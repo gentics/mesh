@@ -8,6 +8,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
+/**
+ * @see MicroschemaComparator
+ */
 @Singleton
 public class MicroschemaComparatorImpl extends AbstractFieldSchemaContainerComparator<MicroschemaModel> implements MicroschemaComparator {
 

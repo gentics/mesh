@@ -10,7 +10,21 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 
+/**
+ * Extended {@link Control} which supports utf8 resource bundles.
+ */
 public class UTF8Control extends Control {
+
+	/**
+	 * Create a new resource bundle for the given local and base that supports utf8 encoded properties.
+	 * 
+	 * @param baseName
+	 * @param locale
+	 * @param format
+	 * @param loader
+	 * @param reload
+	 * @return Loaded resource bundle
+	 */
 	public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
 		throws IllegalAccessException, InstantiationException, IOException {
 		// The below is a copy of the default implementation.

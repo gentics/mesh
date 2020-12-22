@@ -11,11 +11,14 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+/**
+ * Elasticsearch handler for search operations on the tag family indices.
+ */
 @Singleton
 public class TagFamilySearchHandler extends AbstractSearchHandler<HibTagFamily, TagFamilyResponse> {
 
 	@Inject
-	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandler indexHandler, MeshOptions options, TagFamilyDAOActions actions) {
+	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandlerImpl indexHandler, MeshOptions options, TagFamilyDAOActions actions) {
 		super(db, searchProvider, options, indexHandler, actions);
 	}
 

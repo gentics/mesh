@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -98,12 +99,8 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 */
 	abstract protected Transformer getTransformer();
 
-	/**
-	 * Return the index specific mapping provider.
-	 * 
-	 * @return
-	 */
-	abstract protected MappingProvider getMappingProvider();
+	@Override
+	abstract public MappingProvider getMappingProvider();
 
 	/**
 	 * Compose the index name using the batch entry data.
@@ -121,14 +118,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 */
 	abstract protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry);
 
-	/**
-	 * Store the given object within the search index.
-	 * 
-	 * @param element
-	 * @param entry
-	 *            search queue entry
-	 * @return
-	 */
+	@Override
 	public Completable store(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
@@ -139,6 +129,13 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		});
 	}
 
+	/**
+	 * Generate an observable which emits a new {@link IndexBulkEntry} which contains the search index document that can be added to a bulk update request.
+	 * 
+	 * @param element
+	 * @param entry
+	 * @return
+	 */
 	public Observable<IndexBulkEntry> storeForBulk(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
@@ -236,17 +233,29 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 				meters.getUpdateMeter().addPending((needUpdateInEs.size()));
 				meters.getDeleteMeter().addPending((needRemovalInES.size()));
 
-				Function<Action, Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
-					JsonObject doc = db.tx(tx -> {
-						return getTransformer().toDocument(getElement(uuid));
+				Function<String, Optional<JsonObject>> toDoc = uuid -> {
+					return db.tx(() -> {
+						T element = getElement(uuid);
+						if (element == null) {
+							log.error("Element for uuid {" + uuid + "} in type handler {" + getType() + "}  could not be found. Skipping document.");
+							return Optional.empty();
+						} else {
+							return Optional.of(getTransformer().toDocument(element));
+						}
 					});
+				};
+
+				Function<Action, Function<JsonObject, CreateDocumentRequest>> toCreateRequest = action -> doc -> {
+					String uuid = doc.getString("uuid");
 					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
 				};
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
+					.map(toDoc).filter(opt -> opt.isPresent()).map(opt -> opt.get())
 					.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
 
 				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
+					.map(toDoc).filter(opt -> opt.isPresent()).map(opt -> opt.get())
 					.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
@@ -262,15 +271,24 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	private Map<String, String> loadVersionsFromGraph(Bucket bucket) {
 		return db.tx(tx -> {
-			return loadAllElements(tx)
+			return loadAllElements()
 				.filter(element -> {
-					return bucket.filter().test((HibBucketableElement)element);
-				}).collect(Collectors.toMap(
+					return bucket.filter().test((HibBucketableElement) element);
+				})
+				.collect(Collectors.toMap(
 					HibBaseElement::getUuid,
 					this::generateVersion));
 		});
 	}
 
+	/**
+	 * Load a map of versions and documentIds from the given search index. Apply the bucket parameters to the query in order to only select documents within the
+	 * bucket range.
+	 * 
+	 * @param indexName
+	 * @param bucket
+	 * @return
+	 */
 	// TODO Async
 	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, Bucket bucket) {
 		return Single.fromCallable(() -> {

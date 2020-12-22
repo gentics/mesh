@@ -21,10 +21,10 @@ import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.endpoint.project.ProjectCrudHandler;
-import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
+import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.endpoint.schema.SchemaCrudHandler;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
 import com.gentics.mesh.core.endpoint.tagfamily.TagFamilyCrudHandler;
@@ -136,7 +136,7 @@ import io.vertx.ext.web.FileUpload;
  * well tested and may lack a lot of endpoint implementations.
  */
 @Singleton
-public class MeshLocalClientImpl implements MeshRestClient {
+public class MeshLocalClientImpl implements MeshLocalClient {
 
 	public MeshAuthUser user;
 
@@ -144,7 +144,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public UserCrudHandler userCrudHandler;
 
 	@Inject
-	public RoleCrudHandler roleCrudHandler;
+	public RoleCrudHandlerImpl roleCrudHandler;
 
 	@Inject
 	public GroupCrudHandler groupCrudHandler;
@@ -168,7 +168,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public NodeCrudHandler nodeCrudHandler;
 
 	@Inject
-	public BinaryUploadHandler fieldAPIHandler;
+	public BinaryUploadHandlerImpl fieldAPIHandler;
 
 	@Inject
 	public WebRootHandler webrootHandler;
@@ -201,11 +201,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	private Map<String, Project> projects = new HashMap<>();
 
-	/**
-	 * Set the user which is used for authentication.
-	 *
-	 * @param user
-	 */
+	@Override
 	public void setUser(MeshAuthUser user) {
 		this.user = user;
 	}
@@ -1124,6 +1120,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
+	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 		byte[] fileData, String fileName, String contentType, ParameterProvider... parameters) {
 
@@ -1283,6 +1280,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return ac;
 	}
 
+	/**
+	 * Add the project to the list of projects which will be used by the context object.
+	 * 
+	 * @param name
+	 * @param project
+	 */
 	public void addProject(String name, Project project) {
 		this.projects.put(name, project);
 	}

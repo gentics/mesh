@@ -47,7 +47,8 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 
 		// .groups
 		roleType.field(newPagingFieldWithFetcher("groups", "Groups which reference the role.", env -> {
-			RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+
+			RoleDaoWrapper roleDao = Tx.get().roleDao();
 			HibRole role = env.getSource();
 			GraphQLContext gc = env.getContext();
 

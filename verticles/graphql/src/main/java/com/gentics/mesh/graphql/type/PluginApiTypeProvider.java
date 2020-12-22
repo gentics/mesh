@@ -58,6 +58,7 @@ public class PluginApiTypeProvider extends AbstractTypeProvider {
 				String apiName = currentPlugin.gqlApiName();
 				GraphQLObjectType queryType = pluginSchema.getQueryType();
 				GraphQLObjectType prefixedType = queryType.transform(e -> {
+					// Prefix all types to avoid clashing of type names with existing types.
 					e.name(apiName + "_" + queryType.getName());
 				});
 

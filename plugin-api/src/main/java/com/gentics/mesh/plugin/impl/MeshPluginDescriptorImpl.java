@@ -9,9 +9,13 @@ import java.util.List;
 import org.pf4j.Plugin;
 import org.pf4j.PluginDependency;
 
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.PluginManifest;
 
+/**
+ * POJO which describes the metadata of a plugin.
+ */
 public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
 	private String id;
@@ -61,6 +65,12 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		return date;
 	}
 
+	/**
+	 * Add an additional dependency to the manifest.
+	 * 
+	 * @param dependency
+	 * @deprecated No longer used. Should be removed.
+	 */
 	public void addDependency(PluginDependency dependency) {
 		this.dependencies.add(dependency);
 	}
@@ -207,6 +217,7 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		return this;
 	}
 
+	@Setter
 	public MeshPluginDescriptor setLicense(String license) {
 		this.license = license;
 		return this;

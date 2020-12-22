@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.plugin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.plugin.PluginManifest;
 
@@ -93,6 +94,7 @@ public class PluginResponse implements RestModel {
 		return status;
 	}
 
+	@Setter
 	public PluginResponse setStatus(PluginStatus status) {
 		this.status = status;
 		return this;

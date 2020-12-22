@@ -16,10 +16,25 @@ public interface HibRole extends HibCoreElement, HibUserTracking, HibNamedElemen
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.ROLE, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED);
 
+	/**
+	 * Remove the element.
+	 */
 	void removeElement();
 
+	/**
+	 * Transform the role to a reference POJO.
+	 * 
+	 * @return
+	 */
 	RoleReference transformToReference();
 
+	/**
+	 * Return the current element version.
+	 * 
+	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
+	 * 
+	 * @return
+	 */
 	String getElementVersion();
 
 	@Override

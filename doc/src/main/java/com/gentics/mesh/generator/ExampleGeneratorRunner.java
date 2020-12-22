@@ -14,6 +14,12 @@ public class ExampleGeneratorRunner {
 	public static File DOCS_FOLDER = new File("src/main/docs");
 	public static File OUTPUT_ROOT_FOLDER = new File(DOCS_FOLDER, "generated");
 
+	/**
+	 * Start the example generators.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		if (!OUTPUT_ROOT_FOLDER.exists()) {
 			OUTPUT_ROOT_FOLDER.mkdirs();

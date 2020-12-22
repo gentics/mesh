@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.rest.common;
 
+/**
+ * Basic interface for name/uuid reference entities.
+ * 
+ * @param <T>
+ */
 public interface NameUuidReference<T> {
 
 	/**

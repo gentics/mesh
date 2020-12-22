@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data;
 
 public interface HibMeshVersion {
+
 	/**
-	 * Returns the mesh version which was last used to access the graph. This version is usually updated during startup of
-	 * mesh.
+	 * Returns the mesh version which was last used to access the graph. This version is usually updated during startup of mesh.
 	 *
 	 * @return Plain text version or null if this information has not yet been stored
 	 */

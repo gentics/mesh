@@ -2,6 +2,9 @@ package com.gentics.mesh.plugin;
 
 import org.pf4j.PluginDescriptor;
 
+/**
+ * Extended PF4J plugin descriptor for the plugin manifest.
+ */
 public interface MeshPluginDescriptor extends PluginDescriptor {
 
 	/**

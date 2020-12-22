@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.7.6-SNAPSHOT</version>
+	<version>1.7.7-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -55,15 +55,6 @@
 			<name>Johannes Schüth</name>
 			<url>https://github.com/Jotschi</url>
 			<email>git@jotschi.de</email>
-			<organization>Gentics Software</organization>
-			<roles>
-				<role>Core Developer</role>
-			</roles>
-		</developer>
-		<developer>
-			<name>Philipp Gürtler</name>
-			<url>https://github.com/philippguertler</url>
-			<email>p.guertler@gentics.com</email>
 			<organization>Gentics Software</organization>
 			<roles>
 				<role>Core Developer</role>

@@ -14,7 +14,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -27,6 +27,9 @@ import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.http.HttpHeaders;
 
+/**
+ * Endpoint for /api/v1/users
+ */
 public class UserEndpoint extends AbstractInternalEndpoint {
 
 	private UserCrudHandler crudHandler;
@@ -38,7 +41,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Inject
-	public UserEndpoint(MeshAuthChain chain, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
+	public UserEndpoint(MeshAuthChainImpl chain, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
 		super("users", chain);
 		this.crudHandler = userCrudHandler;
 		this.userTokenHandler = userTokenHandler;

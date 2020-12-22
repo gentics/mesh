@@ -21,6 +21,12 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRootImpl {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(ProjectMicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 	}

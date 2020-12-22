@@ -52,6 +52,12 @@ public class PluginHandler extends AbstractHandler {
 		this.utils = utils;
 	}
 
+	/**
+	 * Handle the plugin load request that returns information about the plugin with the provided id.
+	 * 
+	 * @param ac
+	 * @param id
+	 */
 	public void handleRead(InternalActionContext ac, String id) {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
@@ -69,6 +75,11 @@ public class PluginHandler extends AbstractHandler {
 		}, model -> ac.send(model, CREATED));
 	}
 
+	/**
+	 * Handle a plugin deployment request.
+	 * 
+	 * @param ac
+	 */
 	public void handleDeploy(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
@@ -93,6 +104,12 @@ public class PluginHandler extends AbstractHandler {
 		}, model -> ac.send(model, CREATED));
 	}
 
+	/**
+	 * Handle a plugin undeploy request.
+	 * 
+	 * @param ac
+	 * @param pluginId
+	 */
 	public void handleUndeploy(InternalActionContext ac, String pluginId) {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
@@ -110,6 +127,11 @@ public class PluginHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Handle the plugin list request which loads a page of all plugins.
+	 * 
+	 * @param ac
+	 */
 	public void handleReadList(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {

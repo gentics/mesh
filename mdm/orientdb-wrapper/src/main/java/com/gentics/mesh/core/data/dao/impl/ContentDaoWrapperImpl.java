@@ -89,7 +89,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public long getGraphFieldContainerCount(Node node) {
+	public long getGraphFieldContainerCount(HibNode node) {
 		return toGraph(node).getGraphFieldContainerCount();
 	}
 

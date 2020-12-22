@@ -1,5 +1,12 @@
 package com.gentics.mesh.rest;
 
+import com.gentics.mesh.annotation.Setter;
+
+/**
+ * Abstract implementation for REST Client authentication providers.
+ * 
+ * @see MeshRestClientAuthenticationProvider
+ */
 public abstract class AbstractAuthenticationProvider implements MeshRestClientAuthenticationProvider {
 
 	private String username;
@@ -38,6 +45,7 @@ public abstract class AbstractAuthenticationProvider implements MeshRestClientAu
 		return newPassword;
 	}
 
+	@Setter
 	public AbstractAuthenticationProvider setNewPassword(String newPassword) {
 		this.newPassword = newPassword;
 		return this;

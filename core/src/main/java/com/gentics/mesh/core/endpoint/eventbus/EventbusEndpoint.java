@@ -2,7 +2,7 @@ package com.gentics.mesh.core.endpoint.eventbus;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -32,7 +32,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Inject
-	public EventbusEndpoint(Vertx vertx, MeshAuthChain chain) {
+	public EventbusEndpoint(Vertx vertx, MeshAuthChainImpl chain) {
 		super("eventbus", chain);
 		this.vertx = vertx;
 	}
@@ -53,6 +53,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 			handler = SockJSHandler.create(vertx, sockJSoptions);
 			BridgeOptions bridgeOptions = new BridgeOptions();
 			for (MeshEvent event : MeshEvent.publicEvents()) {
+				// TODO ensure that clients can't fire internal mesh events. 
 				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(event.address));
 				bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(event.address));
 			}

@@ -1,14 +1,5 @@
 package com.gentics.mesh.core.rest.common;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
@@ -16,7 +7,16 @@ import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.BooleanUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
  * Permission information
@@ -46,6 +46,16 @@ public class PermissionInfo implements RestModel {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether the read published permission is granted.")
 	private Boolean readPublished;
+
+	/**
+	 * Return a basic {@link PermissionInfo} which indicates no perms have been granted.
+	 * 
+	 * @return
+	 */
+	public static PermissionInfo noPermissions() {
+		return new PermissionInfo()
+			.setOthers(false);
+	}
 
 	public Boolean getRead() {
 		return read;
@@ -271,20 +281,20 @@ public class PermissionInfo implements RestModel {
 	@JsonIgnore
 	public Boolean getNullable(Permission perm) {
 		switch (perm) {
-			case CREATE:
-				return create;
-			case READ:
-				return read;
-			case UPDATE:
-				return update;
-			case DELETE:
-				return delete;
-			case PUBLISH:
-				return publish;
-			case READ_PUBLISHED:
-				return readPublished;
-			default:
-				throw new RuntimeException("Unknown permission type {" + perm.getName() + "}");
+		case CREATE:
+			return create;
+		case READ:
+			return read;
+		case UPDATE:
+			return update;
+		case DELETE:
+			return delete;
+		case PUBLISH:
+			return publish;
+		case READ_PUBLISHED:
+			return readPublished;
+		default:
+			throw new RuntimeException("Unknown permission type {" + perm.getName() + "}");
 		}
 	}
 

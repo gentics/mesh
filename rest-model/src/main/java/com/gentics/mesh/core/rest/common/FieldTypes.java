@@ -67,11 +67,11 @@ public enum FieldTypes {
 	private Class<? extends FieldSchema> schemaImplementationClazz;
 
 	private Class<? extends Field> fieldInterfaceClass;
-	
+
 	private Class<? extends Field> fieldImplementationClass;
 
 	private FieldTypes(Class<? extends FieldSchema> schemaInterfaceClazz, Class<? extends FieldSchema> schemaImplementationClazz,
-			Class<? extends Field> fieldInterfaceClass, Class<? extends Field> fieldImplementationClass) {
+		Class<? extends Field> fieldInterfaceClass, Class<? extends Field> fieldImplementationClass) {
 		this.schemaInterfaceClazz = schemaInterfaceClazz;
 		this.schemaImplementationClazz = schemaImplementationClazz;
 		this.fieldImplementationClass = fieldImplementationClass;
@@ -94,6 +94,9 @@ public enum FieldTypes {
 		return fieldInterfaceClass;
 	}
 
+	/**
+	 * Return the name of the type.
+	 */
 	public String toString() {
 		return name().toLowerCase();
 	}

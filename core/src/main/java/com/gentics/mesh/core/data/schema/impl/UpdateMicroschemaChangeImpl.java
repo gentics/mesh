@@ -19,6 +19,12 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public class UpdateMicroschemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<MicroschemaModel> implements UpdateMicroschemaChange {
 
+	/**
+	 * Intialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UpdateMicroschemaChangeImpl.class, MeshVertexImpl.class);
 	}

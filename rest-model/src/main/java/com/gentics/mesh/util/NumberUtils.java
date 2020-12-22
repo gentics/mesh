@@ -5,6 +5,9 @@ import java.math.BigInteger;
 
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * Extended utility class to handle number conversions.
+ */
 public final class NumberUtils extends org.apache.commons.lang.math.NumberUtils {
 
 	/**
@@ -43,13 +46,27 @@ public final class NumberUtils extends org.apache.commons.lang.math.NumberUtils 
 		}
 	}
 
+	/**
+	 * Compare the given numbers with each other.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return -1, 0, or 1 as this {@code Number} is numerically less than, equal to, or greater than {@code y}.
+	 */
 	public static int compare(Number x, Number y) {
-		if (isSpecial(x) || isSpecial(y))
+		if (isSpecial(x) || isSpecial(y)) {
 			return Double.compare(x.doubleValue(), y.doubleValue());
-		else
+		} else {
 			return toBigDecimal(x).compareTo(toBigDecimal(y));
+		}
 	}
 
+	/**
+	 * Check whether the number is either not a double or float or whether it represents infinite.
+	 * 
+	 * @param x
+	 * @return
+	 */
 	private static boolean isSpecial(Number x) {
 		boolean specialDouble = x instanceof Double && (Double.isNaN((Double) x) || Double.isInfinite((Double) x));
 		boolean specialFloat = x instanceof Float && (Float.isNaN((Float) x) || Float.isInfinite((Float) x));

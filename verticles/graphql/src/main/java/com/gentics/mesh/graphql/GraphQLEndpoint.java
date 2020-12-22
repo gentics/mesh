@@ -6,7 +6,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
@@ -29,7 +29,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public GraphQLEndpoint(MeshAuthChain chain, BootstrapInitializer boot, GraphQLHandler queryHandler) {
+	public GraphQLEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, GraphQLHandler queryHandler) {
 		super("graphql", chain, boot);
 		this.queryHandler = queryHandler;
 	}

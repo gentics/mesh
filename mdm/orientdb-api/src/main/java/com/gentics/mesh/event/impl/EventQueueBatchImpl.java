@@ -31,6 +31,8 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 
 	private List<MeshEventModel> bulkEntries = new ArrayList<>();
 
+	private List<Runnable> bulkActions = new ArrayList<>();
+
 	private EventCauseInfo cause;
 
 	private final Vertx vertx;
@@ -43,6 +45,11 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 	@Override
 	public List<MeshEventModel> getEntries() {
 		return bulkEntries;
+	}
+
+	@Override
+	public List<Runnable> getActions() {
+		return bulkActions;
 	}
 
 	@Override
@@ -82,6 +89,11 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 			eventbus.publish(event.getAddress(), new JsonObject(json));
 		});
 		getEntries().clear();
+
+		getActions().forEach(action -> {
+			action.run();
+		});
+		getActions().clear();
 	}
 
 }

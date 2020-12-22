@@ -5,6 +5,9 @@ import com.google.common.net.UrlEscapers;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+/**
+ * Utility to manage URI encoding and decoding.
+ */
 public final class URIUtils {
 
 	private URIUtils() { }

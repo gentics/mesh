@@ -13,6 +13,9 @@ import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.MeshEvent;
 
+/**
+ * @see ProjectBranchNameCache
+ */
 @Singleton
 public class ProjectBranchNameCacheImpl extends AbstractMeshCache<String, HibBranch> implements ProjectBranchNameCache {
 

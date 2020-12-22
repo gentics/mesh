@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 
+/**
+ * Abstract implementation of event model POJO for migration events.
+ */
 public abstract class AbstractMigrationMeshEventModel extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)

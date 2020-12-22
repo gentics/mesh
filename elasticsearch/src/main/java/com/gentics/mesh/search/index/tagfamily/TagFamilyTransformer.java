@@ -25,13 +25,14 @@ public class TagFamilyTransformer extends AbstractTransformer<HibTagFamily> {
 	public TagFamilyTransformer() {
 	}
 
+	@Override
 	public String generateVersion(HibTagFamily tagFamily) {
 		HibProject project = tagFamily.getProject();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(tagFamily.getElementVersion());
 		builder.append("|");
-		Tx.get().data().tagDao().findAll(tagFamily).forEach(tag -> {
+		Tx.get().tagDao().findAll(tagFamily).forEach(tag -> {
 			builder.append(tag.getElementVersion());
 			builder.append("|");
 		});
@@ -50,7 +51,7 @@ public class TagFamilyTransformer extends AbstractTransformer<HibTagFamily> {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, tagFamily.getName());
 		addBasicReferences(document, tagFamily);
-		addTags(document, Tx.get().data().tagDao().findAll(tagFamily));
+		addTags(document, Tx.get().tagDao().findAll(tagFamily));
 		addProject(document, tagFamily.getProject());
 		addPermissionInfo(document, tagFamily);
 		document.put(MappingHelper.VERSION_KEY, generateVersion(tagFamily));

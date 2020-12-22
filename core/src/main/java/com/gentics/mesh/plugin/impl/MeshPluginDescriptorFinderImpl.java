@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 
+/**
+ * Mesh specific implementation of an {@link PluginDescriptorFinder} which reads the manifest and returns {@link MeshPluginDescriptor} descriptors.
+ */
 public class MeshPluginDescriptorFinderImpl implements PluginDescriptorFinder {
 
 	private static final Logger log = LoggerFactory.getLogger(ManifestPluginDescriptorFinder.class);

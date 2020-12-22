@@ -4,6 +4,9 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 
+/**
+ * API info (/api/v1) client methods.
+ */
 public interface ApiInfoClientMethods {
 
 	/**

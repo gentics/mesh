@@ -22,6 +22,7 @@ public class RoleTransformer extends AbstractTransformer<HibRole> {
 	public RoleTransformer() {
 	}
 
+	@Override
 	public String generateVersion(HibRole role) {
 		// No need to add users since the creator/editor edge affects the role version
 		return ETag.hash(role.getElementVersion());

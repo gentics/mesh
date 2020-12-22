@@ -17,6 +17,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
+/**
+ * Cluster runner
+ */
 public class RunnerNodeA {
 
 	private static final String basePath = "data-nodeA";
@@ -29,6 +32,12 @@ public class RunnerNodeA {
 		System.setProperty("mesh.confDirName", "config-nodeA");
 	}
 
+	/**
+	 * Run the server.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 
 		MeshOptions options = OptionsLoader.createOrloadOptions("-" + MeshCLI.INIT_CLUSTER);
@@ -45,7 +54,7 @@ public class RunnerNodeA {
 		options.getClusterOptions().setClusterName("testcluster");
 
 		final Mesh mesh = Mesh.create(options);
-		mesh.setCustomLoader((vertx) -> {
+		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 			MeshComponent meshInternal = mesh.internal();

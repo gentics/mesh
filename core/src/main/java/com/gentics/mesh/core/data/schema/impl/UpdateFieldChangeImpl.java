@@ -25,6 +25,12 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements UpdateFieldChange {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UpdateFieldChangeImpl.class, MeshVertexImpl.class);
 	}

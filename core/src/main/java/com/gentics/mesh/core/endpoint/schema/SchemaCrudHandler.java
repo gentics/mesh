@@ -18,14 +18,13 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectSchemaLoadAllActionImpl;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -49,6 +48,9 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 
+/**
+ * CRUD handler for schema REST operation.
+ */
 public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResponse> {
 
 	private SchemaComparatorImpl comparator;
@@ -61,7 +63,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparatorImpl comparator, Lazy<BootstrapInitializer> boot,
-		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions, SchemaDAOActions schemaActions) {
+		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions,
+		SchemaDAOActions schemaActions) {
 		super(db, utils, writeLock, schemaActions);
 		this.comparator = comparator;
 		this.boot = boot;
@@ -87,7 +90,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				HibSchema schemaContainer = tx.data().schemaDao().findByUuid(uuid);
+				HibSchema schemaContainer = tx.schemaDao().findByUuid(uuid);
 				return schemaContainer == null;
 			});
 
@@ -99,8 +102,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 			}
 
 			utils.syncTx(ac, tx1 -> {
-				UserDaoWrapper userDao = tx1.data().userDao();
-				SchemaDaoWrapper schemaDao = tx1.data().schemaDao();
+				UserDaoWrapper userDao = tx1.userDao();
+				SchemaDaoWrapper schemaDao = tx1.schemaDao();
+				MicroschemaDaoWrapper microschemaDao = tx1.microschemaDao();
 
 				// 1. Load the schema container with update permissions
 				HibSchema schemaContainer = schemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -149,7 +153,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 								// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
 								for (HibProject project : schemaDao.findLinkedProjects(schemaContainer)) {
 									if (project != null) {
-										project.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
+										microschemaDao.addMicroschema(project, user, microschema, batch);
 									}
 								}
 							}
@@ -177,12 +181,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 							// Assign the new version to the branch
 							branch.assignSchemaVersion(user, createdVersion, batch);
 						}
+						batch.add(() -> MeshEvent.triggerJobWorker(boot.get().mesh()));
 					}
 					return createdVersion.getVersion();
 				});
 
 				if (updateParams.getUpdateAssignedBranches()) {
-					MeshEvent.triggerJobWorker(boot.get().mesh());
 					return message(ac, "schema_updated_migration_invoked", schemaName, version);
 				} else {
 					return message(ac, "schema_updated_migration_deferred", schemaName, version);
@@ -203,7 +207,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao.loadObjectByUuid(ac, uuid, READ_PERM);
 			SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
@@ -233,15 +237,16 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				HibProject project = ac.getProject();
+				UserDaoWrapper userDao = tx.userDao();
+				SchemaDaoWrapper schemaDao = tx.schemaDao();
+
+				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
-				UserDaoWrapper userDao = tx.data().userDao();
 				if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
-				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 				HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				if(schemaDao.isLinkedToProject(schema, project)) {
+				if (schemaDao.isLinkedToProject(schema, project)) {
 					// Schema has already been assigned. No need to create indices
 					return schemaDao.transformToRestSync(schema, ac, 0);
 				}
@@ -267,9 +272,10 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-				UserDaoWrapper userDao = tx.data().userDao();
-				HibProject project = ac.getProject();
+				SchemaDaoWrapper schemaDao = tx.schemaDao();
+				UserDaoWrapper userDao = tx.userDao();
+
+				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
 
 				if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
@@ -292,6 +298,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 		}
 	}
 
+	/**
+	 * Not yet implemented.
+	 * 
+	 * @deprecated Not yet implemented
+	 * @param ac
+	 */
 	public void handleGetSchemaChanges(InternalActionContext ac) {
 		// TODO Auto-generated method stub
 	}
@@ -309,7 +321,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+				SchemaDaoWrapper schemaDao = tx.schemaDao();
 				HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				String version = utils.eventAction(batch -> {
 					HibSchemaVersion newVersion = schemaDao.applyChanges(schema.getLatestVersion(), ac, batch);

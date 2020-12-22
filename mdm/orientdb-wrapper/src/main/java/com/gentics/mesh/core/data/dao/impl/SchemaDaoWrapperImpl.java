@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -31,10 +32,10 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.SchemaRoot;
@@ -45,7 +46,6 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -74,7 +74,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	private final SchemaComparator comparator;
 
 	@Inject
-	public SchemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, Lazy<Vertx> vertx,
+	public SchemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Vertx> vertx,
 		Lazy<NodeIndexHandler> nodeIndexHandler, Provider<EventQueueBatch> batchProvider, SchemaComparator comparator) {
 		super(boot, permissions);
 		this.vertx = vertx;
@@ -113,20 +113,29 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return schemaRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo) {
-		return project.getSchemaContainerRoot().findAll(ac, pagingInfo);
+	public Page<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo) {
+		return toGraph(project).getSchemaContainerRoot().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public Page<? extends HibSchema> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo,
+		Predicate<HibSchema> extraFilter) {
+		Project graphProject = toGraph(project);
+		return graphProject.getSchemaContainerRoot().findAll(ac, pagingInfo, schema -> {
+			return extraFilter.test(schema);
+		});
 	}
 
 	@Override
 	public HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		MeshAuthUser requestUser = ac.getUser();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		HibUser requestUser = ac.getUser();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 
 		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
@@ -188,13 +197,13 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public HibSchema findByUuid(HibProject project, String schemaUuid) {
-		return project.getSchemaContainerRoot().findByUuid(schemaUuid);
+		return toGraph(project).getSchemaContainerRoot().findByUuid(schemaUuid);
 
 	}
 
 	@Override
 	public HibSchema findByName(HibProject project, String schemaName) {
-		return project.getSchemaContainerRoot().findByName(schemaName);
+		return toGraph(project).getSchemaContainerRoot().findByName(schemaName);
 	}
 
 	@Override
@@ -210,7 +219,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	@Override
 	public HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
-		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
@@ -274,6 +283,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 		// TODO check for project in context?
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return schemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	}
+
+	@Override
+	public HibSchema loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
+		return toGraph(project).getSchemaContainerRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
@@ -357,9 +371,9 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level) {
+	public SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level, String... languageTags) {
 		Schema graphSchema = toGraph(schema);
-		return graphSchema.transformToRestSync(ac, level);
+		return graphSchema.transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
@@ -401,7 +415,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, MeshAuthUser user, ContainerType type) {
+	public Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user, ContainerType type) {
 		return toGraph(version).getNodes(branchUuid, user, type);
 	}
 
@@ -431,6 +445,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket) {
 		SchemaVersion graphVersion = toGraph(version);
 		return graphVersion.getFieldContainers(branchUuid, bucket);
+	}
+
+	@Override
+	public boolean contains(HibProject project, HibSchema schema) {
+		return toGraph(project).getSchemaContainerRoot().contains(schema);
 	}
 
 }

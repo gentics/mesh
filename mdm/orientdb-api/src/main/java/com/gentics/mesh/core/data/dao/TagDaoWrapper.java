@@ -8,7 +8,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -30,22 +29,90 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 */
 	Result<? extends HibTag> findAll(HibTagFamily tagFamily);
 
+	/**
+	 * Return the tag of the uuid.
+	 * 
+	 * @param project
+	 * @param uuid
+	 * @return
+	 */
 	HibTag findByUuid(HibProject project, String uuid);
 
+	/**
+	 * Find the tag by family and uuid.
+	 * 
+	 * @param tagFamily
+	 * @param uuid
+	 * @return
+	 */
 	HibTag findByUuid(HibTagFamily tagFamily, String uuid);
 
+	/**
+	 * Find the tag by name.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	HibTag findByName(String name);
 
+	/**
+	 * Find the tag of the tag family by name.
+	 * 
+	 * @param tagFamily
+	 * @param name
+	 * @return
+	 */
 	HibTag findByName(HibTagFamily tagFamily, String name);
 
+	/**
+	 * Load a page of tags.
+	 * 
+	 * @param tagFamily
+	 * @param ac
+	 * @param pagingParameters
+	 * @return
+	 */
 	Page<? extends HibTag> findAll(HibTagFamily tagFamily, InternalActionContext ac, PagingParameters pagingParameters);
 
+	/**
+	 * Load a page of tags.
+	 * 
+	 * @param tagFamily
+	 * @param ac
+	 * @param pagingInfo
+	 * @param extraFilter
+	 * @return
+	 */
 	Page<? extends HibTag> findAll(HibTagFamily tagFamily, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibTag> extraFilter);
 
+	/**
+	 * Return the sub etag of the tag.
+	 * 
+	 * @param tag
+	 * @param ac
+	 * @return
+	 */
 	String getSubETag(HibTag tag, InternalActionContext ac);
 
+	/**
+	 * Create the tag.
+	 * 
+	 * @param tagFamily
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
 	HibTag create(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch);
 
+	/**
+	 * Create the tag.
+	 * 
+	 * @param tagFamily
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
 	HibTag create(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
@@ -78,19 +145,66 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 */
 	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
 
+	/**
+	 * Delete the tag.
+	 * 
+	 * @param tag
+	 * @param bac
+	 */
 	void delete(HibTag tag, BulkActionContext bac);
 
+	/**
+	 * Update the tag.
+	 * 
+	 * @param tag
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
 	boolean update(HibTag tag, InternalActionContext ac, EventQueueBatch batch);
 
+	/**
+	 * Return the etag.
+	 */
 	String getETag(HibTag tag, InternalActionContext ac);
 
+	/**
+	 * Return the API path of the tag.
+	 * 
+	 * @param tag
+	 * @param ac
+	 * @return
+	 */
 	String getAPIPath(HibTag tag, InternalActionContext ac);
 
+	/**
+	 * Load the tag of the branch.
+	 * 
+	 * @param branch
+	 * @param ac
+	 * @param tagUuid
+	 * @param perm
+	 * @return
+	 */
 	HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm);
 
+	/**
+	 * Load all tags.
+	 * 
+	 * @return
+	 */
 	Result<? extends HibTag> findAllGlobal();
 
-	HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission readPerm);
+	/**
+	 * Load the tag and check permissions.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param tagUuid
+	 * @param perm
+	 * @return
+	 */
+	HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission perm);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
@@ -103,10 +217,17 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends HibNode> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
+	Page<? extends HibNode> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
 		ContainerType type,
 		PagingParameters pagingInfo);
 
+	/**
+	 * Return the tagged nodes.
+	 * 
+	 * @param tag
+	 * @param ac
+	 * @return
+	 */
 	Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac);
 
 	/**
@@ -124,6 +245,12 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 */
 	Result<? extends HibNode> getNodes(HibTag tag, HibBranch branch);
 
+	/**
+	 * Compute the total count of tags in the tag family.
+	 * 
+	 * @param tagFamily
+	 * @return
+	 */
 	long computeCount(HibTagFamily tagFamily);
 
 	/**
@@ -165,7 +292,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch);
+	Page<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.

@@ -4,8 +4,10 @@ import java.util.Objects;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.HibInNode;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -43,11 +45,16 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.ElementFrame;
 
 public final class HibClassConverter {
 
 	private HibClassConverter() {
+	}
+
+	public static MeshElement toGraph(HibBaseElement element) {
+		return checkAndCast(element, MeshElement.class);
 	}
 
 	public static Tag toGraph(HibTag tag) {
@@ -122,18 +129,12 @@ public final class HibClassConverter {
 		return checkAndCast(binary, Binary.class);
 	}
 
-	/**
-	 * @param node
-	 * @return
-	 * @deprecated Use {@link #toGraph(HibNode)} instead.
-	 */
-	@Deprecated
-	public static Node toGraph(HibInNode node) {
+	public static Node toGraph(HibNode node) {
 		return checkAndCast(node, Node.class);
 	}
 
-	public static Node toGraph(HibNode node) {
-		return checkAndCast(node, Node.class);
+	public static NodeGraphFieldContainer toGraph(HibContent content) {
+		return checkAndCast(content, NodeGraphFieldContainer.class);
 	}
 
 	public static Job toGraph(HibJob job) {
@@ -150,7 +151,9 @@ public final class HibClassConverter {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T checkAndCast(HibElement element, Class<? extends ElementFrame> clazz) {
-		Objects.requireNonNull(element, "The provided element was null and thus can't be converted to " + clazz.getName());
+		if (element == null) {
+			return null;
+		}
 		if (clazz.isInstance(element)) {
 			return (T) clazz.cast(element);
 		} else {

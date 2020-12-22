@@ -38,19 +38,18 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -90,7 +89,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	private final Lazy<PermissionCache> permissionCache;
 
 	@Inject
-	public UserDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, PasswordEncoder passwordEncoder,
+	public UserDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, PasswordEncoder passwordEncoder,
 		Lazy<PermissionCache> permissionCache) {
 		super(boot, permissions);
 		this.passwordEncoder = passwordEncoder;
@@ -102,7 +101,8 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		UserRoot userRoot = boot.get().userRoot();
 		GroupDaoWrapper groupDao = boot.get().groupDao();
 		ProjectDaoWrapper projectDao = boot.get().projectDao();
-		MeshAuthUser requestUser = ac.getUser();
+		NodeDaoWrapper nodeDao = boot.get().nodeDao();
+		HibUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
 		if (requestModel == null) {
@@ -169,7 +169,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 			if (project == null) {
 				throw error(BAD_REQUEST, "project_not_found", projectName);
 			}
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
 			user.setReferencedNode(node);
 		} else if (reference != null) {
 			// TODO handle user create using full node rest model.
@@ -278,12 +278,11 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 				/*
 				 * TODO decide whether we need to check perms on the project as well
 				 */
-				HibProject project = Tx.get().data().projectDao().findByName(projectName);
+				HibProject project = Tx.get().projectDao().findByName(projectName);
 				if (project == null) {
 					throw error(BAD_REQUEST, "project_not_found", projectName);
 				}
-				NodeRoot nodeRoot = project.getNodeRoot();
-				Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
+				HibNode node = Tx.get().nodeDao().loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
 				if (!dry) {
 					graphUser.setReferencedNode(node);
 				}
@@ -466,7 +465,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public TransformablePage<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		UserRoot userRoot = boot.get().userRoot();
 		return userRoot.findAll(ac, pagingInfo);
 	}
@@ -664,7 +663,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, MeshVertex targetNode,
 		InternalPermission... toGrant) {
 		// TODO inject dao via DI
-		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		RoleDaoWrapper roleDao = Tx.get().roleDao();
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (HibRole role : sourceNode.getRolesWithPerm(permission)) {
@@ -716,12 +715,12 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo) {
+	public Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		return toGraph(fromUser).getRolesViaShortcut(authUser, pagingInfo);
 	}
 
 	@Override
-	public Page<? extends HibGroup> getGroups(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo) {
+	public Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		return toGraph(fromUser).getGroups(authUser, pagingInfo);
 	}
 }

@@ -2,6 +2,9 @@ package com.gentics.mesh.parameter.value;
 
 import java.util.Set;
 
+/**
+ * Utility interface for string sets.
+ */
 public interface FieldsSet extends Set<String> {
 
 	/**

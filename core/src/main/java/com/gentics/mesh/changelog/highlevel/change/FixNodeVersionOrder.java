@@ -78,7 +78,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		AtomicLong fixedNodes = new AtomicLong();
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		singleBranchProjects()
-			.flatMap(project -> project.getNodeRoot().findAll().stream())
+			.flatMap(project -> Tx.get().nodeDao().findAll(project).stream())
 			.forEach(node -> {
 				long count = nodeCount.get();
 				if (count != 0 && count % 1000 == 0) {
@@ -86,7 +86,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				}
 				boot.get().contentDao().getGraphFieldContainers(node, ContainerType.INITIAL).stream()
 					.forEach(content -> {
-						boolean mutated = fixNodeVersionOrder(context, node, content);
+						boolean mutated = fixNodeVersionOrder(context, toGraph(node), content);
 						if (mutated) {
 							fixedNodes.incrementAndGet();
 						}
@@ -200,7 +200,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private Stream<? extends HibProject> singleBranchProjects() {
-		return Tx.get().data().projectDao().findAll().stream()
+		return Tx.get().projectDao().findAll().stream()
 			.filter(this::hasSingleBranch);
 	}
 

@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.event.tag.TagElementEventModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 
+/**
+ * POJO for tag permission change events.
+ */
 public class TagPermissionChangedEventModel extends PermissionChangedProjectElementEventModel implements TagElementEventModel {
 
 	@JsonProperty(required = true)

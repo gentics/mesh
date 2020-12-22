@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
@@ -89,6 +90,7 @@ public class ClusterOptions implements Option {
 		return enabled;
 	}
 
+	@Setter
 	public ClusterOptions setEnabled(boolean flag) {
 		this.enabled = flag;
 		return this;
@@ -98,6 +100,7 @@ public class ClusterOptions implements Option {
 		return networkHost;
 	}
 
+	@Setter
 	public ClusterOptions setNetworkHost(String networkHost) {
 		this.networkHost = networkHost;
 		return this;
@@ -107,6 +110,7 @@ public class ClusterOptions implements Option {
 		return clusterName;
 	}
 
+	@Setter
 	public ClusterOptions setClusterName(String clusterName) {
 		this.clusterName = clusterName;
 		return this;
@@ -116,6 +120,7 @@ public class ClusterOptions implements Option {
 		return vertxPort;
 	}
 
+	@Setter
 	public ClusterOptions setVertxPort(Integer vertxPort) {
 		this.vertxPort = vertxPort;
 		return this;
@@ -125,6 +130,7 @@ public class ClusterOptions implements Option {
 		return coordinatorMode;
 	}
 
+	@Setter
 	public ClusterOptions setCoordinatorMode(CoordinatorMode coordinatorMode) {
 		this.coordinatorMode = coordinatorMode;
 		return this;
@@ -134,6 +140,7 @@ public class ClusterOptions implements Option {
 		return coordinatorRegex;
 	}
 
+	@Setter
 	public ClusterOptions setCoordinatorRegex(String coordinatorRegex) {
 		this.coordinatorRegex = coordinatorRegex;
 		return this;
@@ -143,6 +150,7 @@ public class ClusterOptions implements Option {
 		return topologyLockTimeout;
 	}
 
+	@Setter
 	public ClusterOptions setTopologyLockTimeout(long topologyLockTimeout) {
 		this.topologyLockTimeout = topologyLockTimeout;
 		return this;
@@ -152,6 +160,7 @@ public class ClusterOptions implements Option {
 		return coordinatorTopology;
 	}
 
+	@Setter
 	public ClusterOptions setCoordinatorTopology(CoordinationTopology coordinatorTopology) {
 		this.coordinatorTopology = coordinatorTopology;
 		return this;
@@ -161,6 +170,7 @@ public class ClusterOptions implements Option {
 		return topologyLockDelay;
 	}
 
+	@Setter
 	public ClusterOptions setTopologyLockDelay(long topologyLockDelay) {
 		this.topologyLockDelay = topologyLockDelay;
 		return this;

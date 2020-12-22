@@ -26,6 +26,7 @@ public class TagTransformer extends AbstractTransformer<HibTag> {
 	public TagTransformer() {
 	}
 
+	@Override
 	public String generateVersion(HibTag tag) {
 		HibProject project = tag.getProject();
 		HibTagFamily tagFamily = tag.getTagFamily();

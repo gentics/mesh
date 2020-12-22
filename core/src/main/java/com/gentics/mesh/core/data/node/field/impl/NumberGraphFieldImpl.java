@@ -14,6 +14,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
+/**
+ * @see NumberGraphField
+ */
 public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implements NumberGraphField {
 
 	public static FieldTransformer<NumberField> NUMBER_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {

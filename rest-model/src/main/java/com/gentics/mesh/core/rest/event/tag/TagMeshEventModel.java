@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 
+/**
+ * REST model for tag related events.
+ */
 public class TagMeshEventModel extends AbstractProjectEventModel implements TagElementEventModel {
 
 	@JsonProperty(required = true)

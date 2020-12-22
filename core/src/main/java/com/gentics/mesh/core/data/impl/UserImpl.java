@@ -20,16 +20,18 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -39,7 +41,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
@@ -77,6 +79,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	public static final String FORCE_PASSWORD_CHANGE_KEY = "forcePasswordChange";
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
@@ -214,7 +222,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	}
 
 	@Override
-	public Result<? extends Group> getGroups() {
+	public Result<? extends HibGroup> getGroups() {
 		return out(HAS_USER, GroupImpl.class);
 	}
 
@@ -251,9 +259,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	public void updateShortcutEdges() {
 		GroupRoot groupRoot = mesh().boot().groupRoot();
 		outE(ASSIGNED_TO_ROLE).removeAll();
-		for (Group group : getGroups()) {
-			for (Role role : groupRoot.getRoles(group)) {
-				setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+		for (HibGroup group : getGroups()) {
+			for (HibRole role : groupRoot.getRoles(group)) {
+				setUniqueLinkOutTo(toGraph(role), ASSIGNED_TO_ROLE);
 			}
 		}
 	}
@@ -264,7 +272,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	}
 
 	@Override
-	public HibUser setReferencedNode(HibInNode node) {
+	public HibUser setReferencedNode(HibNode node) {
 		setSingleLinkOutTo(toGraph(node), HAS_NODE_REFERENCE);
 		return this;
 	}
@@ -309,7 +317,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		return userDao.update(this, ac, batch);
 	}
 
@@ -321,7 +329,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandler.baseRoute(ac) + "/users/" + getUuid();
+		return VersionHandlerImpl.baseRoute(ac) + "/users/" + getUuid();
 	}
 
 	@Override

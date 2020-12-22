@@ -14,7 +14,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utility for RxJava related search code.
+ */
 public final class RxUtil {
+
 	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
 
 	private RxUtil() {

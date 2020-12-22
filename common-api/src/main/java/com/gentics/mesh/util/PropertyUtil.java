@@ -3,6 +3,9 @@ package com.gentics.mesh.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Utility for property handling.
+ */
 public final class PropertyUtil {
 
 	private final static Pattern PATTERN = Pattern.compile("\\$\\{(\\w+)\\}|\\$(\\w+)");

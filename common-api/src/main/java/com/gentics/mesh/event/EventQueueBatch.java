@@ -28,6 +28,13 @@ public interface EventQueueBatch {
 	List<MeshEventModel> getEntries();
 
 	/**
+	 * Return a list of all actions in this batch.
+	 * 
+	 * @return
+	 */
+	List<Runnable> getActions();
+
+	/**
 	 * Dispatch events for all entries in the batch.
 	 */
 	void dispatch();
@@ -37,6 +44,7 @@ public interface EventQueueBatch {
 	 */
 	default void clear() {
 		getEntries().clear();
+		getActions().clear();
 	}
 
 	/**
@@ -60,8 +68,26 @@ public interface EventQueueBatch {
 		return this;
 	}
 
+	/**
+	 * Add a action which should be run once the batch gets processed.
+	 * 
+	 * @param action
+	 * @return
+	 */
+	default EventQueueBatch add(Runnable action) {
+		Objects.requireNonNull(action);
+		getActions().add(action);
+		return this;
+	}
+
+	/**
+	 * Merge the contents of the given batch with the current batch.
+	 * 
+	 * @param containerBatch
+	 */
 	default void addAll(EventQueueBatch containerBatch) {
 		getEntries().addAll(containerBatch.getEntries());
+		getActions().addAll(containerBatch.getActions());
 	}
 
 	/**

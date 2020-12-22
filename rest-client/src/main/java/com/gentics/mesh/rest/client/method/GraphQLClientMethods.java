@@ -5,6 +5,9 @@ import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
+/**
+ * REST clients methods for GraphQL operations.
+ */
 public interface GraphQLClientMethods {
 
 	/**

@@ -17,17 +17,35 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * Utility for stream related operations and conversions.
+ */
 public final class StreamUtil {
+
 	private StreamUtil() {
 
 	}
 
+	/**
+	 * Convert the iterable to a stream.
+	 * 
+	 * @param <T>
+	 * @param iterable
+	 * @return
+	 */
 	public static <T> Stream<T> toStream(Iterable<? extends T> iterable) {
-		return (Stream<T>)StreamSupport.stream(iterable.spliterator(), false);
+		return (Stream<T>) StreamSupport.stream(iterable.spliterator(), false);
 	}
 
+	/**
+	 * Convert the iterator to a stream.
+	 * 
+	 * @param <T>
+	 * @param iterator
+	 * @return
+	 */
 	public static <T> Stream<T> toStream(Iterator<? extends T> iterator) {
-		return toStream(() -> (Iterator<T>)iterator);
+		return toStream(() -> (Iterator<T>) iterator);
 	}
 
 	/**
@@ -69,6 +87,13 @@ public final class StreamUtil {
 		});
 	}
 
+	/**
+	 * Return a lazy supplier which will load the value from the given supplier once {@link Supplier#get()} gets invoked.
+	 * 
+	 * @param <T>
+	 * @param supplier
+	 * @return
+	 */
 	public static <T> Supplier<T> lazy(Supplier<T> supplier) {
 		return new Supplier<T>() {
 			T value;
@@ -85,6 +110,15 @@ public final class StreamUtil {
 		};
 	}
 
+	/**
+	 * Return a custom collector which is able to merge two maps.
+	 * 
+	 * @param <K>
+	 *            Type of the key
+	 * @param <V>
+	 *            Type of the value
+	 * @return
+	 */
 	public static <K, V> Collector<Map<K, V>, Map<K, V>, Map<K, V>> mergeMaps() {
 		return Collector.of(
 			HashMap::new,
@@ -92,21 +126,35 @@ public final class StreamUtil {
 			(m1, m2) -> {
 				m1.putAll(m2);
 				return m1;
-			}
-		);
+			});
 	}
 
+	/**
+	 * Create a stream of nullable elements in which null items will be excluded via a filter.
+	 * 
+	 * @param <T>
+	 * @param elements
+	 * @return
+	 */
 	public static <T> Stream<T> ofNullable(T... elements) {
 		return Arrays.stream(elements)
 			.filter(Objects::nonNull);
 	}
 
+	/**
+	 * Return the negated predicate.
+	 * 
+	 * @param <T>
+	 * @param predicate
+	 * @return
+	 */
 	public static <T> Predicate<T> not(Predicate<T> predicate) {
 		return predicate.negate();
 	}
 
 	/**
 	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}.
+	 * 
 	 * @return
 	 */
 	public static <T> Predicate<T> unique() {
@@ -114,8 +162,9 @@ public final class StreamUtil {
 	}
 
 	/**
-	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}.
-	 * Two items are considered equal when the results of the <code>keyMapper</code> function are equal by {@link #equals(Object)}.
+	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}. Two items are considered equal when the results of the
+	 * <code>keyMapper</code> function are equal by {@link #equals(Object)}.
+	 * 
 	 * @param keyMapper
 	 * @param <T>
 	 * @param <K>
@@ -145,5 +194,16 @@ public final class StreamUtil {
 		return IntStream.iterate(arr.length - 1, i -> i - 1)
 			.limit(arr.length)
 			.mapToObj(i -> arr[i]);
+	}
+
+	/**
+	 * Creates an iterable that uses {@link Stream#iterator()}.
+	 *
+	 * @param stream
+	 * @param <T>
+	 * @return
+	 */
+	public static <T> Iterable<T> toIterable(Stream<? extends T> stream) {
+		return () -> ((Iterator<T>) stream.iterator());
 	}
 }

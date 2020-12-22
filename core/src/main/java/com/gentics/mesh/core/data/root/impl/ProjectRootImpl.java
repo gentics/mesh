@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
@@ -19,6 +20,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -34,6 +36,12 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_PROJECT));
@@ -67,9 +75,10 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project findByName(String name) {
-		return mesh().projectNameCache().get(name, n -> {
+		HibProject project = mesh().projectNameCache().get(name, n -> {
 			return super.findByName(n);
 		});
+		return toGraph(project);
 	}
 
 	@Override

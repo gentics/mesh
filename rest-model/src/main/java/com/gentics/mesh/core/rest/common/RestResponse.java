@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.common;
 
+/**
+ * Common interface for entity REST responses.
+ */
 public interface RestResponse extends RestModel {
 
 	/**

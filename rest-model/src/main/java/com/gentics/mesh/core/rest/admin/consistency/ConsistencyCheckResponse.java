@@ -81,6 +81,11 @@ public class ConsistencyCheckResponse implements RestModel {
 		getInconsistencies().add(info);
 	}
 
+	/**
+	 * Check whether the limit of listed inconsistencies was reached.
+	 * 
+	 * @return
+	 */
 	public boolean reachedLimit() {
 		return getInconsistencies().size() >= MAX_ENTRIES;
 	}

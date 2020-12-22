@@ -5,7 +5,11 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSC
 import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Direction;
 
+/**
+ * Changelog which replaces microschema edges with properties to reduce contention.
+ */
 public class ReplaceMicroschemaVersionEdges extends AbstractChange {
+
 	@Override
 	public String getUuid() {
 		return "2E6DA7D47E13429EADA7D47E13729E56";

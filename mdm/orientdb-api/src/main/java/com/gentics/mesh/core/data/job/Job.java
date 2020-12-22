@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.data.job;
 
+import static com.gentics.mesh.core.rest.MeshEvent.JOB_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.JOB_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.JOB_UPDATED;
+
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -18,6 +24,8 @@ import io.reactivex.Completable;
  */
 public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex, HibJob {
 
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.JOB, JOB_CREATED, JOB_UPDATED, JOB_DELETED);
+	
 	String TYPE_PROPERTY_KEY = "type";
 
 	String ERROR_DETAIL_PROPERTY_KEY = "error_detail";

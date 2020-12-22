@@ -13,8 +13,12 @@ import com.gentics.mesh.search.index.AdminIndexHandler;
 
 import io.reactivex.Flowable;
 
+/**
+ * Provider for mesh status debug information.
+ */
 @Singleton
 public class StatusProvider implements DebugInfoProvider {
+
 	private final Database db;
 	private final AdminIndexHandler adminIndexHandler;
 	private final AdminHandler adminHandler;
@@ -36,8 +40,7 @@ public class StatusProvider implements DebugInfoProvider {
 		return Flowable.mergeArray(
 			getVersions(ac),
 			getClusterStatus(),
-			getElasticSearchStatus()
-		);
+			getElasticSearchStatus());
 	}
 
 	private Flowable<DebugInfoEntry> getClusterStatus() {

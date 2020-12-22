@@ -7,6 +7,9 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 
+/**
+ * @see BranchMigrationContext
+ */
 public class BranchMigrationContextImpl implements BranchMigrationContext {
 
 	private BranchMigrationCause cause;

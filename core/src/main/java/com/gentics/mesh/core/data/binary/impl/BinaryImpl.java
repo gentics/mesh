@@ -28,6 +28,12 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	private static final Base64.Encoder BASE64 = Base64.getEncoder();
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(BinaryImpl.class, MeshVertexImpl.class);
 		index.createIndex(vertexIndex(BinaryImpl.class)
@@ -38,7 +44,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	@Override
 	public Result<BinaryGraphField> findFields() {
 		// TODO inE should not return wildcard generics
-		return (Result<BinaryGraphField>)(Result<?>)inE(HAS_FIELD, BinaryGraphFieldImpl.class);
+		return (Result<BinaryGraphField>) (Result<?>) inE(HAS_FIELD, BinaryGraphFieldImpl.class);
 	}
 
 	@Override

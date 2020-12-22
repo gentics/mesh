@@ -8,8 +8,12 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.metric.MetricsService;
 
+/**
+ * 
+ */
 @Singleton
 public class SyncMetersFactory {
+
 	private final MetricsService registry;
 
 	private final Map<String, SyncMeters> meters = new ConcurrentHashMap<>();
@@ -19,10 +23,19 @@ public class SyncMetersFactory {
 		this.registry = registry;
 	}
 
+	/**
+	 * Create a new ES sync meter for (insert, delete, update).
+	 * 
+	 * @param type
+	 * @return
+	 */
 	public SyncMeters createSyncMetric(String type) {
 		return meters.computeIfAbsent(type, k -> new SyncMeters(registry, k));
 	}
 
+	/**
+	 * Reset all meters.
+	 */
 	public void reset() {
 		meters.values().forEach(SyncMeters::reset);
 	}

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.action;
 
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -11,5 +11,5 @@ import com.gentics.mesh.parameter.PagingParameters;
  * @param <T>
  */
 public interface LoadAllAction<T extends HibBaseElement> {
-	TransformablePage<? extends T> loadAll(DAOActionContext ctx, PagingParameters pagingInfo);
+	Page<? extends T> loadAll(DAOActionContext ctx, PagingParameters pagingInfo);
 }

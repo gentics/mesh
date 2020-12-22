@@ -6,6 +6,9 @@ import java.io.Closeable;
 import java.io.InputStream;
 import java.util.Arrays;
 
+/**
+ * The binary response contains additional method to access the binary data via stream or flowable.
+ */
 public interface MeshBinaryResponse extends Closeable {
 
 	int FLOWABLE_BUFFER_SIZE = 8192;

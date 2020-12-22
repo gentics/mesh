@@ -1,32 +1,9 @@
 package com.syncleus.ferma.ext.orientdb3;
 
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.action.BranchDAOActions;
-import com.gentics.mesh.core.action.GroupDAOActions;
-import com.gentics.mesh.core.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.action.ProjectDAOActions;
-import com.gentics.mesh.core.action.RoleDAOActions;
-import com.gentics.mesh.core.action.SchemaDAOActions;
-import com.gentics.mesh.core.action.TagDAOActions;
-import com.gentics.mesh.core.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.HibMeshVersion;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.CacheConfig;
@@ -42,16 +19,17 @@ import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
+/**
+ * @see TxData
+ */
 public class TxDataImpl implements TxData {
 
-	private final DaoCollection daos;
 	private final BootstrapInitializer boot;
 	private final MeshOptions options;
 	private final PermissionRoots permissionRoots;
 
-	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, BootstrapInitializer boot, PermissionRoots permissionRoots) {
+	public TxDataImpl(MeshOptions options, BootstrapInitializer boot, PermissionRoots permissionRoots) {
 		this.options = options;
-		this.daos = daoCollection;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
 	}
@@ -61,55 +39,23 @@ public class TxDataImpl implements TxData {
 		return options;
 	}
 
-	@Override
-	public UserDaoWrapper userDao() {
-		return daos.userDao();
-	}
-
-	public UserDAOActions userActions() {
-		return daos.userActions();
-	}
-
-	public GroupDAOActions groupActions() {
-		return daos.groupActions();
-	}
-
-	public RoleDAOActions roleActions() {
-		return daos.roleActions();
-	}
-
-	public ProjectDAOActions projectActions() {
-		return daos.projectActions();
-	}
-
-	public TagFamilyDAOActions tagFamilyActions() {
-		return daos.tagFamilyActions();
-	}
-
-	public TagDAOActions tagActions() {
-		return daos.tagActions();
-	}
-
-	public BranchDAOActions branchActions() {
-		return daos.branchActions();
-	}
-
-	public MicroschemaDAOActions microschemaActions() {
-		return daos.microschemaActions();
-	}
-
-	public SchemaDAOActions schemaActions() {
-		return daos.schemaActions();
-	}
-
+	/**
+	 * @see MeshOptions#overrideWithEnv()
+	 */
 	public void overrideWithEnv() {
 		options.overrideWithEnv();
 	}
 
+	/**
+	 * @see MeshOptions#hashCode()
+	 */
 	public int hashCode() {
 		return options.hashCode();
 	}
 
+	/**
+	 * @see MeshOptions#equals(Object)
+	 */
 	public boolean equals(Object obj) {
 		return options.equals(obj);
 	}
@@ -118,6 +64,7 @@ public class TxDataImpl implements TxData {
 		return options.getDefaultLanguage();
 	}
 
+	@Setter
 	public MeshOptions setDefaultLanguage(String defaultLanguage) {
 		return options.setDefaultLanguage(defaultLanguage);
 	}
@@ -126,6 +73,7 @@ public class TxDataImpl implements TxData {
 		return options.getLanguagesFilePath();
 	}
 
+	@Setter
 	public MeshOptions setLanguagesFilePath(String languagesFilePath) {
 		return options.setLanguagesFilePath(languagesFilePath);
 	}
@@ -134,6 +82,7 @@ public class TxDataImpl implements TxData {
 		return options.getDefaultMaxDepth();
 	}
 
+	@Setter
 	public MeshOptions setDefaultMaxDepth(int defaultMaxDepth) {
 		return options.setDefaultMaxDepth(defaultMaxDepth);
 	}
@@ -142,6 +91,7 @@ public class TxDataImpl implements TxData {
 		return options.getStorageOptions();
 	}
 
+	@Setter
 	public MeshOptions setStorageOptions(GraphStorageOptions storageOptions) {
 		return options.setStorageOptions(storageOptions);
 	}
@@ -150,6 +100,7 @@ public class TxDataImpl implements TxData {
 		return options.getUploadOptions();
 	}
 
+	@Setter
 	public MeshOptions setUploadOptions(MeshUploadOptions uploadOptions) {
 		return options.setUploadOptions(uploadOptions);
 	}
@@ -158,6 +109,7 @@ public class TxDataImpl implements TxData {
 		return options.getHttpServerOptions();
 	}
 
+	@Setter
 	public MeshOptions setHttpServerOptions(HttpServerConfig httpServerOptions) {
 		return options.setHttpServerOptions(httpServerOptions);
 	}
@@ -166,6 +118,7 @@ public class TxDataImpl implements TxData {
 		return options.getMonitoringOptions();
 	}
 
+	@Setter
 	public MeshOptions setMonitoringOptions(MonitoringConfig monitoringOptions) {
 		return options.setMonitoringOptions(monitoringOptions);
 	}
@@ -174,6 +127,7 @@ public class TxDataImpl implements TxData {
 		return options.getVertxOptions();
 	}
 
+	@Setter
 	public MeshOptions setVertxOptions(VertxOptions vertxOptions) {
 		return options.setVertxOptions(vertxOptions);
 	}
@@ -182,6 +136,7 @@ public class TxDataImpl implements TxData {
 		return options.getClusterOptions();
 	}
 
+	@Setter
 	public MeshOptions setClusterOptions(ClusterOptions clusterOptions) {
 		return options.setClusterOptions(clusterOptions);
 	}
@@ -190,6 +145,7 @@ public class TxDataImpl implements TxData {
 		return options.getSearchOptions();
 	}
 
+	@Setter
 	public MeshOptions setSearchOptions(ElasticSearchOptions searchOptions) {
 		return options.setSearchOptions(searchOptions);
 	}
@@ -198,6 +154,7 @@ public class TxDataImpl implements TxData {
 		return options.getAuthenticationOptions();
 	}
 
+	@Setter
 	public MeshOptions setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
 		return options.setAuthenticationOptions(authenticationOptions);
 	}
@@ -206,10 +163,14 @@ public class TxDataImpl implements TxData {
 		return options.getTempDirectory();
 	}
 
+	@Setter
 	public MeshOptions setTempDirectory(String tempDirectory) {
 		return options.setTempDirectory(tempDirectory);
 	}
 
+	/**
+	 * @see MeshOptions#toString()
+	 */
 	public String toString() {
 		return options.toString();
 	}
@@ -218,6 +179,7 @@ public class TxDataImpl implements TxData {
 		return options.getPluginDirectory();
 	}
 
+	@Setter
 	public MeshOptions setPluginDirectory(String pluginDirectory) {
 		return options.setPluginDirectory(pluginDirectory);
 	}
@@ -226,6 +188,7 @@ public class TxDataImpl implements TxData {
 		return options.getImageOptions();
 	}
 
+	@Setter
 	public MeshOptions setImageOptions(ImageManipulatorOptions imageOptions) {
 		return options.setImageOptions(imageOptions);
 	}
@@ -234,6 +197,7 @@ public class TxDataImpl implements TxData {
 		return options.getContentOptions();
 	}
 
+	@Setter
 	public MeshOptions setContentOptions(ContentConfig contentOptions) {
 		return options.setContentOptions(contentOptions);
 	}
@@ -242,6 +206,7 @@ public class TxDataImpl implements TxData {
 		return options.getDebugInfoOptions();
 	}
 
+	@Setter
 	public MeshOptions setDebugInfoOptions(DebugInfoOptions debugInfoOptions) {
 		return options.setDebugInfoOptions(debugInfoOptions);
 	}
@@ -250,6 +215,7 @@ public class TxDataImpl implements TxData {
 		return options.getCacheConfig();
 	}
 
+	@Setter
 	public MeshOptions setCacheConfig(CacheConfig cacheConfig) {
 		return options.setCacheConfig(cacheConfig);
 	}
@@ -258,6 +224,7 @@ public class TxDataImpl implements TxData {
 		return options.isUpdateCheckEnabled();
 	}
 
+	@Setter
 	public MeshOptions setUpdateCheck(boolean updateCheck) {
 		return options.setUpdateCheck(updateCheck);
 	}
@@ -266,6 +233,7 @@ public class TxDataImpl implements TxData {
 		return options.getNodeName();
 	}
 
+	@Setter
 	public MeshOptions setNodeName(String nodeName) {
 		return options.setNodeName(nodeName);
 	}
@@ -274,6 +242,7 @@ public class TxDataImpl implements TxData {
 		return options.isInitClusterMode();
 	}
 
+	@Setter
 	public MeshOptions setInitCluster(boolean isInitCluster) {
 		return options.setInitCluster(isInitCluster);
 	}
@@ -282,6 +251,7 @@ public class TxDataImpl implements TxData {
 		return options.getLockPath();
 	}
 
+	@Setter
 	public MeshOptions setLockPath(String lockPath) {
 		return options.setLockPath(lockPath);
 	}
@@ -290,6 +260,7 @@ public class TxDataImpl implements TxData {
 		return options.getAdminPassword();
 	}
 
+	@Setter
 	public MeshOptions setAdminPassword(String adminPassword) {
 		return options.setAdminPassword(adminPassword);
 	}
@@ -298,6 +269,7 @@ public class TxDataImpl implements TxData {
 		return options.getInitialAdminPassword();
 	}
 
+	@Setter
 	public MeshOptions setInitialAdminPassword(String initialAdminPassword) {
 		return options.setInitialAdminPassword(initialAdminPassword);
 	}
@@ -306,6 +278,7 @@ public class TxDataImpl implements TxData {
 		return options.isForceInitialAdminPasswordReset();
 	}
 
+	@Setter
 	public MeshOptions setForceInitialAdminPasswordReset(boolean forceInitialAdminPasswordReset) {
 		return options.setForceInitialAdminPasswordReset(forceInitialAdminPasswordReset);
 	}
@@ -314,6 +287,7 @@ public class TxDataImpl implements TxData {
 		return options.getPluginTimeout();
 	}
 
+	@Setter
 	public MeshOptions setPluginTimeout(int pluginTimeout) {
 		return options.setPluginTimeout(pluginTimeout);
 	}
@@ -322,6 +296,7 @@ public class TxDataImpl implements TxData {
 		return options.isStartInReadOnly();
 	}
 
+	@Setter
 	public MeshOptions setStartInReadOnly(boolean startInReadOnly) {
 		return options.setStartInReadOnly(startInReadOnly);
 	}
@@ -330,81 +305,23 @@ public class TxDataImpl implements TxData {
 		return options.getVersionPurgeMaxBatchSize();
 	}
 
+	@Setter
 	public MeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
 		return options.setVersionPurgeMaxBatchSize(versionPurgeMaxBatchSize);
 	}
 
+	/**
+	 * @see MeshOptions#validate()
+	 */
 	public void validate() {
 		options.validate();
 	}
 
+	/**
+	 * @see MeshOptions#validate(MeshOptions)
+	 */
 	public void validate(MeshOptions options) {
 		options.validate(options);
-	}
-
-	@Override
-	public GroupDaoWrapper groupDao() {
-		return daos.groupDao();
-	}
-
-	@Override
-	public RoleDaoWrapper roleDao() {
-		return daos.roleDao();
-	}
-
-	@Override
-	public ProjectDaoWrapper projectDao() {
-		return daos.projectDao();
-	}
-
-	@Override
-	public JobDaoWrapper jobDao() {
-		return daos.jobDao();
-	}
-
-	@Override
-	public LanguageDaoWrapper languageDao() {
-		return daos.languageDao();
-	}
-
-	@Override
-	public SchemaDaoWrapper schemaDao() {
-		return daos.schemaDao();
-	}
-
-	@Override
-	public TagDaoWrapper tagDao() {
-		return daos.tagDao();
-	}
-
-	@Override
-	public TagFamilyDaoWrapper tagFamilyDao() {
-		return daos.tagFamilyDao();
-	}
-
-	@Override
-	public MicroschemaDaoWrapper microschemaDao() {
-		return daos.microschemaDao();
-	}
-
-	@Override
-	public BinaryDaoWrapper binaryDao() {
-		return daos.binaryDao();
-	}
-
-	@Override
-	public BranchDaoWrapper branchDao() {
-		return daos.branchDao();
-	}
-
-	@Override
-	public NodeDaoWrapper nodeDao() {
-		return daos.nodeDao();
-	}
-
-	@Override
-	public ContentDaoWrapper contentDao() {
-		return daos.contentDao();
 	}
 
 	@Override
@@ -416,4 +333,5 @@ public class TxDataImpl implements TxData {
 	public PermissionRoots permissionRoots() {
 		return permissionRoots;
 	}
+
 }

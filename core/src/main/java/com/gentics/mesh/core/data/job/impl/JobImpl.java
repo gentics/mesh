@@ -54,7 +54,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse> implem
 
 	@Override
 	public TypeInfo getTypeInfo() {
-		return null;
+		return TYPE_INFO;
 	}
 
 	@Override

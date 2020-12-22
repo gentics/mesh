@@ -101,9 +101,12 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().role();
 	}
 
-	default MeshAuthUser getRequestUser() {
-		HibUser user = data().getUserInfo().getUser();
-		return MeshAuthUserImpl.create(db(), user);
+	default HibUser getRequestUser() {
+		return data().getUserInfo().getUser();
+	}
+
+	default MeshAuthUser getRequestMeshAuthUser() {
+		return MeshAuthUserImpl.create(db(), getRequestUser());
 	}
 
 	default HibRole anonymousRole() {
@@ -553,6 +556,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		waitForJob(() -> client().updateSchema(uuid, request).blockingAwait());
 	}
 
+	/**
+	 * Delete the schema with the given uuid.
+	 * 
+	 * @param uuid
+	 */
 	default public void deleteSchema(String uuid) {
 		call(() -> client().deleteSchema(uuid));
 	}

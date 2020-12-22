@@ -5,8 +5,16 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshRestClientConfig.Builder;
 
+/**
+ * REST client usage example code.
+ */
 public class MeshRestClientExample {
 
+	/**
+	 * Create a Mesh Rest Client and fetch the user information.
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		// Set config settings
 		Builder builder = MeshRestClientConfig.newConfig();
@@ -21,6 +29,9 @@ public class MeshRestClientExample {
 
 		// Create the client
 		MeshRestClient client = MeshRestClient.create(builder.build());
+
+		// Load information on the authenticated user.
+		// Since we have not logged in the anonymous user will be returned.
 		UserResponse meInfo = client.me().blockingGet();
 		System.out.println(meInfo.toJson());
 	}

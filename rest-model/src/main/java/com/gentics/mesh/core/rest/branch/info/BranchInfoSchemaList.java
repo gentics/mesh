@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
+/**
+ * Branch / Schema assignment info REST model for lists.
+ */
 public class BranchInfoSchemaList implements RestModel {
 
 	@JsonProperty(required = false)

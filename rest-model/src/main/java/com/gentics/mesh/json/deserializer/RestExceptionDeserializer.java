@@ -16,6 +16,9 @@ import com.gentics.mesh.json.MeshJsonException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Custom deserializer for REST exceptions.
+ */
 public class RestExceptionDeserializer extends JsonDeserializer<AbstractRestException> {
 
 	private static final Logger log = LoggerFactory.getLogger(RestExceptionDeserializer.class);

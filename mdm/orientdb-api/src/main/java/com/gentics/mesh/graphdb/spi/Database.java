@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.db.GlueDatabase;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction0;
 import com.gentics.mesh.core.db.TxAction1;
@@ -39,7 +40,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Main description of a graph database.
  */
-public interface Database extends TxFactory {
+public interface Database extends TxFactory, GlueDatabase {
 
 	Logger log = LoggerFactory.getLogger(Database.class);
 

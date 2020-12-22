@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
+/**
+ * Utilities which can be used for authentication plugins.
+ */
 public final class AuthServicePluginUtils {
 
 	private AuthServicePluginUtils() {

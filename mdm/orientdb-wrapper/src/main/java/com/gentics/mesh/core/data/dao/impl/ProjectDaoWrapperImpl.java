@@ -26,10 +26,10 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -38,7 +38,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -65,7 +64,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	private final RouterStorageRegistry routerStorageRegistry;
 
 	@Inject
-	public ProjectDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions,
+	public ProjectDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
 		RouterStorageRegistry routerStorageRegistry) {
 		super(boot, permissions);
 		this.routerStorageRegistry = routerStorageRegistry;
@@ -102,7 +101,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().projectRoot().findAll(ac, pagingInfo);
 	}
 
@@ -204,7 +203,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		// name)
 		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
 		String projectName = requestModel.getName();
-		MeshAuthUser creator = ac.getUser();
+		HibUser creator = ac.getUser();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
@@ -246,7 +245,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
-		project.getBaseNode().getDraftGraphFieldContainers().forEach(c -> {
+		toGraph(project.getBaseNode()).getDraftGraphFieldContainers().forEach(c -> {
 			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
 
@@ -264,7 +263,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		Project graphProject = toGraph(project);
 
 		// Remove the nodes in the project hierarchy
-		Node base = graphProject.getBaseNode();
+		HibNode base = graphProject.getBaseNode();
 		nodeDao.delete(base, bac, true, true);
 
 		// Remove the tagfamilies from the index

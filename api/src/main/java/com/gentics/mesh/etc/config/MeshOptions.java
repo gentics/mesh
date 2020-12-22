@@ -6,6 +6,8 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Getter;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -103,6 +105,10 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Debug info options.")
 	private DebugInfoOptions debugInfoOptions = new DebugInfoOptions();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("GraphQL options.")
+	private GraphQLOptions graphQLOptions = new GraphQLOptions();
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
@@ -158,6 +164,7 @@ public class MeshOptions implements Option {
 		return defaultLanguage;
 	}
 
+	@Setter
 	public MeshOptions setDefaultLanguage(String defaultLanguage) {
 		this.defaultLanguage = defaultLanguage;
 		return this;
@@ -167,6 +174,7 @@ public class MeshOptions implements Option {
 		return languagesFilePath;
 	}
 
+	@Setter
 	public MeshOptions setLanguagesFilePath(String languagesFilePath) {
 		this.languagesFilePath = languagesFilePath;
 		return this;
@@ -197,6 +205,7 @@ public class MeshOptions implements Option {
 		return this.storageOptions;
 	}
 
+	@Setter
 	public MeshOptions setStorageOptions(GraphStorageOptions storageOptions) {
 		this.storageOptions = storageOptions;
 		return this;
@@ -207,6 +216,7 @@ public class MeshOptions implements Option {
 		return uploadOptions;
 	}
 
+	@Setter
 	public MeshOptions setUploadOptions(MeshUploadOptions uploadOptions) {
 		this.uploadOptions = uploadOptions;
 		return this;
@@ -217,6 +227,7 @@ public class MeshOptions implements Option {
 		return httpServerOptions;
 	}
 
+	@Setter
 	public MeshOptions setHttpServerOptions(HttpServerConfig httpServerOptions) {
 		this.httpServerOptions = httpServerOptions;
 		return this;
@@ -227,6 +238,7 @@ public class MeshOptions implements Option {
 		return monitoringOptions;
 	}
 
+	@Setter
 	public MeshOptions setMonitoringOptions(MonitoringConfig monitoringOptions) {
 		this.monitoringOptions = monitoringOptions;
 		return this;
@@ -236,6 +248,7 @@ public class MeshOptions implements Option {
 		return vertxOptions;
 	}
 
+	@Setter
 	public MeshOptions setVertxOptions(VertxOptions vertxOptions) {
 		this.vertxOptions = vertxOptions;
 		return this;
@@ -246,6 +259,7 @@ public class MeshOptions implements Option {
 		return clusterOptions;
 	}
 
+	@Setter
 	public MeshOptions setClusterOptions(ClusterOptions clusterOptions) {
 		this.clusterOptions = clusterOptions;
 		return this;
@@ -256,6 +270,7 @@ public class MeshOptions implements Option {
 		return searchOptions;
 	}
 
+	@Setter
 	public MeshOptions setSearchOptions(ElasticSearchOptions searchOptions) {
 		this.searchOptions = searchOptions;
 		return this;
@@ -266,6 +281,7 @@ public class MeshOptions implements Option {
 		return authenticationOptions;
 	}
 
+	@Setter
 	public MeshOptions setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
 		this.authenticationOptions = authenticationOptions;
 		return this;
@@ -275,6 +291,7 @@ public class MeshOptions implements Option {
 		return tempDirectory;
 	}
 
+	@Setter
 	public MeshOptions setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
 		return this;
@@ -284,6 +301,7 @@ public class MeshOptions implements Option {
 		return pluginDirectory;
 	}
 
+	@Setter
 	public MeshOptions setPluginDirectory(String pluginDirectory) {
 		this.pluginDirectory = pluginDirectory;
 		return this;
@@ -294,6 +312,7 @@ public class MeshOptions implements Option {
 		return imageOptions;
 	}
 
+	@Setter
 	public MeshOptions setImageOptions(ImageManipulatorOptions imageOptions) {
 		this.imageOptions = imageOptions;
 		return this;
@@ -304,6 +323,7 @@ public class MeshOptions implements Option {
 		return contentOptions;
 	}
 
+	@Setter
 	public MeshOptions setContentOptions(ContentConfig contentOptions) {
 		this.contentOptions = contentOptions;
 		return this;
@@ -314,45 +334,73 @@ public class MeshOptions implements Option {
 		return debugInfoOptions;
 	}
 
+	@Setter
 	public MeshOptions setDebugInfoOptions(DebugInfoOptions debugInfoOptions) {
 		this.debugInfoOptions = debugInfoOptions;
 		return this;
 	}
 
+	@Getter
 	@JsonProperty("cache")
 	public CacheConfig getCacheConfig() {
 		return cacheConfig;
 	}
 
+	/**
+	 * Get the graphql options
+	 * @return graphql options
+	 */
+	@JsonProperty("graphQL")
+	public GraphQLOptions getGraphQLOptions() {
+		return graphQLOptions;
+	}
+
+	/**
+	 * Set the graphql options
+	 * @param graphQlOptions options
+	 * @return fluent API
+	 */
+	public MeshOptions setGraphQlOptions(GraphQLOptions graphQlOptions) {
+		this.graphQLOptions = graphQlOptions;
+		return this;
+	}
+
+	@Setter
 	public MeshOptions setCacheConfig(CacheConfig cacheConfig) {
 		this.cacheConfig = cacheConfig;
 		return this;
 	}
 
+	@Getter
 	@JsonProperty("updateCheck")
 	public boolean isUpdateCheckEnabled() {
 		return updateCheck;
 	}
 
+	@Setter
 	public MeshOptions setUpdateCheck(boolean updateCheck) {
 		this.updateCheck = updateCheck;
 		return this;
 	}
 
+	@Getter
 	public String getNodeName() {
 		return nodeName;
 	}
 
+	@Setter
 	public MeshOptions setNodeName(String nodeName) {
 		this.nodeName = nodeName;
 		return this;
 	}
 
+	@Getter
 	@JsonIgnore
 	public boolean isInitClusterMode() {
 		return isInitCluster;
 	}
 
+	@Setter
 	@JsonIgnore
 	public MeshOptions setInitCluster(boolean isInitCluster) {
 		this.isInitCluster = isInitCluster;
@@ -364,6 +412,7 @@ public class MeshOptions implements Option {
 		return lockPath;
 	}
 
+	@Setter
 	@JsonIgnore
 	public MeshOptions setLockPath(String lockPath) {
 		this.lockPath = lockPath;
@@ -375,6 +424,7 @@ public class MeshOptions implements Option {
 		return adminPassword;
 	}
 
+	@Setter
 	@JsonIgnore
 	public MeshOptions setAdminPassword(String adminPassword) {
 		this.adminPassword = adminPassword;
@@ -386,6 +436,7 @@ public class MeshOptions implements Option {
 		return initialAdminPassword;
 	}
 
+	@Setter
 	@JsonIgnore
 	public MeshOptions setInitialAdminPassword(String initialAdminPassword) {
 		this.initialAdminPassword = initialAdminPassword;
@@ -397,6 +448,7 @@ public class MeshOptions implements Option {
 		return forceInitialAdminPasswordReset;
 	}
 
+	@Setter
 	@JsonIgnore
 	public MeshOptions setForceInitialAdminPasswordReset(boolean forceInitialAdminPasswordReset) {
 		this.forceInitialAdminPasswordReset = forceInitialAdminPasswordReset;
@@ -407,6 +459,7 @@ public class MeshOptions implements Option {
 		return pluginTimeout;
 	}
 
+	@Setter
 	public MeshOptions setPluginTimeout(int pluginTimeout) {
 		this.pluginTimeout = pluginTimeout;
 		return this;
@@ -416,6 +469,7 @@ public class MeshOptions implements Option {
 		return startInReadOnly;
 	}
 
+	@Setter
 	public MeshOptions setStartInReadOnly(boolean startInReadOnly) {
 		this.startInReadOnly = startInReadOnly;
 		return this;
@@ -425,11 +479,15 @@ public class MeshOptions implements Option {
 		return versionPurgeMaxBatchSize;
 	}
 
+	@Setter
 	public MeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
 		this.versionPurgeMaxBatchSize = versionPurgeMaxBatchSize;
 		return this;
 	}
 
+	/**
+	 * Validate this and the nested options.
+	 */
 	public void validate() {
 		if (getClusterOptions() != null) {
 			getClusterOptions().validate(this);
@@ -454,6 +512,9 @@ public class MeshOptions implements Option {
 		}
 		if (getContentOptions() != null) {
 			getContentOptions().validate(this);
+		}
+		if (getGraphQLOptions() != null) {
+			getGraphQLOptions().validate(this);
 		}
 		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
 		if (getVersionPurgeMaxBatchSize() <= 0) {

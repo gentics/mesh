@@ -50,7 +50,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.BackupParameters;
-import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -71,7 +71,7 @@ public class AdminHandler extends AbstractHandler {
 
 	private final Database db;
 
-	private final RouterStorage routerStorage;
+	private final RouterStorageImpl routerStorage;
 
 	private final BootstrapInitializer boot;
 
@@ -92,9 +92,10 @@ public class AdminHandler extends AbstractHandler {
 	private final ConsistencyCheckHandler consistencyCheckHandler;
 
 	@Inject
-	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
+	public AdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
-		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock, ConsistencyCheckHandler consistencyCheckHandler) {
+		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
+		ConsistencyCheckHandler consistencyCheckHandler) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -108,6 +109,11 @@ public class AdminHandler extends AbstractHandler {
 		this.consistencyCheckHandler = consistencyCheckHandler;
 	}
 
+	/**
+	 * Handle the mesh status request.
+	 * 
+	 * @param ac
+	 */
 	public void handleMeshStatus(InternalActionContext ac) {
 		MeshStatusResponse response = new MeshStatusResponse();
 		response.setStatus(boot.mesh().getStatus());
@@ -139,6 +145,11 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Invoke the graph database backup.
+	 * 
+	 * @return
+	 */
 	public String backup() {
 		Mesh mesh = boot.mesh();
 		MeshStatus oldStatus = mesh.getStatus();
@@ -203,6 +214,7 @@ public class AdminHandler extends AbstractHandler {
 			vertx.eventBus().publish(GRAPH_RESTORE_START.address, null);
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
+			// TODO add changelog execution
 			db.setupConnectionPool();
 			boot.globalCacheClear();
 			boot.clearReferences();
@@ -271,6 +283,7 @@ public class AdminHandler extends AbstractHandler {
 			vertx.eventBus().publish(GRAPH_IMPORT_START.address, null);
 			db.importGraph(latestFile.getAbsolutePath());
 			boot.globalCacheClear();
+			// TODO apply changelog after import
 			vertx.eventBus().publish(GRAPH_IMPORT_FINISHED.address, null);
 
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -279,6 +292,11 @@ public class AdminHandler extends AbstractHandler {
 		}
 	}
 
+	/**
+	 * Load cluster status information.
+	 * 
+	 * @param ac
+	 */
 	public void handleClusterStatus(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			HibUser user = ac.getUser();
@@ -293,11 +311,22 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Load the mesh server version information.
+	 * 
+	 * @param ac
+	 */
 	public void handleVersions(InternalActionContext ac) {
 		MeshServerInfoModel model = getMeshServerInfoModel(ac);
 		ac.send(model, OK);
 	}
 
+	/**
+	 * Populate the mesh server version info.
+	 * 
+	 * @param ac
+	 * @return
+	 */
 	public MeshServerInfoModel getMeshServerInfoModel(InternalActionContext ac) {
 		boolean admin = db.tx(() -> ac.isAdmin());
 		MeshServerInfoModel info = new MeshServerInfoModel();
@@ -314,6 +343,11 @@ public class AdminHandler extends AbstractHandler {
 		return info;
 	}
 
+	/**
+	 * Generate and return the RAML of the server.
+	 * 
+	 * @param ac
+	 */
 	public void handleRAML(InternalActionContext ac) {
 		boolean admin = db.tx(() -> ac.isAdmin());
 		if (admin) {
@@ -325,6 +359,11 @@ public class AdminHandler extends AbstractHandler {
 		}
 	}
 
+	/**
+	 * Load the currently active cluster configuration.
+	 * 
+	 * @param ac
+	 */
 	public void handleLoadClusterConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			HibUser user = ac.getUser();
@@ -335,6 +374,11 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Update the OrientDB cluster configuration.
+	 * 
+	 * @param ac
+	 */
 	public void handleUpdateClusterConfig(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
@@ -349,6 +393,11 @@ public class AdminHandler extends AbstractHandler {
 		}
 	}
 
+	/**
+	 * Load information on the currently elected coordination master.
+	 * 
+	 * @param ac
+	 */
 	public void handleLoadCoordinationMaster(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			HibUser user = ac.getUser();
@@ -363,6 +412,11 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Manually set the elected master on the instance which runs this handler.
+	 * 
+	 * @param ac
+	 */
 	public void handleSetCoordinationMaster(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
@@ -387,6 +441,11 @@ public class AdminHandler extends AbstractHandler {
 		return new CoordinatorMasterResponse(name, port, host);
 	}
 
+	/**
+	 * Return the currently set coordinator config.
+	 * 
+	 * @param ac
+	 */
 	public void handleLoadCoordinationConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			HibUser user = ac.getUser();
@@ -397,6 +456,11 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Update the coordination configuration.
+	 * 
+	 * @param ac
+	 */
 	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {

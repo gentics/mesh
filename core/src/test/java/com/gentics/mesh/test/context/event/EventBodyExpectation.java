@@ -15,6 +15,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Body asserter for events.
+ */
 public class EventBodyExpectation implements EventExpectation {
 
 	private static final Logger log = LoggerFactory.getLogger(EventBodyExpectation.class);

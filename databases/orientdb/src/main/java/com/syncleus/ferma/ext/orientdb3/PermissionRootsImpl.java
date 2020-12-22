@@ -7,6 +7,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 
+/**
+ * @see PermissionRoots
+ */
 @Singleton
 public class PermissionRootsImpl implements PermissionRoots {
 	private final BootstrapInitializer boot;

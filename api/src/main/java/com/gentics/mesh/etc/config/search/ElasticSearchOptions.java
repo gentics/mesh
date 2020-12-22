@@ -3,6 +3,7 @@ package com.gentics.mesh.etc.config.search;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
@@ -24,7 +25,7 @@ public class ElasticSearchOptions implements Option {
 
 	public static final int DEFAULT_BULK_LIMIT = 100;
 	public static final int DEFAULT_BULK_LENGTH_LIMIT = 5_000_000;
-	public static final int DEFAULT_SYNC_BATCH_SIZE= 50_000;
+	public static final int DEFAULT_SYNC_BATCH_SIZE = 50_000;
 
 	public static final int DEFAULT_EVENT_BUFFER_SIZE = 1000;
 	public static final int DEFAULT_BULK_DEBOUNCE_TIME = 2000;
@@ -257,15 +258,27 @@ public class ElasticSearchOptions implements Option {
 		return username;
 	}
 
+	/**
+	 * Set the username to be used for basic authentication.
+	 * 
+	 * @param username
+	 * @return Fluent API
+	 */
 	public ElasticSearchOptions setUsername(String username) {
 		this.username = username;
 		return this;
 	}
 
+	/**
+	 * Return the password to be used for basic authentication.
+	 * 
+	 * @return
+	 */
 	public String getPassword() {
 		return password;
 	}
 
+	@Setter
 	public ElasticSearchOptions setPassword(String password) {
 		this.password = password;
 		return this;
@@ -275,6 +288,7 @@ public class ElasticSearchOptions implements Option {
 		return certPath;
 	}
 
+	@Setter
 	public ElasticSearchOptions setCertPath(String certPath) {
 		this.certPath = certPath;
 		return this;
@@ -284,6 +298,7 @@ public class ElasticSearchOptions implements Option {
 		return caPath;
 	}
 
+	@Setter
 	public ElasticSearchOptions setCaPath(String caPath) {
 		this.caPath = caPath;
 		return this;
@@ -293,6 +308,7 @@ public class ElasticSearchOptions implements Option {
 		return hostnameVerification;
 	}
 
+	@Setter
 	public ElasticSearchOptions setHostnameVerification(boolean hostnameVerification) {
 		this.hostnameVerification = hostnameVerification;
 		return this;
@@ -302,6 +318,7 @@ public class ElasticSearchOptions implements Option {
 		return embeddedArguments;
 	}
 
+	@Setter
 	public ElasticSearchOptions setEmbeddedArguments(String embeddedArguments) {
 		this.embeddedArguments = embeddedArguments;
 		return this;
@@ -311,6 +328,7 @@ public class ElasticSearchOptions implements Option {
 		return startupTimeout;
 	}
 
+	@Setter
 	public ElasticSearchOptions setStartupTimeout(Integer startupTimeout) {
 		this.startupTimeout = startupTimeout;
 		return this;
@@ -320,6 +338,7 @@ public class ElasticSearchOptions implements Option {
 		return bulkLimit;
 	}
 
+	@Setter
 	public ElasticSearchOptions setBulkLimit(int bulkLimit) {
 		this.bulkLimit = bulkLimit;
 		return this;
@@ -329,6 +348,7 @@ public class ElasticSearchOptions implements Option {
 		return bulkLengthLimit;
 	}
 
+	@Setter
 	public ElasticSearchOptions setBulkLengthLimit(long bulkLengthLimit) {
 		this.bulkLengthLimit = bulkLengthLimit;
 		return this;
@@ -338,6 +358,7 @@ public class ElasticSearchOptions implements Option {
 		return prefix;
 	}
 
+	@Setter
 	public ElasticSearchOptions setPrefix(String prefix) {
 		this.prefix = prefix;
 		return this;
@@ -347,6 +368,7 @@ public class ElasticSearchOptions implements Option {
 		return eventBufferSize;
 	}
 
+	@Setter
 	public ElasticSearchOptions setEventBufferSize(int eventBufferSize) {
 		this.eventBufferSize = eventBufferSize;
 		return this;
@@ -356,6 +378,7 @@ public class ElasticSearchOptions implements Option {
 		return bulkDebounceTime;
 	}
 
+	@Setter
 	public ElasticSearchOptions setBulkDebounceTime(int bulkDebounceTime) {
 		this.bulkDebounceTime = bulkDebounceTime;
 		return this;
@@ -365,6 +388,7 @@ public class ElasticSearchOptions implements Option {
 		return idleDebounceTime;
 	}
 
+	@Setter
 	public ElasticSearchOptions setIdleDebounceTime(int idleDebounceTime) {
 		this.idleDebounceTime = idleDebounceTime;
 		return this;
@@ -374,6 +398,7 @@ public class ElasticSearchOptions implements Option {
 		return retryInterval;
 	}
 
+	@Setter
 	public ElasticSearchOptions setRetryInterval(int retryInterval) {
 		this.retryInterval = retryInterval;
 		return this;
@@ -383,6 +408,7 @@ public class ElasticSearchOptions implements Option {
 		return waitForIdle;
 	}
 
+	@Setter
 	public ElasticSearchOptions setWaitForIdle(boolean waitForIdle) {
 		this.waitForIdle = waitForIdle;
 		return this;
@@ -392,6 +418,7 @@ public class ElasticSearchOptions implements Option {
 		return includeBinaryFields;
 	}
 
+	@Setter
 	public ElasticSearchOptions setIncludeBinaryFields(boolean includeBinaryFields) {
 		this.includeBinaryFields = includeBinaryFields;
 		return this;
@@ -401,6 +428,7 @@ public class ElasticSearchOptions implements Option {
 		return mappingMode;
 	}
 
+	@Setter
 	public ElasticSearchOptions setMappingMode(MappingMode mode) {
 		this.mappingMode = mode;
 		return this;
@@ -410,6 +438,7 @@ public class ElasticSearchOptions implements Option {
 		return complianceMode;
 	}
 
+	@Setter
 	public ElasticSearchOptions setComplianceMode(ComplianceMode complianceMode) {
 		this.complianceMode = complianceMode;
 		return this;
@@ -419,15 +448,24 @@ public class ElasticSearchOptions implements Option {
 		return retryLimit;
 	}
 
+	@Setter
 	public ElasticSearchOptions setRetryLimit(int retryLimit) {
 		this.retryLimit = retryLimit;
 		return this;
 	}
 
+	/**
+	 * Validate the options.
+	 */
 	public void validate(MeshOptions meshOptions) {
 
 	}
 
+	/**
+	 * Disable the elasticsearch integration by setting a null URL and disabling the embedded ES provider.
+	 * 
+	 * @return
+	 */
 	@JsonIgnore
 	public ElasticSearchOptions disable() {
 		setUrl(null);

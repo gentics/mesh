@@ -11,6 +11,11 @@ public interface HibCreatorTracking {
 	 */
 	HibUser getCreator();
 
+	/**
+	 * Set the creator of the element.
+	 * 
+	 * @param user
+	 */
 	void setCreator(HibUser user);
 
 	/**
@@ -43,7 +48,11 @@ public interface HibCreatorTracking {
 		return DateUtils.toISO8601(getCreationTimestamp(), 0);
 	}
 
-
+	/**
+	 * Return the creation timestamp.
+	 * 
+	 * @return
+	 */
 	Long getCreationTimestamp();
 
 }

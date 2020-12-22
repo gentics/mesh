@@ -11,8 +11,12 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 
 import io.reactivex.Flowable;
 
+/**
+ * Debug info provider for the currently active local configuration.
+ */
 @Singleton
 public class LocalConfigProvider implements DebugInfoProvider {
+
 	private final LocalConfigApi localConfigApi;
 
 	@Inject

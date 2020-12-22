@@ -4,7 +4,11 @@ import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 
+/**
+ * Changelog entry which removes the binary edges in order to reduce contention when updating / creating binaries.
+ */
 public class RemoveBinaryEdges extends AbstractChange {
+
 	@Override
 	public String getUuid() {
 		return "41827A16E5BE4B45827A16E5BECB450A";

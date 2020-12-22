@@ -14,7 +14,10 @@ import javax.crypto.SecretKey;
 
 import org.apache.commons.io.FileExistsException;
 
-public class KeyStoreHelper {
+/**
+ * Helper for keystore operations.
+ */
+public final class KeyStoreHelper {
 
 	/**
 	 * Create a keystore for the given path and store various keys in it which are needed for JWT.

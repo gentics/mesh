@@ -12,6 +12,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.Field;
 
+/**
+ * Custom deserializer for REST node fields. The type of the field selects the specific model class.
+ * 
+ * @param <T>
+ */
 public class FieldDeserializer<T extends Field> extends JsonDeserializer<T> {
 
 	@Override

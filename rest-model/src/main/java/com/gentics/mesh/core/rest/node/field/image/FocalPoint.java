@@ -50,6 +50,12 @@ public class FocalPoint implements RestModel {
 		}
 	}
 
+	/**
+	 * Convert the relative focal point values ({@link #getX()}, {@link #getY()} to an absolute pixel position using the provided image size.
+	 * 
+	 * @param imageSize
+	 * @return
+	 */
 	@JsonIgnore
 	public Point convertToAbsolutePoint(Point imageSize) {
 		// Recalculate the focal point position since the image has been resized

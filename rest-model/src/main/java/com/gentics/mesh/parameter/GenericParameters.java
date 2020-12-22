@@ -3,6 +3,9 @@ package com.gentics.mesh.parameter;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.parameter.value.FieldsSetImpl;
 
+/**
+ * Interface for generic query parameters.
+ */
 public interface GenericParameters extends ParameterProvider {
 
 	/**

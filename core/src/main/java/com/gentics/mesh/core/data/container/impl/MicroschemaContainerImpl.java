@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -37,6 +37,12 @@ public class MicroschemaContainerImpl extends
 		return MicroschemaContainerVersionImpl.class;
 	}
 
+	/**
+	 * Initalize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
 	}

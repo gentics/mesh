@@ -1,5 +1,8 @@
 package com.gentics.mesh.etc.config.cluster;
 
+/**
+ * Types of cluster topology setup modes.
+ */
 public enum CoordinationTopology {
 
 	/**

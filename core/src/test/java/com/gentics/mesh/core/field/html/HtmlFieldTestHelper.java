@@ -5,6 +5,9 @@ import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.test.util.TestUtils;
 
+/**
+ * Test helper for HTML fields.
+ */
 public interface HtmlFieldTestHelper {
 	public static final DataProvider FILLLONGTEXT = (container, name) -> container.createHTML(name).setHtml(TestUtils.getRandomHash(40000));
 	public static final DataProvider FILLTEXT = (container, name) -> container.createHTML(name).setHtml("<b>HTML</b> content");

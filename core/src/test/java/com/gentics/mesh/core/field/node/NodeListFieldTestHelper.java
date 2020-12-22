@@ -5,8 +5,10 @@ import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.test.TestDataProvider;
 
+/**
+ * Test helper for node list fields. 
+ */
 public interface NodeListFieldTestHelper {
-
 
 	static final DataProvider FILL = (container, name) -> {
 		NodeGraphFieldList	list = container.createNodeList(name);

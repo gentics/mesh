@@ -198,10 +198,11 @@ public interface EventHelper extends BaseHelper {
 		action.run();
 
 		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
+		final int MAX_WAIT = 30;
+		JobListResponse response;
 		for (int i = 0; i < MAX_WAIT; i++) {
 
-			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs()));
+			response = runAsAdmin(() -> call(() -> client().findJobs()));
 
 			if (response.getMetainfo().getTotalCount() == before.getMetainfo().getTotalCount() + expectedJobs) {
 				if (status != null) {
@@ -216,11 +217,9 @@ public interface EventHelper extends BaseHelper {
 					}
 				}
 			}
-			if (i > 30) {
-				System.out.println(response.toJson());
-			}
 			if (i == MAX_WAIT - 1) {
-				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
+				String json = response == null ? "NULL" : response.toJson();
+				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds. Last job response was:\n" + json);
 			}
 			sleep(1000);
 		}
@@ -239,7 +238,7 @@ public interface EventHelper extends BaseHelper {
 		action.run();
 
 		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
+		final int MAX_WAIT = 30;
 		for (int i = 0; i < MAX_WAIT; i++) {
 			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs()));
 			List<JobResponse> diff = TestUtils.difference(response.getData(), before.getData(), JobResponse::getUuid);

@@ -10,6 +10,9 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 
+/**
+ * Utils for plugins.
+ */
 public final class PluginUtils {
 
 	public static final String NAME_REGEX = "^[_a-zA-Z][_a-zA-Z0-9]*$";
@@ -47,6 +50,11 @@ public final class PluginUtils {
 		}
 	}
 
+	/**
+	 * Validate the REST plugin.
+	 * 
+	 * @param plugin
+	 */
 	public static void validate(RestPlugin plugin) {
 		String apiName = plugin.restApiName();
 		if (StringUtils.isEmpty(apiName)) {
@@ -57,6 +65,11 @@ public final class PluginUtils {
 		}
 	}
 
+	/**
+	 * Validate the graphql plugin. This will assert whether the name of the plugin can be used in graphql.
+	 * 
+	 * @param plugin
+	 */
 	public static void validate(GraphQLPlugin plugin) {
 		String name = plugin.gqlApiName();
 		if (name != null && !name.matches(NAME_REGEX)) {
@@ -64,6 +77,11 @@ public final class PluginUtils {
 		}
 	}
 
+	/**
+	 * Delegating validator for plugins.
+	 * 
+	 * @param plugin
+	 */
 	public static void validate(MeshPlugin plugin) {
 		if (plugin instanceof RestPlugin) {
 			validate((RestPlugin) plugin);

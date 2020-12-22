@@ -1,6 +1,12 @@
 package com.gentics.mesh.search;
 
+/**
+ * POJO for a search hit.
+ * 
+ * @param <T> Element type
+ */
 public class MeshSearchHit<T> {
+
 	public String uuid;
 	public String language;
 	public T element;

@@ -22,7 +22,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.field.FieldType;
 
 /**
@@ -30,6 +30,12 @@ import com.gentics.mesh.madl.field.FieldType;
  */
 public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements Group {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(GroupImpl.class, MeshVertexImpl.class);
 		index.createIndex(vertexIndex(GroupImpl.class)
@@ -54,7 +60,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		GroupDaoWrapper groupRoot = Tx.get().data().groupDao();
+		GroupDaoWrapper groupRoot = Tx.get().groupDao();
 		groupRoot.delete(this, bac);
 	}
 
@@ -66,7 +72,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+		GroupDaoWrapper groupDao = Tx.get().groupDao();
 		if (recursive) {
 			for (HibUser user : groupDao.getUsers(this)) {
 				User graphUser = toGraph(user);
@@ -83,7 +89,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandler.baseRoute(ac) + "/groups/" + getUuid();
+		return VersionHandlerImpl.baseRoute(ac) + "/groups/" + getUuid();
 	}
 
 	@Override

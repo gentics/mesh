@@ -39,7 +39,7 @@ public class AbstractOrientDBTest {
 
 		Database db = new OrientDBDatabase(options, null, lazyBoot, lazyDaos, metrics, null, null,
 			new OrientDBClusterManager(null, null, null, options, null),
-			null, lazyPermRoots, null, null);
+			null, lazyPermRoots, null, null, null);
 		return db;
 	}
 

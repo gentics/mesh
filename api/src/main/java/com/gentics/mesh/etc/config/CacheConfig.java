@@ -2,10 +2,14 @@ package com.gentics.mesh.etc.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
+/**
+ * Configuration POJO for caching options.
+ */
 @GenerateDocumentation
 public class CacheConfig implements Option {
 
@@ -27,6 +31,7 @@ public class CacheConfig implements Option {
 		return pathCacheSize;
 	}
 
+	@Setter
 	public CacheConfig setPathCacheSize(long pathCacheSize) {
 		this.pathCacheSize = pathCacheSize;
 		return this;

@@ -11,6 +11,9 @@ import org.apache.commons.io.IOUtils;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
+/**
+ * Configurator for logback logging.
+ */
 public class LoggingConfigurator {
 
 	private static final String DEFAULT_LOGBACK_FILE_NAME = "logback.default.xml";

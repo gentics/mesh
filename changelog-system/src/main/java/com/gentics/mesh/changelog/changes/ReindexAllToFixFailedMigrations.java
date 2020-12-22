@@ -2,6 +2,9 @@ package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
 
+/**
+ * Reindex change.
+ */
 public class ReindexAllToFixFailedMigrations extends AbstractChange {
 
 	@Override

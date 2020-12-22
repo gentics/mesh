@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.job.JobEventModel;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -187,6 +188,12 @@ public final class Examples {
 		model.setName("demoV1");
 		model.setUuid(uuid1());
 		model.setProject(projectRef());
+		return model;
+	}
+
+	public static JobEventModel jobEvent() {
+		JobEventModel model = new JobEventModel();
+		model.setUuid(uuid1());
 		return model;
 	}
 

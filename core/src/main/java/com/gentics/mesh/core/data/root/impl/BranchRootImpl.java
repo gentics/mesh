@@ -39,8 +39,8 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -53,6 +53,12 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  */
 public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot, BranchDao {
 
+	/**
+	 * Initialize the branch type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(BranchRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_BRANCH));
@@ -69,6 +75,18 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
+	/**
+	 * Create the branch element with the specified parameters.
+	 * 
+	 * @param name
+	 * @param creator
+	 * @param uuid
+	 * @param setLatest
+	 * @param baseBranch
+	 * @param assignSchemas
+	 * @param batch
+	 * @return
+	 */
 	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
@@ -130,7 +148,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	public Branch create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 
 		// Check for completeness of request
 		if (StringUtils.isEmpty(request.getName())) {
@@ -141,7 +159,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		String projectName = project.getName();
 		String projectUuid = project.getUuid();
 
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		if (!userDao.hasPermission(requestUser, project, InternalPermission.UPDATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName, UPDATE_PERM.getRestPerm().getName());
@@ -178,6 +196,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		assignSchemas(creator, baseBranch, branch, true, batch);
 
 		batch.add(branch.onCreated());
+		batch.add(() -> MeshEvent.triggerJobWorker(meshApi()));
 
 		return branch;
 	}

@@ -35,7 +35,7 @@ import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
-import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
@@ -67,7 +67,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	private HttpServer httpServer;
 
 	@Inject
-	public Provider<RouterStorage> routerStorage;
+	public Provider<RouterStorageImpl> routerStorage;
 
 	@Inject
 	public Provider<UserEndpoint> userEndpoint;
@@ -209,7 +209,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			httpsServer = rxVertx.createHttpServer(httpsOptions);
 		}
 
-		RouterStorage storage = routerStorage.get();
+		RouterStorageImpl storage = routerStorage.get();
 		Router rootRouter = storage.root().getRouter();
 		registerEndPoints(storage);
 
@@ -267,7 +267,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	 * @param storage
 	 * @throws Exception
 	 */
-	private void registerEndPoints(RouterStorage storage) throws Exception {
+	private void registerEndPoints(RouterStorageImpl storage) throws Exception {
 
 		List<AbstractInternalEndpoint> endpoints = new ArrayList<>();
 		endpoints.add(restInfoEndpoint.get());

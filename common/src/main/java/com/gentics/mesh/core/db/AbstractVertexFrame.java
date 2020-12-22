@@ -9,6 +9,7 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.syncleus.ferma.AbstractElementFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Element;
@@ -16,6 +17,12 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
+/**
+ * OrientDB specific vertex implementation. It must override all calls which would access the element via the field reference.
+ * We don't use the ferma field in Gentics Mesh. Instead the element will always be located using the stored elementId.
+ * The Edge or Vertex instance of the {@link AbstractElementFrame#element} is thread bound and can't be shared across theads.
+ * We thus need to avoid access to it.
+ */
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
 
 	/**

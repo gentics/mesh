@@ -5,6 +5,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 
@@ -30,6 +31,7 @@ public class NodeFieldImpl implements NodeField {
 		return uuid;
 	}
 
+	@Setter
 	public NodeField setUuid(String uuid) {
 		this.uuid = uuid;
 		return this;

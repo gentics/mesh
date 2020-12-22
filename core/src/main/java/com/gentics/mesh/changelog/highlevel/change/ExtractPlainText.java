@@ -19,13 +19,16 @@ import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.gentics.mesh.storage.LocalBinaryStorageImpl;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Changelog entry which re-runs the tika extraction.
+ */
 @Singleton
 public class ExtractPlainText extends AbstractHighLevelChange {
 
@@ -33,14 +36,14 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 
 	private final TikaBinaryProcessor processor;
 
-	private final Lazy<LocalBinaryStorage> storage;
+	private final Lazy<LocalBinaryStorageImpl> storage;
 
 	private final Lazy<BootstrapInitializer> boot;
 
 	private final Binaries binaries;
 
 	@Inject
-	public ExtractPlainText(Lazy<BootstrapInitializer> boot, TikaBinaryProcessor processor, Lazy<LocalBinaryStorage> storage, Binaries binaries) {
+	public ExtractPlainText(Lazy<BootstrapInitializer> boot, TikaBinaryProcessor processor, Lazy<LocalBinaryStorageImpl> storage, Binaries binaries) {
 		this.boot = boot;
 		this.processor = processor;
 		this.storage = storage;
@@ -62,7 +65,7 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 		AtomicLong total = new AtomicLong(0);
-		BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
+		BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
 		binaryDao.findAll().runInExistingTx(Tx.get()).forEach(binary -> {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);

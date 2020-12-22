@@ -9,16 +9,21 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.ext.web.Route;
 
+/**
+ * Endpoint for /api/v1/languages
+ * 
+ * NOTE: This endpoint is currently not active
+ */
 public class LanguageEndpoint extends AbstractProjectEndpoint {
 
 	@Inject
-	public LanguageEndpoint(MeshAuthChain chain, BootstrapInitializer boot) {
+	public LanguageEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot) {
 		super("languages", chain, boot);
 	}
 

@@ -18,7 +18,11 @@ import com.google.common.collect.ImmutableMap;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
+/**
+ * Changelog entry which removes the permission edges.
+ */
 public class ReplacePermissionEdges extends AbstractChange {
+
 	private final Map<String, InternalPermission> permLabels = ImmutableMap.<String, InternalPermission>builder()
 		.put("HAS_CREATE_PERMISSION", CREATE_PERM)
 		.put("HAS_READ_PERMISSION", READ_PERM)

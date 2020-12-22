@@ -3,13 +3,18 @@ package com.gentics.mesh.rest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRestClient;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
 import java.util.Map;
 
+/**
+ * Definition for the authentication provider for the {@link MeshRestClient}. It defines methods to handle login / logout and parsing of auth information.
+ */
 public interface MeshRestClientAuthenticationProvider {
-	
+
 	/**
 	 * Sets the credentials used to authenticate the user
 	 * @param username

@@ -51,7 +51,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
-
 	@Override
 	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
 		return mesh().permissionProperties().getRolePermissions(this, ac, roleUuid);
@@ -62,6 +61,12 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 		return mesh().permissionProperties().getRolesWithPerm(this, perm);
 	}
 
+	/**
+	 * Set the role permissions to the REST model.
+	 * 
+	 * @param ac
+	 * @param model
+	 */
 	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 		model.setRolePerms(getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
@@ -200,7 +205,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 
 	/**
 	 * This method provides the element specific etag. It needs to be individually implemented for all core element classes.
-	 *   
+	 * 
 	 * @param ac
 	 * @return
 	 */

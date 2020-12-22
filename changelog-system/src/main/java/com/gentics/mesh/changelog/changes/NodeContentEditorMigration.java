@@ -9,7 +9,11 @@ import java.util.Iterator;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 
+/**
+ * Changelog entry which replaces editor edges with properties to reduce contention.
+ */
 public class NodeContentEditorMigration extends AbstractChange {
+
 	@Override
 	public String getName() {
 		return "Migrate node content editor";

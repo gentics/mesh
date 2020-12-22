@@ -3,6 +3,9 @@ package com.gentics.mesh.core.rest.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
+/**
+ * Abstract implementation for typical mesh events which relate to elements.
+ */
 public abstract class AbstractElementMeshEventModel extends AbstractMeshEventModel implements MeshElementEventModel {
 
 	@JsonProperty(required = true)

@@ -24,12 +24,21 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 
+/**
+ * Example generator for various JSON / YAML models.
+ */
 public class ModelExampleGenerator extends AbstractGenerator {
 
 	public ModelExampleGenerator(File outputFolder) throws IOException {
 		super(new File(outputFolder, "models"));
 	}
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @throws JsonProcessingException
+	 * @throws IOException
+	 */
 	public void run() throws JsonProcessingException, IOException {
 		writeMeshConfig();
 		writeChangeExamples();

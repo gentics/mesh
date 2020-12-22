@@ -25,7 +25,8 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
@@ -39,6 +40,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.ValidationUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -60,27 +62,42 @@ public class HandlerUtilities {
 
 	private final WriteLock writeLock;
 
+	private final PageTransformer pageTransformer;
+
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
-		Provider<BulkActionContext> bulkProvider, WriteLock writeLock) {
+		Provider<BulkActionContext> bulkProvider, WriteLock writeLock, PageTransformer pageTransformer) {
 		this.database = database;
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
 		this.writeLock = writeLock;
+		this.pageTransformer = pageTransformer;
 	}
 
 	/**
 	 * Create an object using the given aggregation node and respond with a transformed object.
 	 * 
 	 * @param ac
-	 * @param loadAction
-	 * @param createAction
-	 * @param updateAction
+	 * @param actions
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void createElement(InternalActionContext ac, DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, null, actions);
 	}
 
+	/**
+	 * Invoke the delete operation for the element.
+	 * 
+	 * @param <T>
+	 *            Element type
+	 * @param <RM>
+	 *            Response type
+	 * @param ac
+	 *            Request context
+	 * @param actions
+	 *            Actions to be used for loading and deleting
+	 * @param uuid
+	 *            Element uuid
+	 */
 	public <T extends HibCoreElement, RM extends RestModel> void deleteElement(InternalActionContext ac, DAOActions<T, RM> actions,
 		String uuid) {
 		deleteElement(ac, null, actions, uuid);
@@ -127,13 +144,26 @@ public class HandlerUtilities {
 	 *            Uuid of the element which should be updated
 	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
-	 * @param createAction
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, uuid, actions);
 	}
 
+	/**
+	 * Handle a create/update of the given element by uuid
+	 * 
+	 * @param <T>
+	 *            Element type
+	 * @param <RM>
+	 *            Response model
+	 * @param ac
+	 *            Context for the request
+	 * @param uuid
+	 *            Element uuid
+	 * @param actions
+	 *            Actions to be used for loading the element
+	 */
 	public <T extends HibCoreElement, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, null, uuid, actions);
@@ -189,20 +219,30 @@ public class HandlerUtilities {
 		}
 	}
 
+	/**
+	 * Read the element with the given element by loading it from the specified dao action.
+	 * 
+	 * @param <T>
+	 * @param <RM>
+	 * @param ac
+	 * @param uuid
+	 * @param actions
+	 * @param perm
+	 */
 	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions, InternalPermission perm) {
 		readElement(ac, null, uuid, actions, perm);
 	}
 
 	/**
-	 * Read the element with the given element by loading it from the specified root vertex.
+	 * Read the element with the given element by loading it from the specified dao action.
 	 * 
 	 * @param ac
 	 * @param parentLoader
 	 *            Loader for the parent element
 	 * @param uuid
 	 *            Uuid of the element which should be loaded
-	 * @param action
+	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 * @param perm
 	 *            Permission to check against when loading the element
@@ -229,6 +269,17 @@ public class HandlerUtilities {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Read the element list and return it to the client.
+	 * 
+	 * @param <T>
+	 *            Persistence entity type
+	 * @param <RM>
+	 *            Response model type
+	 * @param ac
+	 * @param actions
+	 *            Actions to be used to load the paged data
+	 */
 	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> actions) {
 		readElementList(ac, null, actions);
 	}
@@ -243,27 +294,36 @@ public class HandlerUtilities {
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		LoadAllAction<T> actions) {
+		PagingParameters pagingInfo = ac.getPagingParameters();
+		ValidationUtil.validate(pagingInfo);
 
 		syncTx(ac, tx -> {
-			PagingParameters pagingInfo = ac.getPagingParameters();
 			Object parent = null;
 			if (parentLoader != null) {
 				parent = parentLoader.apply(tx);
 			}
-			TransformablePage<? extends T> page = actions.loadAll(context(tx, ac, parent), pagingInfo);
+			Page<? extends T> page = actions.loadAll(context(tx, ac, parent), pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
-				String etag = page.getETag(ac);
+				String etag = pageTransformer.getETag(page, ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRestSync(ac, 0);
+			return pageTransformer.transformToRestSync(page, ac, 0);
 		}, m -> ac.send(m, OK));
 	}
 
+	/**
+	 * Invoke sync handler in a tx and return the result via the provided action.
+	 * 
+	 * @param <RM>
+	 * @param ac
+	 * @param handler
+	 * @param action
+	 */
 	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
 		try {
 			RM model = database.tx(handler);
@@ -372,6 +432,11 @@ public class HandlerUtilities {
 		return tuple.v1();
 	}
 
+	/**
+	 * Check whether the user is an admin. An error will be thrown otherwise.
+	 * 
+	 * @param context
+	 */
 	public void requiresAdminRole(RoutingContext context) {
 		InternalRoutingActionContextImpl rc = new InternalRoutingActionContextImpl(context);
 		if (database.tx(() -> !rc.getUser().isAdmin())) {

@@ -43,7 +43,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * See {@link MicronodeGraphField}
+ * @see MicronodeGraphField
  */
 public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGraphField {
 
@@ -88,9 +88,10 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			throw error(BAD_REQUEST, "micronode_error_missing_reference", fieldKey);
 		}
 
-		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
-		HibMicroschemaVersion microschemaVersion = microschemaDao.fromReference(ac.getProject(), microschemaReference,
-			ac.getBranch());
+		Tx tx = Tx.get();
+		MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+		HibMicroschemaVersion microschemaVersion = microschemaDao.fromReference(tx.getProject(ac), microschemaReference,
+			tx.getBranch(ac));
 
 		Micronode micronode = null;
 
@@ -113,6 +114,12 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		return container.getMicronode(fieldSchema.getName());
 	};
 
+	/**
+	 * Create the micronode type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(edgeType(MicronodeGraphFieldImpl.class.getSimpleName()));
 		type.createType(edgeType(HAS_FIELD).withSuperClazz(MicronodeGraphFieldImpl.class));

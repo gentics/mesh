@@ -25,12 +25,21 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Graph entity for version purge jobs.
+ */
 public class VersionPurgeJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(VersionPurgeJobImpl.class);
 
 	private static final String MAX_AGE_PROPERTY = "maxAge";
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(VersionPurgeJobImpl.class, MeshVertexImpl.class);
 	}
@@ -39,15 +48,30 @@ public class VersionPurgeJobImpl extends JobImpl {
 		return out(HAS_PROJECT, ProjectImpl.class).nextOrNull();
 	}
 
+	/**
+	 * Set the project reference for the job.
+	 * 
+	 * @param project
+	 */
 	public void setProject(HibProject project) {
 		setSingleLinkOutTo(toGraph(project), HAS_PROJECT);
 	}
 
+	/**
+	 * Return the max age setting for the purge operation.
+	 * 
+	 * @return
+	 */
 	public Optional<ZonedDateTime> getMaxAge() {
 		Long maxAge = getProperty(MAX_AGE_PROPERTY);
 		return Optional.ofNullable(maxAge).map(DateUtils::toZonedDateTime);
 	}
 
+	/***
+	 * Set the max age setting for the purge operation.
+	 * 
+	 * @param time
+	 */
 	public void setMaxAge(ZonedDateTime time) {
 		if (time != null) {
 			Long ms = time.toInstant().toEpochMilli();

@@ -10,13 +10,19 @@ import org.apache.commons.io.FileUtils;
  */
 public class RevisionHashFileGenerator {
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		System.out.println("Generating revision hash...");
-		String hash = new OrientDBDatabase(null, null, null, null, null, null, null, null, null, null, null, null).getDatabaseRevision();
+		String hash = new OrientDBDatabase(null, null, null, null, null, null, null, null, null, null, null, null, null).getDatabaseRevision();
 		System.out.println("Hash: " + hash);
 		File file = new File("target", "database-revision.txt");
 		FileUtils.writeStringToFile(file, hash);
 		System.out.println("Wrote file {" + file.getAbsolutePath() + "}");
 	}
-	
+
 }

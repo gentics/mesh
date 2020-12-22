@@ -19,45 +19,61 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.multibindings.IntoSet;
 
+/**
+ * Dagger module for debug information provider.
+ */
 @Module
 public abstract class DebugInfoProviderModule {
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider activeConfigProvider(ActiveConfigProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider threadDumpProvider(ThreadDumpProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider systemInfoProvider(SystemInfoProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider entitiesProvider(EntitiesProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider pluginsProvider(PluginsProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider logProvider(LogProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider statusProvider(StatusProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider configProvider(ConfigProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider migrationStatusProvider(MigrationStatusProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider consistencyCheckProvider(ConsistencyCheckProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider binaryDiskUsageProvider(BinaryDiskUsageProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider databaseDumpProvider(DatabaseDumpProvider provider);
 
-	@Binds @IntoSet
+	@Binds
+	@IntoSet
 	public abstract DebugInfoProvider localConfigProvider(LocalConfigProvider provider);
 }

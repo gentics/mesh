@@ -2,11 +2,19 @@ package com.gentics.mesh.server.cluster.test;
 
 import java.util.UUID;
 
+/**
+ * Various test utility methods.
+ */
 public final class Utils {
 
 	private Utils() {
 	}
 
+	/**
+	 * Generate a new random UUID.
+	 * 
+	 * @return
+	 */
 	public static String randomUUID() {
 		final UUID uuid = UUID.randomUUID();
 		return (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4)
@@ -26,6 +34,11 @@ public final class Utils {
 		return Long.toHexString(hi | (val & (hi - 1))).substring(1);
 	}
 
+	/**
+	 * Sleep given amount of time.
+	 * 
+	 * @param time Time in milliseconds
+	 */
 	public static void sleep(long time) {
 		try {
 			Thread.sleep(time);

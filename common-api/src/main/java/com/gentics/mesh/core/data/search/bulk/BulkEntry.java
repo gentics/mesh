@@ -5,6 +5,9 @@ package com.gentics.mesh.core.data.search.bulk;
  */
 public interface BulkEntry {
 
+	/**
+	 * Entry action type
+	 */
 	enum Action {
 		CREATE, DELETE, INDEX, UPDATE;
 

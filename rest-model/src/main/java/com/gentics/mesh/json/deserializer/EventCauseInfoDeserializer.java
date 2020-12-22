@@ -12,6 +12,9 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 
 import java.io.IOException;
 
+/**
+ * Custom deserializer for event cause information.
+ */
 public class EventCauseInfoDeserializer extends JsonDeserializer<EventCauseInfo> {
 
 	@Override

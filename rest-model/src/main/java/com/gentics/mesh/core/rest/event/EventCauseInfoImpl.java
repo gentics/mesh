@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.ElementType;
 
+/**
+ * @see EventCauseInfo
+ */
 public class EventCauseInfoImpl implements EventCauseInfo {
 
 	@JsonProperty(required = false)

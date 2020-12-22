@@ -37,6 +37,13 @@ public final class SingleCacheSuccess<T> extends Single<T> implements SingleObse
 	private final AtomicReference<CacheDisposable<T>[]> observers;
 	private T value;
 
+	/**
+	 * Create a new cached single.
+	 * 
+	 * @param <T>
+	 * @param source
+	 * @return
+	 */
 	public static <T> Single<T> create(Single<T> source) {
 		Preconditions.checkNotNull(source, "source is null");
 		return RxJavaPlugins.onAssembly(new SingleCacheSuccess<>(source));
@@ -98,7 +105,7 @@ public final class SingleCacheSuccess<T> extends Single<T> implements SingleObse
 
 	@SuppressWarnings("unchecked")
 	private boolean add(CacheDisposable<T> observer) {
-		for (; ; ) {
+		for (;;) {
 			final CacheDisposable<T>[] a = observers.get();
 			if (a == TERMINATED) {
 				return false;
@@ -115,7 +122,7 @@ public final class SingleCacheSuccess<T> extends Single<T> implements SingleObse
 
 	@SuppressWarnings("unchecked")
 	private void remove(CacheDisposable<T> observer) {
-		for (; ; ) {
+		for (;;) {
 			final CacheDisposable<T>[] a = observers.get();
 			final int n = a.length;
 			if (n == 0) {

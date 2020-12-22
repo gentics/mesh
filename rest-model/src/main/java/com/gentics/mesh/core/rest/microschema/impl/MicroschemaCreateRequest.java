@@ -11,6 +11,9 @@ import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * REST POJO for microschema create requests.
+ */
 public class MicroschemaCreateRequest implements MicroschemaModel {
 
 	@JsonProperty(required = false)

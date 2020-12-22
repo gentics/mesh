@@ -11,6 +11,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Set of utility methods for file handling.
+ */
 public final class FileUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);

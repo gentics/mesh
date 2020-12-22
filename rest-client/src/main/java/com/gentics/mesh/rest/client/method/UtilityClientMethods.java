@@ -6,6 +6,9 @@ import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
+/**
+ * REST client methods for utility operations.
+ */
 public interface UtilityClientMethods {
 
 	/**

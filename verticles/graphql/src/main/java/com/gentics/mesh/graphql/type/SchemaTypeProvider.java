@@ -69,12 +69,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return null;
 		}));
 
-//		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
-//			GraphQLContext gc = env.getContext();
-//			SchemaContainer schema = env.getSource();
-//			return schema.findReferencedBranches().keySet().stream().map(Branch::getProject).distinct()
-//					.filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM)).collect(Collectors.toList());
-//		}, PROJECT_REFERENCE_PAGE_TYPE_NAME));
+		// schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
+		// GraphQLContext gc = env.getContext();
+		// SchemaContainer schema = env.getSource();
+		// return schema.findReferencedBranches().keySet().stream().map(Branch::getProject).distinct()
+		// .filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM)).collect(Collectors.toList());
+		// }, PROJECT_REFERENCE_PAGE_TYPE_NAME));
 
 		// .isContainer
 		schemaType.field(newFieldDefinition().name("isContainer").type(GraphQLBoolean).dataFetcher((env) -> {
@@ -103,26 +103,26 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		// .nodes
 		schemaType
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
-			ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-			GraphQLContext gc = env.getContext();
-			List<String> languageTags = getLanguageArgument(env);
-			ContainerType type = getNodeVersion(env);
-			SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
-			Stream<? extends NodeContent> nodes = schemaDao.findNodes(getSchemaContainerVersion(env), gc.getBranch().getUuid(),
+				Tx tx = Tx.get();
+				ContentDaoWrapper contentDao = tx.contentDao();
+				GraphQLContext gc = env.getContext();
+				List<String> languageTags = getLanguageArgument(env);
+				ContainerType type = getNodeVersion(env);
+				SchemaDaoWrapper schemaDao = tx.schemaDao();
+				Stream<? extends NodeContent> nodes = schemaDao.findNodes(getSchemaContainerVersion(env), tx.getBranch(gc).getUuid(),
 					gc.getUser(),
-					ContainerType.forVersion(gc.getVersioningParameters().getVersion())
-			).stream()
-			.map(node -> {
-				NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
-				return new NodeContent(node, container, languageTags, type);
-			})
-			.filter(content -> content.getContainer() != null)
-			.filter(gc::hasReadPerm);
+					ContainerType.forVersion(gc.getVersioningParameters().getVersion())).stream()
+					.map(node -> {
+						NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+						return new NodeContent(node, container, languageTags, type);
+					})
+					.filter(content -> content.getContainer() != null)
+					.filter(gc::hasReadPerm);
 
-			return applyNodeFilter(env, nodes);
-		}, NODE_PAGE_TYPE_NAME)
-			.argument(NodeFilter.filter(context).createFilterArgument())
-			.argument(createLanguageTagArg(true)));
+				return applyNodeFilter(env, nodes);
+			}, NODE_PAGE_TYPE_NAME)
+				.argument(NodeFilter.filter(context).createFilterArgument())
+				.argument(createLanguageTagArg(true)));
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 

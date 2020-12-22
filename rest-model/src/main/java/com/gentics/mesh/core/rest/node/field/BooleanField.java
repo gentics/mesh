@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.node.field;
 
+/**
+ * Node field definition for a boolean field. The extended marker interfaces are used to allow nesting in fields and in micronodes.
+ */
 public interface BooleanField extends ListableField, MicroschemaListableField {
 
 	/**

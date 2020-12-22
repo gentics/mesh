@@ -8,7 +8,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -24,7 +24,7 @@ public class DynamicTransformablePageTest extends AbstractMeshTest {
 			UserRoot root = meshRoot().getUserRoot();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(2, 2L);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project());
-			TransformablePage<?> page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);
+			Page<?> page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);
 			long totalSize = page.getTotalElements();
 			assertEquals(3, totalSize);
 		}
@@ -36,7 +36,7 @@ public class DynamicTransformablePageTest extends AbstractMeshTest {
 			UserRoot root = meshRoot().getUserRoot();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(2, null);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project());
-			TransformablePage<?> page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);
+			Page<?> page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);
 			long totalSize = page.getTotalElements();
 			assertEquals(1, page.getPageCount());
 			assertNull(page.getPerPage());

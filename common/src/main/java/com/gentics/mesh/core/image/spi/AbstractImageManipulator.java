@@ -7,6 +7,9 @@ import java.io.File;
 import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 
+import com.gentics.mesh.core.image.CacheFileInfo;
+import com.gentics.mesh.core.image.ImageInfo;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 

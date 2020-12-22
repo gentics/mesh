@@ -12,6 +12,9 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * REST model of a schema.
+ */
 public class SchemaResponse extends AbstractGenericRestResponse implements SchemaVersionModel {
 
 	@JsonProperty(required = true)
@@ -155,6 +158,11 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 		return reference;
 	}
 
+	/**
+	 * Create a new {@link SchemaUpdateRequest} using the current schema values as source.
+	 * 
+	 * @return
+	 */
 	public SchemaUpdateRequest toUpdateRequest() {
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
 		updateRequest.setContainer(getContainer());

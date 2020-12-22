@@ -36,7 +36,7 @@ public class UserIndexSyncTest extends AbstractMeshTest {
 		int nUsers = 20;
 
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
+			UserDaoWrapper userDao = tx.userDao();
 			// Create extra users
 			for (int i = 0; i < nUsers; i++) {
 				userDao.create("Anton" + i, user());
@@ -56,8 +56,8 @@ public class UserIndexSyncTest extends AbstractMeshTest {
 
 		// Create a new user
 		String newUserUuid = tx(tx -> {
-			UserDaoWrapper userDao = tx.data().userDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 
 			HibUser user = userDao.create(newUsername, user());
 			roleDao.grantPermissions(role(), user, InternalPermission.values());

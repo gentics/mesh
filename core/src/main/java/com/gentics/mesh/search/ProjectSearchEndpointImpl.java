@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -50,7 +50,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	}
 
 	@Inject
-	public ProjectSearchEndpointImpl(MeshAuthChain chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
+	public ProjectSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
 		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler) {
 		super("search", chain, boot);
 		this.db = db;
@@ -80,12 +80,12 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
 		registerSearchHandler("tags", uuid -> {
-			HibTag tag = Tx.get().data().tagDao().findByUuidGlobal(uuid);
+			HibTag tag = Tx.get().tagDao().findByUuidGlobal(uuid);
 			return tag;
 		}, TagListResponse.class, tagSearchHandler, tagExamples.createTagListResponse(), false);
 
 		registerSearchHandler("tagFamilies", uuid -> {
-			TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+			TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
 			return tagFamilyDao.findByUuid(uuid);
 		}, TagFamilyListResponse.class, tagFamilySearchHandler, tagFamilyExamples.getTagFamilyListResponse(), false);
 	}

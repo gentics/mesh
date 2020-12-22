@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.node.version;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
@@ -40,6 +41,7 @@ public class VersionInfo {
 		return created;
 	}
 
+	@Setter
 	public VersionInfo setCreated(String created) {
 		this.created = created;
 		return this;
@@ -49,6 +51,7 @@ public class VersionInfo {
 		return creator;
 	}
 
+	@Setter
 	public VersionInfo setCreator(UserReference creator) {
 		this.creator = creator;
 		return this;
@@ -58,6 +61,7 @@ public class VersionInfo {
 		return version;
 	}
 
+	@Setter
 	public VersionInfo setVersion(String version) {
 		this.version = version;
 		return this;
@@ -67,6 +71,7 @@ public class VersionInfo {
 		return draft;
 	}
 
+	@Setter
 	public VersionInfo setDraft(Boolean draft) {
 		this.draft = draft;
 		return this;
@@ -76,11 +81,13 @@ public class VersionInfo {
 		return published;
 	}
 
+	@Setter
 	public VersionInfo setPublished(Boolean published) {
 		this.published = published;
 		return this;
 	}
 
+	@Setter
 	public VersionInfo setBranchRoot(Boolean branchRoot) {
 		this.branchRoot = branchRoot;
 		return this;

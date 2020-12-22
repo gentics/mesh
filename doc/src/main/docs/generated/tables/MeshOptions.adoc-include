@@ -447,6 +447,11 @@
 | string
 | The pattern used for each log line.
 
+| graphQLOptions.slowThreshold
+| false
+| long
+| Threshold for logging slow graphql queries. Default: 60000ms
+
 | tempDirectory
 | false
 | string

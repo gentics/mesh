@@ -4,6 +4,9 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.common.hash.Hashing;
 
+/**
+ * Helper class to manage HTTP ETags.
+ */
 public class ETag {
 
 	/**
@@ -37,6 +40,17 @@ public class ETag {
 	 */
 	public static String hash(int key) {
 		return Hashing.crc32c().hashInt(key).toString();
+	}
+
+	/**
+	 * Hash the given long in order to generate a uniform etag hash.
+	 *
+	 * @param key
+	 *            Key which should be hashed
+	 * @return Computed hash
+	 */
+	public static String hash(long key) {
+		return Hashing.crc32c().hashLong(key).toString();
 	}
 
 	/**

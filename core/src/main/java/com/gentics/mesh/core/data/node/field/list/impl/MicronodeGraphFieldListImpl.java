@@ -42,10 +42,10 @@ import io.reactivex.Single;
  * @see MicronodeGraphFieldList
  */
 public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList, Micronode>
-		implements MicronodeGraphFieldList {
+	implements MicronodeGraphFieldList {
 
 	public static FieldTransformer<MicronodeFieldList> MICRONODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+		parentNode) -> {
 		MicronodeGraphFieldList graphMicroschemaField = container.getMicronodeList(fieldKey);
 		if (graphMicroschemaField == null) {
 			return null;
@@ -91,6 +91,12 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		return container.getMicronodeList(fieldSchema.getName());
 	};
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
@@ -147,8 +153,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 
-				MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
-				HibMicroschemaVersion container = microschemaDao.fromReference(ac.getProject(), microschemaReference, ac.getBranch());
+				Tx tx = Tx.get();
+				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+				HibMicroschemaVersion container = microschemaDao.fromReference(tx.getProject(ac), microschemaReference, tx.getBranch(ac));
 				return Observable.just(container);
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			}, (node, microschemaContainerVersion) -> {
@@ -163,11 +170,11 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					if (!equalsIgnoreCase(micronode.getSchemaContainerVersion().getUuid(), microschemaContainerVersion.getUuid())) {
 						HibMicroschemaVersion usedContainerVersion = micronode.getSchemaContainerVersion();
 						String usedSchema = "name:" + usedContainerVersion.getName() + " uuid:" + usedContainerVersion.getSchemaContainer().getUuid()
-								+ " version:" + usedContainerVersion.getVersion();
+							+ " version:" + usedContainerVersion.getVersion();
 						String referencedSchema = "name:" + microschemaContainerVersion.getName() + " uuid:"
-								+ microschemaContainerVersion.getSchemaContainer().getUuid() + " version:" + microschemaContainerVersion.getVersion();
+							+ microschemaContainerVersion.getSchemaContainer().getUuid() + " version:" + microschemaContainerVersion.getVersion();
 						throw error(BAD_REQUEST, "node_error_micronode_list_update_schema_conflict", micronode.getUuid(), usedSchema,
-								referencedSchema);
+							referencedSchema);
 					}
 				}
 

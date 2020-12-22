@@ -36,6 +36,9 @@ import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 
+/**
+ * Utility for the OkHttp client.
+ */
 public final class OkHttpClientUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(OkHttpClientUtil.class);
@@ -43,6 +46,12 @@ public final class OkHttpClientUtil {
 	private OkHttpClientUtil() {
 	}
 
+	/**
+	 * Create a new client using the {@link MeshRestClientConfig} as source for various settiings.
+	 * 
+	 * @param config
+	 * @return
+	 */
 	public static OkHttpClient createClient(MeshRestClientConfig config) {
 
 		Dispatcher dispatcher = new Dispatcher();
@@ -60,6 +69,12 @@ public final class OkHttpClientUtil {
 		return builder.build();
 	}
 
+	/**
+	 * Initialize a given client builder with the client config.
+	 * 
+	 * @param builder
+	 * @param config
+	 */
 	private static void initializeHttpClient(Builder builder, MeshRestClientConfig config) {
 		KeyManager[] keyManagers = null;
 		TrustManager[] trustManagers = null;
@@ -112,6 +127,17 @@ public final class OkHttpClientUtil {
 
 	}
 
+	/**
+	 * Return the keymanagers to be used for client cert authentication for the REST client.
+	 * 
+	 * @param config
+	 * @return
+	 * @throws KeyStoreException
+	 * @throws NoSuchAlgorithmException
+	 * @throws UnrecoverableKeyException
+	 * @throws IOException
+	 * @throws CertificateException
+	 */
 	private static KeyManager[] getKeyManagersPem(MeshRestClientConfig config)
 		throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException, CertificateException {
 		// The keystore pass is only used to access the in-memory keystore thus a random PW is sufficient

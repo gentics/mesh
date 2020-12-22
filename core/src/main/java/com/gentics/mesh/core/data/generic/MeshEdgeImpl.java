@@ -42,6 +42,11 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 		return property("uuid");
 	}
 
+	/**
+	 * Manually set the uuid.
+	 * 
+	 * @param uuid
+	 */
 	public void setUuid(String uuid) {
 		property("uuid", uuid);
 	}
@@ -76,6 +81,12 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 		return db().getElementVersion(edge);
 	}
 
+	/**
+	 * Return the dagger mesh context from the graph attributes. The component is accessed this way since it is not otherwise possible to inject dagger into
+	 * domain classes.
+	 * 
+	 * @return
+	 */
 	public MeshComponent mesh() {
 		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}

@@ -5,6 +5,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 
+/**
+ * Utility which managed uniqueness checks for filenames.
+ */
 public final class UniquenessUtil {
 
 	public static Pattern p = Pattern.compile("^(.*)_([0-9]{1,2})$");

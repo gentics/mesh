@@ -10,17 +10,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.router.route.SecurityLoggingHandler;
+import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -36,6 +38,7 @@ import io.vertx.ext.web.FileUpload;
  *
  * @param <T>
  *            Type of the response object
+ * @see InternalActionContext
  */
 public class LocalActionContextImpl<T> extends AbstractInternalActionContext implements InternalActionContext {
 
@@ -44,7 +47,6 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private Map<String, Object> data = new HashMap<>();
 	private MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
 	private String query;
-	private HibProject project;
 	private String responseBody;
 	private HttpResponseStatus responseStatus;
 	private Promise<T> promise = Promise.promise();
@@ -108,7 +110,12 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	@Override
-	public MeshAuthUser getUser() {
+	public HibUser getUser() {
+		return user.getDelegate();
+	}
+
+	@Override
+	public MeshAuthUser getMeshAuthUser() {
 		return user;
 	}
 
@@ -183,11 +190,6 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	}
 
-	@Override
-	public HibProject getProject() {
-		return project;
-	}
-
 	/**
 	 * Set the project that will be used to invoke project scope specific actions.
 	 * 
@@ -195,9 +197,10 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 */
 	public void setProject(String projectName) {
 		MeshComponent mesh = toGraph(user).getGraphAttribute(GraphAttribute.MESH_COMPONENT);
-		this.project = mesh.database().tx(tx -> {
-			return tx.data().projectDao().findByName(projectName);
+		HibProject project = mesh.database().tx(tx -> {
+			return tx.projectDao().findByName(projectName);
 		});
+		data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 	}
 
 	@Override
@@ -257,6 +260,6 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public int getApiVersion() {
-		return VersionHandler.CURRENT_API_VERSION;
+		return MeshVersion.CURRENT_API_VERSION;
 	}
 }

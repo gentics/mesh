@@ -3,6 +3,9 @@ package com.gentics.mesh.core.rest.schema;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
+/**
+ * REST POJO for a binary field schema.
+ */
 public interface BinaryFieldSchema extends FieldSchema {
 
 	/**

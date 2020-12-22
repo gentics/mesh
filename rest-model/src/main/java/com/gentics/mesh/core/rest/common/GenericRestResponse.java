@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.common;
 
 import com.gentics.mesh.core.rest.user.UserReference;
 
+/**
+ * Common interface for typical REST responses which return entity information.
+ */
 public interface GenericRestResponse extends RestResponse {
 
 	/**

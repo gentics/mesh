@@ -5,15 +5,21 @@ import javax.inject.Singleton;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.test.util.TestUtils;
 
 import dagger.Module;
 import dagger.Provides;
 
+/**
+ * Dagger module for in-memory database setups.
+ */
 @Module
 public class MeshComponentNoDBConfiguration {
 
+	/**
+	 * Initialize the mesh settings.
+	 */
 	public static void init() {
 		MeshOptions options = new MeshOptions();
 		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
@@ -22,12 +28,24 @@ public class MeshComponentNoDBConfiguration {
 		// Mesh.mesh(options);
 	}
 
+	/**
+	 * Return the tracking provider.
+	 * 
+	 * @param options
+	 * @return
+	 */
 	@Provides
 	@Singleton
-	public TrackingSearchProvider dummySearchProvider(MeshOptions options) {
-		return new TrackingSearchProvider(options);
+	public TrackingSearchProviderImpl dummySearchProvider(MeshOptions options) {
+		return new TrackingSearchProviderImpl(options);
 	}
 
+	/**
+	 * Return the dummy provider.
+	 * 
+	 * @param options
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public SearchProvider searchProvider(MeshOptions options) {
@@ -35,8 +53,15 @@ public class MeshComponentNoDBConfiguration {
 		return dummySearchProvider(options);
 	}
 
+	/**
+	 * Dummy reference to database.
+	 * 
+	 * @return
+	 * @deprecated This method should not be needed. Remove it.
+	 */
 	@Provides
 	@Singleton
+	@Deprecated
 	public Database database() {
 		return null;
 	}

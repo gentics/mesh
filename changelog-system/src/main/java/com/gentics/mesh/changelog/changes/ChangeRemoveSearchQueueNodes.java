@@ -5,6 +5,9 @@ import static com.tinkerpop.blueprints.Direction.OUT;
 import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Changelog entry which removed no longer needed persisted search queue.
+ */
 public class ChangeRemoveSearchQueueNodes extends AbstractChange {
 
 	@Override

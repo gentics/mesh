@@ -8,6 +8,9 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Single;
 
+/**
+ * REST client methods for authentication operations.
+ */
 public interface AuthClientMethods {
 
 	/**

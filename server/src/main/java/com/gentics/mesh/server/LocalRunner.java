@@ -24,6 +24,12 @@ public class LocalRunner {
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 	}
 
+	/**
+	 * Start the local runner
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		Logger log = LoggerFactory.getLogger(LocalRunner.class);

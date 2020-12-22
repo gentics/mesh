@@ -22,6 +22,7 @@ public class MicroschemaTransformer extends AbstractTransformer<HibMicroschema> 
 	public MicroschemaTransformer() {
 	}
 
+	@Override
 	public String generateVersion(HibMicroschema microschema) {
 		// No need to add users since the creator/editor edge affects the microschema version
 		return ETag.hash(microschema.getElementVersion());

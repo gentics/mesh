@@ -12,6 +12,9 @@ import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see BucketManager
+ */
 @Singleton
 public class BucketManagerImpl implements BucketManager {
 

@@ -6,6 +6,9 @@ import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * POJO for a GraphQL request.
+ */
 public class GraphQLRequest implements RestModel {
 
 	@JsonProperty(required = true)

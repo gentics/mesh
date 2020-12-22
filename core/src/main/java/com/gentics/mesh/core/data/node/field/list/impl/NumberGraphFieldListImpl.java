@@ -26,10 +26,10 @@ import com.gentics.mesh.util.CompareUtils;
  * @see NumberGraphFieldList
  */
 public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl, Number>
-		implements NumberGraphFieldList {
+	implements NumberGraphFieldList {
 
 	public static FieldTransformer<NumberFieldListImpl> NUMBER_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+		parentNode) -> {
 		NumberGraphFieldList numberFieldList = container.getNumberList(fieldKey);
 		if (numberFieldList == null) {
 			return null;
@@ -82,6 +82,12 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 		return container.getNumberList(fieldSchema.getName());
 	};
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(NumberGraphFieldListImpl.class, MeshVertexImpl.class);
 	}

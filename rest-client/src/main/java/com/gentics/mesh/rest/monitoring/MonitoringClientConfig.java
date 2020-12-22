@@ -2,7 +2,11 @@ package com.gentics.mesh.rest.monitoring;
 
 import java.util.Objects;
 
+/**
+ * REST Client configuration and builder for the monitoring client.
+ */
 public class MonitoringClientConfig {
+
 	private final String host;
 	private final String basePath;
 	private final int port;
@@ -30,11 +34,19 @@ public class MonitoringClientConfig {
 			getBasePath();
 	}
 
+	/**
+	 * Builder for the monitoring client config.
+	 */
 	public static class Builder {
 		private String host;
 		private String basePath = "/api/v2";
 		private int port = 8080;
 
+		/**
+		 * Build the client configuration.
+		 * 
+		 * @return
+		 */
 		public MonitoringClientConfig build() {
 			return new MonitoringClientConfig(this);
 		}

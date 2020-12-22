@@ -6,6 +6,9 @@ import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.test.TestDataProvider;
 
+/**
+ * Test helper for micronode fields.
+ */
 public interface MicronodeFieldHelper {
 
 	public static final FieldFetcher FETCH = (container, name) -> container.getMicronode(name);

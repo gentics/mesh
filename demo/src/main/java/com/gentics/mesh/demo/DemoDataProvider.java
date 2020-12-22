@@ -51,7 +51,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.rest.MeshLocalClientImpl;
+import com.gentics.mesh.rest.MeshLocalClient;
 import com.gentics.mesh.rest.client.MeshRequest;
 
 import io.vertx.core.buffer.Buffer;
@@ -60,6 +60,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Central data provider for the Gentics Mesh Demo content.
+ * 
+ * The content is created using the {@link MeshLocalClient}.
+ */
 @Singleton
 public class DemoDataProvider {
 
@@ -71,7 +76,7 @@ public class DemoDataProvider {
 
 	private Database db;
 
-	private MeshLocalClientImpl client;
+	private MeshLocalClient client;
 
 	private Map<String, ProjectResponse> projects = new HashMap<>();
 	private Map<String, SchemaResponse> schemas = new HashMap<>();
@@ -85,12 +90,22 @@ public class DemoDataProvider {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
+	public DemoDataProvider(Database database, MeshLocalClient client, BootstrapInitializer boot) {
 		this.db = database;
 		this.client = client;
 		this.boot = boot;
 	}
 
+	/**
+	 * Setup the demo content
+	 * 
+	 * @param syncIndex
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 * @throws MeshSchemaException
+	 * @throws InterruptedException
+	 */
 	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		MeshAuthUser user = db.tx(() -> {
 			return boot.meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");

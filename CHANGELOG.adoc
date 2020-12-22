@@ -23,6 +23,23 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.6]]
+== 1.7.6  (22.12.2020)
+
+icon:check[] Changelog: Fix the failing on-the-fly migration introduced in 1.7.5. The migration was producing `ClassCastExceptions`.
+
+icon:check[] Jobs: A race condition within the job processing mechanism has been fixed. In some cases newly created jobs would not be automatically invoked. This has been fixed now.
+
+icon:check[] Jobs: New jobs will now set the correct start date and time.
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.6`.
+
+icon:check[] OrientDB: A bug in the startup order has been fixed which prevented opening of databases via OrientDB Studio.
+
+icon:check[] Core: Binary upload processing failed for binaries with brackets in the metadata key. This has been fixed now.
+
+icon:plus[] GraphQL: Queries, that take longer than the configured threshold will be logged now. See link:{{< relref "graphql.asciidoc" >}}#_slow_query_log[GraphQL Slow Query Log] for details.
+
 [[v1.7.5]]
 == 1.7.5 (09.11.2020)
 

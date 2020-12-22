@@ -12,8 +12,11 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
@@ -54,8 +57,10 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 	}
 
 	private MainFilter<NodeContent> createAllFieldFilters() {
+		HibProject project = Tx.get().getProject(context);
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 		List<FilterField<NodeContent, ?>> schemaFields = StreamSupport
-			.stream(context.getProject().getSchemaContainerRoot().findAll().spliterator(), false)
+			.stream(schemaDao.findAll(project).spliterator(), false)
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
 		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false);

@@ -27,8 +27,8 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 		String groupname = "testgroup42a";
 		GroupResponse response = createGroup(groupname);
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 
 			Group group = meshRoot().getGroupRoot().findByUuid(response.getUuid());
 			System.out.println("Group Uuid:" + response.getUuid());
@@ -47,7 +47,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			Group group = meshRoot().getGroupRoot().findByUuid(response.getUuid());
 			System.out.println("Group Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), group, InternalPermission.READ_PERM);

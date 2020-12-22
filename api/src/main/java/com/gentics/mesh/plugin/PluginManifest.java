@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 
 /**
  * The plugin manifest describes a plugin and is also used to setup the path to the REST API.
@@ -47,6 +48,7 @@ public class PluginManifest {
 		return id;
 	}
 
+	@Setter
 	public PluginManifest setId(String id) {
 		this.id = id;
 		return this;
@@ -56,6 +58,7 @@ public class PluginManifest {
 		return name;
 	}
 
+	@Setter
 	public PluginManifest setName(String name) {
 		this.name = name;
 		return this;
@@ -65,6 +68,7 @@ public class PluginManifest {
 		return description;
 	}
 
+	@Setter
 	public PluginManifest setDescription(String description) {
 		this.description = description;
 		return this;
@@ -74,6 +78,7 @@ public class PluginManifest {
 		return version;
 	}
 
+	@Setter
 	public PluginManifest setVersion(String version) {
 		this.version = version;
 		return this;
@@ -83,6 +88,7 @@ public class PluginManifest {
 		return author;
 	}
 
+	@Setter
 	public PluginManifest setAuthor(String author) {
 		this.author = author;
 		return this;
@@ -92,6 +98,7 @@ public class PluginManifest {
 		return inception;
 	}
 
+	@Setter
 	public PluginManifest setInception(String inception) {
 		this.inception = inception;
 		return this;
@@ -101,11 +108,17 @@ public class PluginManifest {
 		return license;
 	}
 
+	@Setter
 	public PluginManifest setLicense(String license) {
 		this.license = license;
 		return this;
 	}
 
+	/**
+	 * Return a new empty manifest.
+	 * 
+	 * @return
+	 */
 	public static PluginManifest manifest() {
 		return new PluginManifest();
 	}

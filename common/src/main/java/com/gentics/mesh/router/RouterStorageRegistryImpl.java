@@ -8,6 +8,9 @@ import javax.naming.InvalidNameException;
 
 import io.vertx.core.impl.ConcurrentHashSet;
 
+/**
+ * @see RouterStorageRegistry
+ */
 @Singleton
 public class RouterStorageRegistryImpl implements RouterStorageRegistry {
 
@@ -17,6 +20,9 @@ public class RouterStorageRegistryImpl implements RouterStorageRegistry {
 	public RouterStorageRegistryImpl() {
 	}
 
+	/**
+	 * Register the eventbus handlers of all stored router storages.
+	 */
 	public synchronized void registerEventbus() {
 		for (RouterStorage rs : instances) {
 			rs.registerEventbusHandlers();
@@ -34,12 +40,14 @@ public class RouterStorageRegistryImpl implements RouterStorageRegistry {
 		}
 	}
 
+	@Override
 	public synchronized void addProject(String name) throws InvalidNameException {
 		for (RouterStorage rs : instances) {
 			rs.root().apiRouter().projectsRouter().addProjectRouter(name);
 		}
 	}
 
+	@Override
 	public synchronized boolean hasProject(String projectName) {
 		for (RouterStorage rs : instances) {
 			if (rs.root().apiRouter().projectsRouter().hasProjectRouter(projectName)) {
@@ -49,6 +57,7 @@ public class RouterStorageRegistryImpl implements RouterStorageRegistry {
 		return false;
 	}
 
+	@Override
 	public Set<RouterStorage> getInstances() {
 		return instances;
 	}

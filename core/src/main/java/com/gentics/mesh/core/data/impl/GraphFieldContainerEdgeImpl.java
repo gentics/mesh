@@ -44,6 +44,12 @@ import com.tinkerpop.blueprints.Edge;
 @GraphElement
 public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFieldContainerEdge {
 
+	/**
+	 * Initialize the edge type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(edgeType(GraphFieldContainerEdgeImpl.class.getSimpleName()));
 		type.createType(edgeType(HAS_FIELD_CONTAINER).withSuperClazz(GraphFieldContainerEdgeImpl.class));
@@ -77,6 +83,12 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 
 	}
 
+	/**
+	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
+	 * 
+	 * @param parentNode
+	 * @param segment
+	 */
 	public void setSegmentInfo(HibNode parentNode, String segment) {
 		setSegmentInfo(composeSegmentInfo(parentNode, segment));
 	}
@@ -97,10 +109,29 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
 	}
 
+	/**
+	 * Generate the composed value for the segment info. The value is used in an unique index and thus needs to be composed to create a unique segment value per
+	 * level of the node tree structure.
+	 * 
+	 * @param parentNode
+	 * @param segment
+	 * @return
+	 */
 	public static String composeSegmentInfo(HibNode parentNode, String segment) {
 		return parentNode == null ? "" : parentNode.getUuid() + segment;
 	}
 
+	/**
+	 * Generate the composed value for the webroot url field value.
+	 * 
+	 * Format: branchUuid + contentType + url field path
+	 * 
+	 * @param db
+	 * @param path
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
 	public static Object composeWebrootUrlFieldIndexKey(Database db, String path, String branchUuid, ContainerType type) {
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), path);
 	}
@@ -207,6 +238,15 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		return edges.iterator().hasNext();
 	}
 
+	/**
+	 * Utilize the graph index and lookup the edge between node and content for the given parameters.
+	 * 
+	 * @param nodeId
+	 * @param branchUuid
+	 * @param code
+	 * @param lang
+	 * @return
+	 */
 	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, String code, String lang) {
 		FramedGraph graph = Tx.get().getGraph();
 		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
@@ -220,6 +260,15 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		}
 	}
 
+	/**
+	 * Use the graph index to lookup the edges between the node and the contents for the given parameters. Since the language is not included in the index key
+	 * multiple edges may be returned for the edges to the various content languages.
+	 * 
+	 * @param nodeId
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
 	public static Result<GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
 		FramedGraph graph = Tx.get().getGraph();
 		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);

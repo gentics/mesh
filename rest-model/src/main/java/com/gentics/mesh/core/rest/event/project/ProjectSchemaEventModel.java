@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 
+/**
+ * POJO for project schema assignment/un-assignment events.
+ */
 public class ProjectSchemaEventModel extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)

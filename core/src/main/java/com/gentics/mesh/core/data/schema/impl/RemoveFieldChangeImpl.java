@@ -18,6 +18,12 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements RemoveFieldChange {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(RemoveFieldChangeImpl.class, MeshVertexImpl.class);
 	}

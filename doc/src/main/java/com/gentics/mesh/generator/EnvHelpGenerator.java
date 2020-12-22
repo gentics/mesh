@@ -13,6 +13,9 @@ import org.reflections.scanners.FieldAnnotationsScanner;
 
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 
+/**
+ * Example generator for the environment settings table.
+ */
 public class EnvHelpGenerator extends AbstractRenderingGenerator {
 
 	public static File DOCS_FOLDER = new File("src/main/docs");
@@ -24,10 +27,21 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 		super(new File(outputFolder, "tables"), false);
 	}
 
+	/**
+	 * Run the generator and write to the docs folder.
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		new EnvHelpGenerator(OUTPUT_ROOT_FOLDER).run();
 	}
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @throws IOException
+	 */
 	public void run() throws IOException {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 

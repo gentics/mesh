@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -33,14 +33,30 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Implementation of the micronode migration job.
+ */
 public class MicronodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationJobImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
+	/**
+	 * Create a new migration event model object.
+	 * 
+	 * @param event
+	 * @param status
+	 * @return
+	 */
 	public MicroschemaMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {
 		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
 		model.setEvent(event);
@@ -121,7 +137,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	protected Completable processTask() {
 		return Completable.defer(() -> {
 			MicronodeMigrationContext context = prepareContext();
-			MicronodeMigrationImpl handler = mesh().micronodeMigrationHandler();
+			MicronodeMigration handler = mesh().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)
 				.doOnComplete(() -> {
 					db().tx(() -> {

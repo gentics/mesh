@@ -1,6 +1,7 @@
 package com.gentics.mesh.distributed.coordinator.proxy;
 
 import java.util.HashSet;
+
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +28,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.Pump;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * @see RequestDelegator
+ */
 public class RequestDelegatorImpl implements RequestDelegator {
 
 	private static final Logger log = LoggerFactory.getLogger(RequestDelegatorImpl.class);
@@ -244,6 +248,12 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		}
 	}
 
+	/**
+	 * Check whether the path of the request if whitelisted. Whitelisted paths will not be delegated to the elected master.
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public static boolean isWhitelisted(String path) {
 		for (Pattern pattern : whiteListPathPatternSet) {
 			Matcher m = pattern.matcher(path);
@@ -254,6 +264,13 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		return false;
 	}
 
+	/**
+	 * Check whether the provided path matches those that were listed as safe read-only paths. (e.g. a path that points to an endpoint which does not write data
+	 * to mesh).
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public static boolean isReadOnly(String path) {
 		for (Pattern pattern : readOnlyPathPatternSet) {
 			Matcher m = pattern.matcher(path);

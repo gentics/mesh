@@ -25,6 +25,12 @@ public class ServerRunner {
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 	}
 
+	/**
+	 * Start the production server runner.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		Logger log = LoggerFactory.getLogger(ServerRunner.class);
@@ -35,7 +41,7 @@ public class ServerRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions(defaultOption, args);
 
 		Mesh mesh = Mesh.create(options);
-		mesh.setCustomLoader((vertx) -> {
+		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 

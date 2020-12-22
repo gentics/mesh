@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -25,9 +26,13 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
 import com.syncleus.ferma.AbstractVertexFrame;
 
+/**
+ * @see StringGraphField
+ */
 public class StringGraphFieldImpl extends AbstractBasicField<StringField> implements StringGraphField {
 
 	public static FieldTransformer<StringField> STRING_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+		Tx tx = Tx.get();
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		// TODO validate found fields has same type as schema
 		// StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
@@ -38,11 +43,11 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 		} else {
 			StringField field = graphStringField.transformToRest(ac);
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-				HibProject project = ac.getProject();
+				HibProject project = tx.getProject(ac);
 				if (project == null) {
 					project = parentNode.get().getProject();
 				}
-				field.setString(mesh.webRootLinkReplacer().replace(ac, ac.getBranch().getUuid(),
+				field.setString(mesh.webRootLinkReplacer().replace(ac, tx.getBranch(ac).getUuid(),
 						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), field.getString(),
 						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 			}

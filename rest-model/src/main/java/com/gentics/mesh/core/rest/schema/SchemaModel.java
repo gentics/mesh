@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.gentics.mesh.core.rest.error.GenericRestException;
+
 /**
  * Schema which is used for nodes. Various fields can be added to the schema in order build data structures for nodes.
  */
@@ -58,6 +60,9 @@ public interface SchemaModel extends FieldSchemaContainer {
 	 */
 	SchemaModel setSegmentField(String segmentField);
 
+	/**
+	 * Validate the schema model. This method will throw {@link GenericRestException} when a mismatch or error has been detected.
+	 */
 	default void validate() {
 		FieldSchemaContainer.super.validate();
 		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for

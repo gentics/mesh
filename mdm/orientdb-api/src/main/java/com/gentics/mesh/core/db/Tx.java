@@ -1,11 +1,16 @@
 package com.gentics.mesh.core.db;
 
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.DaoCollection;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
  */
-public interface Tx extends BaseTransaction {
+public interface Tx extends BaseTransaction, DaoCollection {
 
 	/**
 	 * Thread local that is used to store references to the used graph.
@@ -39,6 +44,7 @@ public interface Tx extends BaseTransaction {
 	static Tx get() {
 		return getActive();
 	}
+
 	//
 	// /**
 	// * Mark the transaction as succeeded. The autoclosable will invoke a commit when completing.
@@ -50,12 +56,12 @@ public interface Tx extends BaseTransaction {
 	// */
 	// void failure();
 	//
-	 /**
+	/**
 	 * Return the framed graph that is bound to the transaction.
 	 *
 	 * @return Graph which is bound to the transaction.
 	 */
-	 FramedTransactionalGraph getGraph();
+	FramedTransactionalGraph getGraph();
 	//
 	// /**
 	// * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
@@ -78,4 +84,12 @@ public interface Tx extends BaseTransaction {
 	}
 
 	TxData data();
+
+	HibBranch getBranch(InternalActionContext ac);
+
+	HibBranch getBranch(InternalActionContext ac, HibProject project);
+
+	HibProject getProject(InternalActionContext ac);
+
+	Binaries binaries();
 }

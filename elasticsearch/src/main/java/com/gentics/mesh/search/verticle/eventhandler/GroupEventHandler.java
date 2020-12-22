@@ -26,6 +26,9 @@ import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
 import io.reactivex.Flowable;
 
+/**
+ * Search index handler for group events.
+ */
 @Singleton
 public class GroupEventHandler implements EventHandler {
 	private final MeshHelper helper;
@@ -36,7 +39,7 @@ public class GroupEventHandler implements EventHandler {
 	public GroupEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
-		this.complianceMode  = options.getSearchOptions().getComplianceMode();
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	@Override
@@ -53,12 +56,12 @@ public class GroupEventHandler implements EventHandler {
 				return helper.getDb().tx(tx -> {
 					// We also need to update all users of the group
 					Optional<HibGroup> groupOptional = entities.group.getElement(model);
-					GroupDaoWrapper groupDao = tx.data().groupDao();
+					GroupDaoWrapper groupDao = tx.groupDao();
 
 					return Stream.concat(
 						groupOptional.stream().map(entities::createRequest),
-						groupOptional.stream().flatMap(group -> groupDao.getUsers(group).stream()).map(entities::createRequest)
-					).collect(Util.toFlowable());
+						groupOptional.stream().flatMap(group -> groupDao.getUsers(group).stream()).map(entities::createRequest))
+						.collect(Util.toFlowable());
 				});
 			} else if (event == GROUP_DELETED) {
 				// TODO Update users that were part of that group.

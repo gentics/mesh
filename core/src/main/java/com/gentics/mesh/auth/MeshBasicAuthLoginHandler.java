@@ -10,12 +10,18 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Base64;
 
+/**
+ * Extended Vert.x {@link AuthHandler}.
+ * 
+ * The {@link #handle(RoutingContext)} method is overriden in order to support the {@link MeshJWTAuthProvider}.
+ */
 @Singleton
 public class MeshBasicAuthLoginHandler extends AuthHandlerImpl {
 

@@ -5,6 +5,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.path.Path;
 
+/**
+ * The {@link WebRootService} is the starting point for webroot resolving operations.
+ */
 public interface WebRootService {
 
 	/**

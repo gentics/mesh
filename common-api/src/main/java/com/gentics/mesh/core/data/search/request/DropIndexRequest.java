@@ -6,6 +6,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Definition of a index delete requests.
+ */
 public class DropIndexRequest implements SearchRequest {
 
 	private static final Logger log = LoggerFactory.getLogger(CreateIndexRequest.class);

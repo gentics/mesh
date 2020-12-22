@@ -23,6 +23,9 @@ import com.gentics.mesh.util.VersionNumber;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Consistency check for node contents.
+ */
 public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 
 	private static final Logger log = LoggerFactory.getLogger(GraphFieldContainerCheck.class);
@@ -40,7 +43,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 	}
 
 	private void checkGraphFieldContainer(Database db, NodeGraphFieldContainer container, ConsistencyCheckResult result, boolean attemptRepair) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		String uuid = container.getUuid();
 		if (container.getSchemaContainerVersion() == null) {
 			result.addInconsistency("The GraphFieldContainer has no assigned SchemaContainerVersion", uuid, HIGH);

@@ -10,6 +10,11 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.Optional;
 
+/**
+ * Entity definition which is used to manage document transformation, update handling, event handling.
+ * 
+ * @param <T> Database domain class type of the entity
+ */
 public class SimpleMeshEntity<T> extends MeshEntity<T> {
 
 	public SimpleMeshEntity(Transformer<T> transformer, TypeInfo typeInfo, EventVertexMapper<T> eventVertexMapper) {

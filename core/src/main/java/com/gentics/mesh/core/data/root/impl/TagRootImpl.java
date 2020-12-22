@@ -28,14 +28,13 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -155,7 +154,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser user, Branch branch, List<String> languageTags, ContainerType type,
+	public Page<? extends Node> findTaggedNodes(Tag tag, HibUser user, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(tag, branch, languageTags, type);
 		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PUBLISHED_PERM, NodeImpl.class);
@@ -163,12 +162,12 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac) {
-		MeshAuthUser user = ac.getUser();
-		HibBranch branch = ac.getBranch();
+		HibUser user = ac.getUser();
+		Tx tx = Tx.get();
+		HibBranch branch = tx.getBranch(ac);
 		String branchUuid = branch.getUuid();
-		UserDaoWrapper userRoot = Tx.get().data().userDao();
-		TraversalResult<? extends Node> nodes = new TraversalResult<>(
-			toGraph(tag).inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
+		UserDaoWrapper userRoot = Tx.get().userDao();
+		TraversalResult<? extends Node> nodes = new TraversalResult<>(toGraph(tag).inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped

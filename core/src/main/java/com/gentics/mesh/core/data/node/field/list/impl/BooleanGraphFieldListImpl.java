@@ -26,10 +26,10 @@ import com.gentics.mesh.util.CompareUtils;
  * @see BooleanGraphFieldList
  */
 public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean>
-		implements BooleanGraphFieldList {
+	implements BooleanGraphFieldList {
 
 	public static FieldTransformer<BooleanFieldListImpl> BOOLEAN_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+		parentNode) -> {
 		BooleanGraphFieldList booleanFieldList = container.getBooleanList(fieldKey);
 		if (booleanFieldList == null) {
 			return null;
@@ -82,6 +82,12 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 		return container.getBooleanList(fieldSchema.getName());
 	};
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
 	}

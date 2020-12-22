@@ -4,6 +4,9 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 
+/**
+ * Test helper for number fields.
+ */
 public interface NumberListFieldTestHelper {
 
 	static final int NUMBERVALUE = 4711;

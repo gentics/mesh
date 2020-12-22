@@ -4,6 +4,9 @@ import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 
+/**
+ * Test helper for HTML list fields.
+ */
 public interface HtmlListFieldHelper {
 
 	public static final String TEXT1 = "<i>one</i>";

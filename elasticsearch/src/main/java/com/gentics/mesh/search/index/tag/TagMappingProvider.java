@@ -14,6 +14,9 @@ import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Mapping provider for the ES tag index mapping.
+ */
 @Singleton
 public class TagMappingProvider extends AbstractMappingProvider {
 

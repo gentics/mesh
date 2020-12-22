@@ -120,7 +120,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 	}
 
 	private long createUsers(int nUsers) {
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		// Create extra users
 		for (int i = 0; i < nUsers; i++) {

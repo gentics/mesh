@@ -174,12 +174,6 @@ The Gentics Mesh core team consists of:
     </a>
    </td>
    <td align="center">
-    <a href="https://github.com/philippguertler">
-     <img src="https://avatars.githubusercontent.com/philippguertler?size=150" width="150" /><br />
-     Philipp Gürtler<br /><i>full-stack developer</i>
-    </a>
-   </td>
-   <td align="center">
     <a href="https://github.com/pschulzk">
      <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br />
      Philip Viktor Schulz-Klingauf<br /><i>UI/UX developer</i>
@@ -191,18 +185,6 @@ The Gentics Mesh core team consists of:
     <a href="https://github.com/npomaroli">
      <img src="https://avatars.githubusercontent.com/npomaroli?size=150" width="150" /><br />
      Norbert Pomaroli<br /><i>software architect</i>
-    </a>
-   </td>
-   <td align="center">
-    <a href="https://github.com/aschauerhuber">
-     <img src="https://avatars.githubusercontent.com/aschauerhuber?size=150" width="150" /><br />
-     Andrea Schauerhuber<br /><i>general manager</i>
-    </a>
-   </td>
-   <td align="center">
-    <a href="https://github.com/mephinet">
-     <img src="https://avatars.githubusercontent.com/mephinet?size=150" width="150" /><br />
-     Philipp Gortan<br /><i>head of product development</i>
     </a>
    </td>
   </tr>

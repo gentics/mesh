@@ -2,6 +2,9 @@ package com.gentics.mesh.util;
 
 import java.security.SecureRandom;
 
+/**
+ * Utility to generate random token strings of a fixed length.
+ */
 public final class TokenUtil {
 
 	private static final int TOKEN_LENGHT = 12;
@@ -13,6 +16,7 @@ public final class TokenUtil {
 	 */
 	public static String randomToken() {
 
+		// Characters not included which are hard to be differentiated (0 vs O, 1 vs. I)
 		String chars = "abcdefghjkmnpqrstuvwxyz";
 		String nums = "23456789";
 		String passSymbols = chars + nums + chars.toUpperCase();

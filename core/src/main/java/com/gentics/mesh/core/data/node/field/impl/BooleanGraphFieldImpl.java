@@ -14,6 +14,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
+/**
+ * @see BooleanGraphField
+ */
 public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> implements BooleanGraphField {
 
 	public static FieldTransformer<BooleanField> BOOLEAN_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,

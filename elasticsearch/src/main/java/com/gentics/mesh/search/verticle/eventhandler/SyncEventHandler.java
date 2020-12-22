@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -38,7 +38,7 @@ public class SyncEventHandler implements EventHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SyncEventHandler.class);
 
-	private final Lazy<IndexHandlerRegistry> registry;
+	private final Lazy<IndexHandlerRegistryImpl> registry;
 
 	private final SearchProvider provider;
 
@@ -54,28 +54,57 @@ public class SyncEventHandler implements EventHandler {
 		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, null);
 	}
 
-	public static Completable invokeSyncCompletable(Vertx vertx) {
-		return MeshEvent.doAndWaitForEvent(vertx, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx));
-	}
-
+	/**
+	 * Invoke the sync via event and wait for the finished event. Once received the completable will be completed.
+	 * 
+	 * @param mesh
+	 * @return
+	 */
 	public static Completable invokeSyncCompletable(Mesh mesh) {
 		return invokeSyncCompletable(mesh.getVertx());
 	}
 
+	/**
+	 * Invoke the sync via event and wait for the finished event. Once received the completable will be completed.
+	 * 
+	 * @param vertx
+	 * @return
+	 */
+	public static Completable invokeSyncCompletable(Vertx vertx) {
+		return MeshEvent.doAndWaitForEvent(vertx, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx));
+	}
+
+	/**
+	 * Publish the index clear event which will trigger the clear process.
+	 * 
+	 * @param vertx
+	 */
 	public static void invokeClear(Vertx vertx) {
 		vertx.eventBus().publish(INDEX_CLEAR_REQUEST.address, null);
 	}
 
+	/**
+	 * Invoke the index clear event and complete only when the finished event was received.
+	 * 
+	 * @param mesh
+	 * @return
+	 */
 	public static Completable invokeClearCompletable(Mesh mesh) {
 		return MeshEvent.doAndWaitForEvent(mesh, INDEX_CLEAR_FINISHED, () -> SyncEventHandler.invokeClear(mesh.getVertx()));
 	}
 
+	/**
+	 * Invoke the index clear event and complete only when the finished event was received.
+	 * 
+	 * @param vertx
+	 * @return
+	 */
 	public static Completable invokeClearCompletable(Vertx vertx) {
 		return MeshEvent.doAndWaitForEvent(vertx, INDEX_CLEAR_FINISHED, () -> SyncEventHandler.invokeClear(vertx));
 	}
 
 	@Inject
-	public SyncEventHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx, SyncMetersFactory syncMetersFactory) {
+	public SyncEventHandler(Lazy<IndexHandlerRegistryImpl> registry, SearchProvider provider, Vertx vertx, SyncMetersFactory syncMetersFactory) {
 		this.registry = registry;
 		this.provider = provider;
 		this.vertx = vertx;
@@ -87,21 +116,24 @@ public class SyncEventHandler implements EventHandler {
 		return generateSyncRequests();
 	}
 
+	/**
+	 * Generate the sync requests which consist of purging the old indices, syncing the data, publishing the finished event.
+	 * 
+	 * @return
+	 */
 	public Flowable<SearchRequest> generateSyncRequests() {
 		return Flowable.concatArray(
 			purgeOldIndices(),
 			syncIndices(),
-			publishSyncEndEvent()
-		).doOnSubscribe(ignore -> {
-			log.info("Processing index sync job.");
-			vertx.eventBus().publish(INDEX_SYNC_START.address, null);
-			syncMetersFactory.reset();
-		});
+			publishSyncEndEvent()).doOnSubscribe(ignore -> {
+				log.info("Processing index sync job.");
+				vertx.eventBus().publish(INDEX_SYNC_START.address, null);
+				syncMetersFactory.reset();
+			});
 	}
 
 	/**
-	 * This is actually not a search event, but instead just signals the end of an index sync.
-	 * TODO Find a better way to do this, this will not work on an error
+	 * This is actually not a search event, but instead just signals the end of an index sync. TODO Find a better way to do this, this will not work on an error
 	 */
 	private Flowable<SearchRequest> publishSyncEndEvent() {
 		return Flowable.just(SearchRequest.create(provider -> {
@@ -116,17 +148,24 @@ public class SyncEventHandler implements EventHandler {
 		return Collections.singletonList(INDEX_SYNC_REQUEST);
 	}
 
+	/**
+	 * Return search requests needed to init and sync all indices (for all registered type handlers).
+	 * 
+	 * @return
+	 */
 	private Flowable<SearchRequest> syncIndices() {
 		return Flowable.fromIterable(registry.get().getHandlers())
-			.flatMap(handler ->
-				handler.init()
-					.doOnSubscribe(ignore -> log.debug("Init for {}", handler.getClass()))
-					.doOnComplete(() -> log.debug("Init for {} complete", handler.getClass()))
+			.flatMap(handler -> handler.init()
+				.doOnSubscribe(ignore -> log.debug("Init for {}", handler.getClass()))
+				.doOnComplete(() -> log.debug("Init for {} complete", handler.getClass()))
 				.andThen(handler.syncIndices()
-					.doOnSubscribe(ignore -> log.debug("Syncing for {}", handler.getClass()))
-			));
+					.doOnSubscribe(ignore -> log.debug("Syncing for {}", handler.getClass()))));
 	}
 
+	/**
+	 * Generate purge requests needed to drop no longer needed indices.
+	 * @return
+	 */
 	private Flowable<SearchRequest> purgeOldIndices() {
 		List<IndexHandler<?>> handlers = registry.get().getHandlers();
 		Single<Set<String>> allIndices = provider.listIndices();

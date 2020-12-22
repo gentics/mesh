@@ -11,11 +11,14 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+/**
+ * Search handler for queries to the schema index.
+ */
 @Singleton
 public class SchemaSearchHandler extends AbstractSearchHandler<HibSchema, SchemaResponse> {
 
 	@Inject
-	public SchemaSearchHandler(Database db, SearchProvider searchProvider, SchemaContainerIndexHandler indexHandler, MeshOptions options, SchemaDAOActions actions) {
+	public SchemaSearchHandler(Database db, SearchProvider searchProvider, SchemaContainerIndexHandlerImpl indexHandler, MeshOptions options, SchemaDAOActions actions) {
 		super(db, searchProvider, options, indexHandler, actions);
 	}
 

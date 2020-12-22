@@ -13,7 +13,11 @@ import io.reactivex.SingleTransformer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
+/**
+ * Utility for the {@link MeshRestClient}.
+ */
 public final class MeshRestClientUtil {
+
 	private MeshRestClientUtil() {
 	}
 

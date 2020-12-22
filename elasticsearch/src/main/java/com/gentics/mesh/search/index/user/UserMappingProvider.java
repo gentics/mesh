@@ -15,6 +15,10 @@ import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * 
+ * Mapping provider for the ES user index mapping.
+ */
 @Singleton
 public class UserMappingProvider extends AbstractMappingProvider {
 
@@ -32,7 +36,7 @@ public class UserMappingProvider extends AbstractMappingProvider {
 		props.put(UserTransformer.EMAIL_KEY, notAnalyzedType(KEYWORD));
 		props.put(UserTransformer.NODEREFERECE_KEY, notAnalyzedType(KEYWORD));
 		props.put(UserTransformer.GROUPS_KEY, new JsonObject().put("type", OBJECT).put("properties", new JsonObject().put(NAME_KEY, trigramTextType())
-				.put(UUID_KEY, notAnalyzedType(KEYWORD))));
+			.put(UUID_KEY, notAnalyzedType(KEYWORD))));
 
 		return props;
 	}

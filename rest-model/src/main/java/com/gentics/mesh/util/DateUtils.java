@@ -15,6 +15,9 @@ import java.time.format.DateTimeParseException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utility which contains date and time related methods.
+ */
 public final class DateUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(DateUtils.class);
@@ -59,6 +62,12 @@ public final class DateUtils {
 		return Instant.ofEpochMilli(timeInMs).atZone(ZoneOffset.UTC);
 	}
 
+	/**
+	 * Convert the given data string from ISO8601 format back to a unixtimestamp.
+	 * 
+	 * @param dateString
+	 * @return
+	 */
 	public static Long fromISO8601(String dateString) {
 		return fromISO8601(dateString, false);
 	}

@@ -14,6 +14,10 @@ import com.gentics.mesh.etc.config.search.ComplianceMode;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Abstract implementation for various search index mapping providers. This class contains mapping code for basic common mapping fields. Implementation of this
+ * class must invoke super.{@link #getMapping()} to also invoke the common mapping fields.
+ */
 public abstract class AbstractMappingProvider implements MappingProvider {
 
 	public static final String ROLE_UUIDS = "_roleUuids";

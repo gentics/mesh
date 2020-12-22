@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
@@ -32,7 +33,6 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -72,8 +72,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testGetPath() throws Exception {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 
 			HibNode newsNode = content("news overview");
 			InternalActionContext ac = mockActionContext();
@@ -88,7 +88,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMeshNodeStructure() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode newsNode = content("news overview");
 			assertNotNull(newsNode);
 			HibNode newSubNode;
@@ -103,7 +103,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testTaggingOfMeshNode() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.data().tagDao();
+			TagDaoWrapper tagDao = tx.tagDao();
 
 			HibNode newsNode = content("news overview");
 			assertNotNull(newsNode);
@@ -123,13 +123,15 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+
 			InternalActionContext ac = mockActionContext("version=draft");
-			Page<? extends Node> page = project().getNodeRoot().findAll(ac, new PagingParametersImpl(1, 10L));
+			Page<? extends HibNode> page = nodeDao.findAll(project(), ac, new PagingParametersImpl(1, 10L));
 
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(10, page.getSize());
 
-			page = project().getNodeRoot().findAll(ac, new PagingParametersImpl(1, 15L));
+			page = nodeDao.findAll(project(), ac, new PagingParametersImpl(1, 15L));
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(15, page.getSize());
 		}
@@ -138,8 +140,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMeshNodeFields() throws IOException {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode newsNode = content("news overview");
 			String german = german();
 			InternalActionContext ac = mockActionContext("lang=de,en&version=draft");
@@ -170,7 +172,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			Node root = project.getBaseNode();
+			HibNode root = project.getBaseNode();
 			assertNotNull(root);
 		}
 	}
@@ -197,7 +199,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			InternalActionContext ac = mockActionContext("lang=en&version=draft");
 			HibNode newsNode = content("concorde");
@@ -224,7 +226,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreateDelete() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode folder = folder("2015");
 			HibNode subNode = nodeDao.create(folder, user(), getSchemaContainer().getLatestVersion(), project());
 			assertNotNull(subNode.getUuid());
@@ -238,8 +240,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			UserDaoWrapper userDao = tx.userDao();
 			HibNode node = nodeDao.create(folder("2015"), user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = mockActionContext("");
 			assertFalse(userDao.hasPermission(user(), node, InternalPermission.CREATE_PERM));
@@ -265,8 +267,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibUser user = user();
 			HibNode parentNode = folder("2015");
 			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
@@ -311,7 +313,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
 			String uuid = node.getUuid();
-			MeshAssert.assertElement(project().getNodeRoot(), uuid, true);
+			MeshAssert.assertElement(toGraph(project()).getNodeRoot(), uuid, true);
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
@@ -319,7 +321,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				tx2.success();
 			}
 
-			MeshAssert.assertElement(project().getNodeRoot(), uuid, false);
+			MeshAssert.assertElement(toGraph(project()).getNodeRoot(), uuid, false);
 		}
 	}
 
@@ -329,7 +331,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			HibNode node = content();
 			try (Tx tx2 = tx()) {
-				UserDaoWrapper userDao = tx2.data().userDao();
+				UserDaoWrapper userDao = tx2.userDao();
 				HibUser newUser = userDao.create("newUser", user());
 				userDao.addGroup(newUser, group());
 				assertEquals(user().getUuid(), node.getCreator().getUuid());
@@ -379,7 +381,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeleteWithChildren() {
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibProject project = project();
 			HibBranch initialBranch = project.getInitialBranch();
 			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
@@ -406,7 +408,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. assert for initial branch
 			List<String> nodeUuids = new ArrayList<>();
-			project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
+			nodeDao.findAll(project).forEach(node -> nodeUuids.add(node.getUuid()));
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
 		}
 	}
@@ -417,7 +419,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		HibProject project = project();
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			BulkActionContext bac = createBulkContext();
 			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
@@ -473,7 +475,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 10. assert for initial branch
 			List<HibNode> nodes = new ArrayList<>();
-			project.getNodeRoot().findAll(mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000L, "name",
+			nodeDao.findAll(project, mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000L, "name",
 				SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
 			assertThat(nodes).as("Nodes in initial branch").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
@@ -492,8 +494,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 1. create folder and publish
 			String folderUuid = tx(tx2 -> {
-				NodeDaoWrapper nodeDao = tx2.data().nodeDao();
-				RoleDaoWrapper roleDao = tx2.data().roleDao();
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
+				RoleDaoWrapper roleDao = tx2.roleDao();
 				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac2 = createBulkContext();
 				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
@@ -505,32 +507,35 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 2. assert published and draft node
-			tx(() -> {
+			tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
+
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});
 
 			// 3. delete
 			InternalActionContext ac = mockActionContext("");
-			tx(() -> {
-				boot().contentDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, bac, false);
+			tx(tx2 -> {
+				tx2.contentDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, bac, false);
 			});
 
 			// 4. assert published and draft gone
-			tx(() -> {
+			tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
@@ -546,10 +551,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 1. create folder and publish
 			String folderUuid = tx(tx2 -> {
-				NodeDaoWrapper nodeDao = tx2.data().nodeDao();
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
 				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
-				RoleDaoWrapper roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.roleDao();
 				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
 					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				boot().contentDao().createGraphFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
@@ -573,27 +578,29 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 4. assert published and draft gone from initial branch
-			tx(() -> {
+			tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
+				nodeDao.findAll(project, mockActionContext("version=draft&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
 					10000L, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
+				nodeDao.findAll(project, mockActionContext("version=published&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
 					10000L, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
 
 			// 5. assert published and draft still there for new branch
-			tx(() -> {
+			tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
+				nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
 					node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
+				nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
 					node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});

@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -283,7 +283,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.setTypeResolution(type);
 	}
 
-	public BinaryGraphField createBinary(String fieldKey, Binary binary) {
+	public BinaryGraphField createBinary(String fieldKey, HibBinary binary) {
 		return delegate.createBinary(fieldKey, binary);
 	}
 

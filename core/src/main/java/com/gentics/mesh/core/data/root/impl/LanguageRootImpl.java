@@ -29,6 +29,12 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(HAS_LANGUAGE).withInOut());

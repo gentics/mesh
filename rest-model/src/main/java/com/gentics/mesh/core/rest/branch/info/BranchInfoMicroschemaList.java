@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
+/**
+ * REST POJO for branch / microschema information lists.
+ */
 public class BranchInfoMicroschemaList implements RestModel {
 
 	@JsonProperty(required = false)

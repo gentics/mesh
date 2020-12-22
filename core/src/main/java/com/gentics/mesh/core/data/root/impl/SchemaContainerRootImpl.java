@@ -43,6 +43,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_SCHEMA_ROOT));

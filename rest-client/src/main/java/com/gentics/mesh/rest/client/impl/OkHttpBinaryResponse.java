@@ -8,7 +8,13 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 
 import okhttp3.Response;
 
+/**
+ * OK http implementation of a binary response.
+ * 
+ * @see MeshBinaryResponse
+ */
 public class OkHttpBinaryResponse implements MeshBinaryResponse {
+
 	private final Response response;
 
 	public static final String FILENAME_DISPOSITION_ATTR = "filename*=utf-8''";

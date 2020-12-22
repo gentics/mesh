@@ -28,15 +28,13 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -57,8 +55,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	private final CommonDaoHelper commonDaoHelper;
 
 	@Inject
-	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, Lazy<PermissionCache> permissionCache,
-		CommonDaoHelper commonDaoHelper) {
+	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache, CommonDaoHelper commonDaoHelper) {
 		super(boot, permissions);
 		this.permissionCache = permissionCache;
 		this.commonDaoHelper = commonDaoHelper;
@@ -110,14 +107,14 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement vertex) {
-		Set<String> allowedUuids = vertex.getRoleUuidsForPerm(permission);
+		Set<String> allowedUuids = getRoleUuidsForPerm(vertex, permission);
 		return allowedUuids != null && allowedUuids.contains(role.getUuid());
 	}
 
 	@Override
 	public void grantPermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
 		for (InternalPermission permission : permissions) {
-			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
+			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles == null) {
 				vertex.setRoleUuidForPerm(permission, Collections.singleton(role.getUuid()));
 			} else {
@@ -131,7 +128,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	public void revokePermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
 		boolean permissionRevoked = false;
 		for (InternalPermission permission : permissions) {
-			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
+			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles != null) {
 				permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
 				vertex.setRoleUuidForPerm(permission, allowedRoles);
@@ -216,10 +213,10 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	public HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		RoleRoot roleRoot = boot.get().roleRoot();
 
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		if (StringUtils.isEmpty(roleName)) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
@@ -262,7 +259,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public TransformablePage<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.findAll(ac, pagingInfo);
 	}
@@ -312,4 +309,8 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 		graphElement.applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
+	@Override
+	public Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission) {
+		return ((MeshVertex) element).getRoleUuidsForPerm(permission);
+	}
 }

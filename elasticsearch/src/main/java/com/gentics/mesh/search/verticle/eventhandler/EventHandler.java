@@ -16,13 +16,14 @@ public interface EventHandler {
 
 	/**
 	 * Gets collection of all events that can be handled by this class.
+	 * 
 	 * @return
 	 */
 	Collection<MeshEvent> handledEvents();
 
 	/**
-	 * Handles an event from mesh. Creates elasticsearch document from the data of the graph and creates
-	 * requests that represent the data that was changed during the event.
+	 * Handles an event from mesh. Creates elasticsearch document from the data of the graph and creates requests that represent the data that was changed
+	 * during the event.
 	 *
 	 * @param messageEvent
 	 * @return
@@ -31,8 +32,11 @@ public interface EventHandler {
 
 	/**
 	 * Creates an event handler that handles a single event.
-	 * @param event The event to handle
-	 * @param transformer The implementation for {@link #handle(MessageEvent)}
+	 * 
+	 * @param event
+	 *            The event to handle
+	 * @param transformer
+	 *            The implementation for {@link #handle(MessageEvent)}
 	 * @return
 	 */
 	static EventHandler forEvent(MeshEvent event, Function<MessageEvent, Flowable<SearchRequest>> transformer) {

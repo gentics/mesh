@@ -6,20 +6,30 @@ import java.io.OutputStream;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
 
+/**
+ * Wrapper for buffered write streams.
+ */
 public class WrappedWriteStream extends OutputStream {
+
 	private final WriteStream<Buffer> bufferStream;
 
 	private WrappedWriteStream(WriteStream<Buffer> bufferStream) {
 		this.bufferStream = bufferStream;
 	}
 
+	/**
+	 * Create a new wrapper.
+	 * 
+	 * @param bufferStream
+	 * @return
+	 */
 	public static WrappedWriteStream fromWriteStream(WriteStream<Buffer> bufferStream) {
 		return new WrappedWriteStream(bufferStream);
 	}
 
 	@Override
 	public void write(int b) throws IOException {
-		write(new byte[]{(byte) b});
+		write(new byte[] { (byte) b });
 	}
 
 	@Override

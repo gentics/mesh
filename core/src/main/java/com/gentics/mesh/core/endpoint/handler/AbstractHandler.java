@@ -7,6 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 
+/**
+ * Abstract implementation for REST handlers.
+ */
 public class AbstractHandler {
 
 	/**

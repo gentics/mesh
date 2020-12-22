@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
@@ -18,6 +17,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Dedicated entity definition for nodes. This class provides methods to transform database entities to documents and also to generate the partial update requests.
+ */
 public class NodeMeshEntity extends MeshEntity<NodeGraphFieldContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMeshEntity.class);

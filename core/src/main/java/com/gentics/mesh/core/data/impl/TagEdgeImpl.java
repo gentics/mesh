@@ -23,6 +23,12 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	public static final String BRANCH_UUID_KEY = "branchUuid";
 
+	/**
+	 * Initialize the edge type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(edgeType(TagEdgeImpl.class.getSimpleName())
 			.withField(TagEdgeImpl.BRANCH_UUID_KEY, FieldType.STRING));

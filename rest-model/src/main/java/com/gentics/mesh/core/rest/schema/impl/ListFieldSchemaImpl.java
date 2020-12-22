@@ -15,10 +15,13 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
+/**
+ * @see ListFieldSchema
+ */
 public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
 
-	//	private Integer min;
-	//	private Integer max;
+	// private Integer min;
+	// private Integer max;
 
 	@JsonProperty("allow")
 	@JsonPropertyDescription("List of allowed schemas (Only applies to node lists)")
@@ -49,27 +52,27 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 		return this;
 	}
 
-	//	@Override
-	//	public Integer getMax() {
-	//		return max;
-	//	}
+	// @Override
+	// public Integer getMax() {
+	// return max;
+	// }
 	//
-	//	@Override
-	//	public ListFieldSchema setMax(Integer max) {
-	//		this.max = max;
-	//		return this;
-	//	}
+	// @Override
+	// public ListFieldSchema setMax(Integer max) {
+	// this.max = max;
+	// return this;
+	// }
 	//
-	//	@Override
-	//	public Integer getMin() {
-	//		return min;
-	//	}
+	// @Override
+	// public Integer getMin() {
+	// return min;
+	// }
 	//
-	//	@Override
-	//	public ListFieldSchema setMin(Integer min) {
-	//		this.min = min;
-	//		return this;
-	//	}
+	// @Override
+	// public ListFieldSchema setMin(Integer min) {
+	// this.min = min;
+	// return this;
+	// }
 
 	@Override
 	public String getType() {
@@ -114,7 +117,7 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 		if (StringUtils.isEmpty(getListType())) {
 			throw error(BAD_REQUEST, "schema_error_list_type_missing", getName());
 		}
-		//TODO the list type should be a enum.
+		// TODO the list type should be a enum.
 		List<String> validTypes = Arrays.asList("html", "boolean", "string", "micronode", "node", "number", "date", "binary");
 		if (!validTypes.contains(getListType())) {
 			throw error(BAD_REQUEST, "schema_error_list_type_invalid", getListType(), getName());

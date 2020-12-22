@@ -62,7 +62,7 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 			GraphQLContext gc = env.getContext();
 			HibTagFamily tagFamily = env.getSource();
 			PagingParameters pagingInfo = getPagingInfo(env);
-			TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+			TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
 
 			return tagFamilyDao.getTags(tagFamily, gc.getUser(), pagingInfo);
 		}, TAG_PAGE_TYPE_NAME));

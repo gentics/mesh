@@ -28,12 +28,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
@@ -55,13 +59,14 @@ import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
-import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
+import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
-import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
+import com.gentics.mesh.search.index.schema.SchemaIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
@@ -79,7 +84,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
-	private TrackingSearchProvider provider;
+	private TrackingSearchProviderImpl provider;
 
 	private static MeshComponent meshDagger;
 
@@ -87,11 +92,22 @@ public class SearchModelGenerator extends AbstractGenerator {
 		super(new File(outputDir, "search"));
 	}
 
+	/**
+	 * Run the generator.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
 		searchModelGen.run();
 	}
 
+	/**
+	 * Setup mesh to be used for search model generation.
+	 * 
+	 * @return
+	 */
 	public static Mesh initPaths() {
 		MeshOptions options = new MeshOptions();
 		options.setNodeName("Example Generator");
@@ -117,6 +133,11 @@ public class SearchModelGenerator extends AbstractGenerator {
 		return Mesh.create(options);
 	}
 
+	/**
+	 * Run the generator.
+	 * 
+	 * @throws Exception
+	 */
 	public void run() throws Exception {
 		Mesh mesh = initPaths();
 		// String baseDirProp = System.getProperty("baseDir");
@@ -132,21 +153,25 @@ public class SearchModelGenerator extends AbstractGenerator {
 			.searchProviderType(TRACKING)
 			.mesh(mesh)
 			.build();
-		provider = (TrackingSearchProvider) meshDagger.searchProvider();
+		provider = (TrackingSearchProviderImpl) meshDagger.searchProvider();
 
 		try {
-			TxData txData = mockTx();
+			Tx tx = mockTx();
 			NodeDaoWrapper nodeDao = mock(NodeDaoWrapperImpl.class);
 			ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
 			UserDaoWrapper userDao = mock(UserDaoWrapperImpl.class);
+			RoleDaoWrapper roleDao = mock(RoleDaoWrapperImpl.class);
+			GroupDaoWrapper groupDao = mock(GroupDaoWrapperImpl.class);
 			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
 			TagFamilyDaoWrapper tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
 
-			when(txData.nodeDao()).thenReturn(nodeDao);
-			when(txData.contentDao()).thenReturn(contentDao);
-			when(txData.userDao()).thenReturn(userDao);
-			when(txData.tagDao()).thenReturn(tagDao);
-			when(txData.tagFamilyDao()).thenReturn(tagFamilyDao);
+			when(tx.nodeDao()).thenReturn(nodeDao);
+			when(tx.contentDao()).thenReturn(contentDao);
+			when(tx.userDao()).thenReturn(userDao);
+			when(tx.tagDao()).thenReturn(tagDao);
+			when(tx.tagFamilyDao()).thenReturn(tagFamilyDao);
+			when(tx.roleDao()).thenReturn(roleDao);
+			when(tx.groupDao()).thenReturn(groupDao);
 
 			writeNodeDocumentExample(nodeDao, contentDao, tagDao);
 			writeTagDocumentExample();
@@ -163,12 +188,12 @@ public class SearchModelGenerator extends AbstractGenerator {
 		}
 	}
 
-	private TxData mockTx() {
+	private Tx mockTx() {
 		Tx txMock = mock(Tx.class);
 		Tx.setActive(txMock);
 		TxData txData = mock(TxData.class);
 		when(txMock.data()).thenReturn(txData);
-		return txData;
+		return txMock;
 	}
 
 	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDaoWrapper contentDao, TagDaoWrapper tagDao) throws Exception {
@@ -181,8 +206,9 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibNode parentNode = mockNodeBasic("folder", user);
 		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 
-		NodeIndexHandlerImpl nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
+		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
+		((NodeIndexHandlerImpl) nodeIndexHandler)
+			.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
 			.ignoreElement()
 			.blockingAwait();
 		writeStoreEvent("node.search");
@@ -253,7 +279,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibSchema schemaContainer = mockSchemaContainer("content", user);
 
-		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
+		SchemaIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
 		searchIndexHandler.store(schemaContainer, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("schema.search");
 	}
@@ -262,7 +288,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibMicroschema microschema = mockMicroschemaContainer("geolocation", user);
 
-		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
+		MicroschemaIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
 		searchIndexHandler.store(microschema, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("microschema.search");
 	}

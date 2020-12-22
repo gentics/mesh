@@ -1,6 +1,10 @@
 package com.gentics.mesh.metric;
 
+/**
+ * Metric which keeps track of caching stats. 
+ */
 public class CachingMetric implements Metric {
+
 	private final Event event;
 	private final String name;
 
@@ -19,6 +23,9 @@ public class CachingMetric implements Metric {
 		return null;
 	}
 
+	/**
+	 * Metric event types.
+	 */
 	public enum Event {
 		HIT,
 		MISS,

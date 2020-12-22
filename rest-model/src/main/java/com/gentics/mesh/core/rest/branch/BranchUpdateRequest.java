@@ -4,7 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * REST model for branch update requests.
+ */
 public class BranchUpdateRequest implements RestModel {
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the branch.")
 	private String name;

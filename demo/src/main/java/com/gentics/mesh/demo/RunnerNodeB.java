@@ -16,6 +16,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
+/**
+ * Cluster runner
+ */
 public class RunnerNodeB {
 
 	private static final String basePath = "data-nodeB";
@@ -28,10 +31,16 @@ public class RunnerNodeB {
 		System.setProperty("mesh.confDirName", "config-nodeB");
 	}
 
+	/**
+	 * Run the server
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getStorageOptions().setDirectory(basePath + "/graph");
-//		options.getSearchOptions().setDirectory(basePath + "/es");
+		// options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
 		options.getUploadOptions().setTempDirectory(basePath + "/temp");
 		options.getHttpServerOptions().setPort(8081);
@@ -43,7 +52,7 @@ public class RunnerNodeB {
 		options.getClusterOptions().setClusterName("testcluster");
 
 		Mesh mesh = Mesh.create(options);
-		mesh.setCustomLoader((vertx) -> {
+		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 			MeshComponent meshInternal = mesh.internal();
@@ -51,7 +60,8 @@ public class RunnerNodeB {
 
 			// Add demo content provider
 			registry.register(DemoAppEndpoint.class);
-			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(), new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
+			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(),
+				new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
 					meshInternal.boot()));
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 

@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -78,8 +79,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String projectName = created.getName();
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
 
 			HibProject extraProject = projectDao.findByUuid(created.getUuid());
 			// Add only read perms
@@ -105,9 +106,10 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			HibProject extraProject = projectRoot.findByUuid(created.getUuid());
-			assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schemaUuid));
+			assertNotNull("The schema should be added to the extra project", schemaDao.findByUuid(extraProject, schemaUuid));
 		}
 	}
 
@@ -122,8 +124,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String projectUuid = response.getUuid();
 
 		HibProject extraProject = tx((tx) -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
 			// Revoke Update perm on project
 			HibProject p = projectDao.findByUuid(projectUuid);
 			roleDao.revokePermissions(role(), p, UPDATE_PERM);
@@ -134,10 +136,11 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			// Reload the schema and check for expected changes
 			HibSchema schema = schemaContainer("content");
 			assertFalse("The schema should not have been added to the extra project but it was",
-				extraProject.getSchemaContainerRoot().contains(schema));
+				schemaDao.contains(extraProject, schema));
 		}
 
 	}
@@ -150,7 +153,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schema.getUuid());
 
 		try (Tx tx = tx()) {
-			assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			assertTrue("The schema should be assigned to the project.", schemaDao.contains(project, schema));
 		}
 
 		expect(PROJECT_SCHEMA_UNASSIGNED).match(1, ProjectSchemaEventModel.class, event -> {
@@ -174,7 +178,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			list.getData().stream().filter(s -> s.getUuid().equals(schemaUuid)).count());
 
 		try (Tx tx = tx()) {
-			assertFalse("The schema should no longer be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			assertFalse("The schema should no longer be assigned to the project.", schemaDao.contains(project, schema));
 		}
 	}
 
@@ -182,18 +187,20 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
 		HibSchema schema = schemaContainer("content");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			assertTrue("The schema should be assigned to the project.", project().getSchemaContainerRoot().contains(schema));
+			RoleDaoWrapper roleDao = tx.roleDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			assertTrue("The schema should be assigned to the project.", schemaDao.contains(project(), schema));
 			// Revoke update perms on the project
 			roleDao.revokePermissions(role(), project(), UPDATE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schema.getUuid()), FORBIDDEN, "error_missing_perm", projectUuid(),
 				UPDATE_PERM.getRestPerm().getName());
 			// Reload the schema and check for expected changes
-			assertTrue("The schema should still be listed for the project.", project().getSchemaContainerRoot().contains(schema));
+			assertTrue("The schema should still be listed for the project.", schemaDao.contains(project(), schema));
 		}
 	}
 

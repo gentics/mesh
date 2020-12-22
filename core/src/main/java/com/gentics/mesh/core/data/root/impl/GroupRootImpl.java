@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
@@ -17,14 +18,14 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -36,6 +37,12 @@ import com.syncleus.ferma.traversals.VertexTraversal;
  */
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(GroupRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_GROUP));
@@ -53,13 +60,13 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public Result<? extends User> getUsers(Group group) {
-		return group.in(HAS_USER, UserImpl.class);
+	public Result<? extends User> getUsers(HibGroup group) {
+		return toGraph(group).in(HAS_USER, UserImpl.class);
 	}
 
 	@Override
-	public Result<? extends Role> getRoles(Group group) {
-		return group.in(HAS_ROLE, RoleImpl.class);
+	public Result<? extends Role> getRoles(HibGroup group) {
+		return toGraph(group).in(HAS_ROLE, RoleImpl.class);
 	}
 
 	@Override
@@ -68,13 +75,13 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public TransformablePage<? extends User> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo) {
+	public Page<? extends User> getVisibleUsers(Group group, HibUser user, PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = group.in(HAS_USER);
 		return new DynamicTransformablePageImpl<User>(user, traversal, pagingInfo, READ_PERM, UserImpl.class);
 	}
 
 	@Override
-	public TransformablePage<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo) {
+	public Page<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = group.in(HAS_ROLE);
 		return new DynamicTransformablePageImpl<Role>(user, traversal, pagingInfo, READ_PERM, RoleImpl.class);
 	}

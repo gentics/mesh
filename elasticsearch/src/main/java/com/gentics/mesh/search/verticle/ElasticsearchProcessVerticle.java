@@ -46,13 +46,17 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 /**
- * <p>Listens to events that require a change in elasticsearch.</p>
- * <p>The basic flow of events can be found in the {@link #assemble()} method. It looks like this:</p>
+ * <p>
+ * Listens to events that require a change in elasticsearch.
+ * </p>
+ * <p>
+ * The basic flow of events can be found in the {@link #assemble()} method. It looks like this:
+ * </p>
  * <ol>
- *     <li>Event received</li>
- *     <li>Generate necessary requests out of the event</li>
- *     <li>Bulk bulkable requests together</li>
- *     <li>Send request to elasticsearch</li>
+ * <li>Event received</li>
+ * <li>Generate necessary requests out of the event</li>
+ * <li>Bulk bulkable requests together</li>
+ * <li>Send request to elasticsearch</li>
  * </ol>
  */
 public class ElasticsearchProcessVerticle extends AbstractVerticle {
@@ -73,10 +77,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	@Inject
 	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler,
-										SearchProvider searchProvider,
-										IdleChecker idleChecker,
-										SyncEventHandler syncEventHandler,
-										MeshOptions options) {
+		SearchProvider searchProvider,
+		IdleChecker idleChecker,
+		SyncEventHandler syncEventHandler,
+		MeshOptions options) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
 		this.idleChecker = idleChecker;
@@ -118,15 +122,21 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		log.trace("Done Initializing Elasticsearch process verticle");
 	}
 
+	/**
+	 * Subscribe to the local event and add a rely handler which utilizes the provided single response.
+	 * 
+	 * @param event
+	 *            Event to be subscribed to
+	 * @param response
+	 *            Reply to be send
+	 * @return
+	 */
 	public MessageConsumer<JsonObject> replyingEventHandler(MeshEvent event, Single<?> response) {
-		return new Vertx(vertx).eventBus().localConsumer(event.address, message ->
-			response.subscribe(value -> message.reply(value))
-		);
+		return new Vertx(vertx).eventBus().localConsumer(event.address, message -> response.subscribe(value -> message.reply(value)));
 	}
 
 	/**
-	 * Tests if an event in a message should be ignore for further processing.
-	 * Events will be ignored when an index sync has been requested but not yet started.
+	 * Tests if an event in a message should be ignore for further processing. Events will be ignored when an index sync has been requested but not yet started.
 	 * Effectively this will ignore all events that occurred before the index sync request.
 	 *
 	 * @param message
@@ -174,17 +184,14 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		BulkOperator bulker = new BulkOperator(vertx,
 			Duration.ofMillis(options.getBulkDebounceTime()),
 			options.getBulkLimit(),
-			options.getBulkLengthLimit()
-		);
+			options.getBulkLengthLimit());
 		requests
 			.compose(this::bufferEvents)
 			.concatMap(this::generateRequests, 1)
 			.lift(bulker)
-			.concatMap(request ->
-				this.sendRequest(request)
+			.concatMap(request -> this.sendRequest(request)
 				// To make sure the subscription stays alive
-				.onErrorResumeNext(Flowable.empty())
-			, 1)
+				.onErrorResumeNext(Flowable.empty()), 1)
 			// To make sure the subscription stays alive
 			.doOnError(err -> log.info("Error at end of ES process chain", err))
 			.retry()
@@ -192,8 +199,8 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	}
 
 	/**
-	 * Buffers requests to elasticsearch when the requests to elasticsearch are slower than the flow of incoming events.
-	 * If too many events are queued, the queue is cleared and an index sync will be requested.
+	 * Buffers requests to elasticsearch when the requests to elasticsearch are slower than the flow of incoming events. If too many events are queued, the
+	 * queue is cleared and an index sync will be requested.
 	 *
 	 * @see ElasticSearchOptions#getEventBufferSize()
 	 * @param upstream
@@ -208,13 +215,14 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.onBackpressureBuffer(
 				options.getEventBufferSize(),
 				() -> {
-					log.info("Event buffer size of {} was reached. Dropping all pending events and scheduling index sync.", options.getEventBufferSize());
+					log.info("Event buffer size of {} was reached. Dropping all pending events and scheduling index sync.",
+						options.getEventBufferSize());
 					bufferedEvents.set(0);
 					idleChecker.resetTransformations();
 					startSync();
-				}
-		).retry(err -> err instanceof MissingBackpressureException)
-		.doOnNext(request -> bufferedEvents.decrementAndGet());
+				})
+			.retry(err -> err instanceof MissingBackpressureException)
+			.doOnNext(request -> bufferedEvents.decrementAndGet());
 	}
 
 	/**
@@ -237,14 +245,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	/**
 	 * Sends a request to elasticsearch. Handles the following errors:
 	 *
-	 * <h2>index_not_found_exception</h2>
-	 * Sync indices before any other event is processed.
+	 * <h2>index_not_found_exception</h2> Sync indices before any other event is processed.
 	 *
-	 * <h2>Connection errors</h2>
-	 * The request will be retried indefinitely in a configurable interval.
+	 * <h2>Connection errors</h2> The request will be retried indefinitely in a configurable interval.
 	 *
-	 * <h2>Errors inside elasticsearch</h2>
-	 * These errors will not affect this verticle and will be loggend and then ignored.
+	 * <h2>Errors inside elasticsearch</h2> These errors will not affect this verticle and will be loggend and then ignored.
 	 *
 	 * @param request
 	 * @return
@@ -253,30 +258,30 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		return stopped.get()
 			? Flowable.empty()
 			: request.execute(searchProvider)
-			.doOnSubscribe(ignore -> {
-				log.trace("Sending request to Elasticsearch: {}", request);
-			})
-			.doOnComplete(() -> log.trace("Request completed: {}", request))
-			.doOnError(err -> logElasticSearchError(err, () -> {
-				log.error("Error for request: {}", request);
-				log.error("Error after sending request to Elasticsearch", err);
-			}))
-			.andThen(Flowable.just(request))
-			.onErrorResumeNext(ignoreDeleteOnMissingIndexError(request))
-			.onErrorResumeNext(this::syncIndices)
-			.onErrorResumeNext(ignoreElasticsearchErrors(request))
-			.retryWhen(retryWithDelay(
-				Duration.ofMillis(options.getRetryInterval()),
-				options.getRetryLimit()
-			))
-			.doFinally(() -> {
-				log.trace("Request-{}", request);
-				idleChecker.addAndGetRequests(-request.requestCount());
-			});
+				.doOnSubscribe(ignore -> {
+					log.trace("Sending request to Elasticsearch: {}", request);
+				})
+				.doOnComplete(() -> log.trace("Request completed: {}", request))
+				.doOnError(err -> logElasticSearchError(err, () -> {
+					log.error("Error for request: {}", request);
+					log.error("Error after sending request to Elasticsearch", err);
+				}))
+				.andThen(Flowable.just(request))
+				.onErrorResumeNext(ignoreDeleteOnMissingIndexError(request))
+				.onErrorResumeNext(this::syncIndices)
+				.onErrorResumeNext(ignoreElasticsearchErrors(request))
+				.retryWhen(retryWithDelay(
+					Duration.ofMillis(options.getRetryInterval()),
+					options.getRetryLimit()))
+				.doFinally(() -> {
+					log.trace("Request-{}", request);
+					idleChecker.addAndGetRequests(-request.requestCount());
+				});
 	}
 
 	/**
 	 * Ignores the error if there are only deletes on missing indices.
+	 * 
 	 * @param request
 	 * @return
 	 */
@@ -285,10 +290,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			if (error instanceof ElasticsearchResponseErrorStreamable) {
 				return ((ElasticsearchResponseErrorStreamable) error).stream()
 					// Filter out failing deletes on non existing indices
-					.filter(err -> !(
-						"delete".equals(err.getActionType()) &&
-						"index_not_found_exception".equals(err.getType())
-					)).findAny()
+					.filter(err -> !("delete".equals(err.getActionType()) &&
+						"index_not_found_exception".equals(err.getType())))
+					.findAny()
 					// If there are other errors left, throw
 					.map(ignore -> Flowable.<SearchRequest>error(error))
 					.orElseGet(() -> {
@@ -303,6 +307,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	/**
 	 * Invokes index sync if an index not found error has been encountered.
+	 * 
 	 * @param error
 	 * @return
 	 */
@@ -325,6 +330,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	/**
 	 * Most errors inside elasticsearch are not recoverable by retrying. These errors will only be logged.
+	 * 
 	 * @param request
 	 * @return
 	 */
@@ -341,6 +347,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	/**
 	 * Generate events out of the given event. The requests are not sent yet.
+	 * 
 	 * @param messageEvent
 	 * @return
 	 */
@@ -358,9 +365,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				})
 				.retryWhen(retryWithDelay(
 					Duration.ofMillis(options.getRetryInterval()),
-					options.getRetryLimit()
-				))
-				.doOnComplete(() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
+					options.getRetryLimit()))
+				.doOnComplete(
+					() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
 				.doOnTerminate(idleChecker::decrementAndGetTransformations);
 		} catch (Exception e) {
 			// For safety to keep the verticle always running
@@ -371,6 +378,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	/**
 	 * Returns the idle checker for this verticle.
+	 * 
 	 * @return
 	 */
 	public IdleChecker getIdleChecker() {

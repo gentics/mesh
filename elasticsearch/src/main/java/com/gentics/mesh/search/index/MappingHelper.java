@@ -77,6 +77,12 @@ public final class MappingHelper {
 		return fieldInfo;
 	}
 
+	/**
+	 * Return a new not analyzed type for the field type with no custom fields.
+	 * 
+	 * @param type
+	 * @return
+	 */
 	public static JsonObject notAnalyzedType(String type) {
 		return notAnalyzedType(type, null);
 	}

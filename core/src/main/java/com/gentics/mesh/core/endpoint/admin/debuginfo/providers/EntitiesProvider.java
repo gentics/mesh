@@ -21,8 +21,12 @@ import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Flowable;
 
+/**
+ * Debug info provider for entity information (jobs, schemas, microschemas, projects, branches)
+ */
 @Singleton
 public class EntitiesProvider implements DebugInfoProvider {
+
 	private final BootstrapInitializer boot;
 	private final Database db;
 
@@ -49,7 +53,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 	}
 
 	private Flowable<DebugInfoEntry> branches(InternalActionContext ac) {
-		return db.singleTx(tx -> tx.data().projectDao().findAll().stream()
+		return db.singleTx(tx -> tx.projectDao().findAll().stream()
 			.map(project -> DebugInfoBufferEntry.fromString(
 				String.format("entities/branches/%s.json", project.getName()),
 				rootToString(ac, toGraph(project).getBranchRoot())

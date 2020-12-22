@@ -11,7 +11,11 @@ import io.vertx.core.spi.logging.LogDelegate;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Dedicated security logger which can be configured in the logback.xml to log into specific files / targets.
+ */
 public class SecurityLogger implements LogDelegate {
+
 	private final Logger delegate;
 	private final Supplier<String> remoteAddress;
 	private final Supplier<String> userName;

@@ -1,6 +1,6 @@
 package com.gentics.mesh.linkrenderer;
 
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -273,7 +273,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			String german = german();
 			String english = english();
 			HibNode parentNode = folder("2015");
@@ -298,7 +298,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testBinaryFieldLinkResolving() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibNode node = content("news overview");
 			String uuid = node.getUuid();
 
@@ -308,7 +308,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			Binary binary = mesh().binaries().create("bogus", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("bogus", 1L).runInExistingTx(tx);
 			contentDao.getLatestDraftFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link

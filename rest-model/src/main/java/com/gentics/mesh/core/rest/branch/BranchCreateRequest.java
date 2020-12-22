@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * REST model for a branch create request.
+ */
 public class BranchCreateRequest implements RestModel {
 
 	@JsonProperty(required = true)

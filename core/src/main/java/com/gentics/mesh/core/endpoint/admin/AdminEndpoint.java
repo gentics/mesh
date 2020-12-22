@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import static com.gentics.mesh.context.InternalActionContext.internalHandler;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
@@ -23,11 +22,14 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.function.BiConsumer;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
@@ -35,6 +37,9 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
+
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * The admin verticle provides core administration rest endpoints.
@@ -58,7 +63,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	private HandlerUtilities handlerUtilities;
 
 	@Inject
-	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
+	public AdminEndpoint(MeshAuthChainImpl chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
 		PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler,
 		HandlerUtilities handlerUtilities) {
 		super("admin", chain);
@@ -454,5 +459,10 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		updateConfig.exampleRequest(adminExamples.createCoordinatorConfigRequest());
 		updateConfig.handler(rc -> adminHandler.handleUpdateCoordinationConfig(wrap(rc)));
 	}
+	
+	static Handler<RoutingContext> internalHandler(BiConsumer<RoutingContext, InternalActionContext> handler) {
+		return ctx -> handler.accept(ctx, new InternalRoutingActionContextImpl(ctx));
+	}
+
 
 }

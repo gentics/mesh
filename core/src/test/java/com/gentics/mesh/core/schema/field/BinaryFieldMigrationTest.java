@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -48,10 +48,10 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	final DataProvider FILL = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		hash = FileUtils.hash(buffer).blockingGet();
-		Binaries binaries = mesh().binaries();
+		Binaries binaries = Tx.get().binaries();
 
 		// Check whether the binary could already be found
-		Binary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());
+		HibBinary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());
 		boolean store = false;
 		if (binary == null) {
 			binary = binaries.create(hash, 1L).runInExistingTx(Tx.get());
@@ -80,7 +80,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	public void testChangeToBinary() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEBINARY, (container, name) -> {
-			BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
+			BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
 			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);

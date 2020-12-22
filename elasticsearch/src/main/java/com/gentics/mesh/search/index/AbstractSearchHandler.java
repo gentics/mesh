@@ -46,7 +46,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchHandler;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.util.SearchWaitUtil;
 import com.gentics.mesh.util.Tuple;
 
@@ -111,7 +111,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 
 			JsonArray roleUuids = db.tx(tx -> {
 				JsonArray json = new JsonArray();
-				for (HibRole role : tx.data().userDao().getRoles(ac.getUser())) {
+				for (HibRole role : tx.userDao().getRoles(ac.getUser())) {
 					json.add(role.getUuid());
 				}
 				return json;
@@ -145,7 +145,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 
 	@Override
 	public void rawQuery(InternalActionContext ac) {
-		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProvider) {
+		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProviderImpl) {
 			ac.fail(error(SERVICE_UNAVAILABLE, "search_error_no_elasticsearch_configured"));
 			return;
 		}
@@ -201,7 +201,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Function<String, T> elementLoader, Class<RL> classOfRL,
 		boolean filterLanguage)
 		throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
-		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProvider) {
+		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProviderImpl) {
 			ac.fail(error(SERVICE_UNAVAILABLE, "search_error_no_elasticsearch_configured"));
 			return;
 		}

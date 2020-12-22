@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.rest.node.field;
 
+import com.gentics.mesh.core.rest.node.FieldMap;
+
+/**
+ * The HTML field stores plain HTML data.
+ * Please note that {@link FieldMap} will handle the actual JSON format building.
+ */
 public interface HtmlField extends ListableField, MicroschemaListableField {
 
 	/**

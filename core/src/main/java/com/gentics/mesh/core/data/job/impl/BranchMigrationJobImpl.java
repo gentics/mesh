@@ -15,7 +15,7 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
+import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
@@ -27,14 +27,30 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Job implementation to be used for persisting and invoking branch migrations.
+ */
 public class BranchMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationJobImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(BranchMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
+	/**
+	 * Create a new branch migration event.
+	 * 
+	 * @param event
+	 * @param status
+	 * @return
+	 */
 	public BranchMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {
 		BranchMigrationMeshEventModel model = new BranchMigrationMeshEventModel();
 		model.setEvent(event);
@@ -98,7 +114,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	@Override
 	protected Completable processTask() {
-		BranchMigrationImpl handler = mesh().branchMigrationHandler();
+		BranchMigration handler = mesh().branchMigrationHandler();
 
 		return Completable.defer(() -> {
 			BranchMigrationContext context = prepareContext();

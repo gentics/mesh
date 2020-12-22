@@ -69,6 +69,12 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private JobRoot jobRoot;
 	private ChangelogRoot changelogRoot;
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MeshRootImpl.class, MeshVertexImpl.class);
 	}

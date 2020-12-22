@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * REST model for the project update request.
+ */
 public class ProjectUpdateRequest implements RestModel {
 
 	@JsonProperty(required = true)

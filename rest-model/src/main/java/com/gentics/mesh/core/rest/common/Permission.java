@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.common;
 
+/**
+ * REST model for permissions.
+ */
 public enum Permission {
 
 	CREATE("create"),
@@ -50,7 +53,12 @@ public enum Permission {
 		return null;
 	}
 
+	/**
+	 * Return the array with common permissions (excluding special content permissions).
+	 * 
+	 * @return
+	 */
 	public static Permission[] basicPermissions() {
-		return new Permission[] {CREATE, READ, UPDATE, DELETE};
+		return new Permission[] { CREATE, READ, UPDATE, DELETE };
 	}
 }

@@ -10,6 +10,9 @@ import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
+/**
+ * @see BinaryFieldSchema
+ */
 public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements BinaryFieldSchema {
 
 	public static String CHANGE_EXTRACT_CONTENT_KEY = "extractContent";

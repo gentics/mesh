@@ -3,7 +3,10 @@ package com.gentics.mesh.parameter.value;
 import java.util.Arrays;
 import java.util.HashSet;
 
-public class FieldsSetImpl extends HashSet<String> implements FieldsSet  {
+/**
+ * @see FieldsSet
+ */
+public class FieldsSetImpl extends HashSet<String> implements FieldsSet {
 
 	private static final long serialVersionUID = 6436259595505383777L;
 

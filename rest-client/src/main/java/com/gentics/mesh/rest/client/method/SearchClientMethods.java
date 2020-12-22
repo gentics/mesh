@@ -15,6 +15,9 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
+/**
+ * Rest Client methods for handling search requests.
+ */
 public interface SearchClientMethods {
 
 	/**

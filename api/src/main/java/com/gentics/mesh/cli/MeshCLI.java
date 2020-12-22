@@ -8,6 +8,9 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+/**
+ * Internal command line interface option handling for the server jars.
+ */
 public final class MeshCLI {
 
 	public static final String HELP = "help";
@@ -40,6 +43,11 @@ public final class MeshCLI {
 		return parser.parse(options(), args);
 	}
 
+	/**
+	 * Generate the options for the server CLI.
+	 * 
+	 * @return
+	 */
 	public static Options options() {
 		Options options = new Options();
 
@@ -81,6 +89,9 @@ public final class MeshCLI {
 		return options;
 	}
 
+	/**
+	 * Print the server CLI help.
+	 */
 	public static void printHelp() {
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp("mesh.jar", options());

@@ -6,11 +6,9 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -22,16 +20,56 @@ import com.gentics.mesh.parameter.PagingParameters;
 // TODO move the contents of this to GroupDao once migration is done
 public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTransformable<HibGroup, GroupResponse> {
 
+	/**
+	 * Load the group by uuid.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @return
+	 */
 	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
+	/**
+	 * Load all groups.
+	 * 
+	 * @return
+	 */
 	Result<? extends HibGroup> findAll();
 
-	TransformablePage<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	/**
+	 * Load a page of groups.
+	 * 
+	 * @param ac
+	 * @param pagingInfo
+	 * @return
+	 */
+	Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
+	/**
+	 * Load a page of groups.
+	 * 
+	 * @param ac
+	 * @param pagingInfo
+	 * @param extraFilter
+	 * @return
+	 */
 	Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibGroup> extraFilter);
 
+	/**
+	 * Load the group by name.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	HibGroup findByName(String name);
 
+	/**
+	 * Load the group by uuid.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	HibGroup findByUuid(String uuid);
 
 	/**
@@ -173,7 +211,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 *            Paging information
 	 * @return Page which contains the retrieved items
 	 */
-	TransformablePage<? extends HibRole> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo);
+	Page<? extends HibRole> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo);
 
 	/**
 	 * Return a page with all users that the given user can see.
@@ -183,18 +221,63 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param pagingInfo
 	 * @return Page with found users, an empty page is returned when no users could be found
 	 */
-	TransformablePage<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser requestUser, PagingParameters pagingInfo);
+	Page<? extends HibUser> getVisibleUsers(HibGroup group, HibUser requestUser, PagingParameters pagingInfo);
 
+	/**
+	 * Delete the group.
+	 * 
+	 * @param group
+	 * @param bac
+	 */
 	void delete(HibGroup group, BulkActionContext bac);
 
+	/**
+	 * Update the group.
+	 * 
+	 * @param group
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
 	boolean update(HibGroup group, InternalActionContext ac, EventQueueBatch batch);
 
+	/**
+	 * Load the group via uuid.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @param errorIfNotFound
+	 * @return
+	 */
 	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
+	/**
+	 * Create the group.
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
 	HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
+	/**
+	 * Return the etag.
+	 * 
+	 * @param element
+	 * @param ac
+	 * @return
+	 */
 	String getETag(HibGroup element, InternalActionContext ac);
 
+	/**
+	 * Return the API path.
+	 * 
+	 * @param group
+	 * @param ac
+	 * @return
+	 */
 	String getAPIPath(HibGroup group, InternalActionContext ac);
 
 }

@@ -38,6 +38,13 @@ public final class OptionsLoader {
 
 	}
 
+	/**
+	 * Create or load the mesh options and also parse the given args to override specific settings.
+	 * 
+	 * @param args
+	 *            Command line arguments
+	 * @return Effective mesh options
+	 */
 	public static MeshOptions createOrloadOptions(String... args) {
 		return createOrloadOptions(null, args);
 	}
@@ -46,8 +53,8 @@ public final class OptionsLoader {
 	 * Load the main mesh configuration file.
 	 * 
 	 * @param defaultOption
-	 * 
 	 * @param args
+	 * @return Effective mesh options
 	 */
 	public static MeshOptions createOrloadOptions(MeshOptions defaultOption, String... args) {
 		MeshOptions options = loadMeshOptions(defaultOption);

@@ -19,7 +19,7 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -228,7 +228,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateWithNoPerm() throws Exception {
 		String branchName = "Branch V1";
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 
 			HibProject project = project();
 			roleDao.grantPermissions(role(), project, READ_PERM);
@@ -474,7 +474,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch latest = createBranch("Latest", true);
 		String latestUuid = tx(() -> latest.getUuid());
 		tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 
 			roleDao.revokePermissions(role(), latest, READ_PERM);
 		});
@@ -510,7 +510,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		EventQueueBatch batch = createBatch();
 
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			HibProject project = project();
 			HibBranch initialBranch = project.getInitialBranch();
 			branchInfo.add(Pair.of(initialBranch.getUuid(), initialBranch.getName()));
@@ -560,7 +560,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), project().getInitialBranch(), READ_PERM);
 			tx.success();
 		}
@@ -578,7 +578,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch secondBranch;
 
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			HibProject project = project();
 			initialBranch = project.getInitialBranch();
 			firstBranch = branchDao.create(project, "One", user(), batch);
@@ -590,7 +590,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			ListResponse<BranchResponse> responseList = call(() -> client().findBranches(PROJECT_NAME));
 			InternalActionContext ac = mockActionContext();
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			BranchResponse initial = branchDao.transformToRestSync(initialBranch, ac, 0);
 			BranchResponse second = branchDao.transformToRestSync(secondBranch,ac, 0);
 			BranchResponse first = branchDao.transformToRestSync(firstBranch, ac, 0);
@@ -612,7 +612,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch thirdBranch;
 
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			firstBranch = branchDao.create(project, "One", user(), batch);
 			secondBranch = branchDao.create(project, "Two", user(), batch);
 			thirdBranch = branchDao.create(project, "Three", user(), batch);
@@ -620,7 +620,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), firstBranch, READ_PERM);
 			roleDao.revokePermissions(role(), thirdBranch, READ_PERM);
 			tx.success();
@@ -631,7 +631,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			assertThat(responseList).isNotNull();
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			BranchResponse initial = branchDao.transformToRestSync(initialBranch, ac, 0);
 			BranchResponse second = branchDao.transformToRestSync(secondBranch,ac, 0);
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initial, second);
@@ -675,7 +675,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		EventQueueBatch batch = createBatch();
 		String newName = "New Branch Name";
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			branchDao.create(project(), newName, user(), batch);
 			tx.success();
 		}
@@ -690,7 +690,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
@@ -823,7 +823,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testSetLatestNoPerm() {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
@@ -1063,7 +1063,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testAssignSchemaVersionNoPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibProject project = project();
 			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();
@@ -1260,7 +1260,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testAssignMicroschemaVersionNoPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibProject project = project();
 			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();

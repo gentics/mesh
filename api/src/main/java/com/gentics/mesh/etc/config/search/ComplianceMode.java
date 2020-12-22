@@ -1,5 +1,8 @@
 package com.gentics.mesh.etc.config.search;
 
+/**
+ * This enum keeps track of the different Elasticsearch compliance modes. Depending on the used ES version it is required to configure the specific mode.
+ */
 public enum ComplianceMode {
 
 	/**

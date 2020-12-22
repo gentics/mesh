@@ -85,7 +85,7 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 	public void testReadNodeWithExistingField() throws IOException {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			NumberGraphField numberField = container.createNumber(FIELD_NAME);
 			numberField.setNumber(this.num);

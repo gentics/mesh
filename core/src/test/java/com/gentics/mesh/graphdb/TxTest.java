@@ -48,7 +48,7 @@ public class TxTest extends AbstractMeshTest {
 
 		int e = i.incrementAndGet();
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao= tx.data().userDao();
+			UserDaoWrapper userDao= tx.userDao();
 			assertNotNull(userDao.create("testuser" + e, user()));
 			assertNotNull(boot().userDao().findByUsername("testuser" + e));
 			tx.success();
@@ -59,7 +59,7 @@ public class TxTest extends AbstractMeshTest {
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
 			try (Tx tx = tx()) {
-				UserDaoWrapper userDao= tx.data().userDao();
+				UserDaoWrapper userDao= tx.userDao();
 				assertNotNull(userDao.create("testuser" + u, user()));
 				assertNotNull(userDao.findByUsername("testuser" + u));
 				tx.failure();
@@ -174,7 +174,7 @@ public class TxTest extends AbstractMeshTest {
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
 							try (Tx tx = tx()) {
-								TagDaoWrapper tagDao = tx.data().tagDao();
+								TagDaoWrapper tagDao = tx.tagDao();
 								if (retry == 0) {
 									try {
 										System.out.println("Thread [" + threadNo + "] Waiting..");
@@ -225,7 +225,7 @@ public class TxTest extends AbstractMeshTest {
 			}
 			// Thread.sleep(1000);
 			try (Tx tx = tx()) {
-				TagDaoWrapper tagDao = tx.data().tagDao();
+				TagDaoWrapper tagDao = tx.tagDao();
 
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());

@@ -32,9 +32,8 @@ import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -299,7 +298,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<String> handleResize(Binary binary, ImageManipulationParameters parameters) {
+	public Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters) {
 		// Validate the resize parameters
 		parameters.validate();
 		parameters.validateLimits(options);

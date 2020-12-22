@@ -118,7 +118,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			Page<? extends NodeContent> page = db.tx(tx -> {
-				ContentDaoWrapper contentDao = tx.data().contentDao();
+				ContentDaoWrapper contentDao = tx.contentDao();
 				long totalCount = extractTotalCount(hitsInfo);
 				List<NodeContent> elementList = new ArrayList<>();
 				JsonArray hits = hitsInfo.getJsonArray("hits");
@@ -138,7 +138,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 						continue;
 					}
 
-					HibLanguage language = tx.data().languageDao().findByLanguageTag(languageTag);
+					HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
 					if (language == null) {
 						log.warn("Could not find language {" + languageTag + "}");
 						totalCount--;
@@ -146,7 +146,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 					}
 
 					// Locate the matching container and add it to the list of found containers
-					NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(element, languageTag, ac.getBranch(), type);
+					NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(element, languageTag, tx.getBranch(ac), type);
 					if (container != null) {
 						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag), type));
 					} else {

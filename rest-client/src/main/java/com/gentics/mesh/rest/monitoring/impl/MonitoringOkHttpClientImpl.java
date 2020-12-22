@@ -17,6 +17,11 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 
 import okhttp3.OkHttpClient;
 
+/**
+ * Monitoring client implementation for {@link OkHttpClient}.
+ * 
+ * @see MonitoringRestClient
+ */
 public class MonitoringOkHttpClientImpl implements MonitoringRestClient {
 
 	public static final int DEFAULT_PORT = 8081;

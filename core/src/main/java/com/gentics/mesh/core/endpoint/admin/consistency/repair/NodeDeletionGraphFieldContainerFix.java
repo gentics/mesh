@@ -32,6 +32,12 @@ public class NodeDeletionGraphFieldContainerFix {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeDeletionGraphFieldContainerFix.class);
 
+	/**
+	 * Repair the inconsistency for the given container.
+	 * 
+	 * @param container
+	 * @return
+	 */
 	public boolean repair(NodeGraphFieldContainer container) {
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		BootstrapInitializer boot = mesh.boot();

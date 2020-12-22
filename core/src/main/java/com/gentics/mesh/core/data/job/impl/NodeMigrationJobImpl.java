@@ -18,8 +18,8 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
@@ -32,10 +32,21 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Job implementation for node migrations.
+ * 
+ * The job class contains code for initialization, handler invocation and finalization of a node migration.
+ */
 public class NodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationJobImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
@@ -126,7 +137,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	}
 
 	protected Completable processTask() {
-		NodeMigrationImpl handler = mesh().nodeMigrationHandler();
+		NodeMigration handler = mesh().nodeMigrationHandler();
 
 		return Completable.defer(() -> {
 			NodeMigrationActionContextImpl context = prepareContext();

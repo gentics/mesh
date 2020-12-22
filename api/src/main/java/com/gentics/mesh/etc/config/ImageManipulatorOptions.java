@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -59,6 +60,7 @@ public class ImageManipulatorOptions implements Option {
 		return imageCacheDirectory;
 	}
 
+	@Setter
 	public ImageManipulatorOptions setImageCacheDirectory(String imageCacheDirectory) {
 		this.imageCacheDirectory = imageCacheDirectory;
 		return this;
@@ -68,6 +70,7 @@ public class ImageManipulatorOptions implements Option {
 		return maxHeight;
 	}
 
+	@Setter
 	public ImageManipulatorOptions setMaxHeight(int maxHeight) {
 		this.maxHeight = maxHeight;
 		return this;
@@ -77,6 +80,7 @@ public class ImageManipulatorOptions implements Option {
 		return maxWidth;
 	}
 
+	@Setter
 	public ImageManipulatorOptions setMaxWidth(int maxWidth) {
 		this.maxWidth = maxWidth;
 		return this;
@@ -86,6 +90,7 @@ public class ImageManipulatorOptions implements Option {
 		return jpegQuality;
 	}
 
+	@Setter
 	public ImageManipulatorOptions setJpegQuality(float jpegQuality) {
 		this.jpegQuality = jpegQuality;
 		return this;
@@ -95,11 +100,15 @@ public class ImageManipulatorOptions implements Option {
 		return resampleFilter;
 	}
 
+	@Setter
 	public ImageManipulatorOptions setResampleFilter(ResampleFilter resampleFilter) {
 		this.resampleFilter = resampleFilter;
 		return this;
 	}
 
+	/**
+	 * Validate the options.
+	 */
 	public void validate(MeshOptions meshOptions) {
 	}
 }

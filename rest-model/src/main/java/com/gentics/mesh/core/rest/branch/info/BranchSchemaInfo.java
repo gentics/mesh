@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.rest.branch.info;
 
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
+/**
+ * POJO for the branch / schemaversion assignment.
+ */
 public class BranchSchemaInfo extends AbstractBranchSchemaInfo<SchemaReference> implements SchemaReference {
 
 	private String versionUuid;
@@ -16,6 +20,7 @@ public class BranchSchemaInfo extends AbstractBranchSchemaInfo<SchemaReference> 
 		this.setVersionUuid(reference.getVersionUuid());
 	}
 
+	@Setter
 	public BranchSchemaInfo setVersion(String version) {
 		super.setVersion(version);
 		return this;

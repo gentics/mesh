@@ -4,6 +4,9 @@ import java.io.File;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 
+/**
+ * Cluster Runner 1
+ */
 public class ServerRunner1 extends ClusterServer {
 
 	static {
@@ -11,6 +14,12 @@ public class ServerRunner1 extends ClusterServer {
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 	}
 
+	/**
+	 * Run the server.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = init(args);
 		options.setInitCluster(true);

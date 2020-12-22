@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * REST model for cluster configuration update requests.
+ */
 public class ClusterConfigRequest implements RestModel {
 
 	@JsonProperty(required = false)

@@ -7,6 +7,12 @@ import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
 
+/**
+ * Context for bulkable actions. The context can be used when handling bulk operations. It keeps track of the elements / actions that were performed during a
+ * operation (delete nodes). The {@link #inc()} should be incremented when ever an entity has been touched. The {@link #process()} can be invoked during the
+ * tracked operation to commit the transaction and thus flush the tx log.
+ * The goal of the context is to avoid very large transactions and commit in save places that would result in consistent data.
+ */
 public interface BulkActionContext {
 
 	/**

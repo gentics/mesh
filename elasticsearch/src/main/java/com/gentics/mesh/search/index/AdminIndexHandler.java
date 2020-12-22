@@ -19,7 +19,7 @@ import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 
@@ -29,6 +29,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Handler for index admin operations (purge,sync)
+ */
 @Singleton
 public class AdminIndexHandler {
 
@@ -42,12 +45,13 @@ public class AdminIndexHandler {
 
 	private SyncEventHandler syncVerticle;
 
-	private IndexHandlerRegistry registry;
+	private IndexHandlerRegistryImpl registry;
 
 	private HandlerUtilities utils;
 
 	@Inject
-	public AdminIndexHandler(Vertx vertx, Database db, SearchProvider searchProvider, SyncEventHandler syncVerticle, IndexHandlerRegistry registry, HandlerUtilities utils) {
+	public AdminIndexHandler(Vertx vertx, Database db, SearchProvider searchProvider, SyncEventHandler syncVerticle,
+		IndexHandlerRegistryImpl registry, HandlerUtilities utils) {
 		this.vertx = vertx;
 		this.db = db;
 		this.searchProvider = searchProvider;
@@ -56,10 +60,20 @@ public class AdminIndexHandler {
 		this.utils = utils;
 	}
 
+	/**
+	 * Return the search status to the client.
+	 * 
+	 * @param ac
+	 */
 	public void handleStatus(InternalActionContext ac) {
 		getSearchStatus().subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
+	/**
+	 * Return the search status.
+	 * 
+	 * @return
+	 */
 	public Single<SearchStatusResponse> getSearchStatus() {
 		Map<String, EntityMetrics> metrics = new HashMap<>();
 		// TODO fetch state
@@ -71,13 +85,16 @@ public class AdminIndexHandler {
 			metrics.put(type, handler.getMetrics());
 		}
 
-		return searchProvider.isAvailable().map(available ->
-			new SearchStatusResponse()
-				.setMetrics(metrics)
-				.setAvailable(available)
-		);
+		return searchProvider.isAvailable().map(available -> new SearchStatusResponse()
+			.setMetrics(metrics)
+			.setAvailable(available));
 	}
 
+	/**
+	 * Invoke the search index sync.
+	 * 
+	 * @param ac
+	 */
 	public void handleSync(InternalActionContext ac) {
 		db.asyncTx(() -> Single.just(ac.getUser().isAdmin()))
 			.subscribe(isAdmin -> {
@@ -90,12 +107,17 @@ public class AdminIndexHandler {
 			}, ac::fail);
 	}
 
+	/**
+	 * Invoke the search index clear and init handlers to re-create the search indices.
+	 * 
+	 * @param ac
+	 */
 	public void handleClear(InternalActionContext ac) {
 		db.asyncTx(() -> Single.just(ac.getUser().isAdmin())).flatMapCompletable(isAdmin -> {
 			if (isAdmin) {
 				return searchProvider.clear()
 					.andThen(Observable.fromIterable(registry.getHandlers())
-					.flatMapCompletable(handler -> handler.init()));
+						.flatMapCompletable(handler -> handler.init()));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

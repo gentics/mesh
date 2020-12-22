@@ -1,8 +1,23 @@
 package com.gentics.mesh.core.rest.node.field;
 
+/**
+ * REST definition of list types.
+ */
 public enum ListTypes {
-	STRING_LIST("string"), HTML_LIST("html"), NUMBER_LIST("number"), DATE_LIST("date"), BOOLEAN_LIST("boolean"), MICRONODE_LIST(
-			"micronode"), NODE_LIST("node");
+
+	STRING_LIST("string"),
+
+	HTML_LIST("html"),
+
+	NUMBER_LIST("number"),
+
+	DATE_LIST("date"),
+
+	BOOLEAN_LIST("boolean"),
+
+	MICRONODE_LIST("micronode"),
+
+	NODE_LIST("node");
 
 	private String type;
 
@@ -14,6 +29,12 @@ public enum ListTypes {
 		return type;
 	}
 
+	/**
+	 * Convert the list type string to the list enum field.
+	 * 
+	 * @param listType
+	 * @return
+	 */
 	public static ListTypes valueByName(String listType) {
 		for (ListTypes type : values()) {
 			if (type.toString().equals(listType)) {

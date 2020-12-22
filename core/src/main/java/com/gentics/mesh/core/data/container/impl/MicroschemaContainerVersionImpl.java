@@ -14,8 +14,8 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -41,10 +41,19 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ElementFrame;
 
+/**
+ * @see MicroschemaVersion
+ */
 public class MicroschemaContainerVersionImpl extends
 	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschemaVersion, HibMicroschema>
 	implements MicroschemaVersion {
 
+	/**
+	 * Initialize the vertex type.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
@@ -137,7 +146,7 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Result<? extends Branch> getBranches() {
+	public Result<? extends HibBranch> getBranches() {
 		return in(HAS_MICROSCHEMA_VERSION, BranchImpl.class);
 	}
 
@@ -180,6 +189,9 @@ public class MicroschemaContainerVersionImpl extends
 		return getSchemaContainer().onUpdated();
 	}
 
+	/**
+	 * Delete the graph element.
+	 */
 	public void deleteElement() {
 		remove();
 	}

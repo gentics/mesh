@@ -13,8 +13,12 @@ import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.shareddata.AsyncMap;
 
+/**
+ * Handler to process the local configuration.
+ */
 @Singleton
 public class LocalConfigApi {
+
 	private static final String LOCAL_CONFIG_KEY = "localConfig";
 
 	private final Lazy<Vertx> vertx;

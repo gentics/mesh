@@ -20,12 +20,11 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -67,9 +66,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 *            Needed permission
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission) {
-		MeshAuthUser user = ac.getUser();
+		HibUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		String idx = "e." + getRootLabel().toLowerCase() + "_out";
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
@@ -99,7 +98,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * 
 	 * @return
 	 */
-	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	default Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null, true);
 	}
 
@@ -128,7 +127,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 *            Paging information object that contains page options
 	 * @return
 	 */
-	default TransformablePage<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	default Page<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, true);
 	}
 
@@ -159,9 +158,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 			throw error(NOT_FOUND, "object_not_found_for_name", name);
 		}
 
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {
@@ -234,9 +233,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 			}
 		}
 
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		if (userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {

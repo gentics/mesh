@@ -5,6 +5,9 @@ import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 
+/**
+ * Cause POJO for a schema migration cause that can be included in an event.
+ */
 public class SchemaMigrationCause extends SchemaMigrationMeshEventModel implements EventCauseInfo {
 
 	public SchemaMigrationCause() {

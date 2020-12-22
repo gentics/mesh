@@ -13,7 +13,6 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -22,6 +21,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see MicroschemaDAOActions
+ */
 @Singleton
 public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
@@ -31,17 +33,17 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public HibMicroschema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = ctx.tx().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByUuid(uuid);
 		} else {
 			return microschemaDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
-	
+
 	@Override
 	public HibMicroschema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = ctx.tx().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByName(name);
 		} else {
@@ -50,22 +52,22 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		return ctx.tx().data().microschemaDao().findAll(ctx.ac(), pagingInfo);
+	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo);
 		// return ac.getProject().getMicroschemaContainerRoot().findAll(ac2, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibMicroschema> extraFilter) {
-		return ctx.tx().data().microschemaDao().findAll(ctx.ac(), pagingInfo, schema -> {
+		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo, schema -> {
 			return extraFilter.test(schema);
 		});
 	}
 
 	@Override
 	public HibMicroschema create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return tx.data().microschemaDao().create(ac, batch, uuid);
+		return tx.microschemaDao().create(ac, batch, uuid);
 	}
 
 	@Override
@@ -74,8 +76,9 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 		return false;
 	}
 
+	@Override
 	public void delete(Tx tx, HibMicroschema element, BulkActionContext bac) {
-		tx.data().microschemaDao().delete(element, bac);
+		tx.microschemaDao().delete(element, bac);
 	}
 
 	@Override

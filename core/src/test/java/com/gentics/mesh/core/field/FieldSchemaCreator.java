@@ -5,6 +5,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 
+/**
+ * Test helper for schema field creation.
+ */
 @FunctionalInterface
 public interface FieldSchemaCreator {
 	public final static FieldSchemaCreator CREATEBINARY = name -> FieldUtil.createBinaryFieldSchema(name);

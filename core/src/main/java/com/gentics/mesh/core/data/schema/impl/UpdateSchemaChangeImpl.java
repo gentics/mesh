@@ -33,6 +33,12 @@ import io.vertx.core.json.JsonObject;
  */
 public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<SchemaModel> implements UpdateSchemaChange {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UpdateSchemaChangeImpl.class, MeshVertexImpl.class);
 	}

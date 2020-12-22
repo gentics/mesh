@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import io.vertx.core.MultiMap;
 
+/**
+ * Utility for HTTP query string processing.
+ */
 public final class HttpQueryUtils {
 
 	/**
@@ -41,8 +44,7 @@ public final class HttpQueryUtils {
 	}
 
 	/**
-	 * Converts a Vert.x multimap to a java map. If multiple entries with the same name are found, the last entry will
-	 * be used.
+	 * Converts a Vert.x multimap to a java map. If multiple entries with the same name are found, the last entry will be used.
 	 *
 	 * @param map
 	 * @return
@@ -51,7 +53,6 @@ public final class HttpQueryUtils {
 		return map.entries().stream().collect(Collectors.toMap(
 			Map.Entry::getKey,
 			Map.Entry::getValue,
-			(a, b) -> b
-		));
+			(a, b) -> b));
 	}
 }

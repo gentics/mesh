@@ -25,11 +25,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
@@ -53,6 +52,12 @@ import io.reactivex.Completable;
  */
 public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(JobRootImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(HAS_JOB).withInOut().withOut());
@@ -107,6 +112,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public Job enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(JobType.schema);
+		job.setCreationTimestamp();
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
@@ -123,6 +129,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		HibMicroschemaVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(JobType.microschema);
+		job.setCreationTimestamp();
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
@@ -139,6 +146,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
 		job.setType(JobType.branch);
+		job.setCreationTimestamp();
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
@@ -154,6 +162,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public Job enqueueBranchMigration(HibUser creator, HibBranch branch) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
 		job.setType(JobType.branch);
+		job.setCreationTimestamp();
 		job.setStatus(QUEUED);
 		job.setBranch(branch);
 		addItem(job);
@@ -168,6 +177,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		VersionPurgeJobImpl job = getGraph().addFramedVertex(VersionPurgeJobImpl.class);
 		// TODO Don't add the user to reduce contention
 		// job.setCreated(user);
+		job.setCreationTimestamp();
 		job.setType(JobType.versionpurge);
 		job.setStatus(QUEUED);
 		job.setProject(project);
@@ -204,7 +214,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 * 
 	 * @return
 	 */
-	public TransformablePage<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null, false);
 	}
 
@@ -218,7 +228,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 * 
 	 * @return
 	 */
-	public TransformablePage<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, false);
 	}
 

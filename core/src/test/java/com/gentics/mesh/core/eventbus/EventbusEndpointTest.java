@@ -1,29 +1,6 @@
 
 package com.gentics.mesh.core.eventbus;
 
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.assertj.MeshAssertions;
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.rest.client.MeshRestClientUtil;
-import com.gentics.mesh.rest.client.MeshWebsocket;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.RxUtil;
-import io.reactivex.Completable;
-import io.reactivex.subjects.CompletableSubject;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
@@ -36,6 +13,30 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.client.MeshRestClientUtil;
+import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.RxUtil;
+
+import io.reactivex.Completable;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 @MeshTestSetting(testSize = FULL, startServer = true)

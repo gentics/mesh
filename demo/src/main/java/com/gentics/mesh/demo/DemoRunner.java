@@ -36,6 +36,12 @@ public class DemoRunner {
 		System.setProperty("storage.trackChangedRecordsInWAL", "true");
 	}
 
+	/**
+	 * Start the process.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		log = LoggerFactory.getLogger(DemoRunner.class);
@@ -45,7 +51,7 @@ public class DemoRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
 		Mesh mesh = Mesh.create(options);
-		mesh.setCustomLoader((vertx) -> {
+		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 			MeshComponent meshInternal = mesh.internal();

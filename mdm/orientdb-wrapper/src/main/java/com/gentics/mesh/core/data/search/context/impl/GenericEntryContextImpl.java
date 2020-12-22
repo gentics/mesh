@@ -4,8 +4,7 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.rest.common.ContainerType;
 
 /**
- * Index entry context which contains information about the scope of the action. The index handler implementation may use this information in order to correctly
- * identify the elements which need to be stored.
+ * @see GenericEntryContext
  */
 public class GenericEntryContextImpl implements GenericEntryContext {
 
@@ -76,7 +75,7 @@ public class GenericEntryContextImpl implements GenericEntryContext {
 	@Override
 	public String toString() {
 		return " type: " + getContainerType() + " branch: " + getBranchUuid() + " project: " + getProjectUuid() + " languageTag: " + languageTag
-				+ " schemaContainerVersionUuid: " + schemaContainerVersionUuid;
+			+ " schemaContainerVersionUuid: " + schemaContainerVersionUuid;
 	}
 
 	/**

@@ -3,6 +3,8 @@ package com.gentics.mesh.distributed.coordinator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.annotation.Getter;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
@@ -30,15 +32,18 @@ public class Coordinator {
 		return mode;
 	}
 
+	@Setter
 	public Coordinator setCoordinatorMode(CoordinatorMode mode) {
 		this.mode = mode;
 		return this;
 	}
 
+	@Setter
 	public void setMaster() {
 		elector.setMaster();
 	}
 
+	@Getter
 	public CoordinatorConfig loadConfig() {
 		return new CoordinatorConfig().setMode(mode);
 	}
@@ -66,6 +71,7 @@ public class Coordinator {
 
 	/**
 	 * Check if the current node is the master.
+	 * 
 	 * @return
 	 */
 	public boolean isMaster() {

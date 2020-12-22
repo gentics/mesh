@@ -15,8 +15,12 @@ import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import io.reactivex.Flowable;
 
+/**
+ * Provider for plugin debug information. 
+ */
 @Singleton
 public class PluginsProvider implements DebugInfoProvider {
+
 	private final MeshPluginManager pluginManager;
 
 	@Inject

@@ -5,7 +5,11 @@ import java.util.stream.Stream;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.mesh.changelog.AbstractChange;
 
+/**
+ * Changelog entry which removes obsolete old indices.
+ */
 public class RemoveReleaseIndices extends AbstractChange {
+
 	@Override
 	public String getUuid() {
 		return "956D6DB886EE48D4B7CD1BA0735A9C35";

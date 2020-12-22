@@ -34,10 +34,22 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 		super(file, cleanDir);
 	}
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		new DatabaseRevisionTableGenerator(new File("target", "output"), true).run();
 	}
 
+	/**
+	 * Run the generator.
+	 * 
+	 * @throws MalformedURLException
+	 * @throws Exception
+	 */
 	public void run() throws MalformedURLException, Exception {
 		MavenMetadata metadata = MavenUtilities
 			.getMavenMetadata(new URL(BASE_PATH + "maven-metadata.xml"));
@@ -62,7 +74,8 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 		String version = Mesh.getPlainVersion();
 		if (!version.endsWith("-SNAPSHOT")) {
 			local.put("version", version);
-			local.put("revision", new OrientDBDatabase(null, null, null, null, null, null, null, null, null, null, null, null).getDatabaseRevision());
+			local.put("revision",
+				new OrientDBDatabase(null, null, null, null, null, null, null, null, null, null, null, null, null).getDatabaseRevision());
 			entries.add(local);
 		}
 

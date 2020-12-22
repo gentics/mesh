@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.schema;
 
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 
+/**
+ * Name / UUID reference to microschema POJOs 
+ */
 public interface MicroschemaReference extends NameUuidReference<MicroschemaReference> {
 
 	/**

@@ -137,6 +137,9 @@ public final class ElasticsearchProcessManager {
 		return p;
 	}
 
+	/**
+	 * Start the watchdog which detects whether the Elasticsearch processed crashed.
+	 */
 	public void startWatchDog() {
 		if (watchDogTimerId == null) {
 			log.info("Starting watchdog for Elasticsearch process");
@@ -288,6 +291,15 @@ public final class ElasticsearchProcessManager {
 		return os != null && os.toLowerCase().startsWith("windows");
 	}
 
+	/**
+	 * Unzip the Elasticsearch zipfile to the output directory.
+	 * 
+	 * @param zipClasspath
+	 * @param outdir
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ZipException
+	 */
 	public void unzip(String zipClasspath, String outdir) throws FileNotFoundException, IOException, ZipException {
 		InputStream ins = ElasticsearchProcessManager.class.getResourceAsStream(zipClasspath);
 		if (ins != null) {

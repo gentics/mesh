@@ -15,6 +15,9 @@ import org.codehaus.jettison.json.JSONObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Node name provider for Gentics Mesh. Names are used for the logger and cluster names. (When no name has been specified).
+ */
 public class MeshNameProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshNameProvider.class);
@@ -31,6 +34,11 @@ public class MeshNameProvider {
 		init();
 	}
 
+	/**
+	 * Return the singleton.
+	 * 
+	 * @return
+	 */
 	public static MeshNameProvider getInstance() {
 		if (instance == null) {
 			try {
@@ -42,6 +50,11 @@ public class MeshNameProvider {
 		return instance;
 	}
 
+	/**
+	 * Initialize the name provider by loading the JSON files.
+	 * 
+	 * @throws Exception
+	 */
 	public void init() throws Exception {
 		if (names == null) {
 			names = loadJson(NAME_JSON_FILENAME);

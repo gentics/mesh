@@ -5,7 +5,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Utility which provides additional collection methods which are not present in JDK 8
+ */
 public final class CollectionUtil {
+
 	private CollectionUtil() {
 	}
 

@@ -18,8 +18,12 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 
 import io.reactivex.Flowable;
 
+/**
+ * Debug info provider for the thread dump of the JVM.
+ */
 @Singleton
 public class ThreadDumpProvider implements DebugInfoProvider {
+
 	@Inject
 	public ThreadDumpProvider() {
 	}
@@ -44,6 +48,7 @@ public class ThreadDumpProvider implements DebugInfoProvider {
 
 	/**
 	 * Same as {@link ThreadInfo#toString()}, except that the amount of stack frames are not limited.
+	 * 
 	 * @param threadInfo
 	 * @return
 	 */
@@ -74,19 +79,19 @@ public class ThreadDumpProvider implements DebugInfoProvider {
 			if (i == 0 && threadInfo.getLockInfo() != null) {
 				Thread.State ts = threadInfo.getThreadState();
 				switch (ts) {
-					case BLOCKED:
-						sb.append("\t-  blocked on " + threadInfo.getLockInfo());
-						sb.append('\n');
-						break;
-					case WAITING:
-						sb.append("\t-  waiting on " + threadInfo.getLockInfo());
-						sb.append('\n');
-						break;
-					case TIMED_WAITING:
-						sb.append("\t-  waiting on " + threadInfo.getLockInfo());
-						sb.append('\n');
-						break;
-					default:
+				case BLOCKED:
+					sb.append("\t-  blocked on " + threadInfo.getLockInfo());
+					sb.append('\n');
+					break;
+				case WAITING:
+					sb.append("\t-  waiting on " + threadInfo.getLockInfo());
+					sb.append('\n');
+					break;
+				case TIMED_WAITING:
+					sb.append("\t-  waiting on " + threadInfo.getLockInfo());
+					sb.append('\n');
+					break;
+				default:
 				}
 			}
 

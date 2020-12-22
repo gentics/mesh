@@ -4,12 +4,21 @@ import com.gentics.mesh.plugin.MeshPlugin;
 
 import io.reactivex.Completable;
 
+/**
+ * Plugin registry which can delegate plugin registrations to registries for the dedicated sections (e.g. graphql registry for graphql plugins).
+ */
 public interface DelegatingPluginRegistry {
 
+	/**
+	 * Method will be invoked when the registry is first used.
+	 */
 	default void start() {
 
 	}
 
+	/**
+	 * Method will be invoked to unload all plugins.
+	 */
 	default void stop() {
 
 	}

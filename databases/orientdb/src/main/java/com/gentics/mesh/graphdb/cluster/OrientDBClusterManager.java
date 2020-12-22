@@ -53,6 +53,14 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.TimeoutStream;
 
+/**
+ * Manager for OrientDB cluster and server features.
+ * 
+ * The manager handles the OrientDB cluster/server configuration, OrientDB studio plugin installation, OrientDB server startup.
+ * 
+ * Additionally the manager also provides methods to access the cluster information. The {@link TopologyEventBridge} is installed by the manager during the
+ * startup to handle cluster specific events.
+ */
 @Singleton
 public class OrientDBClusterManager implements ClusterManager {
 
@@ -60,7 +68,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "orientdb-plugins";
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.1.3.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.1.6.zip";
 
 	private static final String ORIENTDB_DISTRIBUTED_CONFIG = "default-distributed-db-config.json";
 
@@ -325,6 +333,11 @@ public class OrientDBClusterManager implements ClusterManager {
 		topologyEventBridge.onDatabaseChangeStatus(getNodeName(), "storage", status);
 	}
 
+	/**
+	 * Query the OrientDB API and load cluster information which will be added to a {@link ClusterStatusResponse} response.
+	 * 
+	 * @return Cluster status REST response
+	 */
 	public ClusterStatusResponse getClusterStatus() {
 		ClusterStatusResponse response = new ClusterStatusResponse();
 		if (hazelcastPlugin != null) {
@@ -454,7 +467,6 @@ public class OrientDBClusterManager implements ClusterManager {
 			server.shutdown();
 		}
 	}
-
 
 	public boolean isServerActive() {
 		return server != null && server.isActive();

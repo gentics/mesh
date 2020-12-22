@@ -21,9 +21,9 @@ public class DAOActionContextImpl implements DAOActionContext {
 	public DAOActionContextImpl(Tx tx, InternalActionContext ac, Object parent) {
 		this.tx = tx;
 		this.ac = ac;
-		this.project = ac.getProject();
+		this.project = tx.getProject(ac);
 		if (project != null) {
-			this.branch = ac.getBranch(project);
+			this.branch = tx.getBranch(ac, project);
 		} else {
 			this.branch = null;
 		}

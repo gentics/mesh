@@ -48,7 +48,7 @@ public class GroupEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			HibGroup group = group();
 
 			String actualEtag = callETag(() -> client().findGroupByUuid(group.getUuid()));

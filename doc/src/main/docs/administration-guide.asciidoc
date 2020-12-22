@@ -297,6 +297,10 @@ Additionally it is possible to tweak the underlying OrientDB cache settings.
 
 include::content/docs/generated/tables/DebugInfoOptions.adoc-include[]
 
+=== GraphQL Options
+
+include::content/docs/generated/tables/GraphQLOptions.adoc-include[]
+
 === Memory Settings
 
 Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variable.

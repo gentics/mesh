@@ -39,6 +39,9 @@ public abstract class AbstractActionContext implements ActionContext {
 		return this;
 	}
 
+	/**
+	 * Convert the response body to a POJO.
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> T fromJson(Class<?> classOfT) throws GenericRestException {
 		try {

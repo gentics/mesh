@@ -45,19 +45,19 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	@Override
 	public List<? extends T> getList() {
 		return toStream(outE(HAS_ITEM).has(getListType()).frameExplicit(getListType()))
-		.sorted((a, b) -> {
-			String bk = b.getFieldKey();
-			String ak = a.getFieldKey();
-			if (bk == null) {
-				bk = "0";
-			}
-			if (ak == null) {
-				ak = "0";
-			}
-			long bv = Long.valueOf(bk);
-			long av = Long.valueOf(ak);
-			return Long.compare(av, bv);
-		}).collect(Collectors.toList());
+			.sorted((a, b) -> {
+				String bk = b.getFieldKey();
+				String ak = a.getFieldKey();
+				if (bk == null) {
+					bk = "0";
+				}
+				if (ak == null) {
+					ak = "0";
+				}
+				long bv = Long.valueOf(bk);
+				long av = Long.valueOf(ak);
+				return Long.compare(av, bv);
+			}).collect(Collectors.toList());
 	}
 
 	@Override
@@ -77,6 +77,9 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 		return container.getList(getClass(), getFieldKey());
 	}
 
+	/**
+	 * Remove the field by invoking {@link #delete()}.
+	 */
 	public void removeField() {
 		delete();
 	}

@@ -104,6 +104,12 @@ public class MavenVersionNumber implements Comparable<MavenVersionNumber> {
 		return fullVersion;
 	}
 
+	/**
+	 * Compare both versions and mark snapshot versions always as newest.
+	 * 
+	 * @param other
+	 * @return
+	 */
 	public int compareTo(MavenVersionNumber other) {
 		return compareTo(other, true);
 	}

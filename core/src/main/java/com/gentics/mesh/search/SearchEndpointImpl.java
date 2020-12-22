@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -44,6 +44,9 @@ import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import dagger.Lazy;
 
+/**
+ * @see SearchEndpoint
+ */
 public class SearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
 
 	private Lazy<BootstrapInitializer> boot;
@@ -82,7 +85,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	Database db;
 
 	@Inject
-	public SearchEndpointImpl(MeshAuthChain chain, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
+	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
 		super("search", chain);
 		this.boot = boot;
 	}

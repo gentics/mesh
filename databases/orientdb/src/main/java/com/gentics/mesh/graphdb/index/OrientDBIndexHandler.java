@@ -48,6 +48,11 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * OrientDB specific implementation for index handling.
+ * 
+ * @see IndexHandler
+ */
 @Singleton
 public class OrientDBIndexHandler implements IndexHandler {
 

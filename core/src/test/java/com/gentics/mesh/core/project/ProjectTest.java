@@ -16,6 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -67,7 +68,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		HibProject project = project();
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
-			tx.data().projectDao().delete(project, bac);
+			tx.projectDao().delete(project, bac);
 			assertElement(meshRoot().getProjectRoot(), projectUuid(), false);
 		}
 	}
@@ -129,7 +130,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			HibProject project = project();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			ProjectResponse response = tx.data().projectDao().transformToRestSync(project, ac, 0);
+			ProjectResponse response = tx.projectDao().transformToRestSync(project, ac, 0);
 
 			assertEquals(project.getName(), response.getName());
 			assertEquals(project.getUuid(), response.getUuid());
@@ -146,7 +147,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			BulkActionContext bac = createBulkContext();
 			HibProject foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull(foundProject);
-			tx.data().projectDao().delete(project, bac);
+			tx.projectDao().delete(project, bac);
 			// TODO check for attached nodes
 			foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNull(foundProject);
@@ -157,8 +158,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
@@ -178,11 +179,12 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibProject project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());
 			assertNotNull(project.getBaseNode());
-			assertEquals(3, project.getSchemaContainerRoot().findAll().count());
+			assertEquals(3, schemaDao.findAll(project).count());
 		}
 	}
 

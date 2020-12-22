@@ -23,6 +23,7 @@ public class ProjectTransformer extends AbstractTransformer<HibProject> {
 	public ProjectTransformer() {
 	}
 
+	@Override
 	public String generateVersion(HibProject project) {
 		// No need to add users since the creator/editor edge affects the project version
 		return ETag.hash(toGraph(project).getElementVersion());

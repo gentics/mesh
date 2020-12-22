@@ -6,6 +6,9 @@ import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 
+/**
+ * Helper to identify the cause of an event.
+ */
 public final class EventCauseHelper {
 
 	private EventCauseHelper() {

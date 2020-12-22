@@ -13,6 +13,9 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
 
+/**
+ * This class manages the {@link HibBinary} instances that have been persisted.
+ */
 @Singleton
 public class BinariesImpl implements Binaries {
 
@@ -24,9 +27,9 @@ public class BinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<Binary> create(String uuid, String sha512sum, Long size) {
+	public Transactional<HibBinary> create(String uuid, String sha512sum, Long size) {
 		return database.transactional(tx -> {
-			Binary binary = tx.getGraph().addFramedVertex(BinaryImpl.class);
+			HibBinary binary = tx.getGraph().addFramedVertex(BinaryImpl.class);
 			binary.setSHA512Sum(sha512sum);
 			binary.setSize(size);
 			binary.setUuid(uuid);
@@ -35,7 +38,7 @@ public class BinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<Binary> findByHash(String hash) {
+	public Transactional<HibBinary> findByHash(String hash) {
 		return database.transactional(tx -> database.getVerticesTraversal(BinaryImpl.class, Binary.SHA512SUM_KEY, hash).nextOrNull());
 	}
 

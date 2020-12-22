@@ -10,6 +10,10 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 
+/**
+ * Helper to deal with tests which need to create entitites and tests which invoke non-mdm code.
+ * TODO MDM: This code must be refactored to support MDM
+ */
 public interface WrapperHelper {
 
 	default Schema createSchema(Tx tx) {

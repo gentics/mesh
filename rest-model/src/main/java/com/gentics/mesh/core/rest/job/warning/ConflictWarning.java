@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.rest.job.warning;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.mesh.annotation.Setter;
 
+/**
+ * POJO for a job conflict.
+ */
 public class ConflictWarning extends JobWarning {
 
 	public ConflictWarning() {
@@ -22,6 +26,7 @@ public class ConflictWarning extends JobWarning {
 		return getProperties().get("nodeUuid");
 	}
 
+	@Setter
 	@JsonIgnore
 	public ConflictWarning setNodeUuid(String uuid) {
 		getProperties().put("nodeUuid", uuid);
@@ -33,6 +38,7 @@ public class ConflictWarning extends JobWarning {
 		return getProperties().get("languageTag");
 	}
 
+	@Setter
 	@JsonIgnore
 	public ConflictWarning setLanguageTag(String languageTag) {
 		getProperties().put("languageTag", languageTag);
@@ -44,6 +50,7 @@ public class ConflictWarning extends JobWarning {
 		return getProperties().get("branchUuid");
 	}
 
+	@Setter
 	@JsonIgnore
 	public ConflictWarning setBranchUuid(String branchUuid) {
 		getProperties().put("branchUuid", branchUuid);
@@ -55,6 +62,7 @@ public class ConflictWarning extends JobWarning {
 		return getProperties().get("nodeType");
 	}
 
+	@Setter
 	@JsonIgnore
 	public ConflictWarning setNodeType(String type) {
 		getProperties().put("nodeType", type);
@@ -66,6 +74,7 @@ public class ConflictWarning extends JobWarning {
 		return getProperties().get("fieldName");
 	}
 
+	@Setter
 	@JsonIgnore
 	public ConflictWarning setFieldName(String fieldName) {
 		getProperties().put("fieldName", fieldName);

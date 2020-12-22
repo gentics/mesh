@@ -79,7 +79,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -106,9 +106,10 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.DevNullSearchProvider;
-import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 import com.gentics.mesh.util.RequirementsCheck;
@@ -147,7 +148,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private static final String ADMIN_USERNAME = "admin";
 
 	@Inject
-	public ServerSchemaStorage schemaStorage;
+	public ServerSchemaStorageImpl schemaStorage;
 
 	@Inject
 	public Database db;
@@ -162,7 +163,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public DistributedEventManager eventManager;
 
 	@Inject
-	public Lazy<IndexHandlerRegistry> indexHandlerRegistry;
+	public Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry;
 
 	@Inject
 	public Lazy<CoreVerticleLoader> loader;
@@ -223,7 +224,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Init the classes / indices
 		DatabaseHelper.init(db);
 
-		if (searchProvider instanceof TrackingSearchProvider) {
+		if (searchProvider instanceof TrackingSearchProviderImpl) {
 			return;
 		}
 		if (searchProvider instanceof DevNullSearchProvider) {
@@ -288,7 +289,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Joining of cluster members is only allowed when the changelog has been applied
 				throw new RuntimeException(
 					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
-						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER + " command line argument to migrate the database.");
+						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER
+						+ " command line argument to migrate the database.");
 			}
 		}
 	}
@@ -389,15 +391,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 			coordinatorMasterElector.start();
 		} else {
+			if (startOrientServer) {
+				db.clusterManager().startAndSync();
+			}
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();
 			initVertx(options);
 			searchProvider.init();
 			searchProvider.start();
 			initLocalData(flags, options, false);
-			if (startOrientServer) {
-				db.clusterManager().startAndSync();
-			}
 		}
 
 		eventManager.registerHandlers();
@@ -532,6 +534,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 	}
 
+	/**
+	 * Create and initialize Vert.x
+	 * 
+	 * @param options
+	 */
 	public void initVertx(MeshOptions options) {
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
@@ -625,7 +632,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private void handleLocalData(PostProcessFlags flags, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Load the verticles
 		List<String> initialProjects = db.tx(tx -> {
-			return tx.data().projectDao().findAll().stream()
+			return tx.projectDao().findAll().stream()
 				.map(HibProject::getName)
 				.collect(Collectors.toList());
 		});
@@ -654,7 +661,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			db.tx(tx -> {
-				UserDaoWrapper userDao = tx.data().userDao();
+				UserDaoWrapper userDao = tx.userDao();
 				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					userDao.setPassword(adminUser, password);
@@ -985,10 +992,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void initMandatoryData(MeshOptions config) throws Exception {
 
 		db.tx(tx -> {
-			UserDaoWrapper userDao = tx.data().userDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			UserDaoWrapper userDao = tx.userDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 			if (db.requiresTypeInit()) {
 				MeshRoot meshRoot = meshRoot();
@@ -1155,9 +1162,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Only setup optional data for empty installations
 		if (isEmptyInstallation) {
 			db.tx(tx -> {
-				UserDaoWrapper userDao = tx.data().userDao();
-				GroupDaoWrapper groupDao = tx.data().groupDao();
-				RoleDaoWrapper roleDao = tx.data().roleDao();
+				UserDaoWrapper userDao = tx.userDao();
+				GroupDaoWrapper groupDao = tx.groupDao();
+				RoleDaoWrapper roleDao = tx.roleDao();
 
 				if (db.requiresTypeInit()) {
 					meshRoot = meshRoot();
@@ -1197,7 +1204,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void initPermissions() {
 		db.tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibRole adminRole = roleDao.findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;

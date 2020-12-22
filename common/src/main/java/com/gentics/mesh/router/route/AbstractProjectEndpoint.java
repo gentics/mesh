@@ -1,6 +1,6 @@
 package com.gentics.mesh.router.route;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.router.RouterStorage;
 
@@ -14,7 +14,7 @@ public abstract class AbstractProjectEndpoint extends AbstractInternalEndpoint {
 
 	protected BootstrapInitializer boot;
 
-	protected AbstractProjectEndpoint(String basePath, MeshAuthChain chain, BootstrapInitializer boot) {
+	protected AbstractProjectEndpoint(String basePath, MeshAuthChainImpl chain, BootstrapInitializer boot) {
 		super(basePath, chain);
 		this.boot = boot;
 	}

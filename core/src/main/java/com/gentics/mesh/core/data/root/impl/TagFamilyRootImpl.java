@@ -33,6 +33,12 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagFamilyRootImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(HAS_TAG_FAMILY).withInOut().withOut());

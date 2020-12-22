@@ -11,6 +11,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+/**
+ * Handler for group search related index operations.
+ */
 @Singleton
 public class GroupSearchHandler extends AbstractSearchHandler<HibGroup, GroupResponse> {
 

@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.endpoint.utility;
 
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -21,7 +21,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 	private UtilityHandler utilityHandler;
 
 	@Inject
-	public UtilityEndpoint(MeshAuthChain chain, UtilityHandler utilityHandler) {
+	public UtilityEndpoint(MeshAuthChainImpl chain, UtilityHandler utilityHandler) {
 		super("utilities", chain);
 		this.utilityHandler = utilityHandler;
 	}

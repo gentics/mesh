@@ -19,6 +19,9 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.ParserDecorator;
 import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 
+/**
+ * Central tika parser class configures the Tika Parser. All parsing operations should use {@link #TIKA_INSTANCE}
+ */
 public class DocumentTikaParser {
 
 	/**

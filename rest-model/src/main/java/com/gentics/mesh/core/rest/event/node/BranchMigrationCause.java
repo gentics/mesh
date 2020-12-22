@@ -5,6 +5,9 @@ import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 
+/**
+ * Event info model for a branch migration cause.
+ */
 public class BranchMigrationCause extends BranchMigrationMeshEventModel implements EventCauseInfo {
 
 	public BranchMigrationCause() {

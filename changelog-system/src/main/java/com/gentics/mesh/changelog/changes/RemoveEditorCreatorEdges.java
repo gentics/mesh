@@ -9,7 +9,11 @@ import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Change which removed the editor and creator edges from all elements.
+ */
 public class RemoveEditorCreatorEdges extends AbstractChange {
+
 	@Override
 	public String getUuid() {
 		return "0B9DF9EDB94F473E9DF9EDB94F573EF3";

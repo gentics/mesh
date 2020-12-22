@@ -15,6 +15,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * Provider for logging debug information. Please note that this provider will only field data when the debuginfo log is enabled.
+ */
 @Singleton
 public class LogProvider implements DebugInfoProvider {
 	private final DebugInfoUtil debugInfoUtil;
@@ -36,10 +39,9 @@ public class LogProvider implements DebugInfoProvider {
 		String logFolder = meshOptions.getDebugInfoOptions().getLogFolder();
 		return Flowable.concatArray(
 			debugInfoUtil.readFileOrEmpty(Paths.get(logFolder, "debuginfo.1.log").toString()),
-			debugInfoUtil.readFileOrEmpty(Paths.get(logFolder, "debuginfo.log").toString())
-		).reduce(this::concat)
-		.toFlowable()
-		.map(buffer -> DebugInfoBufferEntry.fromBuffer("log.txt", buffer));
+			debugInfoUtil.readFileOrEmpty(Paths.get(logFolder, "debuginfo.log").toString())).reduce(this::concat)
+			.toFlowable()
+			.map(buffer -> DebugInfoBufferEntry.fromBuffer("log.txt", buffer));
 	}
 
 	private Buffer concat(Buffer buffer1, Buffer buffer2) {

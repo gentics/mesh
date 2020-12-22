@@ -56,9 +56,19 @@ import com.gentics.mesh.util.ETag;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see Micronode
+ */
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
+
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(vertexType(MicronodeImpl.class, MeshVertexImpl.class)
 			.withField(MICROSCHEMA_VERSION_KEY_PROPERTY, FieldType.STRING));
@@ -132,12 +142,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		if (container == null) {
 			// the micronode may be part of a list field
 			container = in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class,
-					null);
+				null);
 		}
 
 		return container;
 	}
-	
+
 	@Override
 	public Result<? extends NodeGraphFieldContainer> getContainers() {
 		// First try to get the container in case for normal fields
@@ -153,7 +163,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public HibNode getNode() {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		NodeGraphFieldContainer container = getContainer();
 		while (container.getPreviousVersion() != null) {
 			container = container.getPreviousVersion();
@@ -172,7 +182,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, java.util.List<String> languageTags,
-			int level) {
+		int level) {
 
 		// Filter out unsupported field types
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
@@ -285,6 +295,11 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		return ETag.hash(getUuid());
 	}
 
+	/**
+	 * Micronodes don't provide a dedicated API path since those can't be directly accessed via REST URI.
+	 * 
+	 * @param ac
+	 */
 	public String getAPIPath(InternalActionContext ac) {
 		// Micronodes have no public location
 		return null;

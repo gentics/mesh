@@ -60,8 +60,13 @@ public abstract class AbstractBasicGraphFieldContainerImpl extends MeshVertexImp
 		super.setProperty(I18N_PREFIX + key, value);
 	}
 
-	// TODO Check whether this is the correct way of dealing with property deletions
+	/**
+	 * Remove the i18n specific property for the key.
+	 * 
+	 * @param key
+	 */
 	public void removeI18nProperty(String key) {
+		// TODO Check whether this is the correct way of dealing with property deletions
 		super.setProperty(I18N_PREFIX + key, null);
 	}
 }

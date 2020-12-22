@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.job;
 
+/**
+ * List of possible status values for persisted jobs. 
+ */
 public enum JobStatus {
 
 	/**

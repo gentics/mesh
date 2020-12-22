@@ -6,6 +6,9 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Test task which inserts roles.
+ */
 public class RoleInserterTask extends AbstractLoadTask {
 
 	public static final String ROLE = "RoleImpl";
@@ -14,6 +17,13 @@ public class RoleInserterTask extends AbstractLoadTask {
 		super(test);
 	}
 
+	/**
+	 * Create a new role vertex.
+	 * 
+	 * @param tx
+	 * @param uuid
+	 * @return
+	 */
 	public Vertex createRole(Tx tx, String uuid) {
 		Vertex v = tx.getGraph().addVertex("class:" + ROLE);
 		v.setProperty("uuid", uuid);

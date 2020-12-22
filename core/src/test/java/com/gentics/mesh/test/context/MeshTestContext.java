@@ -1,7 +1,7 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.UNREACHABLE;
 import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
 import static org.junit.Assert.assertTrue;
@@ -60,6 +60,7 @@ import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
@@ -80,7 +81,7 @@ import okhttp3.OkHttpClient;
 public class MeshTestContext extends TestWatcher {
 
 	static {
-		System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
+		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
@@ -602,7 +603,7 @@ public class MeshTestContext extends TestWatcher {
 			searchOptions.setStartEmbedded(false);
 			break;
 		case TRACKING:
-			System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
+			System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
 			searchOptions.setStartEmbedded(false);
 			break;
 		default:
@@ -681,7 +682,7 @@ public class MeshTestContext extends TestWatcher {
 				.mesh(mesh)
 				.build();
 			dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
-			if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
+			if (meshDagger.searchProvider() instanceof TrackingSearchProviderImpl) {
 				trackingSearchProvider = meshDagger.trackingSearchProvider();
 			}
 			mesh.setMeshInternal(meshDagger);
@@ -750,14 +751,15 @@ public class MeshTestContext extends TestWatcher {
 	 * Waits until all requests have been sent successfully.
 	 */
 	public void waitForSearchIdleEvent() {
+		int MAX_WAIT_TIME = 25;
 		Objects.requireNonNull(idleConsumer, "Call #listenToSearchIdleEvent first");
 		ElasticsearchProcessVerticle verticle = getElasticSearchVerticle();
 		try {
-			verticle.flush().blockingAwait();
 			idleLatch = new CountDownLatch(1);
-			boolean success = idleLatch.await(30, TimeUnit.SECONDS);
+			verticle.flush().blockingAwait();
+			boolean success = idleLatch.await(MAX_WAIT_TIME, TimeUnit.SECONDS);
 			if (!success) {
-				throw new RuntimeException("Timed out while waiting for search idle event");
+				throw new RuntimeException("Timed out after " + MAX_WAIT_TIME + " seconds waiting for search idle event.");
 			}
 			verticle.refresh().blockingAwait();
 		} catch (InterruptedException e) {

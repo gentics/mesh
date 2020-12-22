@@ -2,6 +2,9 @@ package com.gentics.mesh.test.context;
 
 import com.gentics.mesh.dagger.SearchProviderType;
 
+/**
+ * Various test modes for ES tests.
+ */
 public enum ElasticsearchTestMode {
 
 	/**

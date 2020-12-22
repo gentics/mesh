@@ -12,7 +12,11 @@ import java.util.List;
 
 import static com.gentics.mesh.util.RxUtil.NOOP;
 
+/**
+ * Wrapper for bulkable delete document requests in elasticsearch.
+ */
 public class DeleteDocumentRequest implements Bulkable {
+
 	private final String index;
 	private final String transformedIndex;
 	private final String id;

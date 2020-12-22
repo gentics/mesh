@@ -11,6 +11,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract implementation of a consistency check which provides helper methods to track edges and vertices.
+ */
 public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractConsistencyCheck.class);
@@ -54,7 +57,6 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 		return result;
 	}
 
-
 	/**
 	 * Check existence of an incoming edge.
 	 *
@@ -65,7 +67,7 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 	 * @param severity
 	 * @param edges
 	 */
-	protected  <N extends MeshVertex> void checkIn(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResult result,
+	protected <N extends MeshVertex> void checkIn(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResult result,
 		InconsistencySeverity severity, Edge... edges) {
 		N ref = vertex.in(edgeLabel).has(clazz).nextOrDefaultExplicit(clazz, null);
 		if (ref == null) {
@@ -97,7 +99,7 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 	 * @param severity
 	 * @param edges
 	 */
-	protected  <N extends MeshVertex> void checkOut(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResult result,
+	protected <N extends MeshVertex> void checkOut(MeshVertex vertex, String edgeLabel, Class<N> clazz, ConsistencyCheckResult result,
 		InconsistencySeverity severity, Edge... edges) {
 		N ref = vertex.out(edgeLabel).has(clazz).nextOrDefaultExplicit(clazz, null);
 		if (ref == null) {
@@ -146,6 +148,13 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 	 */
 	@FunctionalInterface
 	public static interface Edge {
+
+		/**
+		 * Helper to follow the given vertex.
+		 * 
+		 * @param v
+		 * @return
+		 */
 		MeshVertex follow(MeshVertex v);
 	}
 }

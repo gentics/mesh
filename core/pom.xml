@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.6-SNAPSHOT</version>
+		<version>1.7.7-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -79,10 +79,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-graphql</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-client</artifactId>
 		</dependency>
 
 		<!-- Common Tools -->
@@ -183,12 +179,6 @@
 					<groupId>commons-logging</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<!-- Dagger -->
-		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger</artifactId>
 		</dependency>
 
 		<!-- Test dependencies -->

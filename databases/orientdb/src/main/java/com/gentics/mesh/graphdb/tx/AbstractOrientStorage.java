@@ -27,6 +27,9 @@ import io.micrometer.core.instrument.Counter;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract implementation of an {@link OrientStorage}. Backup/Restore and clear code are for example shareable across specific implementations.
+ */
 public abstract class AbstractOrientStorage implements OrientStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractOrientStorage.class);

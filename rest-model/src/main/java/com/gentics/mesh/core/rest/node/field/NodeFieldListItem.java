@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.node.field;
 
+/**
+ * Entry for a node list REST model.
+ */
 public interface NodeFieldListItem {
 
 	/**

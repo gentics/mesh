@@ -12,6 +12,12 @@ import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.Future;
 
+/**
+ * Request implementation for {@link MeshLocalClient}.
+ * 
+ * @see MeshRequest
+ * @param <T>
+ */
 public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 
 	private Future<T> future;

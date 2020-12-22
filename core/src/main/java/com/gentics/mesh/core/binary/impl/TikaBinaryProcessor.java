@@ -47,6 +47,10 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
+/**
+ * This class can be used to parse binary data from {@link BinaryGraphField} fields. Once parsed the processor will populate the field with additional meta data
+ * from the parsing result.
+ */
 @Singleton
 public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
@@ -133,12 +137,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			.flatMap(
 				extractOptions -> process(extractOptions, upload),
 				Maybe::error,
-				() -> process(null, upload)
-			);
+				() -> process(null, upload));
 	}
 
 	/**
 	 * Determines if the binary data will be processed for the node.
+	 * 
 	 * @param ac
 	 * @param nodeUuid
 	 * @param fieldName
@@ -146,9 +150,9 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	 */
 	private Maybe<BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
 		return db.maybeTx(tx -> {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			HibProject project = ac.getProject();
-			HibBranch branch = ac.getBranch();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
+			HibBranch branch = tx.getBranch(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
@@ -174,7 +178,8 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	private Maybe<Consumer<BinaryGraphField>> process(BinaryExtractOptions extractOptions, FileUpload upload) {
 		// Shortcut if no field specific options are specified and parsing is globally disabled
 		if (!options.getUploadOptions().isParser() && extractOptions == null) {
-			log.debug("Not parsing " + upload.fileName() + " because it is globally disabled and no extract options are defined in the binary field schema.");
+			log.debug("Not parsing " + upload.fileName()
+				+ " because it is globally disabled and no extract options are defined in the binary field schema.");
 			return Maybe.empty();
 		}
 
@@ -218,10 +223,32 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		}, true);
 	}
 
+	/**
+	 * Parse the given file via the provided input stream.
+	 * 
+	 * @param ins
+	 * @param len
+	 * @return
+	 * @throws TikaException
+	 * @throws IOException
+	 */
 	public TikaResult parseFile(InputStream ins, int len) throws TikaException, IOException {
 		return parseFile(ins, len, true);
 	}
 
+	/**
+	 * Parse the given file with the provided inputstream.
+	 * 
+	 * @param ins
+	 *            Data stream
+	 * @param len
+	 *            Expected length of the stream
+	 * @param parseMetadata
+	 *            Whether to also parse metadata
+	 * @return Result of the parse operation
+	 * @throws TikaException
+	 * @throws IOException
+	 */
 	public TikaResult parseFile(InputStream ins, int len, boolean parseMetadata) throws TikaException, IOException {
 
 		Location loc = new Location();
@@ -294,6 +321,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		}
 	}
 
+	/**
+	 * Return the parser limit for the given contentType.
+	 * 
+	 * @param contentType
+	 * @return
+	 */
 	public int getParserLimit(String contentType) {
 		boolean isDocument = acceptedDocumentTypes.stream().anyMatch(type -> {
 			return contentType.startsWith(type);

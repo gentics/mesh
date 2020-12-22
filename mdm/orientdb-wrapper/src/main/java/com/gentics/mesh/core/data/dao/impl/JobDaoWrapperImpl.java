@@ -15,26 +15,28 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 
 @Singleton
 public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements JobDaoWrapper {
 
 	@Inject
-	public JobDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+	public JobDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
@@ -49,7 +51,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public TransformablePage<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().jobRoot().findAll(ac, pagingInfo);
 	}
 
@@ -140,6 +142,12 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	@Override
 	public void clear() {
 		boot.get().jobRoot().clear();
+	}
+
+	@Override
+	public Completable process() {
+		JobRoot jobRoot = boot.get().jobRoot();
+		return jobRoot.process();
 	}
 
 	@Override

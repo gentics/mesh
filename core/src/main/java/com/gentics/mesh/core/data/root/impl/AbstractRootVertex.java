@@ -73,20 +73,50 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		return mesh().permissionProperties().getRolesWithPerm(vertex, perm);
 	}
 
+	/**
+	 * Update the role permissions for the given vertex.
+	 * 
+	 * @param vertex
+	 * @param ac
+	 * @param model
+	 */
 	public void setRolePermissions(MeshVertex vertex, InternalActionContext ac, GenericRestResponse model) {
 		model.setRolePerms(getRolePermissions(vertex, ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
 
+	/**
+	 * Not implemented for abstract implementations.
+	 * 
+	 * @param element
+	 * @param ac
+	 * @return
+	 */
 	public String getAPIPath(T element, InternalActionContext ac) {
 		// TODO FIXME remove this method, must be implemented in all derived classes
 		throw new RuntimeException("Not implemented");
 	}
 
+	/**
+	 * Root elements can't be transformed to REST.
+	 * 
+	 * @param element
+	 * @param ac
+	 * @param level
+	 * @param languageTags
+	 * @return
+	 */
 	public RestModel transformToRestSync(T element, InternalActionContext ac, int level, String... languageTags) {
 		// TODO FIXME remove this method, must be implemented in all derived classes
 		throw new RuntimeException("Not implemented");
 	}
 
+	/**
+	 * Generate the eTag for the element. Every time the edges to the root vertex change the internal element version gets updated.
+	 * 
+	 * @param element
+	 * @param ac
+	 * @return
+	 */
 	public final String getETag(T element, InternalActionContext ac) {
 		UserDaoWrapper userDao = mesh().boot().userDao();
 		RoleDaoWrapper roleDao = mesh().boot().roleDao();

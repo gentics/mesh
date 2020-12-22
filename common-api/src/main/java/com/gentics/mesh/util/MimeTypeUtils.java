@@ -4,6 +4,9 @@ import java.util.Optional;
 
 import io.vertx.core.http.impl.MimeMapping;
 
+/**
+ * Utility for mimetype operations.
+ */
 public class MimeTypeUtils {
 
 	/** Default MIME type for binary files. */
@@ -15,7 +18,8 @@ public class MimeTypeUtils {
 	 * The actual work is done by the {@link MimeMapping#getMimeTypeForFilename MimeMapping} class, this wrapper takes care of <code>null</code> values.
 	 *
 	 * @see MimeMapping#getMimeTypeForFilename(String)
-	 * @param filename The filename to get a MIME type for
+	 * @param filename
+	 *            The filename to get a MIME type for
 	 * @return An empty Optional when the filename is <code>null</code> or no MIME type could be determined, or an Optional containing the MIME type otherwise.
 	 */
 	public static Optional<String> getMimeTypeForFilename(String filename) {

@@ -2,6 +2,9 @@ package com.gentics.mesh.etc.config;
 
 import java.awt.*;
 
+/**
+ *	List of resample filters which can be used in for image processing. 
+ */
 public enum ResampleFilter {
 	/**
 	 * Undefined interpolation, filter method will use default filter.

@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 
 public interface HibBaseElement extends HibElement {
@@ -20,14 +19,6 @@ public interface HibBaseElement extends HibElement {
 	 * @return
 	 */
 	Object getId();
-
-	/**
-	 * Return set of role uuids for the given permission that were granted on the element.
-	 * 
-	 * @param permission
-	 * @return
-	 */
-	Set<String> getRoleUuidsForPerm(InternalPermission permission);
 
 	/**
 	 * Set the role uuid for the given permission.

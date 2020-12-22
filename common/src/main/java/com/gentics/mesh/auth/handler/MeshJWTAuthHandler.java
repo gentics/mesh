@@ -1,3 +1,4 @@
+
 package com.gentics.mesh.auth.handler;
 
 import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
@@ -25,7 +26,6 @@ import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
-import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
 
 /**
  * This class extends the Vert.x AuthHandler, so that it also works when the token is set as a cookie.
@@ -35,7 +35,7 @@ import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
 @Singleton
 public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandler, MeshAuthHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(JWTAuthHandlerImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthHandler.class);
 
 	private static final Pattern BEARER = Pattern.compile("^Bearer$", Pattern.CASE_INSENSITIVE);
 
@@ -79,6 +79,12 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 		handle(context, false);
 	}
 
+	/**
+	 * Handle the JWT authentication. No authentication will be performed when the user has already been added to the context.
+	 * 
+	 * @param context
+	 * @param ignoreDecodeErrors
+	 */
 	public void handle(RoutingContext context, boolean ignoreDecodeErrors) {
 
 		// 1. Check whether the user is already authenticated

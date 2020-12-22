@@ -40,6 +40,9 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 
+/**
+ * @see PersistenceClassMap
+ */
 @Singleton
 public class PersistenceClassMapImpl extends HashMap<Class<?>, Class<?>> implements PersistenceClassMap {
 

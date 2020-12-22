@@ -6,6 +6,9 @@ import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Graph helper which can be used to return the mesh root vertex which is often the startpoint for changelog operation.
+ */
 public final class MeshGraphHelper {
 
 	private static final String MESH_ROOT_TYPE = "MeshRootImpl";

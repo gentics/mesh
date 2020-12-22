@@ -33,7 +33,7 @@ public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserR
 		assertEquals(user.getFirstname(), actual.getFirstname());
 		assertEquals(user.getLastname(), actual.getLastname());
 		assertEquals(user.getUuid(), actual.getUuid());
-		assertEquals(Tx.get().data().userDao().getGroups(user).count(), actual.getGroups().size());
+		assertEquals(Tx.get().userDao().getGroups(user).count(), actual.getGroups().size());
 		// TODO groups
 		return this;
 	}

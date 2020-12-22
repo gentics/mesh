@@ -2,6 +2,9 @@ package com.gentics.mesh.parameter;
 
 import org.apache.commons.lang.BooleanUtils;
 
+/**
+ * Interface for publish query parameters.
+ */
 public interface PublishParameters extends ParameterProvider {
 
 	public static final String RECURSIVE_PARAMETER_KEY = "recursive";

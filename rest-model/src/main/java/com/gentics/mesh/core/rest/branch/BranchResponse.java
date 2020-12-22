@@ -78,6 +78,7 @@ public class BranchResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Get the migration status for the branch.
+	 * 
 	 * @return
 	 * @deprecated Use {@link #getMigrated()} instead.
 	 */
@@ -152,6 +153,11 @@ public class BranchResponse extends AbstractGenericRestResponse {
 		return this;
 	}
 
+	/**
+	 * Create a new {@link BranchUpdateRequest} from the values of this response.
+	 * 
+	 * @return
+	 */
 	public BranchUpdateRequest toRequest() {
 		return new BranchUpdateRequest()
 			.setName(getName())

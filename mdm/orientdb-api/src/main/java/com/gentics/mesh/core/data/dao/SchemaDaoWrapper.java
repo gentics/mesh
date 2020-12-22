@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -11,7 +12,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.SchemaRoot;
@@ -19,7 +20,6 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -31,22 +31,90 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
+public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
 
+	/**
+	 * Load the schema by uuid.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	HibSchema findByUuid(String uuid);
 
+	/**
+	 * Load the schema by name.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	HibSchema findByName(String name);
 
+	/**
+	 * Load the schema by uuid.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @return
+	 */
 	HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
+	/**
+	 * Load the schema by uuid.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @param errorIfNotFound
+	 * @return
+	 */
 	HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
+	/**
+	 * Load the schema by uuid.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @return
+	 */
+	HibSchema loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
+
+	/**
+	 * Return all schemas.
+	 * 
+	 * @return
+	 */
 	Result<HibSchema> findAll();
 
-	TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	/**
+	 * Load the page of schemas.
+	 * 
+	 * @param ac
+	 * @param pagingInfo
+	 * @return
+	 */
+	Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo);
+	/**
+	 * Load a page of schemas.
+	 * 
+	 * @param ac
+	 * @param project
+	 * @param pagingInfo
+	 * @return
+	 */
+	Page<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo);
 
+	/**
+	 * Create the schema.
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
 	HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
@@ -58,6 +126,13 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	 */
 	HibSchemaVersion fromReference(SchemaReference reference);
 
+	/**
+	 * Load the schema versions via the given reference.
+	 * 
+	 * @param project
+	 * @param reference
+	 * @return
+	 */
 	HibSchemaVersion fromReference(HibProject project, SchemaReference reference);
 
 	/**
@@ -104,10 +179,30 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	 */
 	HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) throws MeshSchemaException;
 
+	/**
+	 * Find the schema by name.
+	 * 
+	 * @param project
+	 * @param schemaName
+	 * @return
+	 */
 	HibSchema findByName(HibProject project, String schemaName);
 
+	/**
+	 * Find the schema by uuid.
+	 * 
+	 * @param project
+	 * @param schemaUuid
+	 * @return
+	 */
 	HibSchema findByUuid(HibProject project, String schemaUuid);
 
+	/**
+	 * Delete the schema.
+	 * 
+	 * @param schema
+	 * @param bac
+	 */
 	void delete(HibSchema schema, BulkActionContext bac);
 
 	/**
@@ -152,34 +247,116 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	 */
 	HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, SchemaChangesListModel model, EventQueueBatch batch);
 
+	/**
+	 * Apply changes to the schema version.
+	 * 
+	 * @param version
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
 	HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, EventQueueBatch batch);
 
+	/**
+	 * Load the schema version via the schema and version.
+	 * 
+	 * @param schema
+	 * @param version
+	 * @return
+	 */
 	HibSchemaVersion findVersionByRev(HibSchema schema, String version);
 
+	/**
+	 * Check whether the schema is linked to the project.
+	 * 
+	 * @param schema
+	 * @param project
+	 * @return
+	 */
 	boolean isLinkedToProject(HibSchema schema, HibProject project);
 
-	SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level);
-
+	/**
+	 * Remove the schema from the project.
+	 * 
+	 * @param schema
+	 * @param project
+	 * @param batch
+	 */
 	void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch);
 
+	/**
+	 * Diff the schema version with the request model and return a list of changes.
+	 * 
+	 * @param latestVersion
+	 * @param ac
+	 * @param requestModel
+	 * @return
+	 */
 	SchemaChangesListModel diff(HibSchemaVersion latestVersion, InternalActionContext ac, SchemaModel requestModel);
 
+	/**
+	 * Return the schema version.
+	 * 
+	 * @param container
+	 * @param versionUuid
+	 * @return
+	 */
 	HibSchemaVersion findVersionByUuid(HibSchema container, String versionUuid);
 
 	Map<HibBranch, HibSchemaVersion> findReferencedBranches(HibSchema schema);
 
 	Iterator<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid);
 
+	/**
+	 * Find all projects which reference the schema.
+	 * 
+	 * @param schema
+	 * @return
+	 */
 	Result<HibProject> findLinkedProjects(HibSchema schema);
 
+	/**
+	 * Return the schema.
+	 * 
+	 * @param schema
+	 * @param ac
+	 * @return
+	 * 
+	 */
 	String getETag(HibSchema schema, InternalActionContext ac);
 
-	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, MeshAuthUser user, ContainerType type);
+	/**
+	 * Load all nodes.
+	 * 
+	 * @param version
+	 * @param uuid
+	 * @param user
+	 * @param type
+	 * @return
+	 */
+	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, HibUser user, ContainerType type);
 
+	/**
+	 * Load all schemas for the project.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	Result<? extends HibSchema> findAll(HibProject project);
 
+	/**
+	 * Add the schema to the db.
+	 * 
+	 * @param schema
+	 */
 	void addSchema(HibSchema schema);
 
+	/**
+	 * Load all active schema versions for the given branch.
+	 * 
+	 * @param branch
+	 * @return
+	 */
 	Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch);
 
 	/**
@@ -192,8 +369,40 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	 */
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
 
+	/**
+	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @param bucket
+	 *            Bucket to limit the selection by
+	 * @return
+	 */
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
 
+	/**
+	 * Return the total count of schemas.
+	 */
 	long globalCount();
+
+	/**
+	 * Load a page of schemas.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param pagingInfo
+	 * @param extraFilter
+	 * @return
+	 */
+	Page<? extends HibSchema> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibSchema> extraFilter);
+
+	/**
+	 * Check whether the schema is linked to the project.
+	 * 
+	 * @param project
+	 * @param schema
+	 * @return
+	 */
+	boolean contains(HibProject project, HibSchema schema);
 
 }

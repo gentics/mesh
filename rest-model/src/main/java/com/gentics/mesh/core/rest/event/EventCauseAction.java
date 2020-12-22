@@ -5,7 +5,7 @@ import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 
 /**
- * Typical actions which can be listed as a cause in an event.  
+ * Typical actions which can be listed as a cause in an event.
  */
 public enum EventCauseAction {
 
@@ -17,12 +17,21 @@ public enum EventCauseAction {
 
 	DELETE(EventCauseInfoImpl.class);
 
+	/**
+	 * Event POJO model class.
+	 */
 	private final Class modelClass;
 
 	<T extends EventCauseInfo> EventCauseAction(Class<T> modelClass) {
 		this.modelClass = modelClass;
 	}
 
+	/**
+	 * Return the model class for the event action.
+	 * 
+	 * @param <T>
+	 * @return
+	 */
 	public <T extends EventCauseInfo> Class<T> getModelClass() {
 		return modelClass;
 	}

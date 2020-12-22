@@ -60,7 +60,7 @@ public interface Binary extends MeshVertex, HibBinary {
 	 * @param sha512sum
 	 * @return
 	 */
-	default Binary setSHA512Sum(String sha512sum) {
+	default HibBinary setSHA512Sum(String sha512sum) {
 		property(SHA512SUM_KEY, sha512sum);
 		return this;
 	}
@@ -81,7 +81,7 @@ public interface Binary extends MeshVertex, HibBinary {
 	 * @param sizeInBytes
 	 * @return Fluent API
 	 */
-	default Binary setSize(long sizeInBytes) {
+	default HibBinary setSize(long sizeInBytes) {
 		property(BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
 		return this;
 	}
@@ -110,7 +110,7 @@ public interface Binary extends MeshVertex, HibBinary {
 	 * @param heigth
 	 * @return Fluent API
 	 */
-	default Binary setImageHeight(Integer heigth) {
+	default HibBinary setImageHeight(Integer heigth) {
 		property(BINARY_IMAGE_HEIGHT_PROPERTY_KEY, heigth);
 		return this;
 	}
@@ -121,7 +121,7 @@ public interface Binary extends MeshVertex, HibBinary {
 	 * @param width
 	 * @return Fluent API
 	 */
-	default Binary setImageWidth(Integer width) {
+	default HibBinary setImageWidth(Integer width) {
 		property(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
 		return this;
 	}

@@ -11,11 +11,14 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+/**
+ * Handler for role index search operations.
+ */
 @Singleton
 public class RoleSearchHandler extends AbstractSearchHandler<HibRole, RoleResponse> {
 
 	@Inject
-	public RoleSearchHandler(Database db, SearchProvider searchProvider, RoleIndexHandler indexHandler, MeshOptions options, RoleDAOActions actions) {
+	public RoleSearchHandler(Database db, SearchProvider searchProvider, RoleIndexHandlerImpl indexHandler, MeshOptions options, RoleDAOActions actions) {
 		super(db, searchProvider, options, indexHandler, actions);
 	}
 

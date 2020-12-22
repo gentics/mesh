@@ -28,6 +28,9 @@ import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
 import io.reactivex.Flowable;
 
+/**
+ * Handler which processes tag family index related events. 
+ */
 @Singleton
 public class TagFamilyEventHandler implements EventHandler {
 	private final MeshHelper helper;
@@ -55,7 +58,7 @@ public class TagFamilyEventHandler implements EventHandler {
 
 			if (event == TAG_FAMILY_CREATED || event == TAG_FAMILY_UPDATED) {
 				return helper.getDb().tx(tx -> {
-					TagDaoWrapper tagDao = tx.data().tagDao();
+					TagDaoWrapper tagDao = tx.tagDao();
 					// We also need to update all tags of this family
 					Optional<HibTagFamily> tagFamily = entities.tagFamily.getElement(model);
 

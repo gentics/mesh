@@ -19,7 +19,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.PathParameters;
@@ -32,6 +32,9 @@ import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Endpoint for /api/v1/:project/tagFamilies
+ */
 public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyEndpoint.class);
@@ -50,7 +53,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public TagFamilyEndpoint(MeshAuthChain chain, BootstrapInitializer boot, TagCrudHandler tagCrudHandler,
+	public TagFamilyEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, TagCrudHandler tagCrudHandler,
 		TagFamilyCrudHandler tagFamilyCrudHandler) {
 		super("tagFamilies", chain, boot);
 		this.tagCrudHandler = tagCrudHandler;

@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -51,6 +50,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
 		// TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
@@ -105,7 +110,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(MeshAuthUser user, PagingParameters pagingInfo) {
+	public Page<? extends Tag> getTags(HibUser user, PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, pagingInfo, READ_PERM, TagImpl.class);
 	}
@@ -122,19 +127,19 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 
 	@Override
 	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
 		return tagFamilyDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
 		tagFamilyDao.delete(this, bac);
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
 		return tagFamilyDao.update(this, ac, batch);
 	}
 
@@ -221,6 +226,9 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 			.nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
+	/**
+	 * Delete the graph element.
+	 */
 	public void deleteElement() {
 		getElement().remove();
 	}

@@ -13,6 +13,9 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Changelog entry which adds versioning support.
+ */
 public class ChangeAddVersioning extends AbstractChange {
 
 	@Override

@@ -1,12 +1,26 @@
 package com.gentics.mesh.core.data.user;
 
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibInNode;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.user.UserReference;
 
+import io.vertx.ext.auth.User;
+
 public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableElement {
+
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.USER, USER_CREATED, USER_UPDATED, USER_DELETED);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Return the username.
@@ -94,12 +108,33 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	 */
 	HibUser enable();
 
+	/**
+	 * Transform the user to a reference POJO.
+	 * 
+	 * @return
+	 */
 	UserReference transformToReference();
 
+	/**
+	 * Return the timestamp at which the reset token was issued.
+	 * 
+	 * @return
+	 */
 	Long getResetTokenIssueTimestamp();
 
+	/**
+	 * Invalidate the reset token.
+	 * 
+	 * @return
+	 */
 	HibUser invalidateResetToken();
 
+	/**
+	 * Set the password hash.
+	 * 
+	 * @param hash
+	 * @return
+	 */
 	HibUser setPasswordHash(String hash);
 
 	/**
@@ -151,7 +186,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	 * @return
 	 */
 	// TODO we want to use this to the user dao
-//	Iterable<? extends Role> getRoles();
+	// Iterable<? extends Role> getRoles();
 
 	/**
 	 * Reset the API token id and issue timestamp and thus invalidating the token.
@@ -221,7 +256,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	 *
 	 * @return Referenced node or null when no node was assigned to the user.
 	 */
-	HibInNode getReferencedNode();
+	HibNode getReferencedNode();
 
 	/**
 	 * Set the referenced node.
@@ -229,8 +264,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	 * @param node
 	 * @return Fluent API
 	 */
-	HibUser setReferencedNode(HibInNode node);
-
+	HibUser setReferencedNode(HibNode node);
 
 	/**
 	 * A CRC32 hash of the users {@link #getRoles roles}.
@@ -239,8 +273,20 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	 */
 	String getRolesHash();
 
+	/**
+	 * Return the current element version.
+	 * 
+	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
+	 * 
+	 * @return
+	 */
 	String getElementVersion();
 
+	/**
+	 * Transform the user to a {@link MeshAuthUser} which implements the {@link User} interface and is thus usable in Vert.x Auth API code.
+	 * 
+	 * @return
+	 */
 	MeshAuthUser toAuthUser();
 
 }

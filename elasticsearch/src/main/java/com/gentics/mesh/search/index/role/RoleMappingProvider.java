@@ -11,6 +11,9 @@ import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Provider for the ES role index mapping.
+ */
 @Singleton
 public class RoleMappingProvider extends AbstractMappingProvider {
 

@@ -1,5 +1,8 @@
 package com.gentics.mesh.etc.config.cluster;
 
+/**
+ * List of modes in which the cluster coordinator can handle / redirect requests.
+ */
 public enum CoordinatorMode {
 
 	/**

@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -18,6 +18,9 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 
+/**
+ * REST handler for authentication calls.
+ */
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 
@@ -38,8 +41,8 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	public void handleMe(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			// TODO add permission check
-			MeshAuthUser requestUser = ac.getUser();
-			return tx.data().userDao().transformToRestSync(requestUser, ac, 0);
+			HibUser requestUser = ac.getUser();
+			return tx.userDao().transformToRestSync(requestUser, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 

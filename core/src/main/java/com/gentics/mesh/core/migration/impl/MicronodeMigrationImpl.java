@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
@@ -43,6 +43,9 @@ import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see MicronodeMigration
+ */
 @Singleton
 public class MicronodeMigrationImpl extends AbstractMigrationHandler implements MicronodeMigration {
 
@@ -51,7 +54,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	private final WriteLock writeLock;
 
 	@Inject
-	public MicronodeMigrationImpl(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
+	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
 		super(db, binaryFieldHandler, metrics, batchProvider);
 		this.writeLock = writeLock;
 	}
@@ -87,7 +90,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 
 			// Get the containers, that need to be transformed
 			List<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(tx -> {
-				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 				return microschemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).list();
 			});
 
@@ -140,8 +143,8 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		NodeGraphFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
 		Set<String> touchedFields, VersionNumber nextDraftVersion)
 		throws Exception {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		String branchUuid = branch.getUuid();
 		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
@@ -196,7 +199,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		// Run the actual migration in a dedicated transaction
 		try {
 			db.tx(tx -> {
-				ContentDaoWrapper contentDao = tx.data().contentDao();
+				ContentDaoWrapper contentDao = tx.contentDao();
 
 				HibNode node = contentDao.getNode(container);
 				String languageTag = container.getLanguageTag();
@@ -243,8 +246,8 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
 		NodeGraphFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
 		Set<String> touchedFields) throws Exception {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		String branchUuid = branch.getUuid();
 		ac.getVersioningParameters().setVersion("published");

@@ -11,10 +11,17 @@ import org.reflections.Reflections;
 
 import com.gentics.madl.annotations.GraphElement;
 
+/**
+ * Cache for classes which were annotated with {@link GraphElement}.
+ */
 public class SimpleReflectionCache extends Reflections {
 
 	private final Map<String, Set<String>> hierarchy;
 	private final Map<Method, Map<Class<Annotation>, Annotation>> annotationCache = new HashMap<>();
+
+	/**
+	 * Mapping for class FQN to actual class reference.
+	 */
 	private final Map<String, Class> classStringCache = new HashMap<>();
 
 	public SimpleReflectionCache() {
@@ -32,6 +39,12 @@ public class SimpleReflectionCache extends Reflections {
 		}
 	}
 
+	/**
+	 * Return the set of sub types for the given class.
+	 * 
+	 * @param type
+	 * @return
+	 */
 	public Set<? extends String> getSubTypeNames(final Class<?> type) {
 		Set<String> subtypes = this.hierarchy.get(type.getName());
 		if (subtypes == null)
@@ -39,6 +52,12 @@ public class SimpleReflectionCache extends Reflections {
 		return Collections.unmodifiableSet(subtypes);
 	}
 
+	/**
+	 * Return the set of sub types for the given class.
+	 * 
+	 * @param typeName
+	 * @return
+	 */
 	public Set<? extends String> getSubTypeNames(final String typeName) {
 		Set<String> subtypes = this.hierarchy.get(typeName);
 		if (subtypes == null)
@@ -46,6 +65,17 @@ public class SimpleReflectionCache extends Reflections {
 		return Collections.unmodifiableSet(subtypes);
 	}
 
+	/**
+	 * Return the annotation from the given method.
+	 * 
+	 * @param <E>
+	 *            Annotation type
+	 * @param method
+	 *            Reference to the method
+	 * @param annotationType
+	 *            Type of the anntation to be loaded
+	 * @return
+	 */
 	public <E extends Annotation> E getAnnotation(final Method method, final Class<E> annotationType) {
 		Map<Class<Annotation>, Annotation> annotationsPresent = annotationCache.get(method);
 		if (annotationsPresent == null) {
@@ -61,6 +91,12 @@ public class SimpleReflectionCache extends Reflections {
 		return annotation;
 	}
 
+	/**
+	 * Resolve the class by name using the cache.
+	 * 
+	 * @param className
+	 * @return
+	 */
 	public Class<?> forName(final String className) {
 		return this.classStringCache.get(className);
 	}

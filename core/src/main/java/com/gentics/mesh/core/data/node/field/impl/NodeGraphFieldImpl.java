@@ -50,6 +50,9 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.VertexFrame;
 
+/**
+ * @see NodeGraphField
+ */
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	public static FieldTransformer<NodeField> NODE_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
@@ -63,7 +66,9 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	};
 
 	public static FieldUpdater NODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		Tx tx = Tx.get();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
+
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
@@ -92,7 +97,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 
 		// Handle Update / Create
-		HibNode node = nodeDao.findByUuid(ac.getProject(), nodeField.getUuid());
+		HibNode node = nodeDao.findByUuid(tx.getProject(ac), nodeField.getUuid());
 		if (node == null) {
 			// TODO We want to delete the field when the field has been explicitly set to null
 			if (log.isDebugEnabled()) {
@@ -109,16 +114,16 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			String schemaName = node.getSchemaContainer().getName();
 
 			if (!ArrayUtils.isEmpty(nodeFieldSchema.getAllowedSchemas())
-					&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaName)) {
+				&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaName)) {
 				log.error("Node update not allowed since the schema {" + schemaName
-						+ "} is not allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
+					+ "} is not allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
 				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
 			}
 
 			if (graphNodeField == null) {
 				container.createNode(fieldKey, node);
 			} else {
-				// We can't update the graphNodeField since it is in fact an edge. 
+				// We can't update the graphNodeField since it is in fact an edge.
 				// We need to delete it and create a new one.
 				container.deleteFieldEdge(fieldKey);
 				container.createNode(fieldKey, node);
@@ -148,6 +153,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	/**
 	 * Creates a stream of all field containers that are connected to this edge.
+	 * 
 	 * @return
 	 */
 	private Stream<GraphFieldContainer> getReferencingFieldContainers() {
@@ -185,15 +191,16 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			nodeField.setUuid(node.getUuid());
 			LinkType type = ac.getNodeParameters().getResolveLinks();
 			if (type != LinkType.OFF) {
-				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+				Tx tx = Tx.get();
+				ContentDaoWrapper contentDao = tx.contentDao();
 
 				WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-				HibBranch branch = ac.getBranch();
+				HibBranch branch = tx.getBranch(ac);
 				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
 
 				// Set the webroot path for the currently active language
 				nodeField.setPath(linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, languageTags.toArray(new String[languageTags
-						.size()])));
+					.size()])));
 
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
@@ -280,12 +287,12 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	/**
-	 * Used in {@link #getFieldName()} and {@link #getMicronodeFieldName()} to skip lists and abstract
-	 * the retrieval of the field name.
+	 * Used in {@link #getFieldName()} and {@link #getMicronodeFieldName()} to skip lists and abstract the retrieval of the field name.
 	 */
 	private class ListSkipper {
 		VertexFrame nextVertex;
 		Supplier<String> nameSupplier;
+
 		private ListSkipper() {
 			VertexFrame framedVertex = outV().next();
 

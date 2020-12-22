@@ -13,6 +13,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
+/**
+ * Verticle which starts the monitoring server (default port 8081).
+ */
 public class MonitoringServerVerticle extends AbstractVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(MonitoringServerVerticle.class);

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -92,6 +93,7 @@ public class GraphStorageOptions implements Option {
 		return directory;
 	}
 
+	@Setter
 	public GraphStorageOptions setDirectory(String directory) {
 		this.directory = directory;
 		return this;
@@ -122,6 +124,7 @@ public class GraphStorageOptions implements Option {
 		return backupDirectory;
 	}
 
+	@Setter
 	public GraphStorageOptions setBackupDirectory(String backupDirectory) {
 		this.backupDirectory = backupDirectory;
 		return this;
@@ -131,6 +134,7 @@ public class GraphStorageOptions implements Option {
 		return exportDirectory;
 	}
 
+	@Setter
 	public GraphStorageOptions setExportDirectory(String exportDirectory) {
 		this.exportDirectory = exportDirectory;
 		return this;
@@ -140,6 +144,7 @@ public class GraphStorageOptions implements Option {
 		return startServer;
 	}
 
+	@Setter
 	public GraphStorageOptions setStartServer(Boolean startServer) {
 		this.startServer = startServer;
 		return this;
@@ -149,6 +154,7 @@ public class GraphStorageOptions implements Option {
 		return synchronizeWrites;
 	}
 
+	@Setter
 	public GraphStorageOptions setSynchronizeWrites(boolean synchronizeWrites) {
 		this.synchronizeWrites = synchronizeWrites;
 		return this;
@@ -158,6 +164,7 @@ public class GraphStorageOptions implements Option {
 		return txRetryDelay;
 	}
 
+	@Setter
 	public GraphStorageOptions setTxRetryDelay(int txRetryDelay) {
 		this.txRetryDelay = txRetryDelay;
 
@@ -168,6 +175,7 @@ public class GraphStorageOptions implements Option {
 		return synchronizeWritesTimeout;
 	}
 
+	@Setter
 	public GraphStorageOptions setSynchronizeWritesTimeout(long synchronizeWritesTimeout) {
 		this.synchronizeWritesTimeout = synchronizeWritesTimeout;
 		return this;
@@ -177,6 +185,7 @@ public class GraphStorageOptions implements Option {
 		return txRetryLimit;
 	}
 
+	@Setter
 	public GraphStorageOptions setTxRetryLimit(int txRetryLimit) {
 		this.txRetryLimit = txRetryLimit;
 		return this;
@@ -186,11 +195,15 @@ public class GraphStorageOptions implements Option {
 		return this.txCommitTimeout;
 	}
 
+	@Setter
 	public GraphStorageOptions setTxCommitTimeout(long txCommitTimeout) {
 		this.txCommitTimeout = txCommitTimeout;
 		return this;
 	}
 
+	/**
+	 * Validate the settings.
+	 */
 	public void validate(MeshOptions meshOptions) {
 		if (getStartServer() && getDirectory() == null) {
 			throw new NullPointerException(

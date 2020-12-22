@@ -6,6 +6,9 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.AbstractElementMeshEventModel;
 import com.gentics.mesh.core.rest.role.RoleReference;
 
+/**
+ * @see PermissionChangedEventModel
+ */
 public class PermissionChangedEventModelImpl extends AbstractElementMeshEventModel implements PermissionChangedEventModel {
 
 	@JsonProperty(required = true)

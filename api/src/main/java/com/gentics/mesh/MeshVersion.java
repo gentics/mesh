@@ -8,6 +8,9 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public interface MeshVersion {
 
+	public static final int CURRENT_API_VERSION = 2;
+	public static final String CURRENT_API_BASE_PATH = "/api/v" + MeshVersion.CURRENT_API_VERSION;
+
 	static AtomicReference<BuildInfo> buildInfo = new AtomicReference<BuildInfo>(null);
 
 	/**

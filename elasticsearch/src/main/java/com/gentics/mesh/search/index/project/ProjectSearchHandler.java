@@ -11,11 +11,14 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+/**
+ * Handler for ES project search.
+ */
 @Singleton
 public class ProjectSearchHandler extends AbstractSearchHandler<HibProject, ProjectResponse> {
 
 	@Inject
-	public ProjectSearchHandler(Database db, SearchProvider searchProvider, ProjectIndexHandler indexHandler, MeshOptions options,
+	public ProjectSearchHandler(Database db, SearchProvider searchProvider, ProjectIndexHandlerImpl indexHandler, MeshOptions options,
 		ProjectDAOActions actions) {
 		super(db, searchProvider, options, indexHandler, actions);
 	}

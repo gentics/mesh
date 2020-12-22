@@ -15,6 +15,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler for monitoring related actions.
+ */
 @Singleton
 public class MonitoringCrudHandler {
 	private static final Logger log = LoggerFactory.getLogger(MonitoringCrudHandler.class);
@@ -29,6 +32,11 @@ public class MonitoringCrudHandler {
 		this.pluginManager = pluginManager;
 	}
 
+	/**
+	 * Check the cluster liveness probe.
+	 * 
+	 * @param rc
+	 */
 	public void handleLive(RoutingContext rc) {
 		for (String id : pluginManager.getPluginIds()) {
 			PluginStatus status = pluginManager.getStatus(id);
@@ -40,17 +48,22 @@ public class MonitoringCrudHandler {
 		rc.response().setStatusCode(200).end();
 	}
 
+	/**
+	 * Check the cluster readiness probe.
+	 * 
+	 * @param rc
+	 */
 	public void handleReady(RoutingContext rc) {
 		for (String id : pluginManager.getPluginIds()) {
 			PluginStatus status = pluginManager.getStatus(id);
-			// TODO We need can't check for plugin registered since plugins will only be 
+			// TODO We need can't check for plugin registered since plugins will only be
 			// registered once the write quorum has been reached.
 			// Thus we can only check for failed. Otherwise we would interrupt the
 			// K8S deployment process and prevent additional nodes from being added
 			// to the cluster. Without additional nodes the write quorum would never
 			// be reached.
 			if (status == PluginStatus.FAILED) {
-				log.warn("Plugin {" + id + "} is in status failed.");
+				log.error("Plugin {" + id + "} is in status failed.");
 				throw error(SERVICE_UNAVAILABLE, "error_internal");
 			}
 		}

@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonObject;
  * @param <T>
  */
 public abstract class MeshEntity<T> {
+
 	protected final Transformer<T> transformer;
 	private final TypeInfo typeInfo;
 	private final EventVertexMapper<T> eventVertexMapper;

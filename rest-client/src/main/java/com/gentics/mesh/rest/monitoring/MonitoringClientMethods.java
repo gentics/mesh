@@ -6,6 +6,9 @@ import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
+/**
+ * REST client methods for  the {@link MonitoringRestClient}
+ */
 public interface MonitoringClientMethods {
 
 	/**

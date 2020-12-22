@@ -13,7 +13,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class ClusterServer {
+/**
+ * Abstract implementation for cluster servers.
+ */
+public abstract class ClusterServer {
 
 	static {
 		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
@@ -21,6 +24,12 @@ public class ClusterServer {
 	}
 	public static Logger log;
 
+	/**
+	 * Create the mesh options.
+	 * 
+	 * @param args
+	 * @return
+	 */
 	public static MeshOptions init(String[] args) {
 		LoggingConfigurator.init();
 		log = LoggerFactory.getLogger(ClusterServer.class);
@@ -53,9 +62,15 @@ public class ClusterServer {
 		return options;
 	}
 
+	/**
+	 * Run the server with the given options.
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
 	public static void run(MeshOptions options) throws Exception {
 		Mesh mesh = Mesh.create(options);
-		mesh.setCustomLoader((vertx) -> {
+		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 

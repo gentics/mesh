@@ -8,6 +8,9 @@ import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Changelog entry which deleted old jobs from the job list.
+ */
 public class PurgeOldJobs extends AbstractChange {
 
 	@Override

@@ -1,6 +1,5 @@
 package com.gentics.mesh.auth.provider;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -41,6 +40,10 @@ import io.vertx.ext.web.Cookie;
 
 /**
  * Central mesh authentication provider which will handle JWT.
+ * 
+ * Note that the auth proces starts at {@link MeshJWTAuthHandler#handle(io.vertx.ext.web.RoutingContext). The handler will extract the JWT values and this
+ * provider will authenticate the data and load the user.
+ * 
  */
 @Singleton
 public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
@@ -48,7 +51,6 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthProvider.class);
 
 	private JWTAuth jwtProvider;
-
 
 	private static final String USERID_FIELD_NAME = "userUuid";
 
@@ -63,7 +65,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private final MeshOptions meshOptions;
 
 	@Inject
-	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
+	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database,
+		BootstrapInitializer boot) {
 		this.meshOptions = meshOptions;
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
@@ -84,6 +87,14 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	}
 
+	/**
+	 * Authenticate the JWT information and invoke the handler with the result of the authentication process.
+	 * 
+	 * This method will also load the actual user from the JWT user reference.
+	 * 
+	 * @param authInfo
+	 * @param resultHandler
+	 */
 	public void authenticateJWT(JsonObject authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
 		// We will use this information to load the Mesh User from the graph.
@@ -136,8 +147,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		HibUser user = authenticate(username, password, newPassword);
 		String uuid = db.tx(user::getUuid);
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
-		return jwtProvider.generateToken(tokenData,	new JWTOptions()
-				.setExpiresInSeconds(meshOptions.getAuthenticationOptions().getTokenExpirationTime()));
+		return jwtProvider.generateToken(tokenData, new JWTOptions()
+			.setExpiresInSeconds(meshOptions.getAuthenticationOptions().getTokenExpirationTime()));
 	}
 
 	/**
@@ -200,7 +211,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = meshOptions.getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject();
-			String uuid = db.tx(((MeshAuthUser) user)::getUuid);
+			String uuid = db.tx(((MeshAuthUser) user).getDelegate()::getUuid);
 			tokenData.put(USERID_FIELD_NAME, uuid);
 			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
 				.setExpiresInSeconds(options.getTokenExpirationTime());
@@ -243,7 +254,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private User loadUserByJWT(JsonObject jwt) throws Exception {
 		return db.tx(tx -> {
 			String userUuid = jwt.getString(USERID_FIELD_NAME);
-			MeshAuthUser user = tx.data().userDao().findMeshAuthUserByUuid(userUuid);
+			MeshAuthUser user = tx.userDao().findMeshAuthUserByUuid(userUuid);
 			if (user == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with UUID {" + userUuid + "}.");
@@ -251,20 +262,18 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				// TODO use NoStackTraceThrowable?
 				throw new Exception("Invalid credentials!");
 			}
-			// Set the uuid to cache it in the element. We know it is valid.
-			toGraph(user).setCachedUuid(userUuid);
 
 			// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
-			//	if (!user.isEnabled()) {
-			//		throw new Exception("User is disabled");
-			//	}
+			// if (!user.isEnabled()) {
+			// throw new Exception("User is disabled");
+			// }
 
 			// Check whether the token might be an API key token
 			if (!jwt.containsKey("exp")) {
 				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
 				// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
 				if (apiKeyToken != null) {
-					String storedApiKey = user.getAPIKeyTokenCode();
+					String storedApiKey = user.getDelegate().getAPIKeyTokenCode();
 					// Verify that the API token is invalid.
 					if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
 						throw new Exception("API key token is invalid.");

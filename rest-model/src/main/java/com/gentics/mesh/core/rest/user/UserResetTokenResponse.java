@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * REST POJO for a user reset token response.
+ */
 public class UserResetTokenResponse implements RestModel {
 
 	@JsonProperty(required = true)

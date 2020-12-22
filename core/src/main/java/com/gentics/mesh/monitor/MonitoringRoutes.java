@@ -9,9 +9,10 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.handler.MonitoringCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 
@@ -23,6 +24,9 @@ import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.impl.RouterImpl;
 import io.vertx.micrometer.PrometheusScrapingHandler;
 
+/**
+ * Routes for the monitoring server. Not to be confused with {@link HealthEndpoint} which is used for the Mesh REST server. 
+ */
 public class MonitoringRoutes {
 
 	private static final Logger log = LoggerFactory.getLogger(MonitoringRoutes.class);
@@ -46,12 +50,15 @@ public class MonitoringRoutes {
 		this.apiRouter = new RouterImpl(vertx);
 		this.options = options;
 		this.monitoringCrudHandler = monitoringCrudHandler;
-		VersionHandler.generateVersionMountpoints()
+		VersionHandlerImpl.generateVersionMountpoints()
 			.forEach(mountPoint -> router.mountSubRouter(mountPoint, apiRouter));
 		this.adminHandler = adminHandler;
 		init();
 	}
 
+	/**
+	 * Initialize the monitoring routes.
+	 */
 	public void init() {
 		router.route().handler(LoggerHandler.create());
 		router.route().last().handler(DefaultNotFoundHandler.create());

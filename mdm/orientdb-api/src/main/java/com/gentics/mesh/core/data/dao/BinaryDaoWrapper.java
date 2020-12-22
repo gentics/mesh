@@ -35,6 +35,13 @@ public interface BinaryDaoWrapper extends BinaryDao, DaoWrapper<HibBinary> {
 	 */
 	Transactional<? extends HibBinary> create(String uuid, String hash, Long size);
 
+	/**
+	 * Create a new binary.
+	 * 
+	 * @param hash
+	 * @param size
+	 * @return
+	 */
 	default Transactional<? extends HibBinary> create(String hash, long size) {
 		return create(UUIDUtil.randomUUID(), hash, size);
 	}

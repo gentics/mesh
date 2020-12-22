@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 
+/**
+ * Interface for node query parameters.
+ */
 public interface NodeParameters extends ParameterProvider {
 
 	/**
@@ -134,7 +137,8 @@ public interface NodeParameters extends ParameterProvider {
 
 	/**
 	 * @see #getLanguages()
-	 * @param options Mesh options which contains the default language information
+	 * @param options
+	 *            Mesh options which contains the default language information
 	 * @return
 	 */
 	default List<String> getLanguageList(MeshOptions options) {

@@ -33,7 +33,14 @@ import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
 
+/**
+ * OkHttp implementation of the {@link MeshRequest}.
+ * 
+ * @see MeshRequest
+ * @param <T>
+ */
 public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
+
 	private final OkHttpClient client;
 	private final Class<? extends T> resultClass;
 
@@ -52,6 +59,29 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		this.requestBody = requestBody;
 	}
 
+	/**
+	 * Create a new binary request.
+	 * 
+	 * @param <T>
+	 *            Response type
+	 * @param client
+	 *            Client to be used
+	 * @param method
+	 *            Request method
+	 * @param url
+	 *            Request url
+	 * @param headers
+	 *            Additional headers
+	 * @param classOfT
+	 *            Response model class
+	 * @param data
+	 *            stream for the binary data
+	 * @param fileSize
+	 *            expected length of the data
+	 * @param contentType
+	 *            Posted content type
+	 * @return
+	 */
 	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, new RequestBody() {
@@ -71,16 +101,51 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		});
 	}
 
+	/**
+	 * Create a {@link MeshOkHttpRequestImpl} using the request parameters that sends a JSON payload.
+	 * 
+	 * @param <T>
+	 * @param client
+	 * @param method
+	 * @param url
+	 * @param headers
+	 * @param classOfT
+	 * @param json
+	 * @return
+	 */
 	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String json) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
 	}
 
+	/**
+	 * Create a {@link MeshOkHttpRequestImpl} using the request parameters that sends a plain text payload.
+	 * 
+	 * @param <T>
+	 * @param client
+	 * @param method
+	 * @param url
+	 * @param headers
+	 * @param classOfT
+	 * @param text
+	 * @return
+	 */
 	public static <T> MeshOkHttpRequestImpl<T> TextRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String text) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
 	}
 
+	/**
+	 * Create a {@link MeshOkHttpRequestImpl} request which does not send a body payload.
+	 * 
+	 * @param <T>
+	 * @param client
+	 * @param method
+	 * @param url
+	 * @param headers
+	 * @param classOfT
+	 * @return
+	 */
 	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(null, ""));
@@ -151,7 +216,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		String contentType = response.header("Content-Type");
 		if (!response.isSuccessful()) {
 			return null;
-		} else if  (resultClass.isAssignableFrom(EmptyResponse.class)) {
+		} else if (resultClass.isAssignableFrom(EmptyResponse.class)) {
 			return (T) EmptyResponse.getInstance();
 		} else if (resultClass.isAssignableFrom(MeshBinaryResponse.class)) {
 			return (T) new OkHttpBinaryResponse(response);

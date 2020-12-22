@@ -13,6 +13,8 @@ import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.annotation.Getter;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -43,6 +45,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 
 	private String uuid;
 
+	/**
+	 * Initialize the vertex type and index.
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MeshVertexImpl.class, null);
 		index.createIndex(vertexIndex(MeshVertexImpl.class)
@@ -79,6 +84,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		return properties;
 	}
 
+	@Getter
 	public String getUuid() {
 		// Return the locally stored uuid if possible. Otherwise load it from the graph.
 		if (uuid == null) {
@@ -87,6 +93,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		return uuid;
 	}
 
+	@Setter
 	public void setUuid(String uuid) {
 		setProperty("uuid", uuid);
 		this.uuid = uuid;
@@ -140,14 +147,28 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		this.uuid = uuid;
 	}
 
+	/**
+	 * Return the dagger mesh context from the graph attributes. The component is accessed this way since it is not otherwise possible to inject dagger into
+	 * domain classes.
+	 * 
+	 * @return
+	 */
 	public MeshComponent mesh() {
 		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 
+	/**
+	 * Return the public mesh API
+	 * 
+	 * @return
+	 */
 	public Mesh meshApi() {
 		return mesh().boot().mesh();
 	}
 
+	/**
+	 * Return the Mesh options.
+	 */
 	public MeshOptions options() {
 		return mesh().options();
 	}
@@ -162,6 +183,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		return mesh().vertx();
 	}
 
+	/**
+	 * Create a new event queue batch for CUD operations.
+	 * 
+	 * @return
+	 */
 	public EventQueueBatch createBatch() {
 		return mesh().batchProvider().get();
 	}

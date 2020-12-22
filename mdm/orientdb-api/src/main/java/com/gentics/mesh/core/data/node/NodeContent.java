@@ -33,7 +33,7 @@ public class NodeContent {
 	}
 
 	public HibNode getNode() {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		if (node == null && container != null) {
 			node = contentDao.getNode(container);
 		}

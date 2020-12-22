@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * POJO for a graphql response. The actual JSON data is nested within.
+ */
 public class GraphQLResponse implements RestModel {
 
 	/**

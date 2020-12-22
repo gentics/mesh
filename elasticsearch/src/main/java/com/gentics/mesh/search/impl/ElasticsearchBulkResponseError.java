@@ -5,7 +5,11 @@ import io.vertx.core.json.JsonObject;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Elasticsearch bulk request error response.
+ */
 public class ElasticsearchBulkResponseError extends Throwable implements ElasticsearchResponseErrorStreamable {
+
 	private final JsonObject json;
 
 	public ElasticsearchBulkResponseError(JsonObject json) {
@@ -17,6 +21,10 @@ public class ElasticsearchBulkResponseError extends Throwable implements Elastic
 		this.json = json;
 	}
 
+	/**
+	 * Return the raw JSON from Elasticsearch.
+	 * @return
+	 */
 	public JsonObject getJson() {
 		return json;
 	}

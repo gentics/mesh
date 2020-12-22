@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 
+/**
+ * @see NodeFieldSchema
+ */
 public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFieldSchema {
 
 	@JsonProperty("allow")

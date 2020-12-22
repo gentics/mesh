@@ -8,6 +8,11 @@ import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 
+/**
+ * Abstract implementation for a branch assign event.
+ * 
+ * @param <T> Type of the schema reference (microschema, schema)
+ */
 public abstract class AbstractBranchAssignEventModel<T extends NameUuidReference<T>> extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)

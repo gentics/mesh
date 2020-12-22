@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 
+/**
+ * POJO for the schema migration event payload
+ */
 public class SchemaMigrationMeshEventModel extends AbstractMigrationMeshEventModel {
 
 	@JsonProperty(required = true)

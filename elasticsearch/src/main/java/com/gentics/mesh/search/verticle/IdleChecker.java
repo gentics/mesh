@@ -15,7 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.dummyObject;
 
 
+/**
+ * The {@link IdleChecker} keeps track of the queued operations for ES.
+ */
 public class IdleChecker {
+
 	private static final Logger log = LoggerFactory.getLogger(IdleChecker.class);
 
 	private final AtomicInteger requests = new AtomicInteger();

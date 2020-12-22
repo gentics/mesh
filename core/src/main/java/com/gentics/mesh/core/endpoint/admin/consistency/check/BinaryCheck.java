@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.LOW;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
@@ -29,7 +30,7 @@ public class BinaryCheck extends AbstractConsistencyCheck {
 		}, attemptRepair, tx);
 	}
 
-	private void checkBinary(Binary binary, ConsistencyCheckResult result, boolean attemptRepair) {
+	private void checkBinary(HibBinary binary, ConsistencyCheckResult result, boolean attemptRepair) {
 		String uuid = binary.getUuid();
 
 		if (binary.getSHA512Sum() == null) {
@@ -40,12 +41,12 @@ public class BinaryCheck extends AbstractConsistencyCheck {
 			result.addInconsistency("The binary has no valid size specified", uuid, LOW);
 		}
 
-		boolean isLinkedToField = binary.in("HAS_FIELD").hasNext();
+		boolean isLinkedToField = toGraph(binary).in("HAS_FIELD").hasNext();
 		if (!isLinkedToField) {
 			InconsistencyInfo info = new InconsistencyInfo().setDescription("The binary is dangling and not used by any container")
 				.setElementUuid(uuid).setSeverity(MEDIUM);
 			if (attemptRepair) {
-				binary.delete();
+				toGraph(binary).delete();
 				info.setRepaired(true).setRepairAction(RepairAction.DELETE);
 			}
 			result.addInconsistency(info);

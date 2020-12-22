@@ -3,7 +3,11 @@ package com.gentics.mesh.rest.client.method;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.rest.client.MeshRequest;
 
+/**
+ * Rest client methods for local configuration handling.
+ */
 public interface LocalConfigMethods {
+
 	/**
 	 * Loads the currently active local config.
 	 * @return

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.graphql;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
 import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
@@ -30,7 +30,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -154,6 +154,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("nodes-query", true, "draft"),
 			Arrays.asList("nodes-query-by-uuids", true, "draft"),
 			Arrays.asList("node-breadcrumb-query", true, "draft"),
+			Arrays.asList("node-breadcrumb-query-with-lang", true, "draft"),
 			Arrays.asList("node-language-fallback-query", true, "draft"),
 			Arrays.asList("node-languages-query", true, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLanguageContent),
 			Arrays.asList("node-not-found-webroot-query", true, "draft"),
@@ -222,7 +223,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 
 			HibNode node = folder("2015");
 			HibNode folder = folder("news");
@@ -357,7 +358,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			Binary binary = mesh().binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));

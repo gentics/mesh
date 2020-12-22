@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
+/**
+ * @see MicronodeFieldSchema
+ */
 public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements MicronodeFieldSchema {
 
 	@JsonProperty("allow")

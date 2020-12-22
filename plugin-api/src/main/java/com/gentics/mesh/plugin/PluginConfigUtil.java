@@ -17,6 +17,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utility class which can be used to load plugin configuration files.
+ */
 public class PluginConfigUtil {
 	
 	private static final Logger log = LoggerFactory.getLogger(PluginConfigUtil.class);

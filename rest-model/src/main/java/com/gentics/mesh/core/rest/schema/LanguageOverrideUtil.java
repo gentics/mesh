@@ -5,8 +5,6 @@ import static com.gentics.mesh.util.StreamUtil.unique;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -14,7 +12,12 @@ import org.apache.commons.lang.StringUtils;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * 
+ * Utility for the language specific ES schema settings.
+ */
 public final class LanguageOverrideUtil {
+
 	public static final String LANGUAGE_OVERRIDE_KEY = "_meshLanguageOverride";
 	public static final Pattern LANGUAGE_SPLIT_PATTERN = Pattern.compile(",");
 
@@ -23,6 +26,7 @@ public final class LanguageOverrideUtil {
 
 	/**
 	 * Validates the language override for Elasticsearch settings / mappings.
+	 * 
 	 * @param settings
 	 */
 	public static void validateLanguageOverrides(JsonObject settings) {
@@ -35,8 +39,8 @@ public final class LanguageOverrideUtil {
 	}
 
 	/**
-	 * Finds all overridden languages for Elasticsearch settings / mappings.
-	 * Duplicate languages will not be filtered out.
+	 * Finds all overridden languages for Elasticsearch settings / mappings. Duplicate languages will not be filtered out.
+	 * 
 	 * @param settings
 	 * @return
 	 */

@@ -2,6 +2,9 @@ package com.gentics.mesh.parameter;
 
 import org.apache.commons.lang.BooleanUtils;
 
+/**
+ * Interface for delete query parameters.
+ */
 public interface DeleteParameters extends ParameterProvider {
 
 	public static final String RECURSIVE_PARAMETER_KEY = "recursive";

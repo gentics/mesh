@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * REST model for location information (within the JSON) of a graphql error.
+ */
 public class ErrorLocation implements RestModel {
 
 	@JsonProperty(required = true)

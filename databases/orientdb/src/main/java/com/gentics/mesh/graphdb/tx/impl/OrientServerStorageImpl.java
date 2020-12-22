@@ -79,6 +79,9 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 		throw new NotImplementedException("Not supported in server mode");
 	}
 
+	/**
+	 * Create a new session by opening the mesh database.
+	 */
 	public ODatabaseSession createSession() {
 		return context.open(DB_NAME, "admin", "admin");
 	}

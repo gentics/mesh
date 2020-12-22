@@ -9,6 +9,9 @@ import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Changelog entry for the content language migration.
+ */
 public class NodeContentLanguageMigration extends AbstractChange {
 
 	@Override

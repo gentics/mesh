@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * POJO for a REST API token response.
+ */
 public class UserAPITokenResponse implements RestModel {
 
 	@JsonProperty(required = true)

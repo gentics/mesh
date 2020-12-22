@@ -20,17 +20,23 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
+	/**
+	 * Initialize the root vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
 	public void addSchemaContainer(HibUser user, HibSchema schema, EventQueueBatch batch) {
-		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
-		BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+		ProjectDaoWrapper projectDao = Tx.get().projectDao();
+		BranchDaoWrapper branchDao = Tx.get().branchDao();
 
 		HibProject project = getProject();
-		batch.add(projectDao.onSchemaAssignEvent(project,schema, ASSIGNED));
+		batch.add(projectDao.onSchemaAssignEvent(project, schema, ASSIGNED));
 		super.addSchemaContainer(user, schema, batch);
 
 		// assign the latest schema version to all branches of the project
@@ -41,8 +47,8 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
 	@Override
 	public void removeSchemaContainer(HibSchema schema, EventQueueBatch batch) {
-		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
-		BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+		ProjectDaoWrapper projectDao = Tx.get().projectDao();
+		BranchDaoWrapper branchDao = Tx.get().branchDao();
 
 		HibProject project = getProject();
 		batch.add(projectDao.onSchemaAssignEvent(project, schema, UNASSIGNED));

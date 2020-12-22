@@ -14,7 +14,11 @@ import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.data.dao.DaoCollection;
 
+/**
+ * Daggerized implementation of a {@link DaoCollection}
+ */
 @Singleton
 public class DAOActionsCollectionImpl implements DAOActionsCollection {
 

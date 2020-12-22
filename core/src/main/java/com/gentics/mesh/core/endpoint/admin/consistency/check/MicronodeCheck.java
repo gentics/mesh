@@ -11,6 +11,9 @@ import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.graphdb.spi.Database;
 
+/**
+ * Micronode consistency check
+ */
 public class MicronodeCheck extends AbstractConsistencyCheck {
 
 	@Override

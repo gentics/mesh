@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.verticle.entity;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
@@ -297,7 +298,7 @@ public class MeshEntities {
 	 */
 	public Stream<CreateDocumentRequest> generateNodeRequests(String nodeUuid, HibProject project, HibBranch branch) {
 		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
-		return findElementByUuidStream(project.getNodeRoot(), nodeUuid)
+		return findElementByUuidStream(toGraph(project).getNodeRoot(), nodeUuid)
 		.flatMap(node -> latestVersionTypes()
 		.flatMap(type -> boot.contentDao().getGraphFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(

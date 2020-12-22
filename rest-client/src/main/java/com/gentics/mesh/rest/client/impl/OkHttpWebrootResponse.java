@@ -13,6 +13,11 @@ import static com.gentics.mesh.http.MeshHeaders.WEBROOT_RESPONSE_TYPE;
 import static com.gentics.mesh.http.MeshHeaders.WEBROOT_NODE_UUID;
 import static com.gentics.mesh.rest.client.impl.Util.lazily;
 
+/**
+ * OkHttp specific webroot response implementation.
+ * 
+ * @see MeshWebrootResponse
+ */
 public class OkHttpWebrootResponse implements MeshWebrootResponse {
 
 	private final Response response;

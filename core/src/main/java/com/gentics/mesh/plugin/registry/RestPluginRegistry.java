@@ -14,7 +14,9 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.router.PluginRouter;
+import com.gentics.mesh.router.PluginRouterImpl;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 
 import io.reactivex.Completable;
@@ -22,6 +24,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
+/**
+ * {@link PluginRegistry} which keeps track of plugins which extend the REST API.
+ */
 @Singleton
 public class RestPluginRegistry implements PluginRegistry {
 

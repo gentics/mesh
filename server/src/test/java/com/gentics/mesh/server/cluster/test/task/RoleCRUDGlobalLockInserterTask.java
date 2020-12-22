@@ -2,6 +2,7 @@
 package com.gentics.mesh.server.cluster.test.task;
 
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
@@ -12,6 +13,9 @@ import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Test task
+ */
 public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 
 	public static final String ROLE = "RoleImpl";
@@ -20,6 +24,13 @@ public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 		super(test);
 	}
 
+	/**
+	 * Create a new role
+	 * 
+	 * @param tx
+	 * @param uuid
+	 * @return
+	 */
 	public Vertex createRole(Tx tx, String uuid) {
 		Vertex v = tx.getGraph().addVertex("class:" + ROLE);
 		v.setProperty("uuid", uuid);
@@ -32,8 +43,9 @@ public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 		try {
 			MeshComponent comp = test.getMesh().internal();
 			RoleCrudHandler crudHandler = comp.roleCrudHandler();
-			MeshAuthUser user = comp.database().tx(() -> {
-				return comp.boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
+			MeshAuthUser user = comp.database().tx(tx -> {
+				UserDaoWrapper userDao = tx.userDao();
+				return userDao.findMeshAuthUserByUsername("admin");
 			});
 			String roleUuid = UUIDUtil.randomUUID();
 			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(user, RoleResponse.class);

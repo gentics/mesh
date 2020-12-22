@@ -43,7 +43,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 
 	private void checkNode(Node node, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 /*
 		checkOut(node, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH);
@@ -116,7 +116,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	 * @param result check response
 	 */
 	private void checkParentNodes(Node node, ConsistencyCheckResult result) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 
 		Set<String> branchUuids = new HashSet<>();
 		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode())

@@ -11,6 +11,9 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * REST model for schema update requests.
+ */
 public class SchemaUpdateRequest implements SchemaVersionModel {
 
 	@JsonProperty(required = false)

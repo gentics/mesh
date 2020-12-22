@@ -3,7 +3,11 @@ package com.gentics.mesh.rest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.handler.ActionContext;
 
+/**
+ * REST helper to generate new translated {@link GenericMessageResponse} messages.
+ */
 public final class Messages {
+
 	/**
 	 * Generate a new message response.
 	 * 

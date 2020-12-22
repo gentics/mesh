@@ -9,6 +9,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -133,6 +134,7 @@ public class HttpServerConfig implements Option {
 		return host;
 	}
 
+	@Setter
 	public HttpServerConfig setHost(String host) {
 		this.host = host;
 		return this;
@@ -142,6 +144,7 @@ public class HttpServerConfig implements Option {
 		return port;
 	}
 
+	@Setter
 	public HttpServerConfig setPort(int port) {
 		this.port = port;
 		return this;
@@ -151,6 +154,7 @@ public class HttpServerConfig implements Option {
 		return sslPort;
 	}
 
+	@Setter
 	public HttpServerConfig setSslPort(int sslPort) {
 		this.sslPort = sslPort;
 		return this;
@@ -165,6 +169,7 @@ public class HttpServerConfig implements Option {
 		return this.enableCors != null && this.enableCors == true;
 	}
 
+	@Setter
 	public HttpServerConfig setEnableCors(Boolean enableCors) {
 		this.enableCors = enableCors;
 		return this;
@@ -174,6 +179,7 @@ public class HttpServerConfig implements Option {
 		return this.corsAllowedOriginPattern;
 	}
 
+	@Setter
 	public HttpServerConfig setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
 		this.corsAllowedOriginPattern = corsAllowedOriginPattern;
 		return this;
@@ -183,6 +189,7 @@ public class HttpServerConfig implements Option {
 		return corsAllowCredentials;
 	}
 
+	@Setter
 	public HttpServerConfig setCorsAllowCredentials(boolean allowCredentials) {
 		this.corsAllowCredentials = allowCredentials;
 		return this;
@@ -192,6 +199,7 @@ public class HttpServerConfig implements Option {
 		return ssl;
 	}
 
+	@Setter
 	public HttpServerConfig setSsl(boolean ssl) {
 		this.ssl = ssl;
 		return this;
@@ -201,6 +209,7 @@ public class HttpServerConfig implements Option {
 		return http;
 	}
 
+	@Setter
 	public HttpServerConfig setHttp(boolean http) {
 		this.http = http;
 		return this;
@@ -210,6 +219,7 @@ public class HttpServerConfig implements Option {
 		return certPath;
 	}
 
+	@Setter
 	public HttpServerConfig setCertPath(String certPath) {
 		this.certPath = certPath;
 		return this;
@@ -219,6 +229,7 @@ public class HttpServerConfig implements Option {
 		return keyPath;
 	}
 
+	@Setter
 	public HttpServerConfig setKeyPath(String keyPath) {
 		this.keyPath = keyPath;
 		return this;
@@ -228,6 +239,7 @@ public class HttpServerConfig implements Option {
 		return verticleAmount;
 	}
 
+	@Setter
 	public HttpServerConfig setVerticleAmount(int verticleAmount) {
 		this.verticleAmount = verticleAmount;
 		return this;
@@ -237,6 +249,7 @@ public class HttpServerConfig implements Option {
 		return clientAuthMode;
 	}
 
+	@Setter
 	public HttpServerConfig setClientAuthMode(ClientAuth clientAuthMode) {
 		this.clientAuthMode = clientAuthMode;
 		return this;
@@ -246,6 +259,7 @@ public class HttpServerConfig implements Option {
 		return trustedCertPaths;
 	}
 
+	@Setter
 	public HttpServerConfig setTrustedCertPaths(List<String> trustedCertPaths) {
 		this.trustedCertPaths = trustedCertPaths;
 		return this;
@@ -255,11 +269,15 @@ public class HttpServerConfig implements Option {
 		return serverTokens;
 	}
 
+	@Setter
 	public HttpServerConfig setServerTokens(boolean flag) {
 		this.serverTokens = flag;
 		return this;
 	}
 
+	/**
+	 * Validate the settings.
+	 */
 	public void validate(MeshOptions meshOptions) {
 		if (ssl && (isEmpty(getCertPath()) || isEmpty(getKeyPath()))) {
 			throw new IllegalStateException("SSL is enabled but either the server key or the cert path was not specified.");

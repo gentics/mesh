@@ -272,7 +272,7 @@ public abstract class AbstractChange implements Change {
 		edge.remove();
 	}
 
-	public void debug(Element element) {
+	private void debug(Element element) {
 		System.out.println("---");
 		for (String key : element.getPropertyKeys()) {
 			System.out.println(key + " : " + element.getProperty(key));

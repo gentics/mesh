@@ -7,6 +7,9 @@ import java.util.Optional;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Utility used to manage node index operations.
+ */
 public final class NodeIndexUtil {
 
 	private NodeIndexUtil() {

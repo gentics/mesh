@@ -33,6 +33,11 @@ public class SyncMeters {
 		delete = new SyncMeter(metrics, type, DELETE);
 	}
 
+	/**
+	 * Clone the values of the counters for a new metric response entry.
+	 * 
+	 * @return
+	 */
 	public EntityMetrics createSnapshot() {
 		return new EntityMetrics()
 			.setInsert(insert.createSnapshot())
@@ -40,6 +45,9 @@ public class SyncMeters {
 			.setDelete(delete.createSnapshot());
 	}
 
+	/**
+	 * Reset all counter.
+	 */
 	public void reset() {
 		insert.reset();
 		update.reset();

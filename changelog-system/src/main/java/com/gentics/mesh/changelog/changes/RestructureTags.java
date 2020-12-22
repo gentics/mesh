@@ -7,6 +7,9 @@ import java.util.Iterator;
 import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Change which restructures the tag model and tag root elements.
+ */
 public class RestructureTags extends AbstractChange {
 
 	@Override

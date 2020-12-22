@@ -18,8 +18,12 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
+/**
+ * Debug info provider for binary disk usage information.
+ */
 @Singleton
 public class BinaryDiskUsageProvider implements DebugInfoProvider {
+
 	private static final Logger log = LoggerFactory.getLogger(BinaryDiskUsageProvider.class);
 
 	private final MeshOptions options;
@@ -41,9 +45,8 @@ public class BinaryDiskUsageProvider implements DebugInfoProvider {
 		return Single.zip(
 			getTotalDiskUsage(options.getUploadOptions().getDirectory()),
 			getTotalDiskUsage(options.getImageOptions().getImageCacheDirectory()),
-			BinaryDiskUsage::new
-		).map(usage -> DebugInfoBufferEntry.asJson("binaryDiskUsage.json", usage))
-		.toFlowable();
+			BinaryDiskUsage::new).map(usage -> DebugInfoBufferEntry.asJson("binaryDiskUsage.json", usage))
+			.toFlowable();
 	}
 
 	private Single<Long> getTotalDiskUsage(String path) {
@@ -65,6 +68,9 @@ public class BinaryDiskUsageProvider implements DebugInfoProvider {
 			.onErrorReturnItem(0L);
 	}
 
+	/**
+	 * Container class for the information.
+	 */
 	public static class BinaryDiskUsage {
 		public final String binaries;
 		public final String imageCache;

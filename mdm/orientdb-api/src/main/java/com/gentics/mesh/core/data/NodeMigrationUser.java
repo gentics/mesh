@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import java.util.Collections;
 import java.util.Set;
 
 import com.gentics.mesh.core.TypeInfo;
@@ -11,16 +10,10 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserReference;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.AuthProvider;
-
 /**
  * Create mocked user for node migrations.
  */
-public class NodeMigrationUser implements MeshAuthUser {
+public class NodeMigrationUser implements HibUser {
 
 	@Override
 	public UserReference transformToReference() {
@@ -84,34 +77,6 @@ public class NodeMigrationUser implements MeshAuthUser {
 	@Override
 	public String getEmailAddress() {
 		return null;
-	}
-
-	@Override
-	public io.vertx.ext.auth.User isAuthorized(String authority, Handler<AsyncResult<Boolean>> resultHandler) {
-		return null;
-	}
-
-	@Override
-	public io.vertx.ext.auth.User clearCache() {
-		return null;
-	}
-
-	@Override
-	public JsonObject principal() {
-		return null;
-	}
-
-	@Override
-	public void setAuthProvider(AuthProvider authProvider) {
-	}
-
-	@Override
-	public void writeToBuffer(Buffer buffer) {
-	}
-
-	@Override
-	public int readFromBuffer(int pos, Buffer buffer) {
-		return 0;
 	}
 
 	@Override
@@ -246,7 +211,7 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public HibUser setReferencedNode(HibInNode node) {
+	public HibUser setReferencedNode(HibNode node) {
 		return this;
 	}
 
@@ -306,11 +271,6 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
-		return Collections.emptySet();
-	}
-
-	@Override
 	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
 	}
 
@@ -326,11 +286,6 @@ public class NodeMigrationUser implements MeshAuthUser {
 
 	@Override
 	public MeshAuthUser toAuthUser() {
-		return null;
-	}
-
-	@Override
-	public HibUser getDelegate() {
 		return null;
 	}
 
