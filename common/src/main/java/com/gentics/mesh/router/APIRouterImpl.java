@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.etc.config.ClusterOptions;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandlerImpl;
@@ -39,9 +39,9 @@ public class APIRouterImpl implements APIRouter {
 
 	private RootRouter root;
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
-	public APIRouterImpl(Vertx vertx, RootRouter root, AbstractMeshOptions options) {
+	public APIRouterImpl(Vertx vertx, RootRouter root, MeshOptions options) {
 		this.vertx = vertx;
 		this.root = root;
 		this.options = options;

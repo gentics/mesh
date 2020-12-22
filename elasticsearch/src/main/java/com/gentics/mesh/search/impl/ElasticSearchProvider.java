@@ -25,7 +25,7 @@ import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
@@ -57,7 +57,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
 	private final Lazy<Vertx> vertx;
 
@@ -71,7 +71,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	private final ComplianceMode complianceMode;
 
 	@Inject
-	public ElasticSearchProvider(Lazy<Vertx> vertx, AbstractMeshOptions options, ElasticsearchClient<JsonObject> client) {
+	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject> client) {
 		this.vertx = vertx;
 		this.options = options;
 		this.client = client;

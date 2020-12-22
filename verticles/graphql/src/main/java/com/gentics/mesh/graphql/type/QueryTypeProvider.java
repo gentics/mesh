@@ -62,7 +62,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.core.rest.error.UuidNotFoundException;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.GroupFilter;
 import com.gentics.mesh.graphql.filter.NodeFilter;
@@ -185,7 +185,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public DAOActionsCollection actions;
 
 	@Inject
-	public QueryTypeProvider(AbstractMeshOptions options) {
+	public QueryTypeProvider(MeshOptions options) {
 		super(options);
 	}
 

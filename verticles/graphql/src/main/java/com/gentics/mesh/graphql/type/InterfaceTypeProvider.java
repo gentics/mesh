@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import dagger.Lazy;
@@ -41,7 +41,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	public Lazy<UserTypeProvider> userTypeProvider;
 
 	@Inject
-	public InterfaceTypeProvider(AbstractMeshOptions options) {
+	public InterfaceTypeProvider(MeshOptions options) {
 		super(options);
 	}
 

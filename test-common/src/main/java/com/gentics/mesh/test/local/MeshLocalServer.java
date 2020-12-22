@@ -14,8 +14,8 @@ import org.junit.runner.Description;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshCLI;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
@@ -52,7 +52,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private Mesh mesh;
 
-	private MeshOptions meshOptions;
+	private OrientDBMeshOptions meshOptions;
 
 	/**
 	 * Create a new local server.
@@ -81,7 +81,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		}
 
 		if (meshOptions == null) {
-			meshOptions = OptionsLoader.createOrloadOptions(MeshOptions.class, args);
+			meshOptions = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
 		}
 		if (nodeName != null) {
 			meshOptions.setNodeName(nodeName);
@@ -279,7 +279,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 * @param meshOptions
 	 * @return Fluent API
 	 */
-	public MeshLocalServer withOptions(MeshOptions meshOptions) {
+	public MeshLocalServer withOptions(OrientDBMeshOptions meshOptions) {
 		this.meshOptions = meshOptions;
 		return this;
 	}
@@ -289,7 +289,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 * 
 	 * @return
 	 */
-	public AbstractMeshOptions getMeshOptions() {
+	public MeshOptions getMeshOptions() {
 		return meshOptions;
 	}
 

@@ -15,7 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.pf4j.PluginWrapper;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorImpl;
 
@@ -23,11 +23,11 @@ public class PluginConfigTest {
 
 	public static String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
 
-	public static AbstractMeshOptions options;
+	public static MeshOptions options;
 
 	@BeforeClass
 	public static void setupMeshOptions() {
-		options = new AbstractMeshOptions();
+		options = new MeshOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.setPluginDirectory(PLUGIN_DIR);

@@ -17,7 +17,7 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.VertxOptions;
@@ -36,7 +36,7 @@ public class OptionsLoaderTest {
 		if (confFile.exists()) {
 			confFile.delete();
 		}
-		AbstractMeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertNotNull(options);
 		assertTrue("The file should have been created.", confFile.exists());
 		assertNotNull("A keystore password should have been generated.", options.getAuthenticationOptions().getKeystorePassword());
@@ -45,23 +45,23 @@ public class OptionsLoaderTest {
 
 	@Test
 	public void testApplyEnvs() throws Exception {
-		environmentVariables.set(AbstractMeshOptions.MESH_DEFAULT_LANG_ENV, "ru");
-		environmentVariables.set(AbstractMeshOptions.MESH_UPDATECHECK_ENV, "false");
+		environmentVariables.set(MeshOptions.MESH_DEFAULT_LANG_ENV, "ru");
+		environmentVariables.set(MeshOptions.MESH_UPDATECHECK_ENV, "false");
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_PORT_ENV, "8100");
 		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "https://somewhere.com");
-		environmentVariables.set(AbstractMeshOptions.MESH_CLUSTER_INIT_ENV, "true");
+		environmentVariables.set(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_CORS_ORIGIN_PATTERN_ENV, "*");
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_CORS_ENABLE_ENV, "true");
 		environmentVariables.set(VertxOptions.MESH_VERTX_EVENT_POOL_SIZE_ENV, "41");
 		environmentVariables.set(VertxOptions.MESH_VERTX_WORKER_POOL_SIZE_ENV, "42");
-		environmentVariables.set(AbstractMeshOptions.MESH_LOCK_PATH_ENV, "dummy/1234");
+		environmentVariables.set(MeshOptions.MESH_LOCK_PATH_ENV, "dummy/1234");
 		environmentVariables.set(MeshUploadOptions.MESH_BINARY_DIR_ENV, "/uploads");
 		environmentVariables.set(MonitoringConfig.MESH_MONITORING_HTTP_HOST_ENV, "0.0.0.0");
 		environmentVariables.set(ContentConfig.MESH_CONTENT_AUTO_PURGE_ENV, "true");
 		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_MAPPING_MODE_ENV, "STRICT");
 		environmentVariables.set(ImageManipulatorOptions.MESH_IMAGE_CACHE_DIRECTORY_ENV, "data" + File.separator +"binaryImageCache");
 
-		AbstractMeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
 		assertEquals("ru", options.getDefaultLanguage());
 		assertFalse(options.isUpdateCheckEnabled());
@@ -82,14 +82,14 @@ public class OptionsLoaderTest {
 	@Test
 	public void testApplyEnvsNull() throws Exception {
 		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
-		AbstractMeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertNull(options.getSearchOptions().getUrl());
 	}
 
 	@Test
 	public void testTrustedCertListOneItemEnv() {
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "abc");
-		AbstractMeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions();
 		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
 		assertEquals("The path list should contain oneentries", 1, list.size());
 		assertEquals("abc", list.get(0));
@@ -98,7 +98,7 @@ public class OptionsLoaderTest {
 	@Test
 	public void testTrustedCertListEnv() {
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "abc,efg");
-		AbstractMeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions();
 		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
 		assertEquals("The path list should contain two entries", 2, list.size());
 		assertEquals("abc", list.get(0));
@@ -108,14 +108,14 @@ public class OptionsLoaderTest {
 	@Test
 	public void testEmptyTrustedCertListEnv() {
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "");
-		AbstractMeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions();
 		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
 		assertEquals("The path list should contain two entries", 0, list.size());
 	}
 
 	@Test
 	public void testApplyArgs() {
-		AbstractMeshOptions options = OptionsLoader.createOrloadOptions("-nodeName", "theNodeName", "-clusterName", "theClusterName");
+		MeshOptions options = OptionsLoader.createOrloadOptions("-nodeName", "theNodeName", "-clusterName", "theClusterName");
 		assertEquals("The node name should have been specified.", "theNodeName", options.getNodeName());
 		assertEquals("The cluster name should have been specified.", "theClusterName", options.getClusterOptions().getClusterName());
 		assertTrue("We specified the clusterName thus clustering should automatically be enabled.", options.getClusterOptions().isEnabled());
@@ -123,21 +123,21 @@ public class OptionsLoaderTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testInvalidOptions() {
-		AbstractMeshOptions options = new AbstractMeshOptions();
+		MeshOptions options = new MeshOptions();
 		options.getClusterOptions().setEnabled(true);
 		options.validate();
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testInvalidOptions2() {
-		AbstractMeshOptions options = new AbstractMeshOptions();
+		MeshOptions options = new MeshOptions();
 		options.getClusterOptions().setEnabled(true).setClusterName("someName");
 		options.validate();
 	}
 
 	@Test
 	public void testInvalidOptions3() {
-		AbstractMeshOptions options = new AbstractMeshOptions();
+		MeshOptions options = new MeshOptions();
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.setNodeName("someNode");
 		options.getClusterOptions().setEnabled(true).setClusterName("someName");
@@ -146,7 +146,7 @@ public class OptionsLoaderTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testInvalidOptions4() {
-		AbstractMeshOptions options = new AbstractMeshOptions();
+		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory(null);
 		options.getStorageOptions().setStartServer(true);
 		options.validate();
@@ -154,7 +154,7 @@ public class OptionsLoaderTest {
 
 	@Test
 	public void testInvalidOptions5() {
-		AbstractMeshOptions options = new AbstractMeshOptions();
+		MeshOptions options = new MeshOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.getStorageOptions().setDirectory(null);

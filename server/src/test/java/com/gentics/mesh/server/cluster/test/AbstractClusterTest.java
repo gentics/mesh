@@ -8,7 +8,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.server.cluster.ClusterServer;
 import com.gentics.mesh.server.cluster.test.task.LoadTask;
@@ -31,7 +31,7 @@ public abstract class AbstractClusterTest extends ClusterServer {
 
 	private static MeshComponent internal;
 
-	public static void setup(AbstractMeshOptions options) throws Exception {
+	public static void setup(MeshOptions options) throws Exception {
 		mesh = Mesh.create(options);
 		mesh.run(false);
 		while (mesh.getStatus() != MeshStatus.READY) {

@@ -181,7 +181,7 @@ public class ClusterOptions implements Option {
 	 * 
 	 * @param meshOptions
 	 */
-	public void validate(AbstractMeshOptions meshOptions) {
+	public void validate(MeshOptions meshOptions) {
 		if (isEnabled()) {
 			if ("0.0.0.0".equals(networkHost)) {
 				throw new NullPointerException(

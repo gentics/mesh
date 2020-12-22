@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.shared.SharedKeys;
 
@@ -62,10 +62,10 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	private BootstrapInitializer boot;
 
-	private final AbstractMeshOptions meshOptions;
+	private final MeshOptions meshOptions;
 
 	@Inject
-	public MeshJWTAuthProvider(Vertx vertx, AbstractMeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database,
+	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database,
 		BootstrapInitializer boot) {
 		this.meshOptions = meshOptions;
 		this.passwordEncoder = passwordEncoder;

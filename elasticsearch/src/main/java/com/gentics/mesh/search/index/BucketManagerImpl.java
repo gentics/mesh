@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.MathUtil;
 
@@ -20,12 +20,12 @@ public class BucketManagerImpl implements BucketManager {
 
 	private static final Logger log = LoggerFactory.getLogger(BucketManagerImpl.class);
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
 	private final Database database;
 
 	@Inject
-	public BucketManagerImpl(AbstractMeshOptions options, Database database) {
+	public BucketManagerImpl(MeshOptions options, Database database) {
 		this.options = options;
 		this.database = database;
 	}

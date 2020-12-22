@@ -6,7 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
@@ -18,7 +18,7 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class RoleSearchHandler extends AbstractSearchHandler<HibRole, RoleResponse> {
 
 	@Inject
-	public RoleSearchHandler(Database db, SearchProvider searchProvider, RoleIndexHandlerImpl indexHandler, AbstractMeshOptions options, RoleDAOActions actions) {
+	public RoleSearchHandler(Database db, SearchProvider searchProvider, RoleIndexHandlerImpl indexHandler, MeshOptions options, RoleDAOActions actions) {
 		super(db, searchProvider, options, indexHandler, actions);
 	}
 

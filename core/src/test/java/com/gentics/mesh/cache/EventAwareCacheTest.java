@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheImpl;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -23,7 +23,7 @@ public class EventAwareCacheTest extends AbstractMeshTest {
 
 	@Test
 	public void testCustomHandler() {
-		AbstractMeshOptions options = new AbstractMeshOptions();
+		MeshOptions options = new MeshOptions();
 		options.getMonitoringOptions().setEnabled(false);
 		EventAwareCache<String, Boolean> USER_STATE_CACHE = new EventAwareCacheImpl.Builder<String, Boolean>()
 			.maxSize(15_000)

@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.EventAwareCache;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 
 import io.vertx.core.Vertx;
@@ -16,11 +16,11 @@ import io.vertx.core.Vertx;
 public class EventAwareCacheFactory {
 
 	private final Vertx vertx;
-	private final AbstractMeshOptions meshOptions;
+	private final MeshOptions meshOptions;
 	private final MetricsService metricsService;
 
 	@Inject
-	public EventAwareCacheFactory(Vertx vertx, AbstractMeshOptions meshOptions, MetricsService metricsService) {
+	public EventAwareCacheFactory(Vertx vertx, MeshOptions meshOptions, MetricsService metricsService) {
 		this.vertx = vertx;
 		this.meshOptions = meshOptions;
 		this.metricsService = metricsService;

@@ -3,7 +3,7 @@ package com.gentics.mesh.router;
 import static com.gentics.mesh.handler.VersionHandlerImpl.API_MOUNTPOINT;
 
 import com.gentics.mesh.annotation.Getter;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 import com.gentics.mesh.router.route.PoweredByHandler;
@@ -29,7 +29,7 @@ public class RootRouterImpl implements RootRouter {
 
 	private Vertx vertx;
 
-	public RootRouterImpl(Vertx vertx, RouterStorage storage, AbstractMeshOptions options) {
+	public RootRouterImpl(Vertx vertx, RouterStorage storage, MeshOptions options) {
 		this.storage = storage;
 		this.vertx = vertx;
 		this.router = Router.router(vertx);

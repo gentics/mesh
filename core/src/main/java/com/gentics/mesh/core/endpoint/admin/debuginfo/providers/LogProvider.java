@@ -10,7 +10,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
@@ -21,10 +21,10 @@ import io.vertx.core.buffer.Buffer;
 @Singleton
 public class LogProvider implements DebugInfoProvider {
 	private final DebugInfoUtil debugInfoUtil;
-	private final AbstractMeshOptions meshOptions;
+	private final MeshOptions meshOptions;
 
 	@Inject
-	public LogProvider(DebugInfoUtil debugInfoUtil, AbstractMeshOptions meshOptions) {
+	public LogProvider(DebugInfoUtil debugInfoUtil, MeshOptions meshOptions) {
 		this.debugInfoUtil = debugInfoUtil;
 		this.meshOptions = meshOptions;
 	}

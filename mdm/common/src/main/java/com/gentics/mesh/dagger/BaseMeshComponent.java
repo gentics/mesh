@@ -22,7 +22,7 @@ import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -48,7 +48,7 @@ import io.vertx.core.Vertx;
 
 public interface BaseMeshComponent {
 
-	AbstractMeshOptions options();
+	MeshOptions options();
 
 	Vertx vertx();
 

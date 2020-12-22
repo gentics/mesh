@@ -11,7 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.AsyncResult;
@@ -45,10 +45,10 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 
 	private final MeshJWTAuthProvider authProvider;
 
-	private final AbstractMeshOptions meshOptions;
+	private final MeshOptions meshOptions;
 
 	@Inject
-	public MeshJWTAuthHandler(MeshJWTAuthProvider authProvider, AbstractMeshOptions meshOptions) {
+	public MeshJWTAuthHandler(MeshJWTAuthProvider authProvider, MeshOptions meshOptions) {
 		super(authProvider);
 		this.authProvider = authProvider;
 		this.meshOptions = meshOptions;

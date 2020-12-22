@@ -38,7 +38,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
@@ -69,7 +69,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 
 	protected final Database db;
 	protected final SearchProvider searchProvider;
-	protected final AbstractMeshOptions options;
+	protected final MeshOptions options;
 	protected final IndexHandler<T> indexHandler;
 	protected final ComplianceMode complianceMode;
 	protected final DAOActions<T, RM> actions;
@@ -87,7 +87,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 	 * @param options
 	 * @param indexHandler
 	 */
-	public AbstractSearchHandler(Database db, SearchProvider searchProvider, AbstractMeshOptions options, IndexHandler<T> indexHandler,
+	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, IndexHandler<T> indexHandler,
 		DAOActions<T, RM> actions) {
 		this.db = db;
 		this.searchProvider = searchProvider;

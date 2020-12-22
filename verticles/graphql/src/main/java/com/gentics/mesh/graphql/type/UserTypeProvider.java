@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -40,7 +40,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public UserTypeProvider(AbstractMeshOptions options) {
+	public UserTypeProvider(MeshOptions options) {
 		super(options);
 	}
 

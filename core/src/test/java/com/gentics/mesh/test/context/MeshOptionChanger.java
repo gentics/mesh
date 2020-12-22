@@ -3,7 +3,7 @@ package com.gentics.mesh.test.context;
 import java.net.ServerSocket;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.MappingMode;
 
 public enum MeshOptionChanger {
@@ -32,9 +32,9 @@ public enum MeshOptionChanger {
 		}
 	});
 
-	final Consumer<AbstractMeshOptions> changer;
+	final Consumer<MeshOptions> changer;
 
-	MeshOptionChanger(Consumer<AbstractMeshOptions> changer) {
+	MeshOptionChanger(Consumer<MeshOptions> changer) {
 		this.changer = changer;
 	}
 }

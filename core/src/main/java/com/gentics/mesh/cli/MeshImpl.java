@@ -24,7 +24,7 @@ import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.reactivex.Completable;
@@ -50,7 +50,7 @@ public class MeshImpl implements Mesh {
 
 	private MeshCustomLoader<Vertx> verticleLoader;
 
-	private AbstractMeshOptions options;
+	private MeshOptions options;
 
 	private CountDownLatch latch = new CountDownLatch(1);
 
@@ -66,11 +66,11 @@ public class MeshImpl implements Mesh {
 		log = LoggerFactory.getLogger(MeshImpl.class);
 	}
 
-	public MeshImpl(AbstractMeshOptions options) {
+	public MeshImpl(MeshOptions options) {
 		this(options, DaggerOrientDBMeshComponent.builder());
 	}
 
-	public MeshImpl(AbstractMeshOptions options, MeshComponent.Builder builder) {
+	public MeshImpl(MeshOptions options, MeshComponent.Builder builder) {
 		this.builder = builder;
 		long current = instanceCounter.incrementAndGet();
 		if (current >= 2) {
@@ -160,7 +160,7 @@ public class MeshImpl implements Mesh {
 		return this;
 	}
 
-	private void setupKeystore(AbstractMeshOptions options) throws Exception {
+	private void setupKeystore(MeshOptions options) throws Exception {
 		String keyStorePath = options.getAuthenticationOptions().getKeystorePath();
 		File keystoreFile = new File(keyStorePath);
 		// Copy the demo keystore file to the destination
@@ -347,7 +347,7 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
-	public AbstractMeshOptions getOptions() {
+	public MeshOptions getOptions() {
 		return options;
 	}
 

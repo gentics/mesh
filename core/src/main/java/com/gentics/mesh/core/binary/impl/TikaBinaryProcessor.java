@@ -37,7 +37,7 @@ import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
@@ -64,7 +64,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private final Lazy<Vertx> vertx;
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
 	private final Database db;
 
@@ -74,7 +74,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	private static final int DEFAULT_NON_DOC_TIKA_PARSE_LIMIT = 0;
 
 	@Inject
-	public TikaBinaryProcessor(Lazy<Vertx> vertx, AbstractMeshOptions options, Database db) {
+	public TikaBinaryProcessor(Lazy<Vertx> vertx, MeshOptions options, Database db) {
 		this.vertx = vertx;
 		this.options = options;
 		this.db = db;

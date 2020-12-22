@@ -29,7 +29,7 @@ import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -49,7 +49,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 	private final ComplianceMode complianceMode;
 
 	@Inject
-	public PermissionChangedEventHandler(MeshEntities meshEntities, MeshHelper meshHelper, AbstractMeshOptions options) {
+	public PermissionChangedEventHandler(MeshEntities meshEntities, MeshHelper meshHelper, MeshOptions options) {
 		this.meshEntities = meshEntities;
 		this.meshHelper = meshHelper;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();

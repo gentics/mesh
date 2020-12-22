@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 
 import dagger.Module;
@@ -44,7 +44,7 @@ public class MicrometerModule {
 	 */
 	@Provides
 	@Singleton
-	public static MeterRegistry meterRegistry(AbstractMeshOptions options) {
+	public static MeterRegistry meterRegistry(MeshOptions options) {
 		PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
 		List<Tag> tags = Stream.of(
@@ -95,7 +95,7 @@ public class MicrometerModule {
 	 */
 	@Provides
 	@Singleton
-	public static MetricsOptions micrometerMetricsOptions(AbstractMeshOptions options, MeterRegistry meterRegistry) {
+	public static MetricsOptions micrometerMetricsOptions(MeshOptions options, MeterRegistry meterRegistry) {
 		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
 		MicrometerMetricsOptions metricsOptions = new MicrometerMetricsOptions()
 			.setMicrometerRegistry(meterRegistry)
@@ -109,7 +109,7 @@ public class MicrometerModule {
 		return metricsOptions;
 	}
 
-	private static Stream<Match> labelMatches(AbstractMeshOptions options) {
+	private static Stream<Match> labelMatches(MeshOptions options) {
 		return Stream.of(
 			new Match()
 				.setDomain(MetricsDomain.HTTP_SERVER)

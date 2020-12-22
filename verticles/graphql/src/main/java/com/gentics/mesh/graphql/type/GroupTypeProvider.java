@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -29,7 +29,7 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public GroupTypeProvider(AbstractMeshOptions options) {
+	public GroupTypeProvider(MeshOptions options) {
 		super(options);
 	}
 

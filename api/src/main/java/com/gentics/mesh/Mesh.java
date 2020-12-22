@@ -4,7 +4,7 @@ package com.gentics.mesh;
 import java.util.Set;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
 import io.vertx.core.ServiceHelper;
@@ -24,7 +24,7 @@ public interface Mesh {
 	 * 
 	 * @return Fluent API
 	 */
-	static Mesh create(AbstractMeshOptions options) {
+	static Mesh create(MeshOptions options) {
 		options.validate();
 		return factory.create(options);
 	}
@@ -67,7 +67,7 @@ public interface Mesh {
 	 * 
 	 * @return Mesh options
 	 */
-	AbstractMeshOptions getOptions();
+	MeshOptions getOptions();
 
 	/**
 	 * Start Gentics Mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context and

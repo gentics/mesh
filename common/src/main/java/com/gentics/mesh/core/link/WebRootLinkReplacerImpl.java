@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
@@ -44,10 +44,10 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 	private final BootstrapInitializer boot;
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
 	@Inject
-	public WebRootLinkReplacerImpl(BootstrapInitializer boot, AbstractMeshOptions options) {
+	public WebRootLinkReplacerImpl(BootstrapInitializer boot, MeshOptions options) {
 		this.boot = boot;
 		this.options = options;
 	}

@@ -204,7 +204,7 @@ public class GraphStorageOptions implements Option {
 	/**
 	 * Validate the settings.
 	 */
-	public void validate(AbstractMeshOptions meshOptions) {
+	public void validate(MeshOptions meshOptions) {
 		if (getStartServer() && getDirectory() == null) {
 			throw new NullPointerException(
 				"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");

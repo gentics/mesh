@@ -38,7 +38,7 @@ public class CacheConfig implements Option {
 	}
 
 	@Override
-	public void validate(AbstractMeshOptions options) {
+	public void validate(MeshOptions options) {
 	}
 
 }

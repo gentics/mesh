@@ -11,7 +11,7 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient.Builder;
 import com.gentics.mesh.dagger.SearchProviderType;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
@@ -48,7 +48,7 @@ public class SearchProviderModule {
 	 */
 	@Provides
 	@Singleton
-	public static SearchProvider searchProvider(@Nullable SearchProviderType type, AbstractMeshOptions options,
+	public static SearchProvider searchProvider(@Nullable SearchProviderType type, MeshOptions options,
 		Lazy<ElasticSearchProvider> elasticsearchProvider) {
 		if (type == null) {
 			if (options.getSearchOptions().getUrl() == null) {
@@ -76,7 +76,7 @@ public class SearchProviderModule {
 	 */
 	@Provides
 	@Singleton
-	public static ElasticsearchClient<JsonObject> searchClient(AbstractMeshOptions options) {
+	public static ElasticsearchClient<JsonObject> searchClient(MeshOptions options) {
 
 		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		URL url;

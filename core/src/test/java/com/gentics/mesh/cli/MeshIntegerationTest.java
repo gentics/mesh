@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -35,7 +35,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 
 	@Test
 	public void testStartupWithOptions() throws Exception {
-		AbstractMeshOptions options = new AbstractMeshOptions();
+		MeshOptions options = new MeshOptions();
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.getSearchOptions().setStartEmbedded(false);
 		options.getSearchOptions().setUrl(null);

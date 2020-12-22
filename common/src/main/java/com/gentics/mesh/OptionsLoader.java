@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.MeshNameProvider;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
@@ -46,8 +46,8 @@ public final class OptionsLoader {
 	 * @param args
 	 * @return
 	 */
-	public static MeshOptions createOrloadOptions(String... args) {
-		return createOrloadOptions(MeshOptions.class, args);
+	public static OrientDBMeshOptions createOrloadOptions(String... args) {
+		return createOrloadOptions(OrientDBMeshOptions.class, args);
 	}
 	
 	/**
@@ -57,7 +57,7 @@ public final class OptionsLoader {
 	 *            Command line arguments
 	 * @return Effective mesh options
 	 */
-	public static <T extends AbstractMeshOptions> T createOrloadOptions(Class<T> optionsClass, String... args) {
+	public static <T extends MeshOptions> T createOrloadOptions(Class<T> optionsClass, String... args) {
 		return createOrloadOptions(optionsClass, null, args);
 	}
 
@@ -68,7 +68,7 @@ public final class OptionsLoader {
 	 * @param args
 	 * @return Effective mesh options
 	 */
-	public static <T extends AbstractMeshOptions> T createOrloadOptions(Class<T> optionsClass, T defaultOption, String... args) {
+	public static <T extends MeshOptions> T createOrloadOptions(Class<T> optionsClass, T defaultOption, String... args) {
 		T options = loadMeshOptions(optionsClass, defaultOption);
 		applyNonYamlProperties(defaultOption, options);
 		applyEnvironmentVariables(options);
@@ -77,7 +77,7 @@ public final class OptionsLoader {
 		return options;
 	}
 
-	private static void applyNonYamlProperties(AbstractMeshOptions defaultOption, AbstractMeshOptions options) {
+	private static void applyNonYamlProperties(MeshOptions defaultOption, MeshOptions options) {
 		if (defaultOption != null) {
 			options.setInitialAdminPassword(defaultOption.getInitialAdminPassword());
 			options.setForceInitialAdminPasswordReset(defaultOption.isForceInitialAdminPasswordReset());
@@ -89,7 +89,7 @@ public final class OptionsLoader {
 	 * 
 	 * @param options
 	 */
-	private static void applyEnvironmentVariables(AbstractMeshOptions options) {
+	private static void applyEnvironmentVariables(MeshOptions options) {
 		options.overrideWithEnv();
 	}
 
@@ -99,7 +99,7 @@ public final class OptionsLoader {
 	 * @param options
 	 * @param args
 	 */
-	private static void applyCommandLineArgs(AbstractMeshOptions options, String... args) {
+	private static void applyCommandLineArgs(MeshOptions options, String... args) {
 		try {
 			CommandLine commandLine = MeshCLI.parse(args);
 
@@ -164,7 +164,7 @@ public final class OptionsLoader {
 	 * 
 	 * @return
 	 */
-	private static <T extends AbstractMeshOptions> T loadMeshOptions(Class<T> optionsClass, T defaultOption) {
+	private static <T extends MeshOptions> T loadMeshOptions(Class<T> optionsClass, T defaultOption) {
 
 		File confFile = new File(CONFIG_FOLDERNAME, MESH_CONF_FILENAME);
 		T options = null;
@@ -219,7 +219,7 @@ public final class OptionsLoader {
 	 * @param defaultOption
 	 * @return
 	 */
-	public static <T extends AbstractMeshOptions> T generateDefaultConfig(Class<T> optionsClass, T defaultOption) {
+	public static <T extends MeshOptions> T generateDefaultConfig(Class<T> optionsClass, T defaultOption) {
 		T options = defaultOption;
 		if (options == null) {
 			try {
@@ -253,7 +253,7 @@ public final class OptionsLoader {
 	 * @param ins
 	 * @return
 	 */
-	private static <T extends AbstractMeshOptions> T loadConfiguration(Class<T> optionsClass, InputStream ins) {
+	private static <T extends MeshOptions> T loadConfiguration(Class<T> optionsClass, InputStream ins) {
 		if (ins == null) {
 			log.info("Config file {" + MESH_CONF_FILENAME + "} not found. Using default configuration.");
 			try {

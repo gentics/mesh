@@ -10,7 +10,7 @@ import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
@@ -43,7 +43,7 @@ public interface MeshComponent extends BaseMeshComponent {
 		 * @param options
 		 * @return
 		 */
-		Builder configuration(AbstractMeshOptions options);
+		Builder configuration(MeshOptions options);
 
 		/**
 		 * Inject mesh instance.

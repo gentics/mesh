@@ -16,7 +16,7 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -38,7 +38,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 	private final ComplianceMode complianceMode;
 
 	@Inject
-	public RoleDeletedEventHandler(SearchProvider searchProvider, AbstractMeshOptions options) {
+	public RoleDeletedEventHandler(SearchProvider searchProvider, MeshOptions options) {
 		this.searchProvider = searchProvider;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}

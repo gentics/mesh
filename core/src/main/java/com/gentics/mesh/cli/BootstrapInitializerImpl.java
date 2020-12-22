@@ -96,12 +96,12 @@ import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -179,7 +179,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public MeshPluginManager pluginManager;
 
 	@Inject
-	public AbstractMeshOptions options;
+	public MeshOptions options;
 
 	@Inject
 	public RouterStorageRegistryImpl routerStorageRegistry;
@@ -256,7 +256,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @return True if an empty installation was detected, false if existing data was found
 	 * @throws Exception
 	 */
-	private void initLocalData(PostProcessFlags flags, AbstractMeshOptions configuration, boolean isJoiningCluster) throws Exception {
+	private void initLocalData(PostProcessFlags flags, MeshOptions configuration, boolean isJoiningCluster) throws Exception {
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (isEmptyInstallation) {
 			if (db.requiresTypeInit()) {
@@ -290,14 +290,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Joining of cluster members is only allowed when the changelog has been applied
 				throw new RuntimeException(
 					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
-						+ AbstractMeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER
+						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER
 						+ " command line argument to migrate the database.");
 			}
 		}
 	}
 
 	@Override
-	public void init(Mesh mesh, boolean forceResync, AbstractMeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(Mesh mesh, boolean forceResync, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.mesh = (MeshImpl) mesh;
 		PostProcessFlags flags = new PostProcessFlags(forceResync, false);
 
@@ -308,8 +308,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		options = prepareMeshOptions(options);
 
 		addDebugInfoLogAppender(options);
-		if (options instanceof MeshOptions) {
-			GraphStorageOptions storageOptions = ((MeshOptions)options).getStorageOptions();
+		if (options instanceof OrientDBMeshOptions) {
+			GraphStorageOptions storageOptions = ((OrientDBMeshOptions)options).getStorageOptions();
 			startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
 			RequirementsCheck.init(storageOptions);
@@ -429,7 +429,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * 
 	 * @param options
 	 */
-	private void addDebugInfoLogAppender(AbstractMeshOptions options) {
+	private void addDebugInfoLogAppender(MeshOptions options) {
 		DebugInfoOptions debugInfoOptions = options.getDebugInfoOptions();
 		if (!debugInfoOptions.isLogEnabled()) {
 			return;
@@ -476,7 +476,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @param options
 	 * @return
 	 */
-	private AbstractMeshOptions prepareMeshOptions(AbstractMeshOptions options) {
+	private MeshOptions prepareMeshOptions(MeshOptions options) {
 		loadExtraPublicKeys(options);
 		options.validate();
 		return options;
@@ -487,7 +487,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 *
 	 * @param options
 	 */
-	private void loadExtraPublicKeys(AbstractMeshOptions options) {
+	private void loadExtraPublicKeys(MeshOptions options) {
 		AuthenticationOptions auth = options.getAuthenticationOptions();
 		String keyPath = auth.getPublicKeysPath();
 		if (StringUtils.isNotEmpty(keyPath)) {
@@ -544,7 +544,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * 
 	 * @param options
 	 */
-	public void initVertx(AbstractMeshOptions options) {
+	public void initVertx(MeshOptions options) {
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
@@ -586,7 +586,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @param hazelcast
 	 *            Hazelcast instance which should be used by vert.x
 	 */
-	private Vertx createClusteredVertx(AbstractMeshOptions options, VertxOptions vertxOptions, HazelcastInstance hazelcast) {
+	private Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions, HazelcastInstance hazelcast) {
 		Objects.requireNonNull(hazelcast, "The hazelcast instance was not yet initialized.");
 		manager = new HazelcastClusterManager(hazelcast);
 		vertxOptions.setClusterManager(manager);
@@ -634,7 +634,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	private void handleLocalData(PostProcessFlags flags, AbstractMeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	private void handleLocalData(PostProcessFlags flags, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Load the verticles
 		List<String> initialProjects = db.tx(tx -> {
 			return tx.projectDao().findAll().stream()
@@ -994,7 +994,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void initMandatoryData(AbstractMeshOptions config) throws Exception {
+	public void initMandatoryData(MeshOptions config) throws Exception {
 
 		db.tx(tx -> {
 			UserDaoWrapper userDao = tx.userDao();
@@ -1236,7 +1236,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void initOptionalLanguages(AbstractMeshOptions configuration) {
+	public void initOptionalLanguages(MeshOptions configuration) {
 		String languagesFilePath = configuration.getLanguagesFilePath();
 		if (StringUtils.isNotEmpty(languagesFilePath)) {
 			File languagesFile = new File(languagesFilePath);

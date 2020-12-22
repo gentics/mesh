@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.util.ETag;
 
 import dagger.Lazy;
@@ -20,7 +20,7 @@ public abstract class AbstractDatabase implements Database {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
-	protected MeshOptions options;
+	protected OrientDBMeshOptions options;
 	protected String meshVersion;
 	protected String[] basePaths;
 

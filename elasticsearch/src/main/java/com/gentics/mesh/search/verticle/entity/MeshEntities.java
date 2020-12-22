@@ -43,7 +43,7 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagElementEventModel;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
@@ -71,7 +71,7 @@ public class MeshEntities {
 
 	private final MeshHelper helper;
 	private final BootstrapInitializer boot;
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 	private final ComplianceMode complianceMode;
 
 	public final MeshEntity<HibUser> user;
@@ -87,7 +87,7 @@ public class MeshEntities {
 
 	@Inject
 	public MeshEntities(MeshHelper helper, BootstrapInitializer boot, 
-		AbstractMeshOptions options, 
+		MeshOptions options, 
 		UserTransformer userTransformer, 
 		RoleTransformer roleTransformer, 
 		TagTransformer tagTransformer, 

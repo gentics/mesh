@@ -6,13 +6,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 public class MeshMeshIntegrationTest {
 
 	@Test
 	public void testMeshMesh() throws Exception {
-		AbstractMeshOptions optionA = new AbstractMeshOptions().setNodeName("A");
+		MeshOptions optionA = new MeshOptions().setNodeName("A");
 		optionA.getAuthenticationOptions().setKeystorePassword("ABC");
 		optionA.getSearchOptions().setStartEmbedded(false);
 		optionA.getSearchOptions().setUrl(null);
@@ -22,7 +22,7 @@ public class MeshMeshIntegrationTest {
 		optionA.getMonitoringOptions().setPort(8082);
 		Mesh meshA = Mesh.create(optionA);
 
-		AbstractMeshOptions optionB = new AbstractMeshOptions().setNodeName("B");
+		MeshOptions optionB = new MeshOptions().setNodeName("B");
 		optionB.getAuthenticationOptions().setKeystorePassword("ABC");
 		optionB.getSearchOptions().setStartEmbedded(false);
 		optionB.getSearchOptions().setUrl(null);

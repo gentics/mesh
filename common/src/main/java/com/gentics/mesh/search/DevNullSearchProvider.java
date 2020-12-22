@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -20,9 +20,9 @@ import io.vertx.core.json.JsonObject;
  */
 public class DevNullSearchProvider implements SearchProvider {
 
-	private AbstractMeshOptions options;
+	private MeshOptions options;
 
-	public DevNullSearchProvider(AbstractMeshOptions options) {
+	public DevNullSearchProvider(MeshOptions options) {
 		this.options = options;
 	}
 

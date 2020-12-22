@@ -13,7 +13,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
@@ -124,8 +124,8 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
 		}
 
-		addEnv(AbstractMeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
-		addEnv(AbstractMeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
+		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
+		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
 
 		exposedPorts.add(8080);
 		setExposedPorts(exposedPorts);

@@ -3,7 +3,7 @@ package com.gentics.mesh.graphdb.model;
 import java.util.Collections;
 import java.util.Set;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.Element;
@@ -102,5 +102,5 @@ public interface MeshElement extends ElementFrame {
 	 *
 	 * @return
 	 */
-	AbstractMeshOptions options();
+	MeshOptions options();
 }

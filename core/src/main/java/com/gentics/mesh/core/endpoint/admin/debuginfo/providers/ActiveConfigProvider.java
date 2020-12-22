@@ -7,7 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Flowable;
@@ -17,10 +17,10 @@ import io.reactivex.Flowable;
  */
 @Singleton
 public class ActiveConfigProvider implements DebugInfoProvider {
-	private final AbstractMeshOptions meshOptions;
+	private final MeshOptions meshOptions;
 
 	@Inject
-	public ActiveConfigProvider(AbstractMeshOptions meshOptions) {
+	public ActiveConfigProvider(MeshOptions meshOptions) {
 		this.meshOptions = meshOptions;
 	}
 

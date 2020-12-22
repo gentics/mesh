@@ -278,7 +278,7 @@ public class HttpServerConfig implements Option {
 	/**
 	 * Validate the settings.
 	 */
-	public void validate(AbstractMeshOptions meshOptions) {
+	public void validate(MeshOptions meshOptions) {
 		if (ssl && (isEmpty(getCertPath()) || isEmpty(getKeyPath()))) {
 			throw new IllegalStateException("SSL is enabled but either the server key or the cert path was not specified.");
 		}

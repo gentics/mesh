@@ -9,7 +9,7 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.VERSION_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 
 import io.vertx.core.json.JsonObject;
@@ -22,11 +22,11 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 
 	public static final String ROLE_UUIDS = "_roleUuids";
 
-	protected final AbstractMeshOptions options;
+	protected final MeshOptions options;
 
 	protected final ComplianceMode complianceMode;
 
-	public AbstractMappingProvider(AbstractMeshOptions options) {
+	public AbstractMappingProvider(MeshOptions options) {
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}

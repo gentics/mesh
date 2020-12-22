@@ -9,7 +9,7 @@ import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -28,7 +28,7 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	private final Lazy<Vertx> vertx;
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
 	private Lazy<MeshJWTAuthProvider> authProvider;
 
@@ -42,7 +42,7 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	@Inject
 	public PluginEnvironmentImpl(Lazy<BootstrapInitializer> boot, Database db, Lazy<MeshJWTAuthProvider> authProvider, Lazy<Vertx> vertx,
-		AbstractMeshOptions options, @Named("pluginClient") OkHttpClient pluginOkHttpClient) {
+		MeshOptions options, @Named("pluginClient") OkHttpClient pluginOkHttpClient) {
 		this.boot = boot;
 		this.db = db;
 		this.authProvider = authProvider;
@@ -104,11 +104,11 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 	}
 
 	@Override
-	public AbstractMeshOptions options() {
+	public MeshOptions options() {
 		return options;
 	}
 
-	private String determineHostString(AbstractMeshOptions options) {
+	private String determineHostString(MeshOptions options) {
 		String host = options.getHttpServerOptions().getHost();
 		return WILDCARD_IP.equals(host) ? LOOPBACK_IP : host;
 	}

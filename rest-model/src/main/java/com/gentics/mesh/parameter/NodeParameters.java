@@ -3,7 +3,7 @@ package com.gentics.mesh.parameter;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 /**
  * Interface for node query parameters.
@@ -141,7 +141,7 @@ public interface NodeParameters extends ParameterProvider {
 	 *            Mesh options which contains the default language information
 	 * @return
 	 */
-	default List<String> getLanguageList(AbstractMeshOptions options) {
+	default List<String> getLanguageList(MeshOptions options) {
 		String[] langs = getLanguages();
 		if (langs == null) {
 			return Arrays.asList(options.getDefaultLanguage());

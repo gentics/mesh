@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -44,7 +44,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public ProjectTypeProvider(AbstractMeshOptions options) {
+	public ProjectTypeProvider(MeshOptions options) {
 		super(options);
 	}
 

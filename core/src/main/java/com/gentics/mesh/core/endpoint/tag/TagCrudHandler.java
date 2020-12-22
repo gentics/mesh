@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
@@ -35,14 +35,14 @@ import com.gentics.mesh.util.ResultInfo;
 public class TagCrudHandler extends AbstractHandler {
 
 	private final HandlerUtilities utils;
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 	private final WriteLock globalLock;
 	private final TagDAOActions tagActions;
 	private final TagFamilyDAOActions tagFamilyActions;
 	private final PageTransformer pageTransformer;
 
 	@Inject
-	public TagCrudHandler(AbstractMeshOptions options, HandlerUtilities utils, WriteLock writeLock, TagDAOActions tagActions,
+	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, WriteLock writeLock, TagDAOActions tagActions,
 		TagFamilyDAOActions tagFamilyActions, PageTransformer pageTransformer) {
 		this.options = options;
 		this.utils = utils;

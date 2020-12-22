@@ -52,7 +52,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
@@ -79,7 +79,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public WebRootLinkReplacerImpl linkReplacer;
 
 	@Inject
-	public FieldDefinitionProvider(AbstractMeshOptions options) {
+	public FieldDefinitionProvider(MeshOptions options) {
 		super(options);
 	}
 

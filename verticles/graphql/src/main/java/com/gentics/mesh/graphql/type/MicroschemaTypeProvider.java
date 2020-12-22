@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -33,7 +33,7 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public MicroschemaTypeProvider(AbstractMeshOptions options) {
+	public MicroschemaTypeProvider(MeshOptions options) {
 		super(options);
 	}
 

@@ -39,7 +39,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.json.JsonUtil;
@@ -75,7 +75,7 @@ public class WebRootHandler {
 
 	private final BootstrapInitializer boot;
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
 	private final WriteLock writeLock;
 
@@ -83,7 +83,7 @@ public class WebRootHandler {
 
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
-		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, AbstractMeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
+		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		this.db = database;
 		this.webrootService = webrootService;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;

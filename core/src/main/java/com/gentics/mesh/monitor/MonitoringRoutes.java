@@ -11,7 +11,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.handler.MonitoringCrudHandler;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
@@ -39,12 +39,12 @@ public class MonitoringRoutes {
 
 	private final AdminHandler adminHandler;
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
 	private final MonitoringCrudHandler monitoringCrudHandler;
 
 	@Inject
-	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, AdminHandler adminHandler, AbstractMeshOptions options, MonitoringCrudHandler monitoringCrudHandler) {
+	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, AdminHandler adminHandler, MeshOptions options, MonitoringCrudHandler monitoringCrudHandler) {
 		this.router = new RouterImpl(vertx);
 		this.boot = boot;
 		this.apiRouter = new RouterImpl(vertx);

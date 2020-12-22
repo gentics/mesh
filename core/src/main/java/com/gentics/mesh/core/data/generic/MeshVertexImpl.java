@@ -26,7 +26,7 @@ import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.field.FieldType;
@@ -169,7 +169,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	/**
 	 * Return the Mesh options.
 	 */
-	public AbstractMeshOptions options() {
+	public MeshOptions options() {
 		return mesh().options();
 	}
 

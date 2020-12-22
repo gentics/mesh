@@ -15,7 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.binary.HibBinaryField;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.util.RxUtil;
 
@@ -38,7 +38,7 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 	private MeshUploadOptions options;
 
 	@Inject
-	public LocalBinaryStorageImpl(AbstractMeshOptions options, Vertx rxVertx) {
+	public LocalBinaryStorageImpl(MeshOptions options, Vertx rxVertx) {
 		this.options = options.getUploadOptions();
 		this.rxVertx = rxVertx;
 		this.fileSystem = rxVertx.fileSystem();

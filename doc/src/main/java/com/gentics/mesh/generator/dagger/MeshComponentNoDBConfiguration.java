@@ -2,8 +2,8 @@ package com.gentics.mesh.generator.dagger;
 
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
@@ -22,7 +22,7 @@ public class MeshComponentNoDBConfiguration {
 	 * Initialize the mesh settings.
 	 */
 	public static void init() {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
 		// The orientdb database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
@@ -37,7 +37,7 @@ public class MeshComponentNoDBConfiguration {
 	 */
 	@Provides
 	@Singleton
-	public TrackingSearchProviderImpl dummySearchProvider(AbstractMeshOptions options) {
+	public TrackingSearchProviderImpl dummySearchProvider(MeshOptions options) {
 		return new TrackingSearchProviderImpl(options);
 	}
 
@@ -49,7 +49,7 @@ public class MeshComponentNoDBConfiguration {
 	 */
 	@Provides
 	@Singleton
-	public SearchProvider searchProvider(AbstractMeshOptions options) {
+	public SearchProvider searchProvider(MeshOptions options) {
 		// For testing it is not needed to start ES in most cases. This will speedup test execution since ES does not need to initialize.
 		return dummySearchProvider(options);
 	}

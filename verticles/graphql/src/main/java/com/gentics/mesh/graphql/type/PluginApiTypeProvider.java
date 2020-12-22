@@ -6,7 +6,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
@@ -31,7 +31,7 @@ public class PluginApiTypeProvider extends AbstractTypeProvider {
 	private final PluginEnvironment pluginEnv;
 
 	@Inject
-	public PluginApiTypeProvider(AbstractMeshOptions options, GraphQLPluginRegistry pluginTypeRegistry, PluginEnvironment env) {
+	public PluginApiTypeProvider(MeshOptions options, GraphQLPluginRegistry pluginTypeRegistry, PluginEnvironment env) {
 		super(options);
 		this.pluginTypeRegistry = pluginTypeRegistry;
 		this.pluginEnv = env;

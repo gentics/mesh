@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.search.SearchProvider;
@@ -37,10 +37,10 @@ public class MeshTypeProvider {
 
 	private final LocalConfigApi localConfigApi;
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
 	@Inject
-	public MeshTypeProvider(BootstrapInitializer boot, Database db, SearchProvider searchProvider, LocalConfigApi localConfigApi, AbstractMeshOptions options) {
+	public MeshTypeProvider(BootstrapInitializer boot, Database db, SearchProvider searchProvider, LocalConfigApi localConfigApi, MeshOptions options) {
 		this.boot = boot;
 		this.db = db;
 		this.searchProvider = searchProvider;

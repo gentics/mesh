@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -52,7 +52,7 @@ public class NodeContentEventHandler implements EventHandler {
 	private final ComplianceMode complianceMode;
 
 	@Inject
-	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, AbstractMeshOptions options) {
+	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();

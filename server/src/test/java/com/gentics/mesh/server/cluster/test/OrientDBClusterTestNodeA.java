@@ -2,7 +2,7 @@ package com.gentics.mesh.server.cluster.test;
 
 import org.junit.Test;
 
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.server.cluster.test.task.RoleCRUDGlobalLockInserterTask;
 
 /**
@@ -12,7 +12,7 @@ public class OrientDBClusterTestNodeA extends AbstractClusterTest {
 
 	@Test
 	public void testServer() throws Exception {
-		AbstractMeshOptions options = init(null);
+		MeshOptions options = init(null);
 		options.setInitCluster(true);
 		options.setNodeName("gentics-mesh-1");
 		options.getStorageOptions().setDirectory("data1/graphdb");

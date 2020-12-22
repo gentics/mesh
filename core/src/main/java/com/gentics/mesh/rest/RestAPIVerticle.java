@@ -33,7 +33,7 @@ import com.gentics.mesh.core.endpoint.user.UserEndpoint;
 import com.gentics.mesh.core.endpoint.utility.UtilityEndpoint;
 import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -154,7 +154,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public Vertx vertx;
 
 	@Inject
-	public AbstractMeshOptions meshOptions;
+	public MeshOptions meshOptions;
 
 	@Inject
 	public RestAPIVerticle() {

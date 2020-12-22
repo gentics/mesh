@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
@@ -89,7 +89,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	private final RequestDelegator delegator;
 
 	@Inject
-	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, AbstractMeshOptions meshOptions,
+	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions,
 		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
 		AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi, RequestDelegator delegator) {
 		this.db = db;

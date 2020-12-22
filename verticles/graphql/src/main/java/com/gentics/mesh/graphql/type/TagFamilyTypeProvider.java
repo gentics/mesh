@@ -13,7 +13,7 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -34,7 +34,7 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 	private final TagDAOActions tagActions;
 
 	@Inject
-	public TagFamilyTypeProvider(AbstractMeshOptions options, TagDAOActions tagActions) {
+	public TagFamilyTypeProvider(MeshOptions options, TagDAOActions tagActions) {
 		super(options);
 		this.tagActions = tagActions;
 	}

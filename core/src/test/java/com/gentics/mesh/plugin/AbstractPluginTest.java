@@ -12,7 +12,7 @@ import org.junit.Before;
 
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.twelvemonkeys.io.FileUtil;
@@ -63,7 +63,7 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	public void setPluginBaseDir(String baseDir) {
 		File pluginDir = new File(baseDir);
 		pluginDir.mkdirs();
-		AbstractMeshOptions options = testContext.getOptions();
+		MeshOptions options = testContext.getOptions();
 		options.setPluginDirectory(baseDir);
 		pluginManager().start();
 	}

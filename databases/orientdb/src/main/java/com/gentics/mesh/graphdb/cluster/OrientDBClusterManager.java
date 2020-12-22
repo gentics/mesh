@@ -28,10 +28,10 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.spi.GraphStorage;
 import com.gentics.mesh.util.DateUtils;
@@ -91,7 +91,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private final Lazy<Vertx> vertx;
 
-	private final MeshOptions options;
+	private final OrientDBMeshOptions options;
 
 	private final Lazy<OrientDBDatabase> db;
 
@@ -102,11 +102,11 @@ public class OrientDBClusterManager implements ClusterManager {
 	private final boolean isClusteringEnabled;
 
 	@Inject
-	public OrientDBClusterManager(Mesh mesh, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, AbstractMeshOptions options, Lazy<OrientDBDatabase> db) {
+	public OrientDBClusterManager(Mesh mesh, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db) {
 		this.mesh = mesh;
 		this.vertx = vertx;
 		this.boot = boot;
-		this.options = (MeshOptions) options;
+		this.options = (OrientDBMeshOptions) options;
 		this.db = db;
 		this.clusterOptions = options.getClusterOptions();
 		this.isClusteringEnabled = clusterOptions != null && clusterOptions.isEnabled();

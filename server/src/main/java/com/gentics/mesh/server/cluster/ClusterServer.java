@@ -4,8 +4,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
@@ -31,10 +31,10 @@ public abstract class ClusterServer {
 	 * @param args
 	 * @return
 	 */
-	public static MeshOptions init(String[] args) {
+	public static OrientDBMeshOptions init(String[] args) {
 		LoggingConfigurator.init();
 		log = LoggerFactory.getLogger(ClusterServer.class);
-		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(args);
 
 		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);
@@ -69,7 +69,7 @@ public abstract class ClusterServer {
 	 * @param options
 	 * @throws Exception
 	 */
-	public static void run(AbstractMeshOptions options) throws Exception {
+	public static void run(MeshOptions options) throws Exception {
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();

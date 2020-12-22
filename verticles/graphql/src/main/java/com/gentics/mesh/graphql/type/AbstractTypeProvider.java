@@ -38,7 +38,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.etc.config.AbstractMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.parameter.LinkType;
@@ -61,9 +61,9 @@ public abstract class AbstractTypeProvider {
 	public static final String LINK_TYPE_NAME = "LinkType";
 	public static final String NODE_CONTAINER_VERSION_NAME = "NodeVersion";
 
-	private final AbstractMeshOptions options;
+	private final MeshOptions options;
 
-	public AbstractTypeProvider(AbstractMeshOptions options) {
+	public AbstractTypeProvider(MeshOptions options) {
 		this.options = options;
 	}
 
