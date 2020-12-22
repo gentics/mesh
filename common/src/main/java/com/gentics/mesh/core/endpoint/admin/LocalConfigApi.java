@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.util.PojoUtil;
 
 import dagger.Lazy;
@@ -22,10 +22,10 @@ public class LocalConfigApi {
 	private static final String LOCAL_CONFIG_KEY = "localConfig";
 
 	private final Lazy<Vertx> vertx;
-	private final MeshOptions meshOptions;
+	private final AbstractMeshOptions meshOptions;
 
 	@Inject
-	public LocalConfigApi(Lazy<Vertx> vertx, MeshOptions meshOptions) {
+	public LocalConfigApi(Lazy<Vertx> vertx, AbstractMeshOptions meshOptions) {
 		this.vertx = vertx;
 		this.meshOptions = meshOptions;
 	}

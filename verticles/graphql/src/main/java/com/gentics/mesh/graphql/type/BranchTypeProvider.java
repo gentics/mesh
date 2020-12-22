@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -28,7 +28,7 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public BranchTypeProvider(MeshOptions options) {
+	public BranchTypeProvider(AbstractMeshOptions options) {
 		super(options);
 	}
 

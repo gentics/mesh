@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.ext.web.RoutingContext;
@@ -26,12 +26,12 @@ import io.vertx.ext.web.RoutingContext;
 @Singleton
 public class BinaryDownloadHandler extends AbstractHandler {
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
 	private final Database db;
 
 	@Inject
-	public BinaryDownloadHandler(MeshOptions options, Database db, BinaryFieldResponseHandler binaryFieldResponseHandler) {
+	public BinaryDownloadHandler(AbstractMeshOptions options, Database db, BinaryFieldResponseHandler binaryFieldResponseHandler) {
 		this.options = options;
 		this.db = db;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;

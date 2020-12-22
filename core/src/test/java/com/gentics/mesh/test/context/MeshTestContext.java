@@ -50,7 +50,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
@@ -88,7 +88,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
-	private static MeshOptions meshOptions;
+	private static AbstractMeshOptions meshOptions;
 
 	public static ElasticsearchContainer elasticsearch;
 
@@ -122,7 +122,7 @@ public class MeshTestContext extends TestWatcher {
 	private CountDownLatch idleLatch;
 	private MessageConsumer<Object> idleConsumer;
 
-	private Consumer<MeshOptions> optionChanger = noopConsumer();
+	private Consumer<AbstractMeshOptions> optionChanger = noopConsumer();
 
 	private Mesh mesh;
 
@@ -168,7 +168,7 @@ public class MeshTestContext extends TestWatcher {
 		httpsPort = TestUtils.getRandomPort();
 		monitoringPort = TestUtils.getRandomPort();
 		removeConfigDirectory();
-		MeshOptions options = init(settings);
+		AbstractMeshOptions options = init(settings);
 		try {
 			initDagger(options, settings);
 		} catch (Exception e) {
@@ -397,7 +397,7 @@ public class MeshTestContext extends TestWatcher {
 	 *
 	 * @throws Exception
 	 */
-	private void setupData(MeshOptions meshOptions, boolean setAdminPassword) throws Exception {
+	private void setupData(AbstractMeshOptions meshOptions, boolean setAdminPassword) throws Exception {
 		meshDagger.database().setMassInsertIntent();
 		dataProvider.setup(meshOptions, setAdminPassword);
 		meshDagger.database().resetIntent();
@@ -470,8 +470,8 @@ public class MeshTestContext extends TestWatcher {
 	 * @param settings
 	 * @throws Exception
 	 */
-	public MeshOptions init(MeshTestSetting settings) throws Exception {
-		meshOptions = new MeshOptions();
+	public AbstractMeshOptions init(MeshTestSetting settings) throws Exception {
+		meshOptions = new AbstractMeshOptions();
 
 		if (settings == null) {
 			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
@@ -624,7 +624,7 @@ public class MeshTestContext extends TestWatcher {
 		return meshOptions;
 	}
 
-	private void initFolders(MeshOptions meshOptions) throws IOException {
+	private void initFolders(AbstractMeshOptions meshOptions) throws IOException {
 		String tmpDir = newFolder("tmpDir");
 		meshOptions.setTempDirectory(tmpDir);
 
@@ -672,7 +672,7 @@ public class MeshTestContext extends TestWatcher {
 	 * @param settings
 	 * @throws Exception
 	 */
-	public void initDagger(MeshOptions options, MeshTestSetting settings) throws Exception {
+	public void initDagger(AbstractMeshOptions options, MeshTestSetting settings) throws Exception {
 		log.info("Initializing dagger context");
 		try {
 			mesh = Mesh.create(options);
@@ -734,7 +734,7 @@ public class MeshTestContext extends TestWatcher {
 		return keycloak;
 	}
 
-	public MeshOptions getOptions() {
+	public AbstractMeshOptions getOptions() {
 		return meshOptions;
 	}
 
@@ -779,7 +779,7 @@ public class MeshTestContext extends TestWatcher {
 		return elasticsearch;
 	}
 
-	public MeshTestContext setOptionChanger(Consumer<MeshOptions> optionChanger) {
+	public MeshTestContext setOptionChanger(Consumer<AbstractMeshOptions> optionChanger) {
 		this.optionChanger = optionChanger;
 		return this;
 	}

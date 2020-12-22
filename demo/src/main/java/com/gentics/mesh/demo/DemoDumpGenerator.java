@@ -12,6 +12,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -100,7 +101,7 @@ public class DemoDumpGenerator {
 	 * @param options
 	 * @throws Exception
 	 */
-	public void init(MeshOptions options) throws Exception {
+	public void init(AbstractMeshOptions options) throws Exception {
 		Mesh mesh = Mesh.create(options);
 		mesh.run(false);
 		meshInternal = mesh.internal();

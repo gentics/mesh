@@ -3,7 +3,7 @@ package com.gentics.mesh.etc.config.env;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -52,7 +52,7 @@ public interface Option {
 	 * @param options
 	 *            Reference to the full mesh option. This may be useful in order to access other option values and assert that no conflict can happen.
 	 */
-	default void validate(MeshOptions options) {
+	default void validate(AbstractMeshOptions options) {
 		// No validation
 	}
 

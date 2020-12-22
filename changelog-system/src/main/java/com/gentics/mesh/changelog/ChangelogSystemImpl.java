@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.PostProcessFlags;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -32,10 +32,10 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 
 	private Database db;
 
-	private MeshOptions options;
+	private AbstractMeshOptions options;
 
 	@Inject
-	public ChangelogSystemImpl(Database db, MeshOptions options) {
+	public ChangelogSystemImpl(Database db, AbstractMeshOptions options) {
 		this.db = db;
 		this.options = options;
 	}

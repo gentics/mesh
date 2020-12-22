@@ -55,7 +55,7 @@ import org.pf4j.util.FileUtils;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
@@ -81,7 +81,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	private final PluginFactory pluginFactory;
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	// We track our own plugin status since the PF4J state is not extendible.
 	private final Map<String, PluginStatus> pluginStatusMap = new HashedMap<>();
@@ -89,7 +89,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	private final DelegatingPluginRegistry pluginRegistry;
 
 	@Inject
-	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry) {
+	public MeshPluginManagerImpl(AbstractMeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry) {
 		this.pluginFactory = pluginFactory;
 		this.options = options;
 		this.pluginRegistry = pluginRegistry;

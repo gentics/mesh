@@ -109,6 +109,6 @@ public class ImageManipulatorOptions implements Option {
 	/**
 	 * Validate the options.
 	 */
-	public void validate(MeshOptions meshOptions) {
+	public void validate(AbstractMeshOptions meshOptions) {
 	}
 }

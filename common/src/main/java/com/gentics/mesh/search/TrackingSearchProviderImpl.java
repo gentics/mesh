@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
@@ -46,9 +46,9 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 	private Map<String, JsonObject> createIndexEvents = new HashMap<>();
 	private List<Bulkable> bulkRequests = new ArrayList<>();
 
-	private MeshOptions options;
+	private AbstractMeshOptions options;
 
-	public TrackingSearchProviderImpl(MeshOptions options) {
+	public TrackingSearchProviderImpl(AbstractMeshOptions options) {
 		this.options = options;
 	}
 

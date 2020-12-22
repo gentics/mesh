@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.verticle;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
@@ -29,7 +29,7 @@ public class IdleChecker {
 	private final ElasticSearchOptions options;
 
 	@Inject
-	public IdleChecker(MeshOptions options) {
+	public IdleChecker(AbstractMeshOptions options) {
 		this.options = options.getSearchOptions();
 	}
 

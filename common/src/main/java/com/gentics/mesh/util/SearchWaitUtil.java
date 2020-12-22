@@ -1,7 +1,7 @@
 package com.gentics.mesh.util;
 
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.parameter.ParameterProviderContext;
@@ -20,7 +20,7 @@ public class SearchWaitUtil {
 	public MeshEventSender meshEventSender;
 
 	@Inject
-	public MeshOptions options;
+	public AbstractMeshOptions options;
 
 	@Inject
 	public SearchWaitUtil() {

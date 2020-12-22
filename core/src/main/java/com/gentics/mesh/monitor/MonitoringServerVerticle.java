@@ -2,7 +2,7 @@ package com.gentics.mesh.monitor;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 
 import io.vertx.core.AbstractVerticle;
@@ -22,12 +22,12 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 
 	protected HttpServer server;
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private MonitoringRoutes routes;
 
 	@Inject
-	public MonitoringServerVerticle(MeshOptions options, MonitoringRoutes routes) {
+	public MonitoringServerVerticle(AbstractMeshOptions options, MonitoringRoutes routes) {
 		this.options = options;
 		this.routes = routes;
 	}

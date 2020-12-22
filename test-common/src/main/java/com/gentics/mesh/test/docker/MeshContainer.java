@@ -31,6 +31,7 @@ import org.testcontainers.utility.TestEnvironment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -171,18 +172,18 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 		changeUserInContainer();
 		if (initCluster) {
-			addEnv(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
+			addEnv(AbstractMeshOptions.MESH_CLUSTER_INIT_ENV, "true");
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
 		if (nodeName != null) {
-			addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
+			addEnv(AbstractMeshOptions.MESH_NODE_NAME_ENV, nodeName);
 		}
 		if (clusterName != null) {
 			addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
 			addEnv(ClusterOptions.MESH_CLUSTER_ENABLED_ENV, "true");
 		}
 		addEnv(ClusterOptions.MESH_CLUSTER_VERTX_PORT_ENV, "8123");
-		addEnv(MeshOptions.MESH_PLUGIN_DIR_ENV, "/plugins");
+		addEnv(AbstractMeshOptions.MESH_PLUGIN_DIR_ENV, "/plugins");
 
 		if (startEmbeddedES) {
 			exposedPorts.add(9200);
@@ -193,8 +194,8 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 		}
 
-		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
-		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
+		addEnv(AbstractMeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
+		addEnv(AbstractMeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
 
 		if (!useFilesystem) {
 			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
@@ -672,7 +673,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 
 	public MeshContainer withPluginTimeout(int timeoutInSeconds) {
-		addEnv(MeshOptions.MESH_PLUGIN_TIMEOUT_ENV, String.valueOf(timeoutInSeconds));
+		addEnv(AbstractMeshOptions.MESH_PLUGIN_TIMEOUT_ENV, String.valueOf(timeoutInSeconds));
 		return this;
 	}
 

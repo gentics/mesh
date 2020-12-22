@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -67,11 +68,9 @@ import com.orientechnologies.orient.server.distributed.ODistributedConfiguration
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration.ROLES;
 import com.orientechnologies.orient.server.distributed.OModifiableDistributedConfiguration;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
-import com.sun.xml.bind.v2.model.core.Ref;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -133,7 +132,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private final TransactionComponent.Factory txFactory;
 
 	@Inject
-	public OrientDBDatabase(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
+	public OrientDBDatabase(AbstractMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
 		OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
@@ -141,7 +140,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		Lazy<PermissionRoots> permissionRoots, Mesh mesh, WriteLock writeLock,
 		TransactionComponent.Factory txFactory) {
 		super(vertx);
-		this.options = options;
+		this.options = (MeshOptions) options;
 		this.metrics = metrics;
 		if (metrics != null) {
 			txTimer = metrics.timer(TX_TIME);

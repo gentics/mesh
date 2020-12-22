@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.github.jknack.handlebars.Context;
@@ -37,9 +37,9 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
-	public AdminGUIEndpoint(MeshOptions options) {
+	public AdminGUIEndpoint(AbstractMeshOptions options) {
 		super("mesh-ui-v1", null);
 		this.options = options;
 	}

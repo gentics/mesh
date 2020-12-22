@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.metric.CachingMetric;
 import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -38,7 +38,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	private final Vertx vertx;
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private final Predicate<Message<JsonObject>> filter;
 
@@ -51,7 +51,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	private final Counter missCounter;
 	private final Counter hitCounter;
 
-	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Vertx vertx, MeshOptions options, MetricsService metricsService,
+	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Vertx vertx, AbstractMeshOptions options, MetricsService metricsService,
 		Predicate<Message<JsonObject>> filter,
 		BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
 		MeshEvent... events) {
@@ -196,7 +196,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		private Vertx vertx;
 		private Duration expireAfter;
 		private String name;
-		private MeshOptions options;
+		private AbstractMeshOptions options;
 		private MetricsService metricsService;
 
 		/**
@@ -275,7 +275,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 * @param options
 		 * @return
 		 */
-		public Builder<K, V> meshOptions(MeshOptions options) {
+		public Builder<K, V> meshOptions(AbstractMeshOptions options) {
 			this.options = options;
 			return this;
 		}

@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -83,7 +83,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 
 	private FileSystem fs;
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private final Binaries binaries;
 
@@ -97,7 +97,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		BinaryStorage binaryStorage,
 		BinaryProcessorRegistryImpl binaryProcessorRegistry,
 		HandlerUtilities utils, Vertx rxVertx,
-		MeshOptions options,
+		AbstractMeshOptions options,
 		Binaries binaries,
 		WriteLock writeLock) {
 		this.db = db;

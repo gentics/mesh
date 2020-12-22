@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -59,14 +59,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 	private final BootstrapInitializer boot;
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private final PageTransformer pageTransformer;
 
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Inject
-	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot, WriteLock writeLock,
+	public NodeCrudHandler(Database db, HandlerUtilities utils, AbstractMeshOptions options, BootstrapInitializer boot, WriteLock writeLock,
 		NodeDAOActions nodeActions, PageTransformer pageTransformer) {
 		super(db, utils, writeLock, nodeActions);
 		this.options = options;

@@ -5,7 +5,7 @@ import graphql.schema.GraphQLObjectType;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -21,7 +21,7 @@ public class ProjectReferenceTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public ProjectReferenceTypeProvider(MeshOptions options) {
+	public ProjectReferenceTypeProvider(AbstractMeshOptions options) {
 		super(options);
 	}
 

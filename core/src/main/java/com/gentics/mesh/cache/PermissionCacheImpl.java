@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -28,7 +28,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 
 	private final Vertx vertx;
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private static final long CACHE_SIZE = 100_000;
 
@@ -39,7 +39,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	};
 
 	@Inject
-	public PermissionCacheImpl(EventAwareCacheFactory factory, Vertx vertx, CacheRegistry registry, MeshOptions options) {
+	public PermissionCacheImpl(EventAwareCacheFactory factory, Vertx vertx, CacheRegistry registry, AbstractMeshOptions options) {
 		super(createCache(factory), registry, CACHE_SIZE);
 		this.vertx = vertx;
 		this.options = options;

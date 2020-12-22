@@ -1,6 +1,6 @@
 package com.gentics.mesh.plugin.env;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -55,6 +55,6 @@ public interface PluginEnvironment {
 	 *
 	 * @return
 	 */
-	MeshOptions options();
+	AbstractMeshOptions options();
 
 }

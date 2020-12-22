@@ -8,7 +8,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -21,11 +21,11 @@ import io.vertx.core.json.JsonObject;
 public class MeshHelper {
 
 	private final Database db;
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 	private final BootstrapInitializer boot;
 
 	@Inject
-	public MeshHelper(Database db, MeshOptions options, BootstrapInitializer boot) {
+	public MeshHelper(Database db, AbstractMeshOptions options, BootstrapInitializer boot) {
 		this.db = db;
 		this.options = options;
 		this.boot = boot;

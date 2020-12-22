@@ -6,7 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
@@ -18,7 +18,7 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class ProjectSearchHandler extends AbstractSearchHandler<HibProject, ProjectResponse> {
 
 	@Inject
-	public ProjectSearchHandler(Database db, SearchProvider searchProvider, ProjectIndexHandlerImpl indexHandler, MeshOptions options,
+	public ProjectSearchHandler(Database db, SearchProvider searchProvider, ProjectIndexHandlerImpl indexHandler, AbstractMeshOptions options,
 		ProjectDAOActions actions) {
 		super(db, searchProvider, options, indexHandler, actions);
 	}

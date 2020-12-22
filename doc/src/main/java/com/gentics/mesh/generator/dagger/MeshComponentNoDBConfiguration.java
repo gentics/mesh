@@ -2,6 +2,7 @@ package com.gentics.mesh.generator.dagger;
 
 import javax.inject.Singleton;
 
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -36,7 +37,7 @@ public class MeshComponentNoDBConfiguration {
 	 */
 	@Provides
 	@Singleton
-	public TrackingSearchProviderImpl dummySearchProvider(MeshOptions options) {
+	public TrackingSearchProviderImpl dummySearchProvider(AbstractMeshOptions options) {
 		return new TrackingSearchProviderImpl(options);
 	}
 
@@ -48,7 +49,7 @@ public class MeshComponentNoDBConfiguration {
 	 */
 	@Provides
 	@Singleton
-	public SearchProvider searchProvider(MeshOptions options) {
+	public SearchProvider searchProvider(AbstractMeshOptions options) {
 		// For testing it is not needed to start ES in most cases. This will speedup test execution since ES does not need to initialize.
 		return dummySearchProvider(options);
 	}

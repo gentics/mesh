@@ -34,7 +34,7 @@ import com.gentics.mesh.core.db.TxAction0;
 import com.gentics.mesh.core.db.TxAction2;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -65,7 +65,7 @@ public class HandlerUtilities {
 	private final PageTransformer pageTransformer;
 
 	@Inject
-	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
+	public HandlerUtilities(Database database, AbstractMeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
 		Provider<BulkActionContext> bulkProvider, WriteLock writeLock, PageTransformer pageTransformer) {
 		this.database = database;
 		this.queueProvider = queueProvider;

@@ -20,7 +20,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.ElasticsearchResponseErrorStreamable;
@@ -80,7 +80,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		SearchProvider searchProvider,
 		IdleChecker idleChecker,
 		SyncEventHandler syncEventHandler,
-		MeshOptions options) {
+		AbstractMeshOptions options) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
 		this.idleChecker = idleChecker;

@@ -5,7 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.handler.MeshAnonymousAuthHandler;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 import io.vertx.ext.web.Route;
 
@@ -23,7 +23,7 @@ public class MeshAuthChainImpl implements MeshAuthChain {
 
 	@Inject
 	public MeshAuthChainImpl(MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler,
-		MeshAnonymousAuthHandler anonHandler, MeshOptions options) {
+		MeshAnonymousAuthHandler anonHandler, AbstractMeshOptions options) {
 		this.oauthService = oauthService;
 		this.jwtAuthHandler = jwtAuthHandler;
 		this.anonHandler = anonHandler;

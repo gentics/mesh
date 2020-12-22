@@ -9,7 +9,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -26,11 +26,11 @@ public class BinaryDiskUsageProvider implements DebugInfoProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(BinaryDiskUsageProvider.class);
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 	private final FileSystem fs;
 
 	@Inject
-	public BinaryDiskUsageProvider(MeshOptions options, Vertx vertx) {
+	public BinaryDiskUsageProvider(AbstractMeshOptions options, Vertx vertx) {
 		this.options = options;
 		this.fs = vertx.fileSystem();
 	}

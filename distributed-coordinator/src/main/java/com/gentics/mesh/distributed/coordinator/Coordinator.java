@@ -6,7 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
 /**
@@ -19,7 +19,7 @@ public class Coordinator {
 	private CoordinatorMode mode = CoordinatorMode.DISABLED;
 
 	@Inject
-	public Coordinator(MasterElector elector, MeshOptions options) {
+	public Coordinator(MasterElector elector, AbstractMeshOptions options) {
 		this.elector = elector;
 		this.mode = options.getClusterOptions().getCoordinatorMode();
 	}

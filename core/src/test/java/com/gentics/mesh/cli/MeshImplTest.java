@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 import io.vertx.core.Vertx;
 
@@ -29,8 +29,8 @@ public class MeshImplTest {
 		mesh.invokeUpdateCheck();
 	}
 
-	public MeshOptions options() {
-		MeshOptions opts = new MeshOptions();
+	public AbstractMeshOptions options() {
+		AbstractMeshOptions opts = new AbstractMeshOptions();
 		opts.getSearchOptions().setStartEmbedded(false);
 		return opts;
 	}

@@ -1,6 +1,6 @@
 package com.gentics.mesh;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 /**
  * Mesh factory which provides new instances of mesh.
@@ -21,5 +21,5 @@ public interface MeshFactory {
 	 *            Mesh options
 	 * @return Mesh instance
 	 */
-	Mesh create(MeshOptions options);
+	Mesh create(AbstractMeshOptions options);
 }

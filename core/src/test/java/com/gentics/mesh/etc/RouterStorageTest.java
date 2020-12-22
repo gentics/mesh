@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -28,7 +28,7 @@ public class RouterStorageTest {
 	public void testFailureHandler() throws Exception {
 		MeshAuthChainImpl chain = mock(MeshAuthChainImpl.class);
 		RouterStorageRegistryImpl routerStorageRegistry = mock(RouterStorageRegistryImpl.class);
-		RouterStorageImpl storage = new RouterStorageImpl(Vertx.vertx(), new MeshOptions(), chain, null, null, null, () -> {
+		RouterStorageImpl storage = new RouterStorageImpl(Vertx.vertx(), new AbstractMeshOptions(), chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
 		}, null, routerStorageRegistry, null);
 

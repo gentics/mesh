@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -72,7 +72,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected final MeshHelper helper;
 
-	protected final MeshOptions options;
+	protected final AbstractMeshOptions options;
 
 	protected final ComplianceMode complianceMode;
 
@@ -80,7 +80,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected final BucketManager bucketManager;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, AbstractMeshOptions options,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
 		this.searchProvider = searchProvider;
 		this.db = db;

@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.MappingMode;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
@@ -55,7 +55,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	private final boolean isStrictMode;
 
 	@Inject
-	public NodeContainerMappingProviderImpl(MeshOptions options) {
+	public NodeContainerMappingProviderImpl(AbstractMeshOptions options) {
 		super(options);
 		this.isStrictMode = MappingMode.STRICT == options.getSearchOptions().getMappingMode();
 	}

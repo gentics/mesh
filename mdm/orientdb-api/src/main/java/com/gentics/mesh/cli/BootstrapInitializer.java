@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 import io.vertx.core.Vertx;
 
@@ -190,7 +190,7 @@ public interface BootstrapInitializer {
 	 * @param config
 	 * @throws Exception
 	 */
-	void initMandatoryData(MeshOptions config) throws Exception;
+	void initMandatoryData(AbstractMeshOptions config) throws Exception;
 
 	/**
 	 * Clear all caches.
@@ -199,7 +199,7 @@ public interface BootstrapInitializer {
 
 	/**
 	 * Setup the optional data. Optional data will only be setup during the first setup. Mesh will not try to recreate those elements on each setup. The
-	 * {@link #initMandatoryData(MeshOptions)} method on the other hand will setup elements which must exist and thus will enforce creation of those elements.
+	 * {@link #initMandatoryData(AbstractMeshOptions)} method on the other hand will setup elements which must exist and thus will enforce creation of those elements.
 	 * 
 	 * @param isEmptyInstallation
 	 */
@@ -226,7 +226,7 @@ public interface BootstrapInitializer {
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	void init(Mesh mesh, boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
+	void init(Mesh mesh, boolean hasOldLock, AbstractMeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
 
 	/**
 	 * Initialize the languages by loading the JSON file and creating the language graph elements.
@@ -245,7 +245,7 @@ public interface BootstrapInitializer {
 	 * @param configuration
 	 *            configuration
 	 */
-	void initOptionalLanguages(MeshOptions configuration);
+	void initOptionalLanguages(AbstractMeshOptions configuration);
 
 	/**
 	 * Grant CRUD to all objects within the graph to the Admin Role.

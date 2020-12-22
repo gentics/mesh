@@ -60,7 +60,7 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -81,10 +81,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	private static final String VERSION_KEY = "version";
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	@Inject
-	public NodeContainerTransformer(MeshOptions options) {
+	public NodeContainerTransformer(AbstractMeshOptions options) {
 		this.options = options;
 	}
 

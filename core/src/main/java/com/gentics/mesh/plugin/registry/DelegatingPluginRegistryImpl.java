@@ -17,7 +17,7 @@ import com.gentics.mesh.auth.AuthServicePluginRegistry;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.plugin.PluginEventModel;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
 import com.gentics.mesh.plugin.MeshPlugin;
@@ -49,7 +49,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private final AuthServicePluginRegistry authServiceRegistry;
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private final Lazy<MeshPluginManager> manager;
 
@@ -61,7 +61,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	private MessageConsumer<Object> preRegisterConsumer;
 
 	@Inject
-	public DelegatingPluginRegistryImpl(MeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
+	public DelegatingPluginRegistryImpl(AbstractMeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
 		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> rxVertx, Database db) {
 		this.options = options;
 		this.restRegistry = restRegistry;

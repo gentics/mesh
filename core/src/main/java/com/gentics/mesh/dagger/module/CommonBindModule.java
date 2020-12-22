@@ -75,8 +75,6 @@ import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
 import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -189,9 +187,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract RequestDelegator bindRequestDelegator(RequestDelegatorImpl e);
-
-	@Binds
-	abstract WriteLock bindWriteLock(WriteLockImpl e);
 
 	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);

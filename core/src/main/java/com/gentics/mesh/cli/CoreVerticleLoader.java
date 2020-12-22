@@ -7,7 +7,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.monitor.MonitoringServerVerticle;
 import com.gentics.mesh.rest.RestAPIVerticle;
@@ -43,7 +43,7 @@ public class CoreVerticleLoader {
 	private ElasticsearchProcessVerticle elasticsearchProcessVerticle;
 
 	@Inject
-	public MeshOptions meshOptions;
+	public AbstractMeshOptions meshOptions;
 
 	private final Vertx rxVertx;
 	private String searchVerticleId;

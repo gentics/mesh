@@ -59,7 +59,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
@@ -129,7 +129,7 @@ public class TestDataProvider {
 		instance = this;
 	}
 
-	public void setup(MeshOptions meshOptions, boolean setAdminPassword)
+	public void setup(AbstractMeshOptions meshOptions, boolean setAdminPassword)
 			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 		if (getSize() == EMPTY) {

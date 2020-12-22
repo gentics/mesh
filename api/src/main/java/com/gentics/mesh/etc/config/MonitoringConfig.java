@@ -89,7 +89,7 @@ public class MonitoringConfig implements Option {
 	}
 
 	@Override
-	public void validate(MeshOptions options) {
+	public void validate(AbstractMeshOptions options) {
 	}
 
 }

@@ -16,7 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.github.jknack.handlebars.Context;
@@ -37,9 +37,9 @@ public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 
 	private static String meshAdminUi2Version = readBuildProperties().getProperty("mesh.admin-ui2.version");
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
-	public AdminGUI2Endpoint(MeshOptions options) {
+	public AdminGUI2Endpoint(AbstractMeshOptions options) {
 		super("mesh-ui", null);
 		this.options = options;
 	}

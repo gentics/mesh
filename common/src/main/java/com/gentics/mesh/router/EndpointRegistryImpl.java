@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.rest.InternalEndpoint;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -24,12 +24,12 @@ public class EndpointRegistryImpl implements EndpointRegistry {
 	private static final Logger log = LoggerFactory.getLogger(EndpointRegistryImpl.class);
 
 	private final Vertx vertx;
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private final RouterStorageRegistry routerStorageRegistry;
 
 	@Inject
-	public EndpointRegistryImpl(Vertx vertx, MeshOptions options, RouterStorageRegistry routerStorageRegistry) {
+	public EndpointRegistryImpl(Vertx vertx, AbstractMeshOptions options, RouterStorageRegistry routerStorageRegistry) {
 		this.vertx = vertx;
 		this.options = options;
 		this.routerStorageRegistry = routerStorageRegistry;
@@ -40,7 +40,7 @@ public class EndpointRegistryImpl implements EndpointRegistry {
 		for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 			Constructor<?> constructor;
 			try {
-				constructor = clazz.getConstructor(new Class[] { MeshOptions.class });
+				constructor = clazz.getConstructor(new Class[] { AbstractMeshOptions.class });
 				T endpoint = (T) constructor.newInstance(options);
 				endpoint.init(vertx, rs);
 				endpoint.registerEndPoints();

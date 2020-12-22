@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.CacheConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.path.Path;
 
 import io.vertx.core.logging.Logger;
@@ -49,7 +49,7 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 		SCHEMA_MIGRATION_FINISHED };
 
 	@Inject
-	public WebrootPathCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry, MeshOptions options) {
+	public WebrootPathCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry, AbstractMeshOptions options) {
 		super(createCache(factory, options.getCacheConfig()), registry, options.getCacheConfig().getPathCacheSize());
 	}
 

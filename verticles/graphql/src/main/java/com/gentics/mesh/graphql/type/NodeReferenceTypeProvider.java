@@ -9,7 +9,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
 
 import graphql.schema.GraphQLObjectType;
@@ -23,7 +23,7 @@ public class NodeReferenceTypeProvider extends AbstractTypeProvider {
 	public static final String NODE_REFERENCE_PAGE_TYPE_NAME = "NodeReferencePage";
 
 	@Inject
-	public NodeReferenceTypeProvider(MeshOptions options) {
+	public NodeReferenceTypeProvider(AbstractMeshOptions options) {
 		super(options);
 	}
 

@@ -9,6 +9,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoFileEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -25,10 +26,10 @@ public class DatabaseDumpProvider implements DebugInfoProvider {
 	private final AdminHandler adminHandler;
 	private final Database db;
 	private final FileSystem fs;
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	@Inject
-	public DatabaseDumpProvider(AdminHandler adminHandler, Database db, DebugInfoUtil util, Vertx vertx, MeshOptions options) {
+	public DatabaseDumpProvider(AdminHandler adminHandler, Database db, DebugInfoUtil util, Vertx vertx, AbstractMeshOptions options) {
 		this.adminHandler = adminHandler;
 		this.db = db;
 		this.fs = vertx.fileSystem();
@@ -42,7 +43,7 @@ public class DatabaseDumpProvider implements DebugInfoProvider {
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		if (options.getStorageOptions().getDirectory() == null) {
+		if (!(options instanceof MeshOptions) || ((MeshOptions)options).getStorageOptions().getDirectory() == null) {
 			return Flowable.empty();
 		}
 

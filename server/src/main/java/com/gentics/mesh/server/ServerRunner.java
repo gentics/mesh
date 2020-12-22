@@ -38,7 +38,7 @@ public class ServerRunner {
 		MeshOptions defaultOption = new MeshOptions();
 		defaultOption.getSearchOptions().setStartEmbedded(false);
 		defaultOption.getSearchOptions().setUrl(null);
-		MeshOptions options = OptionsLoader.createOrloadOptions(defaultOption, args);
+		MeshOptions options = OptionsLoader.createOrloadOptions(MeshOptions.class, defaultOption, args);
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader(vertx -> {

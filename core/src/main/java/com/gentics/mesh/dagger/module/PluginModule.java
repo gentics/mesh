@@ -3,7 +3,7 @@ package com.gentics.mesh.dagger.module;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.impl.OkHttpClientUtil;
 
@@ -26,7 +26,7 @@ public class PluginModule {
 	@Provides
 	@Singleton
 	@Named("pluginClient")
-	public static OkHttpClient pluginOkHttpClient(MeshOptions options) {
+	public static OkHttpClient pluginOkHttpClient(AbstractMeshOptions options) {
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
 

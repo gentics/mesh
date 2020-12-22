@@ -10,7 +10,7 @@ import com.gentics.mesh.core.db.TxAction0;
 import com.gentics.mesh.core.db.TxAction1;
 import com.gentics.mesh.core.db.TxAction2;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -99,7 +99,7 @@ public interface BaseHelper {
 		return mesh().boot();
 	}
 
-	default MeshOptions options() {
+	default AbstractMeshOptions options() {
 		return mesh().options();
 	}
 

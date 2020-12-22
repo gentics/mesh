@@ -4,6 +4,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshFactory;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshImpl;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 /**
@@ -13,11 +14,11 @@ public class MeshFactoryImpl implements MeshFactory {
 
 	@Override
 	public Mesh create() {
-		return new MeshImpl(OptionsLoader.createOrloadOptions());
+		return new MeshImpl(OptionsLoader.createOrloadOptions(MeshOptions.class));
 	}
 
 	@Override
-	public Mesh create(MeshOptions options) {
+	public Mesh create(AbstractMeshOptions options) {
 		return new MeshImpl(options);
 	}
 

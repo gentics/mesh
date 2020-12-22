@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.GraphQLOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -61,7 +62,7 @@ public class GraphQLHandler {
 	private GraphQLOptions graphQLOptions;
 
 	@Inject
-	public GraphQLHandler(MetricsService metrics, MeshOptions options) {
+	public GraphQLHandler(MetricsService metrics, AbstractMeshOptions options) {
 		graphQlTimer = metrics.timer(SimpleMetric.GRAPHQL_TIME);
 		graphQLOptions = options.getGraphQLOptions();
 	}

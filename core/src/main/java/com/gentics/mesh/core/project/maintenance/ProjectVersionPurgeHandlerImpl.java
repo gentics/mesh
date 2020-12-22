@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
 import com.google.common.collect.Lists;
@@ -35,10 +35,10 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 
 	private final Provider<BulkActionContext> bulkProvider;
 
-	private final MeshOptions meshOptions;
+	private final AbstractMeshOptions meshOptions;
 
 	@Inject
-	public ProjectVersionPurgeHandlerImpl(Database db, Provider<BulkActionContext> bulkProvider, MeshOptions meshOptions) {
+	public ProjectVersionPurgeHandlerImpl(Database db, Provider<BulkActionContext> bulkProvider, AbstractMeshOptions meshOptions) {
 		this.db = db;
 		this.bulkProvider = bulkProvider;
 		this.meshOptions = meshOptions;

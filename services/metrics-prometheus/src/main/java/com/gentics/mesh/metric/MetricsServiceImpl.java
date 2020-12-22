@@ -6,7 +6,7 @@ import java.io.Writer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -23,7 +23,7 @@ public class MetricsServiceImpl implements MetricsService {
 	private MonitoringConfig options;
 
 	@Inject
-	public MetricsServiceImpl(MeshOptions options, MeterRegistry meterRegistry) {
+	public MetricsServiceImpl(AbstractMeshOptions options, MeterRegistry meterRegistry) {
 		this.options = options.getMonitoringOptions();
 		this.registry = CollectorRegistry.defaultRegistry;
 		this.metricRegistry = meterRegistry;

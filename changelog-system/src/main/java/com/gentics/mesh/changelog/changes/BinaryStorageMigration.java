@@ -12,7 +12,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.google.common.io.Files;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -43,9 +43,9 @@ public class BinaryStorageMigration extends AbstractChange {
 
 	static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
-	public BinaryStorageMigration(MeshOptions options) {
+	public BinaryStorageMigration(AbstractMeshOptions options) {
 		this.options = options;
 	}
 

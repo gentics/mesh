@@ -7,7 +7,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.dagger.module.CommonModule;
 import com.gentics.mesh.dagger.module.OrientDBModule;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 
 import dagger.BindsInstance;
@@ -29,7 +29,7 @@ public interface OrientDBMeshComponent extends MeshComponent {
 	@Component.Builder
 	interface Builder extends MeshComponent.Builder {
 		@BindsInstance
-		Builder configuration(MeshOptions options);
+		Builder configuration(AbstractMeshOptions options);
 
 		@BindsInstance
 		Builder mesh(Mesh mesh);

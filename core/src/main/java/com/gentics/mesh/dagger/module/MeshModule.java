@@ -7,7 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
@@ -42,7 +42,7 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options, BootstrapInitializer boot) {
+	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, AbstractMeshOptions options, BootstrapInitializer boot) {
 		return new ImgscalrImageManipulator(vertx, options, boot);
 	}
 
@@ -64,7 +64,7 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static CorsHandler corsHandler(MeshOptions options) {
+	public static CorsHandler corsHandler(AbstractMeshOptions options) {
 		HttpServerConfig serverOptions = options.getHttpServerOptions();
 		String pattern = serverOptions.getCorsAllowedOriginPattern();
 		CorsHandler corsHandler = CorsHandler.create(pattern);
@@ -112,7 +112,7 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static BodyHandlerImpl bodyHandler(MeshOptions options) {
+	public static BodyHandlerImpl bodyHandler(AbstractMeshOptions options) {
 		String tempDirectory = options.getUploadOptions().getTempDirectory();
 		BodyHandlerImpl handler = new MeshBodyHandlerImpl(tempDirectory);
 		handler.setBodyLimit(options.getUploadOptions().getByteLimit());

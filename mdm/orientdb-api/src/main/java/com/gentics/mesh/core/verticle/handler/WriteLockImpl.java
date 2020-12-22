@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.verticle.handler;
 
+import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_TIMEOUT_COUNT;
+import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_WAITING_TIME;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -7,12 +10,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
-import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_TIMEOUT_COUNT;
-import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_WAITING_TIME;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.Counter;
@@ -30,8 +32,8 @@ public class WriteLockImpl implements WriteLock {
 	private final Counter timeoutCount;
 
 	@Inject
-	public WriteLockImpl(MeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService) {
-		this.options = options;
+	public WriteLockImpl(AbstractMeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService) {
+		this.options = (MeshOptions) options;
 		this.hazelcast = hazelcast;
 		this.isClustered = options.getClusterOptions().isEnabled();
 		this.writeLockTimer = metricsService.timer(WRITE_LOCK_WAITING_TIME);

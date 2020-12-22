@@ -14,7 +14,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.GlueDatabase;
 import com.gentics.mesh.distributed.RequestDelegator;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.handler.VersionHandlerImpl;
@@ -41,7 +41,7 @@ public class RouterStorageImpl implements RouterStorage {
 
 	private final Vertx vertx;
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -60,7 +60,7 @@ public class RouterStorageImpl implements RouterStorage {
 	private final RequestDelegator delegator;
 
 	@Inject
-	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChainImpl authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
+	public RouterStorageImpl(Vertx vertx, AbstractMeshOptions options, MeshAuthChainImpl authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandlerImpl versionHandler,
 		RouterStorageRegistryImpl routerStorageRegistry,

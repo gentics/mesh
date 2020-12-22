@@ -17,7 +17,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -47,7 +47,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		MeshOptions configuration = new MeshOptions();
+		AbstractMeshOptions configuration = new AbstractMeshOptions();
 		configuration.setLanguagesFilePath("target/custom-languages.json");
 		boot().initOptionalLanguages(configuration);
 

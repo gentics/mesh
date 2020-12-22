@@ -55,7 +55,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
@@ -108,7 +108,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public FieldDefinitionProvider fields;
 
 	@Inject
-	public NodeTypeProvider(MeshOptions options) {
+	public NodeTypeProvider(AbstractMeshOptions options) {
 		super(options);
 	}
 

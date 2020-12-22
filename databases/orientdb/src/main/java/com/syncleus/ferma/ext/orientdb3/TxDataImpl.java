@@ -5,6 +5,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.CacheConfig;
 import com.gentics.mesh.etc.config.ClusterOptions;
@@ -40,21 +41,21 @@ public class TxDataImpl implements TxData {
 	}
 
 	/**
-	 * @see MeshOptions#overrideWithEnv()
+	 * @see AbstractMeshOptions#overrideWithEnv()
 	 */
 	public void overrideWithEnv() {
 		options.overrideWithEnv();
 	}
 
 	/**
-	 * @see MeshOptions#hashCode()
+	 * @see AbstractMeshOptions#hashCode()
 	 */
 	public int hashCode() {
 		return options.hashCode();
 	}
 
 	/**
-	 * @see MeshOptions#equals(Object)
+	 * @see AbstractMeshOptions#equals(Object)
 	 */
 	public boolean equals(Object obj) {
 		return options.equals(obj);
@@ -65,7 +66,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setDefaultLanguage(String defaultLanguage) {
+	public AbstractMeshOptions setDefaultLanguage(String defaultLanguage) {
 		return options.setDefaultLanguage(defaultLanguage);
 	}
 
@@ -74,7 +75,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setLanguagesFilePath(String languagesFilePath) {
+	public AbstractMeshOptions setLanguagesFilePath(String languagesFilePath) {
 		return options.setLanguagesFilePath(languagesFilePath);
 	}
 
@@ -83,7 +84,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setDefaultMaxDepth(int defaultMaxDepth) {
+	public AbstractMeshOptions setDefaultMaxDepth(int defaultMaxDepth) {
 		return options.setDefaultMaxDepth(defaultMaxDepth);
 	}
 
@@ -92,7 +93,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setStorageOptions(GraphStorageOptions storageOptions) {
+	public AbstractMeshOptions setStorageOptions(GraphStorageOptions storageOptions) {
 		return options.setStorageOptions(storageOptions);
 	}
 
@@ -101,7 +102,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setUploadOptions(MeshUploadOptions uploadOptions) {
+	public AbstractMeshOptions setUploadOptions(MeshUploadOptions uploadOptions) {
 		return options.setUploadOptions(uploadOptions);
 	}
 
@@ -110,7 +111,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setHttpServerOptions(HttpServerConfig httpServerOptions) {
+	public AbstractMeshOptions setHttpServerOptions(HttpServerConfig httpServerOptions) {
 		return options.setHttpServerOptions(httpServerOptions);
 	}
 
@@ -119,7 +120,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setMonitoringOptions(MonitoringConfig monitoringOptions) {
+	public AbstractMeshOptions setMonitoringOptions(MonitoringConfig monitoringOptions) {
 		return options.setMonitoringOptions(monitoringOptions);
 	}
 
@@ -128,7 +129,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setVertxOptions(VertxOptions vertxOptions) {
+	public AbstractMeshOptions setVertxOptions(VertxOptions vertxOptions) {
 		return options.setVertxOptions(vertxOptions);
 	}
 
@@ -137,7 +138,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setClusterOptions(ClusterOptions clusterOptions) {
+	public AbstractMeshOptions setClusterOptions(ClusterOptions clusterOptions) {
 		return options.setClusterOptions(clusterOptions);
 	}
 
@@ -146,7 +147,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setSearchOptions(ElasticSearchOptions searchOptions) {
+	public AbstractMeshOptions setSearchOptions(ElasticSearchOptions searchOptions) {
 		return options.setSearchOptions(searchOptions);
 	}
 
@@ -155,7 +156,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
+	public AbstractMeshOptions setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
 		return options.setAuthenticationOptions(authenticationOptions);
 	}
 
@@ -164,12 +165,12 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setTempDirectory(String tempDirectory) {
+	public AbstractMeshOptions setTempDirectory(String tempDirectory) {
 		return options.setTempDirectory(tempDirectory);
 	}
 
 	/**
-	 * @see MeshOptions#toString()
+	 * @see AbstractMeshOptions#toString()
 	 */
 	public String toString() {
 		return options.toString();
@@ -180,7 +181,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setPluginDirectory(String pluginDirectory) {
+	public AbstractMeshOptions setPluginDirectory(String pluginDirectory) {
 		return options.setPluginDirectory(pluginDirectory);
 	}
 
@@ -189,7 +190,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setImageOptions(ImageManipulatorOptions imageOptions) {
+	public AbstractMeshOptions setImageOptions(ImageManipulatorOptions imageOptions) {
 		return options.setImageOptions(imageOptions);
 	}
 
@@ -198,7 +199,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setContentOptions(ContentConfig contentOptions) {
+	public AbstractMeshOptions setContentOptions(ContentConfig contentOptions) {
 		return options.setContentOptions(contentOptions);
 	}
 
@@ -207,7 +208,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setDebugInfoOptions(DebugInfoOptions debugInfoOptions) {
+	public AbstractMeshOptions setDebugInfoOptions(DebugInfoOptions debugInfoOptions) {
 		return options.setDebugInfoOptions(debugInfoOptions);
 	}
 
@@ -216,7 +217,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setCacheConfig(CacheConfig cacheConfig) {
+	public AbstractMeshOptions setCacheConfig(CacheConfig cacheConfig) {
 		return options.setCacheConfig(cacheConfig);
 	}
 
@@ -225,7 +226,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setUpdateCheck(boolean updateCheck) {
+	public AbstractMeshOptions setUpdateCheck(boolean updateCheck) {
 		return options.setUpdateCheck(updateCheck);
 	}
 
@@ -234,7 +235,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setNodeName(String nodeName) {
+	public AbstractMeshOptions setNodeName(String nodeName) {
 		return options.setNodeName(nodeName);
 	}
 
@@ -243,7 +244,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setInitCluster(boolean isInitCluster) {
+	public AbstractMeshOptions setInitCluster(boolean isInitCluster) {
 		return options.setInitCluster(isInitCluster);
 	}
 
@@ -252,7 +253,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setLockPath(String lockPath) {
+	public AbstractMeshOptions setLockPath(String lockPath) {
 		return options.setLockPath(lockPath);
 	}
 
@@ -261,7 +262,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setAdminPassword(String adminPassword) {
+	public AbstractMeshOptions setAdminPassword(String adminPassword) {
 		return options.setAdminPassword(adminPassword);
 	}
 
@@ -270,7 +271,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setInitialAdminPassword(String initialAdminPassword) {
+	public AbstractMeshOptions setInitialAdminPassword(String initialAdminPassword) {
 		return options.setInitialAdminPassword(initialAdminPassword);
 	}
 
@@ -279,7 +280,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setForceInitialAdminPasswordReset(boolean forceInitialAdminPasswordReset) {
+	public AbstractMeshOptions setForceInitialAdminPasswordReset(boolean forceInitialAdminPasswordReset) {
 		return options.setForceInitialAdminPasswordReset(forceInitialAdminPasswordReset);
 	}
 
@@ -288,7 +289,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setPluginTimeout(int pluginTimeout) {
+	public AbstractMeshOptions setPluginTimeout(int pluginTimeout) {
 		return options.setPluginTimeout(pluginTimeout);
 	}
 
@@ -297,7 +298,7 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setStartInReadOnly(boolean startInReadOnly) {
+	public AbstractMeshOptions setStartInReadOnly(boolean startInReadOnly) {
 		return options.setStartInReadOnly(startInReadOnly);
 	}
 
@@ -306,21 +307,21 @@ public class TxDataImpl implements TxData {
 	}
 
 	@Setter
-	public MeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
+	public AbstractMeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
 		return options.setVersionPurgeMaxBatchSize(versionPurgeMaxBatchSize);
 	}
 
 	/**
-	 * @see MeshOptions#validate()
+	 * @see AbstractMeshOptions#validate()
 	 */
 	public void validate() {
 		options.validate();
 	}
 
 	/**
-	 * @see MeshOptions#validate(MeshOptions)
+	 * @see AbstractMeshOptions#validate(AbstractMeshOptions)
 	 */
-	public void validate(MeshOptions options) {
+	public void validate(AbstractMeshOptions options) {
 		options.validate(options);
 	}
 

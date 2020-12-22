@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.etc.config.ClusterOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.hazelcast.core.Cluster;
@@ -53,7 +53,7 @@ public class MasterElector {
 
 	private final static String MESH_NODE_NAME_ATTR = "mesh_node_name";
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 	private final ClusterOptions clusterOptions;
 
 	private final Database database;
@@ -71,7 +71,7 @@ public class MasterElector {
 	private boolean merging = false;
 
 	@Inject
-	public MasterElector(Lazy<HazelcastInstance> hazelcast, MeshOptions options, Database database) {
+	public MasterElector(Lazy<HazelcastInstance> hazelcast, AbstractMeshOptions options, Database database) {
 		this.hazelcast = hazelcast;
 		this.options = options;
 		this.clusterOptions = options.getClusterOptions();

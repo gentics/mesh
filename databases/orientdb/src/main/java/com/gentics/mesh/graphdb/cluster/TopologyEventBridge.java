@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.etc.config.ClusterOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
@@ -47,7 +47,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private ClusterOptions clusterOptions;
 
-	public TopologyEventBridge(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager,
+	public TopologyEventBridge(AbstractMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager,
 		HazelcastInstance hz) {
 		this.clusterOptions = options.getClusterOptions();
 		this.vertx = vertx;

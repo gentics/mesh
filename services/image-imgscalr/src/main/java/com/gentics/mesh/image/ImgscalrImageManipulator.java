@@ -36,7 +36,7 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -65,7 +65,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private final BootstrapInitializer boot;
 
-	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, BootstrapInitializer boot) {
+	public ImgscalrImageManipulator(Vertx vertx, AbstractMeshOptions options, BootstrapInitializer boot) {
 		this(vertx, options.getImageOptions(), boot);
 		
 	}

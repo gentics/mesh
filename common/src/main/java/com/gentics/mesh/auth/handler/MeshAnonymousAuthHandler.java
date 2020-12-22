@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.MeshHeaders;
 
@@ -34,10 +34,10 @@ public class MeshAnonymousAuthHandler extends AuthHandlerImpl implements MeshAut
 	private Database db;
 	private BootstrapInitializer boot;
 
-	private MeshOptions options;
+	private AbstractMeshOptions options;
 
 	@Inject
-	public MeshAnonymousAuthHandler(MeshJWTAuthProvider authProvider, MeshOptions options, Database db, BootstrapInitializer boot) {
+	public MeshAnonymousAuthHandler(MeshJWTAuthProvider authProvider, AbstractMeshOptions options, Database db, BootstrapInitializer boot) {
 		super(authProvider);
 		this.options = options;
 		this.db = db;

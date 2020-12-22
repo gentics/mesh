@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
@@ -457,7 +457,7 @@ public class ElasticSearchOptions implements Option {
 	/**
 	 * Validate the options.
 	 */
-	public void validate(MeshOptions meshOptions) {
+	public void validate(AbstractMeshOptions meshOptions) {
 
 	}
 

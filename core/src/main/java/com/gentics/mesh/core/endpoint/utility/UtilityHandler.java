@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
@@ -38,7 +38,7 @@ public class UtilityHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(UtilityHandler.class);
 
-	private final MeshOptions options;
+	private final AbstractMeshOptions options;
 
 	private final Database db;
 
@@ -49,7 +49,7 @@ public class UtilityHandler extends AbstractHandler {
 	private final HandlerUtilities utils;
 
 	@Inject
-	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacerImpl linkReplacer, NodeIndexHandlerImpl nodeIndexHandler,
+	public UtilityHandler(AbstractMeshOptions options, Database db, WebRootLinkReplacerImpl linkReplacer, NodeIndexHandlerImpl nodeIndexHandler,
 		HandlerUtilities utils) {
 		this.options = options;
 		this.db = db;

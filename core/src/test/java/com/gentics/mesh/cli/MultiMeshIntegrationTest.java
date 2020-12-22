@@ -10,7 +10,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 
 @Ignore
 public class MultiMeshIntegrationTest {
@@ -22,7 +22,7 @@ public class MultiMeshIntegrationTest {
 
 		List<Mesh> meshes = new ArrayList<>();
 		for (int i = 0; i <= INSTANCE_COUNT; i++) {
-			MeshOptions option = new MeshOptions().setNodeName("M" + i);
+			AbstractMeshOptions option = new AbstractMeshOptions().setNodeName("M" + i);
 			option.getAuthenticationOptions().setKeystorePassword("ABC");
 			option.getSearchOptions().setStartEmbedded(false);
 			option.getSearchOptions().setUrl(null);

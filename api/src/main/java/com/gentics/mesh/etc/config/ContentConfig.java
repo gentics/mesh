@@ -38,6 +38,6 @@ public class ContentConfig implements Option {
 	}
 
 	@Override
-	public void validate(MeshOptions options) {
+	public void validate(AbstractMeshOptions options) {
 	}
 }

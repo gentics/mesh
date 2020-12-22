@@ -47,7 +47,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.frame.EdgeFrame;
@@ -247,7 +247,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.hasPublishPermissions();
 	}
 
-	public MeshOptions options() {
+	public AbstractMeshOptions options() {
 		return delegate.options();
 	}
 

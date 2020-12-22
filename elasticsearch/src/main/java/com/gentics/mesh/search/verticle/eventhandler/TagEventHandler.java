@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
@@ -41,7 +41,7 @@ public class TagEventHandler implements EventHandler {
 	private final ComplianceMode complianceMode;
 
 	@Inject
-	public TagEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
+	public TagEventHandler(MeshHelper helper, MeshEntities entities, AbstractMeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();

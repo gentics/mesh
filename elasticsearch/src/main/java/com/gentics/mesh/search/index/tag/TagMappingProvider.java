@@ -9,7 +9,7 @@ import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ import io.vertx.core.json.JsonObject;
 public class TagMappingProvider extends AbstractMappingProvider {
 
 	@Inject
-	public TagMappingProvider(MeshOptions options) {
+	public TagMappingProvider(AbstractMeshOptions options) {
 		super(options);
 	}
 

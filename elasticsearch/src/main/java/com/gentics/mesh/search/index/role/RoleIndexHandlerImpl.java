@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
@@ -41,7 +41,7 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	RoleMappingProvider mappingProvider;
 
 	@Inject
-	public RoleIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public RoleIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, AbstractMeshOptions options,
 		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
 		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
 	}

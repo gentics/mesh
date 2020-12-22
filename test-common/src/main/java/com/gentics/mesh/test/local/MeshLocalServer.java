@@ -14,6 +14,7 @@ import org.junit.runner.Description;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshCLI;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -80,7 +81,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		}
 
 		if (meshOptions == null) {
-			meshOptions = OptionsLoader.createOrloadOptions(args);
+			meshOptions = OptionsLoader.createOrloadOptions(MeshOptions.class, args);
 		}
 		if (nodeName != null) {
 			meshOptions.setNodeName(nodeName);
@@ -288,7 +289,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 * 
 	 * @return
 	 */
-	public MeshOptions getMeshOptions() {
+	public AbstractMeshOptions getMeshOptions() {
 		return meshOptions;
 	}
 

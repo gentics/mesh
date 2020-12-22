@@ -155,7 +155,7 @@ public class AuthenticationOptions implements Option {
 	 * 
 	 * @param meshOptions
 	 */
-	public void validate(MeshOptions meshOptions) {
+	public void validate(AbstractMeshOptions meshOptions) {
 		Objects.requireNonNull(getKeystorePassword(), "The keystore password was not specified.");
 		Objects.requireNonNull(keystorePath, "The keystore path cannot be null.");
 		if (keystorePath.trim().isEmpty()) {

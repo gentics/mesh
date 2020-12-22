@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.entity.MeshEntity;
@@ -21,7 +21,7 @@ public class EventHandlerFactory {
 	private final ComplianceMode complianceMode;
 
 	@Inject
-	public EventHandlerFactory(MeshEntities entities, MeshHelper helper, MeshOptions options) {
+	public EventHandlerFactory(MeshEntities entities, MeshHelper helper, AbstractMeshOptions options) {
 		this.entities = entities;
 		this.helper = helper;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();

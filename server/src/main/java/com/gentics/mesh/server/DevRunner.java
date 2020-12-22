@@ -44,7 +44,7 @@ public class DevRunner {
 		defaultOption.setInitialAdminPassword("admin");
 		defaultOption.setForceInitialAdminPasswordReset(false);
 		defaultOption.getDebugInfoOptions().setLogEnabled(false);
-		MeshOptions options = OptionsLoader.createOrloadOptions(defaultOption, args);
+		MeshOptions options = OptionsLoader.createOrloadOptions(MeshOptions.class, defaultOption, args);
 
 		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);

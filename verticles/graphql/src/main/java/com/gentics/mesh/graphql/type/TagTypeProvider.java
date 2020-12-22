@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AbstractMeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -38,7 +38,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 	private final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public TagTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
+	public TagTypeProvider(AbstractMeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
 		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
