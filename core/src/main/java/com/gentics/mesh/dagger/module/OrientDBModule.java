@@ -57,6 +57,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.dagger.OrientDBCoreModule;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -143,6 +145,15 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
+
+	@Provides
+	public static OrientDBMeshOptions orientDBMeshOptions(MeshOptions meshOptions) {
+		if (meshOptions instanceof OrientDBMeshOptions) {
+			return (OrientDBMeshOptions) meshOptions;
+		} else {
+			throw new IllegalArgumentException("Unsupported MeshOptions class:" + meshOptions.getClass().getCanonicalName());
+		}
+	}
 
 	/**
 	 * Return a list of all consistency checks.

@@ -32,8 +32,8 @@ public class WriteLockImpl implements WriteLock {
 	private final Counter timeoutCount;
 
 	@Inject
-	public WriteLockImpl(MeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService) {
-		this.options = (OrientDBMeshOptions) options;
+	public WriteLockImpl(OrientDBMeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService) {
+		this.options = options;
 		this.hazelcast = hazelcast;
 		this.isClustered = options.getClusterOptions().isEnabled();
 		this.writeLockTimer = metricsService.timer(WRITE_LOCK_WAITING_TIME);

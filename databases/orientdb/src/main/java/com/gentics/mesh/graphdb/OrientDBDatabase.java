@@ -35,7 +35,6 @@ import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
@@ -132,7 +131,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private final TransactionComponent.Factory txFactory;
 
 	@Inject
-	public OrientDBDatabase(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
+	public OrientDBDatabase(OrientDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
 		OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
@@ -140,7 +139,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		Lazy<PermissionRoots> permissionRoots, Mesh mesh, WriteLock writeLock,
 		TransactionComponent.Factory txFactory) {
 		super(vertx);
-		this.options = (OrientDBMeshOptions) options;
+		this.options = options;
 		this.metrics = metrics;
 		if (metrics != null) {
 			txTimer = metrics.timer(TX_TIME);

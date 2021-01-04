@@ -42,7 +42,7 @@ public class OrientDBMeshOptions extends MeshOptions {
 		if (getVersionPurgeMaxBatchSize() <= 0) {
 			throw new IllegalArgumentException("versionPurgeMaxBatchSize must be positive.");
 		}
-		// TODO check for other invalid characters in node name
+		super.validate();
 	}
 
 	@Override
