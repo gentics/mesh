@@ -387,6 +387,14 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	Result<? extends HibGroup> getGroups(HibUser user);
 
 	/**
+	 * A CRC32 hash of the user roles {@link #getRoles roles}.
+	 *
+	 * @param user
+	 * @return A hash of the user roles
+	 */
+	String getRolesHash(HibUser user);
+
+	/**
 	 * Return the ETag of the user.
 	 * 
 	 * @param user

@@ -40,11 +40,6 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public String getRolesHash() {
-		return null;
-	}
-
-	@Override
 	public HibNode getReferencedNode() {
 		return null;
 	}

@@ -331,7 +331,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 			setGroups(user, ac, restUser);
 		}
 		if (fields.has("rolesHash")) {
-			restUser.setRolesHash(user.getRolesHash());
+			restUser.setRolesHash(getRolesHash(user));
 		}
 		if (fields.has("forcedPasswordChange")) {
 			restUser.setForcedPasswordChange(user.isForcedPasswordChange());
@@ -722,5 +722,10 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	@Override
 	public Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		return toGraph(fromUser).getGroups(authUser, pagingInfo);
+	}
+
+	@Override
+	public String getRolesHash(HibUser user) {
+		return toGraph(user).getRolesHash();
 	}
 }
