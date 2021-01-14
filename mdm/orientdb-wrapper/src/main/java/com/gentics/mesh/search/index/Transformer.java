@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Transformator which can be used to transform a mesh specific element type into an object which is specific to the search provider implementation.
+ * Transformer which can be used to transform a mesh specific element type into an object which is specific to the search provider implementation.
  * 
  * @param <T>
  */
