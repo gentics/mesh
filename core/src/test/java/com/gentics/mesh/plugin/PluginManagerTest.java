@@ -34,6 +34,9 @@ import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 
+/**
+ * In order to run the plugin tests you need to build the test plugins using the build-test-plugins.sh script. 
+ */
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class PluginManagerTest extends AbstractPluginTest {
 
