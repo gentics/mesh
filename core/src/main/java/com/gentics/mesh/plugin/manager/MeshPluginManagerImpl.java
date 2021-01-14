@@ -198,7 +198,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		}
 		setStatus(id, LOADED);
 
-		// 3. Invoke the loading of the plugin class
+		// 3. Invoke the validation of the plugin class
 		try {
 			PluginWrapper plugin = getPlugin(id);
 			if (plugin == null || plugin.getPlugin() == null) {
@@ -232,7 +232,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name);
 		}
 
-		// 5. Register the plugin
+		// 5. Pre-Register the plugin
 		try {
 			PluginWrapper wrapper = getPlugin(id);
 			Plugin plugin = wrapper.getPlugin();
