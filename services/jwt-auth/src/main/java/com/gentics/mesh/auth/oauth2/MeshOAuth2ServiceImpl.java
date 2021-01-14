@@ -527,7 +527,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						}
 					}
 
-					// 7. Check if the plugin wants to remove the user user from any of its current groups.
+					// 7. Check if the plugin wants to remove the user from any of its current groups.
 					GroupFilter groupFilter = result.getGroupFilter();
 					if (groupFilter != null) {
 						for (HibGroup group : userDao.getGroups(user.getDelegate())) {
