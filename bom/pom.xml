@@ -33,6 +33,7 @@
 		<aws.sdk.version>2.1.0</aws.sdk.version>
 	</properties>
 
+	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
 	<dependencyManagement>
 		<dependencies>
 			<!-- Logging -->
