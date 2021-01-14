@@ -284,6 +284,7 @@ public class AdminHandler extends AbstractHandler {
 			db.importGraph(latestFile.getAbsolutePath());
 			boot.globalCacheClear();
 			// TODO apply changelog after import
+			// TODO flush references, clear & init project routers 
 			vertx.eventBus().publish(GRAPH_IMPORT_FINISHED.address, null);
 
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);
