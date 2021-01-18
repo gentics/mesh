@@ -20,3 +20,7 @@ cp plugins/orientdb-studio-3.1.6.zip ~/workspaces/mesh2/mesh/databases/orientdb/
 6. Add entry to changelog files
 
 7. Run tests
+
+## MDM
+
+Should be integrated into mdm/orientdb-
