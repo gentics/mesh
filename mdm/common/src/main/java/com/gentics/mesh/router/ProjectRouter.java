@@ -9,10 +9,25 @@ import io.vertx.ext.web.Router;
  */
 public interface ProjectRouter {
 
+	/**
+	 * Return the Vert.x router.
+	 * 
+	 * @return
+	 */
 	Router getRouter();
 
+	/**
+	 * Return all routers that have been registered.
+	 * 
+	 * @return
+	 */
 	Map<String, Router> getRouters();
 
+	/**
+	 * Return the project plugin router.
+	 * 
+	 * @return
+	 */
 	PluginRouter pluginRouter();
 
 	/**

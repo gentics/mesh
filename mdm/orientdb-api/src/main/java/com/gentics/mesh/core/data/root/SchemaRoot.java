@@ -16,7 +16,6 @@ public interface SchemaRoot extends RootVertex<Schema> {
 
 	public static final String TYPE = "schemas";
 
-
 	/**
 	 * Add the schema to the aggregation node and assign it to all branches of the project to which the root belongs.
 	 * 
@@ -50,8 +49,18 @@ public interface SchemaRoot extends RootVertex<Schema> {
 	 */
 	Project getProject();
 
+	/**
+	 * Create a new schema.
+	 * 
+	 * @return
+	 */
 	Schema create();
 
+	/**
+	 * Create a new schema version.
+	 * 
+	 * @return
+	 */
 	SchemaVersion createVersion();
 
 	/**

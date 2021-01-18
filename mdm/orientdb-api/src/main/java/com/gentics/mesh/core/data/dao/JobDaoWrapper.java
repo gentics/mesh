@@ -18,6 +18,9 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import io.reactivex.Completable;
 
+/**
+ * DAO to access {@link HibJob}.
+ */
 public interface JobDaoWrapper extends JobDao, DaoTransformable<HibJob, JobResponse> {
 
 	/**

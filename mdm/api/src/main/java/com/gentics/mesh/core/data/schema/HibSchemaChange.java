@@ -3,6 +3,11 @@ package com.gentics.mesh.core.data.schema;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
+/**
+ * A schema change tracks the changes that are listed in between two schema versions.
+ * 
+ * @param <T>
+ */
 public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBaseElement {
 
 	/**

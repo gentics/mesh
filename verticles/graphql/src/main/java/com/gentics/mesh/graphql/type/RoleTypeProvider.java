@@ -22,7 +22,7 @@ import graphql.schema.GraphQLObjectType.Builder;
 public class RoleTypeProvider extends AbstractTypeProvider {
 
 	public static final String ROLE_TYPE_NAME = "Role";
-	
+
 	public static final String ROLE_PAGE_TYPE_NAME = "RolesPage";
 
 	@Inject
@@ -33,6 +33,11 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 		super(options);
 	}
 
+	/**
+	 * Create the role type.
+	 * 
+	 * @return
+	 */
 	public GraphQLObjectType createType() {
 		Builder roleType = newObject();
 		roleType.name(ROLE_TYPE_NAME);

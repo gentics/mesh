@@ -28,6 +28,9 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
+/**
+ * Endpoint for the new mesh admin ui.
+ */
 public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminGUI2Endpoint.class);
@@ -91,7 +94,7 @@ public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 		handler.setIndexPage("index.html");
 		route("/*").method(GET).blockingHandler(handler);
 	}
-	
+
 	private void addMeshConfigHandler() {
 		route("/assets/config/" + CONF_FILE).method(GET).handler(rc -> {
 			rc.response().putHeader("Content-Type", "application/javascript");

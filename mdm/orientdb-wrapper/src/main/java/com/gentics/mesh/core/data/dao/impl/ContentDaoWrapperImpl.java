@@ -33,6 +33,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
+/**
+ * @see ContentDaoWrapper
+ */
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	private final Database db;

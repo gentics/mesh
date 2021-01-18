@@ -3,6 +3,10 @@ package com.gentics.mesh.path;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * A path is the result object of a path resolve operation. It lists the resolved segments and has information of the stack that was used during the resolve
+ * operation.
+ */
 public interface Path {
 
 	/**
@@ -12,8 +16,18 @@ public interface Path {
 	 */
 	void setPrefixMismatch(boolean flag);
 
+	/**
+	 * Return the resolve stack which contains the segmented path strings
+	 * 
+	 * @return
+	 */
 	Stack<String> getInitialStack();
 
+	/**
+	 * Set the resolve stack which contains path segment strings.
+	 * 
+	 * @param stack
+	 */
 	void setInitialStack(Stack<String> stack);
 
 	/**
@@ -23,6 +37,12 @@ public interface Path {
 	 */
 	String getResolvedPath();
 
+	/**
+	 * Flag which indicates whether the path resolve operation was able to fully resolve the path. When segments can't be found or resolved this will return
+	 * false.
+	 * 
+	 * @return
+	 */
 	boolean isFullyResolved();
 
 	/**
@@ -76,6 +96,11 @@ public interface Path {
 	 */
 	PathSegment getLast();
 
+	/**
+	 * Check whether the branch/project prefix was matched during the resolve operation.
+	 * 
+	 * @return
+	 */
 	boolean isPrefixMismatch();
 
 }

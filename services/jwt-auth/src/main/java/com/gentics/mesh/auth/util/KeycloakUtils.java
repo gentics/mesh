@@ -19,6 +19,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+/**
+ * Utilities for keycloak SSO.
+ */
 public final class KeycloakUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(KeycloakUtils.class);
@@ -26,6 +29,13 @@ public final class KeycloakUtils {
 	private KeycloakUtils() {
 	}
 
+	/**
+	 * Load the public key from the realm.
+	 * 
+	 * @param realmName
+	 * @param authServerUrl
+	 * @return
+	 */
 	public static String loadPublicKey(String realmName, String authServerUrl) {
 		try {
 			URL parsedAuthServerUrl = new URL(authServerUrl);
@@ -40,6 +50,16 @@ public final class KeycloakUtils {
 		}
 	}
 
+	/**
+	 * Load the JWKs from the realm.
+	 * 
+	 * @param protocol
+	 * @param host
+	 * @param port
+	 * @param realmName
+	 * @return
+	 * @throws IOException
+	 */
 	public static Set<JsonObject> loadJWKs(String protocol, String host, int port, String realmName) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
@@ -80,6 +100,20 @@ public final class KeycloakUtils {
 		}
 	}
 
+	/**
+	 * Invoke a login request.
+	 * 
+	 * @param protocol
+	 * @param host
+	 * @param port
+	 * @param realmName
+	 * @param clientId
+	 * @param username
+	 * @param password
+	 * @param secret
+	 * @return
+	 * @throws IOException
+	 */
 	public static JsonObject loginKeycloak(String protocol, String host, int port, String realmName, String clientId, String username,
 		String password, String secret) throws IOException {
 

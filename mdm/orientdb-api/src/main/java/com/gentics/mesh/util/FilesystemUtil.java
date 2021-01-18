@@ -10,6 +10,9 @@ import com.orientechnologies.common.jnr.ONative;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utilities for filesystem operation.
+ */
 public final class FilesystemUtil {
 
 	public static final Logger log = LoggerFactory.getLogger(FilesystemUtil.class);
@@ -20,7 +23,7 @@ public final class FilesystemUtil {
 
 	/**
 	 * Check whether provided filesystem location supports directIO.
-	 * 	
+	 * 
 	 * @param path
 	 * @return
 	 */

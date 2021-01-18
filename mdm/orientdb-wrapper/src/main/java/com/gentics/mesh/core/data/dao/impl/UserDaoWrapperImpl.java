@@ -80,6 +80,9 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see UserDaoWrapper
+ */
 public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements UserDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(UserDaoWrapperImpl.class);

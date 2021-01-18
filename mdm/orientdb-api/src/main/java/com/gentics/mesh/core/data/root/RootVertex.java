@@ -353,13 +353,18 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 */
 	Class<? extends T> getPersistanceClass();
 
+	/**
+	 * Return the total count of all tracked elements.
+	 * 
+	 * @return
+	 */
 	default long computeCount() {
 		return findAll().count();
 	}
 
 	/**
-	 * Return the global count for all elements of the type that are managed by the root vertex. 
-	 * The count will include all vertices in the graph of the specific type.
+	 * Return the global count for all elements of the type that are managed by the root vertex. The count will include all vertices in the graph of the
+	 * specific type.
 	 * 
 	 * @return
 	 */

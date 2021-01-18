@@ -150,6 +150,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.addFramedEdge(label, inVertex, initializer);
 	}
 
+	/**
+	 * Set the edit timestamp.
+	 * 
+	 * @param timestamp
+	 */
 	public void setLastEditedTimestamp(long timestamp) {
 		delegate.setLastEditedTimestamp(timestamp);
 	}

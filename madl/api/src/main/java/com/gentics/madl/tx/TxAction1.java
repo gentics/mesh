@@ -15,9 +15,21 @@
  */
 package com.gentics.madl.tx;
 
+/**
+ * Transaction action.
+ * 
+ * @param <T>
+ *            Return type of the action
+ */
 @FunctionalInterface
 public interface TxAction1<T> {
 
-    T handle() throws Exception;
+	/**
+	 * Run the action.
+	 * 
+	 * @return Return object
+	 * @throws Exception
+	 */
+	T handle() throws Exception;
 
 }

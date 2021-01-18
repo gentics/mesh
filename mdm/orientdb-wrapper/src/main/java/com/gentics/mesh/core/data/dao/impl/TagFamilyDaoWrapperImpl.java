@@ -44,6 +44,9 @@ import com.google.common.base.Predicate;
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 
+/**
+ * @see TagFamilyDaoWrapper
+ */
 public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> implements TagFamilyDaoWrapper {
 
 	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);

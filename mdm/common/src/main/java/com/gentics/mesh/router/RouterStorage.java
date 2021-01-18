@@ -26,10 +26,25 @@ import io.vertx.ext.web.handler.CorsHandler;
  */
 public interface RouterStorage {
 
+	/**
+	 * Return the router.
+	 * 
+	 * @return
+	 */
 	RootRouter root();
 
+	/**
+	 * Return the authentication handler chain.
+	 * 
+	 * @return
+	 */
 	MeshAuthChain getAuthChain();
 
+	/**
+	 * Return the version handler.
+	 * 
+	 * @return
+	 */
 	VersionHandler getVersionHandler();
 
 	void registerEventbusHandlers();
@@ -41,8 +56,18 @@ public interface RouterStorage {
 	 */
 	RequestDelegator getDelegator();
 
+	/**
+	 * Return the body handler.
+	 * 
+	 * @return
+	 */
 	BodyHandler getBodyHandler();
 
+	/**
+	 * Return the CORS handler.
+	 * 
+	 * @return
+	 */
 	CorsHandler getCorsHandler();
 
 	GlueDatabase getDb();

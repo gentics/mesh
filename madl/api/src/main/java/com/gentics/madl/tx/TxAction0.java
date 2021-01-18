@@ -1,9 +1,17 @@
 
 package com.gentics.madl.tx;
 
+/**
+ * Transaction operation.
+ */
 @FunctionalInterface
 public interface TxAction0 {
 
-    void handle() throws Exception;
+	/**
+	 * Run action in the transaction.
+	 * 
+	 * @throws Exception
+	 */
+	void handle() throws Exception;
 
 }

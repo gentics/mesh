@@ -46,6 +46,11 @@ public interface BinaryDaoWrapper extends BinaryDao, DaoWrapper<HibBinary> {
 		return create(UUIDUtil.randomUUID(), hash, size);
 	}
 
+	/**
+	 * Return a stream of binaries.
+	 * 
+	 * @return
+	 */
 	Transactional<Stream<HibBinary>> findAll();
 
 	/**

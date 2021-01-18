@@ -29,6 +29,9 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
+/**
+ * Endpoint for the old mesh admin UI.
+ */
 public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminGUIEndpoint.class);

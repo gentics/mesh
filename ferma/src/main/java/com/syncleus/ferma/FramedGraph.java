@@ -30,6 +30,11 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public interface FramedGraph extends Graph {
 
+	/**
+	 * Return the type resolver for the graph.
+	 * 
+	 * @return
+	 */
 	TypeResolver getTypeResolver();
 
 	/**

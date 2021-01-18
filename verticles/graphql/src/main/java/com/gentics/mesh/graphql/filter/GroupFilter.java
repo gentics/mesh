@@ -15,6 +15,12 @@ public class GroupFilter extends StartMainFilter<HibGroup> {
 	private static final String NAME = "GroupFilter";
 
 	private static GroupFilter instance;
+
+	/**
+	 * Create a new group filter.
+	 * 
+	 * @return
+	 */
 	public static synchronized GroupFilter filter() {
 		if (instance == null) {
 			instance = new GroupFilter();

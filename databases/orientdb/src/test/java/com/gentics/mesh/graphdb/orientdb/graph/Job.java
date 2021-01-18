@@ -9,6 +9,11 @@ import com.gentics.madl.frame.AbstractVertexFrame;
 @GraphElement
 public class Job extends AbstractVertexFrame {
 
+	/**
+	 * Add the person as employee to the job.
+	 * 
+	 * @param person
+	 */
 	public void addEmployee(Person person) {
 		addFramedEdge("HAS_EMPLOYEE", person);
 	}

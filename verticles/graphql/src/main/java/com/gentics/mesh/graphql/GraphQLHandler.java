@@ -36,6 +36,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
+/**
+ * Handler for GraphQL REST endpoint operations.
+ */
 @Singleton
 public class GraphQLHandler {
 	public static final String SLOW_QUERY_LOGGER_NAME = "com.gentics.mesh.graphql.SlowQuery";
@@ -131,8 +134,8 @@ public class GraphQLHandler {
 				}
 			}
 		}))
-		.doOnError(gc::fail)
-		.subscribe();
+			.doOnError(gc::fail)
+			.subscribe();
 	}
 
 	/**
@@ -191,9 +194,9 @@ public class GraphQLHandler {
 	private void addLocation(GraphQLError error, JsonObject jsonError) {
 		if (error.getPath() != null && !error.getPath().isEmpty()) {
 			String path = error.getPath()
-					.stream()
-					.map(e -> e.toString())
-					.collect(Collectors.joining("."));
+				.stream()
+				.map(e -> e.toString())
+				.collect(Collectors.joining("."));
 			jsonError.put("path", path);
 		}
 		if (error.getLocations() != null && !error.getLocations().isEmpty()) {

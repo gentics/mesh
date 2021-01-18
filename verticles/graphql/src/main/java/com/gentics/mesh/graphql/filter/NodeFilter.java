@@ -26,6 +26,12 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 
 	private static final String NAME = "NodeFilter";
 
+	/**
+	 * Create a node filter for the given context.
+	 * 
+	 * @param context
+	 * @return
+	 */
 	public static NodeFilter filter(GraphQLContext context) {
 		return context.getOrStore(NAME, () -> new NodeFilter(context));
 	}

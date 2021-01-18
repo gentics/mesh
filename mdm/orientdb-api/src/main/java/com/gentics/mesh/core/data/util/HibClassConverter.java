@@ -113,34 +113,82 @@ public final class HibClassConverter {
 		return checkAndCast(schema, Microschema.class);
 	}
 
+	/**
+	 * Convert the microschema version to a graph element.
+	 * 
+	 * @param version
+	 * @return
+	 */
 	public static MicroschemaVersion toGraph(HibMicroschemaVersion version) {
 		return checkAndCast(version, MicroschemaVersion.class);
 	}
 
+	/**
+	 * Convert the project to a graph element.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	public static Project toGraph(HibProject project) {
 		return checkAndCast(project, Project.class);
 	}
 
+	/**
+	 * Convert the role to a graph element.
+	 * 
+	 * @param role
+	 * @return
+	 */
 	public static Role toGraph(HibRole role) {
 		return checkAndCast(role, Role.class);
 	}
 
+	/**
+	 * Convert the binary to a graph element.
+	 * 
+	 * @param binary
+	 * @return
+	 */
 	public static Binary toGraph(HibBinary binary) {
 		return checkAndCast(binary, Binary.class);
 	}
 
+	/**
+	 * Convert the node to a graph element.
+	 * 
+	 * @param node
+	 * @return
+	 */
 	public static Node toGraph(HibNode node) {
 		return checkAndCast(node, Node.class);
 	}
 
+	/**
+	 * Convert the content to a graph element.
+	 * 
+	 * @param content
+	 * @return
+	 */
 	public static NodeGraphFieldContainer toGraph(HibContent content) {
 		return checkAndCast(content, NodeGraphFieldContainer.class);
 	}
 
+	/**
+	 * Convert the job to graph element.
+	 * 
+	 * @param job
+	 * @return
+	 */
 	public static Job toGraph(HibJob job) {
 		return checkAndCast(job, Job.class);
 	}
 
+	/**
+	 * Convert the change to a graph element.
+	 * 
+	 * @param change
+	 * @return
+	 */
 	public static SchemaChange<?> toGraph(HibSchemaChange<?> change) {
 		return checkAndCast(change, SchemaChange.class);
 	}

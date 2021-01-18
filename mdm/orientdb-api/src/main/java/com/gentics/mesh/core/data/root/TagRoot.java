@@ -73,6 +73,14 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 */
 	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
 
+	/**
+	 * Update the tag
+	 * 
+	 * @param tag
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
 	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch);
 
 	/**

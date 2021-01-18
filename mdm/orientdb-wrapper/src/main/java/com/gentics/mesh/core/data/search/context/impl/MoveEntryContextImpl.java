@@ -4,6 +4,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.rest.common.ContainerType;
 
+/**
+ * @see MoveEntryContext
+ */
 public class MoveEntryContextImpl implements MoveEntryContext {
 
 	private String branchUuid;

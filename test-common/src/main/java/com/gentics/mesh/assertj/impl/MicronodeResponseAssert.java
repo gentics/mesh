@@ -12,12 +12,22 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 
+/**
+ * Asserter for {@link MicronodeResponse}
+ */
 public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAssert, MicronodeResponse> {
 
 	public MicronodeResponseAssert(MicronodeResponse actual) {
 		super(actual, MicronodeResponseAssert.class);
 	}
 
+	/**
+	 * Assert the response with the model.
+	 * 
+	 * @param expected
+	 * @param schema
+	 * @return
+	 */
 	public MicronodeResponseAssert matches(MicronodeResponse expected, MicroschemaModel schema) {
 		if (expected == null) {
 			assertNull(descriptionText() + " must be null", actual);
@@ -30,34 +40,34 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 			case "html":
 				assertThat(expected.getFields().getHtmlField(key)).isNotNull();
 				assertThat(actual.getFields().getHtmlField(key).getHTML()).as("Field " + key)
-						.isEqualTo(expected.getFields().getHtmlField(key).getHTML());
+					.isEqualTo(expected.getFields().getHtmlField(key).getHTML());
 				break;
 			case "binary":
 				break;
 			case "boolean":
 				assertThat(expected.getFields().getBooleanField(key)).isNotNull();
 				assertThat(actual.getFields().getBooleanField(key).getValue()).as("Field " + key)
-						.isEqualTo(expected.getFields().getBooleanField(key).getValue());
+					.isEqualTo(expected.getFields().getBooleanField(key).getValue());
 				break;
 			case "date":
 				assertThat(expected.getFields().getDateField(key)).isNotNull();
 				assertThat(actual.getFields().getDateField(key).getDate()).as("Field " + key)
-						.isEqualTo(expected.getFields().getDateField(key).getDate());
+					.isEqualTo(expected.getFields().getDateField(key).getDate());
 				break;
 			case "node":
 				assertThat(expected.getFields().getNodeField(key)).isNotNull();
 				assertThat(actual.getFields().getNodeField(key).getUuid()).as("Field " + key)
-						.isEqualTo(expected.getFields().getNodeField(key).getUuid());
+					.isEqualTo(expected.getFields().getNodeField(key).getUuid());
 				break;
 			case "string":
 				assertThat(expected.getFields().getStringField(key)).isNotNull();
 				assertThat(actual.getFields().getStringField(key).getString()).as("Field " + key)
-						.isEqualTo(expected.getFields().getStringField(key).getString());
+					.isEqualTo(expected.getFields().getStringField(key).getString());
 				break;
 			case "number":
 				assertThat(expected.getFields().getNumberField(key)).isNotNull();
 				assertThat(actual.getFields().getNumberField(key).getNumber()).as("Field " + key)
-						.isEqualTo(expected.getFields().getNumberField(key).getNumber());
+					.isEqualTo(expected.getFields().getNumberField(key).getNumber());
 				break;
 			case "list":
 
@@ -68,9 +78,9 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 						return a.getUuid().compareTo(b.getUuid());
 					}).containsExactlyElementsOf(expected.getFields().getNodeFieldList(key).getItems());
 				} else if (field instanceof FieldList) {
-					//TODO handle lists
-//					assertThat(((FieldList<?>) field).getItems())
-//							.containsExactlyElementsOf(expected.getFields().get(key, FieldList.class).getItems());
+					// TODO handle lists
+					// assertThat(((FieldList<?>) field).getItems())
+					// .containsExactlyElementsOf(expected.getFields().get(key, FieldList.class).getItems());
 				}
 
 			}
@@ -82,8 +92,11 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 
 	/**
 	 * Assert that the MicronodeResponse contains the given string field
-	 * @param name field name
-	 * @param value field value
+	 * 
+	 * @param name
+	 *            field name
+	 * @param value
+	 *            field value
 	 * @return fluent API
 	 */
 	public MicronodeResponseAssert hasStringField(String name, String value) {

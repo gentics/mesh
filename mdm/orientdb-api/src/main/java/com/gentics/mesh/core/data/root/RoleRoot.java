@@ -14,17 +14,38 @@ public interface RoleRoot extends RootVertex<Role>, TransformableElementRoot<Rol
 
 	public static final String TYPE = "roles";
 
+	/**
+	 * Return the page of groups for the given role.
+	 * 
+	 * @param role
+	 *            Role to load groups from
+	 * @param user
+	 *            User to be used to check read permissions
+	 * @param pagingInfo
+	 *            Paging parameters
+	 * @return Return the page of groups
+	 */
 	Page<? extends Group> getGroups(Role role, HibUser user, PagingParameters pagingInfo);
 
+	/**
+	 * Add the role.
+	 * 
+	 * @param role
+	 */
 	void addRole(Role role);
 
+	/**
+	 * Remove the role.
+	 * 
+	 * @param role
+	 */
 	void removeRole(Role role);
 
 	/**
 	 * Create a shallow entity.
+	 * 
 	 * @return
 	 */
 	Role create();
-
 
 }

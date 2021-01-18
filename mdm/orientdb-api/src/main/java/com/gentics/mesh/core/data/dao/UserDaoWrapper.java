@@ -23,10 +23,14 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * User DAO
+ */
 // TODO move the contents of this to UserDao once migration is done
 public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
 
 	/**
+	 * Load all users.
 	 * 
 	 * @return
 	 */

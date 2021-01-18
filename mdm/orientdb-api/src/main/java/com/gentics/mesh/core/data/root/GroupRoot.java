@@ -17,14 +17,53 @@ public interface GroupRoot extends RootVertex<Group>, TransformableElementRoot<G
 
 	public static final String TYPE = "groups";
 
+	/**
+	 * Load a result of all users of the group.
+	 * 
+	 * @param group
+	 * @return
+	 */
 	Result<? extends HibUser> getUsers(HibGroup group);
 
+	/**
+	 * Load a result of all roles of the group.
+	 * 
+	 * @param group
+	 * @return
+	 */
 	Result<? extends HibRole> getRoles(HibGroup group);
 
+	/**
+	 * Return a page of users.
+	 * 
+	 * @param group
+	 *            Group to load users from
+	 * @param user
+	 *            User to check read permissions
+	 * @param pagingInfo
+	 *            Paging information
+	 * @return Paged result
+	 */
 	Page<? extends HibUser> getVisibleUsers(Group group, HibUser user, PagingParameters pagingInfo);
 
+	/**
+	 * Return a page of roles.
+	 * 
+	 * @param group
+	 *            Group to load roles from
+	 * @param user
+	 *            User to be used to check read permissions
+	 * @param pagingInfo
+	 *            Paging settings
+	 * @return Paged result
+	 */
 	Page<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo);
 
+	/**
+	 * Create a new group.
+	 * 
+	 * @return
+	 */
 	Group create();
 
 }

@@ -13,6 +13,9 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * DAO to access {@link HibBranch}
+ */
 // TODO move the contents of this to BranchDao once migration is done
 public interface BranchDaoWrapper extends BranchDao, DaoTransformable<HibBranch, BranchResponse>, DaoWrapper<HibBranch> {
 

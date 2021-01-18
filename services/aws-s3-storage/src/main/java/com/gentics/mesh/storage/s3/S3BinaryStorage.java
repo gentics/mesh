@@ -37,6 +37,9 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+/**
+ * Initial S3 Storage implementation.
+ */
 @Singleton
 public class S3BinaryStorage extends AbstractBinaryStorage {
 

@@ -6,14 +6,20 @@ import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.HibLanguage;
 
+/**
+ * Asserter for {@link HibLanguage}
+ */
 public class LanguageAssert extends AbstractAssert<LanguageAssert, HibLanguage> {
+
 	public LanguageAssert(HibLanguage actual) {
 		super(actual, LanguageAssert.class);
 	}
 
 	/**
 	 * Assert that the language as the given name
-	 * @param name name
+	 * 
+	 * @param name
+	 *            name
 	 * @return fluent API
 	 */
 	public LanguageAssert hasName(String name) {
@@ -23,7 +29,9 @@ public class LanguageAssert extends AbstractAssert<LanguageAssert, HibLanguage> 
 
 	/**
 	 * Assert that the language as the given native name
-	 * @param nativeName native name
+	 * 
+	 * @param nativeName
+	 *            native name
 	 * @return fluent API
 	 */
 	public LanguageAssert hasNativeName(String nativeName) {
@@ -33,7 +41,9 @@ public class LanguageAssert extends AbstractAssert<LanguageAssert, HibLanguage> 
 
 	/**
 	 * Assert that the language as the given tag
-	 * @param tag tag
+	 * 
+	 * @param tag
+	 *            tag
 	 * @return fluent API
 	 */
 	public LanguageAssert hasTag(String tag) {

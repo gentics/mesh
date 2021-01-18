@@ -91,8 +91,19 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 	 */
 	void removeProject(Project project);
 
-	default	Page<? extends HibProject> findAllWrapped(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibProject> extraFilter) {
-		return new DynamicNonTransformablePageImpl<Project>(ac.getUser(), this, pagingInfo, READ_PERM, project ->  { 
+	/**
+	 * Return a page with all projects.
+	 * 
+	 * @param ac
+	 *            Action context to be used to handle permissions checks
+	 * @param pagingInfo
+	 *            Paging information
+	 * @param extraFilter
+	 *            Additional filter to be applied
+	 * @return Page with loaded projects
+	 */
+	default Page<? extends HibProject> findAllWrapped(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibProject> extraFilter) {
+		return new DynamicNonTransformablePageImpl<Project>(ac.getUser(), this, pagingInfo, READ_PERM, project -> {
 			return extraFilter.test(project);
 		}, true);
 	}
@@ -104,8 +115,20 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 	 */
 	void addProject(Project project);
 
+	/**
+	 * Return the sub etag for the project.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @return
+	 */
 	String getSubETag(Project project, InternalActionContext ac);
 
+	/**
+	 * Create a new project.
+	 * 
+	 * @return
+	 */
 	Project create();
 
 }

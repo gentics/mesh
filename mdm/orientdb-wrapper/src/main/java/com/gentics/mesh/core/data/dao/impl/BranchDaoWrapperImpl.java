@@ -30,6 +30,9 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
+/**
+ * @see BranchDaoWrapper
+ */
 @Singleton
 public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements BranchDaoWrapper {
 

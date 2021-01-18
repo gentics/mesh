@@ -28,6 +28,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
+/**
+ * DAO to access {@link HibNode}.
+ */
 public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransformable<HibNode, NodeResponse> {
 
 	/**

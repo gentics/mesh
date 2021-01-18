@@ -15,6 +15,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.OkHttpClient.Builder;
 
+/**
+ * Utilities for Auth0 service.
+ */
 public final class Auth0Utils {
 
 	private static final Logger log = LoggerFactory.getLogger(Auth0Utils.class);
@@ -22,6 +25,13 @@ public final class Auth0Utils {
 	private Auth0Utils() {
 	}
 
+	/**
+	 * Load the JWK for the given auth0 service name.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
 	public static Set<JsonObject> loadJWKs(String name) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
@@ -45,6 +55,18 @@ public final class Auth0Utils {
 
 	}
 
+	/**
+	 * Invoke a login.
+	 * 
+	 * @param name
+	 *            Name of the auth0 service
+	 * @param clientId
+	 * @param username
+	 * @param password
+	 * @param secret
+	 * @return
+	 * @throws IOException
+	 */
 	public static JsonObject loginAuth0(String name, String clientId, String username, String password, String secret) throws IOException {
 		StringBuilder content = new StringBuilder();
 		content.append("client_id=" + clientId + "&");

@@ -5,8 +5,17 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
+/**
+ * Utility for Unix OS
+ */
 public final class UnixUtils {
 
+	/**
+	 * Return the user uid.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
 	public static int getUid() throws IOException {
 		InputStream in = null;
 		try {
