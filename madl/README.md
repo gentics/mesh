@@ -10,3 +10,9 @@ MADL stands for `Mesh Abstraction Database Layer` which aims to replace Ferma.
 
 The main goal for MADL was to replace the Ferma library. MADL also provides a dedicated index and type handling API which is already in use.
 The ferma / tinkerpop library did not provide such a feature since GraphDBs often have vendor specific APIs to handle types and indices.
+
+Replacement of ferma is not fully accomplished.
+
+## MDM
+
+Nothing to do for MDM (MADL will still be used for OrientDB).
