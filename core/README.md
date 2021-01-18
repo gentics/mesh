@@ -4,7 +4,7 @@ The core contains the actual main business logic implementation.
 
 ## Tasks
 
-* Move REST API endpoint specific code to `/verticles/rest`
+* Move REST API endpoint specific code (e.g. UserEndpoint) to `/verticles/rest`
 
 ## Tests
 

@@ -6,4 +6,4 @@ Code from `/core` and `/common` was here since it does not require the `mdm` API
 
 Tasks: 
 
-* It may be worth to keep the code in a dedicated module. If this is not wanted it could also be moved to `mdm/common`.
+* It may be worth to keep the code in a dedicated module. If this is not wanted it could also be moved to `/mdm/common` or `/common`.
