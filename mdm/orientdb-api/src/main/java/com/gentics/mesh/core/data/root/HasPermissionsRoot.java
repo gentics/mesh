@@ -8,6 +8,7 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.result.Result;
 
 public interface HasPermissionsRoot {
+
 	/**
 	 * Get the permissions of a role for this element.
 	 *

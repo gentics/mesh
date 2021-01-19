@@ -47,6 +47,10 @@ public interface RouterStorage {
 	 */
 	VersionHandler getVersionHandler();
 
+	/**
+	 * Register on the eventbus in order to update the stored routes. Project routes may need to be removed when a project gets deleted on a different cluster
+	 * instance.
+	 */
 	void registerEventbusHandlers();
 
 	/**

@@ -65,7 +65,7 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
 /**
- * Handler which contains field API specific request handlers.
+ * @see BinaryUploadHandler
  */
 public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUploadHandler {
 
@@ -328,8 +328,8 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 
 				// Create a new node version field container to store the upload
 				NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
-	latestDraftVersion,
-	true);
+					latestDraftVersion,
+					true);
 
 				// Get the potential existing field
 				BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);

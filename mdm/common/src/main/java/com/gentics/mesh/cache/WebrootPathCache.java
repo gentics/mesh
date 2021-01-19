@@ -5,6 +5,9 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.path.Path;
 
+/**
+ * Path cache for webroot paths.
+ */
 public interface WebrootPathCache extends MeshCache<String, Path> {
 
 	/**

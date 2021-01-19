@@ -6,6 +6,7 @@ import java.util.Collection;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -52,6 +53,7 @@ public interface BootstrapInitializer {
 	@Deprecated
 	ProjectRoot projectRoot();
 
+	@Getter
 	ProjectDaoWrapper projectDao();
 
 	/**
@@ -63,11 +65,14 @@ public interface BootstrapInitializer {
 	@Deprecated
 	LanguageRoot languageRoot();
 
+	@Getter
 	LanguageDaoWrapper languageDao();
 
+	@Getter
 	@Deprecated
 	GroupRoot groupRoot();
 
+	@Getter
 	GroupDaoWrapper groupDao();
 
 	/**
@@ -79,6 +84,7 @@ public interface BootstrapInitializer {
 	@Deprecated
 	UserRoot userRoot();
 
+	@Getter
 	UserDaoWrapper userDao();
 
 	/**
@@ -90,6 +96,7 @@ public interface BootstrapInitializer {
 	@Deprecated
 	JobRoot jobRoot();
 
+	@Getter
 	JobDaoWrapper jobDao();
 
 	/**
@@ -108,6 +115,7 @@ public interface BootstrapInitializer {
 	@Deprecated
 	TagFamilyRoot tagFamilyRoot();
 
+	@Getter
 	TagFamilyDaoWrapper tagFamilyDao();
 
 	/**
@@ -119,6 +127,7 @@ public interface BootstrapInitializer {
 	@Deprecated
 	TagRoot tagRoot();
 
+	@Getter
 	TagDaoWrapper tagDao();
 
 	/**
@@ -130,6 +139,7 @@ public interface BootstrapInitializer {
 	@Deprecated
 	RoleRoot roleRoot();
 
+	@Getter
 	RoleDaoWrapper roleDao();
 
 	/**
@@ -141,6 +151,7 @@ public interface BootstrapInitializer {
 	@Deprecated
 	MicroschemaRoot microschemaContainerRoot();
 
+	@Getter
 	MicroschemaDaoWrapper microschemaDao();
 
 	/**
@@ -152,12 +163,16 @@ public interface BootstrapInitializer {
 	@Deprecated
 	SchemaRoot schemaContainerRoot();
 
+	@Getter
 	SchemaDaoWrapper schemaDao();
 
+	@Getter
 	NodeDaoWrapper nodeDao();
 
+	@Getter
 	ContentDaoWrapper contentDao();
 
+	@Getter
 	BinaryDaoWrapper binaryDao();
 
 	/**
@@ -255,7 +270,8 @@ public interface BootstrapInitializer {
 	/**
 	 * Invoke the changelog system to execute database changes.
 	 * 
-	 * @param flags Flags which will be used to control the post process actions
+	 * @param flags
+	 *            Flags which will be used to control the post process actions
 	 */
 	void invokeChangelog(PostProcessFlags flags);
 
@@ -324,7 +340,7 @@ public interface BootstrapInitializer {
 	/**
 	 * Check whether the execution of the changelog is required.
 	 * 
-	 * @return 
+	 * @return
 	 */
 	boolean requiresChangelog();
 

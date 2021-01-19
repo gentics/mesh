@@ -2,6 +2,9 @@ package com.gentics.mesh.cache;
 
 import com.gentics.mesh.core.data.perm.InternalPermission;
 
+/**
+ * Permission cache for user perms on elements.
+ */
 public interface PermissionCache extends MeshCache<String, Boolean> {
 
 	/**

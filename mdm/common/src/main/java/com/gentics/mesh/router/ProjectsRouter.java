@@ -41,6 +41,11 @@ public interface ProjectsRouter {
 	 */
 	boolean hasProjectRouter(String projectName);
 
+	/**
+	 * Return a map of project routers.
+	 * 
+	 * @return
+	 */
 	Map<String, Router> getProjectRouters();
 
 }

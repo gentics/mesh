@@ -16,12 +16,22 @@ public interface ImageManipulator {
 
 	/**
 	 * Resize the given binary data and return the path to the resized file.
+	 * 
 	 * @param binary
 	 * @param parameters
 	 * @return The path to the resized file.
 	 */
 	Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters);
 
+	/**
+	 * Return the cache file for the given binary and image parameters.
+	 * 
+	 * @param sha512sum
+	 *            Hashsum of the source binary
+	 * @param parameters
+	 *            Resize parameters
+	 * @return
+	 */
 	Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters);
 
 	/**

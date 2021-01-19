@@ -30,6 +30,12 @@ public class AuthHandlerContainer {
 		this.vertx = vertx;
 	}
 
+	/**
+	 * Create a new JWT handler for the given JWKs.
+	 * 
+	 * @param jwks
+	 * @return
+	 */
 	public synchronized JWTAuthHandler create(Set<JsonObject> jwks) {
 		if (hashCode != jwks.hashCode()) {
 			JWTAuthOptions jwtOptions = new JWTAuthOptions();

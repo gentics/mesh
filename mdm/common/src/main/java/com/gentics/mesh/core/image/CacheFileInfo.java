@@ -1,6 +1,10 @@
 package com.gentics.mesh.core.image;
 
+/**
+ * Entry for image cache file information.
+ */
 public class CacheFileInfo {
+
 	public final String path;
 	public final boolean exists;
 
