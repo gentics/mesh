@@ -2,6 +2,9 @@ package com.gentics.mesh.router;
 
 import com.gentics.mesh.rest.InternalEndpoint;
 
+/**
+ * Generic registry for endpoints.
+ */
 public interface EndpointRegistry {
 
 	/**

@@ -32,6 +32,11 @@ public class NodeContent {
 		this.type = type;
 	}
 
+	/**
+	 * Return the node of the content.
+	 * 
+	 * @return
+	 */
 	public HibNode getNode() {
 		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		if (node == null && container != null) {

@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.changelog;
 
+/**
+ * Domain model for a database changelog entry.
+ */
 public interface Change {
 
 	/**

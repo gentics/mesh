@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
@@ -53,6 +54,11 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * DAO for {@link HibTag} elements.
+ * 
+ * TODO MDM Migrate to {@link TagDao}
+ */
 public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements TagDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(TagDaoWrapperImpl.class);

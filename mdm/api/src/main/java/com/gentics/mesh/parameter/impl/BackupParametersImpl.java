@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.BackupParameters;
 
+/**
+ * @see BackupParameters
+ */
 public class BackupParametersImpl extends AbstractParameters implements BackupParameters {
 
 	public BackupParametersImpl(ActionContext ac) {

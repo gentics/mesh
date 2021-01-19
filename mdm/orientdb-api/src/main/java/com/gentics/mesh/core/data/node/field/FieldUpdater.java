@@ -6,6 +6,9 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
+/**
+ * Updater of a field which uses the REST field information from the fieldmap.
+ */
 @FunctionalInterface
 public interface FieldUpdater {
 
@@ -24,5 +27,5 @@ public interface FieldUpdater {
 	 * @param schema
 	 */
 	void update(GraphFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema,
-			FieldSchemaContainer schema);
+		FieldSchemaContainer schema);
 }

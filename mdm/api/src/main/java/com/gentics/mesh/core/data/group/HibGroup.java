@@ -12,6 +12,9 @@ import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.group.GroupReference;
 
+/**
+ * Domain model for group.
+ */
 public interface HibGroup extends HibCoreElement, HibUserTracking, HibNamedElement, HibBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);

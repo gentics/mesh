@@ -7,8 +7,18 @@ import io.vertx.ext.web.Router;
  */
 public interface RootRouter {
 
+	/**
+	 * Return the /api/v1 router
+	 * 
+	 * @return
+	 */
 	APIRouter apiRouter();
 
+	/**
+	 * Return the Vert.x router.
+	 * 
+	 * @return
+	 */
 	Router getRouter();
 
 	RouterStorage getStorage();

@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 
+/**
+ * @see SchemaUpdateParameters
+ */
 public class SchemaUpdateParametersImpl extends AbstractParameters implements SchemaUpdateParameters {
 
 	public SchemaUpdateParametersImpl(ActionContext ac) {

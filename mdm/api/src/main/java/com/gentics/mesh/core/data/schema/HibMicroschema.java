@@ -9,6 +9,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
 
+/**
+ * Domain model for microschema.
+ */
 public interface HibMicroschema
 	extends HibFieldSchemaElement<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion>, HibBucketableElement {
 

@@ -6,6 +6,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * Streaming page implementation.
+ * 
+ * @param <T>
+ */
 public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 
 	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo) {

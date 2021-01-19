@@ -1,6 +1,10 @@
 package com.gentics.mesh.core.data.dao;
 
-public interface BranchDao {
+import com.gentics.mesh.core.data.branch.HibBranch;
 
+/**
+ * DAO for {@link HibBranch}.
+ */
+public interface BranchDao {
 
 }

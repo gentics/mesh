@@ -65,6 +65,9 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 
+/**
+ * @see MeshOAuthService
+ */
 @Singleton
 public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 

@@ -6,6 +6,9 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.event.EventQueueBatch;
 
+/**
+ * Root element for microschemas.
+ */
 public interface MicroschemaRoot extends RootVertex<Microschema> {
 
 	public static final String TYPE = "microschemas";
@@ -36,8 +39,17 @@ public interface MicroschemaRoot extends RootVertex<Microschema> {
 	 */
 	boolean contains(HibMicroschema microschema);
 
-
+	/**
+	 * Create a new microschema.
+	 * 
+	 * @return
+	 */
 	Microschema create();
 
+	/**
+	 * Create a new microschema version.
+	 * 
+	 * @return
+	 */
 	MicroschemaVersion createVersion();
 }

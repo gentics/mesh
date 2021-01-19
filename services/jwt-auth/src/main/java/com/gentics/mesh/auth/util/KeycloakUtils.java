@@ -83,6 +83,16 @@ public final class KeycloakUtils {
 
 	}
 
+	/**
+	 * Load the realm information from the keycloak server.
+	 * 
+	 * @param protocol
+	 * @param host
+	 * @param port
+	 * @param realmName
+	 * @return Realm information
+	 * @throws IOException
+	 */
 	public static JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName) throws IOException {
 
 		Request request = new Request.Builder()

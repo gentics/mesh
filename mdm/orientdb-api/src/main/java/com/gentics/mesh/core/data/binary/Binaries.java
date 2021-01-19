@@ -31,6 +31,13 @@ public interface Binaries {
 	 */
 	Transactional<HibBinary> create(String uuid, String hash, Long size);
 
+	/**
+	 * Create a new binary.
+	 * 
+	 * @param hash
+	 * @param size
+	 * @return Transactional which executes the operation within a transaction
+	 */
 	default Transactional<HibBinary> create(String hash, long size) {
 		return create(UUIDUtil.randomUUID(), hash, size);
 	}

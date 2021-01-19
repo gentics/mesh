@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -121,7 +122,7 @@ public class TestDataProvider {
 	private Provider<EventQueueBatch> queueProvider;
 
 	public TestDataProvider(TestSize size, BootstrapInitializer boot, Database database,
-			Provider<EventQueueBatch> queueProvider) {
+		Provider<EventQueueBatch> queueProvider) {
 		this.size = size;
 		this.boot = boot;
 		this.db = database;
@@ -130,7 +131,7 @@ public class TestDataProvider {
 	}
 
 	public void setup(MeshOptions meshOptions, boolean setAdminPassword)
-			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
+		throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 		if (getSize() == EMPTY) {
 			return;
@@ -139,7 +140,7 @@ public class TestDataProvider {
 		db.tx(tx -> {
 			boot.globalCacheClear();
 			if (meshOptions.getInitialAdminPassword() != null
-					&& !meshOptions.getInitialAdminPassword().startsWith("debug")) {
+				&& !meshOptions.getInitialAdminPassword().startsWith("debug")) {
 				// We omit creating the initial admin password since hashing the password would
 				// slow down tests
 				meshOptions.setInitialAdminPassword(null);
@@ -189,8 +190,8 @@ public class TestDataProvider {
 			addPermissions(project);
 			addPermissions(project.getBaseNode());
 			// TODO HIB probably not necessary. Remove if tests are positive
-//			addPermissions(toGraph(project).getMicroschemaContainerRoot());
-//			addPermissions(toGraph(project).getSchemaContainerRoot());
+			// addPermissions(toGraph(project).getMicroschemaContainerRoot());
+			// addPermissions(toGraph(project).getSchemaContainerRoot());
 			addPermissions(project.getBranchPermissionRoot());
 			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyPermissionRoot());
@@ -231,13 +232,12 @@ public class TestDataProvider {
 				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
 			}
 			roleDao.grantPermissions(role, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM,
-					READ_PUBLISHED_PERM, PUBLISH_PERM);
+				READ_PUBLISHED_PERM, PUBLISH_PERM);
 		}
 	}
 
 	/**
-	 * Add data to the internal maps which was created within the
-	 * {@link BootstrapInitializer} (eg. admin groups, roles, users)
+	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
 	 * 
 	 * @param tx
 	 */
@@ -262,27 +262,27 @@ public class TestDataProvider {
 		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
 
 		HibNode content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht",
-				CONTENT_UUID);
+			CONTENT_UUID);
 		contentUuid = content.getUuid();
 
 		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!",
-				"Kauf zwei und nimm neun mit!");
+			"Kauf zwei und nimm neun mit!");
 		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!",
-				"Kauf zwei und nimm drei mit!");
+			"Kauf zwei und nimm drei mit!");
 
 		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!");
 
 		HibNode concorde = addContent(folders.get("products"), "Concorde",
-				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
-				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
+			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
+			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
 		tagDao.addTag(concorde, tags.get("plane"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("twinjet"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("red"), project.getLatestBranch());
 
 		HibNode hondaNR = addContent(folders.get("products"), "Honda NR",
-				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
-				"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
+			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
+			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
 		tagDao.addTag(hondaNR, tags.get("vehicle"), project.getLatestBranch());
 		tagDao.addTag(hondaNR, tags.get("motorcycle"), project.getLatestBranch());
 		tagDao.addTag(hondaNR, tags.get("green"), project.getLatestBranch());
@@ -390,7 +390,7 @@ public class TestDataProvider {
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
-				getSchemaContainer("folder").getLatestVersion(), batch);
+			getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();
 		schemaDao.addSchema(getSchemaContainer("folder"), project, jobUser, batch);
 		schemaDao.addSchema(getSchemaContainer("content"), project, jobUser, batch);
@@ -424,7 +424,7 @@ public class TestDataProvider {
 		// Publish the project basenode
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		boot.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
-				getUserInfo().getUser());
+			getUserInfo().getUser());
 		contentCount++;
 
 	}
@@ -510,7 +510,7 @@ public class TestDataProvider {
 		vcardMicroschema.addField(postcodeFieldSchema);
 
 		HibMicroschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(),
-				createBatch());
+			createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		microschemaDao.addMicroschema(project, user(), vcardMicroschemaContainer, createBatch());
 	}
@@ -541,7 +541,7 @@ public class TestDataProvider {
 		captionedImageMicroschema.addField(captionFieldSchema);
 
 		HibMicroschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(),
-				createBatch());
+			createBatch());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
 		microschemaDao.addMicroschema(project, user(), microschema, createBatch());
 	}
@@ -563,7 +563,7 @@ public class TestDataProvider {
 		}
 		if (germanName != null) {
 			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(folderNode, german,
-					branch, userInfo.getUser());
+				branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
@@ -573,7 +573,7 @@ public class TestDataProvider {
 		}
 		if (englishName != null) {
 			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(folderNode, english,
-					branch, userInfo.getUser());
+				branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
@@ -612,21 +612,21 @@ public class TestDataProvider {
 	}
 
 	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent,
-			String uuid) {
+		String uuid) {
 		NodeDaoWrapper nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		HibNode node;
 		if (uuid == null) {
 			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(),
-					project);
+				project);
 		} else {
 			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(),
-					project, branch, uuid);
+				project, branch, uuid);
 		}
 		if (englishContent != null) {
 			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(node, english,
-					branch, userInfo.getUser());
+				branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
@@ -639,7 +639,7 @@ public class TestDataProvider {
 
 		if (germanContent != null) {
 			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(node, german, branch,
-					userInfo.getUser());
+				userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
@@ -665,9 +665,9 @@ public class TestDataProvider {
 		ContentDaoWrapper contentDao = boot.contentDao();
 
 		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name")
-				.getString();
+			.getString();
 		String name2 = contentDao.getLatestDraftFieldContainer(folders.get("2015"), languageTag).getString("name")
-				.getString();
+			.getString();
 		return name + "/" + name2;
 	}
 
@@ -687,22 +687,27 @@ public class TestDataProvider {
 		return userInfo;
 	}
 
+	@Getter
 	public HibNode getFolder(String name) {
 		return folders.get(name);
 	}
 
+	@Getter
 	public HibTagFamily getTagFamily(String key) {
 		return tagFamilies.get(key);
 	}
 
+	@Getter
 	public HibNode getContent(String name) {
 		return contents.get(name);
 	}
 
+	@Getter
 	public HibTag getTag(String name) {
 		return tags.get(name);
 	}
 
+	@Getter
 	public HibSchema getSchemaContainer(String name) {
 		return schemaContainers.get(name);
 	}
@@ -752,14 +757,17 @@ public class TestDataProvider {
 		return tagFamilies;
 	}
 
+	@Getter
 	public HibRole role() {
 		return getUserInfo().getRole();
 	}
 
+	@Getter
 	public HibUser user() {
 		return getUserInfo().getUser();
 	}
 
+	@Getter
 	public HibGroup group() {
 		return getUserInfo().getGroup();
 	}
@@ -768,6 +776,7 @@ public class TestDataProvider {
 		return roles.get("anonymous");
 	}
 
+	@Getter
 	public String projectUuid() {
 		return projectUuid;
 	}
@@ -776,6 +785,7 @@ public class TestDataProvider {
 		return contentUuid;
 	}
 
+	@Getter
 	public String branchUuid() {
 		return branchUuid;
 	}
@@ -784,6 +794,11 @@ public class TestDataProvider {
 		return contentCount;
 	}
 
+	/**
+	 * Create a new batch for operations.
+	 * 
+	 * @return
+	 */
 	public EventQueueBatch createBatch() {
 		return queueProvider.get();
 	}

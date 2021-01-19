@@ -12,6 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -22,6 +23,11 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
+/**
+ * DAO for {@link HibLanguage}
+ * 
+ * TODO MDM The method should be moved to {@link LanguageDao}
+ */
 @Singleton
 public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> implements LanguageDaoWrapper {
 

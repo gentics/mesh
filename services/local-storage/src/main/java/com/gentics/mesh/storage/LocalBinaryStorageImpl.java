@@ -28,6 +28,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
+/**
+ * @see LocalBinaryStorage
+ */
 @Singleton
 public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements LocalBinaryStorage {
 
@@ -155,6 +158,13 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 		return binaryFile.getAbsolutePath();
 	}
 
+	/**
+	 * Return the local filesystem path for the binary.
+	 * 
+	 * @param UUID
+	 *            of the binary
+	 * @return Absolute path
+	 */
 	public String getFilePath(String binaryUuid) {
 		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
 		File folder = new File(options.getDirectory(), getSegmentedPath(binaryUuid));

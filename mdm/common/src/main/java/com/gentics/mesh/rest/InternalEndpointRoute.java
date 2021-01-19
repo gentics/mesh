@@ -381,6 +381,11 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	 */
 	Map<Integer, Class<?>> getExampleResponseClasses();
 
+	/**
+	 * Return the rest model class for the example request.
+	 * 
+	 * @return
+	 */
 	Class<? extends RestModel> getExampleRequestClass();
 
 	/**

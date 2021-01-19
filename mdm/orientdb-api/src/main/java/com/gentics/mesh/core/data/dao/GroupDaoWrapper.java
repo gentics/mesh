@@ -17,7 +17,11 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-// TODO move the contents of this to GroupDao once migration is done
+/**
+ * The intermediate group dao.
+ * 
+ * TODO MDM move the contents of this to GroupDao once migration is done
+ */
 public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTransformable<HibGroup, GroupResponse> {
 
 	/**

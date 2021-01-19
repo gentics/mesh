@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
 
+/**
+ * @see ProjectPurgeParameters
+ */
 public class ProjectPurgeParametersImpl extends AbstractParameters implements ProjectPurgeParameters {
 
 	public ProjectPurgeParametersImpl(ActionContext ac) {

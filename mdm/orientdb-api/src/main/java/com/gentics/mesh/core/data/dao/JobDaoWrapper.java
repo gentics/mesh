@@ -20,6 +20,7 @@ import io.reactivex.Completable;
 
 /**
  * DAO to access {@link HibJob}.
+ * TODO MDM - The method should be moved to {@link JobDao}
  */
 public interface JobDaoWrapper extends JobDao, DaoTransformable<HibJob, JobResponse> {
 

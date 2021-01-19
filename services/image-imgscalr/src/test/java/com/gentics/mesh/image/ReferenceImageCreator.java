@@ -21,12 +21,23 @@ import io.reactivex.Observable;
 import io.vertx.core.file.FileSystem;
 import io.vertx.reactivex.core.Vertx;
 
+/**
+ * Test reference image generator.
+ */
 public class ReferenceImageCreator {
+
+	/**
+	 * Run the generator.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		new ReferenceImageCreator().run();
 	}
 
 	private final String BASE_PATH = "services/image-imgscalr/src/test/resources/";
+
 	private void run() throws Exception {
 		Vertx vertx = Vertx.vertx();
 		FileSystem fs = vertx.getDelegate().fileSystem();
@@ -43,7 +54,8 @@ public class ReferenceImageCreator {
 			System.out.println("Transforming image " + imageName);
 			String path = "/pictures/" + imageName;
 
-			String file = manipulator.handleResize(createMockedBinary(path), new ImageManipulationParametersImpl().setWidth(150).setHeight(180)).blockingGet();
+			String file = manipulator.handleResize(createMockedBinary(path), new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+				.blockingGet();
 			String targetPath = BASE_PATH + getReferenceFilename(imageName);
 
 			if (fs.existsBlocking(targetPath)) {
@@ -63,6 +75,5 @@ public class ReferenceImageCreator {
 		return Observable.range(0, array.length())
 			.map(array::getJSONObject);
 	}
-
 
 }

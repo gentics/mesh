@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.util;
 
-import java.util.Objects;
-
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -48,6 +46,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.ElementFrame;
 
+/**
+ * Converter which can transform MDM domain model objects to graph domain element.
+ */
 public final class HibClassConverter {
 
 	private HibClassConverter() {
@@ -197,6 +198,17 @@ public final class HibClassConverter {
 		return checkAndCast(version, GraphFieldSchemaContainerVersion.class);
 	}
 
+	/**
+	 * Apply the cast to the graph element and return it.
+	 * 
+	 * @param <T>
+	 *            Type of the graph element
+	 * @param element
+	 *            MDM element to be casted
+	 * @param clazz
+	 *            Element class to validate the cast operation
+	 * @return Casted element object
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T checkAndCast(HibElement element, Class<? extends ElementFrame> clazz) {
 		if (element == null) {

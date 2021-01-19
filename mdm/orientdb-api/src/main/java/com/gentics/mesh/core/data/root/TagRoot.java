@@ -97,6 +97,13 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	Page<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo);
 
+	/**
+	 * Load all nodes which have been tagged by the tag.
+	 * 
+	 * @param tag
+	 * @param ac
+	 * @return
+	 */
 	Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac);
 
 	/**

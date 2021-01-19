@@ -18,7 +18,7 @@ import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
 /**
- * Crop and resize parameters for image manipulation.
+ * @see ImageManipulationParameters
  */
 public class ImageManipulationParametersImpl extends AbstractParameters implements ImageManipulationParameters {
 

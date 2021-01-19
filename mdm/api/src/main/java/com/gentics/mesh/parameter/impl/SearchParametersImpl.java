@@ -9,6 +9,9 @@ import org.raml.model.parameter.QueryParameter;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * @see SearchParameters
+ */
 public class SearchParametersImpl extends AbstractParameters implements SearchParameters {
 
 	public SearchParametersImpl(ActionContext ac) {

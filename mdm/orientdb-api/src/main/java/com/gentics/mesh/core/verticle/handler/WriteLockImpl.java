@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.verticle.handler;
 
+import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_TIMEOUT_COUNT;
+import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_WAITING_TIME;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -11,13 +14,14 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
-import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_TIMEOUT_COUNT;
-import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_WAITING_TIME;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 
+/**
+ * @see WriteLock
+ */
 @Singleton
 public class WriteLockImpl implements WriteLock {
 

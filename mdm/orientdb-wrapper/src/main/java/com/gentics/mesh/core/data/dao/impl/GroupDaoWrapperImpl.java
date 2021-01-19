@@ -56,6 +56,11 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 
 import dagger.Lazy;
 
+/**
+ * DAO for {@link HibGroup}
+ * 
+ * TODO MDM The methods should be moved to {@link HibGroup}
+ */
 @Singleton
 public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements GroupDaoWrapper {
 
@@ -386,7 +391,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	public String getETag(HibGroup group, InternalActionContext ac) {
 		Group graphGroup = toGraph(group);
 		return graphGroup.getETag(ac);
-		//return boot.get().groupRoot().getETag(graphGroup, ac);
+		// return boot.get().groupRoot().getETag(graphGroup, ac);
 	}
 
 }

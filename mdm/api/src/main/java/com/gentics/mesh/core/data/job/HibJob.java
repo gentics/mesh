@@ -5,10 +5,14 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobType;
 
+/**
+ * Domain model for job.
+ */
 public interface HibJob extends HibCoreElement {
 
 	/**
 	 * Set the branch reference for this job.
+	 * 
 	 * @param branch
 	 */
 	void setBranch(HibBranch branch);

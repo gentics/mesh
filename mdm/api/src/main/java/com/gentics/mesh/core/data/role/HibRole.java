@@ -12,6 +12,9 @@ import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.role.RoleReference;
 
+/**
+ * Domain model for role.
+ */
 public interface HibRole extends HibCoreElement, HibUserTracking, HibNamedElement, HibBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.ROLE, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED);

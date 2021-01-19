@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.UserParameters;
 
+/**
+ * @see UserParameters
+ */
 public class UserParametersImpl extends AbstractParameters implements UserParameters {
 
 	public UserParametersImpl() {
@@ -35,7 +38,7 @@ public class UserParametersImpl extends AbstractParameters implements UserParame
 		// token
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDescription(
-				"Token code which can be used to update the user even if the connection is not authenticated. This can be used to implement a password recovery feature.");
+			"Token code which can be used to update the user even if the connection is not authenticated. This can be used to implement a password recovery feature.");
 		pageParameter.setExample("FDrbBDWRY3aS");
 		pageParameter.setRequired(false);
 		pageParameter.setType(ParamType.STRING);

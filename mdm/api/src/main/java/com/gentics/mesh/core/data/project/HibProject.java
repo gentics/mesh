@@ -8,6 +8,9 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 
+/**
+ * Domain model for project.
+ */
 public interface HibProject extends HibCoreElement, HibUserTracking, HibBucketableElement {
 
 	/**

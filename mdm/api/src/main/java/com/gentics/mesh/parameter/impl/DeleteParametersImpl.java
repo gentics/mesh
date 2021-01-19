@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.DeleteParameters;
 
+/**
+ * @see DeleteParameters
+ */
 public class DeleteParametersImpl extends AbstractParameters implements DeleteParameters {
 
 	public DeleteParametersImpl(ActionContext ac) {

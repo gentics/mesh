@@ -2,6 +2,9 @@ package com.gentics.mesh.core.endpoint.handler;
 
 import com.gentics.mesh.context.InternalActionContext;
 
+/**
+ * Generic REST CRUD handler.
+ */
 public interface CrudHandler {
 
 	/**

@@ -23,6 +23,9 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * Domain model for branch.
+ */
 public interface HibBranch extends HibCoreElement, HibUserTracking {
 
 	/**

@@ -25,13 +25,15 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
 
+/**
+ * DAO for jobs.
+ */
 @Singleton
 public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements JobDaoWrapper {
 
@@ -98,6 +100,15 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 		return boot.get().jobRoot().enqueueBranchMigration(creator, branch);
 	}
 
+	/**
+	 * Apply the permissions to the job.
+	 * 
+	 * @param batch
+	 * @param role
+	 * @param recursive
+	 * @param permissionsToGrant
+	 * @param permissionsToRevoke
+	 */
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		Role graphRole = toGraph(role);

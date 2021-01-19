@@ -7,15 +7,45 @@ import com.gentics.mesh.core.data.HibBaseElement;
  */
 public interface PermissionRoots {
 
+	/**
+	 * Return the root for projects.
+	 * 
+	 * @return
+	 */
 	HibBaseElement project();
 
+	/**
+	 * Return the root for users.
+	 * 
+	 * @return
+	 */
 	HibBaseElement user();
 
+	/**
+	 * Return the root for groups.
+	 * 
+	 * @return
+	 */
 	HibBaseElement group();
 
+	/**
+	 * Return the root for roles.
+	 * 
+	 * @return
+	 */
 	HibBaseElement role();
 
+	/**
+	 * Return the root for microschemas.
+	 * 
+	 * @return
+	 */
 	HibBaseElement microschema();
 
+	/**
+	 * Return the root for schemas.
+	 * 
+	 * @return
+	 */
 	HibBaseElement schema();
 }

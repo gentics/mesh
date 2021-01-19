@@ -12,7 +12,7 @@ import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.util.NumberUtils;
 
 /**
- * Interface for image manipulation query parameters.
+ * Interface for image manipulation query parameters. Crop and resize parameters for image manipulation.
  */
 public interface ImageManipulationParameters extends ParameterProvider {
 

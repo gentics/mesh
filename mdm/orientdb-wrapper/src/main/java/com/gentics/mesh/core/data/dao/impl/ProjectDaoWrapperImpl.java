@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -55,7 +56,11 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-// Use ProjectDao instead of ProjectRoot once ready
+/**
+ * DAO for project operations.
+ * 
+ * TODO MDM Use {@link ProjectDao} instead of ProjectRoot once ready
+ */
 @Singleton
 public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implements ProjectDaoWrapper {
 

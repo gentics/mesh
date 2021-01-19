@@ -471,7 +471,7 @@ public interface Database extends TxFactory, GlueDatabase {
 		};
 	}
 
-	/*
+	/**
 	 * Return the type handler for the database.
 	 */
 	TypeHandler type();

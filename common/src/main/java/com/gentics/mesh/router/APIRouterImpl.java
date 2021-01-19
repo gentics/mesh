@@ -16,7 +16,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.CookieHandler;
 
 /**
- * Central router for /api/v1 routes
+ * @see APIRouter
  */
 public class APIRouterImpl implements APIRouter {
 

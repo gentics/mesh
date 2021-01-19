@@ -80,10 +80,20 @@ public class Bucket {
 		return bucketId <= end && bucketId >= start;
 	}
 
+	/**
+	 * Return the current number of this bucket (Useful for progress handling).
+	 * 
+	 * @return
+	 */
 	public int bucketNo() {
 		return bucketNo;
 	}
 
+	/**
+	 * Return the amount of total buckets.
+	 * 
+	 * @return
+	 */
 	public int total() {
 		return totalBuckets;
 	}

@@ -6,6 +6,9 @@ import com.gentics.mesh.core.data.project.HibProject;
 
 import io.reactivex.Completable;
 
+/**
+ * Node version purge operation handler.
+ */
 public interface ProjectVersionPurgeHandler {
 
 	/**

@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.binary;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 
+/**
+ * Domain model for binaries.
+ */
 public interface HibBinary extends HibBaseElement {
 
 	/**

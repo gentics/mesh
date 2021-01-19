@@ -7,6 +7,9 @@ import com.hazelcast.core.HazelcastInstance;
 
 import io.reactivex.Completable;
 
+/**
+ * The cluster manager provides cluster support for Gentics Mesh.
+ */
 public interface ClusterManager {
 
 	/**

@@ -1,5 +1,8 @@
 package com.gentics.mesh.example;
 
+/**
+ * List of UUIDs for examples. This is used to avoid diffs when generating new doc examples.
+ */
 public final class ExampleUuids {
 
 	// Generic

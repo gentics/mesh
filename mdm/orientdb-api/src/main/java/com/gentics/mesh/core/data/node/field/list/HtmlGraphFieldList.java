@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.node.field.list;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 
+/**
+ * Domain model definition for a html list.
+ */
 public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlFieldListImpl, String> {
 
 	String TYPE = "html";

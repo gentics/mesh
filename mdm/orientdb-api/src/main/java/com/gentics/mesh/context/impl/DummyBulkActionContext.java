@@ -6,6 +6,9 @@ import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.event.EventQueueBatch;
 import io.reactivex.Completable;
 
+/**
+ * Test bulk action context which does not process entries.
+ */
 public class DummyBulkActionContext implements BulkActionContext {
 
 	@Override

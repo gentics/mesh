@@ -15,6 +15,9 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.ETag;
 
+/**
+ * REST transformer for {@link Page} objects.
+ */
 @Singleton
 public class PageTransformer {
 	private final Map<ElementType, DaoTransformable<HibCoreElement, RestModel>> daos;
@@ -24,6 +27,14 @@ public class PageTransformer {
 		this.daos = daos;
 	}
 
+	/**
+	 * Transform the given page to a REST list response.
+	 * 
+	 * @param page
+	 * @param ac
+	 * @param level Level of depth to be used for nested element transformation
+	 * @return
+	 */
 	public ListResponse<RestModel> transformToRestSync(Page<? extends HibCoreElement> page, InternalActionContext ac, int level) {
 		List<RestModel> responses = new ArrayList<>();
 		for (HibCoreElement element : page) {

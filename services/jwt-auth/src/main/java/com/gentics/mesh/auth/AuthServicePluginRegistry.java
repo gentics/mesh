@@ -16,6 +16,9 @@ import com.gentics.mesh.plugin.registry.PluginRegistry;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * {@link PluginRegistry} for Authentication plugins.
+ */
 @Singleton
 public class AuthServicePluginRegistry implements PluginRegistry {
 
@@ -46,6 +49,11 @@ public class AuthServicePluginRegistry implements PluginRegistry {
 		// Not needed
 	}
 
+	/**
+	 * Return a list of all registered {@link AuthServicePlugin}.
+	 * 
+	 * @return
+	 */
 	public List<AuthServicePlugin> getPlugins() {
 		return plugins.values().stream().collect(Collectors.toList());
 	}

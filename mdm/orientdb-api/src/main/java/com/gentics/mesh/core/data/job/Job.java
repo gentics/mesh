@@ -25,7 +25,7 @@ import io.reactivex.Completable;
 public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex, HibJob {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.JOB, JOB_CREATED, JOB_UPDATED, JOB_DELETED);
-	
+
 	String TYPE_PROPERTY_KEY = "type";
 
 	String ERROR_DETAIL_PROPERTY_KEY = "error_detail";
@@ -239,6 +239,11 @@ public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex,
 		return DateUtils.toISO8601(timestamp);
 	}
 
+	/**
+	 * Return the stop timestamp of the job.
+	 * 
+	 * @return
+	 */
 	Long getStopTimestamp();
 
 	/**
@@ -307,12 +312,14 @@ public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex,
 
 	/**
 	 * Return the stored warnings.
+	 * 
 	 * @return
 	 */
 	JobWarningList getWarnings();
 
 	/**
 	 * Set the list of warnings.
+	 * 
 	 * @param warning
 	 */
 	void setWarnings(JobWarningList warnings);

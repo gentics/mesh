@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.dao;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 
+/**
+ * DAO for user operations.
+ */
 public interface UserDao {
 
 	/**

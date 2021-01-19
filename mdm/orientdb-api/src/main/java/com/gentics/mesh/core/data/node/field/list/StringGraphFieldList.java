@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.node.field.list;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 
+/**
+ * Domain model definition for a string list.
+ */
 public interface StringGraphFieldList extends ListGraphField<StringGraphField, StringFieldListImpl, String> {
 
 	String TYPE = "string";

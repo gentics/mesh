@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.NavigationParameters;
 
+/**
+ * @see NavigationParameters
+ */
 public class NavigationParametersImpl extends AbstractParameters implements NavigationParameters {
 
 	public NavigationParametersImpl(ActionContext ac) {
@@ -38,7 +41,7 @@ public class NavigationParametersImpl extends AbstractParameters implements Navi
 		// includeAll
 		QueryParameter includeAllParameter = new QueryParameter();
 		includeAllParameter.setDescription(
-				"If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.");
+			"If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.");
 		includeAllParameter.setExample("true");
 		includeAllParameter.setRequired(false);
 		includeAllParameter.setType(ParamType.BOOLEAN);

@@ -4,6 +4,9 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.perm.InternalPermission;
 
+/**
+ * Common interface for all base elements.
+ */
 public interface HibBaseElement extends HibElement {
 
 	/**

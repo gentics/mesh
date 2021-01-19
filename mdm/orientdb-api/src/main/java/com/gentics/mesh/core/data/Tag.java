@@ -20,7 +20,8 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
  * 
  * Tags can currently only hold a single string value. Tags are not localizable. A tag can only be assigned to a single tag family.
  */
-public interface Tag extends MeshCoreVertex<TagResponse>, ReferenceableElement<TagReference>, UserTrackingVertex, ProjectElement, HibTag, BucketableElement {
+public interface Tag
+	extends MeshCoreVertex<TagResponse>, ReferenceableElement<TagReference>, UserTrackingVertex, ProjectElement, HibTag, BucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAG, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
 
@@ -38,6 +39,12 @@ public interface Tag extends MeshCoreVertex<TagResponse>, ReferenceableElement<T
 		return indexName.toString();
 	}
 
+	/**
+	 * Return the composed search index document if for the element.
+	 * 
+	 * @param elementUuid
+	 * @return
+	 */
 	static String composeDocumentId(String elementUuid) {
 		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
 		return elementUuid;
@@ -69,6 +76,11 @@ public interface Tag extends MeshCoreVertex<TagResponse>, ReferenceableElement<T
 	 */
 	HibProject getProject();
 
+	/**
+	 * Set the project to the tag.
+	 * 
+	 * @param project
+	 */
 	void setProject(HibProject project);
 
 }

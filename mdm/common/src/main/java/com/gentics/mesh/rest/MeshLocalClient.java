@@ -6,6 +6,9 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
+/**
+ * {@link MeshRestClient} for local embedded operation.
+ */
 public interface MeshLocalClient extends MeshRestClient {
 
 	/**

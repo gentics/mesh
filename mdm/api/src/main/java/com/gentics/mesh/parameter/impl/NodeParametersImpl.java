@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 
+/**
+ * @see NodeParameters
+ */
 public class NodeParametersImpl extends AbstractParameters implements NodeParameters {
 
 	public NodeParametersImpl(ActionContext ac) {

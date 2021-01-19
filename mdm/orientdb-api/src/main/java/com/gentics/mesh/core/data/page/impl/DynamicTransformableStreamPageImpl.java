@@ -7,7 +7,13 @@ import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * Dynamic streamable page implementation which can handle transformable elements.
+ * 
+ * @param <T>
+ */
 public class DynamicTransformableStreamPageImpl<T extends TransformableElement<? extends RestModel>> extends DynamicStreamPageImpl<T> {
+
 	public DynamicTransformableStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo) {
 		super(stream, pagingInfo);
 	}

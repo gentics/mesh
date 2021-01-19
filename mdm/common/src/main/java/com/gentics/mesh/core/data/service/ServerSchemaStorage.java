@@ -3,8 +3,14 @@ package com.gentics.mesh.core.data.service;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
+/**
+ * Server-side storage for schema information.
+ */
 public interface ServerSchemaStorage extends SchemaStorage {
 
+	/**
+	 * Initialize the schema storage.
+	 */
 	void init();
 
 	/**

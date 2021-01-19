@@ -1,5 +1,8 @@
 package com.gentics.mesh.path;
 
+/**
+ * Resolved path segments for a {@link Path} object.
+ */
 public interface PathSegment {
 
 	/**

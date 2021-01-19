@@ -9,6 +9,12 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
+/**
+ * Transformer for domain models of fields into REST models.
+ * 
+ * @param <T>
+ *            REST model type of the field
+ */
 @FunctionalInterface
 public interface FieldTransformer<T extends Field> {
 
@@ -29,6 +35,6 @@ public interface FieldTransformer<T extends Field> {
 	 * @return
 	 */
 	T transform(GraphFieldContainer container, InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
-			int level, Supplier<HibNode> parentNode);
+		int level, Supplier<HibNode> parentNode);
 
 }

@@ -10,7 +10,7 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
 
-/* 
+/**
  * Aggregated collection of DAOs
  */
 public interface DaoCollection {

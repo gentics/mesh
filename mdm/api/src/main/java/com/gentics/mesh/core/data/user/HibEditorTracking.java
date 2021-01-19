@@ -2,6 +2,9 @@ package com.gentics.mesh.core.data.user;
 
 import com.gentics.mesh.util.DateUtils;
 
+/**
+ * Domain model extension for elements which can be edited.
+ */
 public interface HibEditorTracking {
 
 	/**

@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.node.field;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
+/**
+ * Fetcher for fields from a content.
+ */
 @FunctionalInterface
 public interface FieldGetter {
 
