@@ -4,6 +4,9 @@ import com.gentics.mesh.madl.type.AbstractTypeDefinition;
 import com.gentics.mesh.madl.type.AbstractTypeDefinitionBuilder;
 import com.gentics.mesh.madl.type.VertexTypeDefinition;
 
+/**
+ * @see VertexTypeDefinition
+ */
 public class VertexTypeDefinitionImpl extends AbstractTypeDefinition implements VertexTypeDefinition {
 
 	private Class<?> clazz;
@@ -24,6 +27,11 @@ public class VertexTypeDefinitionImpl extends AbstractTypeDefinition implements 
 			this.superClazz = superClazz;
 		}
 
+		/**
+		 * Build the definition.
+		 * 
+		 * @return
+		 */
 		public VertexTypeDefinition build() {
 			VertexTypeDefinitionImpl def = new VertexTypeDefinitionImpl();
 			def.clazz = clazz;

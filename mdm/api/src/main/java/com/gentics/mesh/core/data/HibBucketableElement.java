@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data;
 
+/**
+ * Domain model extension for elements which can be handled via buckets.
+ */
 public interface HibBucketableElement {
 
 	/**

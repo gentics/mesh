@@ -22,6 +22,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Plugin registry for {@link GraphQLPlugin}'s.
+ */
 @Singleton
 public class GraphQLPluginRegistry implements PluginRegistry {
 
@@ -58,6 +61,11 @@ public class GraphQLPluginRegistry implements PluginRegistry {
 		});
 	}
 
+	/**
+	 * Return a set of registered plugins.
+	 * 
+	 * @return
+	 */
 	public Set<GraphQLPlugin> getPlugins() {
 		return plugins.values().stream().collect(Collectors.toSet());
 	}

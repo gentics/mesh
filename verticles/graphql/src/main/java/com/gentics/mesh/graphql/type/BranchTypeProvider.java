@@ -19,6 +19,9 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
 
+/**
+ * GraphQL type provider for branch type.
+ */
 @Singleton
 public class BranchTypeProvider extends AbstractTypeProvider {
 
@@ -52,20 +55,20 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 				.argument(createNameArg("Name of the schema."))
 				.type(new GraphQLTypeReference(SCHEMA_TYPE_NAME))
 				.dataFetcher(this::handleBranchSchema)
-				.build()
-		);
+				.build());
 
 		// .schemas
 		branchType.field(newPagingFieldWithFetcher("schemas", "Load schemas assigned to this branch.",
-				this::handleBranchSchemas, SCHEMA_PAGE_TYPE_NAME));
+			this::handleBranchSchemas, SCHEMA_PAGE_TYPE_NAME));
 
 		// .tags
-		branchType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
-			env) -> {
-			GraphQLContext gc = env.getContext();
-			HibBranch branch = env.getSource();
-			return branch.getTags(gc.getUser(), getPagingInfo(env));
-		}));
+		branchType
+			.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
+				env) -> {
+				GraphQLContext gc = env.getContext();
+				HibBranch branch = env.getSource();
+				return branch.getTags(gc.getUser(), getPagingInfo(env));
+			}));
 
 		return branchType.build();
 	}

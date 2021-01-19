@@ -19,6 +19,9 @@ import graphql.schema.GraphQLSchema;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * GraphQL type provider for plugin api types.
+ */
 @Singleton
 public class PluginApiTypeProvider extends AbstractTypeProvider {
 
@@ -37,6 +40,11 @@ public class PluginApiTypeProvider extends AbstractTypeProvider {
 		this.pluginEnv = env;
 	}
 
+	/**
+	 * Create the type definition.
+	 * 
+	 * @return
+	 */
 	public GraphQLFieldDefinition createPluginAPIField() {
 		return newFieldDefinition().name("pluginApi")
 			.description("Access API exposed by Gentics Mesh plugins")

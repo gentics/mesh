@@ -27,6 +27,9 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
 
+/**
+ * GraphQL type provider for project types.
+ */
 @Singleton
 public class ProjectTypeProvider extends AbstractTypeProvider {
 
@@ -68,6 +71,12 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		return new NodeContent(node, container, languageTags, type);
 	}
 
+	/**
+	 * Create the type definition.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	public GraphQLObjectType createType(HibProject project) {
 		Builder root = newObject();
 		root.name(PROJECT_TYPE_NAME);

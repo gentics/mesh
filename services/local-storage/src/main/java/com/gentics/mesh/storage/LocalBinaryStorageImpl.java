@@ -158,13 +158,7 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 		return binaryFile.getAbsolutePath();
 	}
 
-	/**
-	 * Return the local filesystem path for the binary.
-	 * 
-	 * @param UUID
-	 *            of the binary
-	 * @return Absolute path
-	 */
+	@Override
 	public String getFilePath(String binaryUuid) {
 		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
 		File folder = new File(options.getDirectory(), getSegmentedPath(binaryUuid));

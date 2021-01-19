@@ -24,6 +24,9 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 
+/**
+ * GraphQL type provider for the mesh type.
+ */
 @Singleton
 public class MeshTypeProvider {
 

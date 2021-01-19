@@ -18,6 +18,9 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
+/**
+ * GraphQL type provider for groups.
+ */
 @Singleton
 public class GroupTypeProvider extends AbstractTypeProvider {
 
@@ -33,6 +36,11 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 		super(options);
 	}
 
+	/**
+	 * Create the type definition.
+	 * 
+	 * @return
+	 */
 	public GraphQLObjectType createType() {
 		Builder groupType = newObject();
 		groupType.name(GROUP_TYPE_NAME);

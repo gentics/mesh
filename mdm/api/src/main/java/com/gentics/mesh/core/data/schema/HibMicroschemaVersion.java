@@ -4,6 +4,9 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
+/**
+ * Domain model for microschema versions.
+ */
 public interface HibMicroschemaVersion
 	extends HibFieldSchemaVersionElement<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion> {
 

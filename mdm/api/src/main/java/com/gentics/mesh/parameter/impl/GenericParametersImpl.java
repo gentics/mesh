@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 
+/**
+ * @see GenericParameters
+ */
 public class GenericParametersImpl extends AbstractParameters implements GenericParameters {
 
 	public GenericParametersImpl(ActionContext ac) {

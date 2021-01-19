@@ -15,6 +15,7 @@ public class RoleFilter extends StartMainFilter<HibRole> {
 	private static final String NAME = "RoleFilter";
 
 	private static RoleFilter instance;
+
 	public static synchronized RoleFilter filter() {
 		if (instance == null) {
 			instance = new RoleFilter();

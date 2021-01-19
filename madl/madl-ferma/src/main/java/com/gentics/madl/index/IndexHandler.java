@@ -9,6 +9,9 @@ import com.gentics.mesh.madl.index.impl.VertexIndexDefinitionImpl.VertexIndexDef
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.VertexFrame;
 
+/**
+ * Handler for graph database indices.
+ */
 public interface IndexHandler {
 
 	/**
@@ -36,6 +39,7 @@ public interface IndexHandler {
 
 	/**
 	 * Remove the index.
+	 * 
 	 * @param indexName
 	 */
 	void removeIndex(String indexName);
@@ -103,8 +107,10 @@ public interface IndexHandler {
 	/**
 	 * Find the framed vertex with the given uuid via the index.
 	 * 
-	 * @param classOfT Class of the element
-	 * @param uuid Uuid of the element
+	 * @param classOfT
+	 *            Class of the element
+	 * @param uuid
+	 *            Uuid of the element
 	 * @return
 	 */
 	<T extends VertexFrame> T findByUuid(Class<? extends T> classOfT, String uuid);

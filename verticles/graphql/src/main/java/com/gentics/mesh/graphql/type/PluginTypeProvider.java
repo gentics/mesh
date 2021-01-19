@@ -33,6 +33,9 @@ import graphql.schema.GraphQLTypeReference;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * GraphQL type provider for plugin types.
+ */
 @Singleton
 public class PluginTypeProvider extends AbstractTypeProvider {
 

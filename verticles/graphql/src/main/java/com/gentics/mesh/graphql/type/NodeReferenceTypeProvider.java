@@ -15,6 +15,9 @@ import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeReference;
 
+/**
+ * GraphQL type provider for node references.
+ */
 @Singleton
 public class NodeReferenceTypeProvider extends AbstractTypeProvider {
 
@@ -39,7 +42,7 @@ public class NodeReferenceTypeProvider extends AbstractTypeProvider {
 			.dataFetcher(env -> {
 				NodeReferenceIn reference = env.getSource();
 				return reference.getNode();
-		}));
+			}));
 
 		nodeType.field(newFieldDefinition()
 			.name("fieldName")
@@ -48,7 +51,7 @@ public class NodeReferenceTypeProvider extends AbstractTypeProvider {
 			.dataFetcher(env -> {
 				NodeReferenceIn reference = env.getSource();
 				return reference.getFieldName();
-		}));
+			}));
 
 		nodeType.field(newFieldDefinition()
 			.name("micronodeFieldName")
@@ -58,7 +61,7 @@ public class NodeReferenceTypeProvider extends AbstractTypeProvider {
 			.dataFetcher(env -> {
 				NodeReferenceIn reference = env.getSource();
 				return reference.getMicronodeFieldName();
-		}));
+			}));
 
 		return nodeType.build();
 	}

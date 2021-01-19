@@ -22,13 +22,16 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
+/**
+ * GraphQL type provider for microschema types.
+ */
 @Singleton
 public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 	public static final String MICROSCHEMA_TYPE_NAME = "Microschema";
 
 	public static final String MICROSCHEMA_PAGE_TYPE_NAME = "MicroschemasPage";
-	
+
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
 
@@ -37,6 +40,11 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 		super(options);
 	}
 
+	/**
+	 * Create the type definition.
+	 * 
+	 * @return
+	 */
 	public GraphQLObjectType createType() {
 		Builder schemaType = newObject().name(MICROSCHEMA_TYPE_NAME).description("Microschema");
 		interfaceTypeProvider.addCommonFields(schemaType);

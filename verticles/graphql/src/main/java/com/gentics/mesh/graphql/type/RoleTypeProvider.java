@@ -18,6 +18,9 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
+/**
+ * GraphQL type provider for role.
+ */
 @Singleton
 public class RoleTypeProvider extends AbstractTypeProvider {
 

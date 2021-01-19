@@ -7,6 +7,9 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.tag.TagReference;
 
+/**
+ * Domain model for tags.
+ */
 public interface HibTag extends HibCoreElement, HibUserTracking, HibBucketableElement {
 
 	/**

@@ -12,6 +12,9 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.event.EventQueueBatch;
 
+/**
+ * Domain model for nodes.
+ */
 public interface HibNode extends HibCoreElement, HibCreatorTracking, HibBucketableElement {
 
 	/**
@@ -45,6 +48,11 @@ public interface HibNode extends HibCoreElement, HibCreatorTracking, HibBucketab
 	 */
 	HibProject getProject();
 
+	/**
+	 * Return the schema of the node.
+	 * 
+	 * @return
+	 */
 	// TODO rename method
 	HibSchema getSchemaContainer();
 

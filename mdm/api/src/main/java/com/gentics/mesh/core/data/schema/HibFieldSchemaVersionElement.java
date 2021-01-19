@@ -67,8 +67,18 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 
 	// Version chain
 
+	/**
+	 * Set the previous schema version.
+	 * 
+	 * @param version
+	 */
 	void setPreviousVersion(SCV version);
 
+	/**
+	 * Set the next schema version.
+	 * 
+	 * @param version
+	 */
 	void setNextVersion(SCV version);
 
 	// Changes

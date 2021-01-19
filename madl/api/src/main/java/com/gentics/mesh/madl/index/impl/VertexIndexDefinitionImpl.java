@@ -4,6 +4,9 @@ import com.gentics.mesh.madl.index.AbstractIndexDefinition;
 import com.gentics.mesh.madl.index.AbstractIndexDefinitionBuilder;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
 
+/**
+ * @see VertexIndexDefinition
+ */
 public class VertexIndexDefinitionImpl extends AbstractIndexDefinition implements VertexIndexDefinition {
 
 	private Class<?> clazz;
@@ -21,6 +24,11 @@ public class VertexIndexDefinitionImpl extends AbstractIndexDefinition implement
 			this.name = clazz.getSimpleName();
 		}
 
+		/**
+		 * Return the builder for a new definition.
+		 * 
+		 * @return
+		 */
 		public VertexIndexDefinition build() {
 			VertexIndexDefinitionImpl def = new VertexIndexDefinitionImpl();
 			def.clazz = clazz;

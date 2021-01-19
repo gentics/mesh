@@ -21,6 +21,9 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
 
+/**
+ * GraphQL type provider for tag family.
+ */
 @Singleton
 public class TagFamilyTypeProvider extends AbstractTypeProvider {
 

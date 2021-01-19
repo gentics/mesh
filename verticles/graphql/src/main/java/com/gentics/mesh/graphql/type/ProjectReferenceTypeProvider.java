@@ -11,6 +11,9 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+/**
+ * GraphQL type provider for project reference types.
+ */
 @Singleton
 public class ProjectReferenceTypeProvider extends AbstractTypeProvider {
 	public static final String PROJECT_REFERENCE_TYPE_NAME = "ProjectReference";

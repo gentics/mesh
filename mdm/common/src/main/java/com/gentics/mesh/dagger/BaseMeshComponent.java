@@ -4,6 +4,7 @@ import javax.inject.Provider;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectNameCache;
@@ -46,103 +47,141 @@ import com.gentics.mesh.storage.LocalBinaryStorage;
 
 import io.vertx.core.Vertx;
 
+/**
+ * Dagger interface for the central mesh components. The method allow quick access to elements outside of the dagger di scope.
+ */
 public interface BaseMeshComponent {
 
+	@Getter
 	MeshOptions options();
 
+	@Getter
 	Vertx vertx();
 
+	@Getter
 	PasswordEncoder passwordEncoder();
 
+	@Getter
 	SchemaComparator schemaComparator();
 
 	// Data
 
+	@Getter
 	PermissionProperties permissionProperties();
 
+	@Getter
 	UserProperties userProperties();
 
 	// Caches
-
+	@Getter
 	WebrootPathCache pathCache();
 
+	@Getter
 	PermissionCache permissionCache();
 
+	@Getter
 	ProjectBranchNameCache branchCache();
 
+	@Getter
 	ProjectNameCache projectNameCache();
 
 	// Plugin
-
+	@Getter
 	PluginEnvironment pluginEnv();
 
 	// Other
-
+	@Getter
 	MeshPluginManager pluginManager();
 
+	@Getter
 	MeshLocalClient meshLocalClientImpl();
 
+	@Getter
 	ImageManipulator imageManipulator();
 
+	@Getter
 	LocalBinaryStorage localBinaryStorage();
 
+	@Getter
 	BinaryStorage binaryStorage();
 
+	@Getter
 	Provider<BulkActionContext> bulkProvider();
 
+	@Getter
 	WebRootLinkReplacer webRootLinkReplacer();
 
+	@Getter
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
+	@Getter
 	ServerSchemaStorage serverSchemaStorage();
 
+	@Getter
 	Provider<EventQueueBatch> batchProvider();
 
 	// Search
-
+	@Getter
 	SearchProvider searchProvider();
 
+	@Getter
 	UserIndexHandler userIndexHandler();
 
+	@Getter
 	RoleIndexHandler roleIndexHandler();
 
+	@Getter
 	GroupIndexHandler groupIndexHandler();
 
+	@Getter
 	SchemaIndexHandler schemaContainerIndexHandler();
 
+	@Getter
 	MicroschemaIndexHandler microschemaContainerIndexHandler();
 
+	@Getter
 	TagIndexHandler tagIndexHandler();
 
+	@Getter
 	TagFamilyIndexHandler tagFamilyIndexHandler();
 
+	@Getter
 	ProjectIndexHandler projectIndexHandler();
 
+	@Getter
 	NodeIndexHandler nodeContainerIndexHandler();
 
+	@Getter
 	IndexHandlerRegistry indexHandlerRegistry();
 
+	@Getter
 	default TrackingSearchProvider trackingSearchProvider() {
 		return (TrackingSearchProvider) searchProvider();
 	}
 
 	// Migration
-
+	@Getter
 	NodeMigration nodeMigrationHandler();
 
+	@Getter
 	BranchMigration branchMigrationHandler();
 
+	@Getter
 	MicronodeMigration micronodeMigrationHandler();
 
+	@Getter
 	JobWorkerVerticle jobWorkerVerticle();
 
 	// REST
-
+	@Getter
 	RoleCrudHandler roleCrudHandler();
 
+	@Getter
 	EndpointRegistry endpointRegistry();
 
+	@Getter
 	RouterStorageRegistry routerStorageRegistry();
 
+	@Getter
 	WriteLock globalLock();
 }
