@@ -27,6 +27,15 @@ import com.gentics.mesh.parameter.PagingParameters;
 public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
 
 	/**
+	 * Return the api path for the user.
+	 * 
+	 * @param user
+	 * @param ac
+	 * @return
+	 */
+	String getAPIPath(HibUser user, InternalActionContext ac);
+
+	/**
 	 * 
 	 * @return
 	 */

@@ -691,6 +691,12 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
+	public String getAPIPath(HibUser user, InternalActionContext ac) {
+		User graphUser = toGraph(user);
+		return graphUser.getAPIPath(ac);
+	}
+
+	@Override
 	public Result<? extends HibGroup> getGroups(HibUser user) {
 		User graphUser = toGraph(user);
 		return graphUser.getGroups();
