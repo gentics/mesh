@@ -66,6 +66,9 @@ import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 
+/**
+ * @see SchemaDaoWrapper
+ */
 public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implements SchemaDaoWrapper {
 
 	private final Lazy<Vertx> vertx;
@@ -258,6 +261,12 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 		return container;
 	}
 
+	/**
+	 * Validate the given schema model using the elasticsearch index handler (needed for ES setting validation).
+	 * 
+	 * @param indexHandler
+	 * @param schema
+	 */
 	public static void validateSchema(NodeIndexHandler indexHandler, SchemaVersionModel schema) {
 		// TODO Maybe set the timeout to the configured search.timeout? But the default of 60 seconds is really long.
 		Throwable error = indexHandler.validate(schema).blockingGet(10, TimeUnit.SECONDS);

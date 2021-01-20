@@ -54,6 +54,12 @@ public interface MeshElement extends ElementFrame {
 		return getProperty(name);
 	}
 
+	/**
+	 * Store the string value as {@link Set} property value.
+	 * 
+	 * @param propertyKey
+	 * @param value
+	 */
 	default void addToStringSetProperty(String propertyKey, String value) {
 		Set<String> set = property(propertyKey);
 		if (set == null) {

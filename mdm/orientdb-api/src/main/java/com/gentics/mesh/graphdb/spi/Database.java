@@ -87,6 +87,7 @@ public interface Database extends TxFactory, GlueDatabase {
 
 	/**
 	 * Returns true if the database requires type and index initialization using {@link #type()} and {@link #index()}.
+	 * 
 	 * @return
 	 * @deprecated The logic creating these types should be in {@link #init(String, String...)} or there should be a createTypes() method.
 	 */
@@ -318,7 +319,8 @@ public interface Database extends TxFactory, GlueDatabase {
 	 * @param end
 	 * @return
 	 */
-	Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String postfix, String[] fieldNames, Object[] fieldValues, String rangeKey, long start,
+	Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String postfix, String[] fieldNames, Object[] fieldValues, String rangeKey,
+		long start,
 		long end);
 
 	/**
@@ -498,8 +500,18 @@ public interface Database extends TxFactory, GlueDatabase {
 		return index().createComposedIndexKey(keys);
 	}
 
+	/**
+	 * Return the list low level change uuids.
+	 * 
+	 * @return
+	 */
 	List<String> getChangeUuidList();
 
+	/**
+	 * Return the Vert.x instance.
+	 * 
+	 * @return
+	 */
 	Vertx vertx();
 
 	/**

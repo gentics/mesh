@@ -13,6 +13,9 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.shared.SharedKeys;
 
+/**
+ * @see ContextDataRegistry
+ */
 @Singleton
 public class GraphContextDataRegistryImpl implements ContextDataRegistry {
 
@@ -23,8 +26,8 @@ public class GraphContextDataRegistryImpl implements ContextDataRegistry {
 
 	@Override
 	public HibProject getProject(InternalActionContext ac) {
-		if(ac instanceof NodeMigrationActionContext) {
-			return ((NodeMigrationActionContext)ac).getProject();
+		if (ac instanceof NodeMigrationActionContext) {
+			return ((NodeMigrationActionContext) ac).getProject();
 		}
 		return ac.get(SharedKeys.PROJECT_CONTEXT_KEY);
 	}

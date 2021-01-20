@@ -41,6 +41,9 @@ import com.gentics.mesh.path.Path;
 
 import dagger.Lazy;
 
+/**
+ * DAO for {@link HibNode} operation.
+ */
 @Singleton
 public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements NodeDaoWrapper {
 
@@ -72,7 +75,7 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	@Override
 	public Result<? extends HibNode> findAll(HibProject project) {
 		return toGraph(project).findNodes();
-		//return toGraph(project).getNodeRoot().findAll();
+		// return toGraph(project).getNodeRoot().findAll();
 	}
 
 	@Override

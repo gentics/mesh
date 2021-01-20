@@ -683,6 +683,9 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		return user;
 	}
 
+	/**
+	 * Return the global amount of users stored in mesh.
+	 */
 	public long globalCount() {
 		return boot.get().userRoot().globalCount();
 	}

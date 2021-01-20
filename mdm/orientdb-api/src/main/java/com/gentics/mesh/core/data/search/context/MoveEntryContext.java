@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.search.context;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 
+/**
+ * Context information for move operation.
+ */
 public interface MoveEntryContext extends EntryContext {
 
 	/**

@@ -16,6 +16,9 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * DAO for role operations.
+ */
 public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransformable<HibRole, RoleResponse> {
 
 	/**

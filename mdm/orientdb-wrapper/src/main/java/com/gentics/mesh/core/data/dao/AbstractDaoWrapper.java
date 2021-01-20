@@ -13,6 +13,11 @@ import com.gentics.mesh.core.result.Result;
 
 import dagger.Lazy;
 
+/**
+ * Abstract implementation for DAO's.
+ * 
+ * @param <T>
+ */
 public abstract class AbstractDaoWrapper<T extends HibBaseElement> implements DaoWrapper<T> {
 
 	protected final Lazy<BootstrapInitializer> boot;

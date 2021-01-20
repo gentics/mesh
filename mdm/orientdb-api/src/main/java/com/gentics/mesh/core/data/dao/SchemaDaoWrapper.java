@@ -31,6 +31,9 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * DAO for schema operation.
+ */
 public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
 
 	/**

@@ -14,6 +14,11 @@ import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 
+/**
+ * Container provider for various DAO's.
+ * 
+ * TODO MDM - Refactor to only use Dao's and not DaoActions.
+ */
 @Singleton
 public class OrientDBDaoCollection implements DaoCollection {
 

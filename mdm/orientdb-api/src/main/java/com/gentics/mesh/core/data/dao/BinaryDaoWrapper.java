@@ -13,6 +13,9 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * DAO for {@link HibBinary} operations.
+ */
 public interface BinaryDaoWrapper extends BinaryDao, DaoWrapper<HibBinary> {
 	/**
 	 * Find the binary with the given hashsum.

@@ -41,15 +41,31 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	@Inject
 	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
+		// TODO Fix assignment - Inject DB
 		this.db = db;
 	}
 
-	// New methods
+	/**
+	 * Transform the given branch to REST.
+	 * 
+	 * @param branch
+	 * @param ac
+	 * @param level
+	 * @param languageTags
+	 * @return
+	 */
 	public BranchResponse transformToRestSync(HibBranch branch, InternalActionContext ac, int level, String... languageTags) {
 		Branch graphBranch = toGraph(branch);
 		return graphBranch.getRoot().transformToRestSync(graphBranch, ac, level, languageTags);
 	}
 
+	/**
+	 * Load the branch from the project using the provided uuid.
+	 * 
+	 * @param project
+	 * @param uuid
+	 * @return Loaded branch or null when the branch can't be found
+	 */
 	public HibBranch findByUuid(HibProject project, String uuid) {
 		Objects.requireNonNull(project);
 		Project graphProject = toGraph(project);

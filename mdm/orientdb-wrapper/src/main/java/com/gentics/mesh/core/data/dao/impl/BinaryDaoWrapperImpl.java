@@ -25,6 +25,9 @@ import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * @See {@link BinaryDaoWrapper}
+ */
 @Singleton
 public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implements BinaryDaoWrapper {
 

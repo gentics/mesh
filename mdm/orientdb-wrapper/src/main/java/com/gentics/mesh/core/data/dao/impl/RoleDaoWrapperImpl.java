@@ -48,6 +48,9 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 
 import dagger.Lazy;
 
+/**
+ * DAO for {@link HibRole} operations.
+ */
 @Singleton
 public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements RoleDaoWrapper {
 
@@ -55,7 +58,8 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	private final CommonDaoHelper commonDaoHelper;
 
 	@Inject
-	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache, CommonDaoHelper commonDaoHelper) {
+	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache,
+		CommonDaoHelper commonDaoHelper) {
 		super(boot, permissions);
 		this.permissionCache = permissionCache;
 		this.commonDaoHelper = commonDaoHelper;
@@ -302,7 +306,8 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive,
+		Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		Role graphRole = toGraph(role);
 		MeshVertex graphElement = (MeshVertex) element;

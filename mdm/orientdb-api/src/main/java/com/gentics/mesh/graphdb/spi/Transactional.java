@@ -13,15 +13,47 @@ import io.reactivex.functions.Function;
  * @param <T>
  */
 public interface Transactional<T> {
+
+	/**
+	 * Run the transactional action using the given transaction.
+	 * 
+	 * @param tx
+	 * @return
+	 */
 	T runInExistingTx(Tx tx);
 
+	/**
+	 * Run the transactional action using a newly created transaction.
+	 * 
+	 * @return
+	 */
 	T runInNewTx();
 
-	// <R> Transactional<R> map(Function<T, R> mapper);
+	/**
+	 * Run the transaction using a map-in function. This is useful when handling mapped streams.
+	 * 
+	 * @param <R>
+	 * @param mapper
+	 * @return
+	 */
 	<R> Transactional<R> mapInTx(BiFunction<? super Tx, ? super T, ? extends R> mapper);
 
+	/**
+	 * Run the transactional as a flatmap operation.
+	 * 
+	 * @param <R>
+	 * @param mapper
+	 * @return
+	 */
 	<R> Transactional<R> flatMap(Function<? super T, Transactional<? extends R>> mapper);
 
+	/**
+	 * Run the transactional using the provided mapper.
+	 * 
+	 * @param <R>
+	 * @param mapper
+	 * @return
+	 */
 	default <R> Transactional<R> mapInTx(Function<T, R> mapper) {
 		return mapInTx((tx, t) -> mapper.apply(t));
 	}

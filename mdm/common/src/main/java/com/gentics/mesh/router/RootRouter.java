@@ -21,6 +21,11 @@ public interface RootRouter {
 	 */
 	Router getRouter();
 
+	/**
+	 * Return the central router storage.
+	 * 
+	 * @return
+	 */
 	RouterStorage getStorage();
 
 }

@@ -7,7 +7,12 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.result.Result;
-
+/**
+ * DAO for roles
+ * 
+ * TODO MDM Move methods to generic Dao interface 
+ * @param <T>
+ */
 public interface DaoWrapper<T> extends DaoGlobal<T> {
 
 	/**

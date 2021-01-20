@@ -11,6 +11,9 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.functions.Action;
 
+/**
+ * Bulk request container for elasticsearch bulk operations.
+ */
 public class BulkRequest implements Bulkable {
 
 	private final List<Bulkable> requests;

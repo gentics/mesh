@@ -1,5 +1,8 @@
 package com.gentics.mesh.graphdb.spi;
 
+/**
+ * The graph storage provides means to open and close storage providers.
+ */
 public interface GraphStorage {
 
 	String DB_NAME = "storage";
