@@ -6,6 +6,9 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.result.Result;
 
+/**
+ * Generic extension for domain models which provide means to load role permissions from them.
+ */
 public interface HasPermissions {
 
 	/**

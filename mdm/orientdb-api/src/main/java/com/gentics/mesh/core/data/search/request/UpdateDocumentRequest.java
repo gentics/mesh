@@ -9,7 +9,11 @@ import io.vertx.core.json.JsonObject;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Request model for search index updates.
+ */
 public class UpdateDocumentRequest implements Bulkable {
+
 	private final String index;
 	private final String transformedIndex;
 	private final String id;

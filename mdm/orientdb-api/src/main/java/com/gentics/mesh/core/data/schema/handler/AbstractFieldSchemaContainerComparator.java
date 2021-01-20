@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -29,6 +28,12 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract implementation for a field schema comparator.
+ * 
+ * @param <FC>
+ *            Actual field schema container type
+ */
 public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSchemaContainer> implements FieldSchemaContainerComparator<FC> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractFieldSchemaContainerComparator.class);
@@ -41,8 +46,10 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	/**
 	 * Create a diff of both provides field containers.
 	 * 
-	 * @param containerA Current container
-	 * @param containerB New container
+	 * @param containerA
+	 *            Current container
+	 * @param containerB
+	 *            New container
 	 * @param classOfFC
 	 *            Implementation class of the field containers
 	 * @return
@@ -90,10 +97,10 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((MicronodeFieldSchema) fieldInB).getAllowedMicroSchemas());
 				}
 				if (fieldInB instanceof NodeFieldSchema) {
-					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((NodeFieldSchema)fieldInB).getAllowedSchemas());
+					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((NodeFieldSchema) fieldInB).getAllowedSchemas());
 				}
 				if (fieldInB instanceof StringFieldSchema) {
-					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((StringFieldSchema)fieldInB).getAllowedValues());
+					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((StringFieldSchema) fieldInB).getAllowedValues());
 				}
 				if (fieldInB instanceof BinaryFieldSchema) {
 					BinaryFieldSchema field = (BinaryFieldSchema) fieldInB;
@@ -206,7 +213,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 * @param classOfFC
 	 */
 	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB,
-			Class<? extends FC> classOfFC) {
+		Class<? extends FC> classOfFC) {
 		if (!CompareUtils.equals(objectA, objectB)) {
 			SchemaChangeModel change = createFieldContainerUpdateChange(classOfFC);
 			change.getProperties().put(key, objectB);
@@ -224,7 +231,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 * @param classOfFC
 	 */
 	protected void compareAndAddSchemaElasticSearchProperty(List<SchemaChangeModel> changes, String key, JsonObject objectA, JsonObject objectB,
-															Class<? extends FC> classOfFC) {
+		Class<? extends FC> classOfFC) {
 		// Empty objects and null/missing values should be treated the same
 		if (objectA == null) {
 			objectA = new JsonObject();
@@ -234,7 +241,6 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		}
 		compareAndAddSchemaProperty(changes, key, objectA, objectB, classOfFC);
 	}
-
 
 	/**
 	 * Return the specific update change for the field container.

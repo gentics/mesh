@@ -12,6 +12,12 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * Abstract implementation for result element pages.
+ * 
+ * @param <T>
+ *            Page element type
+ */
 public abstract class AbstractDynamicPage<T> implements Page<T> {
 
 	protected long pageNumber;

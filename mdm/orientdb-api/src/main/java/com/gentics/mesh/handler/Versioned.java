@@ -9,19 +9,24 @@ import java.util.function.Supplier;
 
 /**
  * A wrapper that helps getting different objects for different versions.
+ * 
  * @param <T>
  */
 public class Versioned<T> {
 	private final RangeMap<Integer, Supplier<T>> versions;
+
 	private Versioned(RangeMap<Integer, Supplier<T>> versions) {
 		this.versions = versions;
 	}
 
 	/**
 	 * Executes an action if the requested version is equal or above {@code version}.
+	 * 
 	 * @param version
-	 * @param context The context of the request
-	 * @param runnable The code to be exectued
+	 * @param context
+	 *            The context of the request
+	 * @param runnable
+	 *            The code to be exectued
 	 */
 	public static void doSince(int version, InternalActionContext context, Runnable runnable) {
 		if (context.getApiVersion() >= version) {
@@ -31,6 +36,7 @@ public class Versioned<T> {
 
 	/**
 	 * Gets the wrapped object for the given version.
+	 * 
 	 * @param version
 	 * @return
 	 */
@@ -40,6 +46,7 @@ public class Versioned<T> {
 
 	/**
 	 * Gets the wrapped object in the given context.
+	 * 
 	 * @param ctx
 	 * @return
 	 */
@@ -47,9 +54,9 @@ public class Versioned<T> {
 		return forVersion(ctx.getApiVersion());
 	}
 
-
 	/**
 	 * Return the {@code value} argument when the requested version is equal or above the {@code version} argument.
+	 * 
 	 * @param version
 	 * @param value
 	 * @return
@@ -59,8 +66,8 @@ public class Versioned<T> {
 	}
 
 	/**
-	 * Return the value supplied by the {@code supplier} argument when the
-	 * requested version is equal or above the {@code version} argument.
+	 * Return the value supplied by the {@code supplier} argument when the requested version is equal or above the {@code version} argument.
+	 * 
 	 * @param version
 	 * @param supplier
 	 * @return
@@ -71,6 +78,7 @@ public class Versioned<T> {
 
 	/**
 	 * Return the {@code value} argument when the requested version is equal to the {@code version} argument.
+	 * 
 	 * @param version
 	 * @param value
 	 * @return
@@ -80,8 +88,8 @@ public class Versioned<T> {
 	}
 
 	/**
-	 * Return the value supplied by the {@code supplier} argument when the
-	 * requested version is equal to the {@code version} argument.
+	 * Return the value supplied by the {@code supplier} argument when the requested version is equal to the {@code version} argument.
+	 * 
 	 * @param version
 	 * @param supplier
 	 * @return
@@ -90,11 +98,17 @@ public class Versioned<T> {
 		return new Builder<T>().forVersion(version, supplier);
 	}
 
+	/**
+	 * Builder for versioned objects.
+	 * 
+	 * @param <T>
+	 */
 	public static class Builder<T> {
 		private final RangeMap<Integer, Supplier<T>> map = TreeRangeMap.create();
 
 		/**
 		 * Return the {@code value} argument when the requested version is equal or above the {@code version} argument.
+		 * 
 		 * @param version
 		 * @param value
 		 * @return
@@ -104,8 +118,8 @@ public class Versioned<T> {
 		}
 
 		/**
-		 * Return the value supplied by the {@code supplier} argument when the
-		 * requested version is equal or above the {@code version} argument.
+		 * Return the value supplied by the {@code supplier} argument when the requested version is equal or above the {@code version} argument.
+		 * 
 		 * @param version
 		 * @param supplier
 		 * @return
@@ -117,6 +131,7 @@ public class Versioned<T> {
 
 		/**
 		 * Return the {@code value} argument when the requested version is equal to the {@code version} argument.
+		 * 
 		 * @param version
 		 * @param value
 		 * @return
@@ -126,8 +141,8 @@ public class Versioned<T> {
 		}
 
 		/**
-		 * Return the value supplied by the {@code supplier} argument when the
-		 * requested version is equal to the {@code version} argument.
+		 * Return the value supplied by the {@code supplier} argument when the requested version is equal to the {@code version} argument.
+		 * 
 		 * @param version
 		 * @param supplier
 		 * @return
@@ -139,6 +154,7 @@ public class Versioned<T> {
 
 		/**
 		 * Build the versioned object.
+		 * 
 		 * @return
 		 */
 		public Versioned<T> build() {
@@ -148,6 +164,7 @@ public class Versioned<T> {
 
 	private static class ConstantSupplier<T> implements Supplier<T> {
 		private final T value;
+
 		private ConstantSupplier(T value) {
 			this.value = value;
 		}

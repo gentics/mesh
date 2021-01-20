@@ -16,12 +16,22 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.google.common.base.Predicate;
 
 /**
- * Intermediate DAO for {@link HibTagFamily}.
- * TODO MDM the methods should be moved to {@link TagFamilyDao}
+ * Intermediate DAO for {@link HibTagFamily}. TODO MDM the methods should be moved to {@link TagFamilyDao}
  */
 public interface TagFamilyDaoWrapper
 	extends TagFamilyDao, DaoWrapper<HibTagFamily>, DaoTransformable<HibTagFamily, TagFamilyResponse> {
 
+	/**
+	 * Update the tag family.
+	 * 
+	 * @param tagFamily
+	 *            Element to be updated
+	 * @param ac
+	 *            Context which provides update information
+	 * @param batch
+	 *            Batch to be used to collect events
+	 * @return
+	 */
 	boolean update(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch);
 
 	// Find all tag families across all project.

@@ -50,8 +50,8 @@ public interface UserRoot extends RootVertex<User>, TransformableElementRoot<Use
 	 * @param extraFilter
 	 * @return
 	 */
-	default	Page<? extends HibUser> findAllWrapped(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter) {
-		return new DynamicNonTransformablePageImpl<User>(ac.getUser(), this, pagingInfo, READ_PERM, user ->  { 
+	default Page<? extends HibUser> findAllWrapped(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter) {
+		return new DynamicNonTransformablePageImpl<User>(ac.getUser(), this, pagingInfo, READ_PERM, user -> {
 			return extraFilter.test(user);
 		}, true);
 	}
@@ -72,5 +72,10 @@ public interface UserRoot extends RootVertex<User>, TransformableElementRoot<Use
 	 */
 	MeshAuthUser findMeshAuthUserByUuid(String userUuid);
 
+	/**
+	 * Create a new user.
+	 * 
+	 * @return
+	 */
 	User create();
 }

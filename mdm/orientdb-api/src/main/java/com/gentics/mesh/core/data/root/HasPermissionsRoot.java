@@ -7,6 +7,9 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.result.Result;
 
+/**
+ * Extension for root element domain models which provides ways to grant and retrieve role permissions on these (root) elements.
+ */
 public interface HasPermissionsRoot {
 
 	/**

@@ -15,6 +15,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -36,6 +37,9 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
+/**
+ * DAO for {@link HibContent} operations.
+ */
 public interface ContentDaoWrapper extends ContentDao {
 	/**
 	 * Construct the index name using the provided information.

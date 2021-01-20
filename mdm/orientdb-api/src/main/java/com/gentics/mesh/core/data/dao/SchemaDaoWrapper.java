@@ -306,8 +306,20 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema>, DaoT
 	 */
 	HibSchemaVersion findVersionByUuid(HibSchema container, String versionUuid);
 
+	/**
+	 * Load the branch schemaversion assignments for the given schema. 
+	 * @param schema
+	 * @return
+	 */
 	Map<HibBranch, HibSchemaVersion> findReferencedBranches(HibSchema schema);
 
+	/**
+	 * Load the contents that use the given schema version for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @return
+	 */
 	Iterator<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid);
 
 	/**

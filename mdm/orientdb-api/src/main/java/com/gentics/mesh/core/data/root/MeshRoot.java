@@ -74,6 +74,7 @@ public interface MeshRoot extends MeshVertex, HibMeshVersion {
 
 	/**
 	 * Return the changelog aggregation vertex.
+	 * 
 	 * @return
 	 */
 	ChangelogRoot getChangelogRoot();
@@ -100,8 +101,18 @@ public interface MeshRoot extends MeshVertex, HibMeshVersion {
 	 */
 	HibBaseElement resolvePathToElement(String pathToElement);
 
+	/**
+	 * Clear internally stored graph element references.
+	 * (e.g. to root elements)
+	 */
 	void clearReferences();
 
+	/**
+	 * Load the node by uuid.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	Node findNodeByUuid(String uuid);
 
 }

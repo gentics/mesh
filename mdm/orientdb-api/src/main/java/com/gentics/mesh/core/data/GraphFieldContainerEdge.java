@@ -79,13 +79,26 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	 */
 	void setBranchUuid(String uuid);
 
+	/**
+	 * Reset the webroot properties.
+	 */
 	default void defaultClearDraftPaths() {
 		property(WEBROOT_PROPERTY_KEY, null);
 		property(WEBROOT_URLFIELD_PROPERTY_KEY, null);
 	}
 
+	/**
+	 * Return the referenced content as basic field container.
+	 * 
+	 * @return
+	 */
 	BasicFieldContainer getContainer();
 
+	/**
+	 * Return the referenced content.
+	 * 
+	 * @return
+	 */
 	NodeGraphFieldContainer getNodeContainer();
 
 	/**

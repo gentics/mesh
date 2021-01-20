@@ -21,6 +21,9 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 
 import dagger.Lazy;
 
+/**
+ * @see PermissionProperties
+ */
 @Singleton
 public class PermissionPropertiesImpl implements PermissionProperties {
 

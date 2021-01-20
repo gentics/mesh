@@ -7,6 +7,9 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 
+/**
+ * Basic definition for graph transactions.
+ */
 public interface BaseTransaction extends AutoCloseable {
 
 	/**

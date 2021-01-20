@@ -13,6 +13,9 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * @see MetricsService
+ */
 @Singleton
 public class MetricsServiceImpl implements MetricsService {
 
