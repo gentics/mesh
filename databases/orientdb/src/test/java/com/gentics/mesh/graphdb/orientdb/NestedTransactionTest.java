@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -27,7 +27,7 @@ public class NestedTransactionTest extends AbstractOrientDBTest {
 
 	@Before
 	public void setup() throws Exception {
-		db = mockDatabase(new MeshOptions());
+		db = mockDatabase(new OrientDBMeshOptions());
 		db.init(null);
 	}
 

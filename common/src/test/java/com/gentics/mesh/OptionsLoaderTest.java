@@ -17,13 +17,14 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.etc.config.HttpServerConfig;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.search.MappingMode;
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 
 public class OptionsLoaderTest {
 
@@ -123,21 +124,21 @@ public class OptionsLoaderTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testInvalidOptions() {
-		MeshOptions options = new MeshOptions();
+		MeshOptions options = new OrientDBMeshOptions();
 		options.getClusterOptions().setEnabled(true);
 		options.validate();
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testInvalidOptions2() {
-		MeshOptions options = new MeshOptions();
+		MeshOptions options = new OrientDBMeshOptions();
 		options.getClusterOptions().setEnabled(true).setClusterName("someName");
 		options.validate();
 	}
 
 	@Test
 	public void testInvalidOptions3() {
-		MeshOptions options = new MeshOptions();
+		MeshOptions options = new OrientDBMeshOptions();
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.setNodeName("someNode");
 		options.getClusterOptions().setEnabled(true).setClusterName("someName");
@@ -146,7 +147,7 @@ public class OptionsLoaderTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testInvalidOptions4() {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.getStorageOptions().setDirectory(null);
 		options.getStorageOptions().setStartServer(true);
 		options.validate();
@@ -154,7 +155,7 @@ public class OptionsLoaderTest {
 
 	@Test
 	public void testInvalidOptions5() {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.getStorageOptions().setDirectory(null);
