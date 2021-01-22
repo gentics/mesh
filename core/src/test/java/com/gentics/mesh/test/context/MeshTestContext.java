@@ -48,7 +48,6 @@ import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshBuilderFactory;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
@@ -88,8 +87,6 @@ public class MeshTestContext extends TestWatcher {
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
-	private static MeshOptions meshOptions;
-
 	public static ElasticsearchContainer elasticsearch;
 
 	public static KeycloakContainer keycloak;
@@ -125,6 +122,8 @@ public class MeshTestContext extends TestWatcher {
 	private Consumer<MeshOptions> optionChanger = noopConsumer();
 
 	private Mesh mesh;
+	
+	private MeshOptionsProvider meshOptionsProvider;
 
 	@Override
 	protected void starting(Description description) {
@@ -437,9 +436,9 @@ public class MeshTestContext extends TestWatcher {
 			meshDagger.database().clear();
 		} else {
 			meshDagger.database().stop();
-			String dir = mesh.getOptions().getStorageOptions().getDirectory();
-			File dbDir = new File(dir);
-			FileUtils.deleteDirectory(dbDir);
+			
+			meshOptionsProvider.cleanupPhysicalStorage();
+			
 			meshDagger.database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
@@ -465,17 +464,20 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	/**
-	 * Initialise mesh options.
+	 * Initialize mesh options.
 	 *
 	 * @param settings
 	 * @throws Exception
 	 */
 	public MeshOptions init(MeshTestSetting settings) throws Exception {
-		meshOptions = new MeshOptions();
-
 		if (settings == null) {
 			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
 		}
+		
+		meshOptionsProvider = settings.optionsProvider().getConstructor().newInstance();
+		
+		MeshOptions meshOptions = getOptions();
+
 		// Clustering options
 		if (settings.clusterMode()) {
 			meshOptions.getClusterOptions().setEnabled(true);
@@ -498,7 +500,7 @@ public class MeshTestContext extends TestWatcher {
 		authOptions.setKeystorePath(keystoreFile.getAbsolutePath());
 		meshOptions.setNodeName("testNode");
 
-		initFolders(meshOptions);
+		initFolders(getOptions());
 
 		HttpServerConfig httpOptions = meshOptions.getHttpServerOptions();
 		httpOptions.setPort(httpPort);
@@ -536,24 +538,10 @@ public class MeshTestContext extends TestWatcher {
 		MonitoringConfig monitoringOptions = meshOptions.getMonitoringOptions();
 		monitoringOptions.setPort(monitoringPort);
 
-		// The database provider will switch to in memory mode when no directory has been specified.
-		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
+		meshOptionsProvider.initStorage(settings);
 
-		String graphPath = null;
-		if (!settings.inMemoryDB() || settings.clusterMode()) {
-			graphPath = "target/graphdb_" + UUIDUtil.randomUUID();
-			File directory = new File(graphPath);
-			directory.deleteOnExit();
-			directory.mkdirs();
-		}
-		if (!settings.inMemoryDB() && settings.startStorageServer()) {
-			storageOptions.setStartServer(true);
-		}
-		// Increase timeout to high load during testing
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		searchOptions.setTimeout(10_000L);
-		storageOptions.setDirectory(graphPath);
-		storageOptions.setSynchronizeWrites(true);
 
 		String version = ElasticsearchContainer.VERSION_ES6;
 		switch (settings.elasticsearch()) {
@@ -619,9 +607,9 @@ public class MeshTestContext extends TestWatcher {
 			Set<JsonObject> jwks = KeycloakUtils.loadJWKs("http", keycloak.getHost(), keycloak.getMappedPort(8080), realmName);
 			meshOptions.getAuthenticationOptions().setPublicKeys(jwks);
 		}
-		settings.optionChanger().changer.accept(meshOptions);
-		optionChanger.accept(meshOptions);
-		return meshOptions;
+		settings.optionChanger().changer.accept(getOptions());
+		optionChanger.accept(getOptions());
+		return getOptions();
 	}
 
 	private void initFolders(MeshOptions meshOptions) throws IOException {
@@ -637,14 +625,10 @@ public class MeshTestContext extends TestWatcher {
 		String imageCacheDir = newFolder("image_cache");
 		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
 
-		String backupPath = newFolder("backups");
-		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
-
-		String exportPath = newFolder("exports");
-		meshOptions.getStorageOptions().setExportDirectory(exportPath);
-
 		String plugindirPath = newFolder("plugins");
 		meshOptions.setPluginDirectory(plugindirPath);
+		
+		meshOptionsProvider.initFolders(this::newFolder);
 	}
 
 	/**
@@ -687,8 +671,8 @@ public class MeshTestContext extends TestWatcher {
 			}
 			mesh.setMeshInternal(meshDagger);
 			// We omit creating the initial admin password since hashing the password would slow down tests
-			if (!meshOptions.getInitialAdminPassword().startsWith("debug")) {
-				meshOptions.setInitialAdminPassword(null);
+			if (!getOptions().getInitialAdminPassword().startsWith("debug")) {
+				getOptions().setInitialAdminPassword(null);
 			}
 			meshDagger.boot().init(mesh, false, options, null);
 			vertx = meshDagger.boot().vertx();
@@ -732,10 +716,6 @@ public class MeshTestContext extends TestWatcher {
 
 	public static KeycloakContainer getKeycloak() {
 		return keycloak;
-	}
-
-	public MeshOptions getOptions() {
-		return meshOptions;
 	}
 
 	private void listenToSearchIdleEvent() {
@@ -790,5 +770,13 @@ public class MeshTestContext extends TestWatcher {
 
 	public Mesh getMesh() {
 		return mesh;
+	}
+	
+	public MeshOptionsProvider getOptionsProvider() {
+		return meshOptionsProvider;
+	}
+	
+	public MeshOptions getOptions() {
+		return meshOptionsProvider.getOptions();
 	}
 }

@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorImpl;
 
@@ -27,7 +28,7 @@ public class PluginConfigTest {
 
 	@BeforeClass
 	public static void setupMeshOptions() {
-		options = new MeshOptions();
+		options = new OrientDBMeshOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.setPluginDirectory(PLUGIN_DIR);

@@ -22,11 +22,13 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 
-@MeshTestSetting(testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false, optionsProvider = OrientDBMeshOptionsProvider.class)
 public class DatabaseTest extends AbstractMeshTest {
 
 	private File outputDirectory;
@@ -35,7 +37,7 @@ public class DatabaseTest extends AbstractMeshTest {
 	public void createOutputDirectory() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		outputDirectory = new File("target", "tmp_" + System.currentTimeMillis());
 		outputDirectory.mkdirs();
-		options().getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
+		((OrientDBMeshOptions) options()).getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
 		// db().reset();
 		// setupData();
 	}
@@ -103,5 +105,4 @@ public class DatabaseTest extends AbstractMeshTest {
 		}
 
 	}
-
 }

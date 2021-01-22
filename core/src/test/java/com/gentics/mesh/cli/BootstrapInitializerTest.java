@@ -47,7 +47,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		MeshOptions configuration = new MeshOptions();
+		MeshOptions configuration = options();
 		configuration.setLanguagesFilePath("target/custom-languages.json");
 		boot().initOptionalLanguages(configuration);
 

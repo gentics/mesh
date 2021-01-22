@@ -12,17 +12,19 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 
-@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false, optionsProvider = OrientDBMeshOptionsProvider.class)
 public class AdminEndpointBackupFailLocalTest extends AbstractMeshTest {
 
 
 
 	@Test
 	public void testRestoreWithoutBackup() throws IOException {
-		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
+		final String backupDir = ((OrientDBMeshOptions) testContext.getOptions()).getStorageOptions().getBackupDirectory();
 		org.apache.commons.io.FileUtils.deleteDirectory(new File(backupDir));
 		new File(backupDir).delete();
 		grantAdmin();

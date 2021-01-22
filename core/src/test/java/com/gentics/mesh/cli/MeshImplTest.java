@@ -8,10 +8,11 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.test.context.MeshOptionsTypeUnawareContext;
 
 import io.vertx.core.Vertx;
 
-public class MeshImplTest {
+public class MeshImplTest implements MeshOptionsTypeUnawareContext {
 
 	@Test
 	public void testHostname() throws Exception {
@@ -30,7 +31,7 @@ public class MeshImplTest {
 	}
 
 	public MeshOptions options() {
-		MeshOptions opts = new MeshOptions();
+		MeshOptions opts = getOptions();
 		opts.getSearchOptions().setStartEmbedded(false);
 		return opts;
 	}

@@ -14,8 +14,10 @@ import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshOptionChanger;
+import com.gentics.mesh.test.context.MeshOptionsProvider;
 import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 import com.gentics.mesh.test.context.PluginHelper;
 import com.gentics.mesh.test.context.TestGraphHelper;
 import com.gentics.mesh.test.context.TestHttpMethods;
@@ -161,6 +163,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		public MeshOptionChanger optionChanger() {
 			return delegate.optionChanger();
 		}
+
+		@Override
+		public Class<? extends MeshOptionsProvider> optionsProvider() {
+			return getMeshOptionsProviderClass();
+		}
 	}
 
 	@Override
@@ -189,5 +196,9 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 	@Override
 	public EventAsserter eventAsserter() {
 		return eventAsserter;
+	}
+	
+	public Class<?  extends MeshOptionsProvider> getMeshOptionsProviderClass() {
+		return OrientDBMeshOptionsProvider.class;
 	}
 }

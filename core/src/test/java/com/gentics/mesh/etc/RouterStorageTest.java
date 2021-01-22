@@ -7,10 +7,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
+import com.gentics.mesh.test.context.MeshOptionsTypeUnawareContext;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.CaseInsensitiveHeaders;
@@ -22,13 +22,13 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.impl.RouteImpl;
 import io.vertx.ext.web.impl.RoutingContextImplBase;
 
-public class RouterStorageTest {
+public class RouterStorageTest implements MeshOptionsTypeUnawareContext {
 
 	@Test
 	public void testFailureHandler() throws Exception {
 		MeshAuthChainImpl chain = mock(MeshAuthChainImpl.class);
 		RouterStorageRegistryImpl routerStorageRegistry = mock(RouterStorageRegistryImpl.class);
-		RouterStorageImpl storage = new RouterStorageImpl(Vertx.vertx(), new MeshOptions(), chain, null, null, null, () -> {
+		RouterStorageImpl storage = new RouterStorageImpl(Vertx.vertx(), getOptions(), chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
 		}, null, routerStorageRegistry, null);
 

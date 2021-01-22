@@ -14,17 +14,19 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.parameter.client.BackupParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
-@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false, optionsProvider = OrientDBMeshOptionsProvider.class)
 public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 	@Test
 	public void testBackupInconsistentDB() throws IOException {
-		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
+		final String backupDir = ((OrientDBMeshOptions) testContext.getOptions()).getStorageOptions().getBackupDirectory();
 		assertFilesInDir(backupDir, 0);
 
 		GenericMessageResponse message = adminCall(() -> client().invokeBackup(new BackupParametersImpl().setConsistencyCheck(true)));

@@ -7,29 +7,32 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.test.context.MeshOptionsTypeAwareContext;
 
-public class MeshMeshIntegrationTest {
+public abstract class MeshMeshIntegrationTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
 
 	@Test
 	public void testMeshMesh() throws Exception {
-		MeshOptions optionA = new MeshOptions().setNodeName("A");
+		T optionA = getOptions();
+		optionA.setNodeName("A");
 		optionA.getAuthenticationOptions().setKeystorePassword("ABC");
 		optionA.getSearchOptions().setStartEmbedded(false);
 		optionA.getSearchOptions().setUrl(null);
-		optionA.getStorageOptions().setDirectory(null);
 		optionA.getHttpServerOptions().setPort(8081);
 		optionA.getMonitoringOptions().setEnabled(false);
-		optionA.getMonitoringOptions().setPort(8082);
+		optionA.getMonitoringOptions().setPort(8082);		
+		setupOptions(optionA);		
 		Mesh meshA = Mesh.create(optionA);
 
-		MeshOptions optionB = new MeshOptions().setNodeName("B");
+		T optionB = getOptions();
+		optionB.setNodeName("B");
 		optionB.getAuthenticationOptions().setKeystorePassword("ABC");
 		optionB.getSearchOptions().setStartEmbedded(false);
 		optionB.getSearchOptions().setUrl(null);
-		optionB.getStorageOptions().setDirectory(null);
 		optionB.getHttpServerOptions().setPort(8083);
 		optionB.getMonitoringOptions().setEnabled(false);
 		optionB.getMonitoringOptions().setPort(8084);
+		setupOptions(optionB);
 		Mesh meshB = Mesh.create(optionB);
 
 		assertNotEquals(meshA, meshB);
@@ -56,4 +59,6 @@ public class MeshMeshIntegrationTest {
 		meshA.shutdown();
 		meshB.shutdown();
 	}
+	
+	abstract void setupOptions(T options);
 }

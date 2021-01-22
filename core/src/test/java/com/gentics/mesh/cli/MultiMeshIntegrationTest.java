@@ -11,9 +11,10 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.test.context.MeshOptionsTypeAwareContext;
 
 @Ignore
-public class MultiMeshIntegrationTest {
+public abstract class MultiMeshIntegrationTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
 
 	public static final int INSTANCE_COUNT = 10;
 
@@ -22,14 +23,15 @@ public class MultiMeshIntegrationTest {
 
 		List<Mesh> meshes = new ArrayList<>();
 		for (int i = 0; i <= INSTANCE_COUNT; i++) {
-			MeshOptions option = new MeshOptions().setNodeName("M" + i);
+			T option = getOptions();
+			option.setNodeName("M" + i);
 			option.getAuthenticationOptions().setKeystorePassword("ABC");
 			option.getSearchOptions().setStartEmbedded(false);
 			option.getSearchOptions().setUrl(null);
-			option.getStorageOptions().setDirectory("data/m" + i);
 			option.getHttpServerOptions().setPort(8000 + i);
 			option.getMonitoringOptions().setEnabled(false);
 			option.getMonitoringOptions().setPort(8500 + i);
+			setupOptions(option, i);
 			Mesh mesh = Mesh.create(option);
 			mesh.run(false);
 			System.out.println("Done");
@@ -52,4 +54,6 @@ public class MultiMeshIntegrationTest {
 			mesh.shutdown();
 		}
 	}
+
+	protected abstract void setupOptions(T option, int i);
 }

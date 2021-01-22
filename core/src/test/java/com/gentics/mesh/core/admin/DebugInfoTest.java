@@ -20,10 +20,11 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true, optionsProvider = OrientDBMeshOptionsProvider.class)
 public class DebugInfoTest extends AbstractMeshTest {
 	@Test
 	public void testAsAnonymous() {

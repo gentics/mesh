@@ -17,21 +17,22 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.context.MeshOptionsTypeUnawareContext;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
-public class TikaBinaryProcessorTest {
+public class TikaBinaryProcessorTest implements MeshOptionsTypeUnawareContext {
 
 	@Test
 	public void tikaCachingTest() throws FileNotFoundException, IOException {
 		Lazy<Vertx> lazy = Mockito.mock(Lazy.class);
 		when(lazy.get()).thenReturn(Vertx.vertx());
-		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new MeshOptions(), mockDb());
+		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new OrientDBMeshOptions(), mockDb());
 		FileUpload ul = mockUpload("test.pdf", "application/pdf");
 
 		Maybe<Consumer<BinaryGraphField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
@@ -48,7 +49,7 @@ public class TikaBinaryProcessorTest {
 
 		Lazy<Vertx> lazy = Mockito.mock(Lazy.class);
 		when(lazy.get()).thenReturn(Vertx.vertx());
-		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new MeshOptions(), mockDb());
+		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, getOptions(), mockDb());
 
 		for (int i = 0; i < 2; i++) {
 			for (File file : folder.listFiles()) {

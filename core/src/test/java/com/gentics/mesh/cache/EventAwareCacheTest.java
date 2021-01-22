@@ -23,7 +23,7 @@ public class EventAwareCacheTest extends AbstractMeshTest {
 
 	@Test
 	public void testCustomHandler() {
-		MeshOptions options = new MeshOptions();
+		MeshOptions options = getTestContext().getOptions();
 		options.getMonitoringOptions().setEnabled(false);
 		EventAwareCache<String, Boolean> USER_STATE_CACHE = new EventAwareCacheImpl.Builder<String, Boolean>()
 			.maxSize(15_000)

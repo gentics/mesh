@@ -16,15 +16,17 @@ import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 
-@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false, clusterMode = true)
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false, clusterMode = true, optionsProvider = OrientDBMeshOptionsProvider.class)
 public class AdminEndpointBackupClusteredTest extends AbstractMeshTest {
 
 	@Before
 	public void clearBackupDir() throws IOException {
-		File backupDir = new File(testContext.getOptions().getStorageOptions().getBackupDirectory());
+		File backupDir = new File(((OrientDBMeshOptions) testContext.getOptions()).getStorageOptions().getBackupDirectory());
 		FileUtils.deleteDirectory(backupDir);
 		backupDir.mkdirs();
 	}
@@ -32,7 +34,7 @@ public class AdminEndpointBackupClusteredTest extends AbstractMeshTest {
 	@Test
 	public void testBackup() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
-		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
+		final String backupDir = ((OrientDBMeshOptions) testContext.getOptions()).getStorageOptions().getBackupDirectory();
 
 		assertFilesInDir(backupDir, 0);
 		grantAdmin();
