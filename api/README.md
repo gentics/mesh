@@ -9,4 +9,4 @@ This module contains the public API which can be used by developers.
 
 ## MDM
 
-Nothing to do for MDM (MADL will still be used for OrientDB).
+Nothing to do for MDM (already independent from OrientDB).
