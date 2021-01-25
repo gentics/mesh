@@ -1,7 +1,10 @@
 package com.gentics.mesh.cli;
 
+import org.junit.Ignore;
+
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 
+@Ignore
 public class OrientDBMultiMeshIntegrationTest extends MultiMeshIntegrationTest<OrientDBMeshOptions> {
 
 	@Override

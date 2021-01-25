@@ -3,7 +3,6 @@ package com.gentics.mesh.cli;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -13,7 +12,6 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.context.MeshOptionsTypeAwareContext;
 
-@Ignore
 public abstract class MultiMeshIntegrationTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
 
 	public static final int INSTANCE_COUNT = 10;
