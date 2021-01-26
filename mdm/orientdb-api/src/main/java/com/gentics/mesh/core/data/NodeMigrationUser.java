@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.data;
 
-import java.util.Set;
-
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -263,10 +260,6 @@ public class NodeMigrationUser implements HibUser {
 	@Override
 	public Object getId() {
 		return null;
-	}
-
-	@Override
-	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
 	}
 
 	@Override
