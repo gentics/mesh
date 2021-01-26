@@ -5,9 +5,9 @@ import static org.junit.Assert.assertNotEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshOptionsTypeAwareContext;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.test.context.MeshOptionsTypeAwareContext;
 
 public abstract class MeshMeshIntegrationTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
 

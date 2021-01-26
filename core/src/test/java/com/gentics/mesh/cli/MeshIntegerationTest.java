@@ -11,9 +11,9 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshOptionsTypeUnawareContext;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.AbstractIntegrationTest;
-import com.gentics.mesh.test.context.MeshOptionsTypeUnawareContext;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MeshIntegerationTest extends AbstractIntegrationTest implements MeshOptionsTypeUnawareContext {

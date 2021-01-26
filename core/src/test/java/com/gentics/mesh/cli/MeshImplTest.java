@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.gentics.mesh.MeshOptionsTypeUnawareContext;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.test.context.MeshOptionsTypeUnawareContext;
 
 import io.vertx.core.Vertx;
 

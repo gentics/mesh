@@ -6,11 +6,11 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshOptionsTypeAwareContext;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.test.context.MeshOptionsTypeAwareContext;
 
 public abstract class MultiMeshIntegrationTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
 

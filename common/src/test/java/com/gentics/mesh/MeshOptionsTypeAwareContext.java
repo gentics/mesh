@@ -1,4 +1,4 @@
-package com.gentics.mesh.test.context;
+package com.gentics.mesh;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 

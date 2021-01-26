@@ -361,6 +361,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		}
 	}
 
+	// TODO de-orientDB this?
 	private static String generateMeshYML(boolean enableClustering) throws JsonProcessingException {
 		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.getClusterOptions().setEnabled(enableClustering);

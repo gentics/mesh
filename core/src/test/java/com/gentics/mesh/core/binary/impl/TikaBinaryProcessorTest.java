@@ -15,11 +15,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.gentics.mesh.MeshOptionsTypeUnawareContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.context.MeshOptionsTypeUnawareContext;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
@@ -32,7 +31,7 @@ public class TikaBinaryProcessorTest implements MeshOptionsTypeUnawareContext {
 	public void tikaCachingTest() throws FileNotFoundException, IOException {
 		Lazy<Vertx> lazy = Mockito.mock(Lazy.class);
 		when(lazy.get()).thenReturn(Vertx.vertx());
-		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new OrientDBMeshOptions(), mockDb());
+		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, getOptions(), mockDb());
 		FileUpload ul = mockUpload("test.pdf", "application/pdf");
 
 		Maybe<Consumer<BinaryGraphField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));

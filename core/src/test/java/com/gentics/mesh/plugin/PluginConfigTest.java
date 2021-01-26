@@ -11,24 +11,23 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.pf4j.PluginWrapper;
 
+import com.gentics.mesh.MeshOptionsTypeUnawareContext;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorImpl;
 
-public class PluginConfigTest {
+public class PluginConfigTest implements MeshOptionsTypeUnawareContext {
 
 	public static String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
 
 	public static MeshOptions options;
 
-	@BeforeClass
-	public static void setupMeshOptions() {
-		options = new OrientDBMeshOptions();
+	@Before
+	public void setupMeshOptions() {
+		options = getOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.setPluginDirectory(PLUGIN_DIR);

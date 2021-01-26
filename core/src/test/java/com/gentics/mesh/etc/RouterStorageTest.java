@@ -6,11 +6,11 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.gentics.mesh.MeshOptionsTypeUnawareContext;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
-import com.gentics.mesh.test.context.MeshOptionsTypeUnawareContext;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.CaseInsensitiveHeaders;
