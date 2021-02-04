@@ -46,20 +46,20 @@ import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.LanguageDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -81,7 +81,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -96,13 +96,13 @@ import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -115,6 +115,7 @@ import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 import com.gentics.mesh.util.RequirementsCheck;
 import com.hazelcast.core.HazelcastInstance;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -666,7 +667,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			db.tx(tx -> {
-				UserDaoWrapper userDao = tx.userDao();
+				UserDao userDao = tx.userDao();
 				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					userDao.setPassword(adminUser, password);
@@ -835,7 +836,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					isInitialSetup = false;
 					meshRoot = it.next();
 				} else {
-					meshRoot = Tx.get().getGraph().addFramedVertex(MeshRootImpl.class);
+					meshRoot = GraphDBTx.getGraphTx().getGraph().addFramedVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
@@ -867,7 +868,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public SchemaDaoWrapper schemaDao() {
+	public SchemaDao schemaDao() {
 		return daoCollection.schemaDao();
 	}
 
@@ -877,7 +878,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public MicroschemaDaoWrapper microschemaDao() {
+	public MicroschemaDao microschemaDao() {
 		return daoCollection.microschemaDao();
 	}
 
@@ -887,7 +888,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public RoleDaoWrapper roleDao() {
+	public RoleDao roleDao() {
 		return daoCollection.roleDao();
 	}
 
@@ -897,7 +898,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public TagDaoWrapper tagDao() {
+	public TagDao tagDao() {
 		return daoCollection.tagDao();
 	}
 
@@ -907,7 +908,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public TagFamilyDaoWrapper tagFamilyDao() {
+	public TagFamilyDao tagFamilyDao() {
 		return daoCollection.tagFamilyDao();
 	}
 
@@ -917,7 +918,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public LanguageDaoWrapper languageDao() {
+	public LanguageDao languageDao() {
 		return daoCollection.languageDao();
 	}
 
@@ -927,7 +928,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public UserDaoWrapper userDao() {
+	public UserDao userDao() {
 		return daoCollection.userDao();
 	}
 
@@ -937,7 +938,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public GroupDaoWrapper groupDao() {
+	public GroupDao groupDao() {
 		return daoCollection.groupDao();
 	}
 
@@ -947,7 +948,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public JobDaoWrapper jobDao() {
+	public JobDao jobDao() {
 		return daoCollection.jobDao();
 	}
 
@@ -962,22 +963,22 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public ProjectDaoWrapper projectDao() {
+	public ProjectDao projectDao() {
 		return daoCollection.projectDao();
 	}
 
 	@Override
-	public NodeDaoWrapper nodeDao() {
+	public NodeDao nodeDao() {
 		return daoCollection.nodeDao();
 	}
 
 	@Override
-	public ContentDaoWrapper contentDao() {
+	public ContentDao contentDao() {
 		return daoCollection.contentDao();
 	}
 
 	@Override
-	public BinaryDaoWrapper binaryDao() {
+	public BinaryDao binaryDao() {
 		return daoCollection.binaryDao();
 	}
 
@@ -997,10 +998,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void initMandatoryData(MeshOptions config) throws Exception {
 
 		db.tx(tx -> {
-			UserDaoWrapper userDao = tx.userDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			UserDao userDao = tx.userDao();
+			GroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
+			SchemaDao schemaDao = tx.schemaDao();
 
 			if (db.requiresTypeInit()) {
 				MeshRoot meshRoot = meshRoot();
@@ -1167,9 +1168,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Only setup optional data for empty installations
 		if (isEmptyInstallation) {
 			db.tx(tx -> {
-				UserDaoWrapper userDao = tx.userDao();
-				GroupDaoWrapper groupDao = tx.groupDao();
-				RoleDaoWrapper roleDao = tx.roleDao();
+				UserDao userDao = tx.userDao();
+				GroupDao groupDao = tx.groupDao();
+				RoleDao roleDao = tx.roleDao();
 
 				if (db.requiresTypeInit()) {
 					meshRoot = meshRoot();
@@ -1209,11 +1210,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void initPermissions() {
 		db.tx(tx -> {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibRole adminRole = roleDao.findByName("admin");
-			for (Vertex vertex : tx.getGraph().getVertices()) {
+			FramedTransactionalGraph graph = ((GraphDBTx) tx).getGraph();
+			for (Vertex vertex : graph.getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				MeshVertex meshVertex = graph.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 				roleDao.grantPermissions(adminRole, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
 				if (log.isTraceEnabled()) {
 					log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + adminRole.getUuid() + "}");

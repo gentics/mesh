@@ -17,9 +17,9 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -42,7 +42,7 @@ public class SchemaEndpointNoEsTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			OrientDBSchemaDao schemaDao = tx.schemaDao();
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 

@@ -20,16 +20,16 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -156,8 +156,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		long numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
 			HibUser user = user();
@@ -199,7 +199,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 
 			HibNode node = content("concorde");
 			long previousTagCount = tagDao.getTags(node, project().getLatestBranch()).count();

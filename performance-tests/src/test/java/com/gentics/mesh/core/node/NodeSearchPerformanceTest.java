@@ -11,10 +11,10 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -59,8 +59,8 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 		// Revoke all but one permission
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 
 			for (HibNode node : nodeDao.findAll(project())) {
 				if (!node.getUuid().equals(lastNodeUuid)) {

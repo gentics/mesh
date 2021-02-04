@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -157,7 +157,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 			// Assert the update response
 			try (Tx tx = tx()) {
-				ContentDaoWrapper contentDao = tx.contentDao();
+				OrientDBContentDao contentDao = tx.contentDao();
 				HtmlFieldListImpl field = response.getFields().getHtmlFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
@@ -190,7 +190,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHTMLList(FIELD_NAME)).isNull();

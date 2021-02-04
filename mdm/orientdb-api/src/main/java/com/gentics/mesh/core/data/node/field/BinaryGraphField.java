@@ -1,17 +1,9 @@
 package com.gentics.mesh.core.data.node.field;
 
-import java.util.Map;
-import java.util.Objects;
-
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
-import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.util.UniquenessUtil;
 
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
@@ -50,41 +42,14 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	}
 
 	/**
-	 * Copy the values of this field to the specified target field.
-	 * 
-	 * @param target
-	 * @return Fluent API
-	 */
-	BinaryGraphField copyTo(BinaryGraphField target);
-
-	/**
 	 * Set the binary filename.
 	 * 
 	 * @param fileName
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setFileName(String fileName) {
+	default HibBinaryField setFileName(String fileName) {
 		property(BINARY_FILENAME_PROPERTY_KEY, fileName);
 		return this;
-	}
-
-	/**
-	 * Increment any found postfix number in the filename.
-	 * 
-	 * e.g:
-	 * <ul>
-	 * <li>test.txt -> test_1.txt</li>
-	 * <li>test -> test_1</li>
-	 * <li>test.blub.txt -> test.blub_1.txt</li>
-	 * <ul>
-	 * 
-	 */
-	default void postfixFileName() {
-		String oldName = getFileName();
-		if (oldName != null && !oldName.isEmpty()) {
-			setFileName(UniquenessUtil.suggestNewName(oldName));
-		}
-
 	}
 
 	/**
@@ -102,17 +67,10 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param mimeType
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setMimeType(String mimeType) {
+	default HibBinaryField setMimeType(String mimeType) {
 		property(BINARY_CONTENT_TYPE_PROPERTY_KEY, mimeType);
 		return this;
 	}
-
-	/**
-	 * Check whether the binary data represents an image.
-	 * 
-	 * @return
-	 */
-	boolean hasProcessableImage();
 
 	/**
 	 * Set the binary image dominant color.
@@ -120,7 +78,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param dominantColor
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setImageDominantColor(String dominantColor) {
+	default HibBinaryField setImageDominantColor(String dominantColor) {
 		property(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
 		return this;
 	}
@@ -156,57 +114,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	default void setImageFocalPoint(FocalPoint point) {
 		property(BINARY_IMAGE_FOCAL_POINT_X, point.getX());
 		property(BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
-	}
-
-	/**
-	 * Return the uuid of the binary field.
-	 * 
-	 * @return
-	 */
-	String getUuid();
-
-	/**
-	 * Set the uuid of the binary field.
-	 * 
-	 * @param uuid
-	 */
-	void setUuid(String uuid);
-
-	/**
-	 * Return the referenced binary.
-	 * 
-	 * @return
-	 */
-	HibBinary getBinary();
-
-	/**
-	 * Set the metadata property.
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	void setMetadata(String key, String value);
-
-	/**
-	 * Return the metadata properties.
-	 * 
-	 * @return
-	 */
-	Map<String, String> getMetadataProperties();
-
-	/**
-	 * Set the location information.
-	 * 
-	 * @param loc
-	 */
-	default void setLocation(Location loc) {
-		Objects.requireNonNull(loc, "A valid location object needs to be supplied. Got null.");
-		setLocationLatitude(loc.getLat());
-		setLocationLongitude(loc.getLon());
-		Integer alt = loc.getAlt();
-		if (alt != null) {
-			setLocationAltitude(alt);
-		}
 	}
 
 	/**
@@ -278,24 +185,4 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 				setMetadata(e.substring(META_DATA_PROPERTY_PREFIX.length()), null);
 			});
 	}
-
-	/**
-	 * Return the {@link BinaryMetadata} REST model of the field.
-	 * 
-	 * @return
-	 */
-	BinaryMetadata getMetadata();
-
-	/**
-	 * Set the plain text content.
-	 * @param text
-	 */
-	void setPlainText(String text);
-
-	/**
-	 * Return the extracted plain text content of the binary.
-	 * @return
-	 */
-	String getPlainText();
-
 }

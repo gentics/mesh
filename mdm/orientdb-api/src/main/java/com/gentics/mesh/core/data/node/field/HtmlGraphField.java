@@ -8,20 +8,6 @@ import com.gentics.mesh.core.rest.node.field.HtmlField;
  * 
  * A HTML graph field is a basic node field which can be used to store a single HTML string value.
  */
-public interface HtmlGraphField extends ListableGraphField, BasicGraphField<HtmlField> {
-
-	/**
-	 * Set the HTML field value for the field.
-	 * 
-	 * @param html
-	 */
-	void setHtml(String html);
-
-	/**
-	 * Return the HTML field value for the field.
-	 * 
-	 * @return
-	 */
-	String getHTML();
+public interface HtmlGraphField extends ListableGraphField, BasicGraphField<HtmlField>, HibHtmlField {
 
 }

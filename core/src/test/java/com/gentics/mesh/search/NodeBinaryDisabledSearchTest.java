@@ -22,10 +22,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -90,9 +90,9 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 
 		try (Tx tx = tx()) {
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
-			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				schemaVersionUuid, ContainerType.DRAFT);
-			String id = ContentDaoWrapper.composeDocumentId(nodeA.getUuid(), "en");
+			String id = OrientDBContentDao.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse("The information should not have been added to the search document.",
 				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
@@ -137,9 +137,9 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = ContentDaoWrapper.composeDocumentId(nodeUuid, "en");
+			String id = OrientDBContentDao.composeDocumentId(nodeUuid, "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse("The binary content should not be part of the document",
 				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));

@@ -17,11 +17,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -50,7 +50,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
@@ -88,9 +88,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = ContentDaoWrapper.composeDocumentId(nodeB.getUuid(), "en");
+			String id = OrientDBContentDao.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();
@@ -119,7 +119,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -143,9 +143,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = ContentDaoWrapper.composeDocumentId(nodeB.getUuid(), "en");
+			String id = OrientDBContentDao.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();

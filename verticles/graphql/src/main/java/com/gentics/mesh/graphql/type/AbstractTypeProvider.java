@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.action.DAOActionContext.context;
+import static com.gentics.mesh.core.data.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLLong;
@@ -20,14 +20,14 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
-import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.action.DAOActions;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -366,7 +366,7 @@ public abstract class AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		HibBranch branch = env.getSource();
 		Stream<? extends HibSchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 
 		// We need to handle permissions here since we check the schema container perm and not the schema container version perm.
 		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
@@ -379,7 +379,7 @@ public abstract class AbstractTypeProvider {
 	protected Page<HibSchemaVersion> handleBranchSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		HibBranch branch = env.getSource();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 
 		Stream<? extends HibSchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
 			schema -> userDao.hasPermission(gc.getUser(), schema.getSchemaContainer(), READ_PERM));
@@ -555,8 +555,8 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.contentDao();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		ContentDao contentDao = tx.contentDao();
+		NodeDao nodeDao = tx.nodeDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = tx.getProject(gc);
 

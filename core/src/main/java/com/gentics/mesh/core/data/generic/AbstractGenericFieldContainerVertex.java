@@ -8,11 +8,10 @@ import java.util.Iterator;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -39,7 +38,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 
 	protected Edge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
 		Database db = mesh().database();
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.createComposedIndexKey(id(),
 			branchUuid, type.getCode(), languageTag)).iterator();
 		if (iterator.hasNext()) {
@@ -65,7 +64,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		Class<U> classOfU) {
 		Edge edge = getGraphFieldContainerEdge(languageTag, branchUuid, type);
 		if (edge != null) {
-			FramedGraph graph = Tx.get().getGraph();
+			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			Vertex in = edge.getVertex(IN);
 			return graph.frameElementExplicit(in, classOfU);
 		} else {

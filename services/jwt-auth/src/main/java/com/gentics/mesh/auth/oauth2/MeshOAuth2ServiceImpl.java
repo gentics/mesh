@@ -24,9 +24,9 @@ import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -246,7 +246,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				assertReadOnlyDeactivated()
 					.andThen(requiresWriteCompletable())
 					.andThen(db.singleTxWriteLock(tx -> {
-						UserDaoWrapper userDao = tx.userDao();
+						UserDao userDao = tx.userDao();
 						UserRoot userRoot = boot.userRoot();
 						HibUser admin = userDao.findByUsername("admin");
 						HibUser createdUser = userDao.create(username, admin);
@@ -347,9 +347,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
 		if (!plugins.isEmpty()) {
-			RoleDaoWrapper roleDao = boot.roleDao();
-			GroupDaoWrapper groupDao = boot.groupDao();
-			UserDaoWrapper userDao = boot.userDao();
+			RoleDao roleDao = boot.roleDao();
+			GroupDao groupDao = boot.groupDao();
+			UserDao userDao = boot.userDao();
 			RoleRoot roleRoot = boot.roleRoot();
 			GroupRoot groupRoot = boot.groupRoot();
 

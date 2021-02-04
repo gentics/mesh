@@ -22,7 +22,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -285,7 +285,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Deprecated
 	@Override
 	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		UserDaoWrapper userDao = mesh().boot().userDao();
+		UserDao userDao = mesh().boot().userDao();
 		return userDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
@@ -311,19 +311,19 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		UserDaoWrapper userDao = mesh().boot().userDao();
+		UserDao userDao = mesh().boot().userDao();
 		userDao.delete(this, bac);
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 		return userDao.update(this, ac, batch);
 	}
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		UserDaoWrapper userRoot = mesh().boot().userDao();
+		UserDao userRoot = mesh().boot().userDao();
 		return userRoot.getSubETag(this, ac);
 	}
 

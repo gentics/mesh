@@ -7,9 +7,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.action.DAOActionContext;
-import com.gentics.mesh.core.action.GroupDAOActions;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.action.DAOActionContext;
+import com.gentics.mesh.core.data.action.GroupDAOActions;
+import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -30,7 +30,7 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 
 	@Override
 	public HibGroup loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		GroupDaoWrapper groupDao = ctx.tx().groupDao();
+		GroupDao groupDao = ctx.tx().groupDao();
 		if (perm == null) {
 			return groupDao.findByUuid(uuid);
 		} else {
@@ -40,7 +40,7 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 
 	@Override
 	public HibGroup loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		GroupDaoWrapper groupDao = ctx.tx().groupDao();
+		GroupDao groupDao = ctx.tx().groupDao();
 		if (perm == null) {
 			return groupDao.findByName(name);
 		} else {

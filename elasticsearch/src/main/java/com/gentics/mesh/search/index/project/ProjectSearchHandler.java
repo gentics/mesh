@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index.project;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.action.ProjectDAOActions;
+import com.gentics.mesh.core.data.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.etc.config.MeshOptions;

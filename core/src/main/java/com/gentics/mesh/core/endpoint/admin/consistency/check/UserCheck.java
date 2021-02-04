@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
@@ -61,7 +61,7 @@ public class UserCheck extends AbstractConsistencyCheck {
 	}
 
 	private void assertShortcutRoleEdges(User user, ConsistencyCheckResult result) {
-		GroupDaoWrapper groupDao = Tx.get().groupDao();
+		GroupDao groupDao = Tx.get().groupDao();
 		String uuid = user.getUuid();
 		Set<HibRole> roles = user.getGroups().stream()
 			.flatMap(g -> groupDao.getRoles(g).stream())

@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index.microschema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.action.MicroschemaDAOActions;
+import com.gentics.mesh.core.data.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.etc.config.MeshOptions;

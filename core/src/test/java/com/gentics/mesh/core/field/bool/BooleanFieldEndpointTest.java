@@ -13,10 +13,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -49,7 +49,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testReadNodeWithExistingField() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createBoolean(FIELD_NAME).setBoolean(true);
@@ -121,7 +121,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());

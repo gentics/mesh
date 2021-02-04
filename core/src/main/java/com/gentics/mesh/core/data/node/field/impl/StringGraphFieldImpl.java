@@ -7,12 +7,13 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -37,7 +38,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 		// TODO validate found fields has same type as schema
 		// StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
 		// fieldKey, this);
-		StringGraphField graphStringField = container.getString(fieldKey);
+		HibStringField graphStringField = container.getString(fieldKey);
 		if (graphStringField == null) {
 			return null;
 		} else {
@@ -58,14 +59,14 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 
 	public static FieldUpdater STRING_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		StringField stringField = fieldMap.getStringField(fieldKey);
-		StringGraphField graphStringField = container.getString(fieldKey);
+		HibStringField graphStringField = container.getString(fieldKey);
 		boolean isStringFieldSetToNull = fieldMap.hasField(fieldKey) && (stringField == null || stringField.getString() == null);
-		GraphField.failOnDeletionOfRequiredField(graphStringField, isStringFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(graphStringField, isStringFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = stringField == null || stringField.getString() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(graphStringField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(graphStringField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -128,14 +129,14 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		setFieldProperty("string", null);
 		setFieldKey(null);
 	}
 
 	@Override
-	public GraphField cloneTo(GraphFieldContainer container) {
-		StringGraphField clone = container.createString(getFieldKey());
+	public HibField cloneTo(HibFieldContainer container) {
+		HibStringField clone = container.createString(getFieldKey());
 		clone.setString(getString());
 		return clone;
 	}

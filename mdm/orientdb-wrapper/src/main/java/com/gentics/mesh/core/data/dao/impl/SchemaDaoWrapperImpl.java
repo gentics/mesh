@@ -25,13 +25,14 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -66,7 +67,7 @@ import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 
-public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implements SchemaDaoWrapper {
+public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implements OrientDBSchemaDao {
 
 	private final Lazy<Vertx> vertx;
 	private final Lazy<NodeIndexHandler> nodeIndexHandler;
@@ -135,7 +136,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	@Override
 	public HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibUser requestUser = ac.getUser();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 
 		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
@@ -219,7 +220,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	@Override
 	public HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
@@ -296,9 +297,9 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Iterable<SchemaVersion> findAllVersions(HibSchema schema) {
+	public Iterable<HibSchemaVersion> findAllVersions(HibSchema schema) {
 		Schema graphSchema = toGraph(schema);
-		return (Iterable<SchemaVersion>) (Iterable<?>) boot.get().schemaContainerRoot().findAllVersions(graphSchema);
+		return (Iterable<HibSchemaVersion>) (Iterable<?>) boot.get().schemaContainerRoot().findAllVersions(graphSchema);
 	}
 
 	@Override
@@ -318,8 +319,9 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 			unassignEvents(graphSchema).forEach(bac::add);
 			bac.add(schema.onDeleted());
 
-			for (SchemaVersion v : findAllVersions(schema)) {
-				v.delete(bac);
+			for (HibSchemaVersion v : findAllVersions(schema)) {
+				// TODO call dedicated DAO here
+				((SchemaVersion) v).delete(bac);
 			}
 			graphSchema.remove();
 		} else {
@@ -400,7 +402,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Iterator<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
+	public Iterator<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
 		return toGraph(version).getDraftFieldContainers(branchUuid);
 	}
 
@@ -436,13 +438,13 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid) {
+	public Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid) {
 		SchemaVersion graphVersion = toGraph(version);
 		return graphVersion.getFieldContainers(branchUuid);
 	}
 
 	@Override
-	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket) {
+	public Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket) {
 		SchemaVersion graphVersion = toGraph(version);
 		return graphVersion.getFieldContainers(branchUuid, bucket);
 	}

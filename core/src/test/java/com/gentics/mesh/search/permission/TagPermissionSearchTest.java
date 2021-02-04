@@ -7,13 +7,13 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -30,9 +30,9 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
 		TagResponse response = createTag(PROJECT_NAME, tagFamilyUuid, tagname);
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			TagDaoWrapper tagDao = tx.tagDao();
-			UserDaoWrapper userDao = tx.userDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBTagDao tagDao = tx.tagDao();
+			OrientDBUserDao userDao = tx.userDao();
 
 			HibTag tag = tagDao.findByUuid(tagFamily("colors"), response.getUuid());
 			System.out.println("Tag Uuid:" + response.getUuid());
@@ -51,9 +51,9 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.userDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBUserDao userDao = tx.userDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 
 			HibTag tag = tagDao.findByUuid(tagFamily("colors"), response.getUuid());
 			System.out.println("Tag Uuid:" + response.getUuid());

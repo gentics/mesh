@@ -13,14 +13,14 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -48,7 +48,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadPublishedNodesForTag() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
@@ -97,8 +97,8 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTagOrder() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBTagDao tagDao = tx.tagDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibTagFamily root = tagFamily("basic");
 			HibTag tag1 = tagDao.create(root, "test1", project(), user());
 			HibTag tag2 = tagDao.create(root, "test2", project(), user());

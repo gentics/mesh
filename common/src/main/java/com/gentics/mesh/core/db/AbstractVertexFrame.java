@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.mesh.core.data.db.BaseTransaction;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
@@ -37,7 +38,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	public Vertex getElement() {
 		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
-		FramedGraph fg = Tx.get().getGraph();
+		FramedGraph fg = ((GraphDBTx) Tx.get()).getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
@@ -165,7 +166,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	@Override
 	public <T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		BaseTransaction tx = Tx.get();
+		GraphDBBaseTransaction tx = (GraphDBBaseTransaction) Tx.get();
 		if (tx == null) {
 			throw new RuntimeException("No active transaction found.");
 		}

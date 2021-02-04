@@ -39,15 +39,15 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -75,8 +75,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		final int nBasicTags = 9;
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
-			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+			OrientDBTagDao tagDao = tx.tagDao();
+			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			HibTagFamily basicTagFamily = tagFamily("basic");
@@ -186,7 +186,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid;
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibTagFamily parentTagFamily = tagFamily("basic");
 			parentTagFamilyUuid = parentTagFamily.getUuid();
 			HibTag tag = tag("vehicle");
@@ -215,7 +215,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		List<? extends HibNode> nodes;
 
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			String tagName = tag.getName();
 			assertNotNull(tag.getEditor());
 			TagResponse restTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()));
@@ -249,7 +249,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid()), TagFamily.composeDocumentId(parentTagFamilyUuid));
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			assertThat(tag2).matches(tag);
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
@@ -257,10 +257,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			for (HibNode node : nodes) {
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, type), ContentDaoWrapper.composeDocumentId(node.getUuid(), "en"));
-					assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, type), ContentDaoWrapper.composeDocumentId(node.getUuid(), "de"));
+					assertThat(trackingSearchProvider()).hasStore(OrientDBContentDao.composeIndexName(projectUuid, branchUuid,
+						schemaContainerVersionUuid, type), OrientDBContentDao.composeDocumentId(node.getUuid(), "en"));
+					assertThat(trackingSearchProvider()).hasStore(OrientDBContentDao.composeIndexName(projectUuid, branchUuid,
+						schemaContainerVersionUuid, type), OrientDBContentDao.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
 			assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
@@ -315,7 +315,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		HibTagFamily parentTagFamily = tagFamily("basic");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tag, UPDATE_PERM);
 			tx.success();
 		}
@@ -355,7 +355,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		}).one();
 
 		tx(tx -> {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			tagDao.getNodes(tag, initialBranch()).forEach(n -> {
 				String uuid = n.getUuid();
 				expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
@@ -366,7 +366,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		});
 
 		List<? extends HibNode> nodes = tx(tx -> {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			return tagDao.getNodes(tag, project().getLatestBranch()).list();
 		});
 		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
@@ -375,13 +375,13 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(tagUuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (HibNode node : nodes) {
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
-				assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid,
-					schemaContainerVersionUuid, ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(node.getUuid(), "en"));
+				assertThat(trackingSearchProvider()).hasStore(OrientDBContentDao.composeIndexName(projectUuid, branchUuid,
+					schemaContainerVersionUuid, ContainerType.DRAFT), OrientDBContentDao.composeDocumentId(node.getUuid(), "en"));
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 0, 1, 0, 0);
 
@@ -397,7 +397,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tag("vehicle"), DELETE_PERM);
 			tx.success();
 		}
@@ -475,7 +475,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		String tagRootUuid = db().tx(() -> tagFamily("colors").getUuid());
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
@@ -623,7 +623,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid;
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibTag tag = tag("red");
 
 			HibTagFamily parentTagFamily = tagFamily("colors");

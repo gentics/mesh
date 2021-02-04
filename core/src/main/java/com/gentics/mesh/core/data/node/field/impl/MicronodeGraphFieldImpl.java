@@ -18,15 +18,19 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -51,7 +55,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 
 	public static FieldTransformer<MicronodeField> MICRONODE_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 		parentNode) -> {
-		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
+		HibMicronodeField micronodeGraphField = container.getMicronode(fieldKey);
 		if (micronodeGraphField == null) {
 			return null;
 		} else {
@@ -60,16 +64,16 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	};
 
 	public static FieldUpdater MICRONODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
+		HibMicronodeField micronodeGraphField = container.getMicronode(fieldKey);
 		MicronodeFieldSchema microschemaFieldSchema = (MicronodeFieldSchema) fieldSchema;
 		MicronodeField micronodeRestField = fieldMap.getMicronodeField(fieldKey);
 		boolean isMicronodeFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeRestField == null;
-		GraphField.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = micronodeRestField == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(container.getMicronode(fieldKey), restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(container.getMicronode(fieldKey), restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
@@ -89,11 +93,11 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		}
 
 		Tx tx = Tx.get();
-		MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+		MicroschemaDao microschemaDao = tx.microschemaDao();
 		HibMicroschemaVersion microschemaVersion = microschemaDao.fromReference(tx.getProject(ac), microschemaReference,
 			tx.getBranch(ac));
 
-		Micronode micronode = null;
+		HibMicronode micronode = null;
 
 		// check whether microschema is allowed
 		if (!ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
@@ -156,7 +160,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		Micronode micronode = getMicronode();
 		// Remove the edge to get rid of the reference
 		remove();
@@ -169,10 +173,10 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public GraphField cloneTo(GraphFieldContainer container) {
+	public GraphField cloneTo(HibFieldContainer container) {
 		Micronode micronode = getMicronode();
 
-		MicronodeGraphField field = getGraph().addFramedEdge(container, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
+		MicronodeGraphField field = getGraph().addFramedEdge((GraphFieldContainer) container, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
 		return field;
 	}
@@ -192,8 +196,8 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	@Override
 	public List<FieldContainerChange> compareTo(Object field) {
 		if (field instanceof MicronodeGraphField) {
-			Micronode micronodeA = getMicronode();
-			Micronode micronodeB = ((MicronodeGraphField) field).getMicronode();
+			HibMicronode micronodeA = getMicronode();
+			HibMicronode micronodeB = ((MicronodeGraphField) field).getMicronode();
 			List<FieldContainerChange> changes = micronodeA.compareTo(micronodeB);
 			// Update the detected changes and prepend the fieldkey of the micronode in order to be able to identify nested changes more easy.
 			changes.stream().forEach(c -> {
@@ -205,12 +209,12 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		}
 		if (field instanceof MicronodeField) {
 			List<FieldContainerChange> changes = new ArrayList<>();
-			Micronode micronodeA = getMicronode();
+			HibMicronode micronodeA = getMicronode();
 			MicronodeField micronodeB = ((MicronodeField) field);
 			// Load each field using the field schema
 			MicroschemaModel schema = micronodeA.getSchemaContainerVersion().getSchema();
 			for (FieldSchema fieldSchema : schema.getFields()) {
-				GraphField graphField = micronodeA.getField(fieldSchema);
+				HibField graphField = micronodeA.getField(fieldSchema);
 				try {
 					Field nestedRestField = micronodeB.getFields().getField(fieldSchema.getName(), fieldSchema);
 					// If possible compare the graph field with the rest field
@@ -244,8 +248,8 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof MicronodeGraphField) {
-			Micronode micronodeA = getMicronode();
-			Micronode micronodeB = ((MicronodeGraphField) obj).getMicronode();
+			HibMicronode micronodeA = getMicronode();
+			HibMicronode micronodeB = ((MicronodeGraphField) obj).getMicronode();
 			return CompareUtils.equals(micronodeA, micronodeB);
 		}
 		if (obj instanceof MicronodeField) {
@@ -255,7 +259,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			// Load each field using the field schema
 			MicroschemaModel schema = micronodeA.getSchemaContainerVersion().getSchema();
 			for (FieldSchema fieldSchema : schema.getFields()) {
-				GraphField graphField = micronodeA.getField(fieldSchema);
+				HibField graphField = micronodeA.getField(fieldSchema);
 				try {
 					Field nestedRestField = micronodeB.getFields().getField(fieldSchema.getName(), fieldSchema);
 					// If possible compare the graph field with the rest field

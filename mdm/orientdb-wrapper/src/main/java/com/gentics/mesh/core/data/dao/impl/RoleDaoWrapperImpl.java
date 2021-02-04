@@ -26,8 +26,8 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
@@ -49,7 +49,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import dagger.Lazy;
 
 @Singleton
-public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements RoleDaoWrapper {
+public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements OrientDBRoleDao {
 
 	private final Lazy<PermissionCache> permissionCache;
 	private final CommonDaoHelper commonDaoHelper;
@@ -215,7 +215,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	public HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 		RoleRoot roleRoot = boot.get().roleRoot();
 
 		HibUser requestUser = ac.getUser();

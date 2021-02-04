@@ -19,11 +19,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -68,7 +68,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 		published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 
 			nodes = nodeDao.findAll(project).stream().filter(node -> nodeDao.getParentNode(node, project.getLatestBranch().getUuid()) != null)
 				.collect(Collectors.toList());
@@ -96,7 +96,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForJob(requestBranchMigration(newBranch));
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(true);
 

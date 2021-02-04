@@ -34,12 +34,12 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -80,7 +80,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.userDao();
+			OrientDBUserDao userDao = tx.userDao();
 			HibRole createdRole = tx.roleDao().findByUuid(restRole.getUuid());
 			assertTrue(userDao.hasPermission(user(), createdRole, UPDATE_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, READ_PERM));
@@ -99,7 +99,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateWithNoPerm() throws Exception {
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tx.data().permissionRoots().role(), CREATE_PERM);
 			tx.success();
 		}
@@ -163,7 +163,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setName("new_role");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			// Add needed permission to group
 			roleDao.revokePermissions(role(), tx.data().permissionRoots().role(), CREATE_PERM);
 			tx.success();
@@ -204,8 +204,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUID() throws Exception {
 		HibRole extraRole;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 
 			extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
@@ -233,8 +233,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String extraRoleUuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			GroupDaoWrapper groupRoot = tx.groupDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBGroupDao groupRoot = tx.groupDao();
 			HibRole extraRole = roleDao.create("extra role", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupRoot.addRole(group(), extraRole);
@@ -250,7 +250,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), role(), READ_PERM);
 			tx.success();
 		}
@@ -266,8 +266,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		final int initialRolesCount = roles().size();
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			GroupDaoWrapper groupRoot = tx.groupDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBGroupDao groupRoot = tx.groupDao();
 
 			HibRole noPermRole = roleDao.create(noPermRoleName, user());
 			roleDao.grantPermissions(role(), group(), READ_PERM);
@@ -345,8 +345,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String extraRoleUuid = tx(tx -> {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			HibRole extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, UPDATE_PERM);
@@ -378,7 +378,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), role(), UPDATE_PERM);
 			tx.success();
 		}
@@ -414,7 +414,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), role(), UPDATE_PERM);
 			tx.success();
 		}
@@ -424,7 +424,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Add the missing permission and try again
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			tx.success();
 		}
@@ -444,8 +444,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUID() throws Exception {
 
 		String extraRoleUuid = tx(tx -> {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			HibRole extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, DELETE_PERM);
@@ -475,7 +475,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), role(), DELETE_PERM);
 			tx.success();
 		}

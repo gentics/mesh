@@ -22,13 +22,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -135,7 +135,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		disableAutoPurge();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			updateSchema();
 			NodeGraphFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
@@ -174,7 +174,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		assertThat(restNode).hasVersion("1.1");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			assertNotNull("The old version should have a new version 1.1", contentDao.getNextVersions(oldContainer).iterator().next());
 			NodeGraphFieldContainer newContainer = contentDao.findVersion(node, "en", project().getLatestBranch().getUuid(), "1.1");
 			assertEquals("The name field value of the old container version should not have been changed.", "Concorde_english_name", oldContainer
@@ -302,7 +302,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		disableAutoPurge();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			updateSchema();
 			NodeGraphFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());

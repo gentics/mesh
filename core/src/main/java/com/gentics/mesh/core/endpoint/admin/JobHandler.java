@@ -16,8 +16,8 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.action.JobDAOActions;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.action.JobDAOActions;
+import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -110,7 +110,7 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			JobDaoWrapper jobDao = tx.jobDao();
+			JobDao jobDao = tx.jobDao();
 			HibJob job = jobDao.loadObjectByUuidNoPerm(uuid, true);
 			String etag = jobDao.getETag(job, ac);
 			ac.setEtag(etag, true);

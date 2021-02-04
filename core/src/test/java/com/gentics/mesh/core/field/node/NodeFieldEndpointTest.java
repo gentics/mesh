@@ -27,12 +27,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -127,7 +127,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			// Assert that the old version was not modified
 			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
@@ -284,7 +284,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();
@@ -304,7 +304,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();
@@ -347,7 +347,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			// Create test field
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, referencedNode);
@@ -371,8 +371,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBContentDao contentDao = tx.contentDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			// Revoke the permission to the referenced node
 			HibNode referencedNode = folder("news");
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
@@ -400,7 +400,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Create test field
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();

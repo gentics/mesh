@@ -11,30 +11,30 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibContent;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.ListGraphField;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibListField;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -263,11 +263,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.setProperty(name, value);
 	}
 
-	public StringGraphField getString(String key) {
+	public HibStringField getString(String key) {
 		return delegate.getString(key);
 	}
 
-	public StringGraphField createString(String key) {
+	public HibStringField createString(String key) {
 		return delegate.createString(key);
 	}
 
@@ -275,7 +275,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getTypeResolution();
 	}
 
-	public BinaryGraphField getBinary(String key) {
+	public HibBinaryField getBinary(String key) {
 		return delegate.getBinary(key);
 	}
 
@@ -283,7 +283,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.setTypeResolution(type);
 	}
 
-	public BinaryGraphField createBinary(String fieldKey, HibBinary binary) {
+	public HibBinaryField createBinary(String fieldKey, HibBinary binary) {
 		return delegate.createBinary(fieldKey, binary);
 	}
 
@@ -295,7 +295,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.removeTypeResolution();
 	}
 
-	public NodeGraphField getNode(String key) {
+	public HibNodeField getNode(String key) {
 		return delegate.getNode(key);
 	}
 
@@ -303,7 +303,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.v();
 	}
 
-	public NodeGraphField createNode(String key, HibNode node) {
+	public HibNodeField createNode(String key, HibNode node) {
 		return delegate.createNode(key, node);
 	}
 
@@ -315,11 +315,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.e(ids);
 	}
 
-	public DateGraphField getDate(String key) {
+	public HibDateField getDate(String key) {
 		return delegate.getDate(key);
 	}
 
-	public DateGraphField createDate(String key) {
+	public HibDateField createDate(String key) {
 		return delegate.createDate(key);
 	}
 
@@ -331,15 +331,15 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public NumberGraphField getNumber(String key) {
+	public HibNumberField getNumber(String key) {
 		return delegate.getNumber(key);
 	}
 
-	public NumberGraphField createNumber(String key) {
+	public HibNumberField createNumber(String key) {
 		return delegate.createNumber(key);
 	}
 
-	public HtmlGraphField getHtml(String key) {
+	public HibHtmlField getHtml(String key) {
 		return delegate.getHtml(key);
 	}
 
@@ -347,7 +347,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.in(labels);
 	}
 
-	public HtmlGraphField createHTML(String key) {
+	public HibHtmlField createHTML(String key) {
 		return delegate.createHTML(key);
 	}
 
@@ -359,7 +359,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.inE(labels);
 	}
 
-	public BooleanGraphField getBoolean(String key) {
+	public HibBooleanField getBoolean(String key) {
 		return delegate.getBoolean(key);
 	}
 
@@ -367,11 +367,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.linkOut(vertex, labels);
 	}
 
-	public BooleanGraphField createBoolean(String key) {
+	public HibBooleanField createBoolean(String key) {
 		return delegate.createBoolean(key);
 	}
 
-	public MicronodeGraphField getMicronode(String key) {
+	public HibMicronodeField getMicronode(String key) {
 		return delegate.getMicronode(key);
 	}
 
@@ -379,7 +379,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public MicronodeGraphField createMicronode(String key, HibMicroschemaVersion microschemaVersion) {
+	public HibMicronodeField createMicronode(String key, HibMicroschemaVersion microschemaVersion) {
 		return delegate.createMicronode(key, microschemaVersion);
 	}
 
@@ -387,11 +387,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.unlinkOut(vertex, labels);
 	}
 
-	public DateGraphFieldList getDateList(String fieldKey) {
+	public HibDateFieldList getDateList(String fieldKey) {
 		return delegate.getDateList(fieldKey);
 	}
 
-	public DateGraphFieldList createDateList(String fieldKey) {
+	public HibDateFieldList createDateList(String fieldKey) {
 		return delegate.createDateList(fieldKey);
 	}
 
@@ -399,11 +399,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.unlinkIn(vertex, labels);
 	}
 
-	public HtmlGraphFieldList getHTMLList(String fieldKey) {
+	public HibHtmlFieldList getHTMLList(String fieldKey) {
 		return delegate.getHTMLList(fieldKey);
 	}
 
-	public HtmlGraphFieldList createHTMLList(String fieldKey) {
+	public HibHtmlFieldList createHTMLList(String fieldKey) {
 		return delegate.createHTMLList(fieldKey);
 	}
 
@@ -411,11 +411,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public NumberGraphFieldList getNumberList(String fieldKey) {
+	public HibNumberFieldList getNumberList(String fieldKey) {
 		return delegate.getNumberList(fieldKey);
 	}
 
-	public NumberGraphFieldList createNumberList(String fieldKey) {
+	public HibNumberFieldList createNumberList(String fieldKey) {
 		return delegate.createNumberList(fieldKey);
 	}
 
@@ -423,7 +423,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.traversal();
 	}
 
-	public NodeGraphFieldList getNodeList(String fieldKey) {
+	public HibNodeFieldList getNodeList(String fieldKey) {
 		return delegate.getNodeList(fieldKey);
 	}
 
@@ -431,7 +431,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.toJson();
 	}
 
-	public NodeGraphFieldList createNodeList(String fieldKey) {
+	public HibNodeFieldList createNodeList(String fieldKey) {
 		return delegate.createNodeList(fieldKey);
 	}
 
@@ -439,11 +439,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.reframe(kind);
 	}
 
-	public StringGraphFieldList getStringList(String fieldKey) {
+	public HibStringFieldList getStringList(String fieldKey) {
 		return delegate.getStringList(fieldKey);
 	}
 
-	public StringGraphFieldList createStringList(String fieldKey) {
+	public HibStringFieldList createStringList(String fieldKey) {
 		return delegate.createStringList(fieldKey);
 	}
 
@@ -451,11 +451,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public BooleanGraphFieldList getBooleanList(String fieldKey) {
+	public HibBooleanFieldList getBooleanList(String fieldKey) {
 		return delegate.getBooleanList(fieldKey);
 	}
 
-	public BooleanGraphFieldList createBooleanList(String fieldKey) {
+	public HibBooleanFieldList createBooleanList(String fieldKey) {
 		return delegate.createBooleanList(fieldKey);
 	}
 
@@ -463,11 +463,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getIndexName(projectUuid, branchUuid, type);
 	}
 
-	public MicronodeGraphFieldList getMicronodeList(String fieldKey) {
+	public HibMicronodeFieldList getMicronodeList(String fieldKey) {
 		return delegate.getMicronodeList(fieldKey);
 	}
 
-	public MicronodeGraphFieldList createMicronodeFieldList(String fieldKey) {
+	public HibMicronodeFieldList createMicronodeFieldList(String fieldKey) {
 		return delegate.createMicronodeFieldList(fieldKey);
 	}
 
@@ -483,11 +483,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getDocumentId();
 	}
 
-	public GraphField getField(FieldSchema fieldSchema) {
+	public HibField getField(FieldSchema fieldSchema) {
 		return delegate.getField(fieldSchema);
 	}
 
-	public List<GraphField> getFields() {
+	public List<HibField> getFields() {
 		return delegate.getFields();
 	}
 
@@ -495,7 +495,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.delete(bac);
 	}
 
-	public <T extends ListGraphField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey) {
+	public <T extends HibListField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey) {
 		return delegate.getList(classOfT, fieldKey);
 	}
 
@@ -523,7 +523,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getDisplayFieldValue();
 	}
 
-	public Node getNode() {
+	public HibNode getNode() {
 		return delegate.getNode();
 	}
 
@@ -535,7 +535,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.updateWebrootPathInfo(ac, branchUuid, conflictI18n);
 	}
 
-	public Stream<? extends NodeGraphFieldContainer> getContents() {
+	public Stream<? extends HibNodeFieldContainer> getContents() {
 		return delegate.getContents();
 	}
 
@@ -555,11 +555,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.hasNextVersion();
 	}
 
-	public Iterable<NodeGraphFieldContainer> getNextVersions() {
+	public Iterable<HibNodeFieldContainer> getNextVersions() {
 		return delegate.getNextVersions();
 	}
 
-	public void setNextVersion(NodeGraphFieldContainer container) {
+	public void setNextVersion(HibNodeFieldContainer container) {
 		delegate.setNextVersion(container);
 	}
 
@@ -567,11 +567,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.hasPreviousVersion();
 	}
 
-	public NodeGraphFieldContainer getPreviousVersion() {
+	public HibNodeFieldContainer getPreviousVersion() {
 		return delegate.getPreviousVersion();
 	}
 
-	public void clone(NodeGraphFieldContainer container) {
+	public void clone(HibNodeFieldContainer container) {
 		delegate.clone(container);
 	}
 
@@ -611,7 +611,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getBranches(type);
 	}
 
-	public List<FieldContainerChange> compareTo(NodeGraphFieldContainer container) {
+	public List<FieldContainerChange> compareTo(HibNodeFieldContainer container) {
 		return delegate.compareTo(container);
 	}
 
@@ -623,11 +623,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getSchemaContainerVersion();
 	}
 
-	public List<MicronodeGraphField> getMicronodeFields(HibMicroschemaVersion version) {
+	public List<HibMicronodeField> getMicronodeFields(HibMicroschemaVersion version) {
 		return delegate.getMicronodeFields(version);
 	}
 
-	public Result<MicronodeGraphFieldList> getMicronodeListFields(HibMicroschemaVersion version) {
+	public Result<HibMicronodeFieldList> getMicronodeListFields(HibMicroschemaVersion version) {
 		return delegate.getMicronodeListFields(version);
 	}
 
@@ -699,7 +699,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.purge();
 	}
 
-	public Result<NodeGraphFieldContainer> versions() {
+	public Result<HibNodeFieldContainer> versions() {
 		return delegate.versions();
 	}
 

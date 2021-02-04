@@ -10,8 +10,8 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.test.TestSize;

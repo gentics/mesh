@@ -3,89 +3,89 @@ package com.gentics.mesh.core.data.dao;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.action.BranchDAOActions;
-import com.gentics.mesh.core.action.GroupDAOActions;
-import com.gentics.mesh.core.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.action.ProjectDAOActions;
-import com.gentics.mesh.core.action.RoleDAOActions;
-import com.gentics.mesh.core.action.SchemaDAOActions;
-import com.gentics.mesh.core.action.TagDAOActions;
-import com.gentics.mesh.core.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.context.ContextDataRegistry;
+import com.gentics.mesh.core.data.action.BranchDAOActions;
+import com.gentics.mesh.core.data.action.GroupDAOActions;
+import com.gentics.mesh.core.data.action.MicroschemaDAOActions;
+import com.gentics.mesh.core.data.action.ProjectDAOActions;
+import com.gentics.mesh.core.data.action.RoleDAOActions;
+import com.gentics.mesh.core.data.action.SchemaDAOActions;
+import com.gentics.mesh.core.data.action.TagDAOActions;
+import com.gentics.mesh.core.data.action.TagFamilyDAOActions;
+import com.gentics.mesh.core.data.action.UserDAOActions;
 
 @Singleton
 public class OrientDBDaoCollection implements DaoCollection {
 
-	private final UserDaoWrapper userDao;
+	private final OrientDBUserDao userDao;
 	private final UserDAOActions userActions;
 
-	private final GroupDaoWrapper groupDao;
+	private final OrientDBGroupDao groupDao;
 	private final GroupDAOActions groupActions;
 
-	private final RoleDaoWrapper roleDao;
+	private final OrientDBRoleDao roleDao;
 	private final RoleDAOActions roleActions;
 
-	private final TagDaoWrapper tagDao;
+	private final OrientDBTagDao tagDao;
 	private final TagDAOActions tagActions;
 
-	private final TagFamilyDaoWrapper tagFamilyDao;
+	private final OrientDBTagFamilyDao tagFamilyDao;
 	private final TagFamilyDAOActions tagFamilyActions;
 
-	private final ProjectDaoWrapper projectDao;
+	private final OrientDBProjectDao projectDao;
 	private final ProjectDAOActions projectActions;
 
-	private final BranchDaoWrapper branchDao;
+	private final OrientDBBranchDao branchDao;
 	private final BranchDAOActions branchActions;
 
-	private final SchemaDaoWrapper schemaDao;
+	private final OrientDBSchemaDao schemaDao;
 	private final SchemaDAOActions schemaActions;
 
-	private final MicroschemaDaoWrapper microschemaDao;
+	private final OrientDBMicroschemaDao microschemaDao;
 	private final MicroschemaDAOActions microschemaActions;
 
-	private final NodeDaoWrapper nodeDao;
-	private final ContentDaoWrapper contentDao;
+	private final OrientDBNodeDao nodeDao;
+	private final OrientDBContentDao contentDao;
 
-	private final LanguageDaoWrapper languageDao;
-	private final BinaryDaoWrapper binaryDao;
-	private final JobDaoWrapper jobDao;
+	private final OrientDBLanguageDao languageDao;
+	private final OrientDBBinaryDao binaryDao;
+	private final OrientDBJobDao jobDao;
 
 	@Inject
 	public OrientDBDaoCollection(
-		UserDaoWrapper userDao,
+		OrientDBUserDao userDao,
 		UserDAOActions userActions,
 
-		GroupDaoWrapper groupDao,
+		OrientDBGroupDao groupDao,
 		GroupDAOActions groupActions,
 
-		RoleDaoWrapper roleDao,
+		OrientDBRoleDao roleDao,
 		RoleDAOActions roleActions,
 
-		ProjectDaoWrapper projectDao,
+		OrientDBProjectDao projectDao,
 		ProjectDAOActions projectActions,
 
-		TagFamilyDaoWrapper tagFamilyDao,
+		OrientDBTagFamilyDao tagFamilyDao,
 		TagFamilyDAOActions tagFamilyActions,
 
-		TagDaoWrapper tagDao,
+		OrientDBTagDao tagDao,
 		TagDAOActions tagActions,
 
-		BranchDaoWrapper branchDao,
+		OrientDBBranchDao branchDao,
 		BranchDAOActions branchActions,
 
-		SchemaDaoWrapper schemaDao,
+		OrientDBSchemaDao schemaDao,
 		SchemaDAOActions schemaActions,
 
-		MicroschemaDaoWrapper microschemaDao,
+		OrientDBMicroschemaDao microschemaDao,
 		MicroschemaDAOActions microschemaActions,
 
-		NodeDaoWrapper nodeDao,
-		ContentDaoWrapper contentDao,
+		OrientDBNodeDao nodeDao,
+		OrientDBContentDao contentDao,
 
-		LanguageDaoWrapper languageDao,
-		BinaryDaoWrapper binaryDao,
-		JobDaoWrapper jobDao,
+		OrientDBLanguageDao languageDao,
+		OrientDBBinaryDao binaryDao,
+		OrientDBJobDao jobDao,
 
 		ContextDataRegistry contextDataRegistry) {
 		this.userDao = userDao;
@@ -124,7 +124,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public UserDaoWrapper userDao() {
+	public OrientDBUserDao userDao() {
 		return userDao;
 	}
 
@@ -134,7 +134,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public GroupDaoWrapper groupDao() {
+	public OrientDBGroupDao groupDao() {
 		return groupDao;
 	}
 
@@ -144,7 +144,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public RoleDaoWrapper roleDao() {
+	public OrientDBRoleDao roleDao() {
 		return roleDao;
 	}
 
@@ -154,7 +154,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public ProjectDaoWrapper projectDao() {
+	public OrientDBProjectDao projectDao() {
 		return projectDao;
 	}
 
@@ -164,17 +164,17 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public LanguageDaoWrapper languageDao() {
+	public OrientDBLanguageDao languageDao() {
 		return languageDao;
 	}
 
 	@Override
-	public JobDaoWrapper jobDao() {
+	public OrientDBJobDao jobDao() {
 		return jobDao;
 	}
 
 	@Override
-	public TagFamilyDaoWrapper tagFamilyDao() {
+	public OrientDBTagFamilyDao tagFamilyDao() {
 		return tagFamilyDao;
 	}
 
@@ -184,7 +184,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public TagDaoWrapper tagDao() {
+	public OrientDBTagDao tagDao() {
 		return tagDao;
 	}
 
@@ -194,7 +194,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public BranchDaoWrapper branchDao() {
+	public OrientDBBranchDao branchDao() {
 		return branchDao;
 	}
 
@@ -204,7 +204,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public MicroschemaDaoWrapper microschemaDao() {
+	public OrientDBMicroschemaDao microschemaDao() {
 		return microschemaDao;
 	}
 
@@ -214,7 +214,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public SchemaDaoWrapper schemaDao() {
+	public OrientDBSchemaDao schemaDao() {
 		return schemaDao;
 	}
 
@@ -224,17 +224,17 @@ public class OrientDBDaoCollection implements DaoCollection {
 	}
 
 	@Override
-	public BinaryDaoWrapper binaryDao() {
+	public OrientDBBinaryDao binaryDao() {
 		return binaryDao;
 	}
 
 	@Override
-	public NodeDaoWrapper nodeDao() {
+	public OrientDBNodeDao nodeDao() {
 		return nodeDao;
 	}
 
 	@Override
-	public ContentDaoWrapper contentDao() {
+	public OrientDBContentDao contentDao() {
 		return contentDao;
 	}
 

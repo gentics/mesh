@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.junit.Before;
 
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;

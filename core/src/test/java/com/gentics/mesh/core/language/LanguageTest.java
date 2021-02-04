@@ -12,12 +12,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBLanguageDao;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -43,7 +43,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			LanguageDaoWrapper languageDao = tx.languageDao();
+			OrientDBLanguageDao languageDao = tx.languageDao();
 
 			long nLanguagesBefore = languageDao.globalCount();
 
@@ -173,7 +173,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			LanguageDaoWrapper languageDao = tx.languageDao();
+			OrientDBLanguageDao languageDao = tx.languageDao();
 			final String languageTag = "tlh";
 			final String languageName = "klingon";
 			HibLanguage lang = languageDao.create(languageName, languageTag);

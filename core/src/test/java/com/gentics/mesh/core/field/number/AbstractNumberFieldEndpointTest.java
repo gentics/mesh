@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.junit.Before;
 
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;

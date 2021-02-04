@@ -30,14 +30,14 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -89,7 +89,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			OrientDBSchemaDao schemaDao = tx.schemaDao();
 			assertEquals("The name of the old version should not be updated", "content", currentVersion.getName());
 			assertEquals("The name of the schema was not updated", name, currentVersion.getNextVersion().getName());
 			HibSchema reloaded = schemaDao.findByUuid(schemaUuid);
@@ -216,7 +216,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		HibSchema schemaContainer = schemaContainer("content");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content").setHtml("42.1");
 
 			// 1. Create update request by removing the content field from schema and adding a new content with different type
@@ -451,8 +451,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// Validate schema changes and versions
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.userDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			OrientDBUserDao userDao = tx.userDao();
+			OrientDBSchemaDao schemaDao = tx.schemaDao();
 
 			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, Iterators.size(schemaDao.findAllVersions(container).iterator()));
 			assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
@@ -610,7 +610,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// node must be migrated for initial branch
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 
 			assertThat(contentDao.getGraphFieldContainer(content, "en", initialBranchUuid(), ContainerType.DRAFT))
 				.isOf(schemaContainer.getLatestVersion());

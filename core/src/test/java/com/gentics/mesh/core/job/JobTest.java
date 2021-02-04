@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.test.context.AbstractMeshTest;

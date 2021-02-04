@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
@@ -194,7 +194,7 @@ public class OrientDBTypeHandler implements TypeHandler {
 
 	@Override
 	public <T extends VertexFrame> long count(Class<? extends T> persistanceClass) {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 		return orientBaseGraph.countVertices(persistanceClass.getSimpleName());
@@ -202,7 +202,7 @@ public class OrientDBTypeHandler implements TypeHandler {
 
 	@Override
 	public <T extends VertexFrame> Stream<T> findAll(Class<? extends T> classOfT) {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 

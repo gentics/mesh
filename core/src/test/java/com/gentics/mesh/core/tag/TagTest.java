@@ -21,13 +21,14 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -36,7 +37,6 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -79,8 +79,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testTagFamilyTagCreation() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
-			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+			OrientDBTagDao tagDao = tx.tagDao();
+			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 
 			final String TAG_FAMILY_NAME = "mycustomtagFamily";
 			HibTagFamily tagFamily = tagFamilyDao.create(project(), TAG_FAMILY_NAME, user());
@@ -106,7 +106,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testSimpleTag() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			HibTagFamily root = tagFamily("basic");
 			HibTag tag = tagDao.create(root, "test", project(), user());
 			assertEquals("test", tag.getName());
@@ -118,7 +118,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testProjectTag() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			HibTagFamily root = tagFamily("basic");
 			HibTag tag = tagDao.create(root, "test", project(), user());
 			assertEquals(project(), tag.getProject());
@@ -128,9 +128,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTagging() throws Exception {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBContentDao contentDao = tx.contentDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
 			HibProject project = project();
@@ -174,8 +174,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTaggingInBranch() throws Exception {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
 			HibProject project = project();
@@ -232,7 +232,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMigrateTagsForBranch() throws Exception {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
 			HibProject project = project();
@@ -277,7 +277,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		HibTag tag = null;
 
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
 			initialBranch = project.getInitialBranch();
@@ -302,7 +302,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		branchMigrationHandler.migrateBranch(context).blockingAwait();
 
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			// 5. Untag in initial branch
 			tagDao.removeTag(node, tag, initialBranch);
 
@@ -336,9 +336,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
-			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+			OrientDBTagDao tagDao = tx.tagDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			HibTagFamily basicTagFamily = tagFamily("basic");
@@ -395,7 +395,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			HibTag tag = tag("car");
 			HibTag foundTag = tagDao.findByName(tag.getTagFamily(), "Car");
 			assertNotNull(foundTag);
@@ -418,7 +418,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			HibTagFamily tagFamily = tagFamily("basic");
 			HibTag tag = tagDao.create(tagFamily, GERMAN_NAME, project(), user());
 			assertNotNull(tag);
@@ -439,7 +439,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			HibTag tag = tag("red");
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			List<String> languageTags = new ArrayList<>();
@@ -467,7 +467,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			HibTagFamily tagFamily = tagFamily("basic");
 			HibTag tag = tagDao.create(tagFamily, "someTag", project(), user());
 			String uuid = tag.getUuid();
@@ -481,8 +481,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
-			UserDaoWrapper userDao = tx.userDao();
+			OrientDBTagDao tagDao = tx.tagDao();
+			OrientDBUserDao userDao = tx.userDao();
 			HibTagFamily tagFamily = tagFamily("basic");
 			HibTag tag = tagDao.create(tagFamily, "someTag", project(), user());
 			assertTrue(userDao.hasPermission(user(), tagFamily, InternalPermission.READ_PERM));
@@ -511,7 +511,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDelete() throws Exception {
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			HibTag tag = tag("red");
 
 			// Deletion of a tag must remove the tag from the index and update the nodes which reference the tag

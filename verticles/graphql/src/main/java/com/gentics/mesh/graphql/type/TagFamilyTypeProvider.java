@@ -9,8 +9,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.action.TagDAOActions;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.action.TagDAOActions;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -62,7 +62,7 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 			GraphQLContext gc = env.getContext();
 			HibTagFamily tagFamily = env.getSource();
 			PagingParameters pagingInfo = getPagingInfo(env);
-			TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
+			TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 
 			return tagFamilyDao.getTags(tagFamily, gc.getUser(), pagingInfo);
 		}, TAG_PAGE_TYPE_NAME));

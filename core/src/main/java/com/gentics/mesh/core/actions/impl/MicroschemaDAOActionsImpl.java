@@ -9,9 +9,10 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.action.DAOActionContext;
-import com.gentics.mesh.core.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.action.DAOActionContext;
+import com.gentics.mesh.core.data.action.MicroschemaDAOActions;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -33,7 +34,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public HibMicroschema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
+		MicroschemaDao microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByUuid(uuid);
 		} else {
@@ -43,7 +44,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public HibMicroschema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
+		MicroschemaDao microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByName(name);
 		} else {
@@ -52,17 +53,22 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo);
 		// return ac.getProject().getMicroschemaContainerRoot().findAll(ac2, pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibMicroschema> extraFilter) {
-		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo, schema -> {
-			return extraFilter.test(schema);
-		});
+		MicroschemaDao microschemaDao = ctx.tx().microschemaDao();
+		if (microschemaDao instanceof OrientDBMicroschemaDao) {
+			return ((OrientDBMicroschemaDao) microschemaDao).findAll(ctx.ac(), pagingInfo, schema -> {
+				return extraFilter.test(schema);
+			});
+		} else {
+			throw new UnsupportedOperationException("Extra filter is not supported for " + microschemaDao.getClass().getCanonicalName());
+		}
 	}
 
 	@Override

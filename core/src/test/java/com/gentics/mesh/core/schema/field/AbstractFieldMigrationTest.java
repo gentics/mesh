@@ -18,10 +18,11 @@ import org.junit.Before;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
@@ -39,7 +40,6 @@ import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataAsserter;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
@@ -125,7 +125,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void removeSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
 
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
@@ -200,7 +200,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void removeMicroschemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
 
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
@@ -302,7 +302,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void renameSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 		throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
 
 		String oldFieldName = "oldname";
 		String newFieldName = "newname";
@@ -383,7 +383,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void renameMicroschemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 		throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
 		String oldFieldName = "oldname";
 		String newFieldName = "newname";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -492,8 +492,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void changeSchemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
+		OrientDBSchemaDao schemaDao = Tx.get().schemaDao();
 
 		String fieldName = "changedfield";
 		String schemaName = "schema_" + System.currentTimeMillis();
@@ -588,8 +588,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void changeMicroschemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher,
 		FieldSchemaCreator newField, DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
+		OrientDBMicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		String fieldName = "changedfield";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -708,7 +708,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void customSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
@@ -783,7 +783,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void customMicroschemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
 
 		String fieldName = "migratedField";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -885,8 +885,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		OrientDBNodeDao nodeDao = boot().nodeDao();
+		OrientDBSchemaDao schemaDao = Tx.get().schemaDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.handler;
 
-import static com.gentics.mesh.core.action.DAOActionContext.context;
+import static com.gentics.mesh.core.data.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -9,8 +9,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.action.DAOActions;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;

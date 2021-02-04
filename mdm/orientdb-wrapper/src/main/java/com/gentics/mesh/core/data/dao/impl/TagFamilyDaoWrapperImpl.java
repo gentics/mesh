@@ -19,9 +19,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -44,7 +44,7 @@ import com.google.common.base.Predicate;
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 
-public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> implements TagFamilyDaoWrapper {
+public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> implements OrientDBTagFamilyDao {
 
 	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
 
@@ -146,7 +146,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	@Override
 	public TagFamily create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibUser requestUser = ac.getUser();
-		UserDaoWrapper userDao = boot.get().userDao();
+		UserDao userDao = boot.get().userDao();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
 		String name = requestModel.getName();
@@ -185,7 +185,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 
 	@Override
 	public void delete(HibTagFamily tagFamily, BulkActionContext bac) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + tagFamily.getName() + "}");

@@ -3,7 +3,7 @@ package com.gentics.mesh.core.endpoint.tagfamily;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.action.TagFamilyDAOActions;
+import com.gentics.mesh.core.data.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;

@@ -2,9 +2,9 @@
 package com.gentics.mesh.server.cluster.test.task;
 
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -44,7 +44,7 @@ public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 			MeshComponent comp = test.getMesh().internal();
 			RoleCrudHandler crudHandler = comp.roleCrudHandler();
 			MeshAuthUser user = comp.database().tx(tx -> {
-				UserDaoWrapper userDao = tx.userDao();
+				OrientDBUserDao userDao = tx.userDao();
 				return userDao.findMeshAuthUserByUsername("admin");
 			});
 			String roleUuid = UUIDUtil.randomUUID();

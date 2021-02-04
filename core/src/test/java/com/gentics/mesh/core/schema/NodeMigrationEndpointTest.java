@@ -29,14 +29,15 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBJobDao;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -50,7 +51,6 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -126,9 +126,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(adminCall(() -> client().findJobs())).isEmpty();
 
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			DRAFT));
-		assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			PUBLISHED));
 
 		/**
@@ -154,7 +154,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibSchemaVersion versionB;
 		String versionBUuid;
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			OrientDBSchemaDao schemaDao = tx.schemaDao();
 			versionB = schemaDao.findByName("dummy").getLatestVersion();
 			versionBUuid = versionB.getUuid();
 			assertNotEquals(versionUuid, versionBUuid);
@@ -162,9 +162,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertNotNull(assignment2.getJobUuid());
 			assertEquals("The migration should be queued", QUEUED, assignment2.getMigrationStatus());
 			assertTrue("The assignment should be active.", assignment2.isActive());
-			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
+			assertThat(trackingSearchProvider()).hasCreate(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
 				DRAFT)).hasNoDropEvents();
-			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
+			assertThat(trackingSearchProvider()).hasCreate(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
 				PUBLISHED)).hasNoDropEvents();
 			assertThat(adminCall(() -> client().findJobs())).hasInfos(1);
 		}
@@ -186,7 +186,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// The initial index should have been removed
 		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider())
-			.hasDrop(ContentDaoWrapper.composeIndexPattern(projectUuid(), initialBranchUuid(), versionUuid));
+			.hasDrop(OrientDBContentDao.composeIndexPattern(projectUuid(), initialBranchUuid(), versionUuid));
 
 		/**
 		 * 4. Create a node and update the schema again. This node should be migrated. A deleteDocument call must be recorded for the old index. A store event
@@ -206,7 +206,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(
-			ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid, DRAFT),
+			OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid, DRAFT),
 			response.getUuid() + "-en");
 
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
@@ -218,7 +218,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibSchemaVersion versionC;
 		String versionCUuid;
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			OrientDBSchemaDao schemaDao = tx.schemaDao();
 
 			versionC = tx(() -> schemaDao.findByName("dummy").getLatestVersion());
 			versionCUuid = versionC.getUuid();
@@ -233,9 +233,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertFalse("The previous assignment should be inactive.", assignment1.isActive());
 			assertTrue("The previous assignment should be active since it has not yet been migrated.", assignment2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
-			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
+			assertThat(trackingSearchProvider()).hasCreate(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
 				DRAFT)).hasNoDropEvents();
-			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
+			assertThat(trackingSearchProvider()).hasCreate(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
 				PUBLISHED)).hasNoDropEvents();
 			assertThat(adminCall(() -> client().findJobs())).hasInfos(2);
 		}
@@ -246,7 +246,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			OrientDBSchemaDao schemaDao = tx.schemaDao();
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(COMPLETED, edge3.getMigrationStatus());
 			assertFalse("The previous assignment should be inactive.", assignment1.isActive());
@@ -261,13 +261,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// The old index should have been removed
 		assertThat(trackingSearchProvider())
-			.hasDrop(ContentDaoWrapper.composeIndexPattern(projectUuid(), initialBranchUuid(), versionBUuid));
+			.hasDrop(OrientDBContentDao.composeIndexPattern(projectUuid(), initialBranchUuid(), versionBUuid));
 
 		// The node should have been removed from the old index and placed in the new one
-		assertThat(trackingSearchProvider()).hasDelete(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
+		assertThat(trackingSearchProvider()).hasDelete(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
 			DRAFT), response.getUuid() + "-en");
 		assertThat(trackingSearchProvider()).hasStore(
-			ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid, DRAFT),
+			OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid, DRAFT),
 			response.getUuid() + "-en");
 
 	}
@@ -289,14 +289,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), schemaResponse.toReference()));
 
 		try (Tx tx = tx()) {
-			JobDaoWrapper jobDao = tx.jobDao();
+			OrientDBJobDao jobDao = tx.jobDao();
 			// No job should be scheduled since this is the first time we assign the container to the project/branch
 			assertEquals(0, TestUtils.toList(jobDao.findAll()).size());
 		}
 
-		assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			DRAFT));
-		assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			PUBLISHED));
 
 	}
@@ -414,7 +414,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		container = tx(() -> createDummySchemaWithChanges(oldFieldName, newFieldName, false));
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -479,7 +479,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String nodeUuid = contentUuid();
 		// Add some really long string value to the content
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.getString("title").setString(TestUtils.getRandomHash(40_000));
 			container.getString("teaser").setString(TestUtils.getRandomHash(40_000));
@@ -547,7 +547,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode firstNode;
 		String jobAUuid;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 			container = createDummySchemaWithChanges(oldFieldName, newFieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -598,7 +598,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode node;
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 			container = createDummySchemaWithChanges(oldFieldName, fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -622,7 +622,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		doSchemaMigration(versionA, versionB);
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			assertThat(boot().contentDao().getGraphFieldContainer(node, "en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
 			assertThat(contentDao.getGraphFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED))
 				.as("Migrated published")
@@ -727,7 +727,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	public void testMigrationFailureInSetup() throws Exception {
 
 		String jobUuid = tx(tx -> {
-			JobDaoWrapper jobDao = tx.jobDao();
+			OrientDBJobDao jobDao = tx.jobDao();
 			return jobDao.enqueueMicroschemaMigration(user(), initialBranch(), microschemaContainer("vcard").getLatestVersion(),
 				microschemaContainer("vcard").getLatestVersion()).getUuid();
 		});
@@ -750,7 +750,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Run 10 migrations which should all fail
 		for (int i = 0; i < 10; i++) {
 			tx(tx -> {
-				JobDaoWrapper jobDao = tx.jobDao();
+				OrientDBJobDao jobDao = tx.jobDao();
 				HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 				return jobDao.enqueueSchemaMigration(user(), initialBranch(), version, version);
 			});
@@ -831,7 +831,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	private void printVersionInfo(String uuid) {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			System.out.println();
 			HibNode node = boot().nodeDao().findByUuid(project(), uuid);
 			for (GraphFieldContainerEdgeImpl e : toGraph(node).outE("HAS_FIELD_CONTAINER").frameExplicit(GraphFieldContainerEdgeImpl.class)) {
@@ -931,7 +931,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode secondNode;
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			OrientDBMicroschemaDao microschemaDao = tx.microschemaDao();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			HibUser user = user();
@@ -1044,7 +1044,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode secondNode;
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.generateBucketId();
@@ -1182,7 +1182,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode firstNode;
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.generateBucketId();
@@ -1357,7 +1357,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 */
 	private void doSchemaMigration(HibSchemaVersion versionA, HibSchemaVersion versionB) throws Throwable {
 		String jobUuid = tx(tx -> {
-			JobDaoWrapper jobDao = tx.jobDao();
+			OrientDBJobDao jobDao = tx.jobDao();
 			return jobDao.enqueueSchemaMigration(user(), project().getLatestBranch(), versionA, versionB).getUuid();
 		});
 		triggerAndWaitForJob(jobUuid);

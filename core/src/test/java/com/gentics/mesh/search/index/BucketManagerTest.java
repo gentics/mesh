@@ -9,12 +9,12 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.MathUtil;
@@ -120,7 +120,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 	}
 
 	private long createUsers(int nUsers) {
-		UserDaoWrapper userDao = Tx.get().userDao();
+		OrientDBUserDao userDao = Tx.get().userDao();
 
 		// Create extra users
 		for (int i = 0; i < nUsers; i++) {

@@ -19,7 +19,7 @@ import org.assertj.core.api.AbstractAssert;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.Bulkable;
@@ -184,8 +184,8 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 				String projectUuid = project.getUuid();
 				String branchUuid = branch.getUuid();
 				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
-				assertThat(actual).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type),
-						ContentDaoWrapper.composeDocumentId(node.getUuid(), lang));
+				assertThat(actual).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type),
+						ContentDao.composeDocumentId(node.getUuid(), lang));
 			}
 		}
 		return this;

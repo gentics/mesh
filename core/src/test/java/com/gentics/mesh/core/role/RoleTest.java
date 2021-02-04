@@ -20,10 +20,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -32,7 +33,6 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -62,7 +62,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
 			String roleName = "test";
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibRole createdRole = roleDao.create(roleName, user());
 			assertNotNull(createdRole);
 			String uuid = createdRole.getUuid();
@@ -75,8 +75,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testGrantPermission() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibRole role = role();
 			HibNode node = folder("news");
 			roleDao.grantPermissions(role, node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
@@ -102,7 +102,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testIsPermitted() throws Exception {
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.userDao();
+			OrientDBUserDao userDao = tx.userDao();
 			HibUser user = user();
 			int nRuns = 2000;
 			for (int i = 0; i < nRuns; i++) {
@@ -114,7 +114,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testGrantPermissionTwice() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibRole role = role();
 			HibNode node = folder("news");
 
@@ -133,7 +133,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testGetPermissions() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibRole role = role();
 			HibNode node = folder("news");
 			assertEquals(6, roleDao.getPermissions(role, node).size());
@@ -143,7 +143,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testRevokePermission() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibRole role = role();
 			HibNode node = folder("news");
 			roleDao.revokePermissions(role, node, CREATE_PERM);
@@ -160,8 +160,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			UserDaoWrapper userDao = tx.userDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBUserDao userDao = tx.userDao();
 			roleDao.revokePermissions(role(), meshRoot().getGroupRoot(), CREATE_PERM);
 			HibUser user = user();
 			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user, meshRoot().getGroupRoot(), CREATE_PERM));
@@ -176,7 +176,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			long nRolesBefore = root.computeCount();
 
 			final String roleName = "test2";
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			HibRole role = roleDao.create(roleName, user());
 			assertNotNull(role);
 			long nRolesAfter = root.computeCount();
@@ -187,9 +187,9 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testRoleAddCrudPermissions() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
-			UserDaoWrapper userDao = tx.userDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBUserDao userDao = tx.userDao();
 			HibUser requestUser = user();
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			HibNode parentNode = folder("news");
@@ -227,8 +227,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRolesOfGroup() throws InvalidArgumentException {
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 
 			HibRole extraRole = roleDao.create("extraRole", user());
 			groupDao.addRole(group(), extraRole);
@@ -293,7 +293,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			
 			HibRole role = role();
 			RoutingContext rc = mockRoutingContext();
@@ -312,7 +312,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testCreateDelete() throws Exception {
 		String roleName = "test";
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 
 			HibRole role = roleDao.create(roleName, user());
 			String uuid = role.getUuid();
@@ -330,8 +330,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.userDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBUserDao userDao = tx.userDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
@@ -375,7 +375,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid;
 			BulkActionContext context = createBulkContext();
 			try (Tx tx2 = tx()) {
-				RoleDaoWrapper roleDao = tx2.roleDao();
+				OrientDBRoleDao roleDao = tx2.roleDao();
 				HibRole role = role();
 				uuid = role.getUuid();
 				roleDao.delete(role, context);

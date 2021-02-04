@@ -1,8 +1,6 @@
 package com.gentics.mesh.search.verticle.eventhandler.project;
 
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
@@ -14,20 +12,21 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
@@ -73,16 +72,16 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	private Flowable<SearchRequest> updateNodes(MeshElementEventModelImpl model) {
 		return Flowable.defer(() -> helper.getDb()
 				.transactional(tx -> entities.project.getElement(model).stream().flatMap(project -> {
-					BranchDaoWrapper branchDao = tx.branchDao();
-					NodeDaoWrapper nodeDao = tx.nodeDao();
-					List<Branch> branches = (List<Branch>) branchDao.findAll(project).list();
-					return nodeDao.findAll(project).stream().flatMap(node -> Stream.of(DRAFT, PUBLISHED)
+					BranchDao branchDao = tx.branchDao();
+					NodeDao nodeDao = tx.nodeDao();
+					List<HibBranch> branches = (List<HibBranch>) branchDao.findAll(project).list();
+					return nodeDao.findAll(project).stream().flatMap(node -> Stream.of(ContainerType.DRAFT, ContainerType.PUBLISHED)
 							.flatMap(type -> branches.stream().flatMap(branch -> tx.contentDao()
 									.getGraphFieldContainers(node, branch, type).stream()
 									.map(container -> helper.createDocumentRequest(
-											ContentDaoWrapper.composeIndexName(project.getUuid(), branch.getUuid(),
+											ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
 													container.getSchemaContainerVersion().getUuid(), type),
-											ContentDaoWrapper.composeDocumentId(node.getUuid(),
+											ContentDao.composeDocumentId(node.getUuid(),
 													container.getLanguageTag()),
 											((NodeContainerTransformer) entities.nodeContent.getTransformer())
 													.toDocument(container, branch.getUuid(), type),
@@ -99,7 +98,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	private Flowable<SearchRequest> updateTags(MeshElementEventModelImpl model) {
 		return Flowable.defer(() -> helper.getDb()
 				.transactional(tx -> entities.project.getElement(model).stream().flatMap(project -> {
-					TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+					TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 					return tagFamilyDao.findAll(project).stream()
 							.flatMap(family -> Stream.concat(Stream.of(createTagFamilyRequest(project, family)),
 									createTagRequests(family, project)));
@@ -107,7 +106,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	}
 
 	private Stream<CreateDocumentRequest> createTagRequests(HibTagFamily family, HibProject project) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 		return tagDao.findAll(family).stream()
 				.map(tag -> helper.createDocumentRequest(Tag.composeIndexName(project.getUuid()), tag.getUuid(),
 						entities.tag.transform(tag), complianceMode));

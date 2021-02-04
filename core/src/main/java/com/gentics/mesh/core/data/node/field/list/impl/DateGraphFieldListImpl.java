@@ -12,26 +12,27 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.util.CompareUtils;
 
 /**
- * @see DateGraphFieldList
+ * @see HibDateFieldList
  */
-public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl, Long> implements DateGraphFieldList {
+public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<HibDateField, DateFieldListImpl, Long> implements DateGraphFieldList {
 
 	public static FieldTransformer<DateFieldListImpl> DATE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 		parentNode) -> {
-		DateGraphFieldList dateFieldList = container.getDateList(fieldKey);
+		HibDateFieldList dateFieldList = container.getDateList(fieldKey);
 		if (dateFieldList == null) {
 			return null;
 		} else {
@@ -40,15 +41,15 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	};
 
 	public static FieldUpdater DATE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		DateGraphFieldList graphDateFieldList = container.getDateList(fieldKey);
+		HibDateFieldList graphDateFieldList = container.getDateList(fieldKey);
 		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
 		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
-		GraphField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = dateList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -93,24 +94,24 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	}
 
 	@Override
-	public DateGraphField createDate(Long date) {
-		DateGraphField field = createField();
+	public HibDateField createDate(Long date) {
+		HibDateField field = createField();
 		field.setDate(date);
 		return field;
 	}
 
 	@Override
-	protected DateGraphField createField(String key) {
+	protected HibDateField createField(String key) {
 		return new DateGraphFieldImpl(key, this);
 	}
 
 	@Override
-	public DateGraphField getDate(int index) {
+	public HibDateField getDate(int index) {
 		return getField(index);
 	}
 
 	@Override
-	public Class<? extends DateGraphField> getListType() {
+	public Class<? extends HibDateField> getListType() {
 		return DateGraphFieldImpl.class;
 	}
 
@@ -122,7 +123,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	@Override
 	public DateFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		DateFieldListImpl restModel = new DateFieldListImpl();
-		for (DateGraphField item : getList()) {
+		for (HibDateField item : getList()) {
 			restModel.add(toISO8601(item.getDate()));
 		}
 		return restModel;
@@ -130,7 +131,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 
 	@Override
 	public List<Long> getValues() {
-		return getList().stream().map(DateGraphField::getDate).collect(Collectors.toList());
+		return getList().stream().map(HibDateField::getDate).collect(Collectors.toList());
 	}
 
 	@Override
@@ -138,7 +139,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 		if (obj instanceof DateFieldListImpl) {
 			DateFieldListImpl restField = (DateFieldListImpl) obj;
 			List<String> restList = restField.getItems();
-			List<? extends DateGraphField> graphList = getList();
+			List<? extends HibDateField> graphList = getList();
 			List<String> graphStringList = graphList.stream().map(e -> toISO8601(e.getDate())).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList);
 		}

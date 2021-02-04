@@ -16,8 +16,8 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -165,8 +165,8 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 
 	@Override
 	public final String getETag(InternalActionContext ac) {
-		UserDaoWrapper userDao = mesh().boot().userDao();
-		RoleDaoWrapper roleDao = mesh().boot().roleDao();
+		UserDao userDao = mesh().boot().userDao();
+		RoleDao roleDao = mesh().boot().roleDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getUuid());

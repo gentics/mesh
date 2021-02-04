@@ -21,29 +21,30 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jsoup.Jsoup;
 
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -75,7 +76,7 @@ import io.vertx.core.logging.LoggerFactory;
  * generated using this class.
  */
 @Singleton
-public class NodeContainerTransformer extends AbstractTransformer<NodeGraphFieldContainer> {
+public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeContainerTransformer.class);
 
@@ -156,7 +157,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param fields
 	 *            List of schema fields that should be handled
 	 */
-	public void addFields(JsonObject document, String fieldKey, GraphFieldContainer container, List<? extends FieldSchema> fields) {
+	public void addFields(JsonObject document, String fieldKey, HibFieldContainer container, List<? extends FieldSchema> fields) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : fields) {
 			// Check whether the field is needed
@@ -175,7 +176,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 			switch (type) {
 			case STRING:
-				StringGraphField stringField = container.getString(name);
+				HibStringField stringField = container.getString(name);
 				if (stringField != null) {
 					String value = stringField.getString();
 					if (addRaw) {
@@ -185,7 +186,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 				}
 				break;
 			case HTML:
-				HtmlGraphField htmlField = container.getHtml(name);
+				HibHtmlField htmlField = container.getHtml(name);
 				if (htmlField != null) {
 					String value = htmlField.getHTML();
 					if (value != null) {
@@ -200,7 +201,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 				}
 				break;
 			case BINARY:
-				BinaryGraphField binaryField = container.getBinary(name);
+				HibBinaryField binaryField = container.getBinary(name);
 				if (binaryField != null) {
 					JsonObject binaryFieldInfo = new JsonObject();
 					fieldsMap.put(name, binaryFieldInfo);
@@ -254,19 +255,19 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 				}
 				break;
 			case BOOLEAN:
-				BooleanGraphField booleanField = container.getBoolean(name);
+				HibBooleanField booleanField = container.getBoolean(name);
 				if (booleanField != null) {
 					fieldsMap.put(name, booleanField.getBoolean());
 				}
 				break;
 			case DATE:
-				DateGraphField dateField = container.getDate(name);
+				HibDateField dateField = container.getDate(name);
 				if (dateField != null) {
 					fieldsMap.put(name, dateField.getDate());
 				}
 				break;
 			case NUMBER:
-				NumberGraphField numberField = container.getNumber(name);
+				HibNumberField numberField = container.getNumber(name);
 				if (numberField != null) {
 
 					// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
@@ -275,7 +276,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 				}
 				break;
 			case NODE:
-				NodeGraphField nodeField = container.getNode(name);
+				HibNodeField nodeField = container.getNode(name);
 				if (nodeField != null) {
 					fieldsMap.put(name, nodeField.getNode().getUuid());
 				}
@@ -285,30 +286,30 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 					ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 					switch (listFieldSchema.getListType()) {
 					case "node":
-						NodeGraphFieldList graphNodeList = container.getNodeList(fieldSchema.getName());
+						HibNodeFieldList graphNodeList = container.getNodeList(fieldSchema.getName());
 						if (graphNodeList != null) {
 							List<String> nodeItems = new ArrayList<>();
-							for (NodeGraphField listItem : graphNodeList.getList()) {
+							for (HibNodeField listItem : graphNodeList.getList()) {
 								nodeItems.add(listItem.getNode().getUuid());
 							}
 							fieldsMap.put(fieldSchema.getName(), nodeItems);
 						}
 						break;
 					case "date":
-						DateGraphFieldList graphDateList = container.getDateList(fieldSchema.getName());
+						HibDateFieldList graphDateList = container.getDateList(fieldSchema.getName());
 						if (graphDateList != null) {
 							List<Long> dateItems = new ArrayList<>();
-							for (DateGraphField listItem : graphDateList.getList()) {
+							for (HibDateField listItem : graphDateList.getList()) {
 								dateItems.add(listItem.getDate());
 							}
 							fieldsMap.put(fieldSchema.getName(), dateItems);
 						}
 						break;
 					case "number":
-						NumberGraphFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
+						HibNumberFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
 						if (graphNumberList != null) {
 							List<Number> numberItems = new ArrayList<>();
-							for (NumberGraphField listItem : graphNumberList.getList()) {
+							for (HibNumberField listItem : graphNumberList.getList()) {
 								// TODO Number can also be a big decimal. We need to convert those special objects into basic numbers or else ES will not be
 								// able to store them
 								numberItems.add(listItem.getNumber());
@@ -317,22 +318,22 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						}
 						break;
 					case "boolean":
-						BooleanGraphFieldList graphBooleanList = container.getBooleanList(fieldSchema.getName());
+						HibBooleanFieldList graphBooleanList = container.getBooleanList(fieldSchema.getName());
 						if (graphBooleanList != null) {
 							List<String> booleanItems = new ArrayList<>();
-							for (BooleanGraphField listItem : graphBooleanList.getList()) {
+							for (HibBooleanField listItem : graphBooleanList.getList()) {
 								booleanItems.add(String.valueOf(listItem.getBoolean()));
 							}
 							fieldsMap.put(fieldSchema.getName(), booleanItems);
 						}
 						break;
 					case "micronode":
-						MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldSchema.getName());
+						HibMicronodeFieldList micronodeGraphFieldList = container.getMicronodeList(fieldSchema.getName());
 						if (micronodeGraphFieldList != null) {
 							// Add list of micronode objects
 							fieldsMap.put(fieldSchema.getName(), Observable.fromIterable(micronodeGraphFieldList.getList()).map(item -> {
 								JsonObject itemMap = new JsonObject();
-								Micronode micronode = item.getMicronode();
+								HibMicronode micronode = item.getMicronode();
 								HibMicroschemaVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
 								addMicroschema(itemMap, microschameContainerVersion);
 								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
@@ -342,10 +343,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						}
 						break;
 					case "string":
-						StringGraphFieldList graphStringList = container.getStringList(fieldSchema.getName());
+						HibStringFieldList graphStringList = container.getStringList(fieldSchema.getName());
 						if (graphStringList != null) {
 							List<String> stringItems = new ArrayList<>();
-							for (StringGraphField listItem : graphStringList.getList()) {
+							for (HibStringField listItem : graphStringList.getList()) {
 								String value = listItem.getString();
 								if (addRaw) {
 									value = truncateRawFieldValue(value);
@@ -356,10 +357,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						}
 						break;
 					case "html":
-						HtmlGraphFieldList graphHtmlList = container.getHTMLList(fieldSchema.getName());
+						HibHtmlFieldList graphHtmlList = container.getHTMLList(fieldSchema.getName());
 						if (graphHtmlList != null) {
 							List<String> htmlItems = new ArrayList<>();
-							for (HtmlGraphField listItem : graphHtmlList.getList()) {
+							for (HibHtmlField listItem : graphHtmlList.getList()) {
 								String value = listItem.getHTML();
 								if (value != null) {
 									String plainValue = Jsoup.parse(value).text();
@@ -384,9 +385,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 				// fieldsMap.put(name, htmlField.getHTML());
 				break;
 			case MICRONODE:
-				MicronodeGraphField micronodeGraphField = container.getMicronode(fieldSchema.getName());
+				HibMicronodeField micronodeGraphField = container.getMicronode(fieldSchema.getName());
 				if (micronodeGraphField != null) {
-					Micronode micronode = micronodeGraphField.getMicronode();
+					HibMicronode micronode = micronodeGraphField.getMicronode();
 					if (micronode != null) {
 						JsonObject micronodeMap = new JsonObject();
 						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
@@ -452,7 +453,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 */
 	@Override
 	@Deprecated
-	public JsonObject toDocument(NodeGraphFieldContainer object) {
+	public JsonObject toDocument(HibNodeFieldContainer object) {
 		throw new NotImplementedException("Use toDocument(container, branchUuid) instead");
 	}
 
@@ -477,9 +478,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param type
 	 * @return
 	 */
-	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
-		HibNode node = contentDao.getNode(container);
+	public String generateVersion(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		ContentDao contentDao = Tx.get().contentDao();
+		HibNode node = contentDao.getParentNode(container);
 		HibProject project = node.getProject();
 
 		StringBuilder builder = new StringBuilder();
@@ -501,7 +502,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 */
 	@Override
 	@Deprecated
-	public String generateVersion(NodeGraphFieldContainer element) {
+	public String generateVersion(HibNodeFieldContainer element) {
 		throw new NotImplementedException("Use generateVersion(container, branchUuid) instead");
 	}
 
@@ -513,12 +514,12 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param type
 	 * @return
 	 */
-	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+	public JsonObject toDocument(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		TagDao tagDao = Tx.get().tagDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
-		HibNode node = contentDao.getNode(container);
+		HibNode node = contentDao.getParentNode(container);
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
 		addUser(document, "editor", container.getEditor());

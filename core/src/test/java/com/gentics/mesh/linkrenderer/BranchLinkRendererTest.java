@@ -22,7 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;

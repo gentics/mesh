@@ -24,10 +24,10 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -184,7 +184,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				RoleDaoWrapper roleDao = tx.roleDao();
+				OrientDBRoleDao roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});
@@ -202,7 +202,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				RoleDaoWrapper roleDao = tx.roleDao();
+				OrientDBRoleDao roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});

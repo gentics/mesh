@@ -23,14 +23,14 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -118,7 +118,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse response = updateNode(FIELD_NAME, field);
 
 			try (Tx tx = tx()) {
-				ContentDaoWrapper contentDao = tx.contentDao();
+				OrientDBContentDao contentDao = tx.contentDao();
 				MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELD_NAME);
 				assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName);
 
@@ -166,7 +166,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that a null field value request will delete the micronode
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).isNull();
 			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldNumber);
 
@@ -385,7 +385,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			MicronodeGraphField micronodeField = container.createMicronode(FIELD_NAME, microschema);
@@ -415,7 +415,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		MicroschemaVersionModel nodeMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			OrientDBMicroschemaDao microschemaDao = tx.microschemaDao();
 
 			// 1. Create microschema noderef with nodefield
 			nodeMicroschema.setName("noderef");
@@ -463,7 +463,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		MicroschemaVersionModel fullMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			OrientDBMicroschemaDao microschemaDao = tx.microschemaDao();
 
 			// 1. Create microschema that includes all field types
 			fullMicroschema.setName("full");

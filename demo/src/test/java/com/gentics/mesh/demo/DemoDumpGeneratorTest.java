@@ -14,12 +14,12 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -61,12 +61,12 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		db.tx(tx -> {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			UserDaoWrapper userDao = tx.userDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
-			ProjectDaoWrapper projectDao = tx.projectDao();
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
+			OrientDBUserDao userDao = tx.userDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
+			OrientDBProjectDao projectDao = tx.projectDao();
+			OrientDBContentDao contentDao = tx.contentDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
 			assertTrue(nodeDao.computeCount(project) > 0);
@@ -94,8 +94,8 @@ public class DemoDumpGeneratorTest {
 				String branchUuid = node.getProject().getInitialBranch().getUuid();
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
 				ContainerType type = PUBLISHED;
-				String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
-				String documentId = ContentDaoWrapper.composeDocumentId(node.getUuid(), languageTag);
+				String indexName = OrientDBContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
+				String documentId = OrientDBContentDao.composeDocumentId(node.getUuid(), languageTag);
 				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
 						+ "} could not be found within index {" + indexName + "} - {" + documentId + "}";

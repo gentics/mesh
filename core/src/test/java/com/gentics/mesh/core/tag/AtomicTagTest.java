@@ -7,14 +7,14 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -24,8 +24,8 @@ public class AtomicTagTest extends AbstractMeshTest {
 	@Test
 	public void testTagCreation() throws Exception {
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.userDao();
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBUserDao userDao = tx.userDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 
 			HibUser user = userDao.create("test", null);
 			LanguageRoot languageRoot = boot().languageRoot();

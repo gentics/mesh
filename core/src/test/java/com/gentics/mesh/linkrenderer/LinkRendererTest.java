@@ -14,12 +14,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -273,7 +273,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 			String german = german();
 			String english = english();
 			HibNode parentNode = folder("2015");
@@ -298,7 +298,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testBinaryFieldLinkResolving() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			HibNode node = content("news overview");
 			String uuid = node.getUuid();
 

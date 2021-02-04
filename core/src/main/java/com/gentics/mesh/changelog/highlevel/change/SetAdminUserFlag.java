@@ -6,7 +6,7 @@ import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.user.HibUser;
 
 import dagger.Lazy;
@@ -45,7 +45,7 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 	@Override
 	public void apply() {
 		log.info("Applying change: " + getName());
-		GroupDaoWrapper groupDao = boot.get().groupDao();
+		GroupDao groupDao = boot.get().groupDao();
 		for (Role role : boot.get().roleRoot().findAll()) {
 			if (!"admin".equals(role.getName())) {
 				continue;

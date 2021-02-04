@@ -16,10 +16,10 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -172,7 +172,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	public void testTagSync() throws Exception {
 		// Assert insert
 		tx(tx -> {
-			TagDaoWrapper tagDao = tx.tagDao();
+			OrientDBTagDao tagDao = tx.tagDao();
 			for (int i = 0; i < 400; i++) {
 				tagDao.create(tagFamily("colors"), "tag_" + i, project(), user());
 			}
@@ -278,7 +278,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert update
 		tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer draft = contentDao.getGraphFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
 			draft.getString("slug").setString("updated");
 		});
@@ -287,7 +287,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer draft = contentDao.getGraphFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
 			draft.remove();
 		});
@@ -299,7 +299,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	public void testSchemaSync() throws Exception {
 		// Assert insert
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			OrientDBSchemaDao schemaDao = tx.schemaDao();
 			for (int i = 0; i < 400; i++) {
 				SchemaVersionModel model = new SchemaModelImpl();
 				model.setName("schema_" + i);
@@ -320,7 +320,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			OrientDBSchemaDao schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao.findByName("schema_3");
 			schema.getLatestVersion().deleteElement();
 			schema.deleteElement();
@@ -351,7 +351,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			OrientDBMicroschemaDao microschemaDao = tx.microschemaDao();
 			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
 			microschema.getLatestVersion().deleteElement();
 			microschema.deleteElement();

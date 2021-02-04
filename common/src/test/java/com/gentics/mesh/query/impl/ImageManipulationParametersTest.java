@@ -22,6 +22,7 @@ import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.NumberUtils;
+
 import io.vertx.core.MultiMap;
 
 public class ImageManipulationParametersTest {

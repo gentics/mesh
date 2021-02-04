@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.result.Result;
@@ -86,7 +86,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 * @return Found element or null if the element could not be located
 	 */
 	public Job findByUuid(String uuid) {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = db().getVertices(MeshVertexImpl.class, new String[] { "uuid" }, new String[] { uuid });
 		if (it.hasNext()) {

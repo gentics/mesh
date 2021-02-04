@@ -9,10 +9,10 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.action.DAOActionContext;
-import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.action.DAOActionContext;
+import com.gentics.mesh.core.data.action.SchemaDAOActions;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -34,7 +34,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public HibSchema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		SchemaDao schemaDao = ctx.tx().schemaDao();
 		if (perm == null) {
 			return schemaDao.findByUuid(uuid);
 		} else {
@@ -44,7 +44,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public HibSchema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		SchemaDao schemaDao = ctx.tx().schemaDao();
 		if (perm == null) {
 			return schemaDao.findByName(name);
 		} else {
@@ -62,19 +62,19 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	 * @return
 	 */
 	public Page<? extends HibSchema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
-		SchemaDaoWrapper schemaDao = tx.schemaDao();
+		SchemaDao schemaDao = tx.schemaDao();
 		return schemaDao.findAll(ac, project, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		SchemaDao schemaDao = ctx.tx().schemaDao();
 		return schemaDao.findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibSchema> extraFilter) {
-		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		SchemaDao schemaDao = ctx.tx().schemaDao();
 		return schemaDao.findAll(ctx.project(), ctx.ac(), pagingInfo, schema -> {
 			return extraFilter.test(schema);
 		});

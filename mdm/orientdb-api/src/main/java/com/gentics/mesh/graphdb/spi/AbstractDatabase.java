@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.util.ETag;
 
@@ -36,8 +37,9 @@ public abstract class AbstractDatabase implements Database {
 			log.debug("Clearing graph");
 		}
 		tx(tx -> {
-			tx.getGraph().e().removeAll();
-			tx.getGraph().v().removeAll();
+			GraphDBTx gtx = (GraphDBTx) tx;
+			gtx.getGraph().e().removeAll();
+			gtx.getGraph().v().removeAll();
 			tx.success();
 		});
 		if (log.isDebugEnabled()) {

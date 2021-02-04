@@ -14,19 +14,20 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBBinaryDao;
+import com.gentics.mesh.core.data.db.spi.Supplier;
+import com.gentics.mesh.core.data.db.spi.Transactional;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.graphdb.spi.Supplier;
-import com.gentics.mesh.graphdb.spi.Transactional;
 
 import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 @Singleton
-public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implements BinaryDaoWrapper {
+public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implements OrientDBBinaryDao {
 
 	private final Binaries binaries;
 
@@ -67,7 +68,7 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	}
 
 	@Override
-	public Result<BinaryGraphField> findFields(HibBinary binary) {
+	public Result<HibBinaryField> findFields(HibBinary binary) {
 		return toGraph(binary).findFields();
 	}
 

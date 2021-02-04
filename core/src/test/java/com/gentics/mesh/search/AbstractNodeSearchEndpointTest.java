@@ -13,7 +13,7 @@ import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
 
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -80,7 +80,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	}
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
-		ContentDaoWrapper contentDao = boot().contentDao();
+		OrientDBContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
@@ -93,7 +93,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode field to the tested content
 	 */
 	protected void addMicronodeField() {
-		ContentDaoWrapper contentDao = boot().contentDao();
+		OrientDBContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -112,7 +112,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode list field to the tested content
 	 */
 	protected void addMicronodeListField() {
-		ContentDaoWrapper contentDao = boot().contentDao();
+		OrientDBContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 
 		// Update the schema
@@ -139,7 +139,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a node list field to the tested content
 	 */
 	protected void addNodeListField() {
-		ContentDaoWrapper contentDao = boot().contentDao();
+		OrientDBContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 
 		// Update the schema

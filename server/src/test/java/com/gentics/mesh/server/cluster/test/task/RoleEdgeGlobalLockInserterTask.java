@@ -1,7 +1,7 @@
 
 package com.gentics.mesh.server.cluster.test.task;
 
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;

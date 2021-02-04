@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
@@ -185,7 +186,7 @@ public enum GraphFieldTypes {
 	 *            Field schema which will be used to identify the field
 	 * @return
 	 */
-	public GraphField getField(GraphFieldContainer container, FieldSchema fieldSchema) {
+	public HibField getField(GraphFieldContainer container, FieldSchema fieldSchema) {
 		return getter.get(container, fieldSchema);
 	}
 

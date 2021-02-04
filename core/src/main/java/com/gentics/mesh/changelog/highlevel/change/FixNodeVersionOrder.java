@@ -21,7 +21,7 @@ import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -46,6 +46,7 @@ import io.vertx.core.logging.LoggerFactory;
  *
  * This only fixes nodes in projects with single branches, because this is the simplest case to implement.
  */
+// TODO reimplement DB-agnostic way (no Graph)
 @Singleton
 public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	public static final Logger log = LoggerFactory.getLogger(FixNodeVersionOrder.class);
@@ -86,7 +87,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				}
 				boot.get().contentDao().getGraphFieldContainers(node, ContainerType.INITIAL).stream()
 					.forEach(content -> {
-						boolean mutated = fixNodeVersionOrder(context, toGraph(node), content);
+						boolean mutated = fixNodeVersionOrder(context, toGraph(node), (NodeGraphFieldContainer) content);
 						if (mutated) {
 							fixedNodes.incrementAndGet();
 						}
@@ -99,7 +100,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, NodeGraphFieldContainer initialContent) {
-		ContentDaoWrapper contentDao = boot.get().contentDao();
+		OrientDBContentDao contentDao = (OrientDBContentDao) boot.get().contentDao();
 		Set<VersionNumber> seenVersions = new HashSet<>();
 		TreeSet<NodeGraphFieldContainer> versions = new TreeSet<>(Comparator.comparing(NodeGraphFieldContainer::getVersion));
 		NodeGraphFieldContainer highestVersion = null;
@@ -111,10 +112,10 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		String languageTag = initialContent.getLanguageTag();
 
 		EdgeFrame originalDraftEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.DRAFT);
-		Optional<Object> originalDraftId = Optional.ofNullable(contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.DRAFT))
+		Optional<Object> originalDraftId = Optional.ofNullable((NodeGraphFieldContainer) contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.DRAFT))
 			.map(ElementFrame::id);
 		EdgeFrame originalPublishedEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.PUBLISHED);
-		Optional<Object> originalPublishedId = Optional.ofNullable(contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.PUBLISHED))
+		Optional<Object> originalPublishedId = Optional.ofNullable((NodeGraphFieldContainer) contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.PUBLISHED))
 			.map(ElementFrame::id);
 
 		if (log.isDebugEnabled()) {
@@ -123,7 +124,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 
 		while (currentContainer != null) {
 			// Since we only look at single branch projects, there can at most only be one next version.
-			NodeGraphFieldContainer nextContainer = Iterables.getFirst(contentDao.getNextVersions(currentContainer), null);
+			NodeGraphFieldContainer nextContainer = (NodeGraphFieldContainer) Iterables.getFirst(contentDao.getNextVersions(currentContainer), null);
 			VersionNumber currentVersion = currentContainer.getVersion();
 			boolean isDuplicate = !seenVersions.add(currentVersion);
 			if (isDuplicate) {

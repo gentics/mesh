@@ -13,15 +13,15 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -48,8 +48,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	public void testUserGroup() {
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.userDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBUserDao userDao = tx.userDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 
 			HibGroup group = groupDao.create("test group", user());
 			HibUser user = userDao.create("testuser", user());
@@ -69,7 +69,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testFindAllVisible() throws InvalidArgumentException {
 		int groupCount = groups().size();
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends HibGroup> page = groupDao.findAll(ac, new PagingParametersImpl(1, 19L));
@@ -96,7 +96,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			long nGroupsBefore = groupDao.globalCount();
 			assertNotNull(groupDao.create("test group2", user()));
 
@@ -128,7 +128,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 		try (Tx tx = tx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			GroupResponse response = groupDao.transformToRestSync(group(), ac, 0);
 
 			assertNotNull(response);
@@ -141,7 +141,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			HibGroup group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			String uuid = group.getUuid();
@@ -156,8 +156,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
 			MeshRoot root = meshRoot();
-			UserDaoWrapper userDao = tx.userDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBUserDao userDao = tx.userDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			HibUser user = user();
 			InternalActionContext ac = mockActionContext();
 			HibGroup group = groupDao.create("newGroup", user);
@@ -172,7 +172,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			HibGroup group = group();
 			assertEquals("joe1_group", group.getName());
 			assertNotNull(groupDao.getUsers(group));
@@ -185,7 +185,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			HibGroup group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
@@ -196,7 +196,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			OrientDBGroupDao groupDao = tx.groupDao();
 			HibGroup group = groupDao.create("newGroup", user());
 
 			assertNotNull(group);

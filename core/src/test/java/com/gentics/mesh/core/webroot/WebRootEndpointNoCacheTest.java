@@ -10,8 +10,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;

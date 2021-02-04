@@ -26,12 +26,12 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -61,7 +61,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String parentFolderUuid;
 		String subFolderUuid;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			OrientDBNodeDao nodeDao = tx.nodeDao();
 			InternalActionContext ac = mockActionContext("recursive=true");
 			HibNode subFolder = folder("2015");
 			HibNode parentFolder = folder("news");
@@ -155,7 +155,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
@@ -190,8 +190,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED), ContentDaoWrapper.composeDocumentId(nodeUuid, "en"));
+			assertThat(trackingSearchProvider()).hasStore(OrientDBContentDao.composeIndexName(projectUuid(), branchUuid,
+				schemaContainerVersionUuid, PUBLISHED), OrientDBContentDao.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		}
@@ -204,7 +204,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			OrientDBContentDao contentDao = tx.contentDao();
 			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
@@ -244,8 +244,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED), ContentDaoWrapper.composeDocumentId(nodeUuid, "en"));
+			assertThat(trackingSearchProvider()).hasStore(OrientDBContentDao.composeIndexName(projectUuid(), branchUuid,
+				schemaContainerVersionUuid, PUBLISHED), OrientDBContentDao.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		}
@@ -309,7 +309,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testGetPublishStatusNoPermission() {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			tx.success();
 		}
@@ -385,7 +385,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 			tx.success();
 		}
@@ -540,7 +540,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testPublishLanguageNoPermission() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			OrientDBRoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 			tx.success();
 		}

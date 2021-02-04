@@ -7,11 +7,11 @@ import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -35,7 +35,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 	public void testPermissionPerformance() {
 		loggingStopWatch(logger, "user.hasPermission", 100000, (step) -> {
 			try (Tx tx = tx()) {
-				UserDaoWrapper userDao = tx.userDao();
+				OrientDBUserDao userDao = tx.userDao();
 				userDao.hasPermission(user(), content(), InternalPermission.READ_PERM);
 			}
 		});
@@ -47,7 +47,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 		HibNode content = tx(() -> content());
 		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
 			try (Tx tx = tx()) {
-				UserDaoWrapper userDao = tx.userDao();
+				OrientDBUserDao userDao = tx.userDao();
 				userDao.getPermissionInfo(user, content);
 			}
 		});

@@ -8,11 +8,11 @@ import java.util.stream.Stream;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -34,7 +34,7 @@ public interface TestGraphHelper extends TestHelper {
 
 	default HibMicroschema createMicroschema(MicroschemaVersionModel schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		OrientDBMicroschemaDao microschemaDao = Tx.get().microschemaDao();
 		return microschemaDao.create(schema, user(), batch);
 	}
 

@@ -6,8 +6,8 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -32,8 +32,8 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
 	@Override
 	public void addSchemaContainer(HibUser user, HibSchema schema, EventQueueBatch batch) {
-		ProjectDaoWrapper projectDao = Tx.get().projectDao();
-		BranchDaoWrapper branchDao = Tx.get().branchDao();
+		ProjectDao projectDao = Tx.get().projectDao();
+		BranchDao branchDao = Tx.get().branchDao();
 
 		HibProject project = getProject();
 		batch.add(projectDao.onSchemaAssignEvent(project, schema, ASSIGNED));
@@ -47,8 +47,8 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
 	@Override
 	public void removeSchemaContainer(HibSchema schema, EventQueueBatch batch) {
-		ProjectDaoWrapper projectDao = Tx.get().projectDao();
-		BranchDaoWrapper branchDao = Tx.get().branchDao();
+		ProjectDao projectDao = Tx.get().projectDao();
+		BranchDao branchDao = Tx.get().branchDao();
 
 		HibProject project = getProject();
 		batch.add(projectDao.onSchemaAssignEvent(project, schema, UNASSIGNED));

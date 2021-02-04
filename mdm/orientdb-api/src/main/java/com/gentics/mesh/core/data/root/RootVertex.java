@@ -18,13 +18,15 @@ import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -67,8 +69,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission) {
 		HibUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.get().getGraph();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		FramedTransactionalGraph graph = ((GraphDBTx) Tx.get()).getGraph();
+		UserDao userDao = Tx.get().userDao();
 
 		String idx = "e." + getRootLabel().toLowerCase() + "_out";
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
@@ -160,7 +162,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 
 		HibUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {
@@ -179,7 +181,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		// Try to load the element using the index. This way no record load will happen.
 		T t = db().index().findByUuid(getPersistanceClass(), uuid);
 		if (t != null) {
-			FramedGraph graph = Tx.get().getGraph();
+			FramedGraph graph = ((GraphDBTx) Tx.get()).getGraph();
 			// Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db().createComposedIndexKey(t
 				.getId(), id()));
@@ -235,7 +237,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 
 		HibUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 		if (userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {

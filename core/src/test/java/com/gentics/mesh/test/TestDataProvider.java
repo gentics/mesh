@@ -27,18 +27,19 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -50,7 +51,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
@@ -223,7 +223,7 @@ public class TestDataProvider {
 	}
 
 	private void addPermissions(Collection<? extends HibBaseElement> elements) {
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
+		OrientDBRoleDao roleDao = Tx.get().roleDao();
 
 		HibRole role = userInfo.getRole();
 		for (HibBaseElement meshVertex : elements) {
@@ -254,7 +254,7 @@ public class TestDataProvider {
 	}
 
 	private void addContents() {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		OrientDBTagDao tagDao = Tx.get().tagDao();
 
 		HibSchema contentSchema = schemaContainers.get("content");
 
@@ -290,8 +290,8 @@ public class TestDataProvider {
 	}
 
 	private void addFolderStructure() {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		OrientDBTagDao tagDao = Tx.get().tagDao();
+		OrientDBNodeDao nodeDao = Tx.get().nodeDao();
 
 		HibNode baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
@@ -337,9 +337,9 @@ public class TestDataProvider {
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
-		UserDaoWrapper userDao = Tx.get().userDao();
-		GroupDaoWrapper groupDao = Tx.get().groupDao();
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
+		OrientDBUserDao userDao = Tx.get().userDao();
+		OrientDBGroupDao groupDao = Tx.get().groupDao();
+		OrientDBRoleDao roleDao = Tx.get().roleDao();
 
 		String password = "test123";
 		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
@@ -380,11 +380,11 @@ public class TestDataProvider {
 	}
 
 	private void addUserGroupRoleProject() {
-		UserDaoWrapper userDao = Tx.get().userDao();
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
-		GroupDaoWrapper groupDao = Tx.get().groupDao();
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
-		ProjectDaoWrapper projectDao = Tx.get().projectDao();
+		OrientDBUserDao userDao = Tx.get().userDao();
+		OrientDBRoleDao roleDao = Tx.get().roleDao();
+		OrientDBGroupDao groupDao = Tx.get().groupDao();
+		OrientDBSchemaDao schemaDao = Tx.get().schemaDao();
+		OrientDBProjectDao projectDao = Tx.get().projectDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
@@ -430,7 +430,7 @@ public class TestDataProvider {
 	}
 
 	public void addTagFamilies() {
-		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
+		OrientDBTagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 		HibTagFamily basicTagFamily = tagFamilyDao.create(getProject(), "basic", userInfo.getUser());
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
@@ -445,7 +445,7 @@ public class TestDataProvider {
 	}
 
 	private void addBootstrapSchemas() {
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		OrientDBSchemaDao schemaDao = Tx.get().schemaDao();
 
 		// folder
 		HibSchema folderSchemaContainer = schemaDao.findByName("folder");
@@ -477,7 +477,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		OrientDBMicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
@@ -521,7 +521,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		OrientDBMicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
@@ -551,7 +551,7 @@ public class TestDataProvider {
 	}
 
 	public HibNode addFolder(HibNode rootNode, String englishName, String germanName, String uuid) {
-		NodeDaoWrapper nodeDao = boot.nodeDao();
+		OrientDBNodeDao nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
@@ -598,7 +598,7 @@ public class TestDataProvider {
 	}
 
 	public HibTag addTag(String name, HibTagFamily tagFamily) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		OrientDBTagDao tagDao = Tx.get().tagDao();
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}
@@ -613,7 +613,7 @@ public class TestDataProvider {
 
 	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent,
 			String uuid) {
-		NodeDaoWrapper nodeDao = boot.nodeDao();
+		OrientDBNodeDao nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		HibNode node;
@@ -662,7 +662,7 @@ public class TestDataProvider {
 	 * Returns the path to the tag for the given language.
 	 */
 	public String getPathForNews2015Tag(String languageTag) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+		OrientDBContentDao contentDao = boot.contentDao();
 
 		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name")
 				.getString();

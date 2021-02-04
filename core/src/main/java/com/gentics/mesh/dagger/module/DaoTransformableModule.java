@@ -5,18 +5,18 @@ import java.util.Map;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBBranchDao;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
+import com.gentics.mesh.core.data.dao.OrientDBJobDao;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
@@ -43,56 +43,56 @@ public abstract class DaoTransformableModule {
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.ROLE)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> role(RoleDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> role(OrientDBRoleDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.GROUP)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> group(GroupDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> group(OrientDBGroupDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.USER)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> user(UserDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> user(OrientDBUserDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.PROJECT)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> project(ProjectDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> project(OrientDBProjectDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.SCHEMA)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> schema(SchemaDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> schema(OrientDBSchemaDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.MICROSCHEMA)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> microschema(MicroschemaDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> microschema(OrientDBMicroschemaDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.BRANCH)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> branch(BranchDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> branch(OrientDBBranchDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.NODE)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> node(NodeDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> node(OrientDBNodeDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.TAG)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> tag(TagDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> tag(OrientDBTagDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.TAGFAMILY)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> tagFamily(TagFamilyDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> tagFamily(OrientDBTagFamilyDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.JOB)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> job(JobDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> job(OrientDBJobDao dao);
 
 }
