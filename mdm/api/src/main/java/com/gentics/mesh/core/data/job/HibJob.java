@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.data.job;
 
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 
 public interface HibJob extends HibCoreElement {
@@ -19,6 +22,13 @@ public interface HibJob extends HibCoreElement {
 	 * @param ex
 	 */
 	void markAsFailed(Exception ex);
+
+	/**
+	 * Check whether the job has failed.
+	 *
+	 * @return
+	 */
+	boolean hasFailed();
 
 	/**
 	 * Return the detailed error report.
@@ -59,4 +69,23 @@ public interface HibJob extends HibCoreElement {
 	 * Remove the job.
 	 */
 	void remove();
+
+	/**
+	 * Removes the error information from the job and thus it can be processed again.
+	 */
+	void resetJob();
+
+	/**
+	 * Get migration status.
+	 *
+	 * @return
+	 */
+	JobStatus getStatus();
+
+	/**
+	 * Set migration status.
+	 *
+	 * @param status
+	 */
+	void setStatus(JobStatus status);
 }

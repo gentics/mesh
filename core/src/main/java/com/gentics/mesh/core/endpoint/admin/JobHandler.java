@@ -4,14 +4,12 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -62,10 +60,9 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			JobRoot root = boot.jobRoot();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
-			Page<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
+			Page<? extends HibJob> page = boot.jobDao().findAll(ac, pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
@@ -88,11 +85,11 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-				JobRoot root = boot.jobRoot();
-				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				JobDao dao = boot.jobDao();
+				HibJob job = dao.loadObjectByUuidNoPerm(uuid, true);
 				db.tx(() -> {
 					if (job.hasFailed()) {
-						job.delete();
+						dao.delete(job, new DummyBulkActionContext());
 					} else {
 						throw error(BAD_REQUEST, "job_error_invalid_state", uuid);
 					}
@@ -138,12 +135,12 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			JobRoot root = boot.jobRoot();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
+			JobDao dao = boot.jobDao();
+			HibJob job = dao.loadObjectByUuidNoPerm(uuid, true);
 			db.tx(() -> {
 				job.resetJob();
 			});
-			return job.transformToRestSync(ac, 0);
+			return dao.transformToRestSync(job, ac, 0);
 		}, (model) -> ac.send(model, OK));
 	}
 
@@ -160,8 +157,8 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-				JobRoot root = boot.jobRoot();
-				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				JobDao dao = boot.jobDao();
+				HibJob job = dao.loadObjectByUuidNoPerm(uuid, true);
 				db.tx(() -> {
 					JobStatus status = job.getStatus();
 					if (status == FAILED || status == UNKNOWN) {
@@ -169,7 +166,7 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 					}
 				});
 				MeshEvent.triggerJobWorker(boot.mesh());
-				return job.transformToRestSync(ac, 0);
+				return dao.transformToRestSync(job, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}

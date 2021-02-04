@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
@@ -333,7 +335,9 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	@Override
 	public HibBaseElement resolvePathToElement(String pathToElement) {
-		MeshRoot root = mesh().boot().meshRoot();
+		// Can be cast as this is a ODB Context
+		ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
+		MeshRoot root = boot.meshRoot();
 		if (StringUtils.isEmpty(pathToElement)) {
 			throw error(BAD_REQUEST, "Could not resolve path. The path must must not be empty or null.");
 		}

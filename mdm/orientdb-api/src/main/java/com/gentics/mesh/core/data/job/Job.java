@@ -181,18 +181,6 @@ public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex,
 	void setErrorDetail(String info);
 
 	/**
-	 * Removes the error information from the job and thus it can be processed again.
-	 */
-	void resetJob();
-
-	/**
-	 * Check whether the job has failed.
-	 * 
-	 * @return
-	 */
-	boolean hasFailed();
-
-	/**
 	 * Return the start date of the job.
 	 * 
 	 * @return
@@ -268,20 +256,6 @@ public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex,
 	 * @param count
 	 */
 	void setCompletionCount(long count);
-
-	/**
-	 * Get migration status.
-	 * 
-	 * @return
-	 */
-	JobStatus getStatus();
-
-	/**
-	 * Set migration status.
-	 * 
-	 * @param status
-	 */
-	void setStatus(JobStatus status);
 
 	/**
 	 * Return the name of the node on which the job is being executed.

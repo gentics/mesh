@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.gentics.mesh.core.data.dao.impl.*;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,13 +35,7 @@ import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
 import com.gentics.mesh.core.data.dao.OrientDBTagDao;
 import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
 import com.gentics.mesh.core.data.dao.OrientDBUserDao;
-import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.ODBRoleDaoWrapperImpl;
 import com.gentics.mesh.core.data.db.TxData;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -157,13 +152,13 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		try {
 			Tx tx = mockTx();
-			OrientDBNodeDao nodeDao = mock(NodeDaoWrapperImpl.class);
+			OrientDBNodeDao nodeDao = mock(ODBNodeDaoWrapperImpl.class);
 			OrientDBContentDao contentDao = mock(ContentDaoWrapperImpl.class);
-			OrientDBUserDao userDao = mock(UserDaoWrapperImpl.class);
-			OrientDBRoleDao roleDao = mock(RoleDaoWrapperImpl.class);
-			OrientDBGroupDao groupDao = mock(GroupDaoWrapperImpl.class);
-			OrientDBTagDao tagDao = mock(TagDaoWrapperImpl.class);
-			OrientDBTagFamilyDao tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
+			OrientDBUserDao userDao = mock(ODBUserDaoWrapperImpl.class);
+			OrientDBRoleDao roleDao = mock(ODBRoleDaoWrapperImpl.class);
+			OrientDBGroupDao groupDao = mock(ODBGroupDaoWrapperImpl.class);
+			OrientDBTagDao tagDao = mock(ODBTagDaoWrapperImpl.class);
+			OrientDBTagFamilyDao tagFamilyDao = mock(ODBTagFamilyDaoWrapperImpl.class);
 
 			when(tx.nodeDao()).thenReturn(nodeDao);
 			when(tx.contentDao()).thenReturn(contentDao);

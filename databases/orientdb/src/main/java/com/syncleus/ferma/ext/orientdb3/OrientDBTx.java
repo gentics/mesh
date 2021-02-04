@@ -1,59 +1,15 @@
 package com.syncleus.ferma.ext.orientdb3;
 
-import static com.gentics.mesh.core.graph.GraphAttribute.MESH_COMPONENT;
-import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
-
-import java.util.function.Function;
-
-import javax.inject.Inject;
-
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.context.ContextDataRegistry;
-import com.gentics.mesh.core.data.action.BranchDAOActions;
-import com.gentics.mesh.core.data.action.GroupDAOActions;
-import com.gentics.mesh.core.data.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.data.action.ProjectDAOActions;
-import com.gentics.mesh.core.data.action.RoleDAOActions;
-import com.gentics.mesh.core.data.action.SchemaDAOActions;
-import com.gentics.mesh.core.data.action.TagDAOActions;
-import com.gentics.mesh.core.data.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.data.action.UserDAOActions;
+import com.gentics.mesh.core.data.action.*;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.OrientDBBinaryDao;
-import com.gentics.mesh.core.data.dao.OrientDBBranchDao;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
-import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
-import com.gentics.mesh.core.data.dao.OrientDBJobDao;
-import com.gentics.mesh.core.data.dao.OrientDBLanguageDao;
-import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
-import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
-import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
-import com.gentics.mesh.core.data.dao.OrientDBTagDao;
-import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
-import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.dao.*;
 import com.gentics.mesh.core.data.db.TxData;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.AbstractTx;
@@ -72,14 +28,19 @@ import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import javax.inject.Inject;
+import java.util.function.Function;
+
+import static com.gentics.mesh.core.graph.GraphAttribute.MESH_COMPONENT;
+import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
+
 /**
  * Implementation of an OrientDB transaction.
- * 
+ * <p>
  * This implementation cares care of various aspects including:
  * <ul>
  * <li>Handling of nested/wrapped transactions</li>
@@ -100,7 +61,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private final TypeResolver typeResolver;
 
 	private final Database db;
-	private final BootstrapInitializer boot;
+	private final ODBBootstrapInitializer boot;
 	private final TxData txData;
 	private final ContextDataRegistry contextDataRegistry;
 	private final DaoCollection daos;
@@ -109,9 +70,10 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private Timer commitTimer;
 
 	@Inject
-	public OrientDBTx(OrientDBMeshOptions options, Database db, BootstrapInitializer boot, DaoCollection daos, OrientStorage provider,
+	public OrientDBTx(OrientDBMeshOptions options, Database db, ODBBootstrapInitializer boot, DaoCollection daos, OrientStorage provider,
 		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry,
-		Binaries binaries) {
+		Binaries binaries
+	) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;

@@ -1,11 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
-import java.util.function.Predicate;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.TagFamily;
@@ -22,8 +17,11 @@ import com.gentics.mesh.core.endpoint.PathParameters;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-
 import dagger.Lazy;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.function.Predicate;
 
 /**
  * @see TagDAOActions
@@ -31,10 +29,10 @@ import dagger.Lazy;
 @Singleton
 public class TagDAOActionsImpl implements TagDAOActions {
 
-	private Lazy<BootstrapInitializer> boot;
+	private Lazy<ODBBootstrapInitializer> boot;
 
 	@Inject
-	public TagDAOActionsImpl(Lazy<BootstrapInitializer> boot) {
+	public TagDAOActionsImpl(Lazy<ODBBootstrapInitializer> boot) {
 		this.boot = boot;
 	}
 

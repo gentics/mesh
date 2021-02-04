@@ -13,13 +13,13 @@ import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractODBDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -49,13 +49,13 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
-public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema> implements OrientDBMicroschemaDao {
+public class ODBMicroschemaDaoWrapperImpl extends AbstractODBDaoWrapper<HibMicroschema> implements OrientDBMicroschemaDao {
 
 	private final MicroschemaComparator comparator;
 
 	@Inject
-	public MicroschemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
-		MicroschemaComparator comparator) {
+	public ODBMicroschemaDaoWrapperImpl(Lazy<ODBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
+										MicroschemaComparator comparator) {
 		super(boot, permissions);
 		this.comparator = comparator;
 	}

@@ -113,8 +113,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
-			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
-			for (Project project : projectRoot.findAll()) {
+			for (HibProject project : boot.projectDao().findAll()) {
 				IndexInfo info = getIndex(project.getUuid());
 				indexInfo.put(info.getIndexName(), info);
 			}
@@ -135,7 +134,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
 		return Flowable.defer(() -> db.tx(() -> {
-			return boot.meshRoot().getProjectRoot().findAll().stream()
+			return boot.projectDao().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
 					return diffAndSync(Tag.composeIndexName(uuid), uuid);
@@ -172,7 +171,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 
 	@Override
 	public Function<String, HibTag> elementLoader() {
-		return uuid -> boot.meshRoot().getTagRoot().findByUuid(uuid);
+		return uuid -> boot.tagDao().findByUuidGlobal(uuid);
 	}
 
 	@Override

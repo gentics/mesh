@@ -107,7 +107,7 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 
 	@Override
 	public Function<String, HibRole> elementLoader() {
-		return (uuid) -> boot.meshRoot().getRoleRoot().findByUuid(uuid);
+		return (uuid) -> boot.roleDao().findByUuid(uuid);
 	}
 
 	@Override

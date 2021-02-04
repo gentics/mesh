@@ -1,17 +1,11 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractODBDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBLanguageDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -19,14 +13,18 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-
 import dagger.Lazy;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
 @Singleton
-public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> implements OrientDBLanguageDao {
+public class ODBLanguageDaoWrapperImpl extends AbstractODBDaoWrapper<HibLanguage> implements OrientDBLanguageDao {
 
 	@Inject
-	public LanguageDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
+	public ODBLanguageDaoWrapperImpl(Lazy<ODBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 

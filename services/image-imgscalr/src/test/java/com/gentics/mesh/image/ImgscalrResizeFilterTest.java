@@ -8,13 +8,13 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.gentics.mesh.core.data.dao.impl.ODBBinaryDaoWrapperImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.ResampleFilter;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -40,7 +40,7 @@ public class ImgscalrResizeFilterTest extends AbstractImageTest {
 
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
 		BootstrapInitializer boot = mock(BootstrapInitializer.class);
-		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null, null));
+		when(boot.binaryDao()).thenReturn(new ODBBinaryDaoWrapperImpl(null, null, null));
 		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, boot);
 	}
 

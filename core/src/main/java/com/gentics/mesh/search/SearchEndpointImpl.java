@@ -110,11 +110,11 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerHandler("users", (uuid) -> boot.get().meshRoot().getUserRoot().findByUuid(uuid), UserListResponse.class, userSearchHandler,
+		registerHandler("users", (uuid) -> boot.get().userDao().findByUuid(uuid), UserListResponse.class, userSearchHandler,
 			userExamples.getUserListResponse(), false);
-		registerHandler("groups", (uuid) -> boot.get().meshRoot().getGroupRoot().findByUuid(uuid), GroupListResponse.class, groupSearchHandler,
+		registerHandler("groups", (uuid) -> boot.get().groupDao().findByUuid(uuid), GroupListResponse.class, groupSearchHandler,
 			groupExamples.getGroupListResponse(), false);
-		registerHandler("roles", (uuid) -> boot.get().meshRoot().getRoleRoot().findByUuid(uuid), RoleListResponse.class, roleSearchHandler,
+		registerHandler("roles", (uuid) -> boot.get().roleDao().findByUuid(uuid), RoleListResponse.class, roleSearchHandler,
 			roleExamples.getRoleListResponse(), false);
 
 		registerHandler("nodes", (uuid) -> {
@@ -122,20 +122,20 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 			return node;
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
-		registerHandler("tags", (uuid) -> boot.get().meshRoot().getTagRoot().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
+		registerHandler("tags", (uuid) -> boot.get().tagDao().findByUuidGlobal(uuid), TagListResponse.class, tagSearchHandler, tagExamples
 			.createTagListResponse(), false);
-		registerHandler("tagFamilies", (uuid) -> boot.get().meshRoot().getTagFamilyRoot().findByUuid(uuid), TagFamilyListResponse.class,
+		registerHandler("tagFamilies", (uuid) -> boot.get().tagFamilyDao().findByUuid(uuid), TagFamilyListResponse.class,
 			tagFamilySearchHandler,
 			tagFamilyExamples.getTagFamilyListResponse(), false);
 
-		registerHandler("projects", (uuid) -> boot.get().meshRoot().getProjectRoot().findByUuid(uuid), ProjectListResponse.class,
+		registerHandler("projects", (uuid) -> boot.get().projectDao().findByUuid(uuid), ProjectListResponse.class,
 			projectSearchHandler, projectExamples
 				.getProjectListResponse(),
 			false);
-		registerHandler("schemas", (uuid) -> boot.get().meshRoot().getSchemaContainerRoot().findByUuid(uuid), SchemaListResponse.class,
+		registerHandler("schemas", (uuid) -> boot.get().schemaDao().findByUuid(uuid), SchemaListResponse.class,
 			schemaContainerSearchHandler,
 			schemaExamples.getSchemaListResponse(), false);
-		registerHandler("microschemas", (uuid) -> boot.get().meshRoot().getMicroschemaContainerRoot().findByUuid(uuid), MicroschemaListResponse.class,
+		registerHandler("microschemas", (uuid) -> boot.get().microschemaDao().findByUuid(uuid), MicroschemaListResponse.class,
 			microschemaContainerSearchHandler, microschemaExamples.getMicroschemaListResponse(), false);
 		addAdminHandlers();
 	}

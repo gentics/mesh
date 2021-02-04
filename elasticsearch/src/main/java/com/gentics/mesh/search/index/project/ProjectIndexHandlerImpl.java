@@ -103,7 +103,7 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 
 	@Override
 	public Function<String, HibProject> elementLoader() {
-		return (uuid) -> boot.meshRoot().getProjectRoot().findByUuid(uuid);
+		return (uuid) -> boot.projectDao().findByUuid(uuid);
 	}
 
 	@Override

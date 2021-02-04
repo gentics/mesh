@@ -14,6 +14,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.action.UserDAOActions;
@@ -43,12 +44,12 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 	private static final Logger log = LoggerFactory.getLogger(UserCrudHandler.class);
 
-	private BootstrapInitializer boot;
+	private ODBBootstrapInitializer boot;
 
 	private MeshJWTAuthProvider authProvider;
 
 	@Inject
-	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock, UserDAOActions userActions) {
+	public UserCrudHandler(Database db, ODBBootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock, UserDAOActions userActions) {
 		super(db, utils, writeLock, userActions);
 		this.boot = boot;
 		this.authProvider = authProvider;

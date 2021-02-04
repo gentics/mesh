@@ -1,42 +1,41 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
-import java.util.Set;
-import java.util.function.Predicate;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractODBDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBJobDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-
 import dagger.Lazy;
 import io.reactivex.Completable;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.time.ZonedDateTime;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+
 @Singleton
-public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements OrientDBJobDao {
+public class ODBJobDaoWrapperImpl extends AbstractODBDaoWrapper<HibJob> implements OrientDBJobDao {
 
 	@Inject
-	public JobDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
+	public ODBJobDaoWrapperImpl(Lazy<ODBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
@@ -96,6 +95,16 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Ori
 	@Override
 	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch) {
 		return boot.get().jobRoot().enqueueBranchMigration(creator, branch);
+	}
+
+	@Override
+	public HibJob enqueueVersionPurge(HibUser creator, HibProject project, ZonedDateTime before) {
+		return boot.get().jobRoot().enqueueVersionPurge(creator, project, before);
+	}
+
+	@Override
+	public HibJob enqueueVersionPurge(HibUser creator, HibProject project) {
+		return boot.get().jobRoot().enqueueVersionPurge(creator, project);
 	}
 
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,

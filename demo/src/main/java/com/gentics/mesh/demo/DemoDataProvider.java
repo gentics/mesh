@@ -14,6 +14,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 
@@ -87,10 +88,10 @@ public class DemoDataProvider {
 	private Map<String, RoleResponse> roles = new HashMap<>();
 	private Map<String, GroupResponse> groups = new HashMap<>();
 
-	private BootstrapInitializer boot;
+	private ODBBootstrapInitializer boot;
 
 	@Inject
-	public DemoDataProvider(Database database, MeshLocalClient client, BootstrapInitializer boot) {
+	public DemoDataProvider(Database database, MeshLocalClient client, ODBBootstrapInitializer boot) {
 		this.db = database;
 		this.client = client;
 		this.boot = boot;

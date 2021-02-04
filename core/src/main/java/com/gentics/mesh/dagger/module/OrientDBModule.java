@@ -24,20 +24,8 @@ import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
 import com.gentics.mesh.core.data.dao.OrientDBTagDao;
 import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
 import com.gentics.mesh.core.data.dao.OrientDBUserDao;
-import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.*;
+import com.gentics.mesh.core.data.dao.impl.ODBBinaryDaoWrapperImpl;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
@@ -97,46 +85,46 @@ public abstract class OrientDBModule {
 	abstract DaoCollection daoCollection(OrientDBDaoCollection daoCollection);
 
 	@Binds
-	abstract OrientDBUserDao bindUserDao(UserDaoWrapperImpl e);
+	abstract OrientDBUserDao bindUserDao(ODBUserDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBRoleDao bindRoleDao(RoleDaoWrapperImpl e);
+	abstract OrientDBRoleDao bindRoleDao(ODBRoleDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBGroupDao bindGroupDao(GroupDaoWrapperImpl e);
+	abstract OrientDBGroupDao bindGroupDao(ODBGroupDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBProjectDao bindProjectDao(ProjectDaoWrapperImpl e);
+	abstract OrientDBProjectDao bindProjectDao(ODBProjectDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBNodeDao bindNodeDao(NodeDaoWrapperImpl e);
+	abstract OrientDBNodeDao bindNodeDao(ODBNodeDaoWrapperImpl e);
 
 	@Binds
 	abstract OrientDBContentDao bindContentDao(ContentDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBJobDao bindJobDao(JobDaoWrapperImpl e);
+	abstract OrientDBJobDao bindJobDao(ODBJobDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBTagDao bindTagDao(TagDaoWrapperImpl e);
+	abstract OrientDBTagDao bindTagDao(ODBTagDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBTagFamilyDao bindTagFamilyDao(TagFamilyDaoWrapperImpl e);
+	abstract OrientDBTagFamilyDao bindTagFamilyDao(ODBTagFamilyDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBBinaryDao bindBinaryDao(BinaryDaoWrapperImpl e);
+	abstract OrientDBBinaryDao bindBinaryDao(ODBBinaryDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBBranchDao bindBranchDao(BranchDaoWrapperImpl e);
+	abstract OrientDBBranchDao bindBranchDao(ODBBranchDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBSchemaDao bindSchemaDao(SchemaDaoWrapperImpl e);
+	abstract OrientDBSchemaDao bindSchemaDao(ODBSchemaDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBMicroschemaDao bindMicroschemaDao(MicroschemaDaoWrapperImpl e);
+	abstract OrientDBMicroschemaDao bindMicroschemaDao(ODBMicroschemaDaoWrapperImpl e);
 
 	@Binds
-	abstract OrientDBLanguageDao bindLanguageDao(LanguageDaoWrapperImpl e);
+	abstract OrientDBLanguageDao bindLanguageDao(ODBLanguageDaoWrapperImpl e);
 
 	// END
 

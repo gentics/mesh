@@ -1,38 +1,34 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
-import java.io.InputStream;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang3.NotImplementedException;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractODBDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBBinaryDao;
 import com.gentics.mesh.core.data.db.spi.Supplier;
 import com.gentics.mesh.core.data.db.spi.Transactional;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.result.Result;
-
 import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
+import org.apache.commons.lang3.NotImplementedException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.InputStream;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 @Singleton
-public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implements OrientDBBinaryDao {
+public class ODBBinaryDaoWrapperImpl extends AbstractODBDaoWrapper<HibBinary> implements OrientDBBinaryDao {
 
 	private final Binaries binaries;
 
 	@Inject
-	public BinaryDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Binaries binaries) {
+	public ODBBinaryDaoWrapperImpl(Lazy<ODBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Binaries binaries) {
 		super(boot, permissions);
 		this.binaries = binaries;
 	}

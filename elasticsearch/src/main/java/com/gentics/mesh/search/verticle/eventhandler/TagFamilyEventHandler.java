@@ -101,8 +101,8 @@ public class TagFamilyEventHandler implements EventHandler {
 	 */
 	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, HibTagFamily tagFamily) {
 		TagDao tagDao = helper.getBoot().tagDao();
-		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
-			.flatMap(project -> project.getBranchRoot().findAll().stream()
+		return findElementByUuidStream(helper.getBoot().projectDao(), model.getProject().getUuid())
+			.flatMap(project -> helper.getBoot().branchDao().findAll(project).stream()
 				.flatMap(branch -> {
 					return tagDao.findAll(tagFamily).stream()
 						.flatMap(tag -> tagDao.getNodes(tag, branch).stream())

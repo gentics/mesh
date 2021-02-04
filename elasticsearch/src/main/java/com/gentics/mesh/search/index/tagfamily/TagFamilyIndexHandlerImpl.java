@@ -1,24 +1,10 @@
 package com.gentics.mesh.search.index.tagfamily;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -32,10 +18,16 @@ import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
-
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @see TagFamilyIndexHandler
@@ -107,9 +99,8 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
-			ProjectRoot root = boot.meshRoot().getProjectRoot();
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
-			for (Project project : root.findAll()) {
+			for (HibProject project : boot.projectDao().findAll()) {
 				String indexName = TagFamily.composeIndexName(project.getUuid());
 				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tagFamily");
 				indexInfo.put(indexName, info);
@@ -121,7 +112,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
 		return Flowable.defer(() -> db.tx(() -> {
-			return boot.meshRoot().getProjectRoot().findAll().stream()
+			return boot.projectDao().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
 					String indexName = TagFamily.composeIndexName(uuid);
@@ -160,7 +151,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 
 	@Override
 	public Function<String, HibTagFamily> elementLoader() {
-		return uuid -> boot.meshRoot().getTagFamilyRoot().findByUuid(uuid);
+		return uuid -> boot.tagFamilyDao().findByUuid(uuid);
 	}
 
 	@Override

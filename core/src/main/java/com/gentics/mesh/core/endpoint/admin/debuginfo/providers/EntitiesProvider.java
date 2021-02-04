@@ -1,14 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -18,8 +10,14 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-
 import io.reactivex.Flowable;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 /**
  * Debug info provider for entity information (jobs, schemas, microschemas, projects, branches)
@@ -27,11 +25,11 @@ import io.reactivex.Flowable;
 @Singleton
 public class EntitiesProvider implements DebugInfoProvider {
 
-	private final BootstrapInitializer boot;
+	private final ODBBootstrapInitializer boot;
 	private final Database db;
 
 	@Inject
-	public EntitiesProvider(BootstrapInitializer boot, Database db) {
+	public EntitiesProvider(ODBBootstrapInitializer boot, Database db) {
 		this.boot = boot;
 		this.db = db;
 	}

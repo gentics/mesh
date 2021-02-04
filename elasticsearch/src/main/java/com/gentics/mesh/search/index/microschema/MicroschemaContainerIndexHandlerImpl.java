@@ -103,7 +103,7 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Function<String, HibMicroschema> elementLoader() {
-		return (uuid) -> boot.meshRoot().getMicroschemaContainerRoot().findByUuid(uuid);
+		return (uuid) -> boot.microschemaDao().findByUuid(uuid);
 	}
 
 	@Override
