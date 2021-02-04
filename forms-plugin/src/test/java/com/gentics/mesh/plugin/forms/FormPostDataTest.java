@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 import javax.mail.BodyPart;
@@ -17,6 +19,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -38,12 +44,38 @@ import okhttp3.Response;
 /**
  * Test cases for posting data to a form
  */
+@RunWith(value = Parameterized.class)
 public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
+	@Parameters(name = "{index}: language {0}")
+	public static Collection<Object[]> data() {
+		Collection<Object[]> data = new ArrayList<>();
+		for (String language : Arrays.asList("en", "it")) {
+			data.add(new Object[] { language });
+		}
+		return data;
+	}
+
+	@Parameter(0)
+	public String language;
+
+	/**
+	 * Name of the file containing the definition of the form with a single input field (in the tested language)
+	 */
+	protected String inputFieldForm;
+
+	/**
+	 * Name of the file containing the definition of a form with an inactive element (in the tested language)
+	 */
+	protected String inactiveForm;
+
 	@Before
 	public void setup() {
 		super.setup();
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
+		setLanguages(PROJECT_NAME, Arrays.asList("en", "it"));
+		inputFieldForm = "inputfield_languages_" + language + ".json";
+		inactiveForm = "inactive_" + language + ".json";
 	}
 
 	/**
@@ -67,7 +99,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	private void runCaseForValue(String value) throws GenericRestException, IOException {
-		String uuid = createForm("inputfield.json");
+		String uuid = createForm(inputFieldForm);
 
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
@@ -104,7 +136,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testPostDataIncomplete() throws IOException {
-		String uuid = createForm("inputfield.json");
+		String uuid = createForm(inputFieldForm);
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
@@ -134,7 +166,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testPostDataIncompleteInactive() throws IOException {
-		String uuid = createForm("inactive.json");
+		String uuid = createForm(inactiveForm);
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
@@ -160,7 +192,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testPostDataInactive() throws IOException {
-		String uuid = createForm("inactive.json");
+		String uuid = createForm(inactiveForm);
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
@@ -262,7 +294,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testUpdatePostedData() throws IOException {
-		String uuid = createForm("inputfield.json");
+		String uuid = createForm(inputFieldForm);
 
 		RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
@@ -299,7 +331,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testLoadFormData() throws IOException {
-		String uuid = createForm("inputfield.json");
+		String uuid = createForm(inputFieldForm);
 
 		for (String value : Arrays.asList("one", "two", "three")) {
 			RequestBody requestBody = new MultipartBody.Builder()
@@ -355,7 +387,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 
 	@Test
 	public void testPostDataWithoutPublish() throws Exception {
-		String uuid = createForm("inputfield.json");
+		String uuid = createForm(inputFieldForm);
 
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)

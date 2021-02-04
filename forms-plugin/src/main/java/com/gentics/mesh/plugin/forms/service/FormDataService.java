@@ -116,7 +116,7 @@ public class FormDataService {
 	 * @return single of the post data response
 	 */
 	public Single<PostDataResponse> create(FormDataSaveContext ctx) {
-		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true)
+		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true)
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
@@ -132,7 +132,7 @@ public class FormDataService {
 	 */
 	public Single<PostDataResponse> update(FormDataSaveContext ctx) {
 		return Single.zip(
-			formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true),
+			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true),
 			load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
 			(formNode, formDataNode) -> formService.toForm(formNode)
 			.flatMap(form -> {

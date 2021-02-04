@@ -1,5 +1,6 @@
 {
 	"name": "Form with Inactive Textfield",
+	"language": "it",
 	"elements": [
 		{
 			"type": "input",
