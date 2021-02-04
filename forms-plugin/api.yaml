@@ -41,6 +41,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivationStatus'
+  /{project}/plugins/forms/languages:
+    parameters:
+      - $ref: '#/components/parameters/project'
+    get:
+      summary: Get the current languages
+      tags:
+        - Languages
+      responses:
+        "200":
+          description: Current languages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Languages'
+    put:
+      summary: Set the current languages
+      tags:
+        - Languages
+      responses:
+        "200":
+          description: Languages have been set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Languages'
   /{project}/plugins/forms/forms:
     parameters:
       - $ref: '#/components/parameters/project'
@@ -88,6 +113,32 @@ paths:
       responses:
         "204":
           description: The form was deleted successfully
+  /{project}/plugins/forms/forms/{formUuid}/online/{language}:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+      - $ref: '#/components/parameters/language'
+    get:
+      summary: Get the online status of a form
+      tags:
+        - Forms
+      responses:
+        "200":
+          $ref: '#/components/responses/FormOnlineResponse'
+    put:
+      summary: Set a form online
+      tags:
+        - Forms
+      responses:
+        "200":
+          $ref: '#/components/responses/FormOnlineResponse'
+    delete:
+      summary: Set a form offline
+      tags:
+        - Forms
+      responses:
+        "200":
+          $ref: '#/components/responses/FormOnlineResponse'
   /{project}/plugins/forms/forms/{formUuid}/preview:
     parameters:
       - $ref: '#/components/parameters/project'
@@ -332,6 +383,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/FormResponse'
+    FormOnlineResponse:
+      description: Online status of the form
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FormOnlineResponse'
   requestBodies:
     FormCreateRequest:
       content:
@@ -364,6 +421,14 @@ components:
       name: formUuid
       schema:
         $ref: '#/components/schemas/uuid'
+    language:
+      in: path
+      required: true
+      description: The form language
+      example: "de"
+      name: language
+      schema:
+        type: string
     formDataUuid:
       in: path
       required: true
@@ -394,6 +459,15 @@ components:
       properties:
         active:
           type: boolean
+          example: true
+    Languages:
+      type: object
+      properties:
+        languages:
+          type: array
+          example: ["de", "en"]
+          items:
+            type: string
     Form:
       type: object
       properties:
@@ -409,6 +483,12 @@ components:
             uuid:
               $ref: '#/components/schemas/uuid'
         - $ref: '#/components/schemas/Form'
+    FormOnlineResponse:
+      type: object
+      properties:
+        online:
+          type: boolean
+          example: true
     FormPage:
       allOf:
         - $ref: '#/components/schemas/PageProperties'
