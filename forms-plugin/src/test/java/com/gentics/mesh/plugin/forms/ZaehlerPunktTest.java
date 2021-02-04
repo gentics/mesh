@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -71,12 +72,13 @@ public class ZaehlerPunktTest extends AbstractFormsPluginIntegrationTest {
 		super.setup();
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-	}
 
-	@Before
-	public void setUpForm() throws Exception {
-		Response createResponse = createForm(formJson);
-		formNode = JsonUtil.readValue(createResponse.body().string(), NodeResponse.class);
+		try {
+			String uuid = createForm(formJson);
+			formNode = server.client().findNodeByUuid(PROJECT_NAME, uuid).blockingGet();
+		} catch (IOException e) {
+			fail("Setup of form failed", e);
+		}
 	}
 
 	@Test

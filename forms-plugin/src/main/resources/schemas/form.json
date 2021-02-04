@@ -16,16 +16,16 @@
 			"required": false
 		},
 		{
-			"name": "pageId",
+			"name": "cms_id",
 			"label": "",
 			"type": "number",
 			"required": false
 		},
 		{
-			"name": "cms_id",
+			"name": "online",
 			"label": "",
-			"type": "number",
-			"required": false
+			"type": "boolean",
+			"required": true
 		}
 	]
 }

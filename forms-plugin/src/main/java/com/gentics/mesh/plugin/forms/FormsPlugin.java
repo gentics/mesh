@@ -16,8 +16,8 @@ import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
-import com.gentics.mesh.plugin.forms.dagger.DaggerFormsPluginComponent;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.dagger.DaggerFormsPluginComponent;
 import com.gentics.mesh.plugin.forms.dagger.FormsPluginComponent;
 import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -55,6 +55,8 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/active").method(GET).handler(fromComponent(FormsPluginComponent::checkStatusHandler));
 		projectRouter.route("/active").method(PUT).handler(fromComponent(FormsPluginComponent::activateHandler));
 		projectRouter.route("/active").method(DELETE).handler(fromComponent(FormsPluginComponent::deactivateHandler));
+
+		// routes for getting/setting supported languages
 		projectRouter.route("/languages").method(GET).handler(fromComponent(FormsPluginComponent::getLanguagesHandler));
 		projectRouter.route("/languages").method(PUT).handler(fromComponent(FormsPluginComponent::setLanguagesHandler));
 
@@ -66,6 +68,12 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/forms/:formUuid").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::upsertFormHandler));
 		projectRouter.route("/forms/:formUuid").method(DELETE).handler(fromComponent(FormsPluginComponent::deleteFormHandler));
 
+		// routes for handling the online status of forms
+		projectRouter.route("/forms/:formUuid/online/:lang").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::getFormOnlineStatusHandler));
+		projectRouter.route("/forms/:formUuid/online/:lang").method(PUT).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOnlineHandler));
+		projectRouter.route("/forms/:formUuid/online/:lang").method(DELETE).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::setFormOfflineHandler));
+
+		// routes for rendering previews of forms
 		projectRouter.route("/forms/:formUuid/preview").method(POST).produces("text/html").handler(fromComponent(FormsPluginComponent::renderFormPreviewHandler));
 		projectRouter.route("/forms/:formUuid/preview").method(POST).produces(APPLICATION_JSON).handler(fromComponent(FormsPluginComponent::renderFormPreviewAsJsonHandler));
 

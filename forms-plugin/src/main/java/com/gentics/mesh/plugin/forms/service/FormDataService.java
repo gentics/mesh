@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -115,7 +116,7 @@ public class FormDataService {
 	 * @return single of the post data response
 	 */
 	public Single<PostDataResponse> create(FormDataSaveContext ctx) {
-		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid())
+		return formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true)
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
@@ -131,7 +132,7 @@ public class FormDataService {
 	 */
 	public Single<PostDataResponse> update(FormDataSaveContext ctx) {
 		return Single.zip(
-			formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid()),
+			formService.loadAsAdmin(ctx.getProjectName(), ctx.getFormUuid(), true),
 			load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
 			(formNode, formDataNode) -> formService.toForm(formNode)
 			.flatMap(form -> {
@@ -176,14 +177,18 @@ public class FormDataService {
 	 *            The UUID of the form to export
 	 * @param context
 	 *            The current routing context
+	 * @param lang optional languages
 	 * @return single export data
 	 */
-	public Single<String> export(String projectName, String formUuid, PluginContext context) {
+	public Single<String> export(String projectName, String formUuid, PluginContext context, String...lang) {
 		Exporter exporter = Exporter.create(configuration, userClient, context, formUuid, SchemaService.getSchemaName(formUuid));
 
-		return formService.load(projectName, formUuid)
+		return formService.load(projectName, formUuid, lang)
 			.flatMap(formNode -> formService.toForm(formNode))
-			.flatMap(form -> exporter.export(form));
+			.flatMap(form -> {
+				exporter.setFieldLabels(form.getReportableFields());
+				return exporter.export(form);
+			});
 	}
 
 	/**
@@ -203,12 +208,24 @@ public class FormDataService {
 		try {
 			Single<GraphQLRequest> request = loadFormAndAssembleFindFormGraphQLRequest(projectName, formUuid, query, pagingParams);
 
-			Single<GraphQLResponse> response = request
-				.flatMap(graphQLRequest -> userClient.graphql(projectName, graphQLRequest, new VersioningParametersImpl().published()).toSingle());
+			Single<GraphQLResponse> response = request.flatMap(graphQLRequest -> {
+				return userClient.graphql(projectName, graphQLRequest, new VersioningParametersImpl().published())
+						.toSingle();
+			});
 
 			return response.flatMap(graphQLResponse -> {
 				JsonObject clientResponse = new JsonObject();
-				JsonObject nodes = graphQLResponse.getData().getJsonObject("nodes");
+				// log all errors
+				if (graphQLResponse.getErrors() != null) {
+					for (GraphQLError error : graphQLResponse.getErrors()) {
+						log.warn("Error in graphql response {}", error.toJson());
+					}
+				}
+
+				JsonObject nodes = null;
+				if (graphQLResponse.getData() != null) {
+					nodes = graphQLResponse.getData().getJsonObject("nodes");
+				}
 				if (nodes != null) {
 					pagingService.addPagingInfoToResponse(clientResponse, nodes);
 					clientResponse.put("entries", nodes.getJsonArray("elements"));
@@ -273,7 +290,7 @@ public class FormDataService {
 	 * @return single buffer of rendered form
 	 */
 	public Single<Buffer> render(String projectName, String formUuid, String formDataUuid, RoutingContext rc, String...lang) {
-		return Single.zip(formService.loadAsAdmin(projectName, formUuid, lang), load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
+		return Single.zip(formService.loadAsAdmin(projectName, formUuid, true, lang), load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
 			(formNode, formDataNode) -> {
 				JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 
@@ -528,10 +545,10 @@ public class FormDataService {
 		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
 		graphQLParams.put("query", esQuery.toString());
 
-		return formService.loadAsAdmin(projectName, formUuid).flatMap(formService::toForm).flatMap(form -> {
+		return formService.load(projectName, formUuid).flatMap(formService::toForm).flatMap(form -> {
 			Map<String, String> context = new HashMap<>();
 			context.put("schemaName", SchemaService.getSchemaName(formUuid));
-			context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
+			context.put("fieldNames", String.join("\n", String.join("\n", form.getReportableElementNamesForGraphQL()), "errors"));
 			String graphQLQuery = new Handlebars().compileInline(rawGraphQLQuery).apply(Context.newContext(context));
 			GraphQLRequest graphQLRequest = new GraphQLRequest();
 			graphQLRequest.setQuery(graphQLQuery).setVariables(graphQLParams);

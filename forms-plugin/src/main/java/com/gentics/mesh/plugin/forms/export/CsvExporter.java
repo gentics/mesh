@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -13,6 +12,7 @@ import org.apache.commons.csv.CSVFormat.Predefined;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.output.StringBuilderWriter;
 
+import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
@@ -71,6 +71,13 @@ public class CsvExporter extends Exporter {
 
 	@Override
 	protected Single<String> internalExport(GraphQLResponse response) {
+		// log all errors
+		if (response.getErrors() != null) {
+			for (GraphQLError error : response.getErrors()) {
+				log.warn("Error in graphql response {}", error.toJson());
+			}
+		}
+
 		JsonObject formData = extractData(response);
 
 		if (formData == null) {
@@ -124,12 +131,6 @@ public class CsvExporter extends Exporter {
 		if (dataFields == null || dataFields.isEmpty()) {
 			return new String[0];
 		}
-
-		JsonArray schemaFields = data.getJsonObject("schema").getJsonArray("fields");
-		Map<String, String> fieldLabels = schemaFields.stream()
-			.map(e -> e instanceof JsonObject ? (JsonObject) e : null)
-			.filter(Objects::nonNull)
-			.collect(Collectors.toMap(e -> e.getString("name"), e -> e.getString("label")));
 
 		List<String> headers = new ArrayList<>();
 

@@ -165,9 +165,9 @@ public abstract class FormElement {
 	 */
 	public void addFieldSchema(FieldSchemaContainer container) {
 		if (isMultivalue()) {
-			container.addField(new ListFieldSchemaImpl().setListType(FieldTypes.STRING.toString()).setName(name).setLabel(label));
+			container.addField(new ListFieldSchemaImpl().setListType(FieldTypes.STRING.toString()).setName(name).setLabel(name));
 		} else {
-			container.addField(new StringFieldSchemaImpl().setName(name).setLabel(label));
+			container.addField(new StringFieldSchemaImpl().setName(name).setLabel(name));
 		}
 	}
 

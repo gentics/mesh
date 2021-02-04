@@ -17,12 +17,12 @@ import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -92,47 +92,6 @@ public class FormService {
 	}
 
 	/**
-	 * Create a new form
-	 * @param projectName project name
-	 * @param formData posted form data
-	 * @return single of the node response
-	 */
-	public Single<NodeResponse> create(String projectName, JsonObject formData) {
-		Optional<ValidationError> error = checkForm(formData);
-
-		if (error.isPresent()) {
-			return Single.error(
-				new FormsError(HttpResponseStatus.BAD_REQUEST.code(), error.get().getMessage()));
-		}
-
-		NodeCreateRequest request = new NodeCreateRequest()
-				.setSchemaName(SchemaInitializer.SCHEMA_NAME)
-				.setParentNodeUuid(schemaService.getRootNodeUuid(projectName))
-				.setLanguage("en");
-
-		request.getFields().put("name", new StringFieldImpl().setString(formData.getString("name")));
-		request.getFields().put("json", new StringFieldImpl().setString(formData.encodePrettily()));
-		String pageIdString = formData.getString("pageId", null);
-		if (pageIdString != null) {
-			try {
-				int pageId = Integer.parseInt(pageIdString);
-				request.getFields().put("pageId", new NumberFieldImpl().setNumber(pageId));
-			} catch (NumberFormatException e) {
-				log.error(String.format("Error while saving form: %s is not a valid pageId", pageIdString));
-			}
-		}
-		// create the form node, then create the schema and assign to the project
-		return userClient.createNode(projectName, request).toSingle().flatMap(createdFormNode -> {
-			SchemaCreateRequest schema = getSchema(createdFormNode, new SchemaCreateRequest());
-			return userClient.createSchema(schema).toSingle().flatMap(createdSchema -> {
-				return userClient.assignSchemaToProject(projectName, createdSchema.getUuid()).toSingle().map(r -> createdFormNode);
-			});
-		}).flatMap(createdFormNode -> {
-			return userClient.publishNode(projectName, createdFormNode.getUuid()).toSingle().map(r -> createdFormNode);
-		});
-	}
-
-	/**
 	 * Validate the form itself before sending a create or update request.
 	 *
 	 * <p>
@@ -167,16 +126,39 @@ public class FormService {
 		return Optional.of(error);
 	}
 
+//	/**
+//	 * Load the form node by uuid
+//	 *
+//	 * @param projectName project name
+//	 * @param uuid
+//	 *            uuid
+//	 * @return single noderesponse
+//	 */
+//	public Single<NodeResponse> load(String projectName, String uuid) {
+//		return userClient.findNodeByUuid(projectName, uuid).toSingle().flatMap(nodeResponse -> {
+//			if (isFormNode(nodeResponse)) {
+//				return Single.just(nodeResponse);
+//			} else {
+//				String message = String.format("Object with uuid \"%s\" could not be found.", uuid);
+//				return Single.error(new FormsError(HttpResponseStatus.NOT_FOUND.code(), message));
+//			}
+//		});
+//	}
+
 	/**
-	 * Load the form node by uuid
+	 * Load the form node by uuid in the given language
 	 *
 	 * @param projectName project name
-	 * @param uuid
-	 *            uuid
+	 * @param uuid        uuid
+	 * @param language    language
 	 * @return single noderesponse
 	 */
-	public Single<NodeResponse> load(String projectName, String uuid) {
-		return userClient.findNodeByUuid(projectName, uuid).toSingle().flatMap(nodeResponse -> {
+	public Single<NodeResponse> load(String projectName, String uuid, String...lang) {
+		NodeParameters nParams = new NodeParametersImpl();
+		if (lang.length > 0) {
+			nParams.setLanguages(lang);
+		}
+		return userClient.findNodeByUuid(projectName, uuid, nParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
 				return Single.just(nodeResponse);
 			} else {
@@ -192,18 +174,24 @@ public class FormService {
 	 * @param projectName project name
 	 * @param uuid
 	 *            uuid
+	 * @param published true to load published node, false for draft
 	 * @param lang optional languages
 	 * @return single noderesponse
 	 */
-	public Single<NodeResponse> loadAsAdmin(String projectName, String uuid, String...lang) {
+	public Single<NodeResponse> loadAsAdmin(String projectName, String uuid, boolean published, String...lang) {
 		NodeParameters nParams = new NodeParametersImpl();
 		if (lang.length > 0) {
 			nParams.setLanguages(lang);
 		}
-		VersioningParameters vParams = new VersioningParametersImpl().setVersion("published");
+		VersioningParameters vParams = new VersioningParametersImpl().setVersion(published ? "published" : "draft");
 		return adminClient.findNodeByUuid(projectName, uuid, nParams, vParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
-				return Single.just(nodeResponse);
+				if (published && !FormOnlineStatusService.isOnline(nodeResponse)) {
+					String message = String.format("Form with uuid \"%s\" is not online.", uuid);
+					return Single.error(new FormsError(HttpResponseStatus.NOT_FOUND.code(), message));
+				} else {
+					return Single.just(nodeResponse);
+				}
 			} else {
 				String message = String.format("Object with uuid \"%s\" could not be found.", uuid);
 				return Single.error(new FormsError(HttpResponseStatus.NOT_FOUND.code(), message));
@@ -212,16 +200,29 @@ public class FormService {
 	}
 
 	/**
+	 * Load the form node by uuid as admin user with the form plugin language fallback
+	 * @param projectName project name
+	 * @param uuid form uuid
+	 * @param published true to load published node, false for draft
+	 * @return single noderesponse
+	 */
+	public Single<NodeResponse> loadAsAdminWithLanguageFallback(String projectName, String uuid, boolean published) {
+		return statusService.languageFallback(projectName).flatMap(langs -> loadAsAdmin(projectName, uuid, published, langs));
+	}
+
+	/**
 	 * Get the elements JSON for the form
 	 * @param projectName project name
 	 * @param uuid uuid
+	 * @param lang optional languages
 	 * @return single JsonArray containing the elements
 	 */
-	public Single<JsonObject> getElements(String projectName, String uuid) {
-		return load(projectName, uuid).flatMap(formNode -> {
-			JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
-			return Single.just(new JsonObject().put("elements", formJson.getJsonArray("elements")));
-		});
+	public Single<JsonObject> getElements(String projectName, String uuid, String...lang) {
+		return statusService.languageFallback(projectName, lang)
+				.flatMap(fallback -> loadAsAdmin(projectName, uuid, true, fallback).flatMap(formNode -> {
+					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
+					return Single.just(new JsonObject().put("elements", formJson.getJsonArray("elements")));
+				}));
 	}
 
 	/**
@@ -235,20 +236,16 @@ public class FormService {
 			"perPage" : 1000000,
 			"forms" : [ {
 				 "uuid" : "29a53fee7af6468da53fee7af6568d75",
-				 "name" : "Formular Test 1",
-				 "pageId" : 1234
+				 "name" : "Formular Test 1"
 			 }, {
 				 "uuid" : "05a0c76f7d5940dfa0c76f7d5960df23",
-				 "name" : "Formular Nr. 2",
-				 "pageId" : 4711
+				 "name" : "Formular Nr. 2"
 			 }, {
 				 "uuid" : "5a1e034b14ef480f9e034b14efa80fe3",
-				 "name" : "Formular Nr. 3",
-				 "pageId" : 1289
+				 "name" : "Formular Nr. 3"
 			 }, {
 				 "uuid" : "33b96c62cb754b74b96c62cb75db74bb",
-				 "name" : "Formular Nr. 4",
-				 "pageId" : 4321
+				 "name" : "Formular Nr. 4"
 			 } ]
 	   }
 	 * </pre>
@@ -261,31 +258,40 @@ public class FormService {
 			String graphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("forms.graphql"), StandardCharsets.UTF_8);
 
 			return userClient.findNodeByUuid(projectName, schemaService.getRootNodeUuid(projectName)).toSingle()
-				.flatMap(rootNode -> userClient.graphql(projectName, new GraphQLRequest().setQuery(graphQlQuery).setVariables(pagingParams)).toSingle())
-				.flatMap(graphQlResponse -> {
+					.flatMap(rootNode -> {
+						JsonObject variables = new JsonObject().mergeIn(pagingParams, true).put("rootNodeUuid", rootNode.getUuid());
+						return userClient
+								.graphql(projectName,
+										new GraphQLRequest().setQuery(graphQlQuery).setVariables(variables))
+								.toSingle();
+					})				.flatMap(graphQlResponse -> {
+					// log all errors
+					if (graphQlResponse.getErrors() != null) {
+						for (GraphQLError error : graphQlResponse.getErrors()) {
+							log.warn("Error in graphql response {}", error.toJson());
+						}
+					}
+
 					JsonObject clientResponse = new JsonObject();
 					if (graphQlResponse.getData() == null) {
-						// TODO
-						return Single.error(new Exception());
+						return Single.error(new FormsError(500, "Found no data in graphql response"));
 					}
-					if (!graphQlResponse.getData().containsKey("schema")) {
-						// TODO
-						return Single.error(new Exception());
+
+					if (!graphQlResponse.getData().containsKey("node")) {
+						return Single.error(new FormsError(500, "Found no 'node' in graphql response"));
 					}
-					JsonObject schema = graphQlResponse.getData().getJsonObject("schema");
-					if (!schema.containsKey("nodes")) {
-						// TODO
-						return Single.error(new Exception());
+					JsonObject node = graphQlResponse.getData().getJsonObject("node");
+					if (!node.containsKey("children")) {
+						return Single.error(new FormsError(500, "Found no 'node.children' in graphql response"));
 					}
-					JsonObject nodes = schema.getJsonObject("nodes");
-					if (nodes == null) {
-						// TODO
-						return Single.error(new Exception());
+					JsonObject children = node.getJsonObject("children");
+					if (!children.containsKey("elements")) {
+						return Single.error(new FormsError(500, "Found no 'node.children.elements' in graphql response"));
 					}
-					pagingService.addPagingInfoToResponse(clientResponse, nodes);
+					JsonArray forms = children.getJsonArray("elements");
+					pagingService.addPagingInfoToResponse(clientResponse, children);
 
 					// make response flat
-					JsonArray forms = nodes.getJsonArray("elements");
 					List<JsonObject> clientForms = new ArrayList<>(forms.size());
 					for (int i = 0; i < forms.size(); i++) {
 						JsonObject form = forms.getJsonObject(i);
@@ -305,50 +311,6 @@ public class FormService {
 	}
 
 	/**
-	 * Update a form
-	 * @param projectName project name
-	 * @param uuid uuid of the form
-	 * @param formData form data
-	 * @return single of updated form node
-	 */
-	public Single<NodeResponse> update(String projectName, String uuid, JsonObject formData) {
-		return Single.zip(load(projectName, uuid).flatMap(nodeResponse -> {
-			Optional<ValidationError> error = checkForm(formData);
-
-			if (error.isPresent()) {
-				return Single.error(
-					new FormsError(HttpResponseStatus.BAD_REQUEST.code(), error.get().getMessage()));
-			}
-
-			NodeUpdateRequest request = new NodeUpdateRequest();
-			request.setLanguage("en");
-			request.setVersion(nodeResponse.getVersion());
-			request.getFields().put("name", new StringFieldImpl().setString(formData.getString("name")));
-			request.getFields().put("json", new StringFieldImpl().setString(formData.encodePrettily()));
-
-			String pageIdString = formData.getString("pageId", null);
-			if (pageIdString != null) {
-				try {
-					int pageId = Integer.parseInt(pageIdString);
-					request.getFields().put("pageId", new NumberFieldImpl().setNumber(pageId));
-				} catch (NumberFormatException e) {
-					log.error(String.format("Error while saving form: %s is not a valid pageId", pageIdString));
-				}
-			}
-
-			return userClient.updateNode(projectName, uuid, request).toSingle();
-		}), schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), true), (formNode, schema) -> {
-			// update the schema
-			SchemaUpdateRequest updateRequest = getSchema(formNode, new SchemaUpdateRequest());
-			// The explicit cast is necessary to prevent an Eclipse internal error and can probably be removed in the future.
-			Single<NodeResponse> r = userClient.updateSchema(schema.get().getUuid(), updateRequest).toSingle().map(updatedSchema -> formNode);
-			return r;
-		}).flatMap(x -> x).flatMap(formNode -> {
-			return userClient.publishNode(projectName, formNode.getUuid()).toSingle().map(publishStatus -> formNode);
-		});
-	}
-
-	/**
 	 * Insert or update the form
 	 * @param projectName project name
 	 * @param uuid form uuid
@@ -364,6 +326,7 @@ public class FormService {
 		}
 
 		String language = formData.getString("language", "en");
+		NodeParameters languageParameter = new NodeParametersImpl().setLanguages(language);
 		NodeUpsertRequest request = new NodeUpsertRequest()
 				.setSchemaName(SchemaInitializer.SCHEMA_NAME)
 				.setParentNodeUuid(schemaService.getRootNodeUuid(projectName))
@@ -371,6 +334,8 @@ public class FormService {
 
 		request.getFields().put("name", new StringFieldImpl().setString(formData.getString("name")));
 		request.getFields().put("json", new StringFieldImpl().setString(formData.encodePrettily()));
+		// always set the form "online"
+		request.getFields().put(FormOnlineStatusService.FIELD_NAME, new BooleanFieldImpl().setValue(true));
 		Object cmsIdObject = formData.getValue("cms_id", null);
 		if (cmsIdObject != null) {
 			try {
@@ -381,21 +346,27 @@ public class FormService {
 			}
 		}
 
-		return userClient.upsertNode(projectName, uuid, request, new NodeParametersImpl().setLanguages(language)).toSingle().flatMap(formNode -> {
-			return schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), false).flatMap(optSchema -> {
-				if (optSchema.isPresent()) {
-					log.info("Found schema {}. Schema has uuid {}", SchemaService.getSchemaName(uuid), optSchema.get().getUuid());
-					// update schema
-					return updateSchema(projectName, formNode, optSchema.get()).map(response -> formNode);
-				} else {
-					log.info("Did not find schema {}.", SchemaService.getSchemaName(uuid));
-					// create schema
-					return createAndAssignSchema(projectName, formNode).map(schemaResponse -> formNode);
-				}
-			});
-		}).flatMap(updatedForm -> {
-			return userClient.publishNode(projectName, updatedForm.getUuid()).toSingle().flatMap(r -> load(projectName, updatedForm.getUuid()));
-		});
+		return userClient.upsertNode(projectName, uuid, request, languageParameter)
+				.toSingle() /* .flatMap(formNode -> loadAsAdminWithLanguageFallback(projectName, formNode.getUuid(), false)) */
+				.flatMap(formNode -> {
+					return schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), false)
+							.flatMap(optSchema -> {
+								if (optSchema.isPresent()) {
+									log.info("Found schema {}. Schema has uuid {}", SchemaService.getSchemaName(uuid),
+											optSchema.get().getUuid());
+									// update schema
+									return updateSchema(projectName, formNode, optSchema.get())
+											.map(response -> formNode);
+								} else {
+									log.info("Did not find schema {}.", SchemaService.getSchemaName(uuid));
+									// create schema
+									return createAndAssignSchema(projectName, formNode).map(schemaResponse -> formNode);
+								}
+							});
+				}).flatMap(updatedForm -> {
+					return userClient.publishNode(projectName, updatedForm.getUuid(), languageParameter).toSingle()
+							.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
+				});
 	}
 
 	/**
@@ -435,6 +406,14 @@ public class FormService {
 		});
 	}
 
+	public Single<JsonObject> loadForm(String projectName, String uuid, String... lang) {
+		return statusService.languageFallback(projectName, lang)
+				.flatMap(langFallback -> load(projectName, uuid, langFallback)).map(formNode -> {
+					// TODO if the node has no fields, no specified language was found
+					return new JsonObject(formNode.getFields().getStringField("json").getString());
+				});
+	}
+
 	/**
 	 * Prepare an existing form to be rendered by the template handler
 	 * @param projectName project name
@@ -445,7 +424,7 @@ public class FormService {
 	 */
 	public Single<Buffer> render(String projectName, String uuid, RoutingContext rc, String...lang) {
 		return statusService.languageFallback(projectName, lang)
-				.flatMap(langFallback -> loadAsAdmin(projectName, uuid, langFallback).flatMap(formNode -> {
+				.flatMap(langFallback -> loadAsAdmin(projectName, uuid, true, langFallback).flatMap(formNode -> {
 					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 
 					removeInactiveElements(formJson);

@@ -1,23 +1,22 @@
-package com.gentics.mesh.plugin.forms.handler;
-
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
-import static io.vertx.ext.web.handler.TemplateHandler.DEFAULT_CONTENT_TYPE;
-
+package com.gentics.mesh.plugin.forms.handler.form;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.plugin.forms.service.FormService;
 
 import io.reactivex.Completable;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 
 @Singleton
-public class RenderFormPreviewHandler extends AbstractFormsHandler {
+public class UpsertFormHandler extends AbstractFormsHandler {
 	private final FormService formService;
 
 	@Inject
-	public RenderFormPreviewHandler(FormService formService) {
+	public UpsertFormHandler(FormService formService) {
 		this.formService = formService;
 	}
 
@@ -27,9 +26,9 @@ public class RenderFormPreviewHandler extends AbstractFormsHandler {
 		String uuid = context.pathParam("formUuid");
 		JsonObject formData = context.getBodyAsJson();
 
-		return formService.renderPreview(projectName, uuid, formData, context).doOnEvent((buffer, t) -> {
-			if (buffer != null) {
-				context.response().putHeader(CONTENT_TYPE, String.format("%s; charset=UTF-8", DEFAULT_CONTENT_TYPE)).end(buffer.toString());
+		return formService.upsert(projectName, uuid, formData).doOnEvent((response, t) -> {
+			if (response != null) {
+				context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8).end(response.toJson());
 			}
 		}).ignoreElement();
 	}

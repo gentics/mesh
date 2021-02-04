@@ -1,6 +1,10 @@
-query Forms($perPage: Long = 2147483647, $page: Long = 1) {
-  schema(name: "form") {
-    nodes(perPage: $perPage, page: $page) {
+query Forms($perPage: Long = 2147483647, $page: Long = 1, $rootNodeUuid: String) {
+  node (uuid: $rootNodeUuid) {
+    children (perPage: $perPage, page: $page, filter: {
+      schema: {
+        is: form
+      }
+    }) {
       elements {
         uuid
         fields {

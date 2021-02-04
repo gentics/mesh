@@ -66,8 +66,10 @@ public class FormsActivationTest extends AbstractFormsPluginIntegrationTest {
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
 
+		// initially, no languages are activated
 		assertThat(getLanguages(PROJECT_NAME)).as("Initial languages").isNull();
 
+		// test for different language sets
 		List<String[]> sets = Arrays.asList(new String[] { "de", "en", "fr" }, new String[] { "en", "fr", "de" },
 				new String[] { "de", "en" }, new String[] { "hr", "en", "de" });
 

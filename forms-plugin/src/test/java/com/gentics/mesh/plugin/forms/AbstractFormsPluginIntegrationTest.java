@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -28,6 +29,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
+import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
@@ -79,10 +81,6 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		call(() -> server.client().createProject(createProject));
 
 		server.getMesh().deployPlugin(FormsTestPlugin.class, "forms").blockingAwait();
-	}
-
-	@Before
-	public void setupPlugin() throws InterruptedException {
 		PluginTestUtil.waitForPluginRegistration(server, 5_000, "forms");
 	}
 
@@ -135,6 +133,36 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
+	 * Perform the request, assert that the request was successful, if the user had permission and the expectSuccess flag is true.
+	 * Return the response as given class
+	 * @param <T> response type
+	 * @param request request to perform
+	 * @param permission true if the user has permission
+	 * @param expectSuccess true iff success is expected
+	 * @param clazz response type
+	 * @return response (may be null, if the request failed)
+	 * @throws IOException
+	 */
+	protected <T> T doRequest(Request request, boolean permission, boolean expectSuccess, Class<T> clazz)
+			throws IOException {
+		Response response = client().newCall(request).execute();
+
+		if (permission) {
+			assertThat(response.isSuccessful())
+					.as(String.format("Response status %d (%s)", response.code(), response.message()))
+					.isEqualTo(expectSuccess);
+			if (expectSuccess) {
+				return JsonUtil.readValue(response.body().string(), clazz);
+			} else {
+				return null;
+			}
+		} else {
+			assertForbidden(response);
+			return null;
+		}
+	}
+
+	/**
 	 * Clean forms data before test run
 	 */
 	@Before
@@ -164,10 +192,10 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * for <code>expectSuccess</code>.
 	 *
 	 * @param fileName file name
-	 * @return response
+	 * @return form uuid (null if request fails)
 	 * @throws IOException
 	 */
-	protected Response createForm(String fileName) throws IOException {
+	protected String createForm(String fileName) throws IOException {
 		return createForm(fileName, true, true);
 	}
 
@@ -177,37 +205,35 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @param fileName file name
 	 * @param permission whether the request shall be made with the required permissions
 	 * @param expectSuccess whether the request is expected to be successful
-	 * @return response
+	 * @return form uuid (null if request fails)
 	 * @throws IOException
 	 */
-	protected Response createForm(String fileName, boolean permission, boolean expectSuccess) throws IOException {
+	protected String createForm(String fileName, boolean permission, boolean expectSuccess) throws IOException {
 		String uuid = UUIDUtil.randomUUID();
-		Request createRequest = new Request.Builder()
-			.url(projectUrl("/forms/" + uuid))
-			.headers(auth(permission))
-			.post(requestBodyFromFile(fileName))
-			.build();
-		Response response = client().newCall(createRequest).execute();
 
-		if (permission) {
-			assertThat(response.isSuccessful())
-					.as(String.format("Response status %d (%s)", response.code(), response.message()))
-					.isEqualTo(expectSuccess);
+		JsonNode response = doRequest(new Request.Builder()
+				.url(projectUrl("/forms/" + uuid))
+				.headers(auth(permission))
+				.post(requestBodyFromFile(fileName))
+				.build(), permission, expectSuccess, JsonNode.class);
+
+		if (permission && expectSuccess) {
+			assertThat(response).as("Response").isNotNull();
+			assertThat(response.get("uuid").asText()).as("Returned uuid").isEqualTo(uuid);
+			return uuid;
 		} else {
-			assertForbidden(response);
+			return null;
 		}
-
-		return response;
 	}
 
 	/**
 	 * Create a form with data from the given files, which are supposed to be the language variants
 	 * Assert that creation succeeded
 	 * @param fileNames file names
-	 * @return response
+	 * @return uuid
 	 * @throws IOException
 	 */
-	protected Response createMultilanguageForm(String...fileNames) throws IOException {
+	protected String createMultilanguageForm(String...fileNames) throws IOException {
 		String uuid = UUIDUtil.randomUUID();
 		Response response = null;
 
@@ -220,7 +246,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 					.as(String.format("Response status %d (%s)", response.code(), response.message())).isEqualTo(true);
 		}
 
-		return response;
+		return uuid;
 	}
 
 	/**
@@ -232,10 +258,9 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @throws IOException
 	 */
 	protected NodeResponse updateForm(String fileName, boolean permission, boolean expectSuccess) throws IOException {
-		Response createResponse = createForm("create.json", true, true);
-		NodeResponse createdNode = JsonUtil.readValue(createResponse.body().string(), NodeResponse.class);
+		String uuid = createForm("create.json", true, true);
 		Request updateRequest = new Request.Builder()
-			.url(projectUrl("/forms/" + createdNode.getUuid()))
+			.url(projectUrl("/forms/" + uuid))
 			.headers(auth(permission))
 			.post(requestBodyFromFile(fileName))
 			.build();
@@ -248,8 +273,6 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 
 			if (expectSuccess) {
 				NodeResponse updatedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
-
-				assertThat(updatedNode).as("Loaded Form Node").isEqualToComparingOnlyGivenFields(createdNode, "uuid");
 
 				return updatedNode;
 			}
@@ -315,6 +338,52 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		CountDownLatch latch = new CountDownLatch(1);
 		completable.doOnComplete(() -> latch.countDown()).subscribe();
 		latch.await(timeout, unit);
+	}
+
+	/**
+	 * Check whether the form is online
+	 * @param uuid form uuid
+	 * @param language language
+	 * @param permission true when the user has permission to do the call
+	 * @param expectSuccess true if success is expected
+	 * @return response (may be null, if the call fails)
+	 * @throws IOException
+	 */
+	protected FormOnlineResponse checkFormOnline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
+		return doRequest(new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+				.headers(auth(permission)).get().build(), permission, expectSuccess, FormOnlineResponse.class);
+	}
+
+	/**
+	 * Set the form offline
+	 * @param uuid form uuid
+	 * @param language language
+	 * @param permission true for permission
+	 * @param expectSuccess true for expected success
+	 * @return response (may be null)
+	 * @throws IOException
+	 */
+	protected FormOnlineResponse setFormOffline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
+		return doRequest(
+				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+						.headers(auth(permission)).delete().build(),
+				permission, expectSuccess, FormOnlineResponse.class);
+	}
+
+	/**
+	 * Set the form online
+	 * @param uuid form uuid
+	 * @param language language
+	 * @param permission true for permission
+	 * @param expectSuccess true for expected success
+	 * @return response (may be null)
+	 * @throws IOException
+	 */
+	protected FormOnlineResponse setFormOnline(String uuid, String language, boolean permission, boolean expectSuccess) throws IOException {
+		return doRequest(
+				new Request.Builder().url(projectUrl("/forms/" + uuid + "/online/" + language))
+						.headers(auth(permission)).put(RequestBody.create(MediaType.get("text/plain"), "")).build(),
+				permission, expectSuccess, FormOnlineResponse.class);
 	}
 
 	/**

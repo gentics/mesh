@@ -281,4 +281,14 @@ public class Form {
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 	}
+
+	/**
+	 * Get a map of field name -> field label for all reportable fields
+	 * @return map of name -> label
+	 */
+	public Map<String, String> getReportableFields() {
+		return flattened()
+			.filter(FormElement::isReportable)
+			.collect(Collectors.toMap(FormElement::getName, FormElement::getLabel));
+	}
 }

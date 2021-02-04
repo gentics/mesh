@@ -64,7 +64,7 @@ public class FileElement extends FormElement {
 
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
-		container.addField(new BinaryFieldSchemaImpl().setName(getName()).setLabel(getLabel()));
+		container.addField(new BinaryFieldSchemaImpl().setName(getName()).setLabel(getName()));
 	}
 
 	@Override

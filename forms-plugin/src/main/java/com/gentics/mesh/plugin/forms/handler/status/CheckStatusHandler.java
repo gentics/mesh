@@ -12,7 +12,7 @@ import io.reactivex.Completable;
 import io.vertx.core.http.HttpHeaders;
 
 /**
- * Handler for checking the plugin status for a project
+ * Handler for checking the plugin status in a project
  */
 public class CheckStatusHandler extends AbstractFormsHandler {
 	private final StatusService statusService;

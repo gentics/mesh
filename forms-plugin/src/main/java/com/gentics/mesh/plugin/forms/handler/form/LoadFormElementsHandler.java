@@ -1,4 +1,4 @@
-package com.gentics.mesh.plugin.forms.handler;
+package com.gentics.mesh.plugin.forms.handler.form;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -6,7 +6,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
+import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.plugin.forms.service.FormService;
+import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
@@ -28,7 +30,8 @@ public class LoadFormElementsHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		String uuid = context.pathParam("formUuid");
-		return formService.getElements(projectName, uuid).doOnSuccess(elements -> {
+		String[] languages = ParameterUtil.getLanguages(context);
+		return formService.getElements(projectName, uuid, languages).doOnSuccess(elements -> {
 			ReCaptchaOptions options = config.getReCaptcha();
 			String siteKey = options == null ? null : options.getSiteKey();
 

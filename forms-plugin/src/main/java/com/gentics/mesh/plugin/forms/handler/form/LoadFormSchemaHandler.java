@@ -1,9 +1,10 @@
-package com.gentics.mesh.plugin.forms.handler;
+package com.gentics.mesh.plugin.forms.handler.form;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.plugin.forms.service.FormService;
 
 import io.reactivex.Completable;

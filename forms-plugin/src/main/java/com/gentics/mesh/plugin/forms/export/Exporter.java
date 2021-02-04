@@ -58,6 +58,11 @@ public abstract class Exporter {
 	protected final String schemaName;
 
 	/**
+	 * Map of field names -> labels
+	 */
+	protected Map<String, String> fieldLabels = new HashMap<>();
+
+	/**
 	 * Default constructor.
 	 *
 	 * @param adminClient mesh rest client
@@ -194,6 +199,14 @@ public abstract class Exporter {
 			.graphql(context.project().getString("name"), request)
 			.toSingle()
 			.flatMap(graphQlResponse -> internalExport(graphQlResponse));
+	}
+
+	/**
+	 * Set the field labels
+	 * @param fieldLabels field labels
+	 */
+	public void setFieldLabels(Map<String, String> fieldLabels) {
+		this.fieldLabels = fieldLabels;
 	}
 
 	/**

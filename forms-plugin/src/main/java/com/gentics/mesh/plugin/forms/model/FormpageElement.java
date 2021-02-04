@@ -18,7 +18,7 @@ import io.vertx.core.json.JsonObject;
 public class FormpageElement extends FormElement {
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
-		container.addField(new BooleanFieldSchemaImpl().setName(getName()).setLabel(getLabel()));
+		container.addField(new BooleanFieldSchemaImpl().setName(getName()).setLabel(getName()));
 	}
 
 	@Override
