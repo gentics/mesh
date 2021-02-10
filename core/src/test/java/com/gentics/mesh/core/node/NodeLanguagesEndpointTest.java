@@ -8,16 +8,16 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -33,7 +33,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		HibNode node = content();
 		int nLanguagesBefore;
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			nLanguagesBefore = nodeDao.getAvailableLanguageNames(node).size();
 			assertThat(nodeDao.getAvailableLanguageNames(node)).contains("en", "de");
 		}
@@ -53,7 +53,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 		
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			// Check the deletion
 			assertThat(trackingSearchProvider()).recordedDeleteEvents(2);
 			assertFalse(nodeDao.getAvailableLanguageNames(node).contains("en"));
@@ -79,7 +79,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteLanguageNoPerm() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), content(), DELETE_PERM);
 			tx.success();
 		}

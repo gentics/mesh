@@ -290,4 +290,10 @@ public class NodeMigrationUser implements HibUser {
 	public void generateBucketId() {
 	}
 
+	@Override
+	public String getRolesHash() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

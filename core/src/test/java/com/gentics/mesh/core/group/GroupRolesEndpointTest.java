@@ -21,8 +21,8 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
@@ -41,8 +41,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testReadRolesByGroup() throws Exception {
 		String roleUuid;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBGroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
+			GroupDao groupDao = tx.groupDao();
 
 			HibRole extraRole = roleDao.create("extraRole", user());
 			groupDao.addRole(group(), extraRole);
@@ -73,8 +73,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String groupName = tx(() -> group().getName());
 		String groupUuid = groupUuid();
 		String roleUuid = tx(tx -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBGroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
+			GroupDao groupDao = tx.groupDao();
 
 			HibRole extraRole = roleDao.create(roleName, user());
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
@@ -108,7 +108,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			assertEquals(1, restGroup.getRoles().stream().filter(ref -> ref.getName().equals("extraRole")).count());
 			assertEquals(2, groupDao.getRoles(group()).count());
 		}
@@ -118,7 +118,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddBogusRoleToGroup() throws Exception {
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			assertEquals(1, groupDao.getRoles(group()).count());
 		}
 		call(() -> client().addRoleToGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
@@ -129,8 +129,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String roleUuid;
 		HibRole extraRole;
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
-			OrientDBRoleDao roleDao = tx.roleDao();
+			GroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
 
 			extraRole = roleDao.create("extraRole", user());
 			roleUuid = extraRole.getUuid();
@@ -143,13 +143,13 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			assertEquals(1, groupDao.getRoles(group()).count());
 		}
 
 		// Now confirm that the request works once we set the perm
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			tx.success();
 		}
@@ -159,7 +159,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			assertEquals(2, groupDao.getRoles(group()).count());
 		}
 
@@ -171,8 +171,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String groupUuid = groupUuid();
 		String roleName = "extraRole";
 		String roleUuid = tx(tx -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBGroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
+			GroupDao groupDao = tx.groupDao();
 
 			HibRole extraRole = roleDao.create(roleName, user());
 			groupDao.addRole(group(), extraRole);
@@ -205,7 +205,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			.anyMatch("extraRole"::equals));
 
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			assertEquals(1, groupDao.getRoles(group()).count());
 		}
 
@@ -220,7 +220,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testAddRoleToGroupWithPerm() throws Exception {
 		HibRole extraRole;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 
 			extraRole = roleDao.create("extraRole", user());
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
@@ -233,7 +233,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			assertTrue("Role should be assigned to group.", groupDao.hasRole(group(), extraRole));
 		}
 	}
@@ -242,7 +242,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
 		HibRole extraRole;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 
 			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
@@ -256,7 +256,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			assertFalse("Role should not be assigned to group.", groupDao.hasRole(group(), extraRole));
 		}
 	}
@@ -272,8 +272,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {
 		HibRole extraRole;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBGroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
+			GroupDao groupDao = tx.groupDao();
 
 			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
@@ -292,7 +292,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 			assertThat(restGroup).matches(group());
 			assertFalse("Role should now no longer be assigned to group.", groupDao.hasRole(group(), extraRole));
@@ -304,8 +304,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String extraRoleUuid;
 		HibRole extraRole;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBGroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
+			GroupDao groupDao = tx.groupDao();
 
 			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
@@ -319,7 +319,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			OrientDBGroupDao groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			assertTrue("Role should be stil assigned to group.", groupDao.hasRole(group(), extraRole));
 		}
 	}

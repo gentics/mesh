@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -28,6 +29,7 @@ import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 
+@Ignore
 public class ClusterCoordinatorTokenTest {
 	private static String clusterPostFix = randomUUID();
 	private static String coordinatorRegex = "nodeA";

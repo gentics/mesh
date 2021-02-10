@@ -26,20 +26,20 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
-import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
-import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
-import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
-import com.gentics.mesh.core.data.dao.OrientDBTagDao;
-import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -223,7 +223,7 @@ public class TestDataProvider {
 	}
 
 	private void addPermissions(Collection<? extends HibBaseElement> elements) {
-		OrientDBRoleDao roleDao = Tx.get().roleDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		HibRole role = userInfo.getRole();
 		for (HibBaseElement meshVertex : elements) {
@@ -254,7 +254,7 @@ public class TestDataProvider {
 	}
 
 	private void addContents() {
-		OrientDBTagDao tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 
 		HibSchema contentSchema = schemaContainers.get("content");
 
@@ -290,8 +290,8 @@ public class TestDataProvider {
 	}
 
 	private void addFolderStructure() {
-		OrientDBTagDao tagDao = Tx.get().tagDao();
-		OrientDBNodeDao nodeDao = Tx.get().nodeDao();
+		TagDao tagDao = Tx.get().tagDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
 
 		HibNode baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
@@ -337,9 +337,9 @@ public class TestDataProvider {
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
-		OrientDBUserDao userDao = Tx.get().userDao();
-		OrientDBGroupDao groupDao = Tx.get().groupDao();
-		OrientDBRoleDao roleDao = Tx.get().roleDao();
+		UserDao userDao = Tx.get().userDao();
+		GroupDao groupDao = Tx.get().groupDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		String password = "test123";
 		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
@@ -380,11 +380,11 @@ public class TestDataProvider {
 	}
 
 	private void addUserGroupRoleProject() {
-		OrientDBUserDao userDao = Tx.get().userDao();
-		OrientDBRoleDao roleDao = Tx.get().roleDao();
-		OrientDBGroupDao groupDao = Tx.get().groupDao();
-		OrientDBSchemaDao schemaDao = Tx.get().schemaDao();
-		OrientDBProjectDao projectDao = Tx.get().projectDao();
+		UserDao userDao = Tx.get().userDao();
+		RoleDao roleDao = Tx.get().roleDao();
+		GroupDao groupDao = Tx.get().groupDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
+		ProjectDao projectDao = Tx.get().projectDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
@@ -430,7 +430,7 @@ public class TestDataProvider {
 	}
 
 	public void addTagFamilies() {
-		OrientDBTagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
+		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 		HibTagFamily basicTagFamily = tagFamilyDao.create(getProject(), "basic", userInfo.getUser());
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
@@ -445,7 +445,7 @@ public class TestDataProvider {
 	}
 
 	private void addBootstrapSchemas() {
-		OrientDBSchemaDao schemaDao = Tx.get().schemaDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
 
 		// folder
 		HibSchema folderSchemaContainer = schemaDao.findByName("folder");
@@ -477,7 +477,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
-		OrientDBMicroschemaDao microschemaDao = Tx.get().microschemaDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
@@ -521,7 +521,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		OrientDBMicroschemaDao microschemaDao = Tx.get().microschemaDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
@@ -551,7 +551,7 @@ public class TestDataProvider {
 	}
 
 	public HibNode addFolder(HibNode rootNode, String englishName, String germanName, String uuid) {
-		OrientDBNodeDao nodeDao = boot.nodeDao();
+		NodeDao nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
@@ -562,7 +562,7 @@ public class TestDataProvider {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project, branch, uuid);
 		}
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(folderNode, german,
+			HibNodeFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(folderNode, german,
 					branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
@@ -572,7 +572,7 @@ public class TestDataProvider {
 			boot.contentDao().publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(folderNode, english,
+			HibNodeFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(folderNode, english,
 					branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
@@ -598,7 +598,7 @@ public class TestDataProvider {
 	}
 
 	public HibTag addTag(String name, HibTagFamily tagFamily) {
-		OrientDBTagDao tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}
@@ -613,7 +613,7 @@ public class TestDataProvider {
 
 	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent,
 			String uuid) {
-		OrientDBNodeDao nodeDao = boot.nodeDao();
+		NodeDao nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		HibNode node;
@@ -625,7 +625,7 @@ public class TestDataProvider {
 					project, branch, uuid);
 		}
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(node, english,
+			HibNodeFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(node, english,
 					branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
@@ -638,7 +638,7 @@ public class TestDataProvider {
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(node, german, branch,
+			HibNodeFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(node, german, branch,
 					userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
@@ -662,7 +662,7 @@ public class TestDataProvider {
 	 * Returns the path to the tag for the given language.
 	 */
 	public String getPathForNews2015Tag(String languageTag) {
-		OrientDBContentDao contentDao = boot.contentDao();
+		ContentDao contentDao = boot.contentDao();
 
 		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name")
 				.getString();

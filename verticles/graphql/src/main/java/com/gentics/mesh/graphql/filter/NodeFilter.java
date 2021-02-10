@@ -12,11 +12,11 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**

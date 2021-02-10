@@ -9,7 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -33,7 +33,7 @@ public class SchemaEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 
 			HibSchema schema = schemaContainer("content");
 

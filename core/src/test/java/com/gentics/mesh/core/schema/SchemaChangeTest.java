@@ -18,9 +18,9 @@ import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -30,13 +30,13 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	@Test
 	public void testDomainModel() {
 		try (Tx tx = tx()) {
-			HibSchema container = tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
+			HibSchema container = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerImpl.class);
 
 			HibSchemaVersion versionA = createSchemaVersion(tx);
 			HibSchemaVersion versionB = createSchemaVersion(tx);
 			HibSchemaVersion versionC = createSchemaVersion(tx);
 
-			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertNull("Initially no version should have been set", container.getLatestVersion());
 			container.setLatestVersion(versionA);
 			assertEquals("The uuid of the latest version did not match to versionA's uuid.", versionA.getUuid(),
@@ -95,7 +95,7 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	private HibSchemaChange<?> chainChanges(HibFieldSchemaVersionElement versionA, HibFieldSchemaVersionElement versionB) {
 		HibSchemaChange<?> oldChange = null;
 		for (int i = 0; i < 3; i++) {
-			HibSchemaChange<?> change = Tx.get().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			HibSchemaChange<?> change = GraphDBTx.getGraphTx().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			if (oldChange == null) {
 				oldChange = change;
 				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainerVersion());

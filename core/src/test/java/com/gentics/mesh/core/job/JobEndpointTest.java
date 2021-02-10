@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.OrientDBBranchDao;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -202,7 +202,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		// Change the job so that it will no longer fail
 		tx(tx -> {
-			OrientDBBranchDao branchDao = tx.branchDao();
+			BranchDao branchDao = tx.branchDao();
 			HibBranch branch = branchDao.create(project(), "testBranch", user(), null, true, initialBranch(), createBatch());
 			job.setBranch(branch);
 		});

@@ -15,14 +15,15 @@ import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
@@ -90,7 +91,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateByTagName() {
 		long previousCount = tx(tx -> {
-			OrientDBTagDao tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 			return tagDao.findAll(tagFamily("colors")).count();
 		});
 		assertEquals("The colors tag family did not have the expected amount of tags", 3, previousCount);
@@ -128,13 +129,13 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 		assertEquals("The node should have two tags.", 2, response.getMetainfo().getTotalCount());
 		long afterCount = tx(tx -> {
-			OrientDBTagDao tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 			return tagDao.findAll(tagFamily("colors")).count();
 		});
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
 		try (Tx tx = tx()) {
-			OrientDBTagDao tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 
 			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de");
 			assertThat(trackingSearchProvider()).stored(tagFamily("colors"));
@@ -240,7 +241,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	public void testUpdateWithNoNodePerm() {
 		// 1. Revoke the update permission
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), content(), UPDATE_PERM);
 			tx.success();
 		}
@@ -259,7 +260,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	public void testUpdateWithNoTagFamilyCreatePerm() {
 		// 1. Revoke the tag create permission
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}

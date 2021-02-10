@@ -15,6 +15,7 @@
  */
 package com.gentics.mesh.core.db;
 
+import com.gentics.mesh.core.data.Tx;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 /**

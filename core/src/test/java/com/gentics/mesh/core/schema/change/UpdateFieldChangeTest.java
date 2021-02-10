@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -29,7 +30,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateFieldChange change = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.setLabel("testLabel");
 			assertEquals("testLabel", change.getLabel());
 		}
@@ -39,13 +40,13 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = tx.getGraph()
+			HibSchemaVersion version = ((GraphDBTx) tx).getGraph()
 					.addFramedVertex(SchemaContainerVersionImpl.class);
 
 			SchemaModelImpl schema = new SchemaModelImpl("test");
 			schema.addField(FieldUtil.createStringFieldSchema("name"));
 
-			UpdateFieldChange change = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.setFieldName("name");
 			change.setLabel("updated");
 			version.setSchema(schema);
@@ -62,7 +63,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel(UPDATEFIELD, "someField");
-			UpdateFieldChange change = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.updateFromRest(model);
 			assertEquals("someField", change.getFieldName());
 		}
@@ -72,7 +73,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateFieldChange change = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.setFieldName("fieldName");
 
 			SchemaChangeModel model = change.transformToRest();

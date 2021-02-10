@@ -25,9 +25,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.image.CacheFileInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -61,7 +61,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 3. Validate resize
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			validateResizeImage(download, contentDao.getLatestDraftFieldContainer(node, english()).getBinary("image"), params, 100, 102);
 		}
 	}
@@ -95,7 +95,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		MeshBinaryResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "image", params));
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			assertNotNull(contentDao.getLatestDraftFieldContainer(node, english()));
 			validateResizeImage(download, contentDao.getLatestDraftFieldContainer(node, english()).getBinary("image"), params, 2048, 102);
 		}
@@ -519,7 +519,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		client().webroot(PROJECT_NAME, path).blockingAwait();
 	}
 
-	private void validateResizeImage(MeshBinaryResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
+	private void validateResizeImage(MeshBinaryResponse download, HibBinaryField binaryField, ImageManipulationParameters params,
 									 int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);

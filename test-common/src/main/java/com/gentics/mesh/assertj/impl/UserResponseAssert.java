@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;

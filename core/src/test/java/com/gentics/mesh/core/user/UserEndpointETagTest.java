@@ -11,8 +11,8 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -50,7 +50,7 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 		assertEquals(etag, etag2);
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 			tx.success();
 		}
@@ -65,7 +65,7 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 	public void testReadOne() {
 		String etag;
 		try (Tx tx = tx()) {
-			OrientDBUserDao userDao = tx.userDao();
+			UserDao userDao = tx.userDao();
 			HibUser user = user();
 
 			etag = userDao.getETag(user(), mockActionContext());

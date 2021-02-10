@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
@@ -38,10 +39,10 @@ public class NestedTransactionTest extends AbstractOrientDBTest {
 	public void testNestedTransaction() {
 		try {
 			db.tx((tx) -> {
-				Vertex v = tx.getGraph().addVertex(null);
+				Vertex v = ((GraphDBTx) tx).getGraph().addVertex(null);
 				System.out.println("Outer");
 				db.tx((tx2) -> {
-					long count = tx2.getGraph().v().count();
+					long count = ((GraphDBTx) tx2).getGraph().v().count();
 					System.out.println("Inner " + count);
 				});
 				System.out.println("Outer Done");
@@ -54,7 +55,7 @@ public class NestedTransactionTest extends AbstractOrientDBTest {
 			e.printStackTrace();
 		}
 		long count = db.tx((tx) -> {
-			return tx.getGraph().v().count();
+			return ((GraphDBTx) tx).getGraph().v().count();
 		});
 		assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 	}

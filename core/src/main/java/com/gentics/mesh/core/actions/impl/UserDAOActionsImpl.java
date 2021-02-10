@@ -7,13 +7,13 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.action.DAOActionContext;
 import com.gentics.mesh.core.data.action.UserDAOActions;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;

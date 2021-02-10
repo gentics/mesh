@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.db;
 
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.traversal.TraversalResult;

@@ -31,13 +31,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -71,7 +72,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String uuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			prepareSchema(node, "", "binary");
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
@@ -134,9 +135,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		for (int i = 0; i < 20; i++) {
 			String newFileName = "somefile" + i + ".dat";
 			String oldFilename = null;
-			NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+			HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 			try (Tx tx = tx()) {
-				BinaryGraphField oldValue = container.getBinary("binary");
+				HibBinaryField oldValue = container.getBinary("binary");
 				if (oldValue != null) {
 					oldFilename = oldValue.getFileName();
 				}
@@ -145,8 +146,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, newFileName));
 
 			try (Tx tx = tx()) {
-				OrientDBContentDao contentDao = tx.contentDao();
-				NodeGraphFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
+				ContentDao contentDao = tx.contentDao();
+				HibNodeFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 				assertNotNull("No new version was created.", newContainer);
 				assertEquals(newContainer.getUuid(), contentDao.getLatestDraftFieldContainer(node, english()).getUuid());
 
@@ -524,8 +525,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		assertEquals(fileName, downloadResponse.getFilename());
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
-			BinaryGraphField binaryGraphField = contentDao.getLatestDraftFieldContainer(node, english()).getBinary("binary");
+			ContentDao contentDao = tx.contentDao();
+			HibBinaryField binaryGraphField = contentDao.getLatestDraftFieldContainer(node, english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
 			String path = localBinaryStorage().getFilePath(binaryUuid);
 			File binaryFile = new File(path);
@@ -559,8 +560,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		File binaryFile;
 		String hash;
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
-			BinaryGraphField binaryGraphField = contentDao.getLatestDraftFieldContainer(node, english()).getBinary("binary");
+			ContentDao contentDao = tx.contentDao();
+			HibBinaryField binaryGraphField = contentDao.getLatestDraftFieldContainer(node, english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
 			binaryFile = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFile.exists());
@@ -570,7 +571,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)));
 
 		HibBinary binary = tx(tx -> {
-			return tx.binaries().findByHash(hash).runInExistingTx(tx);
+			return ((GraphDBTx) tx).binaries().findByHash(hash).runInExistingTx(tx);
 		});
 
 		assertNull("The binary for the hash should have also been removed since only one node used the binary.", binary);
@@ -647,8 +648,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		File binaryFileA;
 		String hashA;
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
-			BinaryGraphField binaryGraphField = contentDao.getLatestDraftFieldContainer(nodeA, english()).getBinary("binary");
+			ContentDao contentDao = tx.contentDao();
+			HibBinaryField binaryGraphField = contentDao.getLatestDraftFieldContainer(nodeA, english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
 			binaryFileA = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFileA.exists());
@@ -658,8 +659,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		File binaryFileB;
 		String hashB;
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
-			BinaryGraphField binaryGraphField = contentDao.getLatestDraftFieldContainer(nodeB, english()).getBinary("binary");
+			ContentDao contentDao = tx.contentDao();
+			HibBinaryField binaryGraphField = contentDao.getLatestDraftFieldContainer(nodeB, english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
 			binaryFileB = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFileB.exists());
@@ -672,7 +673,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuidA, new DeleteParametersImpl().setRecursive(true)));
 
 		HibBinary binaryA = tx(tx -> {
-			return tx.binaries().findByHash(hashA).runInExistingTx(tx);
+			return ((GraphDBTx) tx).binaries().findByHash(hashA).runInExistingTx(tx);
 		});
 
 		assertNotNull("The binary for the hash should not have been removed since it is still in use.", binaryA);
@@ -683,7 +684,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuidB, new DeleteParametersImpl().setRecursive(true)));
 
 		binaryA = tx(tx -> {
-			return tx.binaries().findByHash(hashA).runInExistingTx(tx);
+			return ((GraphDBTx) tx).binaries().findByHash(hashA).runInExistingTx(tx);
 		});
 		assertNull("The binary for the hash should have also been removed since only one node used the binary.", binaryA);
 		assertFalse("The binary file should have been removed.", binaryFileA.exists());

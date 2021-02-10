@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBTagDao;
-import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -27,14 +27,14 @@ public class TagFamilyTest extends AbstractMeshTest {
 		});
 		int nExtraTags = 100;
 		try (Tx tx = tx()) {
-			OrientDBTagDao tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 			for (int i = 0; i < nExtraTags; i++) {
 				tagDao.create(tagFamily, "green" + i, project(), user());
 			}
 			tx.success();
 		}
 		try (Tx tx = tx()) {
-			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			BulkActionContext bac = createBulkContext();
 			tagFamilyDao.delete(tagFamily, bac);
 			bac.process(true);

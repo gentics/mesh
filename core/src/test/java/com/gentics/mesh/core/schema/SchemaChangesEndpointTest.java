@@ -29,12 +29,12 @@ import org.testcontainers.shaded.com.google.common.collect.Iterators;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
-import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -89,7 +89,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			assertEquals("The name of the old version should not be updated", "content", currentVersion.getName());
 			assertEquals("The name of the schema was not updated", name, currentVersion.getNextVersion().getName());
 			HibSchema reloaded = schemaDao.findByUuid(schemaUuid);
@@ -216,7 +216,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		HibSchema schemaContainer = schemaContainer("content");
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content").setHtml("42.1");
 
 			// 1. Create update request by removing the content field from schema and adding a new content with different type
@@ -324,7 +324,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges), BAD_REQUEST, "schema_error_segmentfield_invalid", "slug");
 
 			// 3. Assert migrated node
-			NodeGraphFieldContainer fieldContainer = boot().contentDao().getGraphFieldContainer(node, "en");
+			HibNodeFieldContainer fieldContainer = boot().contentDao().getGraphFieldContainer(node, "en");
 			assertNull("The node should still have a filename string graph field", fieldContainer.getHtml("slug"));
 		}
 	}
@@ -359,7 +359,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
 
 			// 6. Assert migrated node
-			NodeGraphFieldContainer fieldContainer = boot().contentDao().getGraphFieldContainer(node, "en");
+			HibNodeFieldContainer fieldContainer = boot().contentDao().getGraphFieldContainer(node, "en");
 			assertNull("The node should no longer have a content html graph field", fieldContainer.getHtml("content"));
 		}
 	}
@@ -451,8 +451,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// Validate schema changes and versions
 		try (Tx tx = tx()) {
-			OrientDBUserDao userDao = tx.userDao();
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			UserDao userDao = tx.userDao();
+			SchemaDao schemaDao = tx.schemaDao();
 
 			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, Iterators.size(schemaDao.findAllVersions(container).iterator()));
 			assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
@@ -610,7 +610,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// node must be migrated for initial branch
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 
 			assertThat(contentDao.getGraphFieldContainer(content, "en", initialBranchUuid(), ContainerType.DRAFT))
 				.isOf(schemaContainer.getLatestVersion());

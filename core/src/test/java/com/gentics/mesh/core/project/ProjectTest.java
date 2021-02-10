@@ -16,9 +16,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -158,8 +158,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBUserDao userDao = tx.userDao();
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
@@ -179,7 +179,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			HibProject project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());

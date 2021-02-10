@@ -1,5 +1,7 @@
 package com.gentics.mesh.distributed.coordinatortoken;
 
+import org.junit.Ignore;
+
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 /**
@@ -17,6 +19,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
  * </ul>
  *
  */
+@Ignore
 public class ClusterCoordinatorTokenTestLocal extends AbstractClusterCoordinatorTokenTest {
 
 	@Override

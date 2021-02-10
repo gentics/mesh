@@ -19,9 +19,10 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -50,7 +51,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
@@ -67,14 +68,14 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
+			HibBinary binaryA = ((GraphDBTx) tx).binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
+			HibBinary binaryB = ((GraphDBTx) tx).binaries().create("someHashB", 200L).runInExistingTx(tx);
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
 
@@ -88,9 +89,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String indexName = OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = OrientDBContentDao.composeDocumentId(nodeB.getUuid(), "en");
+			String id = ContentDao.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();
@@ -119,21 +120,21 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
+			HibBinary binaryA = ((GraphDBTx) tx).binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
-			BinaryGraphField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
+			HibBinary binaryB = ((GraphDBTx) tx).binaries().create("someHashB", 200L).runInExistingTx(tx);
+			HibBinaryField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
@@ -143,9 +144,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String indexName = OrientDBContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = OrientDBContentDao.composeDocumentId(nodeB.getUuid(), "en");
+			String id = ContentDao.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();

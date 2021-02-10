@@ -37,7 +37,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -85,7 +85,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		Set<String> childrenUuids = new HashSet<>();
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			assertThat(nodeDao.getChildren(node, initialBranchUuid())).as("The node must have children").isNotEmpty();
 			for (HibNode child : nodeDao.getChildren(node, initialBranchUuid())) {
 				collectUuids(child, childrenUuids);
@@ -282,7 +282,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		String uuid = tx(() -> node.getUuid());
 
 		HibBranch newBranch = tx(tx -> {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			// Publish the node
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(node, mockActionContext(), bac);
@@ -623,7 +623,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	 * @param childrenUuids
 	 */
 	private void collectUuids(HibNode child, Set<String> childrenUuids) {
-		OrientDBNodeDao nodeDao = Tx.get().nodeDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
 		childrenUuids.add(child.getUuid());
 		for (HibNode subchild : nodeDao.getChildren(child, initialBranchUuid())) {
 			collectUuids(subchild, childrenUuids);

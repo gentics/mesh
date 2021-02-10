@@ -6,6 +6,7 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -16,6 +17,7 @@ import com.gentics.mesh.test.docker.MeshContainer;
 /**
  * Test how a cluster behaves with more than two nodes.
  */
+@Ignore
 public class MultiNodeClusterTest extends AbstractClusterTest {
 
 	private static final int STARTUP_TIMEOUT = 500;

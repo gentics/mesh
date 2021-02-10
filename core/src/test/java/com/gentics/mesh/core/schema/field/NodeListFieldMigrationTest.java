@@ -21,6 +21,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.node.NodeListFieldTestHelper;
@@ -29,7 +30,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest implements NodeListFieldTestHelper {
 	private final DataProvider FILL = (container, name) -> {
-		NodeGraphFieldList field = container.createNodeList(name);
+		HibNodeFieldList field = container.createNodeList(name);
 		field.createNode("0", folder("2015"));
 		field.createNode("1", folder("news"));
 	};

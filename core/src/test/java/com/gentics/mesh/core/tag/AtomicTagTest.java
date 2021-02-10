@@ -8,8 +8,8 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBTagDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -24,8 +24,8 @@ public class AtomicTagTest extends AbstractMeshTest {
 	@Test
 	public void testTagCreation() throws Exception {
 		try (Tx tx = tx()) {
-			OrientDBUserDao userDao = tx.userDao();
-			OrientDBTagDao tagDao = tx.tagDao();
+			UserDao userDao = tx.userDao();
+			TagDao tagDao = tx.tagDao();
 
 			HibUser user = userDao.create("test", null);
 			LanguageRoot languageRoot = boot().languageRoot();

@@ -6,12 +6,14 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.test.docker.MeshContainer;
 
+@Ignore
 public class ClusterCoordinatorPlaneTest extends AbstractClusterTest {
 
 	private static String coordinatorRegex = "nodeA";

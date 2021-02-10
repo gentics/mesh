@@ -9,8 +9,8 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -39,8 +39,8 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 
 		// 3. Revoke all read perm from all nodes also read_published from /News
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			RoleDao roleDao = tx.roleDao();
+			NodeDao nodeDao = tx.nodeDao();
 			for (HibNode node : nodeDao.findAll(project())) {
 				roleDao.revokePermissions(role(), node, InternalPermission.READ_PERM);
 			}

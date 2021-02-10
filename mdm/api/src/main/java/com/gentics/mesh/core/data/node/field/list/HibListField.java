@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field.list;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicroschemaListableField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -14,7 +15,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
  * @param <RM>
  * @param <U>
  */
-public interface HibListField<T extends HibListableField, RM extends Field, U> extends HibMicroschemaListableField, HibTransformableListField<RM> {
+public interface HibListField<T extends HibListableField, RM extends Field, U> extends HibMicroschemaListableField, HibTransformableListField<RM>, HibBaseElement {
 
 	/**
 	 * Return the items of the list.

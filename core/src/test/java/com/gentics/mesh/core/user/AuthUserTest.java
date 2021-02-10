@@ -7,8 +7,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -22,8 +22,8 @@ public class AuthUserTest extends AbstractMeshTest {
 	@Test
 	public void testAuthorization() throws Exception {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBUserDao userDao = Tx.get().userDao();
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = Tx.get().userDao();
 
 			InternalActionContext ac = mockActionContext();
 			HibUser requestUser = ac.getUser();

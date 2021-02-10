@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -120,7 +120,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 	}
 
 	private long createUsers(int nUsers) {
-		OrientDBUserDao userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 
 		// Create extra users
 		for (int i = 0; i < nUsers; i++) {

@@ -16,9 +16,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -79,8 +79,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String projectName = created.getName();
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBProjectDao projectDao = tx.projectDao();
+			RoleDao roleDao = tx.roleDao();
+			ProjectDao projectDao = tx.projectDao();
 
 			HibProject extraProject = projectDao.findByUuid(created.getUuid());
 			// Add only read perms
@@ -106,7 +106,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			HibProject extraProject = projectRoot.findByUuid(created.getUuid());
 			assertNotNull("The schema should be added to the extra project", schemaDao.findByUuid(extraProject, schemaUuid));
@@ -124,8 +124,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String projectUuid = response.getUuid();
 
 		HibProject extraProject = tx((tx) -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBProjectDao projectDao = tx.projectDao();
+			RoleDao roleDao = tx.roleDao();
+			ProjectDao projectDao = tx.projectDao();
 			// Revoke Update perm on project
 			HibProject p = projectDao.findByUuid(projectUuid);
 			roleDao.revokePermissions(role(), p, UPDATE_PERM);
@@ -136,7 +136,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			// Reload the schema and check for expected changes
 			HibSchema schema = schemaContainer("content");
 			assertFalse("The schema should not have been added to the extra project but it was",
@@ -153,7 +153,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schema.getUuid());
 
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			assertTrue("The schema should be assigned to the project.", schemaDao.contains(project, schema));
 		}
 
@@ -178,7 +178,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			list.getData().stream().filter(s -> s.getUuid().equals(schemaUuid)).count());
 
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			assertFalse("The schema should no longer be assigned to the project.", schemaDao.contains(project, schema));
 		}
 	}
@@ -187,8 +187,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
 		HibSchema schema = schemaContainer("content");
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			RoleDao roleDao = tx.roleDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			assertTrue("The schema should be assigned to the project.", schemaDao.contains(project(), schema));
 			// Revoke update perms on the project
 			roleDao.revokePermissions(role(), project(), UPDATE_PERM);
@@ -196,7 +196,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schema.getUuid()), FORBIDDEN, "error_missing_perm", projectUuid(),
 				UPDATE_PERM.getRestPerm().getName());
 			// Reload the schema and check for expected changes

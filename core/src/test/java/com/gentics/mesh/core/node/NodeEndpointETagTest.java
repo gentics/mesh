@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -155,7 +155,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			String actualEtag = callETag(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, actualEtag);

@@ -22,9 +22,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -167,8 +167,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBinary(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBinary(FIELD_NAME)).isNotNull();

@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -32,7 +32,7 @@ public class MicroschemaEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			OrientDBMicroschemaDao microschemaDao = tx.microschemaDao();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
 			HibMicroschema schema = microschemaContainers().get("vcard");
 
 			String actualEtag = callETag(() -> client().findMicroschemaByUuid(schema.getUuid()));

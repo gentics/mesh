@@ -13,12 +13,12 @@ import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
 
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -80,7 +80,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	}
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
-		OrientDBContentDao contentDao = boot().contentDao();
+		ContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
@@ -93,7 +93,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode field to the tested content
 	 */
 	protected void addMicronodeField() {
-		OrientDBContentDao contentDao = boot().contentDao();
+		ContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -102,7 +102,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(vcardFieldSchema);
 
-		MicronodeGraphField vcardField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronode("vcard",
+		HibMicronodeField vcardField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronode("vcard",
 			microschemaContainers().get("vcard").getLatestVersion());
 		vcardField.getMicronode().createString("firstName").setString("Mickey");
 		vcardField.getMicronode().createString("lastName").setString("Mouse");
@@ -112,7 +112,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode list field to the tested content
 	 */
 	protected void addMicronodeListField() {
-		OrientDBContentDao contentDao = boot().contentDao();
+		ContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 
 		// Update the schema
@@ -123,9 +123,9 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(vcardListFieldSchema);
 
-		MicronodeGraphFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeFieldList("vcardlist");
+		HibMicronodeFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
-			Micronode micronode = vcardListField.createMicronode();
+			HibMicronode micronode = vcardListField.createMicronode();
 			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 			micronode.createString("firstName").setString(testdata.v1());
 			micronode.createString("lastName").setString(testdata.v2());
@@ -139,7 +139,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a node list field to the tested content
 	 */
 	protected void addNodeListField() {
-		OrientDBContentDao contentDao = boot().contentDao();
+		ContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 
 		// Update the schema
@@ -151,7 +151,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		schema.addField(nodeListFieldSchema);
 
 		// create a non-empty list for the english version
-		NodeGraphFieldList nodeListField = contentDao.getLatestDraftFieldContainer(node, english()).createNodeList("nodelist");
+		HibNodeFieldList nodeListField = contentDao.getLatestDraftFieldContainer(node, english()).createNodeList("nodelist");
 		nodeListField.addItem(nodeListField.createNode("testNode", node));
 
 		// create an empty list for the german version

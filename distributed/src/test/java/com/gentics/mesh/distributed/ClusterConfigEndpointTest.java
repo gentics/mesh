@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -16,6 +17,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.test.docker.MeshContainer;
 
+@Ignore
 public class ClusterConfigEndpointTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

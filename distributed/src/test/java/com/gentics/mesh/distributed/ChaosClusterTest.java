@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -19,6 +20,7 @@ import com.gentics.mesh.test.docker.MeshContainer;
 /**
  * A test which will randomly add, remove, utilize and stop nodes in a mesh cluster.
  */
+@Ignore
 public class ChaosClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

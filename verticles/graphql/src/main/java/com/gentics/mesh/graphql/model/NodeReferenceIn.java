@@ -3,10 +3,10 @@ package com.gentics.mesh.graphql.model;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.util.Lazy;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 

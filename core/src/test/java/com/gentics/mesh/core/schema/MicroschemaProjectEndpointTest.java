@@ -17,8 +17,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -81,7 +81,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		HibMicroschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -96,7 +96,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 		try (Tx tx = tx()) {
-			OrientDBMicroschemaDao microschemaDao = tx.microschemaDao();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
 			MicroschemaResponse restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
 			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
 			assertNotNull("The microschema should be added to the extra project",
@@ -110,7 +110,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		String microschemaUuid;
 		HibProject extraProject;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibMicroschema microschema = microschemaContainer("vcard");
 			microschemaUuid = microschema.getUuid();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
@@ -129,7 +129,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			OrientDBMicroschemaDao microschemaDao = tx.microschemaDao();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
 			// Reload the microschema and check for expected changes
 			HibMicroschema microschema = microschemaContainer("vcard");
 
@@ -179,7 +179,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		HibMicroschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertTrue("The microschema should be assigned to the project.", tx.microschemaDao().contains(project, microschema));
 			// Revoke update perms on the project
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);

@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.action;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.action.impl.DAOActionContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.db.Tx;
 
 /**
  * Context for a DAO action operation. The context contains information about the scope of the operation.

@@ -13,13 +13,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
-import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
-import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
-import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -61,12 +61,12 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		db.tx(tx -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBUserDao userDao = tx.userDao();
-			OrientDBGroupDao groupDao = tx.groupDao();
-			OrientDBProjectDao projectDao = tx.projectDao();
-			OrientDBContentDao contentDao = tx.contentDao();
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
+			GroupDao groupDao = tx.groupDao();
+			ProjectDao projectDao = tx.projectDao();
+			ContentDao contentDao = tx.contentDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
 			assertTrue(nodeDao.computeCount(project) > 0);
@@ -88,14 +88,14 @@ public class DemoDumpGeneratorTest {
 
 			// Verify that all documents are stored in the index
 			for (HibNode node : nodeDao.findAll(project)) {
-				NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, "en");
+				HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, "en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
 				String branchUuid = node.getProject().getInitialBranch().getUuid();
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
 				ContainerType type = PUBLISHED;
-				String indexName = OrientDBContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
-				String documentId = OrientDBContentDao.composeDocumentId(node.getUuid(), languageTag);
+				String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
+				String documentId = ContentDao.composeDocumentId(node.getUuid(), languageTag);
 				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
 						+ "} could not be found within index {" + indexName + "} - {" + documentId + "}";

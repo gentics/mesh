@@ -24,7 +24,7 @@ import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
@@ -119,14 +119,14 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 
 			roleDao.grantPermissions(role(), element, perm);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
 				+ "} although we granted those permissions.", roleDao.hasPermission(role(), perm, element));
 			assertTrue("The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid() + "/" + element.getClass()
@@ -134,14 +134,14 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), element, perm);
 			rc.data().clear();
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			boolean hasPerm = roleDao.hasPermission(role(), perm, element);
 			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {" + element
 				.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);

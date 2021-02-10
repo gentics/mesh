@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.function.BiConsumer;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.graphdb.spi.Database;
 

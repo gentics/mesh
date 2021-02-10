@@ -12,8 +12,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -36,7 +36,7 @@ public class UserIndexSyncTest extends AbstractMeshTest {
 		int nUsers = 20;
 
 		try (Tx tx = tx()) {
-			OrientDBUserDao userDao = tx.userDao();
+			UserDao userDao = tx.userDao();
 			// Create extra users
 			for (int i = 0; i < nUsers; i++) {
 				userDao.create("Anton" + i, user());
@@ -56,8 +56,8 @@ public class UserIndexSyncTest extends AbstractMeshTest {
 
 		// Create a new user
 		String newUserUuid = tx(tx -> {
-			OrientDBUserDao userDao = tx.userDao();
-			OrientDBRoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
+			RoleDao roleDao = tx.roleDao();
 
 			HibUser user = userDao.create(newUsername, user());
 			roleDao.grantPermissions(role(), user, InternalPermission.values());

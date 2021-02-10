@@ -2,9 +2,9 @@ package com.gentics.mesh.test.context.helper;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
 import com.gentics.mesh.core.db.TxAction1;

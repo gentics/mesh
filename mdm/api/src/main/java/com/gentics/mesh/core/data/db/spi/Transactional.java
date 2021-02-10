@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.db.spi;
 
 
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.Tx;
 
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;

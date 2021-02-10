@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -43,7 +44,7 @@ public class OrientDBServerTest extends AbstractOrientDBTest {
 		for (int i = 0; i < 100; i++) {
 			int e = i;
 			db.tx(tx -> {
-				Person p = tx.getGraph().addFramedVertex(Person.class);
+				Person p = ((GraphDBTx) tx).getGraph().addFramedVertex(Person.class);
 				p.setName("personName_" + e);
 				tx.success();
 				Thread.sleep(5000);

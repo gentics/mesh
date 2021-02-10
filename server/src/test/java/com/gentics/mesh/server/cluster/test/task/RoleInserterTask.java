@@ -1,6 +1,7 @@
 package com.gentics.mesh.server.cluster.test.task;
 
 import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.orientechnologies.common.concur.ONeedRetryException;
@@ -25,7 +26,7 @@ public class RoleInserterTask extends AbstractLoadTask {
 	 * @return
 	 */
 	public Vertex createRole(Tx tx, String uuid) {
-		Vertex v = tx.getGraph().addVertex("class:" + ROLE);
+		Vertex v = ((GraphDBTx) tx).getGraph().addVertex("class:" + ROLE);
 		v.setProperty("uuid", uuid);
 		v.setProperty("name", "SOME VALUE" + System.nanoTime());
 		return v;

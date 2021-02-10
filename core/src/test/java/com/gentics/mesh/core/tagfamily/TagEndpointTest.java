@@ -20,8 +20,8 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -105,7 +105,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			assertNotNull(tagFamilyDao.findByName("colors"));
 		}
 	}
@@ -114,7 +114,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamily("colors");
 
 			HibTagFamily foundTagFamily = tagFamilyDao.findByUuid(tagFamily.getUuid());
@@ -138,7 +138,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCreate() throws IOException {
 		try (Tx tx = tx()) {
-			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily family = tagFamilyDao.create(project(), "test", user());
 			HibTagFamily family2 = tagFamilyDao.findByName(project(), family.getName());
 			assertNotNull(family2);
@@ -152,7 +152,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testDelete() {
 		BulkActionContext context = createBulkContext();
 		try (Tx tx = tx()) {
-			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamily("colors");
 			tagFamilyDao.delete(tagFamily, context);
 			tx.success();
@@ -211,7 +211,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -226,7 +226,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
 			assertNotNull(tagFamily);
 			String uuid = tagFamily.getUuid();
@@ -245,8 +245,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			OrientDBUserDao userDao = tx.userDao();
-			OrientDBTagFamilyDao tagFamilyDao = tx.tagFamilyDao();
+			UserDao userDao = tx.userDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
 			assertFalse(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user(), toGraph(project()).getTagFamilyRoot(), tagFamily);

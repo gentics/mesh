@@ -49,12 +49,14 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBSchemaDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -118,7 +120,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		assertThat(trackingSearchProvider()).hasStore(Schema.composeIndexName(), Schema.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
@@ -161,7 +163,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 		String schemaRootUuid = db().tx(() -> meshRoot().getSchemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), meshRoot().getSchemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -215,8 +217,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		final int nSchemas = 22;
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			RoleDao roleDao = tx.roleDao();
+			SchemaDao schemaDao = tx.schemaDao();
 
 			// Create schema with no read permission
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
@@ -359,7 +361,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 		tx(tx -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibSchema schema = schemaContainer("content");
 			roleDao.grantPermissions(role(), schema, DELETE_PERM);
 			roleDao.grantPermissions(role(), schema, UPDATE_PERM);
@@ -573,7 +575,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			
 			HibSchema schema = schemaContainer("content");
 			String oldName = schema.getName();
@@ -591,7 +593,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			HibSchema schema = schemaContainer("content");
 			assertThat(schemaDao.getNodes(schema)).isNotEmpty();
 		}
@@ -611,15 +613,15 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String jobUuid = tx(() -> schemaContainer("content").getLatestVersion().referencedJobsViaTo().iterator().next().getUuid());
 
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			HibSchema reloaded = schemaDao.findByUuid(uuid);
 
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(schemaDao.getNodes(reloaded)).isNotEmpty();
 			BulkActionContext context = createBulkContext();
-			for (Node node : schemaDao.getNodes(reloaded)) {
-				node.delete(context);
+			for (HibNode node : schemaDao.getNodes(reloaded)) {
+				((Node) node).delete(context);
 			}
 			assertThat(schemaDao.getNodes(reloaded)).isEmpty();
 			tx.success();
@@ -627,7 +629,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		String versionUuid = tx(() -> schemaContainer("content").getLatestVersion().getUuid());
 		assertTrue("The version should exist.", tx(tx -> {
-			return tx.getGraph().getVertices("uuid", versionUuid).iterator().hasNext();
+			return ((GraphDBTx) tx).getGraph().getVertices("uuid", versionUuid).iterator().hasNext();
 		}));
 
 		expect(SCHEMA_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
@@ -640,10 +642,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			OrientDBSchemaDao schemaDao = tx.schemaDao();
-			assertFalse("The referenced job should have been deleted", tx.getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
+			SchemaDao schemaDao = tx.schemaDao();
+			assertFalse("The referenced job should have been deleted", ((GraphDBTx) tx).getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
 			HibSchema reloaded = schemaDao.findByUuid(uuid);
-			assertFalse("The version of the schema container should have been deleted as well.", tx.getGraph().getVertices("uuid", versionUuid)
+			assertFalse("The version of the schema container should have been deleted as well.", ((GraphDBTx) tx).getGraph().getVertices("uuid", versionUuid)
 				.iterator().hasNext());
 			assertNull("The schema should have been deleted.", reloaded);
 		}
@@ -654,7 +656,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		HibSchema schema = schemaContainer("content");
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), schema, DELETE_PERM);
 			tx.success();
 		}
@@ -740,7 +742,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String schemaUuid;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 
 			HibSchema schema = schemaContainer("content");
 			roleDao.revokePermissions(role(), schema, UPDATE_PERM);

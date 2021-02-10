@@ -10,11 +10,11 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -77,7 +77,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
 				HibNode node = folder("2015");
-				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
+				HibNodeFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 				String oldValue = getStringValue(container, FIELD_NAME);
 
 				String newValue = "content " + i;
@@ -116,9 +116,9 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getString(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getString(FIELD_NAME)).isNotNull();
@@ -159,8 +159,8 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return string value (may be null)
 	 */
-	protected String getStringValue(NodeGraphFieldContainer container, String fieldName) {
-		StringGraphField field = container.getString(fieldName);
+	protected String getStringValue(HibNodeFieldContainer container, String fieldName) {
+		HibStringField field = container.getString(fieldName);
 		return field != null ? field.getString() : null;
 	}
 
@@ -179,9 +179,9 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			StringGraphField stringField = container.createString(FIELD_NAME);
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibStringField stringField = container.createString(FIELD_NAME);
 			stringField.setString("someString");
 			tx.success();
 		}

@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -123,7 +123,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have both webrootpath properties set
 		try (Tx tx1 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(folder("products"), language);
+				NodeGraphFieldContainer container = (NodeGraphFieldContainer) boot().contentDao().getGraphFieldContainer(folder("products"), language);
 				GraphFieldContainerEdge draftEdge = container.getContainerEdge(DRAFT, initialBranchUuid()).next();
 				assertThat(draftEdge.getSegmentInfo()).isNotNull();
 				GraphFieldContainerEdge publishEdge = container.getContainerEdge(PUBLISHED, initialBranchUuid()).next();
@@ -137,7 +137,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have only the draft webrootpath properties set
 		try (Tx tx2 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(folder("products"), language);
+				NodeGraphFieldContainer container = (NodeGraphFieldContainer) boot().contentDao().getGraphFieldContainer(folder("products"), language);
 				GraphFieldContainerEdge draftEdge = container.getContainerEdge(DRAFT, initialBranchUuid()).next();
 				assertThat(draftEdge.getSegmentInfo()).isNotNull();
 				assertFalse(container.getContainerEdge(PUBLISHED, initialBranchUuid()).hasNext());
@@ -184,7 +184,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				OrientDBRoleDao roleDao = tx.roleDao();
+				RoleDao roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});
@@ -202,7 +202,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				OrientDBRoleDao roleDao = tx.roleDao();
+				RoleDao roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});

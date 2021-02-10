@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.context.impl.LoggingConfigurator;
@@ -29,6 +30,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * These tests require the test plugins to be build. You can build these plugins using the /core/build-test-plugins.sh script.
  */
+@Ignore
 public class PluginClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

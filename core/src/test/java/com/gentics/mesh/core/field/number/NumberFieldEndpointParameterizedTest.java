@@ -12,11 +12,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.test.Assert;
@@ -85,9 +85,9 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 	public void testReadNodeWithExistingField() throws IOException {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			NumberGraphField numberField = container.createNumber(FIELD_NAME);
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNumberField numberField = container.createNumber(FIELD_NAME);
 			numberField.setNumber(this.num);
 			tx.success();
 		}

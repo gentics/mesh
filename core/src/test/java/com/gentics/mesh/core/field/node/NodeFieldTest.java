@@ -13,15 +13,17 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -52,12 +54,12 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+			Node node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField testField = container.createNode("testField", node);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
@@ -69,9 +71,9 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNode node = tx.getGraph().addFramedVertex(NodeImpl.class);
+			HibNode node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField field = container.createNode("testNodeField", node);
 			assertNotNull(field);
 			assertEquals("testNodeField", field.getFieldKey());
@@ -93,7 +95,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 			// 1. Create the node field schema and add it to the schema of the node
@@ -102,7 +104,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// 2. Add the node reference to the node fields
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(NODE_FIELD, newsNode);
 			tx.success();
 		}
@@ -124,7 +126,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("fieldA", folder("2015"));
 			NodeGraphField fieldB = container.createNode("fieldB", folder("2014"));
 			NodeGraphField fieldC = container.createNode("fieldC", folder("2015"));
@@ -140,7 +142,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("field1", content());
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -151,7 +153,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("field1", content());
 
 			// graph set - rest set - same value - different type
@@ -215,7 +217,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 				field.setUuid(content().getUuid());
 				updateContainer(ac, container, NODE_FIELD, field);
 			}, (container) -> {
-				NodeGraphField field = container.getNode(NODE_FIELD);
+				HibNodeField field = container.getNode(NODE_FIELD);
 				assertNotNull("The graph field {" + NODE_FIELD + "} could not be found.", field);
 				assertEquals("The node reference of the field was not updated.", content().getUuid(), field.getNode().getUuid());
 			});

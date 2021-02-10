@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.FieldUtil.createStringField;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
@@ -12,7 +13,6 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
@@ -49,14 +49,14 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
-import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
-import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -308,7 +308,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), folder("news"), CREATE_PERM);
 			tx.success();
 		}
@@ -406,7 +406,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			() -> client().createNode(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
@@ -436,7 +436,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			initialBranchUuid)));
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
@@ -453,7 +453,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -570,7 +570,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), schemaContainer("content"), READ_PERM);
 			tx.success();
 		}
@@ -596,7 +596,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Revoke create perm
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), folder("news"), CREATE_PERM);
 			tx.success();
 		}
@@ -640,8 +640,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadMultipleAndAssertOrder() {
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
-			OrientDBRoleDao roleDao = tx.roleDao();
+			NodeDao nodeDao = tx.nodeDao();
+			RoleDao roleDao = tx.roleDao();
 			HibNode parentNode = folder("2015");
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
@@ -694,7 +694,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadMultiple() throws Exception {
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode parentNode = folder("2015");
 			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 			HibNode noPermNode = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
@@ -786,7 +786,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L),
 				new VersioningParametersImpl().draft()));
@@ -874,7 +874,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		while (!nodes.isEmpty()) {
 			HibNode folder = nodes.remove(0);
 			tx((tx) -> {
-				OrientDBRoleDao roleDao = tx.roleDao();
+				RoleDao roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), folder, READ_PUBLISHED_PERM);
 				roleDao.revokePermissions(role(), folder, READ_PERM);
 				tx.success();
@@ -911,7 +911,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		for (HibNode node : nodes) {
 			// Revoke the read perm but keep the read published perm on the node
 			tx((tx) -> {
-				OrientDBRoleDao roleDao = tx.roleDao();
+				RoleDao roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), node, READ_PERM);
 				roleDao.grantPermissions(role(), node, READ_PUBLISHED_PERM);
 				tx.success();
@@ -966,7 +966,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 3. Revoke permissions and only grant read_published
 		tx((tx) -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibNode node = content();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			roleDao.revokePermissions(role(), node, CREATE_PERM);
@@ -1010,7 +1010,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid;
 
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode parentNode = folder("news");
 			uuid = parentNode.getUuid();
 
@@ -1051,7 +1051,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			}).blockingAwait();
 
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			long nNodesFoundAfterRest = nodeDao.findAll(project()).count();
 			assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
 		}
@@ -1089,7 +1089,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	@Ignore("Multithreaded update is currently only possible for multiple nodes not a single node")
 	public void testUpdateMultithreaded() throws InterruptedException {
-		OrientDBContentDao contentDao = boot().contentDao();
+		ContentDao contentDao = boot().contentDao();
 		final String newName = "english renamed name";
 		String uuid = tx(() -> folder("2015").getUuid());
 		assertEquals("2015", tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getString("slug").getString()));
@@ -1161,7 +1161,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = tx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
@@ -1177,7 +1177,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = tx(() -> folder("2015").getUuid());
 		// Remove the editor and creator references to simulate that the user has been deleted.
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			folder("2015").setCreated(null);
 			contentDao.getLatestDraftFieldContainer(folder("2015"), english()).setEditor(null);
 			tx.success();
@@ -1187,7 +1187,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
@@ -1557,14 +1557,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 		HibNode node;
 		try (Tx tx = tx()) {
-			OrientDBNodeDao nodeDao = tx.nodeDao();
-			OrientDBRoleDao roleDao = tx.roleDao();
+			NodeDao nodeDao = tx.nodeDao();
+			RoleDao roleDao = tx.roleDao();
 			// Create node with nl language
 			HibNode parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			node = nodeDao.create(parentNode, user(), version, project());
-			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, languageNl.getLanguageTag(),
+			HibNodeFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
@@ -1616,7 +1616,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibNode node = folder("2015");
 			uuid = node.getUuid();
 			roleDao.revokePermissions(role(), node, READ_PERM);
@@ -1668,11 +1668,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 1. Load Ids / Objects
 		String uuid = tx(() -> content("concorde").getUuid());
 		final HibNode node = tx(() -> content("concorde"));
-		NodeGraphFieldContainer origContainer = tx(tx -> {
-			OrientDBContentDao contentDao = tx.contentDao();
-			OrientDBGroupDao groupRoot = tx.groupDao();
+		HibNodeFieldContainer origContainer = tx(tx -> {
+			ContentDao contentDao = tx.contentDao();
+			GroupDao groupRoot = tx.groupDao();
 			HibNode prod = content("concorde");
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(prod, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(prod, english());
 			assertEquals("Concorde_english_name", container.getString("teaser").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
 			UserInfo userInfo = data().createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
@@ -1712,13 +1712,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String projectUuid = tx(() -> project().getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasStore(OrientDBContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), OrientDBContentDao.composeDocumentId(uuid, "en"));
+		assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
+			ContainerType.DRAFT), ContentDao.composeDocumentId(uuid, "en"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
@@ -1727,11 +1727,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 5. Assert graph changes
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
@@ -1746,9 +1746,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(origContainer.getPreviousVersion()).isFirst();
 
 			// Verify that exactly the selected language was updated
-			String indexName = OrientDBContentDao.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
+			String indexName = ContentDao.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
 				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
-			String documentId = OrientDBContentDao.composeDocumentId(uuid, "en");
+			String documentId = ContentDao.composeDocumentId(uuid, "en");
 			assertThat(trackingSearchProvider()).hasStore(indexName, documentId);
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
@@ -1769,7 +1769,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String projectUuid = tx(() -> project().getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
@@ -1796,8 +1796,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("de", restNode.getLanguage());
 		waitForSearchIdleEvent();
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
-		assertThat(trackingSearchProvider()).hasStore(OrientDBContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), OrientDBContentDao.composeDocumentId(uuid, "de"));
+		assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
+			ContainerType.DRAFT), ContentDao.composeDocumentId(uuid, "de"));
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 	}
@@ -1807,7 +1807,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
 		}
@@ -1904,7 +1904,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateNodeWithExtraField2() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1923,7 +1923,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parameters.setLanguages("de", "en");
 			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), BAD_REQUEST, "node_unhandled_fields", "folder", "[someField]");
 
-			NodeGraphFieldContainer englishContainer = contentDao.getLatestDraftFieldContainer(folder("2015"), english());
+			HibNodeFieldContainer englishContainer = contentDao.getLatestDraftFieldContainer(folder("2015"), english());
 			assertNotEquals("The name should not have been changed.", newName, englishContainer.getString("name").getString());
 		}
 	}
@@ -2098,7 +2098,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibNode node = folder("2015");
 			uuid = node.getUuid();
 			roleDao.revokePermissions(role(), node, DELETE_PERM);

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -111,9 +112,9 @@ public class JobTest extends AbstractMeshTest {
 	public void testJobRootTypeHandling() {
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
-			root.addItem(tx.addVertex(NodeMigrationJobImpl.class));
-			root.addItem(tx.addVertex(MicronodeMigrationJobImpl.class));
-			root.addItem(tx.addVertex(BranchMigrationJobImpl.class));
+			root.addItem(((GraphDBTx) tx).addVertex(NodeMigrationJobImpl.class));
+			root.addItem(((GraphDBTx) tx).addVertex(MicronodeMigrationJobImpl.class));
+			root.addItem(((GraphDBTx) tx).addVertex(BranchMigrationJobImpl.class));
 
 			List<String> list = TestUtils.toList(root.findAll()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
 			assertThat(list).containsExactly(NodeMigrationJobImpl.class.getName(), MicronodeMigrationJobImpl.class.getName(),

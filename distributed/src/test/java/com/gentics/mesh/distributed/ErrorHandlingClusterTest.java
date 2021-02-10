@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -20,6 +21,7 @@ import com.gentics.mesh.test.docker.MeshContainer;
 /**
  * Tests various interacts with the cluster. (e.g.: Adding new nodes, Removing nodes)
  */
+@Ignore
 public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

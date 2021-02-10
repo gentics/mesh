@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -26,7 +27,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setDescription("test");
 			assertEquals("test", change.getDescription());
 		}
@@ -36,10 +37,10 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			MicroschemaVersion version = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			MicroschemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			MicroschemaModelImpl schema = new MicroschemaModelImpl();
 
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setName("updated");
 			change.setIndexOptions(new JsonObject().put("key", "value"));
 			version.setSchema(schema);
@@ -49,7 +50,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 			assertEquals("updated", updatedSchema.getName());
 			assertEquals("value", updatedSchema.getElasticsearch().getString("key"));
 
-			change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setDescription("text");
 			version.setNextChange(change);
 			updatedSchema = mutator.apply(version);
@@ -64,7 +65,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 			SchemaChangeModel model = SchemaChangeModel.createUpdateMicroschemaChange();
 			model.setProperty(SchemaChangeModel.NAME_KEY, "someName");
 
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.updateFromRest(model);
 			assertEquals("someName", change.getName());
 		}
@@ -74,7 +75,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			UpdateMicroschemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setName("vcard");
 
 			SchemaChangeModel model = change.transformToRest();

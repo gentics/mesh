@@ -14,11 +14,10 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -138,7 +137,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
 			Arrays.asList("X", "Y"), Arrays.asList("C"));
 
-		NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			List<String> oldValue;
 			List<String> newValue;
@@ -157,12 +156,12 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 			// Assert the update response
 			try (Tx tx = tx()) {
-				OrientDBContentDao contentDao = tx.contentDao();
+				ContentDao contentDao = tx.contentDao();
 				HtmlFieldListImpl field = response.getFields().getHtmlFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
 				// Assert the update within the graph
-				NodeGraphFieldContainer updatedContainer = contentDao.getNextVersions(container).iterator().next();
+				HibNodeFieldContainer updatedContainer = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("The container version number did not match up with the response version number.",
 					updatedContainer.getVersion().toString(), response.getVersion());
 				assertEquals("We expected container {" + container.getVersion().toString() + "} to contain the old value.", newValue,
@@ -190,8 +189,8 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			OrientDBContentDao contentDao = tx.contentDao();
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHTMLList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHTMLList(FIELD_NAME)).isNotNull();

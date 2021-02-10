@@ -7,8 +7,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -28,8 +28,8 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		String username = "testuser42a";
 		UserResponse response = createUser(username);
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBUserDao userDao = tx.userDao();
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
 			HibUser user = meshRoot().getUserRoot().findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			for (HibRole role : userDao.getRoles(user())) {
@@ -49,8 +49,8 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBUserDao userDao = tx.userDao();
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
 			HibUser user = userDao.findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), user, InternalPermission.READ_PERM);

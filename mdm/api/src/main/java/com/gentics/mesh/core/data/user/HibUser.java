@@ -282,4 +282,10 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	 */
 	MeshAuthUser toAuthUser();
 
+	/**
+	 * A CRC32 hash of the users {@link #getRoles roles}.
+	 *
+	 * @return A hash of the users roles
+	 */
+	String getRolesHash();
 }

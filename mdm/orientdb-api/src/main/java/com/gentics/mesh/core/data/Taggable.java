@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.event.EventQueueBatch;

@@ -13,11 +13,12 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBLanguageDao;
+import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -43,7 +44,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			OrientDBLanguageDao languageDao = tx.languageDao();
+			LanguageDao languageDao = tx.languageDao();
 
 			long nLanguagesBefore = languageDao.globalCount();
 
@@ -60,9 +61,9 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testLanguageIndex() {
 		try (Tx tx = tx()) {
 			stopWatch("languageindex.read", 50000, (step) -> {
-				Iterable<Vertex> it = tx.getGraph().getVertices("LanguageImpl.languageTag", "en");
+				Iterable<Vertex> it = ((GraphDBTx) tx).getGraph().getVertices("LanguageImpl.languageTag", "en");
 				assertTrue(it.iterator().hasNext());
-				Iterable<Vertex> it2 = tx.getGraph().getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY,
+				Iterable<Vertex> it2 = ((GraphDBTx) tx).getGraph().getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY,
 					"en");
 				assertTrue(it2.iterator().hasNext());
 				Vertex vertex = it2.iterator().next();
@@ -173,7 +174,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			OrientDBLanguageDao languageDao = tx.languageDao();
+			LanguageDao languageDao = tx.languageDao();
 			final String languageTag = "tlh";
 			final String languageName = "klingon";
 			HibLanguage lang = languageDao.create(languageName, languageTag);

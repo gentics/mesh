@@ -28,9 +28,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.Tx;
-import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
-import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
-import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -59,7 +59,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		final String roleName = tx(() -> role().getName());
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
@@ -93,7 +93,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		assertThat(trackingSearchProvider()).hasEvents(0, updateEvents, 0, 0, 0);
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertThat(message).matches("role_updated_permission", role().getName());
 			assertFalse(roleDao.hasPermission(role(), InternalPermission.READ_PERM, tagFamily("colors")));
 		}
@@ -102,7 +102,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testRevokeAllPermissionFromProjectByName() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.DELETE_PERM, tagFamily("colors")));
@@ -110,7 +110,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
 			request.getPermissions().setOthers(false);
@@ -123,7 +123,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testAddPermissionToProjectTagFamily() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.DELETE_PERM, tagFamily("colors")));
@@ -143,7 +143,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		assertThat(message).matches("role_updated_permission", roleName);
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertFalse(roleDao.hasPermission(role(), InternalPermission.DELETE_PERM, tagFamily("colors")));
 		}
 	}
@@ -151,7 +151,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testAddPermissionToMicroschema() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
@@ -164,7 +164,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		HibMicroschema vcard;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 
 			// Validate revocation
 			vcard = microschemaContainer("vcard");
@@ -180,7 +180,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertFalse(roleDao.hasPermission(role(), InternalPermission.DELETE_PERM, vcard));
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.UPDATE_PERM, vcard));
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, vcard));
@@ -198,7 +198,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setOthers(false);
 
 		tx(tx -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertTrue("The role should have read permission on the group.", roleDao.hasPermission(role(), InternalPermission.READ_PERM, group()));
 		});
 
@@ -206,7 +206,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		assertThat(message).matches("role_updated_permission", tx(() -> role().getName()));
 
 		tx(tx -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertFalse("The role should no longer have read permission on the group.",
 				roleDao.hasPermission(role(), InternalPermission.READ_PERM, group()));
 		});
@@ -225,7 +225,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setOthers(false);
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertTrue("The role should have delete permission on the group.", roleDao.hasPermission(role(), DELETE_PERM, group()));
 		}
 
@@ -261,7 +261,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertFalse("The role should no longer have delete permission on the group.", roleDao.hasPermission(role(), DELETE_PERM, group()));
 		}
 
@@ -270,7 +270,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testGrantPermToProjectByName() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.DELETE_PERM, tagFamily("colors")));
@@ -284,7 +284,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		assertThat(response).hasPerm(Permission.basicPermissions());
 
 		tx(tx -> {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), project(), DELETE_PERM);
 		});
 
@@ -299,7 +299,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testReadPermissionsOnProjectTagFamily() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.DELETE_PERM, tagFamily("colors")));
@@ -315,7 +315,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testApplyPermissionsOnTag() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.DELETE_PERM, tagFamily("colors")));
@@ -331,7 +331,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, tag("red")));
 		}
 	}
@@ -339,7 +339,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testApplyPermissionsOnTags() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.DELETE_PERM, tagFamily("colors")));
@@ -355,7 +355,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setDelete(true);
 		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertFalse("The perm of the tag should not change since the action currently only affects the tag family itself",
 				roleDao.hasPermission(role(), DELETE_PERM, tag("red")));
 			assertTrue("The tag family perm did not change", roleDao.hasPermission(role(), DELETE_PERM, tagFamily("colors")));
@@ -365,7 +365,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testApplyCreatePermissionsOnTagFamily() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
@@ -384,7 +384,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setOthers(true);
 		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertFalse("The perm of the tag should not change since the action currently only affects the tag family itself",
 				roleDao.hasPermission(role(), CREATE_PERM, tag("red")));
 			assertTrue("The tag family perm did not change", roleDao.hasPermission(role(), CREATE_PERM, tagFamily("colors")));
@@ -399,8 +399,8 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		String roleUuid;
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBGroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
+			GroupDao groupDao = tx.groupDao();
 			HibGroup testGroup = groupDao.create("testGroup", user());
 			HibRole testRole = tx.roleDao().create("testRole", user());
 			HibUser testUser = tx.userDao().create("test", user());
@@ -444,8 +444,8 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testAddPermissionToNode() {
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
-			OrientDBUserDao userDao = tx.userDao();
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
 			HibNode node = folder("2015");
 			roleDao.revokePermissions(role(), node, InternalPermission.UPDATE_PERM);
 			assertFalse(roleDao.hasPermission(role(), InternalPermission.UPDATE_PERM, node));
@@ -467,7 +467,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			OrientDBRoleDao roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.UPDATE_PERM, node));
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, node));
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.READ_PERM, node));
