@@ -26,15 +26,8 @@ public class PluginConfigTest implements MeshOptionsTypeUnawareContext {
 	public static MeshOptions options;
 
 	@Before
-	public void setupMeshOptions() {
-		options = getOptions();
-		options.setNodeName("ABC");
-		options.getAuthenticationOptions().setKeystorePassword("ABC");
-		options.setPluginDirectory(PLUGIN_DIR);
-	}
-
-	@Before
 	public void cleanConfigFiles() {
+		setupMeshOptions();
 		DummyPlugin plugin = mockPlugin();
 		plugin.getConfigFile().delete();
 		plugin.getLocalConfigFile().delete();
@@ -78,6 +71,13 @@ public class PluginConfigTest implements MeshOptionsTypeUnawareContext {
 		config = plugin.readConfig(DummyPluginConfig.class);
 		assertEquals("local", config.getName());
 
+	}
+
+	private void setupMeshOptions() {
+		options = getOptions();
+		options.setNodeName("ABC");
+		options.getAuthenticationOptions().setKeystorePassword("ABC");
+		options.setPluginDirectory(PLUGIN_DIR);
 	}
 
 	private DummyPlugin mockPlugin() {
