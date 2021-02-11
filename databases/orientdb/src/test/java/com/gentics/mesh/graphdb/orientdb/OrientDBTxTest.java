@@ -12,8 +12,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;

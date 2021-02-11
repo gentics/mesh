@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -34,6 +33,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;

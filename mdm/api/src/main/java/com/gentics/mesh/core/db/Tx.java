@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data;
+package com.gentics.mesh.core.db;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;

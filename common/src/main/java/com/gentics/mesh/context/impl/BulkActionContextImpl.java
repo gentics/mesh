@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 

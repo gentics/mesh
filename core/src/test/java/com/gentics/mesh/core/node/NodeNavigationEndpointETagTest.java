@@ -6,7 +6,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 

@@ -10,7 +10,6 @@ import java.util.function.Function;
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.action.TagDAOActions;
 import com.gentics.mesh.core.data.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.dao.TagDao;
@@ -19,6 +18,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;

@@ -14,9 +14,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;

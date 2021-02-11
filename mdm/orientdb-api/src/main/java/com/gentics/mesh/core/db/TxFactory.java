@@ -15,8 +15,6 @@
  */
 package com.gentics.mesh.core.db;
 
-import com.gentics.mesh.core.data.Tx;
-
 /**
  * Interface which can be used for custom transaction factories in 
  * order to provide various ways of executing transaction handlers.

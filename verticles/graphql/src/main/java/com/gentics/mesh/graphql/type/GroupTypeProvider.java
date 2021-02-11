@@ -9,9 +9,9 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 

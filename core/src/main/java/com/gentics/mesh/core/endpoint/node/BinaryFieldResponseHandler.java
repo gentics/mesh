@@ -9,11 +9,11 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.handler.RangeRequestHandler;

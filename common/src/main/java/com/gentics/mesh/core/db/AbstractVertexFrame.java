@@ -4,7 +4,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.db.BaseTransaction;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;

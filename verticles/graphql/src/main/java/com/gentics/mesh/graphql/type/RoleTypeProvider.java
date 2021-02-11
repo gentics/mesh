@@ -9,9 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 

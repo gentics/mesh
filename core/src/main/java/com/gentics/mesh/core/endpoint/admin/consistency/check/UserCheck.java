@@ -9,12 +9,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;

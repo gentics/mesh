@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.dagger;
 
-import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 

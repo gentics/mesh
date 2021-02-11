@@ -9,7 +9,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.action.DAOActionContext;
 import com.gentics.mesh.core.data.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -18,6 +17,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;

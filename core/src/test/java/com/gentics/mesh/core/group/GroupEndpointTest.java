@@ -38,13 +38,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;

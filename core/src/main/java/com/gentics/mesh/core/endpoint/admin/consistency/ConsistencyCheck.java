@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin.consistency;
 
-import com.gentics.mesh.core.data.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**

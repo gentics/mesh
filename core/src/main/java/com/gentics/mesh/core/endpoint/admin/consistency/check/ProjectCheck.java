@@ -12,7 +12,6 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
@@ -21,6 +20,7 @@ import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;

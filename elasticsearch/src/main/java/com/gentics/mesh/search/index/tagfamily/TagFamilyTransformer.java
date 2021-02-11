@@ -6,9 +6,9 @@ import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.util.ETag;

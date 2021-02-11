@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.db.Tx;
 
 public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGraphFieldContainerAssert, HibNodeFieldContainer> {
 

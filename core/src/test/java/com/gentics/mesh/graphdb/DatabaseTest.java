@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.madl.field.FieldType;

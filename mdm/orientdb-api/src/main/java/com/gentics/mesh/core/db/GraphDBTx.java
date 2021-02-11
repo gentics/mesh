@@ -3,7 +3,6 @@ package com.gentics.mesh.core.db;
 import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;

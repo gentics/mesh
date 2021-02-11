@@ -11,9 +11,9 @@ import java.util.HashSet;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;

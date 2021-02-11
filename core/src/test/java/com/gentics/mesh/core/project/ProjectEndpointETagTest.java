@@ -6,8 +6,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.client.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;

@@ -5,12 +5,12 @@ import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 

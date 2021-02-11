@@ -9,12 +9,12 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.MathUtil;

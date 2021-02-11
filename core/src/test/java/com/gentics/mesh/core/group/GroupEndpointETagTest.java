@@ -11,9 +11,9 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;

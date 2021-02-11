@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.field.binary;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.Tx;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.core.graph.GraphAttribute;
