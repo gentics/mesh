@@ -16,7 +16,6 @@ import org.junit.rules.RuleChain;
 import com.gentics.mesh.test.docker.MeshContainer;
 import com.google.common.collect.Lists;
 
-@Ignore
 public class SplitBrainTest {
 
 	private static final int STARTUP_TIMEOUT = 500;

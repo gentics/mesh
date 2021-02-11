@@ -19,7 +19,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
  * </ul>
  *
  */
-@Ignore
 public class ClusterCoordinatorTokenTestLocal extends AbstractClusterCoordinatorTokenTest {
 
 	@Override

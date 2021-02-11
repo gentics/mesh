@@ -34,7 +34,6 @@ import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@Ignore
 public class ClusterConcurrencyTest extends AbstractClusterTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ClusterConcurrencyTest.class);

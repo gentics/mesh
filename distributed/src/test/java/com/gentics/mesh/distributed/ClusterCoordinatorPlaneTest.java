@@ -13,7 +13,6 @@ import org.junit.rules.RuleChain;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.test.docker.MeshContainer;
 
-@Ignore
 public class ClusterCoordinatorPlaneTest extends AbstractClusterTest {
 
 	private static String coordinatorRegex = "nodeA";

@@ -20,7 +20,6 @@ import com.gentics.mesh.test.docker.MeshContainer;
 /**
  * A test which will randomly add, remove, utilize and stop nodes in a mesh cluster.
  */
-@Ignore
 public class ChaosClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

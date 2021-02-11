@@ -30,7 +30,6 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * These tests require the test plugins to be build. You can build these plugins using the /core/build-test-plugins.sh script.
  */
-@Ignore
 public class PluginClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

@@ -21,7 +21,6 @@ import com.gentics.mesh.test.docker.MeshContainer;
 /**
  * Tests various interacts with the cluster. (e.g.: Adding new nodes, Removing nodes)
  */
-@Ignore
 public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

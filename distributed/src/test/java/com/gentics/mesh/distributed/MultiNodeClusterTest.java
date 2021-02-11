@@ -17,7 +17,6 @@ import com.gentics.mesh.test.docker.MeshContainer;
 /**
  * Test how a cluster behaves with more than two nodes.
  */
-@Ignore
 public class MultiNodeClusterTest extends AbstractClusterTest {
 
 	private static final int STARTUP_TIMEOUT = 500;

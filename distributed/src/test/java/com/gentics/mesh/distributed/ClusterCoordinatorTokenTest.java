@@ -29,7 +29,6 @@ import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 
-@Ignore
 public class ClusterCoordinatorTokenTest {
 	private static String clusterPostFix = randomUUID();
 	private static String coordinatorRegex = "nodeA";

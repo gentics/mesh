@@ -17,7 +17,6 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.test.docker.MeshContainer;
 
-@Ignore
 public class ClusterConfigEndpointTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
