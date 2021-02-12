@@ -585,17 +585,17 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			groupDao.addUser(newGroup, newUser);
 
 			// Both groups have the same roles, so the hashes must match.
-			assertEquals(oldUser.getRolesHash(), newUser.getRolesHash());
+			assertEquals(userDao.getRolesHash(oldUser), userDao.getRolesHash(newUser));
 
-			String hash = oldUser.getRolesHash();
+			String hash = userDao.getRolesHash(oldUser);
 
 			// Add another role to the groups only oldUser is in.
 			grantAdmin();
 
 			// The roles have changed for oldUser ...
-			assertNotEquals(hash, oldUser.getRolesHash());
+			assertNotEquals(hash, userDao.getRolesHash(oldUser));
 			// ... but NOT for newUser.
-			assertEquals(hash, newUser.getRolesHash());
+			assertEquals(hash, userDao.getRolesHash(newUser));
 		}
 	}
 }
