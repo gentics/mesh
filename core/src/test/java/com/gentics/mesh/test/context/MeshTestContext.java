@@ -500,7 +500,7 @@ public class MeshTestContext extends TestWatcher {
 		authOptions.setKeystorePath(keystoreFile.getAbsolutePath());
 		meshOptions.setNodeName("testNode");
 
-		initFolders(getOptions());
+		initFolders(meshOptions);
 
 		HttpServerConfig httpOptions = meshOptions.getHttpServerOptions();
 		httpOptions.setPort(httpPort);
@@ -607,9 +607,9 @@ public class MeshTestContext extends TestWatcher {
 			Set<JsonObject> jwks = KeycloakUtils.loadJWKs("http", keycloak.getHost(), keycloak.getMappedPort(8080), realmName);
 			meshOptions.getAuthenticationOptions().setPublicKeys(jwks);
 		}
-		settings.optionChanger().changer.accept(getOptions());
-		optionChanger.accept(getOptions());
-		return getOptions();
+		settings.optionChanger().changer.accept(meshOptions);
+		optionChanger.accept(meshOptions);
+		return meshOptions;
 	}
 
 	private void initFolders(MeshOptions meshOptions) throws IOException {
