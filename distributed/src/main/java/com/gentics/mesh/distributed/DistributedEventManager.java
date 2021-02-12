@@ -1,26 +1,14 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
-import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
-import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
-import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
-import static com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS.ONLINE;
-
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.naming.InvalidNameException;
-
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.graphdb.cluster.TopologyEventBridge;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
-
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -29,6 +17,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.naming.InvalidNameException;
+import java.util.Map;
+
+import static com.gentics.mesh.core.rest.MeshEvent.*;
+import static com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS.ONLINE;
 
 /**
  * The distributed event manager is responsible for handling cluster specific events.
@@ -127,7 +123,7 @@ public class DistributedEventManager {
 			for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 				Map<String, Router> registeredProjectRouters = rs.root().apiRouter().projectsRouter().getProjectRouters();
 				// Load all projects and check whether they are already registered
-				for (Project project : cboot.meshRoot().getProjectRoot().findAll()) {
+				for (HibProject project : cboot.projectDao().findAll()) {
 					if (registeredProjectRouters.containsKey(project.getName())) {
 						continue;
 					} else {

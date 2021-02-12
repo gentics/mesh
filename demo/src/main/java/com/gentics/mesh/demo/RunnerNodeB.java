@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
@@ -62,7 +63,7 @@ public class RunnerNodeB {
 			registry.register(DemoAppEndpoint.class);
 			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(),
 				new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
-					meshInternal.boot()));
+					(ODBBootstrapInitializer) meshInternal.boot()));
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 
 			// Add admin ui

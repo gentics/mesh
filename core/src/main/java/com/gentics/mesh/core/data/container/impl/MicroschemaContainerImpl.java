@@ -4,6 +4,7 @@ import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -54,7 +55,8 @@ public class MicroschemaContainerImpl extends
 
 	@Override
 	public RootVertex<Microschema> getRoot() {
-		return mesh().boot().meshRoot().getMicroschemaContainerRoot();
+		ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
+		return boot.microschemaContainerRoot();
 	}
 
 	@Override

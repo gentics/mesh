@@ -13,6 +13,7 @@ import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.madl.index.IndexHandler;
@@ -257,7 +258,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public void updateShortcutEdges() {
-		GroupRoot groupRoot = mesh().boot().groupRoot();
+		ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
+		GroupRoot groupRoot = boot.groupRoot();
 		outE(ASSIGNED_TO_ROLE).removeAll();
 		for (HibGroup group : getGroups()) {
 			for (HibRole role : groupRoot.getRoles(group)) {

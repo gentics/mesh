@@ -1,21 +1,21 @@
 package com.syncleus.ferma.ext.orientdb3;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @see PermissionRoots
  */
 @Singleton
 public class PermissionRootsImpl implements PermissionRoots {
-	private final BootstrapInitializer boot;
+	private final ODBBootstrapInitializer boot;
 
 	@Inject
-	public PermissionRootsImpl(BootstrapInitializer boot) {
+	public PermissionRootsImpl(ODBBootstrapInitializer boot) {
 		this.boot = boot;
 	}
 

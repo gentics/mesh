@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.time.ZonedDateTime;
 import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -8,6 +9,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -114,6 +116,24 @@ public interface JobDao extends DaoTransformable<HibJob, JobResponse> {
 	 * @return
 	 */
 	HibJob enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion);
+
+	/**
+	 * Enqueue a project version purge job that is limited to the given date.
+	 *
+	 * @param creator
+	 * @param project
+	 * @param before
+	 * @return
+	 */
+	HibJob enqueueVersionPurge(HibUser creator, HibProject project, ZonedDateTime before);
+
+	/**
+	 * Enqueue a project version purge job.
+	 * @param creator
+	 * @param project
+	 * @return
+	 */
+	HibJob enqueueVersionPurge(HibUser creator, HibProject project);
 
 	/**
 	 * Compute the total count of jobs.

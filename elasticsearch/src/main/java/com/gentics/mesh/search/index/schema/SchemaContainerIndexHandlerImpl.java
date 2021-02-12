@@ -107,7 +107,7 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 
 	@Override
 	public Function<String, HibSchema> elementLoader() {
-		return (uuid) -> boot.meshRoot().getSchemaContainerRoot().findByUuid(uuid);
+		return (uuid) -> boot.schemaDao().findByUuid(uuid);
 	}
 
 	@Override

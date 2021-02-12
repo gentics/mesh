@@ -1,31 +1,12 @@
 package com.gentics.mesh.search.verticle.entity;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
+import com.gentics.mesh.core.data.*;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.Dao;
+import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -57,9 +38,20 @@ import com.gentics.mesh.search.index.user.UserTransformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.gentics.mesh.search.verticle.eventhandler.Util;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 /**
  * A helper class that abstracts the common functionality shared across mesh elements
@@ -70,7 +62,7 @@ public class MeshEntities {
 	private static final Logger log = LoggerFactory.getLogger(MeshEntities.class);
 
 	private final MeshHelper helper;
-	private final BootstrapInitializer boot;
+	private final ODBBootstrapInitializer boot;
 	private final MeshOptions options;
 	private final ComplianceMode complianceMode;
 
@@ -86,7 +78,7 @@ public class MeshEntities {
 	private final Map<ElementType, MeshEntity<?>> entities;
 
 	@Inject
-	public MeshEntities(MeshHelper helper, BootstrapInitializer boot, 
+	public MeshEntities(MeshHelper helper, ODBBootstrapInitializer boot,
 		MeshOptions options, 
 		UserTransformer userTransformer, 
 		RoleTransformer roleTransformer, 
@@ -232,6 +224,21 @@ public class MeshEntities {
 	}
 
 	/**
+	 * Finds an element in the given root vertex.
+	 * If the element could not be found, a warning will be logged and an empty optional is returned.
+	 * @param dao
+	 * @param uuid
+	 * @param <T>
+	 * @return
+	 */
+	public static <T extends HibCoreElement> Optional<T> findElementByUuid(DaoGlobal<T> dao, String uuid) {
+		return warningOptional(
+			String.format("Could not find element with uuid {%s} with dao {%s}", uuid, dao.getClass().getSimpleName()),
+			dao.findByUuidGlobal(uuid)
+		);
+	}
+
+	/**
 	 * Same as {@link #findElementByUuid(RootVertex, String)}, but as a stream.
 	 *
 	 * @param rootVertex
@@ -241,6 +248,18 @@ public class MeshEntities {
 	 */
 	public static <T extends MeshCoreVertex<? extends RestModel>> Stream<T> findElementByUuidStream(RootVertex<T> rootVertex, String uuid) {
 		return findElementByUuid(rootVertex, uuid).stream();
+	}
+
+	/**
+	 * Same as {@link #findElementByUuid(DaoGlobal, String)}, but as a stream.
+	 *
+	 * @param dao
+	 * @param uuid
+	 * @param <T>
+	 * @return
+	 */
+	public static <T extends HibCoreElement> Stream<T> findElementByUuidStream(DaoGlobal<T> dao, String uuid) {
+		return findElementByUuid(dao, uuid).stream();
 	}
 
 	private <T extends MeshCoreVertex<? extends RestModel>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {

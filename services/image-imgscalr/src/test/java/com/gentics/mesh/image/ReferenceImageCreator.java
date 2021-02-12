@@ -8,12 +8,12 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
+import com.gentics.mesh.core.data.dao.impl.ODBBinaryDaoWrapperImpl;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 
@@ -35,7 +35,7 @@ public class ReferenceImageCreator {
 		options.setImageCacheDirectory(tmpDir);
 
 		BootstrapInitializer boot = mock(BootstrapInitializer.class);
-		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null, null));
+		when(boot.binaryDao()).thenReturn(new ODBBinaryDaoWrapperImpl(null, null, null));
 		ImgscalrImageManipulator manipulator = new ImgscalrImageManipulator(vertx, options, boot);
 
 		readImageConfig().blockingForEach(image -> {

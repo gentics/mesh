@@ -75,9 +75,9 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 				HibProject project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
 				db.tx(() -> {
 					if (before.isPresent()) {
-						boot.jobRoot().enqueueVersionPurge(user, project, before.get());
+						boot.jobDao().enqueueVersionPurge(user, project, before.get());
 					} else {
-						boot.jobRoot().enqueueVersionPurge(user, project);
+						boot.jobDao().enqueueVersionPurge(user, project);
 					}
 				});
 				MeshEvent.triggerJobWorker(boot.mesh());

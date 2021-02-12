@@ -14,6 +14,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -41,10 +42,10 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandlerImpl.class);
 
-	private BootstrapInitializer boot;
+	private ODBBootstrapInitializer boot;
 
 	@Inject
-	public RoleCrudHandlerImpl(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, RoleDAOActions roleActions) {
+	public RoleCrudHandlerImpl(Database db, ODBBootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, RoleDAOActions roleActions) {
 		super(db, utils, writeLock, roleActions);
 		this.boot = boot;
 	}

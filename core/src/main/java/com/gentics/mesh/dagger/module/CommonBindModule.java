@@ -1,5 +1,7 @@
 package com.gentics.mesh.dagger.module;
 
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializerImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -16,7 +18,6 @@ import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
@@ -135,7 +136,10 @@ public abstract class CommonBindModule {
 	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
 
 	@Binds
-	abstract BootstrapInitializer bindBoot(BootstrapInitializerImpl e);
+	abstract BootstrapInitializer bindBoot(ODBBootstrapInitializerImpl e);
+
+	@Binds
+	abstract ODBBootstrapInitializer bindODBBoot(ODBBootstrapInitializerImpl e);
 
 	@Binds
 	abstract WebRootService bindWebrootService(WebRootServiceImpl e);

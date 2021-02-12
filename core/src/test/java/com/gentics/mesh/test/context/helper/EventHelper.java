@@ -11,7 +11,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.ODBBootstrapInitializerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
@@ -379,7 +379,7 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	default ElasticsearchProcessVerticle getSearchVerticle() {
-		return ((BootstrapInitializerImpl) boot()).loader.get().getSearchVerticle();
+		return ((ODBBootstrapInitializerImpl) boot()).loader.get().getSearchVerticle();
 	}
 
 	/**

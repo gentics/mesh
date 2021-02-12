@@ -12,6 +12,7 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -122,7 +123,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		addTag(tag);
 
 		// Add to global list of tags
-		TagRoot globalTagRoot = mesh().boot().tagRoot();
+		ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
+		TagRoot globalTagRoot = boot.tagRoot();
 		if (this != globalTagRoot) {
 			globalTagRoot.addTag(tag);
 		}
@@ -235,8 +237,9 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		tag.setProject(project);
 		tag.generateBucketId();
 
+		ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
 		// Add the tag to the global tag root
-		mesh().boot().meshRoot().getTagRoot().addTag(tag);
+		boot.meshRoot().getTagRoot().addTag(tag);
 		// And to the tag family
 		toGraph(tagFamily).addTag(tag);
 

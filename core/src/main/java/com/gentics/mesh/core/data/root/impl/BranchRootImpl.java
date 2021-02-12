@@ -191,7 +191,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			branch.setSsl(request.getSsl());
 		}
 		HibUser creator = branch.getCreator();
-		mesh().boot().jobRoot().enqueueBranchMigration(creator, branch);
+		mesh().boot().jobDao().enqueueBranchMigration(creator, branch);
 		assignSchemas(creator, baseBranch, branch, true, batch);
 
 		batch.add(branch.onCreated());

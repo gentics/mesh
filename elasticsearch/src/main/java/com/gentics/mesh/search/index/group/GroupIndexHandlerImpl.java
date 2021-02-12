@@ -96,7 +96,7 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 
 	@Override
 	public Function<String, HibGroup> elementLoader() {
-		return (uuid) -> boot.meshRoot().getGroupRoot().findByUuid(uuid);
+		return (uuid) -> boot.groupDao().findByUuid(uuid);
 	}
 
 	@Override

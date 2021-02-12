@@ -14,6 +14,7 @@ import java.util.Iterator;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -92,7 +93,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		if (mesh().boot().meshRoot().getSchemaContainerRoot() == this) {
+		ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
+		if (boot.meshRoot().getSchemaContainerRoot() == this) {
 			throw error(INTERNAL_SERVER_ERROR, "Deletion of the global schema root is not possible");
 		}
 		if (log.isDebugEnabled()) {

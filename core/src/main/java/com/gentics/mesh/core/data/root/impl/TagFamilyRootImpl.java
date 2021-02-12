@@ -10,6 +10,7 @@ import java.util.Stack;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -73,7 +74,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		tagFamily.setProject(getProject());
 
 		// Add created tag family to tag family root
-		TagFamilyRoot root = mesh().boot().tagFamilyRoot();
+		ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
+		TagFamilyRoot root = boot.tagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
 		}

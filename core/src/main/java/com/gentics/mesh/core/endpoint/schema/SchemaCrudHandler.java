@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.actions.impl.ProjectSchemaLoadAllActionImpl;
 import com.gentics.mesh.core.data.action.SchemaDAOActions;
@@ -22,7 +23,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.ODBSchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -55,14 +56,14 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 	private SchemaComparatorImpl comparator;
 
-	private Lazy<BootstrapInitializer> boot;
+	private Lazy<ODBBootstrapInitializer> boot;
 
 	private final NodeIndexHandlerImpl nodeIndexHandler;
 
 	private final ProjectSchemaLoadAllActionImpl projectSchemaDAOActions;
 
 	@Inject
-	public SchemaCrudHandler(Database db, SchemaComparatorImpl comparator, Lazy<BootstrapInitializer> boot,
+	public SchemaCrudHandler(Database db, SchemaComparatorImpl comparator, Lazy<ODBBootstrapInitializer> boot,
 		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions,
 		SchemaDAOActions schemaActions) {
 		super(db, utils, writeLock, schemaActions);
@@ -111,7 +112,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 				SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
 				if (ac.getSchemaUpdateParameters().isStrictValidation()) {
-					SchemaDaoWrapperImpl.validateSchema(nodeIndexHandler, requestModel);
+					ODBSchemaDaoWrapperImpl.validateSchema(nodeIndexHandler, requestModel);
 				}
 
 				// 2. Diff the schema with the latest version

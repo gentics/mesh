@@ -89,8 +89,8 @@ public class TagEventHandler implements EventHandler {
 
 	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, HibTag tag) {
 		TagDao tagDao = helper.getBoot().tagDao();
-		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
-			.flatMap(project -> project.getBranchRoot().findAll().stream()
+		return findElementByUuidStream(helper.getBoot().projectDao(), model.getProject().getUuid())
+			.flatMap(project -> helper.getBoot().branchDao().findAll(project).stream()
 			.flatMap(branch -> tagDao.getNodes(tag, branch).stream()
 			.flatMap(node -> entities.generateNodeRequests(node.getUuid(), project, branch))));
 	}

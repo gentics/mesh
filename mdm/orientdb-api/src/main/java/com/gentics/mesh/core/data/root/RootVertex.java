@@ -14,6 +14,7 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -390,6 +391,15 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	default Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
+	}
+
+	/**
+	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
+	 *
+	 * @param element
+	 */
+	default void delete(T element) {
+		delete(element, new DummyBulkActionContext());
 	}
 
 	/**

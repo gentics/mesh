@@ -151,8 +151,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
-				for (Branch branch : project.getBranchRoot().findAll()) {
+			for (HibProject project : boot.projectDao().findAll()) {
+				for (HibBranch branch : boot.branchDao().findAll(project)) {
 					indexInfo.putAll(getIndices(project, branch).runInExistingTx(tx));
 				}
 			}

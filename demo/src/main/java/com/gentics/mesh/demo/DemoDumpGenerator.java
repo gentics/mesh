@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -117,7 +118,7 @@ public class DemoDumpGenerator {
 
 		// Initialise demo data
 		BootstrapInitializer boot = meshInternal.boot();
-		DemoDataProvider provider = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), boot);
+		DemoDataProvider provider = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), (ODBBootstrapInitializer) boot);
 		invokeDump(boot, provider);
 
 	}

@@ -43,8 +43,6 @@ import io.vertx.core.logging.LoggerFactory;
  * 
  * @param <T>
  *            Rest model representation of the core vertex
- * @param <R>
- *            Type of the core vertex which is used to determine type of chained vertices
  */
 public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVertexImpl
 	implements MeshCoreVertex<T> {
@@ -185,7 +183,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 		 */
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			HibRole role = mesh().boot().roleDao().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				Set<InternalPermission> permSet = roleDao.getPermissions(role, this);
 				Set<String> humanNames = new HashSet<>();

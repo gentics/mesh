@@ -1,24 +1,11 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.vertx.core.logging.LoggerFactory.getLogger;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractODBDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -40,16 +27,27 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.google.common.base.Predicate;
-
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
+import org.apache.commons.lang3.StringUtils;
 
-public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> implements OrientDBTagFamilyDao {
+import javax.inject.Inject;
 
-	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.vertx.core.logging.LoggerFactory.getLogger;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+public class ODBTagFamilyDaoWrapperImpl extends AbstractODBDaoWrapper<HibTagFamily> implements OrientDBTagFamilyDao {
+
+	private static final Logger log = getLogger(ODBTagFamilyDaoWrapperImpl.class);
 
 	@Inject
-	public TagFamilyDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
+	public ODBTagFamilyDaoWrapperImpl(Lazy<ODBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 

@@ -1,21 +1,11 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
-import java.util.Objects;
-import java.util.function.Predicate;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang3.NotImplementedException;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractODBDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBBranchDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -27,16 +17,23 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
-
 import dagger.Lazy;
+import org.apache.commons.lang3.NotImplementedException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Objects;
+import java.util.function.Predicate;
+
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 @Singleton
-public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements OrientDBBranchDao {
+public class ODBBranchDaoWrapperImpl extends AbstractODBDaoWrapper<HibBranch> implements OrientDBBranchDao {
 
 	private Database db;
 
 	@Inject
-	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
+	public ODBBranchDaoWrapperImpl(Lazy<ODBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 		this.db = db;
 	}

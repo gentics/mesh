@@ -25,6 +25,7 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -189,7 +190,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
-			Language language = mesh().boot().languageRoot().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
+			ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
+			Language language = boot.languageRoot().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
 			baseNode.createGraphFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
 			setBaseNode(baseNode);
 		}
@@ -244,7 +246,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		ProjectRoot projectRoot = mesh().boot().projectRoot();
+		ODBBootstrapInitializer boot = (ODBBootstrapInitializer) mesh().boot();
+		ProjectRoot projectRoot = boot.projectRoot();
 		return projectRoot.getSubETag(this, ac);
 	}
 

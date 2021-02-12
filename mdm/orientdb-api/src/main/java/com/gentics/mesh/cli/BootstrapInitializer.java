@@ -7,19 +7,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
-import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.dao.*;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -38,119 +26,30 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import io.vertx.core.Vertx;
 
 /**
- * The bootstrap initialiser takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
+ * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
  * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
  */
 public interface BootstrapInitializer {
 
-	/**
-	 * Return the project root element.
-	 * 
-	 * @deprecated Use {@link #projectDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	ProjectRoot projectRoot();
-
 	ProjectDao projectDao();
 
-	/**
-	 * Return the language root element.
-	 * 
-	 * @deprecated Use {@link #languageDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	LanguageRoot languageRoot();
+	BranchDao branchDao();
 
 	LanguageDao languageDao();
 
-	@Deprecated
-	GroupRoot groupRoot();
-
 	GroupDao groupDao();
-
-	/**
-	 * Return the user root element.
-	 * 
-	 * @deprecated Use {@link #userDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	UserRoot userRoot();
 
 	UserDao userDao();
 
-	/**
-	 * Return the job root element.
-	 *
-	 * @deprecated Use {@link #jobDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	JobRoot jobRoot();
-
 	JobDao jobDao();
-
-	/**
-	 * Return the changelog root element.
-	 * 
-	 * @return
-	 */
-	ChangelogRoot changelogRoot();
-
-	/**
-	 * Return the global tagfamily root element. Note that each project has their own tag family root element.
-	 * 
-	 * @deprecated Use {@link #tagFamilyDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	TagFamilyRoot tagFamilyRoot();
 
 	TagFamilyDao tagFamilyDao();
 
-	/**
-	 * Return the global tag root element. Note that each project has their own tag root element.
-	 * 
-	 * @deprecated Use {@link #tagDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	TagRoot tagRoot();
-
 	TagDao tagDao();
-
-	/**
-	 * Return the role root element.
-	 * 
-	 * @deprecated Use {@link #roleDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	RoleRoot roleRoot();
 
 	RoleDao roleDao();
 
-	/**
-	 * Return the global microschema root element.
-	 * 
-	 * @deprecated Use {@link #microschemaDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	MicroschemaRoot microschemaContainerRoot();
-
 	MicroschemaDao microschemaDao();
-
-	/**
-	 * Return the global schema container root element.
-	 * 
-	 * @deprecated Use {@link #schemaDao()} instead.
-	 * @return
-	 */
-	@Deprecated
-	SchemaRoot schemaContainerRoot();
 
 	SchemaDao schemaDao();
 
@@ -159,13 +58,6 @@ public interface BootstrapInitializer {
 	ContentDao contentDao();
 
 	BinaryDao binaryDao();
-
-	/**
-	 * Return the mesh root element. All other mesh graph elements are connected to this element. It represents the main root of the whole mesh graph.
-	 * 
-	 * @return
-	 */
-	MeshRoot meshRoot();
 
 	/**
 	 * Return the anonymous role (if-present).

@@ -11,6 +11,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.ODBBootstrapInitializer;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,12 +43,12 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 	private static final Logger log = LoggerFactory.getLogger(WebRootLinkReplacerImpl.class);
 
-	private final BootstrapInitializer boot;
+	private final ODBBootstrapInitializer boot;
 
 	private final MeshOptions options;
 
 	@Inject
-	public WebRootLinkReplacerImpl(BootstrapInitializer boot, MeshOptions options) {
+	public WebRootLinkReplacerImpl(ODBBootstrapInitializer boot, MeshOptions options) {
 		this.boot = boot;
 		this.options = options;
 	}
