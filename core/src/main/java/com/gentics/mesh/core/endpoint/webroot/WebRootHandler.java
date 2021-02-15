@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.endpoint.webroot;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.decodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +14,13 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -33,10 +29,8 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -50,39 +44,17 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 @Singleton
-public class WebRootHandler {
+public class WebRootHandler extends AbstractWebrootHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
-	private static final String WEBROOT_LAST_SEGMENT = "WEBROOT_SEGMENT_NAME";
-
-	private final WebRootServiceImpl webrootService;
-
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
-
-	private final Database db;
-
-	private final NodeCrudHandler nodeCrudHandler;
-
-	private final BootstrapInitializer boot;
-
-	private final MeshOptions options;
-
-	private final WriteLock writeLock;
-
-	private final HandlerUtilities utils;
 
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
 		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
-		this.db = database;
-		this.webrootService = webrootService;
+		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
-		this.nodeCrudHandler = nodeCrudHandler;
-		this.boot = boot;
-		this.options = options;
-		this.writeLock = writeLock;
-		this.utils = utils;
 	}
 
 	/**
@@ -95,33 +67,9 @@ public class WebRootHandler {
 		String path = rc.request().path().substring(rc.mountPoint().length());
 
 		utils.syncTx(ac, tx -> {
-			MeshAuthUser requestUser = ac.getUser();
-
-			String branchUuid = ac.getBranch().getUuid();
-			// Load all nodes for the given path
-			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-			Path nodePath = webrootService.findByProjectPath(ac, path, type);
-			if (!nodePath.isFullyResolved()) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
-			}
+			Path nodePath = findNodePathByProjectPath(ac, path);
 			PathSegment lastSegment = nodePath.getLast();
-
-			// Check whether the path actually points to a valid node
-			if (lastSegment == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
-			}
-			NodeGraphFieldContainer container = lastSegment.getContainer();
-			if (container == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
-			}
-
-			String version = ac.getVersioningParameters().getVersion();
-			Node node = container.getParentNode();
-			addCacheControl(rc, node, version);
-			requestUser.failOnNoReadPermission(container, branchUuid, version);
-
-			rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
-			// TODO decide whether we want to add also lang, version
+			Node node = findNodeByPath(ac, rc, nodePath, path);
 
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
@@ -159,44 +107,6 @@ public class WebRootHandler {
 					HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
 			}
 		});
-	}
-
-	/**
-	 * Add the cache control headers.
-	 * 
-	 * @param rc
-	 * @param node
-	 * @param version
-	 */
-	private void addCacheControl(RoutingContext rc, Node node, String version) {
-		if (isPublic(node, version)) {
-			rc.response().putHeader(CACHE_CONTROL, "public");
-		} else {
-			rc.response().putHeader(CACHE_CONTROL, "private");
-		}
-
-	}
-
-	/**
-	 * Checks whether the content is readable via anonymous user.
-	 * 
-	 * @param node
-	 * @param version
-	 * @return
-	 */
-	private boolean isPublic(Node node, String version) {
-		Role anonymousRole = boot.anonymousRole();
-		AuthenticationOptions authOptions = options.getAuthenticationOptions();
-		if (anonymousRole != null && authOptions != null && authOptions.isEnableAnonymousAccess()) {
-			if (anonymousRole.hasPermission(READ_PERM, node)) {
-				return true;
-			}
-			boolean requestsPublished = "published".equals(version);
-			if (requestsPublished && anonymousRole.hasPermission(READ_PUBLISHED_PERM, node)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public void handleUpdateCreatePath(RoutingContext rc, HttpMethod method) {

@@ -1,0 +1,67 @@
+package com.gentics.mesh.core.endpoint.webrootfield;
+
+import static io.vertx.core.http.HttpMethod.GET;
+
+import javax.inject.Inject;
+
+import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
+
+public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
+	
+	private WebRootFieldHandler handler;
+
+	public WebRootFieldEndpoint() {
+		super("webrootfield", null, null);
+	}
+
+	@Inject
+	public WebRootFieldEndpoint(MeshAuthChain chain, BootstrapInitializer boot, WebRootFieldHandler handler) {
+		super("webrootfield", chain, boot);
+		this.handler = handler;
+	}
+
+	@Override
+	public String getDescription() {
+		return "Provides endpoints which allow viewing fields for the node loaded via a webroot path.";
+	}
+
+	@Override
+	public void registerEndPoints() {
+		secureAll();
+
+		addErrorHandlers();
+		addGetHandler();
+	}
+
+	private void addGetHandler() {
+		InternalEndpointRoute fieldGet = createRoute();
+		fieldGet.pathRegex("\\/([_a-zA-Z][_a-zA-Z0-9]*)\\/(.*)");
+		fieldGet.setRAMLPath("/{fieldName}/{path}");
+		fieldGet.addUriParameter("fieldName", "Name of the field which should be updated.", "stringField");
+		fieldGet.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
+		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
+		fieldGet.addQueryParameters(VersioningParametersImpl.class);
+		fieldGet.method(GET);
+		fieldGet.description(
+			"Download the field with the given name from the given path. You can use image query parameters for crop and resize if the binary data represents an image.");
+		fieldGet.blockingHandler(rc -> {
+			handler.handleGetPathField(rc);
+		});
+
+	}
+
+	private void addErrorHandlers() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/error/404");
+		endpoint.description("Fallback endpoint for unresolvable links which returns 404.");
+		endpoint.handler(rc -> {
+			rc.data().put("statuscode", "404");
+			rc.next();
+		});
+	}
+}
