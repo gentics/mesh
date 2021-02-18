@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.endpoint.webrootfield;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -44,6 +46,9 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 		fieldGet.setRAMLPath("/{fieldName}/{path}");
 		fieldGet.addUriParameter("fieldName", "Name of the field which should be updated.", "stringField");
 		fieldGet.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
+		fieldGet.exampleResponse(OK, "JSON for a node/micronode/list field value, or the binary data for the binary field, or the text data for any other field of the node for the given path.", MeshHeaders.WEBROOT_RESPONSE_TYPE, "node",
+				"Header value which identifies the type of the webrootfield response. The response can either be a JSON, text or binary response.");
+		fieldGet.description("Load the field content for the node, which is located using the provided path.");
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.addQueryParameters(VersioningParametersImpl.class);
 		fieldGet.method(GET);
