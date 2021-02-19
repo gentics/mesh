@@ -81,8 +81,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			FieldSchema fieldSchema = container.getSchemaContainerVersion().getSchema().getField(fieldName);
 
 			if (fieldSchema == null) {
-				// TODO correct error (needs translation into chinese)
-				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+				throw error(NOT_FOUND, "error_field_not_found_with_name", fieldName);
 			}
 
 			FieldTypes fieldType = FieldTypes.valueByName(fieldSchema.getType());
@@ -116,6 +115,10 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
 
 			Field field = container.getRestFieldFromGraph(ac, fieldName, fieldSchema, languageTags, 0);
+			if (field == null) {
+				throw error(NOT_FOUND, "error_field_not_found_with_name", fieldName);
+			}
+
 			String fieldTypeName = fieldSchema.getType();
 			ac.setWebrootResponseType(fieldTypeName.toLowerCase());
 

@@ -14,9 +14,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,7 +41,6 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -52,37 +49,6 @@ import com.gentics.mesh.util.URIUtils;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class WebRootFieldEndpointTest extends AbstractMeshTest {
-
-	@Test
-	public void testReadBinaryNodeField() throws IOException {
-		Node node = content("news_2015");
-		String nodeUuid = tx(() -> node.getUuid());
-
-		try (Tx tx = tx()) {
-			// 1. Transform the node into a binary content
-			SchemaContainer container = schemaContainer("binary_content");
-			node.setSchemaContainer(container);
-			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
-			prepareSchema(node, "image/*", "binary");
-			tx.success();
-		}
-
-		String contentType = "application/octet-stream";
-		int binaryLen = 8000;
-		String fileName = "somefile.dat";
-
-		// 2. Update the binary data
-		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
-
-		// 3. Try to resolve the path
-		String path = "/News/2015/somefile.dat";
-		MeshWebrootFieldResponse response = call(() -> client().webrootField(PROJECT_NAME, "binary", path, new VersioningParametersImpl().draft(),
-			new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-		MeshBinaryResponse downloadResponse = response.getBinaryResponse();
-		assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
-		assertTrue(response.isBinary());
-		assertNotNull(downloadResponse);
-	}
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
