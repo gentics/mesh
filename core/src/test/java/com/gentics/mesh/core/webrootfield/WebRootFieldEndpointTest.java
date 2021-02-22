@@ -16,6 +16,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -252,7 +253,11 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 		for (String path1 : Arrays.asList("News", "Neuigkeiten")) {
 			for (String path2 : Arrays.asList("2014")) {
 				for (String path3 : Arrays.asList("March", "März")) {
-					for (Entry<String, String> language : Map.of("en", "english", "de", "german").entrySet()) {
+					Map<String, String> languages = new HashMap<String, String>();
+					languages.put("en", "english");
+					languages.put("de", "german");
+
+					for (Entry<String, String> language : languages.entrySet()) {
 						MeshWebrootFieldResponse response = call(() -> client().webrootField(PROJECT_NAME, "title",
 							new String[] { path1, path2, path3, name + "." + language.getKey() + ".html" }, new VersioningParametersImpl().draft()));
 
