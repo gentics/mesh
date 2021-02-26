@@ -13,8 +13,15 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 
+import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
+/**
+ * {@link OkHttpClient} implementation of {@link MeshWebrootFieldResponse}.
+ * 
+ * @author plyhun
+ *
+ */
 public class OkHttpWebrootFieldResponse implements MeshWebrootFieldResponse {
 
 	private final Response response;

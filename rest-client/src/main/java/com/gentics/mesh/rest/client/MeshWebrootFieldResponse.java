@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest.client;
 
 /**
- * Response for @link WebRootFieldClientMethods
+ * Response for {@link WebRootFieldClientMethods}
  * 
  * @author plyhun
  *
