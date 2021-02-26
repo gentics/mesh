@@ -35,7 +35,7 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 
 	@Override
 	public String getDescription() {
-		return "Provides endpoints which allow viewing fields for the node loaded via a webroot path.";
+		return "Provides endpoint which allow viewing the requested field for the node loaded via a webroot path.";
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute fieldGet = createRoute();
 		fieldGet.pathRegex("\\/([_a-zA-Z][_a-zA-Z0-9]*)\\/(.*)");
 		fieldGet.setRAMLPath("/{fieldName}/{path}");
-		fieldGet.addUriParameter("fieldName", "Name of the field which should be updated.", "stringField");
+		fieldGet.addUriParameter("fieldName", "Name of the field which should be acquired.", "stringField");
 		fieldGet.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
 		fieldGet.exampleResponse(OK, "JSON for a node/micronode/list field value, or the binary data for the binary field, or the text data for any other field of the node for the given path.", MeshHeaders.WEBROOT_RESPONSE_TYPE, "node",
 				"Header value which identifies the type of the webrootfield response. The response can either be a JSON, text or binary response.");
