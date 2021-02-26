@@ -42,7 +42,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * Handler for '/api/{version}/{project}/webrootfield/{fieldName}/{path}'.
+ * Handler for Webroot field functions.
  * 
  * @author plyhun
  *

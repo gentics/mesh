@@ -13,6 +13,12 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
+/**
+ * Endpoint for Webroot field functions: '/api/{version}/{project}/webrootfield/{fieldName}/{path}'.
+ * 
+ * @author plyhun
+ *
+ */
 public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 	
 	private WebRootFieldHandler handler;
