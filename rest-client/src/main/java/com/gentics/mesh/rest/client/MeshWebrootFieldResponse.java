@@ -1,5 +1,11 @@
 package com.gentics.mesh.rest.client;
 
+/**
+ * Response for @link WebRootFieldClientMethods
+ * 
+ * @author plyhun
+ *
+ */
 public interface MeshWebrootFieldResponse {
 
 	/**

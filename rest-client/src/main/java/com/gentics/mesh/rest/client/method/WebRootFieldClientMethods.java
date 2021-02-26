@@ -4,6 +4,12 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 
+/**
+ * Methods for '/api/{version}/{project}/webrootfield/{fieldName}/{path}' endpoint.
+ * 
+ * @author plyhun
+ *
+ */
 public interface WebRootFieldClientMethods {
 
 	/**

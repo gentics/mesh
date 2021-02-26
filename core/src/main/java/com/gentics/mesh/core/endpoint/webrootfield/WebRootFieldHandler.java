@@ -41,6 +41,12 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler for '/api/{version}/{project}/webrootfield/{fieldName}/{path}'.
+ * 
+ * @author plyhun
+ *
+ */
 @Singleton
 public class WebRootFieldHandler extends AbstractWebrootHandler {
 	private static final Logger log = LoggerFactory.getLogger(WebRootFieldHandler.class);
@@ -65,7 +71,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 		String fieldName = rc.request().getParam("param0");
 
 		utils.syncTx(ac, tx -> {
-			//String path = rc.request().getParam("param1");
+			// Cut all the common parts off, obtaining the project-based path.
 			String path = rc.request().path();
 			path = path.substring(rc.mountPoint().length());
 			path = path.substring(fieldName.length() + 1); 
@@ -126,11 +132,13 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 
 			return field;
 		}, field -> {
+			// Check if field is binary and already processed accordingly
 			if (field != null) {
+				// Check if field is JSON, to set corresponding HTTP header value
 				String contentType = rc.response().headers().get(HttpHeaders.CONTENT_TYPE);
 				ac.send(
 					HttpConstants.APPLICATION_JSON_UTF8.equals(contentType) ? field.toJson() : field.toString(),
-					HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())),
+					HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().get("statuscode").toString(), OK.code())),
 					contentType);
 			}
 		});

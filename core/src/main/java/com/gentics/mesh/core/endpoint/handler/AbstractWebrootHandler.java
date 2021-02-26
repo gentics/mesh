@@ -30,6 +30,12 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Base class for webroot-based handlers. Contains basic webroot resolving mechanisms.
+ * 
+ * @author plyhun
+ *
+ */
 public abstract class AbstractWebrootHandler {
 
 	protected static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
@@ -61,6 +67,13 @@ public abstract class AbstractWebrootHandler {
 		this.utils = utils;
 	}
 	
+	/**
+	 * Transforms project-based webroot path into absolute Mesh path. May throw a runtime exception, if path is invalid.
+	 * 
+	 * @param ac
+	 * @param path without the project segment
+	 * @return absolute Mesh {@link Path}
+	 */
 	protected Path findNodePathByProjectPath(InternalActionContext ac, String path) {
 		// Load all nodes for the given path
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -71,11 +84,28 @@ public abstract class AbstractWebrootHandler {
 		return nodePath;
 	}
 	
+	/**
+	 * Finds the node by project-based webroot path. May throw a runtime exception, if path is invalid.
+	 * 
+	 * @param ac action context
+	 * @param rc routing context
+	 * @param projectPath path without the project segment
+	 * @return found {@link Node}
+	 */
 	protected Node findNodeByPath(InternalActionContext ac, RoutingContext rc, String projectPath) {
 		Path nodePath = findNodePathByProjectPath(ac, projectPath);
 		return findNodeByPath(ac, rc, nodePath, projectPath);
 	}
 	
+	/**
+	 * Finds the node by node path. May throw a runtime exception, if path is invalid.
+	 * 
+	 * @param ac action context
+	 * @param rc routing context
+	 * @param nodePath node {@link Path}
+	 * @param projectPath original path without the project segment, used in the error logging
+	 * @return found {@link Node}
+	 */
 	protected Node findNodeByPath(InternalActionContext ac, RoutingContext rc, Path nodePath, String projectPath) {
 		MeshAuthUser requestUser = ac.getUser();
 
