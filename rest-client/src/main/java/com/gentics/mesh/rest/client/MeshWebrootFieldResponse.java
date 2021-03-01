@@ -16,7 +16,7 @@ public interface MeshWebrootFieldResponse {
 	boolean isBinary();
 	
 	/**
-	 * Tests if the response is binary data.
+	 * Tests if the response is plain text data, i.e. not a binary, not a JSON structure/array.
 	 * 
 	 * @return
 	 */
