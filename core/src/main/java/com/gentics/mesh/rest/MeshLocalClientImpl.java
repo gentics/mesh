@@ -31,6 +31,7 @@ import com.gentics.mesh.core.endpoint.tagfamily.TagFamilyCrudHandler;
 import com.gentics.mesh.core.endpoint.user.UserCrudHandler;
 import com.gentics.mesh.core.endpoint.utility.UtilityHandler;
 import com.gentics.mesh.core.endpoint.webroot.WebRootHandler;
+import com.gentics.mesh.core.endpoint.webrootfield.WebRootFieldHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
@@ -117,6 +118,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
@@ -172,6 +174,9 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Inject
 	public WebRootHandler webrootHandler;
+
+	@Inject
+	public WebRootFieldHandler webrootFieldHandler;
 
 	@Inject
 	public AdminHandler adminHandler;
@@ -575,6 +580,22 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<TagFamilyListResponse> ac = createContext(TagFamilyListResponse.class, parameters);
 		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleReadList(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName, String path,
+			ParameterProvider... parameters) {
+		LocalActionContextImpl<MeshWebrootFieldResponse> ac = createContext(MeshWebrootFieldResponse.class, parameters);
+		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName,
+			String[] pathSegments, ParameterProvider... parameters) {
+		LocalActionContextImpl<MeshWebrootFieldResponse> ac = createContext(MeshWebrootFieldResponse.class, parameters);
+		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
