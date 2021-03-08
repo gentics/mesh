@@ -72,6 +72,11 @@
 			<artifactId>mesh-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core-tests</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

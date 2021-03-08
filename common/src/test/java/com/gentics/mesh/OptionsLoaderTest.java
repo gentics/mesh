@@ -24,6 +24,7 @@ import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.search.MappingMode;
+import com.gentics.mesh.test.MeshOptionsTypeAwareContext;
 
 public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
 

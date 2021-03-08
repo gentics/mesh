@@ -104,6 +104,8 @@
 		<module>demo</module>
 		<module>distributed</module>
 		<module>doc</module>
+		<module>tests</module>
+		<module>test-suites</module>
 	</modules>
 
 	<dependencies>

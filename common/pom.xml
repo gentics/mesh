@@ -117,7 +117,12 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-api</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.github.stefanbirkner</groupId>
 			<artifactId>system-rules</artifactId>
