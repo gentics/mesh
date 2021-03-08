@@ -59,6 +59,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -586,9 +587,19 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @throws IOException
 	 */
 	default public void prepareSchema(HibNode node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
-		// Update the schema and enable binary support for folders
+		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
+	}
+	
+	/**
+	 * Prepare the schema of the given node by adding a new field to its schema fields. This method will also update the clientside schema storage.
+	 * 
+	 * @param node
+	 * @param fieldSchema filled field
+	 * @throws IOException
+	 */
+	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema) throws IOException {
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
+		schema.addField(fieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);

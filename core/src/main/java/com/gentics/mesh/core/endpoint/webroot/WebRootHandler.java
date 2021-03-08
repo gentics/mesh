@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.endpoint.webroot;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.decodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,16 +17,12 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
-import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -38,10 +31,8 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -59,39 +50,17 @@ import io.vertx.ext.web.RoutingContext;
  * REST handler for webroot requests.
  */
 @Singleton
-public class WebRootHandler {
+public class WebRootHandler extends AbstractWebrootHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
-	private static final String WEBROOT_LAST_SEGMENT = "WEBROOT_SEGMENT_NAME";
-
-	private final WebRootServiceImpl webrootService;
-
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
-
-	private final Database db;
-
-	private final NodeCrudHandler nodeCrudHandler;
-
-	private final BootstrapInitializer boot;
-
-	private final MeshOptions options;
-
-	private final WriteLock writeLock;
-
-	private final HandlerUtilities utils;
 
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
 		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
-		this.db = database;
-		this.webrootService = webrootService;
+		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
-		this.nodeCrudHandler = nodeCrudHandler;
-		this.boot = boot;
-		this.options = options;
-		this.writeLock = writeLock;
-		this.utils = utils;
 	}
 
 	/**
@@ -105,36 +74,12 @@ public class WebRootHandler {
 			rc.mountPoint().length());
 
 		utils.syncTx(ac, tx -> {
-			HibUser requestUser = ac.getUser();
-			UserDaoWrapper userDao = tx.userDao();
 			NodeDaoWrapper nodeDao = tx.nodeDao();
 
-			String branchUuid = tx.getBranch(ac).getUuid();
-			// Load all nodes for the given path
-			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-			Path nodePath = webrootService.findByProjectPath(ac, path, type);
-			if (!nodePath.isFullyResolved()) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
-			}
+			Path nodePath = findNodePathByProjectPath(ac, path);
 			PathSegment lastSegment = nodePath.getLast();
-
-			// Check whether the path actually points to a valid node
-			if (lastSegment == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
-			}
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-			NodeGraphFieldContainer container = graphSegment.getContainer();
-			if (container == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
-			}
-
-			String version = ac.getVersioningParameters().getVersion();
-			HibNode node = tx.contentDao().getNode(container);
-			addCacheControl(rc, node, version);
-			userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
-
-			rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
-			// TODO decide whether we want to add also lang, version
+			HibNode node = findNodeByPath(ac, rc, nodePath, path);
 
 			GraphField field = graphSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
@@ -175,57 +120,6 @@ public class WebRootHandler {
 
 	}
 
-	/**
-	 * Add the cache control headers.
-	 * 
-	 * @param rc
-	 * @param node
-	 * @param version
-	 */
-	private void addCacheControl(RoutingContext rc, HibNode node, String version) {
-		if (isPublic(node, version)) {
-			rc.response().putHeader(CACHE_CONTROL, "public");
-		} else {
-			rc.response().putHeader(CACHE_CONTROL, "private");
-		}
-
-	}
-
-	/**
-	 * Checks whether the content is readable via anonymous user.
-	 * 
-	 * @param node
-	 * @param version
-	 * @return
-	 */
-
-	private boolean isPublic(HibNode node, String version) {
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
-
-		HibRole anonymousRole = boot.anonymousRole();
-		AuthenticationOptions authOptions = options.getAuthenticationOptions();
-		if (anonymousRole != null && authOptions != null && authOptions.isEnableAnonymousAccess()) {
-			if (roleDao.hasPermission(anonymousRole, READ_PERM, node)) {
-				return true;
-			}
-			boolean requestsPublished = "published".equals(version);
-			if (requestsPublished && roleDao.hasPermission(anonymousRole, READ_PUBLISHED_PERM, node)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Handle the given request using the webroot create or update code.
-	 * 
-	 * This handler will automatically invoke update or create if the path could be resolved or not. Please note that partial paths can only be used for update
-	 * if only the last segment is missing from the resolved path. The last segment will thus be created with the request. The parent node information may be
-	 * omitted from any request to the handler since the information can be deduced via the resolved parent segment.
-	 * 
-	 * @param rc
-	 * @param method
-	 */
 	public void handleUpdateCreatePath(RoutingContext rc, HttpMethod method) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(
