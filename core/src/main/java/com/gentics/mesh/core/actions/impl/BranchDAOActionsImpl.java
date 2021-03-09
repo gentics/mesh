@@ -7,8 +7,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.action.BranchDAOActions;
-import com.gentics.mesh.core.data.action.DAOActionContext;
+import com.gentics.mesh.core.action.BranchDAOActions;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.page.Page;

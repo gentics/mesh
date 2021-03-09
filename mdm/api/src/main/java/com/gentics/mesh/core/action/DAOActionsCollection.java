@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.action;
+package com.gentics.mesh.core.action;
 
 /**
  * Collection of all DAO actions which can be used in a REST or GraphQL context.

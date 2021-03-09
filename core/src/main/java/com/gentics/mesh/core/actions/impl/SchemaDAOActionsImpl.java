@@ -9,9 +9,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
+import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.action.DAOActionContext;
-import com.gentics.mesh.core.data.action.SchemaDAOActions;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;

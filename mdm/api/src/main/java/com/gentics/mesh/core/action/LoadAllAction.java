@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.action;
+package com.gentics.mesh.core.action;
 
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.page.Page;

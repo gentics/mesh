@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.action;
+package com.gentics.mesh.core.action;
 
 import java.util.function.Predicate;
 

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.action;
+package com.gentics.mesh.core.action;
 
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.node.NodeResponse;

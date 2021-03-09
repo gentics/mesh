@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.action.impl;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.action.DAOActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;

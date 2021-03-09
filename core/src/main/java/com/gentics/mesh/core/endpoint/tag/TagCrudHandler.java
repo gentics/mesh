@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.tag;
 
-import static com.gentics.mesh.core.data.action.DAOActionContext.context;
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -10,8 +10,8 @@ import java.util.function.Function;
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.action.TagDAOActions;
-import com.gentics.mesh.core.data.action.TagFamilyDAOActions;
+import com.gentics.mesh.core.action.TagDAOActions;
+import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;

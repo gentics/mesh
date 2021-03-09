@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.data.dao;
 
-import com.gentics.mesh.core.data.action.BranchDAOActions;
-import com.gentics.mesh.core.data.action.GroupDAOActions;
-import com.gentics.mesh.core.data.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.data.action.ProjectDAOActions;
-import com.gentics.mesh.core.data.action.RoleDAOActions;
-import com.gentics.mesh.core.data.action.SchemaDAOActions;
-import com.gentics.mesh.core.data.action.TagDAOActions;
-import com.gentics.mesh.core.data.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.data.action.UserDAOActions;
+import com.gentics.mesh.core.action.BranchDAOActions;
+import com.gentics.mesh.core.action.GroupDAOActions;
+import com.gentics.mesh.core.action.MicroschemaDAOActions;
+import com.gentics.mesh.core.action.ProjectDAOActions;
+import com.gentics.mesh.core.action.RoleDAOActions;
+import com.gentics.mesh.core.action.SchemaDAOActions;
+import com.gentics.mesh.core.action.TagDAOActions;
+import com.gentics.mesh.core.action.TagFamilyDAOActions;
+import com.gentics.mesh.core.action.UserDAOActions;
 
 /* 
  * Aggregated collection of DAOs

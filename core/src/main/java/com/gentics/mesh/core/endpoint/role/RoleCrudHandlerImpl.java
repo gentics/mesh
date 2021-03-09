@@ -18,8 +18,8 @@ import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.action.RoleDAOActions;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;

@@ -3,17 +3,17 @@ package com.gentics.mesh.core.actions.impl;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.action.BranchDAOActions;
-import com.gentics.mesh.core.data.action.DAOActionsCollection;
-import com.gentics.mesh.core.data.action.GroupDAOActions;
-import com.gentics.mesh.core.data.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.data.action.NodeDAOActions;
-import com.gentics.mesh.core.data.action.ProjectDAOActions;
-import com.gentics.mesh.core.data.action.RoleDAOActions;
-import com.gentics.mesh.core.data.action.SchemaDAOActions;
-import com.gentics.mesh.core.data.action.TagDAOActions;
-import com.gentics.mesh.core.data.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.data.action.UserDAOActions;
+import com.gentics.mesh.core.action.BranchDAOActions;
+import com.gentics.mesh.core.action.DAOActionsCollection;
+import com.gentics.mesh.core.action.GroupDAOActions;
+import com.gentics.mesh.core.action.MicroschemaDAOActions;
+import com.gentics.mesh.core.action.NodeDAOActions;
+import com.gentics.mesh.core.action.ProjectDAOActions;
+import com.gentics.mesh.core.action.RoleDAOActions;
+import com.gentics.mesh.core.action.SchemaDAOActions;
+import com.gentics.mesh.core.action.TagDAOActions;
+import com.gentics.mesh.core.action.TagFamilyDAOActions;
+import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 
 /**

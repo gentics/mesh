@@ -3,8 +3,8 @@ package com.gentics.mesh.core.actions.impl;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.action.DAOActionContext;
-import com.gentics.mesh.core.data.action.LoadAllAction;
+import com.gentics.mesh.core.action.DAOActionContext;
+import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.schema.HibMicroschema;

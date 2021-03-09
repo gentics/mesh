@@ -22,7 +22,7 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 
 	@Override
 	public Edge getElement() {
-		FramedGraph fg = ((GraphDBTx) Tx.get()).getGraph();
+		FramedGraph fg = GraphDBTx.getGraphTx().getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");

@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index.role;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.action.RoleDAOActions;
+import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.etc.config.MeshOptions;

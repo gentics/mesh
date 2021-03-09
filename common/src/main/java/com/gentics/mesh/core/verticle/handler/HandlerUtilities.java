@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import static com.gentics.mesh.core.data.action.DAOActionContext.context;
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.DELETE;
@@ -22,9 +22,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.action.DAOActions;
+import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.action.DAOActions;
-import com.gentics.mesh.core.data.action.LoadAllAction;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;

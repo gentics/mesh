@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.action;
+package com.gentics.mesh.core.action;
 
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.rest.job.JobResponse;
