@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.client.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -30,7 +30,7 @@ public class ProjectEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			ProjectDaoWrapper projectDao = tx.projectDao();
+			ProjectDao projectDao = tx.projectDao();
 			String actualETag = callETag(() -> client().findProjectByUuid(projectUuid()));
 			String etag = projectDao.getETag(project(), mockActionContext());
 			assertEquals(etag, actualETag);

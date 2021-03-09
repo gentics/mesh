@@ -10,14 +10,16 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.util.CompareUtils;
@@ -25,11 +27,11 @@ import com.gentics.mesh.util.CompareUtils;
 /**
  * @see HtmlGraphFieldList
  */
-public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
+public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HibHtmlField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
 
 	public static FieldTransformer<HtmlFieldListImpl> HTML_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 		parentNode) -> {
-		HtmlGraphFieldList htmlFieldList = container.getHTMLList(fieldKey);
+		HibHtmlFieldList htmlFieldList = container.getHTMLList(fieldKey);
 		if (htmlFieldList == null) {
 			return null;
 		} else {
@@ -38,15 +40,15 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	};
 
 	public static FieldUpdater HTML_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HtmlGraphFieldList graphHtmlFieldList = container.getHTMLList(fieldKey);
+		HibHtmlFieldList graphHtmlFieldList = container.getHTMLList(fieldKey);
 		HtmlFieldListImpl htmlList = fieldMap.getHtmlFieldList(fieldKey);
 		boolean isHtmlListFieldSetToNull = fieldMap.hasField(fieldKey) && htmlList == null;
-		GraphField.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = htmlList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -89,8 +91,8 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public HtmlGraphField createHTML(String html) {
-		HtmlGraphField field = createField();
+	public HibHtmlField createHTML(String html) {
+		HibHtmlField field = createField();
 		field.setHtml(html);
 		return field;
 	}
@@ -101,7 +103,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public HtmlGraphField getHTML(int index) {
+	public HibHtmlField getHTML(int index) {
 		return getField(index);
 	}
 
@@ -118,7 +120,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	@Override
 	public HtmlFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		HtmlFieldListImpl restModel = new HtmlFieldListImpl();
-		for (HtmlGraphField item : getList()) {
+		for (HibHtmlField item : getList()) {
 			restModel.add(item.getHTML());
 		}
 		return restModel;
@@ -126,7 +128,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 
 	@Override
 	public List<String> getValues() {
-		return getList().stream().map(HtmlGraphField::getHTML).collect(Collectors.toList());
+		return getList().stream().map(HibHtmlField::getHTML).collect(Collectors.toList());
 	}
 
 	@Override
@@ -134,7 +136,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 		if (obj instanceof HtmlFieldListImpl) {
 			HtmlFieldListImpl restField = (HtmlFieldListImpl) obj;
 			List<String> restList = restField.getItems();
-			List<? extends HtmlGraphField> graphList = getList();
+			List<? extends HibHtmlField> graphList = getList();
 			List<String> graphStringList = graphList.stream().map(e -> e.getHTML()).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList);
 		}

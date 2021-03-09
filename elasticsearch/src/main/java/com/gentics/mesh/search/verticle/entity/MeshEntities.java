@@ -17,15 +17,15 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -82,7 +82,7 @@ public class MeshEntities {
 	public final MeshEntity<HibTagFamily> tagFamily;
 	public final MeshEntity<HibSchema> schema;
 	public final MeshEntity<HibMicroschema> microschema;
-	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
+	public final MeshEntity<HibNodeFieldContainer> nodeContent;
 	private final Map<ElementType, MeshEntity<?>> entities;
 
 	@Inject
@@ -205,8 +205,8 @@ public class MeshEntities {
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}
 
-	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+	private Optional<HibNodeFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
+		ContentDao contentDao = boot.contentDao();
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
@@ -302,13 +302,13 @@ public class MeshEntities {
 		.flatMap(node -> latestVersionTypes()
 		.flatMap(type -> boot.contentDao().getGraphFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
-			ContentDaoWrapper.composeIndexName(
+			ContentDao.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				container.getSchemaContainerVersion().getUuid(),
 				type
 			),
-			ContentDaoWrapper.composeDocumentId(nodeUuid, container.getLanguageTag()),
+			ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
 			transformer.toDocument(container, branch.getUuid(), type), complianceMode
 		))));
 	}

@@ -102,7 +102,7 @@ public class PathImpl implements Path {
 		for (PathSegment segment : segments) {
 			try {
 				PathSegmentImpl graphSegment = (PathSegmentImpl) segment;
-				NodeGraphFieldContainer container = graphSegment.getContainer();
+				NodeGraphFieldContainer container = (NodeGraphFieldContainer) graphSegment.getContainer();
 				if (container == null || container.getElement() == null) {
 					log.debug("Container or element of container is null. Segment is invalid.");
 					return false;

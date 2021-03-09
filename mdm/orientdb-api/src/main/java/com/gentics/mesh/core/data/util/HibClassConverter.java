@@ -1,12 +1,11 @@
 package com.gentics.mesh.core.data.util;
 
-import java.util.Objects;
-
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -48,6 +47,14 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.ElementFrame;
 
+/**
+ * This converted is created for the MDM migration refactoring purposes. It should be gone when the refactoring is finished.
+ * Should not be used in the new code.
+ * 
+ * @author plyhun
+ *
+ */
+@Deprecated
 public final class HibClassConverter {
 
 	private HibClassConverter() {
@@ -147,6 +154,10 @@ public final class HibClassConverter {
 
 	public static GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> toGraph(HibFieldSchemaVersionElement<?, ?, ?, ?> version) {
 		return checkAndCast(version, GraphFieldSchemaContainerVersion.class);
+	}
+	
+	public static NodeGraphFieldContainer toGraph(HibNodeFieldContainer container) {
+		return checkAndCast(container, NodeGraphFieldContainer.class);
 	}
 
 	@SuppressWarnings("unchecked")

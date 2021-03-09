@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
@@ -55,8 +56,8 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		// Test creation of user in current thread
 		long nFriendsBefore;
 		try (Tx tx = db.tx()) {
-			p = addPersonWithFriends(tx.getGraph(), "Person2");
-			manipulatePerson(tx.getGraph(), p);
+			p = addPersonWithFriends(((GraphDBTx) tx).getGraph(), "Person2");
+			manipulatePerson(((GraphDBTx) tx).getGraph(), p);
 			tx.success();
 			nFriendsBefore = p.getFriends().count();
 		}
@@ -69,7 +70,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 				i.incrementAndGet();
 
 				System.out.println("Tx1");
-				addFriend(tx.getGraph(), p);
+				addFriend(((GraphDBTx) tx).getGraph(), p);
 				if (i.get() <= 2) {
 					b.await();
 				}
@@ -82,7 +83,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 				i.incrementAndGet();
 
 				System.out.println("Tx2");
-				addFriend(tx.getGraph(), p);
+				addFriend(((GraphDBTx) tx).getGraph(), p);
 				if (i.get() <= 2) {
 					b.await();
 				}
@@ -94,7 +95,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		Thread.sleep(1000);
 		System.out.println("Asserting");
 		try (Tx tx = db.tx()) {
-			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
+			p = ((GraphDBTx) tx).getGraph().getFramedVertexExplicit(Person.class, p.getId());
 			long nFriendsAfter = p.getFriends().count();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
 		}
@@ -107,8 +108,8 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		// Test creation of user in current thread
 		long nFriendsBefore;
 		try (Tx tx = db.tx()) {
-			p = addPersonWithFriends(tx.getGraph(), "Person2");
-			manipulatePerson(tx.getGraph(), p);
+			p = addPersonWithFriends(((GraphDBTx) tx).getGraph(), "Person2");
+			manipulatePerson(((GraphDBTx) tx).getGraph(), p);
 			tx.success();
 			nFriendsBefore = p.getFriends().count();
 		}
@@ -121,7 +122,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		b.await();
 		Thread.sleep(1000);
 		try (Tx tx = db.tx()) {
-			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
+			p = ((GraphDBTx) tx).getGraph().getFramedVertexExplicit(Person.class, p.getId());
 			long nFriendsAfter = p.getFriends().count();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
 		}
@@ -134,7 +135,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 				System.out.println("Try: " + retry);
 				//				try {
 				try (Tx tx = db.tx()) {
-					addFriend(tx.getGraph(), p);
+					addFriend(((GraphDBTx) tx).getGraph(), p);
 					tx.success();
 					if (retry == 0) {
 						try {

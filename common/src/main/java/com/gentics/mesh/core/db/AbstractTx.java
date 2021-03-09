@@ -20,7 +20,7 @@ import com.syncleus.ferma.FramedTransactionalGraph;
 /**
  * An abstract class that can be used to implement vendor specific graph database Tx classes.
  */
-public abstract class AbstractTx<T extends FramedTransactionalGraph> implements Tx {
+public abstract class AbstractTx<T extends FramedTransactionalGraph> implements GraphDBTx {
 
 	/**
 	 * Graph that is active within the scope of the autoclosable.

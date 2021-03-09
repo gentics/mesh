@@ -11,7 +11,7 @@ import javax.management.ObjectName;
 
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
@@ -52,7 +52,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		job.setCompletionCount(completionCount);
 		job.setStatus(status);
 
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 		return this;
 
 	}

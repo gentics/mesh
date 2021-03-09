@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.search.BucketableElement;
+import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
@@ -38,7 +38,7 @@ import com.gentics.mesh.event.Assignment;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking, HibProject, BucketableElement {
+public interface Project extends MeshCoreVertex<ProjectResponse>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking, HibProject, GraphDBBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.PROJECT, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 

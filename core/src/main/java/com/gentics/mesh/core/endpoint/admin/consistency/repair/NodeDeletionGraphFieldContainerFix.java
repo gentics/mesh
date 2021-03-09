@@ -10,6 +10,7 @@ import java.util.Iterator;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -52,16 +53,16 @@ public class NodeDeletionGraphFieldContainerFix {
 		}
 		HibSchema schemaContainer = version.getSchemaContainer();
 		// 1. Find the initial version to check whether the whole version history is still intact
-		NodeGraphFieldContainer initial = findInitial(container);
+		HibNodeFieldContainer initial = findInitial(container);
 
 		if (initial == null) {
 			// The container has no previous version or is not the initial version so we can just delete it.
 			container.remove();
 			return true;
 		}
-		NodeGraphFieldContainer latest = findLatest(container);
-		NodeGraphFieldContainer published = null;
-		NodeGraphFieldContainer draft = null;
+		HibNodeFieldContainer latest = findLatest(container);
+		HibNodeFieldContainer published = null;
+		HibNodeFieldContainer draft = null;
 		if (latest.getVersion().getFullVersion().endsWith(".0")) {
 			published = latest;
 		} else {
@@ -95,13 +96,13 @@ public class NodeDeletionGraphFieldContainerFix {
 		node.setCreated(project.getCreator());
 
 		if (published != null) {
-			GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, published, GraphFieldContainerEdgeImpl.class);
+			GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, ((NodeGraphFieldContainer) published), GraphFieldContainerEdgeImpl.class);
 			edge.setLanguageTag(published.getLanguageTag());
 			edge.setBranchUuid(branchUuid);
 			edge.setType(PUBLISHED);
 		}
 
-		GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, draft, GraphFieldContainerEdgeImpl.class);
+		GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, ((NodeGraphFieldContainer) draft), GraphFieldContainerEdgeImpl.class);
 		edge.setLanguageTag(draft.getLanguageTag());
 		edge.setBranchUuid(branchUuid);
 		edge.setType(DRAFT);
@@ -116,8 +117,8 @@ public class NodeDeletionGraphFieldContainerFix {
 		return true;
 	}
 
-	private NodeGraphFieldContainer findDraft(NodeGraphFieldContainer latest) {
-		NodeGraphFieldContainer previous = latest.getPreviousVersion();
+	private HibNodeFieldContainer findDraft(HibNodeFieldContainer latest) {
+		HibNodeFieldContainer previous = latest.getPreviousVersion();
 		while (previous != null) {
 			if (!previous.getVersion().getFullVersion().equalsIgnoreCase(".0")) {
 				return previous;
@@ -133,8 +134,8 @@ public class NodeDeletionGraphFieldContainerFix {
 	 * @param latest
 	 * @return
 	 */
-	private NodeGraphFieldContainer findPublished(NodeGraphFieldContainer latest) {
-		NodeGraphFieldContainer previous = latest.getPreviousVersion();
+	private HibNodeFieldContainer findPublished(HibNodeFieldContainer latest) {
+		HibNodeFieldContainer previous = latest.getPreviousVersion();
 		while (previous != null) {
 			if (previous.getVersion().getFullVersion().equalsIgnoreCase(".0")) {
 				return previous;
@@ -145,10 +146,10 @@ public class NodeDeletionGraphFieldContainerFix {
 
 	}
 
-	private NodeGraphFieldContainer findLatest(NodeGraphFieldContainer container) {
-		Iterator<? extends NodeGraphFieldContainer> it = container.getNextVersions().iterator();
+	private HibNodeFieldContainer findLatest(HibNodeFieldContainer container) {
+		Iterator<? extends HibNodeFieldContainer> it = container.getNextVersions().iterator();
 		if (it.hasNext()) {
-			NodeGraphFieldContainer next = it.next();
+			HibNodeFieldContainer next = it.next();
 			if (it.hasNext()) {
 				throw new RuntimeException("The version history has branches. The fix is currently unable to deal with version branches.");
 			}
@@ -158,12 +159,12 @@ public class NodeDeletionGraphFieldContainerFix {
 		}
 	}
 
-	private NodeGraphFieldContainer findInitial(NodeGraphFieldContainer container) {
+	private HibNodeFieldContainer findInitial(HibNodeFieldContainer container) {
 		if (container.getVersion().getFullVersion().equalsIgnoreCase("0.1")) {
 			return container;
 		}
-		NodeGraphFieldContainer initial = null;
-		NodeGraphFieldContainer previous = container.getPreviousVersion();
+		HibNodeFieldContainer initial = null;
+		HibNodeFieldContainer previous = container.getPreviousVersion();
 		while (previous != null) {
 			initial = previous;
 			previous = previous.getPreviousVersion();

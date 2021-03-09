@@ -27,13 +27,13 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBContentDao;
+import com.gentics.mesh.core.data.dao.OrientDBGroupDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBRoleDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.OrientDBTagFamilyDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
 import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
@@ -41,6 +41,7 @@ import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.db.TxData;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -52,7 +53,6 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
@@ -157,13 +157,13 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		try {
 			Tx tx = mockTx();
-			NodeDaoWrapper nodeDao = mock(NodeDaoWrapperImpl.class);
-			ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
-			UserDaoWrapper userDao = mock(UserDaoWrapperImpl.class);
-			RoleDaoWrapper roleDao = mock(RoleDaoWrapperImpl.class);
-			GroupDaoWrapper groupDao = mock(GroupDaoWrapperImpl.class);
-			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
-			TagFamilyDaoWrapper tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
+			OrientDBNodeDao nodeDao = mock(NodeDaoWrapperImpl.class);
+			OrientDBContentDao contentDao = mock(ContentDaoWrapperImpl.class);
+			OrientDBUserDao userDao = mock(UserDaoWrapperImpl.class);
+			OrientDBRoleDao roleDao = mock(RoleDaoWrapperImpl.class);
+			OrientDBGroupDao groupDao = mock(GroupDaoWrapperImpl.class);
+			OrientDBTagDao tagDao = mock(TagDaoWrapperImpl.class);
+			OrientDBTagFamilyDao tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
 
 			when(tx.nodeDao()).thenReturn(nodeDao);
 			when(tx.contentDao()).thenReturn(contentDao);
@@ -196,7 +196,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		return txMock;
 	}
 
-	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDaoWrapper contentDao, TagDaoWrapper tagDao) throws Exception {
+	private void writeNodeDocumentExample(OrientDBNodeDao nodeDao, OrientDBContentDao contentDao, OrientDBTagDao tagDao) throws Exception {
 		String language = "de";
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibProject project = mockProject(user);
@@ -239,7 +239,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		writeStoreEvent("role.search");
 	}
 
-	private void writeUserDocumentExample(UserDaoWrapper userDao) throws Exception {
+	private void writeUserDocumentExample(OrientDBUserDao userDao) throws Exception {
 		HibUser creator = mockUser("admin", "Admin", "");
 		HibUser user = mockUser("joe1", "Joe", "Doe", creator);
 		HibGroup groupA = mockGroup("editors", user);
@@ -253,7 +253,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		writeStoreEvent("user.search");
 	}
 
-	private void writeTagFamilyDocumentExample(TagDaoWrapper tagDao, TagFamilyDaoWrapper tagFamilyDao) throws Exception {
+	private void writeTagFamilyDocumentExample(OrientDBTagDao tagDao, OrientDBTagFamilyDao tagFamilyDao) throws Exception {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibProject project = mockProject(user);
 		HibTagFamily tagFamily = mockTagFamily("colors", user, project);

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -57,7 +58,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testNullOperation() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			version.setSchema(schema);
 			SchemaModel updatedSchema = mutator.apply(version);
@@ -69,7 +70,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateTypeAndAllowProperty() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -82,7 +83,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 			version.setSchema(schema);
 
-			FieldTypeChange fieldTypeChange = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange fieldTypeChange = ((GraphDBTx) tx).getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			fieldTypeChange.setFieldName("testField");
 			fieldTypeChange.setRestProperty(SchemaChangeModel.TYPE_KEY, "string");
 			fieldTypeChange.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "testValue" });
@@ -100,7 +101,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateLabel() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -114,7 +115,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 			version.setSchema(schema);
 
-			UpdateFieldChange stringFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange stringFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.LABEL_KEY, "UpdatedLabel");
 			version.setNextChange(stringFieldUpdate);
@@ -131,7 +132,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testAUpdateFields() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -189,53 +190,53 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			version.setSchema(schema);
 
 			// 2. Create schema field update change
-			UpdateFieldChange binaryFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange binaryFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			binaryFieldUpdate.setFieldName("binaryField");
 			binaryFieldUpdate.setRestProperty("allowedMimeTypes", new String[] { "newTypes" });
 			binaryFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			version.setNextChange(binaryFieldUpdate);
 
-			UpdateFieldChange nodeFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange nodeFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			nodeFieldUpdate.setFieldName("nodeField");
 			nodeFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "schemaA", "schemaB" });
 			nodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
-			UpdateFieldChange stringFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange stringFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			stringFieldUpdate.setIndexOptions(IndexOptionHelper.getRawFieldOption());
 			nodeFieldUpdate.setNextChange(stringFieldUpdate);
 
-			UpdateFieldChange htmlFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange htmlFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			htmlFieldUpdate.setFieldName("htmlField");
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.ELASTICSEARCH_KEY, IndexOptionHelper.getRawFieldOption().encode());
 			stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
-			UpdateFieldChange numberFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange numberFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			numberFieldUpdate.setFieldName("numberField");
 			numberFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			htmlFieldUpdate.setNextChange(numberFieldUpdate);
 
-			UpdateFieldChange dateFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange dateFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			dateFieldUpdate.setFieldName("dateField");
 			dateFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			numberFieldUpdate.setNextChange(dateFieldUpdate);
 
-			UpdateFieldChange booleanFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange booleanFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			booleanFieldUpdate.setFieldName("booleanField");
 			booleanFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			dateFieldUpdate.setNextChange(booleanFieldUpdate);
 
-			UpdateFieldChange micronodeFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange micronodeFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			micronodeFieldUpdate.setFieldName("micronodeField");
 			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A", "B", "C" });
 			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			booleanFieldUpdate.setNextChange(micronodeFieldUpdate);
 
-			UpdateFieldChange listFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange listFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			listFieldUpdate.setFieldName("listField");
 			listFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			listFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A1", "B1", "C1" });

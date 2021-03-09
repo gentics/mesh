@@ -31,17 +31,17 @@ import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBUserDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -53,6 +53,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -80,7 +81,7 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements UserDaoWrapper {
+public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements OrientDBUserDao {
 
 	private static final Logger log = LoggerFactory.getLogger(UserDaoWrapperImpl.class);
 
@@ -99,9 +100,9 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	@Override
 	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		UserRoot userRoot = boot.get().userRoot();
-		GroupDaoWrapper groupDao = boot.get().groupDao();
-		ProjectDaoWrapper projectDao = boot.get().projectDao();
-		NodeDaoWrapper nodeDao = boot.get().nodeDao();
+		GroupDao groupDao = boot.get().groupDao();
+		ProjectDao projectDao = boot.get().projectDao();
+		NodeDao nodeDao = boot.get().nodeDao();
 		HibUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -428,7 +429,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 				return true;
 			}
 
-			FramedGraph graph = Tx.get().getGraph();
+			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
 			String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
@@ -562,17 +563,12 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public HibUser inheritRolePermissions(HibUser user, MeshVertex sourceNode, MeshVertex targetNode) {
+	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target) {
 		for (InternalPermission perm : InternalPermission.values()) {
 			String key = perm.propertyKey();
-			targetNode.property(key, sourceNode.property(key));
+			((MeshVertex) target).property(key, ((MeshVertex) source).property(key));
 		}
 		return user;
-	}
-
-	@Override
-	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target) {
-		return inheritRolePermissions(user, (MeshVertex) source, (MeshVertex) target);
 	}
 
 	@Override
@@ -615,9 +611,9 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public boolean hasReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDaoWrapper contentDao = boot.get().contentDao();
-		HibNode node = contentDao.getNode(container);
+	public boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
+		ContentDao contentDao = boot.get().contentDao();
+		HibNode node = contentDao.getParentNode(container);
 		if (hasPermission(user, node, READ_PERM)) {
 			return true;
 		}
@@ -653,17 +649,17 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, MeshVertex targetNode) {
+	public HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode) {
 		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM,
 			READ_PUBLISHED_PERM);
 		return user;
 	}
 
 	@Override
-	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, MeshVertex targetNode,
+	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode,
 		InternalPermission... toGrant) {
 		// TODO inject dao via DI
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (HibRole role : sourceNode.getRolesWithPerm(permission)) {
@@ -709,9 +705,9 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDaoWrapper contentDao = boot.get().contentDao();
-		HibNode node = contentDao.getNode(container);
+	public void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
+		ContentDao contentDao = boot.get().contentDao();
+		HibNode node = contentDao.getParentNode(container);
 		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
 			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
 				"published".equals(requestedVersion)

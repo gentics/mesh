@@ -21,6 +21,7 @@ import java.util.stream.StreamSupport;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -55,6 +57,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListIm
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -174,7 +177,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		MicronodeGraphField existing = getMicronode(key);
 		Micronode existingMicronode = null;
 		if (existing != null) {
-			existingMicronode = existing.getMicronode();
+			existingMicronode = (Micronode) existing.getMicronode();
 			// existing.getMicronode().delete();
 		}
 
@@ -286,7 +289,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public <T extends ListGraphField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey) {
+	public <T extends HibListField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey) {
 		return out(HAS_LIST).has(classOfT).has(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey).nextOrDefaultExplicit(classOfT, null);
 	}
 
@@ -362,7 +365,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public GraphField getField(FieldSchema fieldSchema) {
+	public HibField getField(FieldSchema fieldSchema) {
 		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
 		if (type != null) {
 			return type.getField(this, fieldSchema);
@@ -372,11 +375,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public List<GraphField> getFields() {
+	public List<HibField> getFields() {
 		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
-		List<GraphField> fields = new ArrayList<>();
+		List<HibField> fields = new ArrayList<>();
 		for (FieldSchema fieldSchema : schema.getFields()) {
-			GraphField field = getField(fieldSchema);
+			HibField field = getField(fieldSchema);
 			if (field != null) {
 				fields.add(field);
 			}
@@ -458,7 +461,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			return Optional.ofNullable(getNodeList(list.getName()))
 				.map(listField -> listField.getList().stream())
 				.orElseGet(Stream::empty)
-				.map(NodeGraphField::getNode);
+				.map(HibNodeField::getNode);
 		} else if (type.equals(FieldTypes.MICRONODE.toString())) {
 			return Optional.ofNullable(getMicronodeList(list.getName()))
 				.map(listField -> listField.getList().stream())

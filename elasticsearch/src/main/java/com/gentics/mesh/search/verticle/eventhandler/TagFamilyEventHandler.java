@@ -15,7 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -58,7 +58,7 @@ public class TagFamilyEventHandler implements EventHandler {
 
 			if (event == TAG_FAMILY_CREATED || event == TAG_FAMILY_UPDATED) {
 				return helper.getDb().tx(tx -> {
-					TagDaoWrapper tagDao = tx.tagDao();
+					TagDao tagDao = tx.tagDao();
 					// We also need to update all tags of this family
 					Optional<HibTagFamily> tagFamily = entities.tagFamily.getElement(model);
 
@@ -100,7 +100,7 @@ public class TagFamilyEventHandler implements EventHandler {
 	 * @return
 	 */
 	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, HibTagFamily tagFamily) {
-		TagDaoWrapper tagDao = helper.getBoot().tagDao();
+		TagDao tagDao = helper.getBoot().tagDao();
 		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 			.flatMap(project -> project.getBranchRoot().findAll().stream()
 				.flatMap(branch -> {

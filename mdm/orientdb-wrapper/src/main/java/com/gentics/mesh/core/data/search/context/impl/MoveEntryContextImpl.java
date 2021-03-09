@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.search.context.impl;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.rest.common.ContainerType;
 
@@ -8,8 +8,8 @@ public class MoveEntryContextImpl implements MoveEntryContext {
 
 	private String branchUuid;
 	private ContainerType type;
-	private NodeGraphFieldContainer oldContainer;
-	private NodeGraphFieldContainer newContainer;
+	private HibNodeFieldContainer oldContainer;
+	private HibNodeFieldContainer newContainer;
 
 	@Override
 	public String getBranchUuid() {
@@ -34,23 +34,23 @@ public class MoveEntryContextImpl implements MoveEntryContext {
 	}
 
 	@Override
-	public NodeGraphFieldContainer getOldContainer() {
+	public HibNodeFieldContainer getOldContainer() {
 		return oldContainer;
 	}
 
 	@Override
-	public MoveEntryContext setOldContainer(NodeGraphFieldContainer container) {
+	public MoveEntryContext setOldContainer(HibNodeFieldContainer container) {
 		this.oldContainer = container;
 		return this;
 	}
 
 	@Override
-	public NodeGraphFieldContainer getNewContainer() {
+	public HibNodeFieldContainer getNewContainer() {
 		return newContainer;
 	}
 
 	@Override
-	public MoveEntryContext setNewContainer(NodeGraphFieldContainer container) {
+	public MoveEntryContext setNewContainer(HibNodeFieldContainer container) {
 		this.newContainer = container;
 		return this;
 	}

@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 
 /**
@@ -17,24 +18,24 @@ import com.gentics.mesh.core.db.Tx;
 public interface WrapperHelper {
 
 	default Schema createSchema(Tx tx) {
-		Schema schema = tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schema = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerImpl.class);
 		schema.generateBucketId();
 		return schema;
 	}
 
 	default HibSchemaVersion createSchemaVersion(Tx tx) {
-		SchemaContainerVersionImpl graphVersion = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersionImpl graphVersion = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		return graphVersion;
 	}
 
 	default HibMicroschema createMicroschema(Tx tx) {
-		HibMicroschema schema = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		HibMicroschema schema = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		schema.generateBucketId();
 		return schema;
 	}
 
 	default HibMicroschemaVersion createMicroschemaVersion(Tx tx) {
-		MicroschemaContainerVersionImpl graphVersion = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		MicroschemaContainerVersionImpl graphVersion = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 		return graphVersion;
 	}
 }

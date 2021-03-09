@@ -26,8 +26,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -51,7 +50,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 /**
  * @see BranchRoot
  */
-public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot, BranchDao {
+public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
 
 	/**
 	 * Initialize the branch type and index.
@@ -90,7 +89,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
-		UserDaoWrapper userRoot = mesh().boot().userDao();
+		UserDao userRoot = mesh().boot().userDao();
 
 		if (uuid != null) {
 			branch.setUuid(uuid);
@@ -159,7 +158,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		String projectName = project.getName();
 		String projectUuid = project.getUuid();
 
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 
 		if (!userDao.hasPermission(requestUser, project, InternalPermission.UPDATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName, UPDATE_PERM.getRestPerm().getName());

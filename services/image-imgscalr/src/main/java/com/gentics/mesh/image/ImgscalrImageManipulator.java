@@ -33,11 +33,11 @@ import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.db.spi.Supplier;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
@@ -303,7 +303,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		parameters.validate();
 		parameters.validateLimits(options);
 
-		BinaryDaoWrapper binaryDao = boot.binaryDao();
+		BinaryDao binaryDao = boot.binaryDao();
 		Supplier<InputStream> stream = binaryDao.openBlockingStream(binary);
 
 		return getCacheFilePath(binary.getSHA512Sum(), parameters)

@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -48,7 +48,7 @@ public class GroupEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			HibGroup group = group();
 
 			String actualEtag = callETag(() -> client().findGroupByUuid(group.getUuid()));

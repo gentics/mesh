@@ -27,13 +27,15 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBucketableElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.db.spi.Transactional;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -56,7 +58,6 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -114,7 +115,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return ContentDaoWrapper.composeDocumentId(entry.getElementUuid(), entry.getContext().getLanguageTag());
+		return ContentDao.composeDocumentId(entry.getElementUuid(), entry.getContext().getLanguageTag());
 	}
 
 	@Override
@@ -124,7 +125,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		String branchUuid = context.getBranchUuid();
 		String schemaContainerVersionUuid = context.getSchemaContainerVersionUuid();
 		ContainerType type = context.getContainerType();
-		return ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
+		return ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
 	}
 
 	@Override
@@ -194,7 +195,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 			// Add all language specific indices (might be none)
 			schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {
-				String indexName = ContentDaoWrapper.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 					.getUuid(), version, language);
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
@@ -203,7 +204,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 			// And all default indices
 			Stream.of(DRAFT, PUBLISHED).forEach(version -> {
-				String indexName = ContentDaoWrapper.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 					.getUuid(), version);
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
@@ -240,9 +241,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		Set<String> activeIndices = new HashSet<>();
 		db.tx(tx -> {
-			ProjectDaoWrapper projectDao = tx.projectDao();
-			BranchDaoWrapper branchDao = tx.branchDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			ProjectDao projectDao = tx.projectDao();
+			BranchDao branchDao = tx.branchDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			for (HibProject currentProject : projectDao.findAll()) {
 				for (HibBranch branch : branchDao.findAll(currentProject)) {
 					for (HibSchemaVersion version : schemaDao.findActiveSchemaVersions(branch)) {
@@ -252,7 +253,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 						}
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
-								.add(ContentDaoWrapper.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
+								.add(ContentDao.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
 									type));
 						});
 					}
@@ -278,9 +279,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
 		return Flowable.defer(() -> db.tx(tx -> {
-			ProjectDaoWrapper projectDao = tx.projectDao();
-			BranchDaoWrapper branchDao = tx.branchDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			ProjectDao projectDao = tx.projectDao();
+			BranchDao branchDao = tx.branchDao();
+			SchemaDao schemaDao = tx.schemaDao();
 
 			return projectDao.findAll().stream()
 				.flatMap(project -> branchDao.findAll(project).stream()
@@ -299,20 +300,20 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param bucket
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type,
+	private Map<String, Map<String, HibNodeFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type,
 		Bucket bucket) {
 		return db.tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			ContentDao contentDao = tx.contentDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
 			return schemaDao.getFieldContainers(version, branchUuid, bucket)
 				.filter(c -> c.isType(type, branchUuid))
-				.map(NodeGraphFieldContainer.class::cast)
+				.map(HibNodeFieldContainer.class::cast)
 				.collect(Collectors.groupingBy(content -> {
 					String languageTag = content.getLanguageTag();
-					return ContentDaoWrapper.composeIndexName(
+					return ContentDao.composeIndexName(
 						branch.getProject().getUuid(),
 						branchUuid,
 						version.getUuid(),
@@ -321,7 +322,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 							? languageTag
 							: null);
 				},
-					Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
+					Collectors.toMap(c -> contentDao.getParentNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
 		});
 	}
 
@@ -352,11 +353,11 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Bucket bucket) {
 		return Flowable.defer(() -> {
-			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucket);
+			Map<String, Map<String, HibNodeFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucket);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
 				.flatMap(indexName -> loadVersionsFromIndex(indexName, bucket).flatMapPublisher(sinkVersions -> {
 					log.debug("Handling index sync on handler {" + getClass().getName() + "} for bucket {" + bucket + "}");
-					Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
+					Map<String, HibNodeFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
 					String branchUuid = branch.getUuid();
 
 					Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
@@ -401,13 +402,13 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	private List<String> getIndexNames(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type) {
 		return db.tx(() -> {
 			Stream<String> languageIndices = version.getSchema().findOverriddenSearchLanguages()
-				.map(lang -> ContentDaoWrapper.composeIndexName(
+				.map(lang -> ContentDao.composeIndexName(
 					project.getUuid(),
 					branch.getUuid(),
 					version.getUuid(),
 					type,
 					lang));
-			Stream<String> defaultIndex = Stream.of(ContentDaoWrapper.composeIndexName(
+			Stream<String> defaultIndex = Stream.of(ContentDao.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				version.getUuid(),
@@ -429,12 +430,12 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			HibProject project = tx.getProject(ac);
 			if (project != null) {
 				HibBranch branch = tx.getBranch(ac);
-				return Collections.singleton(ContentDaoWrapper.composeIndexPattern(
+				return Collections.singleton(ContentDao.composeIndexPattern(
 					project.getUuid(),
 					branch.getUuid(),
 					type));
 			} else {
-				return Collections.singleton(ContentDaoWrapper.composeIndexPattern(type));
+				return Collections.singleton(ContentDao.composeIndexPattern(type));
 			}
 		});
 	}
@@ -525,9 +526,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param context
 	 */
 	private void store(Set<Single<String>> obs, HibNode node, String branchUuid, ContainerType type, GenericEntryContext context) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
+			HibNodeFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
@@ -535,7 +536,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		} else {
-			for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
+			for (HibNodeFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		}
@@ -599,10 +600,10 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return
 	 */
 	private Observable<IndexBulkEntry> storeForBulk(HibNode node, String branchUuid, ContainerType type, GenericEntryContext context) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
 		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
+			HibNodeFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
@@ -611,7 +612,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			}
 		} else {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
+			for (HibNodeFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
 				obs.add(storeContainerForBulk(container, branchUuid, type).toObservable());
 			}
 			return Observable.merge(obs);
@@ -641,18 +642,18 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return
 	 */
 	public Observable<BulkEntry> moveForBulk(MoveDocumentEntry entry) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDao contentDao = boot.contentDao();
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getBranchUuid();
 
-		NodeGraphFieldContainer newContainer = context.getNewContainer();
-		String newProjectUuid = contentDao.getNode(newContainer).getProject().getUuid();
-		String newIndexName = ContentDaoWrapper.composeIndexName(newProjectUuid, releaseUuid,
+		HibNodeFieldContainer newContainer = context.getNewContainer();
+		String newProjectUuid = contentDao.getParentNode(newContainer).getProject().getUuid();
+		String newIndexName = ContentDao.composeIndexName(newProjectUuid, releaseUuid,
 			newContainer.getSchemaContainerVersion().getUuid(),
 			type);
 		String newLanguageTag = newContainer.getLanguageTag();
-		String newDocumentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(newContainer).getUuid(), newLanguageTag);
+		String newDocumentId = ContentDao.composeDocumentId(contentDao.getParentNode(newContainer).getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
 		return Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
 
@@ -666,9 +667,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param type
 	 * @return
 	 */
-	private Completable deleteContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = boot.contentDao();
-		String projectUuid = contentDao.getNode(container).getProject().getUuid();
+	private Completable deleteContainer(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		ContentDao contentDao = boot.contentDao();
+		String projectUuid = contentDao.getParentNode(container).getProject().getUuid();
 		return searchProvider.deleteDocument(contentDao.getIndexName(container, projectUuid, branchUuid, type), contentDao.getDocumentId(container));
 	}
 
@@ -680,16 +681,16 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param type
 	 * @return Single with affected index name
 	 */
-	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+	public Single<String> storeContainer(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		ContentDao contentDao = boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		String projectUuid = contentDao.getNode(container).getProject().getUuid();
-		String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String projectUuid = contentDao.getParentNode(container).getProject().getUuid();
+		String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
+			log.debug("Storing node {" + contentDao.getParentNode(container).getUuid() + "} into index {" + indexName + "}");
 		}
 		String languageTag = container.getLanguageTag();
-		String documentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(container).getUuid(), languageTag);
+		String documentId = ContentDao.composeDocumentId(contentDao.getParentNode(container).getUuid(), languageTag);
 		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
 	}
 
@@ -701,16 +702,16 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param type
 	 * @return Single with the bulk entry
 	 */
-	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+	public Single<IndexBulkEntry> storeContainerForBulk(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		ContentDao contentDao = boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		String projectUuid = contentDao.getNode(container).getProject().getUuid();
-		String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String projectUuid = contentDao.getParentNode(container).getProject().getUuid();
+		String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
+			log.debug("Storing node {" + contentDao.getParentNode(container).getUuid() + "} into index {" + indexName + "}");
 		}
 		String languageTag = container.getLanguageTag();
-		String documentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(container).getUuid(), languageTag);
+		String documentId = ContentDao.composeDocumentId(contentDao.getParentNode(container).getUuid(), languageTag);
 
 		return Single.just(new IndexBulkEntry(indexName, documentId, doc, complianceMode));
 	}
@@ -736,8 +737,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			// Not found
 			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
 		} else {
-			BranchDaoWrapper branchDao = Tx.get().branchDao();
-			ContentDaoWrapper contentDao = Tx.get().contentDao();
+			BranchDao branchDao = Tx.get().branchDao();
+			ContentDao contentDao = Tx.get().contentDao();
 
 			HibProject project = node.getProject();
 			List<UpdateBulkEntry> entries = new ArrayList<>();
@@ -746,7 +747,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			for (HibBranch branch : branchDao.findAll(project)) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
-					for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branch, type)) {
+					for (HibNodeFieldContainer container : contentDao.getGraphFieldContainers(node, branch, type)) {
 						String indexName = boot.contentDao().getIndexName(container, project.getUuid(), branch.getUuid(), type);
 						String documentId = boot.contentDao().getDocumentId(container);
 						entries.add(new UpdateBulkEntry(indexName, documentId, json, complianceMode));
@@ -807,7 +808,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param type
 	 * @return
 	 */
-	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+	public String generateVersion(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
 		return getTransformer().generateVersion(container, branchUuid, type);
 	}
 

@@ -32,7 +32,8 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -171,12 +172,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	/**
-	 * @deprecated Use {@link ProjectDaoWrapper}{@link #transformToRestSync(InternalActionContext, int, String...)} instead
+	 * @deprecated Use {@link OrientDBProjectDao}{@link #transformToRestSync(InternalActionContext, int, String...)} instead
 	 */
 	@Override
 	@Deprecated
 	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		ProjectDaoWrapper projectDao = mesh().boot().projectDao();
+		ProjectDao projectDao = mesh().boot().projectDao();
 		return projectDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
@@ -201,7 +202,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	@Deprecated
 	public void delete(BulkActionContext bac) {
-		ProjectDaoWrapper projectDao = mesh().boot().projectDao();
+		ProjectDao projectDao = mesh().boot().projectDao();
 		projectDao.delete(this, bac);
 	}
 

@@ -9,7 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.JobDAOActions;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -30,7 +30,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 
 	@Override
 	public HibJob loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		JobDaoWrapper jobDao = ctx.tx().jobDao();
+		JobDao jobDao = ctx.tx().jobDao();
 		if (perm == null) {
 			return jobDao.findByUuid(uuid);
 		} else {
@@ -40,7 +40,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 
 	@Override
 	public HibJob loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		JobDaoWrapper jobDao = ctx.tx().jobDao();
+		JobDao jobDao = ctx.tx().jobDao();
 		if (perm == null) {
 			return jobDao.findByName(name);
 		} else {
@@ -75,19 +75,19 @@ public class JobDAOActionsImpl implements JobDAOActions {
 
 	@Override
 	public JobResponse transformToRestSync(Tx tx, HibJob job, InternalActionContext ac, int level, String... languageTags) {
-		JobDaoWrapper jobDao = tx.jobDao();
+		JobDao jobDao = tx.jobDao();
 		return jobDao.transformToRestSync(job, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibJob job) {
-		JobDaoWrapper jobDao = tx.jobDao();
+		JobDao jobDao = tx.jobDao();
 		return jobDao.getAPIPath(job, ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibJob job) {
-		JobDaoWrapper jobDao = tx.jobDao();
+		JobDao jobDao = tx.jobDao();
 		return jobDao.getETag(job, ac);
 	}
 

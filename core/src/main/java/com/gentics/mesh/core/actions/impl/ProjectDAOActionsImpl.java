@@ -9,7 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.ProjectDAOActions;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -30,7 +30,7 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 
 	@Override
 	public HibProject loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		ProjectDaoWrapper projectDao = ctx.tx().projectDao();
+		ProjectDao projectDao = ctx.tx().projectDao();
 		if (perm == null) {
 			return projectDao.findByUuid(uuid);
 		} else {
@@ -70,25 +70,25 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 
 	@Override
 	public void delete(Tx tx, HibProject project, BulkActionContext bac) {
-		ProjectDaoWrapper projectDao = tx.projectDao();
+		ProjectDao projectDao = tx.projectDao();
 		projectDao.delete(project, bac);
 	}
 
 	@Override
 	public ProjectResponse transformToRestSync(Tx tx, HibProject project, InternalActionContext ac, int level, String... languageTags) {
-		ProjectDaoWrapper projectDao = tx.projectDao();
+		ProjectDao projectDao = tx.projectDao();
 		return projectDao.transformToRestSync(project, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibProject project) {
-		ProjectDaoWrapper projectDao = tx.projectDao();
+		ProjectDao projectDao = tx.projectDao();
 		return projectDao.getAPIPath(project, ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibProject project) {
-		ProjectDaoWrapper projectDao = tx.projectDao();
+		ProjectDao projectDao = tx.projectDao();
 		return projectDao.getETag(project, ac);
 	}
 

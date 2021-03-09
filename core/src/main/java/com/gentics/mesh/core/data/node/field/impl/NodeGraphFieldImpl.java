@@ -22,11 +22,14 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -35,6 +38,7 @@ import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -56,7 +60,7 @@ import com.syncleus.ferma.VertexFrame;
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	public static FieldTransformer<NodeField> NODE_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
-		NodeGraphField graphNodeField = container.getNode(fieldKey);
+		HibNodeField graphNodeField = container.getNode(fieldKey);
 		if (graphNodeField == null) {
 			return null;
 		} else {
@@ -67,17 +71,17 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	public static FieldUpdater NODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		NodeDao nodeDao = tx.nodeDao();
 
-		NodeGraphField graphNodeField = container.getNode(fieldKey);
+		HibNodeField graphNodeField = container.getNode(fieldKey);
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
-		GraphField.failOnDeletionOfRequiredField(graphNodeField, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(graphNodeField, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = nodeField == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(graphNodeField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(graphNodeField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
@@ -146,7 +150,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public Stream<? extends NodeGraphFieldContainer> getReferencingContents() {
+	public Stream<? extends HibNodeFieldContainer> getReferencingContents() {
 		return getReferencingFieldContainers()
 			.flatMap(GraphFieldContainer::getContents);
 	}
@@ -174,7 +178,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		// TODO handle null across all types
 		// if (getNode() != null) {
 		NodeParameters parameters = ac.getNodeParameters();
-		UserDaoWrapper userDao = mesh().boot().userDao();
+		UserDao userDao = mesh().boot().userDao();
 		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		Node node = getNode();
 
@@ -192,7 +196,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			LinkType type = ac.getNodeParameters().getResolveLinks();
 			if (type != LinkType.OFF) {
 				Tx tx = Tx.get();
-				ContentDaoWrapper contentDao = tx.contentDao();
+				ContentDao contentDao = tx.contentDao();
 
 				WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
 				HibBranch branch = tx.getBranch(ac);
@@ -204,7 +208,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
-				for (GraphFieldContainer currentFieldContainer : contentDao.getGraphFieldContainers(node, branch, containerType)) {
+				for (HibFieldContainer currentFieldContainer : contentDao.getGraphFieldContainers(node, branch, containerType)) {
 					String currLanguage = currentFieldContainer.getLanguageTag();
 					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage);
 					languagePaths.put(currLanguage, languagePath);
@@ -217,14 +221,14 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		// TODO BUG We must only remove one edge to the given container!
 		remove();
 	}
 
 	@Override
-	public GraphField cloneTo(GraphFieldContainer container) {
-		NodeGraphFieldImpl field = getGraph().addFramedEdge(container, getNode(), HAS_FIELD, NodeGraphFieldImpl.class);
+	public GraphField cloneTo(HibFieldContainer container) {
+		NodeGraphFieldImpl field = getGraph().addFramedEdge((GraphFieldContainer) container, getNode(), HAS_FIELD, NodeGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
 		return field;
 	}

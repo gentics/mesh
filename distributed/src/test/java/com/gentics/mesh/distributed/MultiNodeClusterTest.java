@@ -6,6 +6,7 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 

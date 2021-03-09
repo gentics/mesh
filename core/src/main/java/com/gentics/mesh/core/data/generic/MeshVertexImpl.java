@@ -20,10 +20,10 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -109,7 +109,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 
 	@Override
 	public FramedGraph getGraph() {
-		return Tx.get().getGraph();
+		return GraphDBTx.getGraphTx().getGraph();
 	}
 
 	@Override
@@ -125,7 +125,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 
 	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		RoleDaoWrapper roleDao = mesh().boot().roleDao();
+		RoleDao roleDao = mesh().boot().roleDao();
 		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new InternalPermission[permissionsToGrant.size()]));
 		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()]));
 

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBBranchDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -31,7 +31,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import dagger.Lazy;
 
 @Singleton
-public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements BranchDaoWrapper {
+public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements OrientDBBranchDao {
 
 	private Database db;
 

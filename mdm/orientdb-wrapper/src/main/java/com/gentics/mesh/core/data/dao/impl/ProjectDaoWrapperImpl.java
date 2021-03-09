@@ -22,10 +22,10 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBProjectDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -57,7 +57,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 // Use ProjectDao instead of ProjectRoot once ready
 @Singleton
-public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implements ProjectDaoWrapper {
+public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implements OrientDBProjectDao {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectDaoWrapperImpl.class);
 
@@ -194,8 +194,8 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	@Override
 	public HibProject create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		ProjectRoot projectRoot = boot.get().projectRoot();
-		UserDaoWrapper userDao = boot.get().userDao();
-		SchemaDaoWrapper schemaDao = boot.get().schemaDao();
+		UserDao userDao = boot.get().userDao();
+		SchemaDao schemaDao = boot.get().schemaDao();
 
 		// TODO also create a default object schema for the project. Move this
 		// into service class
@@ -258,7 +258,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
-		NodeDaoWrapper nodeDao = boot.get().nodeDao();
+		NodeDao nodeDao = boot.get().nodeDao();
 
 		Project graphProject = toGraph(project);
 

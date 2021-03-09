@@ -10,12 +10,14 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.db.spi.Transactional;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.Transactional;
 
 /**
  * This class manages the {@link HibBinary} instances that have been persisted.
  */
+// TODO Move out of Core to OrientDB module
 @Singleton
 public class BinariesImpl implements Binaries {
 
@@ -29,7 +31,7 @@ public class BinariesImpl implements Binaries {
 	@Override
 	public Transactional<HibBinary> create(String uuid, String sha512sum, Long size) {
 		return database.transactional(tx -> {
-			HibBinary binary = tx.getGraph().addFramedVertex(BinaryImpl.class);
+			HibBinary binary = ((GraphDBTx) tx).getGraph().addFramedVertex(BinaryImpl.class);
 			binary.setSHA512Sum(sha512sum);
 			binary.setSize(size);
 			binary.setUuid(uuid);

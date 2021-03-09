@@ -20,9 +20,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBMicroschemaDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -49,7 +49,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
-public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema> implements MicroschemaDaoWrapper {
+public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema> implements OrientDBMicroschemaDao {
 
 	private final MicroschemaComparator comparator;
 
@@ -62,7 +62,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 
 	@Override
 	public HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		UserDaoWrapper userRoot = Tx.get().userDao();
+		UserDao userRoot = Tx.get().userDao();
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 
 		HibUser requestUser = ac.getUser();
@@ -83,7 +83,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		EventQueueBatch batch) {
 		microschema.validate();
 
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 
 		String name = microschema.getName();
@@ -195,7 +195,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibMicroschema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.findAll(ac, pagingInfo);
 	}

@@ -338,6 +338,7 @@ public class OrientDBClusterManager implements ClusterManager {
 	 * 
 	 * @return Cluster status REST response
 	 */
+	@Override
 	public ClusterStatusResponse getClusterStatus() {
 		ClusterStatusResponse response = new ClusterStatusResponse();
 		if (hazelcastPlugin != null) {

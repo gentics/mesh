@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field;
 
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
 
 @FunctionalInterface
@@ -15,5 +16,5 @@ public interface FieldFetcher {
 	 *            Name of the field
 	 * @return Found graph field
 	 */
-	GraphField fetch(GraphFieldContainer container, String name);
+	HibField fetch(HibFieldContainer container, String name);
 }

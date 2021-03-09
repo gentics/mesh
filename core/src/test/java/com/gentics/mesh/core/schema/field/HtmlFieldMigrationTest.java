@@ -28,7 +28,7 @@ import java.util.concurrent.TimeoutException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.field.html.HtmlFieldTestHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
@@ -373,7 +373,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 		changeType(CREATEHTML, FILLLONGTEXT, FETCH,
 			name -> FieldUtil.createHtmlFieldSchema(name).setElasticsearch(IndexOptionHelper.getRawFieldOption()),
 			(container, name) -> {
-				HtmlGraphField htmlField = container.getHtml(name);
+				HibHtmlField htmlField = container.getHtml(name);
 				assertEquals("The html field should not be truncted.", 40_000, htmlField.getHTML().length());
 				waitForSearchIdleEvent();
 				assertThat(trackingSearchProvider()).recordedStoreEvents(1);

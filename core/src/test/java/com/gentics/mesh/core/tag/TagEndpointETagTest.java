@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
@@ -33,7 +33,7 @@ public class TagEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 			HibTagFamily tagfamily = tagFamily("colors");
 			HibTag tag = tag("red");
 

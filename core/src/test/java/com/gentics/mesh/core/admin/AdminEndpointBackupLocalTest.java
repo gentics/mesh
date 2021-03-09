@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.parameter.client.BackupParametersImpl;
@@ -34,7 +35,7 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 		// Now produce inconsistency
 		Node bogusNode = tx(tx -> {
-			Node bogus = tx.getGraph().addFramedVertex(NodeImpl.class);
+			Node bogus = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
 			bogus.setUuid(UUIDUtil.randomUUID());
 			bogus.setProject(project());
 			return bogus;

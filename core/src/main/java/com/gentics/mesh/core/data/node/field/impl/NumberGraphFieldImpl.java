@@ -1,12 +1,13 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -20,7 +21,7 @@ import com.syncleus.ferma.AbstractVertexFrame;
 public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implements NumberGraphField {
 
 	public static FieldTransformer<NumberField> NUMBER_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
-		NumberGraphField graphNumberField = container.getNumber(fieldKey);
+		HibNumberField graphNumberField = container.getNumber(fieldKey);
 		if (graphNumberField == null) {
 			return null;
 		} else {
@@ -29,15 +30,15 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 	};
 
 	public static FieldUpdater NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		NumberGraphField numberGraphField = container.getNumber(fieldKey);
+		HibNumberField numberGraphField = container.getNumber(fieldKey);
 		NumberField numberField = fieldMap.getNumberField(fieldKey);
 		boolean isNumberFieldSetToNull = fieldMap.hasField(fieldKey) && (numberField == null || numberField.getNumber() == null);
-		GraphField.failOnDeletionOfRequiredField(numberGraphField, isNumberFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(numberGraphField, isNumberFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = numberField == null || numberField.getNumber() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(numberGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(numberGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -85,14 +86,14 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		setFieldProperty("number", null);
 		setFieldKey(null);
 	}
 
 	@Override
-	public GraphField cloneTo(GraphFieldContainer container) {
-		NumberGraphField clone = container.createNumber(getFieldKey());
+	public HibField cloneTo(HibFieldContainer container) {
+		HibNumberField clone = container.createNumber(getFieldKey());
 		clone.setNumber(getNumber());
 		return clone;
 	}

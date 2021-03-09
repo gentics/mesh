@@ -22,8 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -31,9 +31,9 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 	private final DataProvider FILL = (container, name) -> {
-		MicronodeGraphFieldList field = container.createMicronodeFieldList(name);
+		HibMicronodeFieldList field = container.createMicronodeFieldList(name);
 
-		Micronode micronode = field.createMicronode();
+		HibMicronode micronode = field.createMicronode();
 		micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Donald");
 		micronode.createString("lastName").setString("Duck");

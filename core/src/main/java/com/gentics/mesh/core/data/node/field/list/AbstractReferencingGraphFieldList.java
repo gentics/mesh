@@ -9,9 +9,10 @@ import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.node.field.Field;
 
 /**
@@ -24,7 +25,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
  * @param <U>
  *            Type of element that is referenced
  */
-public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> {
+public abstract class AbstractReferencingGraphFieldList<T extends HibListableField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> {
 
 	@Override
 	public long getSize() {
@@ -61,9 +62,11 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+		GraphFieldContainer graphContainer = (GraphFieldContainer) container;
+		
 		// Detach the list from the given graph field container
-		container.unlinkOut(this, HAS_LIST);
+		graphContainer.unlinkOut(this, HAS_LIST);
 
 		// Remove the field if no more containers are attached to it
 		if (!in(HAS_LIST).hasNext()) {
@@ -72,9 +75,11 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	}
 
 	@Override
-	public GraphField cloneTo(GraphFieldContainer container) {
-		container.linkOut(this, HAS_LIST);
-		return container.getList(getClass(), getFieldKey());
+	public GraphField cloneTo(HibFieldContainer container) {
+		GraphFieldContainer graphContainer = (GraphFieldContainer) container;
+		
+		graphContainer.linkOut(this, HAS_LIST);
+		return graphContainer.getList(getClass(), getFieldKey());
 	}
 
 	/**

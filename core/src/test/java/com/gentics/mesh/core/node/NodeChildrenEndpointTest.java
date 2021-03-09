@@ -21,8 +21,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -104,7 +104,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
@@ -143,7 +143,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadNodeChildren() throws Exception {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -164,7 +164,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		HibNode node = folder("news");
 		HibNode nodeWithNoPerm = folder("2015");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 			roleDao.revokePermissions(role(), nodeWithNoPerm, READ_PERM);
@@ -172,7 +172,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(),
 					new PagingParametersImpl().setPerPage(20000L), new VersioningParametersImpl().draft()));
 
@@ -186,7 +186,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 			roleDao.revokePermissions(role(), node, READ_PERM);
@@ -209,7 +209,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		HibNode firstFolder;
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			firstFolder = nodeDao.getChildren(node)
 				.stream()
 				.filter(child -> child.getSchemaContainer().getName().equals("folder"))
@@ -222,7 +222,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 		// "migrate" the News node to the new branch, so that we can get children of it in both branches
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setLanguage("en");
 			create.getFields().put("name", FieldUtil.createStringField("News"));

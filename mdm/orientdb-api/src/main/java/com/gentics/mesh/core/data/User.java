@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.search.BucketableElement;
+import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -37,7 +37,7 @@ import com.gentics.mesh.util.DateUtils;
  * <img src= "http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement<UserReference>, UserTrackingVertex, HibUser, BucketableElement {
+public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement<UserReference>, UserTrackingVertex, HibUser, GraphDBBucketableElement {
 
 	/**
 	 * API token id property name {@value #API_TOKEN_ID}
@@ -192,13 +192,6 @@ public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement
 	 * @return Fluent API
 	 */
 	HibUser addGroup(Group group);
-
-	/**
-	 * A CRC32 hash of the users {@link #getRoles roles}.
-	 *
-	 * @return A hash of the users roles
-	 */
-	String getRolesHash();
 
 	/**
 	 * Return an iterable of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.

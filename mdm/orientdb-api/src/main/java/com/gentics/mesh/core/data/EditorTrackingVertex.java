@@ -14,13 +14,6 @@ public interface EditorTrackingVertex extends MeshVertex, HibEditorTracking {
 	String LAST_EDIT_TIMESTAMP_PROPERTY_KEY = "last_edited_timestamp";
 
 	/**
-	 * Return the editor of the vertex.
-	 * 
-	 * @return Editor
-	 */
-	HibUser getEditor();
-
-	/**
 	 * Set the editor of the vertex.
 	 * 
 	 * @param user

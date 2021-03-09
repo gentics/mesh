@@ -7,6 +7,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;

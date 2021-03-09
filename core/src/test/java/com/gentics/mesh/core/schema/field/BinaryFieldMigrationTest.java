@@ -23,8 +23,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
@@ -48,7 +49,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	final DataProvider FILL = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		hash = FileUtils.hash(buffer).blockingGet();
-		Binaries binaries = Tx.get().binaries();
+		Binaries binaries = GraphDBTx.getGraphTx().binaries();
 
 		// Check whether the binary could already be found
 		HibBinary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());
@@ -57,7 +58,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			binary = binaries.create(hash, 1L).runInExistingTx(Tx.get());
 			store = true;
 		}
-		BinaryGraphField field = container.createBinary(name, binary);
+		HibBinaryField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
 
@@ -80,7 +81,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	public void testChangeToBinary() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEBINARY, (container, name) -> {
-			BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
+			BinaryDao binaryDao = Tx.get().binaryDao();
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
 			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);

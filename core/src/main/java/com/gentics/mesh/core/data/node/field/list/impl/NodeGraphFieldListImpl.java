@@ -15,18 +15,21 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBNodeDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -43,11 +46,11 @@ import com.gentics.mesh.util.CompareUtils;
 /**
  * @see NodeGraphFieldList
  */
-public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, HibNode> implements NodeGraphFieldList {
+public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<HibNodeField, NodeFieldList, HibNode> implements NodeGraphFieldList {
 
 	public static FieldTransformer<NodeFieldList> NODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 		parentNode) -> {
-		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
+		HibNodeFieldList nodeFieldList = container.getNodeList(fieldKey);
 		if (nodeFieldList == null) {
 			return null;
 		} else {
@@ -57,18 +60,18 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	public static FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		OrientDBNodeDao nodeDao = (OrientDBNodeDao) tx.nodeDao();
 
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
-		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
+		HibNodeFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
-		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = nodeList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -114,7 +117,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			if (log.isDebugEnabled()) {
 				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
 			}
-			graphNodeFieldList.addItem(graphNodeFieldList.createNode(String.valueOf(pos), node));
+			((NodeGraphFieldList) graphNodeFieldList).addItem((NodeGraphField) graphNodeFieldList.createNode(String.valueOf(pos), node));
 		}
 
 	};
@@ -134,7 +137,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public NodeGraphField createNode(String key, HibNode node) {
+	public HibNodeField createNode(String key, HibNode node) {
 		return addItem(key, toGraph(node));
 	}
 
@@ -157,12 +160,12 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		boolean expandField = parameters.getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
 
-		UserDaoWrapper userDao = mesh().boot().userDao();
-		NodeDaoWrapper nodeDao = mesh().boot().nodeDao();
+		UserDao userDao = mesh().boot().userDao();
+		NodeDao nodeDao = mesh().boot().nodeDao();
 
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
-			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
+			for (HibNodeField item : getList()) {
 				HibNode node = item.getNode();
 				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
@@ -173,7 +176,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			return restModel;
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
-			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
+			for (HibNodeField item : getList()) {
 				HibNode node = item.getNode();
 				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
@@ -188,18 +191,18 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	@Override
 	public List<HibNode> getValues() {
-		return getList().stream().map(NodeGraphField::getNode).collect(Collectors.toList());
+		return getList().stream().map(HibNodeField::getNode).collect(Collectors.toList());
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof NodeGraphFieldList) {
-			List<? extends NodeGraphField> listA = getList();
-			List<? extends NodeGraphField> listB = ((NodeGraphFieldList) obj).getList();
+			List<? extends HibNodeField> listA = getList();
+			List<? extends HibNodeField> listB = ((NodeGraphFieldList) obj).getList();
 			return CompareUtils.equals(listA, listB);
 		}
 		if (obj instanceof NodeFieldList) {
-			List<? extends NodeGraphField> listA = getList();
+			List<? extends HibNodeField> listA = getList();
 			List<NodeFieldListItem> listB = ((NodeFieldList) obj).getItems();
 			return CompareUtils.equals(listA, listB);
 		}

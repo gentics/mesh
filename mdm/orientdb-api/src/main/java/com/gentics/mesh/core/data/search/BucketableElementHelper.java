@@ -16,7 +16,7 @@ public final class BucketableElementHelper {
 	 * @param e
 	 * @return
 	 */
-	public static Integer getBucketId(BucketableElement e) {
+	public static Integer getBucketId(GraphDBBucketableElement e) {
 		Long bucketId = e.property(BUCKET_ID_KEY);
 		if (bucketId == null) {
 			e.generateBucketId();
@@ -31,7 +31,7 @@ public final class BucketableElementHelper {
 	 * @param e
 	 * @param bucketId
 	 */
-	public static void setBucketId(BucketableElement e, Integer bucketId) {
+	public static void setBucketId(GraphDBBucketableElement e, Integer bucketId) {
 		if (bucketId == null) {
 			e.removeProperty(BUCKET_ID_KEY);
 		} else {

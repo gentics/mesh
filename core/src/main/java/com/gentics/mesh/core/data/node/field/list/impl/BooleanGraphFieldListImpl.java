@@ -10,27 +10,29 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.util.CompareUtils;
 
 /**
  * @see BooleanGraphFieldList
  */
-public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean>
+public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<HibBooleanField, BooleanFieldListImpl, Boolean>
 	implements BooleanGraphFieldList {
 
 	public static FieldTransformer<BooleanFieldListImpl> BOOLEAN_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 		parentNode) -> {
-		BooleanGraphFieldList booleanFieldList = container.getBooleanList(fieldKey);
+		HibBooleanFieldList booleanFieldList = container.getBooleanList(fieldKey);
 		if (booleanFieldList == null) {
 			return null;
 		} else {
@@ -39,15 +41,15 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 	};
 
 	public static FieldUpdater BOOLEAN_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		BooleanGraphFieldList graphBooleanFieldList = container.getBooleanList(fieldKey);
+		HibBooleanFieldList graphBooleanFieldList = container.getBooleanList(fieldKey);
 		BooleanFieldListImpl booleanList = fieldMap.getBooleanFieldList(fieldKey);
 		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
-		GraphField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = booleanList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(graphBooleanFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(graphBooleanFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -93,13 +95,13 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 	}
 
 	@Override
-	public BooleanGraphField getBoolean(int index) {
+	public HibBooleanField getBoolean(int index) {
 		return getField(index);
 	}
 
 	@Override
-	public BooleanGraphField createBoolean(Boolean flag) {
-		BooleanGraphField field = createField();
+	public HibBooleanField createBoolean(Boolean flag) {
+		HibBooleanField field = createField();
 		field.setBoolean(flag);
 		return field;
 	}
@@ -122,7 +124,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 	@Override
 	public BooleanFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		BooleanFieldListImpl restModel = new BooleanFieldListImpl();
-		for (BooleanGraphField item : getList()) {
+		for (HibBooleanField item : getList()) {
 			restModel.add(item.getBoolean());
 		}
 		return restModel;
@@ -130,7 +132,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 
 	@Override
 	public List<Boolean> getValues() {
-		return getList().stream().map(BooleanGraphField::getBoolean).collect(Collectors.toList());
+		return getList().stream().map(HibBooleanField::getBoolean).collect(Collectors.toList());
 	}
 
 	@Override
@@ -138,7 +140,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 		if (obj instanceof BooleanFieldListImpl) {
 			BooleanFieldListImpl restField = (BooleanFieldListImpl) obj;
 			List<Boolean> restList = restField.getItems();
-			List<? extends BooleanGraphField> graphList = getList();
+			List<? extends HibBooleanField> graphList = getList();
 			List<Boolean> graphStringList = graphList.stream().map(e -> e.getBoolean()).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList);
 		}

@@ -24,8 +24,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBTagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -53,7 +53,7 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements TagDaoWrapper {
+public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements OrientDBTagDao {
 
 	private static final Logger log = LoggerFactory.getLogger(TagDaoWrapperImpl.class);
 
@@ -275,7 +275,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 			throw error(BAD_REQUEST, "tag_name_not_set");
 		}
 
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 		HibUser requestUser = ac.getUser();
 		if (!userDao.hasPermission(requestUser, tagFamily, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", tagFamily.getUuid(), CREATE_PERM.getRestPerm().getName());

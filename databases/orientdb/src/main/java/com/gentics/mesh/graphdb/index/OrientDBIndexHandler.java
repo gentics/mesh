@@ -13,8 +13,8 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.data.PersistenceClassMap;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
@@ -191,7 +191,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 	@Override
 	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		OrientBaseGraph orientBaseGraph = db.get().unwrapCurrentGraph();
 
 		OrientElementType elementType = null;
@@ -231,7 +231,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 	@Override
 	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 
@@ -406,7 +406,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 			classOfT = (Class<? extends T>) foundImpl;
 		}
 
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 		String type = "MeshVertexImpl";

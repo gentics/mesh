@@ -11,7 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -41,7 +41,7 @@ public class ProjectDeleteEventHandler implements EventHandler {
 			DropIndexRequest dropTagFamilyIndex = new DropIndexRequest(TagFamily.composeIndexName(projectUuid));
 
 			return Flowable.fromArray(
-				new DropIndexRequest(ContentDaoWrapper.composeIndexPattern(projectUuid)),
+				new DropIndexRequest(ContentDao.composeIndexPattern(projectUuid)),
 				// This is handled by the simple event handler
 				// helper.deleteDocumentRequest(Project.composeIndexName(), model.getUuid()),
 				dropTagIndex,
