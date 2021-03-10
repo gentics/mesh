@@ -32,7 +32,6 @@ import com.gentics.mesh.core.endpoint.tagfamily.TagFamilyEndpoint;
 import com.gentics.mesh.core.endpoint.user.UserEndpoint;
 import com.gentics.mesh.core.endpoint.utility.UtilityEndpoint;
 import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
-import com.gentics.mesh.core.endpoint.webrootfield.WebRootFieldEndpoint;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
@@ -111,9 +110,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	@Inject
 	public Provider<WebRootEndpoint> webrootEndpoint;
-
-	@Inject
-	public Provider<WebRootFieldEndpoint> webrootFieldEndpoint;
 
 	@Inject
 	public Provider<RestInfoEndpoint> restInfoEndpoint;
@@ -294,7 +290,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 		// Global verticles
 		endpoints.add(webrootEndpoint.get());
-		endpoints.add(webrootFieldEndpoint.get());
 		endpoints.add(navrootEndpoint.get());
 		endpoints.add(projectEndpoint.get());
 		endpoints.add(schemaEndpoint.get());

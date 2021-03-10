@@ -106,7 +106,6 @@ import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.util.URIUtils;
 
@@ -1605,30 +1604,4 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		return prepareRequest(DELETE, path, responseClass);
 	}
 
-	@Override
-	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName, String path,
-			ParameterProvider... parameters) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(fieldName, "fieldName must not be null");
-		Objects.requireNonNull(path, "path must not be null");
-		if (!path.startsWith("/")) {
-			throw new RuntimeException("The path {" + path + "} must start with a slash");
-		}
-		return webrootField(projectName, fieldName, path.split("/"), parameters);
-	}
-
-	@Override
-	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName,
-			String[] pathSegments, ParameterProvider... parameters) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(fieldName, "fieldName must not be null");
-		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
-
-		String path = Arrays.stream(pathSegments)
-			.filter(segment -> segment != null && !segment.isEmpty())
-			.map(URIUtils::encodeSegment)
-			.collect(Collectors.joining("/", "/", ""));
-
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/webrootfield/" + fieldName + path + getQuery(parameters), MeshWebrootFieldResponse.class);
-	}
 }

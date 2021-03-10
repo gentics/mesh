@@ -44,7 +44,6 @@ import com.gentics.mesh.core.endpoint.tagfamily.TagFamilyEndpoint;
 import com.gentics.mesh.core.endpoint.user.UserEndpoint;
 import com.gentics.mesh.core.endpoint.utility.UtilityEndpoint;
 import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
-import com.gentics.mesh.core.endpoint.webrootfield.WebRootFieldEndpoint;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.APIRouter;
@@ -303,10 +302,6 @@ public class RAMLGenerator extends AbstractGenerator {
 		WebRootEndpoint webEndpoint = Mockito.spy(new WebRootEndpoint());
 		initEndpoint(webEndpoint);
 		addEndpoints(projectBasePath, resources, webEndpoint);
-
-		WebRootFieldEndpoint webFieldEndpoint = Mockito.spy(new WebRootFieldEndpoint());
-		initEndpoint(webFieldEndpoint);
-		addEndpoints(projectBasePath, resources, webFieldEndpoint);
 
 		BranchEndpoint branchEndpoint = Mockito.spy(new BranchEndpoint());
 		initEndpoint(branchEndpoint);
