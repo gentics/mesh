@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.6.9]]
-== 1.6.9 (TBD)
+== 1.6.9 (11.03.2021)
 
 icon:plus[] Core: Added support for looking up the node field content by webroot path and a field name.
 
