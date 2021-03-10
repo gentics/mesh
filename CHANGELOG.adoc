@@ -23,6 +23,13 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.7]]
+== 1.7.7  (10.03.2021)
+
+icon:plus[] Core: Added support for looking up the node field content by the webroot path and a field name.
+
+icon:plus[] Rest: Added new endpoint for the webroot path field lookup.
+
 [[v1.7.6]]
 == 1.7.6  (22.12.2020)
 
