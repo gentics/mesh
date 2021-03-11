@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.6.8"
+version: "1.6.9"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -6022,7 +6022,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.6.8",
+                                  "meshVersion" : "1.6.9",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -10326,6 +10326,106 @@ mediaType: application/json
                                 {
                                   "message" : "I18n message"
                                 }
+/{project}/webrootfield: 
+    displayName: /{project}/webrootfield
+    description: Provides endpoint which allow viewing the requested field for the node loaded via a webroot path.
+    /{fieldName}/{path}: 
+        uriParameters: 
+            path: 
+                displayName: path
+                description: Path to the node
+                type: string
+                required: true
+                repeat: false
+                example: /News/2015/Images/flower.jpg
+            fieldName: 
+                displayName: fieldName
+                description: Name of the field which should be acquired.
+                type: string
+                required: true
+                repeat: false
+                example: stringField
+        get: 
+            description: Download the field with the given name from the given path. You can use image query parameters for crop and resize if the binary data represents an image.
+            queryParameters: 
+                fpz: 
+                    description: Set the focal point zoom factor. The value must be greater than one.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "1.5"
+                rect: 
+                    description: Set image crop area.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "20,20,128,128"
+                w: 
+                    description: Set image target width. The height will automatically be calculated if the width was omitted.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "1280"
+                h: 
+                    description: Set image target height. The width will automatically be calculated if the height was omitted.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "720"
+                resize: 
+                    description: |
+                        Set the resize mode. Possible modes: 
+                        force : The force mode will resize the image to the specified dimensions. This can lead to a distorted image when the aspect ratio of the source image does not match the destination aspect ratio
+                        smart : The smart mode will resize the image proportionally so that the resulting destination format matches the source format in at least one dimension. No distortion of the image will occur.
+                        prop : The prop mode will resize the image proportionally so that the resulting destination format fits inside the provided dimensions. No distortion of the image will occur.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: smart
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+                fpy: 
+                    description: Set the focal point y factor between 0  and 1 where 0.5 is the middle of the image. You can use this parameter in combination with the crop=fp parameter in order to crop and resize the image in relation to the given point.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "0.2"
+                crop: 
+                    description: |
+                        Set the crop mode. Possible modes: 
+                        rect : The rect mode will work in combination with the rect parameter and crop the specified area.
+                        fp : The fp mode will utilize the specified or pre-selected focal point and crop the image according to the position of the focus point and the specified image size.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: rect
+                fpx: 
+                    description: Set the focal point x factor between 0  and 1 where 0.5 is the middle of the image.  You can use this parameter in combination with the crop=fp parameter in order to crop and resize the image in relation to the given point.
+                    type: number
+                    required: false
+                    repeat: false
+                    example: "0.1"
+            responses: 
+                "200": 
+                    description: JSON for a node/micronode/list field value, or the binary data for the binary field, or the text data for any other field of the node for the given path.
+                    headers: 
+                        Webroot-Response-Type: 
+                            description: Header value which identifies the type of the webrootfield response. The response can either be a JSON, text or binary response.
+                            type: string
+                            required: false
+                            repeat: false
+                            example: node
 /{project}/branches: 
     displayName: /{project}/branches
     description: Provides endpoints which allow the manipulation of branches.
