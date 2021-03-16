@@ -15,6 +15,7 @@ public abstract class MeshTestContextSuite extends MeshTestSuite {
 		super(klass, builder);
 		MeshTestContextSuite.optionsProvider = spawnOptionsProvider();
 		MeshTestContextSuite.componentBuilder = spawnComponentBuilder();
+		init();
 	}
 
 	public static MeshOptionsProvider getOptionsProvider() {
@@ -28,4 +29,6 @@ public abstract class MeshTestContextSuite extends MeshTestSuite {
 	protected abstract MeshOptionsProvider spawnOptionsProvider();
 
 	protected abstract MeshComponent.Builder spawnComponentBuilder();
+
+	protected void init() {}
 }
