@@ -17,7 +17,7 @@
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>1.5.1</mesh.version>
+		<mesh.version>1.5.6</mesh.version>
 	</properties>
 
 	<modules>
@@ -39,7 +39,7 @@
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-bom</artifactId>
-				<version>1.5.1</version>
+				<version>1.5.6</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
