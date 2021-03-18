@@ -159,7 +159,7 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters arg0) {
+	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters) {
 		throw new NotImplementedException();
 	}
 
