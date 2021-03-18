@@ -5,6 +5,8 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -77,6 +79,7 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -84,6 +87,7 @@ import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
@@ -151,6 +155,11 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeBackup() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1177,6 +1186,31 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRestClientConfig getConfig() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<CoordinatorConfig> loadCoordinationConfig() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<CoordinatorMasterResponse> loadCoordinationMaster() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> setCoordinationMaster() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
 		throw new NotImplementedException();
 	}
 
