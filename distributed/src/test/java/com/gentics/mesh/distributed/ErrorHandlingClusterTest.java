@@ -8,19 +8,37 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.test.docker.MeshContainer;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Tests various interacts with the cluster. (e.g.: Adding new nodes, Removing nodes)
  */
 public class ErrorHandlingClusterTest extends AbstractClusterTest {
+
+	private static final Logger log = LoggerFactory.getLogger(ClusterConcurrencyTest.class);
+
+	private static final int TEST_DATA_SIZE = 30000;
 
 	private static String clusterPostFix = randomUUID();
 
@@ -58,6 +76,111 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 		serverB.login();
 		// serverB.dropTraffic();
 		call(() -> serverB.client().findProjectByUuid(response.getUuid()));
+	}
+	
+	@Test
+	public void testSecondaryKilledDuringMigration() throws Exception {
+		final int numProjects = 80;
+		
+		SchemaListResponse schemas = call(() -> serverA.client().findSchemas());
+		SchemaResponse contentSchema = schemas.getData().stream().filter(s -> s.getName().equals("content")).findFirst().get();
+		String schemaUuid = contentSchema.getUuid();
+		
+		log.info("Created at localhost:" + serverA.getPort());
+
+		Map<ProjectResponse, List<NodeResponse>> projects = IntStream.range(0, numProjects).mapToObj(unused -> {
+			String newProjectName = randomName();
+			// Node A: Create Project
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName(newProjectName);
+			request.setSchemaRef("folder");
+			ProjectResponse project = call(() -> serverA.client().createProject(request));		
+			
+			call(() -> serverA.client().assignSchemaToProject(project.getName(), schemaUuid));
+			
+			return project;
+		}).collect(Collectors.toMap(p -> p, v -> new ArrayList<>()));
+		
+		String parentUuid = null;
+		Map.Entry<ProjectResponse, List<NodeResponse>> currentProject = null;
+		
+		for (int i = 0; i < TEST_DATA_SIZE; i++) {
+			if (currentProject == null) {
+				currentProject = projects.entrySet().stream().skip(new Random().nextInt(numProjects)).findFirst().get();
+				parentUuid = null;
+			}
+			if (parentUuid == null) {
+				parentUuid = currentProject.getKey().getRootNode().getUuid();
+			}
+			String projectName = currentProject.getKey().getName();
+			
+			int rnd = new Random().nextInt();			
+			
+			// Create test data
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.setParentNodeUuid(parentUuid);
+			
+			if ((rnd % 3) == 2) {
+				nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("some rorschach teaser"));
+				nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+				nodeCreateRequest.setSchemaName("content");
+				nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("page-" + i + ".html"));
+				log.info("Creating node {" + i + "/" + TEST_DATA_SIZE + "}");
+			} else {
+				nodeCreateRequest.setSchemaName("folder");
+				nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("folder-" + i));
+			}	
+			
+			NodeResponse newNode = call(() -> serverA.client().createNode(projectName, nodeCreateRequest));
+			
+			currentProject.getValue().add(newNode);
+			
+			if ((rnd % 2) == 1) {
+				currentProject = null;
+			} else if ((rnd % 3) == 1) {
+				parentUuid = newNode.getUuid();
+			}
+		}
+		
+		String dataPathPostfix = randomToken();
+		{
+			MeshContainer serverB1 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, true, 1);
+			Thread.sleep(2000);
+			serverB1.stop();
+		}
+		
+		{
+			MeshContainer serverB1 = prepareSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false, false, 1);
+			serverB1.start();
+			Thread.sleep(2000);
+			
+			new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					SchemaUpdateRequest schemaUpdateRequest = contentSchema.toUpdateRequest();
+					schemaUpdateRequest.removeField("teaser");
+					schemaUpdateRequest.addField(new DateFieldSchemaImpl().setName("teaser"), "content");
+					
+					call(() -> serverA.client().updateSchema(schemaUuid, schemaUpdateRequest));
+				}
+			}).run();
+			
+			serverB1.killHardContainer();
+		}
+		Thread.sleep(2000);
+		
+		{
+			MeshContainer serverB1 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false, 1);
+			projects.entrySet().stream().forEach(entry -> {
+				call(() -> serverB1.client().findProjectByUuid(entry.getKey().getUuid()));
+				
+				entry.getValue().stream().forEach(node -> {
+					call(() -> serverB1.client().findNodeByUuid(entry.getKey().getName(), node.getUuid()));
+				});
+			});
+		}
 	}
 
 	/**
