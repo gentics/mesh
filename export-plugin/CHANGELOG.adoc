@@ -1,0 +1,37 @@
+:icons: font
+
+////
+* Write changelog entries in present tense
+* Include GitHub issue or PR if possible using link:http://...[#123] format
+* Review your changelog entries
+* Don't include security sensitive information in the changelog
+* Include links to documentation if possible
+////
+
+= Mesh Export Plugin
+
+[[v2.0.0]]
+== 2.0.0
+
+CAUTION: The configuration format has changed and need to be corrected manually!
+
+icon:plus[] Mapping type `+TEMPLATE+` which replaces it's String template %value% tokens with the value.
+icon:plus[] Mapping type `+REGEXP+` which replaces it's String template %<GROUP-NUM>% tokens with the values from the matching groups of the RegExp.
+icon:plus[] Filter `+in+`.
+icon:plus[] Request Options `+hasMorePath+` and `+elementsPath+` for advanced/special GraphQL Queries.
+icon:plus[] Request Option `+maximalNodes+` to limit the results.
+icon:plus[] Request Option `+elementFilter+` to filter out unwanted elements.
+icon:plus[] Permissions checks via new configurable role.
+icon:plus[] Possibility to create custom Config-Value Plugins and Providers.
+
+icon:check[] Reworked Configuration-Value handling.
+icon:check[] Reworked the CsvConverter - Removed RxJava as it's completely sync.
+icon:check[] Reworked handling of Requests - Requests can be aborted and respond properly chunked now with lower memory footprint.
+icon:check[] Project-Based Webroot Configuration-Value nodes.
+
+icon:minus[] Removed `+configValueField+` from the `+CONFIG_VALUE+` Mapping.
+
+[[v1.0.0]]
+== 1.0.0
+
+Initial Release

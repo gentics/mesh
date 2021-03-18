@@ -1,0 +1,4 @@
+config
+debuginfo
+logs
+*.iml
