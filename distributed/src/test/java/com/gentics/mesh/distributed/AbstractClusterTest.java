@@ -80,23 +80,17 @@ public abstract class AbstractClusterTest {
 		server.start();
 		return server;
 	}
-	
-	protected MeshContainer prepareSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
-		return prepareSlave(clusterName, nodeName, dataPathPostfix, clearFolders, true, writeQuorum);
-	}
 
-	protected MeshContainer prepareSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, boolean waitForStartup, int writeQuorum) {
+	protected MeshContainer prepareSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
 		MeshContainer server = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 			.withDataPathPostfix(dataPathPostfix)
 			.withClusterName(clusterName)
 			.withNodeName(nodeName)
 			.withFilesystem()
-			.withWriteQuorum(writeQuorum);
+			.withWriteQuorum(writeQuorum)
+			.waitForStartup();
 		if (clearFolders) {
 			server.withClearFolders();
-		}
-		if (waitForStartup) {
-			server.waitForStartup();
 		}
 		return server;
 	}
