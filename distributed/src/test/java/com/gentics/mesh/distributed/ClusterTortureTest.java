@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.test.docker.MeshContainer;
+import com.gentics.mesh.test.docker.StartupLatchingConsumer.UnresponsiveContainerError;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -37,7 +38,7 @@ public class ClusterTortureTest extends AbstractClusterTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ClusterConcurrencyTest.class);
 
-	private static final int TEST_DATA_SIZE = 30000;
+	private static final int TEST_DATA_SIZE = 10000;
 
 	private final int NUM_PROJECTS = 80;
 	
@@ -48,8 +49,8 @@ public class ClusterTortureTest extends AbstractClusterTest {
 	 * 
 	 * @throws Exception
 	 */
-	// Ignored, due to the instability (nodes never recognize each other after being killed)
-	//@Test
+	// Ignored - the nodes never respond started after being killed. Bug?
+	// @Test
 	public void testAllKilled() throws Exception {
 		torture((serverA, serverB, contentSchema) -> {
 			String schemaUuid = contentSchema.getUuid();
@@ -185,7 +186,17 @@ public class ClusterTortureTest extends AbstractClusterTest {
 		// Torture
 		torture.torture(serverA, serverB1, contentSchema);
 		Thread.sleep(2000);
-		
+
+		boolean serverArestarted = false;
+		boolean serverB1restarted = false;
+
+		// Start the secondary node, check for start errors.
+		if (!serverB1.isRunning()) {
+			serverB1 = prepareSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false, false, 1);
+			serverB1.start();
+			serverB1restarted = true;
+		}
+
 		// Start the primary node, check for start errors.
 		if (!serverA.isRunning()) {
 			serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
@@ -195,16 +206,20 @@ public class ClusterTortureTest extends AbstractClusterTest {
 					.withFilesystem()
 					.withWriteQuorum(1);			
 			serverA.start();
-			serverA.login();
-		}
-		
-		// Start the secondary node, check for start errors.
-		if (!serverB1.isRunning()) {
-			serverB1 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false, 1);
+			serverArestarted = true;
 		}
 		
 		Thread.sleep(5000);
-		
+
+		if (serverB1restarted) {
+			serverB1.awaitStartup(60);
+			serverB1.login();
+		}
+		if (serverArestarted) {
+			serverA.awaitStartup(60);
+			serverA.login();
+		}
+
 		// Read all the data from the secondary node.
 		for (Entry<ProjectResponse, List<NodeResponse>> entry: projects.entrySet()) {
 			// Read project
@@ -217,6 +232,9 @@ public class ClusterTortureTest extends AbstractClusterTest {
 				serverB1.client().findNodeByUuid(entry.getKey().getName(), node.getUuid()).blockingGet();
 			}
 		}
+		
+		serverB1.close();
+		serverA.close();
 	}
 	
 	@FunctionalInterface
