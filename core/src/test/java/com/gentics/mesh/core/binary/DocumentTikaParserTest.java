@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.binary;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
@@ -29,6 +30,15 @@ public class DocumentTikaParserTest {
 		String content = DocumentTikaParser.parse(new ByteArrayInputStream(data), metadata, LIMIT).get();
 		System.out.println(content);
 		System.out.println(metadata.toString());
+	}
+
+	@Test
+	public void testEmptyFile() throws TikaException, IOException {
+		Buffer buffer = getBuffer("/testfiles/empty.txt");
+		byte[] data = buffer.getBytes();
+		Metadata metadata = new Metadata();
+		Optional<String> maybeContent = DocumentTikaParser.parse(new ByteArrayInputStream(data), metadata, LIMIT);
+		assertFalse(maybeContent.isPresent());
 	}
 
 	protected Buffer getBuffer(String path) throws IOException {
