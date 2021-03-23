@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.exception.ZeroByteFileException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
@@ -102,6 +103,8 @@ public class DocumentTikaParser {
 				throw (TikaException) cause;
 			} else if (cause instanceof IOException) {
 				throw (IOException) cause;
+			} else if (e instanceof ZeroByteFileException) {
+				return Optional.empty();
 			} else {
 				throw e;
 			}
