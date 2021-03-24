@@ -212,11 +212,11 @@ public class ClusterTortureTest extends AbstractClusterTest {
 		Thread.sleep(5000);
 
 		if (serverB1restarted) {
-			serverB1.awaitStartup(60);
+			serverB1.awaitStartup(300);
 			serverB1.login();
 		}
 		if (serverArestarted) {
-			serverA.awaitStartup(60);
+			serverA.awaitStartup(300);
 			serverA.login();
 		}
 
