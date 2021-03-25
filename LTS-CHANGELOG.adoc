@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.10]]
+== 1.6.10 (TBD)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
 [[v1.6.9]]
 == 1.6.9 (11.03.2021)
 
@@ -108,6 +113,11 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.10]]
+== 1.5.10 (TBD)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
 [[v1.5.9]]
 == 1.5.9 (18.12.2020)
 
@@ -175,6 +185,41 @@ icon:plus[] Monitoring: The liveness probe will now check for plugin status. Fai
 icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+
+[[v1.4.20]]
+== 1.4.20 (TBD)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
+[[v1.4.19]]
+== 1.4.19 (17.12.2020)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.6`.
+
+icon:check[] OrientDB: A bug in the startup order has been fixed which prevented opening of databases via OrientDB Studio.
+
+icon:check[] Core: Binary upload processing failed for binaries with brackets in the metadata key. This has been fixed now.
+
+icon:plus[] GraphQL: Queries, that take longer than the configured threshold will be logged now. See link:{{< relref "graphql.asciidoc" >}#_slow_query_log[GraphQL Slow Query Log] for details.
+
+[[v1.4.18]]
+== 1.4.18 (18.11.2020)
+
+icon:check[] Jobs: A race condition within the job processing mechanism has been fixed. In some cases newly created jobs would not be automatically invoked. This has been fixed now.
+
+[[v1.4.17]] 
+== 1.4.17 (27.10.2020)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.4`.
+
+icon:check[] Clustering: The coordination feature will now be automatically disabled whenever clustering is disabled.
+
+icon:check[] Clustering: Internal caches will now be cleared when cluster topology changes occur.
+
+icon:plus[] Backup: The `?consistencyCheck` query parameter was added to the `/api/v2/admin/backup` endpoint. When set to true it will run the consistency check before invoking the backup. The call will fail when inconsistencies were detected.
+
+icon:check[] Clustering: An additional check has been added which will prevent nodes from joining a cluster which contains an outdated database. The `-initCluster` flag needs to be used for a single instance to migrate the cluster. This is done to prevent concurrency issues during changelog execution and cluster formation.
 
 [[v1.4.16]]
 == 1.4.16 (06.09.2020)
