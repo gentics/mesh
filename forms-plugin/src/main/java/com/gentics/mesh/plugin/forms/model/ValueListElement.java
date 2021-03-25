@@ -1,7 +1,8 @@
 package com.gentics.mesh.plugin.forms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.portal.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;

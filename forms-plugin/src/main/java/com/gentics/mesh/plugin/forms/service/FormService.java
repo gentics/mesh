@@ -41,10 +41,11 @@ import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.response.RenderResponse;
-import com.gentics.mesh.portal.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
@@ -564,7 +565,7 @@ public class FormService {
 		JsonArray cleanedElements = new JsonArray();
 		for (int i = 0; i < elements.size(); i++) {
 			JsonObject element = elements.getJsonObject(i);
-			if (element.getBoolean("active", true)) {
+			if (ParameterUtil.asBoolean(element.getValue("active"), true)) {
 				cleanedElements.add(element);
 				JsonArray subElements = element.getJsonArray("elements");
 				if (subElements != null) {

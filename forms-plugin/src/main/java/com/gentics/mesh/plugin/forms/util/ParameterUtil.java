@@ -35,4 +35,40 @@ public final class ParameterUtil {
 			return def;
 		}
 	}
+
+	/**
+	 * Transform the given value into an integer, if possible. If this is not possible, return the default value
+	 * @param value value to transform
+	 * @param defaultValue default value
+	 * @return transformed or default value
+	 */
+	public static int asInt(Object value, int defaultValue) {
+		if (value instanceof Number) {
+			return ((Number) value).intValue();
+		} else if (value != null) {
+			try {
+				return Integer.parseInt(value.toString());
+			} catch (NumberFormatException e) {
+				return defaultValue;
+			}
+		} else {
+			return defaultValue;
+		}
+	}
+
+	/**
+	 * Transform the given value into a boolean. Return the default value, if the value is null.
+	 * @param value value
+	 * @param defaultValue default value
+	 * @return transformed or default value
+	 */
+	public static boolean asBoolean(Object value, boolean defaultValue) {
+		if (value instanceof Boolean) {
+			return ((Boolean)value).booleanValue();
+		} else if (value != null) {
+			return Boolean.parseBoolean(value.toString());
+		} else {
+			return defaultValue;
+		}
+	}
 }

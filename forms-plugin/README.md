@@ -121,18 +121,6 @@ Element for (single line) input fields.
 
 No extra properties.
 
-## `dropdown`
-
-Element for dropdown fields.
-
-No extra properties.
-
-## `radio`
-
-Element for radio buttons.
-
-No extra properties.
-
 ## `checkbox`
 
 Element for checkbox fields.
@@ -142,22 +130,6 @@ No extra properties.
 ## `textarea`
 
 Element for (multi line) textarea fields.
-
-No extra properties.
-
-## `zipcode`
-
-Element for zip code fields.
-
-No extra properties.
-
-## `svnr`
-
-Element for austrian social security number fields.
-
-No extra properties.
-
-## `range`
 
 No extra properties.
 
@@ -206,18 +178,6 @@ Element for select group.
 ## `recaptcha`
 
 Element for recaptcha.
-
-No extra properties.
-
-## `date`
-
-Element for entering dates.
-
-No extra properties.
-
-## `time`
-
-Element for entering times.
 
 No extra properties.
 

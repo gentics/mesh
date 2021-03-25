@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.portal.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;

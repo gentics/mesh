@@ -5,43 +5,27 @@ package com.gentics.mesh.plugin.forms.model;
  */
 public enum ElementType {
 
-	input(InputElement.class),
+	input(InputElement.class), // OK
 
-	dropdown(DropdownElement.class),
+	checkbox(CheckboxElement.class), // OK
 
-	radio(RadioElement.class),
-
-	checkbox(CheckboxElement.class),
-
-	textarea(TextareaElement.class),
-
-	zipcode(ZipcodeElement.class),
-
-	svnr(SvnrElement.class),
-
-	range(RangeElement.class),
+	textarea(TextareaElement.class), // OK
 
 	combielem(CombiElement.class),
 
-	buttons(ButtonsElement.class),
+	buttons(ButtonsElement.class), // OK
 
 	formpage(FormpageElement.class),
 
-	usermail(UsermailElement.class),
+	usermail(UsermailElement.class), // OK
 
 	mandatorygroup(MandatorygroupElement.class),
 
-	selectgroup(SelectgroupElement.class),
+	selectgroup(SelectgroupElement.class), // OK
 
-	recaptcha(ReCaptchaElement.class),
+	recaptcha(ReCaptchaElement.class), // OK
 
-	date(DateElement.class),
-
-	time(DateElement.class),
-
-	zaehlerpunkt(ZaehlerpunktElement.class),
-
-	file(FileElement.class),
+	file(FileElement.class), // OK
 
 	conditionalcontainer(ConditionalContainerElement.class);
 

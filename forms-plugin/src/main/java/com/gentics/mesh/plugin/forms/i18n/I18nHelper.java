@@ -1,4 +1,4 @@
-package com.gentics.mesh.portal.i18n;
+package com.gentics.mesh.plugin.forms.i18n;
 
 import java.text.MessageFormat;
 import java.util.Locale;

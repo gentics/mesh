@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
-import com.gentics.mesh.portal.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 
 /**
  * Enumeration of input validators

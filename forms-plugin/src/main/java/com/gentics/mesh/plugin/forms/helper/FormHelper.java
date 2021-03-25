@@ -3,8 +3,7 @@ package com.gentics.mesh.plugin.forms.helper;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-
+import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.github.jknack.handlebars.Options;
 
 import io.vertx.core.json.JsonArray;
@@ -12,11 +11,9 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * Helper for rendering a form (optionally prefilled with input and error messages)
- *
- * TODO remove {@link #getZaehlerstandValue()} as this helper is project specific. Ideally there should
- * be a mechanism to add custom helpers for Mesh plugins.
  */
 public class FormHelper {
+	public final static String SUBTYPE_PARAMETER_NAME = "subtype";
 
 	/**
 	 * Create an instance
@@ -37,14 +34,17 @@ public class FormHelper {
 	/**
 	 * Render the name of the template for the element with type given in the context
 	 * 
-	 * @param context
-	 *            context
-	 * @param options
-	 *            options
+	 * @param elementType element type
+	 * @param options options
 	 * @return template name
 	 */
-	public CharSequence formsElementTemplate(Object context, Options options) {
-		return String.format("elements/%s", context);
+	public CharSequence formsElementTemplate(Object elementType, Options options) {
+		Object elementSubType = options.hash.get(SUBTYPE_PARAMETER_NAME);
+		if (elementSubType != null) {
+			return String.format("elements/%s_%s", elementType, elementSubType);	
+		} else {
+			return String.format("elements/%s", elementType);
+		}
 	}
 
 	/**
@@ -73,10 +73,10 @@ public class FormHelper {
 			}
 		} else if (context instanceof JsonObject) {
 			JsonObject element = (JsonObject) context;
-			String minVal = element.getString("minVal", "");
-			String maxVal = element.getString("maxVal", "");
-			if ((StringUtils.isNotBlank(minVal) && StringUtils.isNumeric(minVal))
-				|| (StringUtils.isNotBlank(maxVal) && StringUtils.isNumeric(maxVal))) {
+			int minVal = ParameterUtil.asInt(element.getValue("minVal"), -1);
+			int maxVal = ParameterUtil.asInt(element.getValue("maxVal"), -1);
+
+			if (minVal > 0 || maxVal > 0) {
 				return "number";
 			} else {
 				return formsInputType(element.getString("validation", ""), options);
@@ -154,25 +154,5 @@ public class FormHelper {
 				break;
 			}
 		}
-	}
-
-	/**
-	 * Removes the Zählerpunkt prefix if present.
-	 *
-	 * @deprecated TODO This is project specific and should be removed. Ideally there will be a mechanism to add
-	 * custom helpers to Mesh plugins.
-	 *
-	 * @param value The complete value for the Zählerpunkt element
-	 * @param zaehlerpunkt The prefix
-	 *
-	 * @return The string <code>value</code> without the prefix <code>zaehlerpunkt + "."</code> if present
-	 */
-	@Deprecated
-	public CharSequence getZaehlerstandValue(String value, String zaehlerpunkt) {
-		zaehlerpunkt += ".";
-		if (value.startsWith(zaehlerpunkt)) {
-			return value.substring(zaehlerpunkt.length());
-		}
-		return value;
 	}
 }

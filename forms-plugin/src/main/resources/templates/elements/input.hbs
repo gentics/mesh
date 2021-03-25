@@ -1,0 +1,10 @@
+<div>
+	<input type="{{formsInputType this}}" id="{{ name }}"
+		{{#if minVal }}min="{{ minVal }}" minval="{{ minVal }}"{{/if}}
+		{{#if maxVal }}max="{{ maxVal }}" maxval="{{ maxVal }}"{{/if}}
+		{{#if maxCharCount }}maxlength="{{ maxCharCount }}" maxcharcount="{{ maxCharCount }}"{{/if}}
+		name="{{ name }}" placeholder="{{placeholder}}"
+		value="{{#if data.value }}{{ data.value }}{{else}}{{ value }}{{/if}}"
+		{{#if mandatory}}required="required"{{/if}}>
+	<label for="{{ name }}">{{{ label }}}</label>
+</div>

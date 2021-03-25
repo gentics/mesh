@@ -1,0 +1,15 @@
+{{#if form }}
+{{#with form }}
+<div class="forms-form">
+{{#each elements}}
+{{> (formsElementTemplate type) }}
+{{/each}}
+</div>
+{{/with}}
+{{else}}
+<div class="forms-form">
+{{#each elements}}
+{{> (formsElementTemplate type) }}
+{{/each}}
+</div>
+{{/if}}
