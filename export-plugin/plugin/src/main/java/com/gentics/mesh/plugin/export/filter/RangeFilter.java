@@ -47,7 +47,7 @@ public class RangeFilter implements IFilter {
     }
 
     @Override
-    public boolean isAllowed(JsonObject obj) {
+    public boolean isAllowed(JsonObject source) {
         if (this.gt == null
                 && this.gte == null
                 && this.lt == null
@@ -56,7 +56,7 @@ public class RangeFilter implements IFilter {
             return false;
         }
 
-        Optional<Object> value = Utils.getValueByPath(obj, Utils.getPathAsList(this.path));
+        Optional<Object> value = Utils.getValueByPath(source, Utils.getPathAsList(this.path));
         if (!value.isPresent()) {
             return false;
         }

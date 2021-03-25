@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.export.util;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.plugin.export.model.BooleanMapping;
 import com.uwyn.jhighlight.fastutil.Hash;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -29,30 +30,61 @@ public class Utils {
                     continue;
                 }
             } else if (obj instanceof JsonArray) {
-                if (!((JsonArray) obj).isEmpty()) {
-                    JsonArray out = new JsonArray();
-
-                    List<String> innerPath = split.subList(i, split.size());
-                    ((JsonArray) obj).stream()
-                        .map(element -> getValueByPath(element, innerPath))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .forEach(found -> {
-                           if (found instanceof JsonArray) {
-                               out.addAll(((JsonArray) found));
-                           } else {
-                               out.add(found);
-                           }
-                        });
-
-                    return out.isEmpty() ? Optional.empty() : Optional.of(out);
+                if (((JsonArray) obj).isEmpty()) {
+                    continue;
                 }
+                JsonArray out = new JsonArray();
+
+                List<String> innerPath = split.subList(i, split.size());
+                ((JsonArray) obj).stream()
+                    .map(element -> getValueByPath(element, innerPath))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .forEach(found -> {
+                       if (found instanceof JsonArray) {
+                           addRecursive(out, (JsonArray) found);
+                       } else {
+                           out.add(found);
+                       }
+                    });
+
+                return out.isEmpty() ? Optional.empty() : Optional.of(out);
             }
 
             return Optional.empty();
         }
 
         return Optional.ofNullable(obj);
+    }
+
+    private static void addRecursive(JsonArray out, JsonArray element) {
+        for (Object item : element) {
+            if (item instanceof JsonArray) {
+                addRecursive(out, (JsonArray) item);
+            } else {
+                out.add(item);
+            }
+        }
+    }
+
+    public static BooleanMapping mergeMappings(BooleanMapping ...mappings) {
+        BooleanMapping out = new BooleanMapping();
+        for (BooleanMapping item : mappings) {
+            if (item == null) {
+                continue;
+            }
+            if (item.getTrueValue() != null) {
+                out.setTrueValue(item.getTrueValue());
+            }
+            if (item.getFalseValue() != null) {
+                out.setFalseValue(item.getFalseValue());
+            }
+            if (item.getNullValue() != null) {
+                out.setNullValue(item.getNullValue());
+            }
+        }
+
+        return out;
     }
 
     public static void addMessageToContext(ConstraintValidatorContext context, String message) {

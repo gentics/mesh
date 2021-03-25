@@ -166,6 +166,11 @@ public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportCo
 
 	private Completable setupRoles() {
 		return Completable.defer(() -> {
+			if (!this.component.getConfiguration().isRoleCheck()) {
+				log.info("Role check is getting skipped!");
+				return Completable.complete();
+			}
+
 			MeshRestClient client = component.getMeshClient();
 			Set<String> rolesToCheck = new HashSet<>(Arrays.asList(
 				component.getConfiguration().getRoleName()

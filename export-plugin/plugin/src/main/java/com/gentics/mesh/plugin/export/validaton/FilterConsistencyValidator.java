@@ -18,13 +18,19 @@ public class FilterConsistencyValidator implements ConstraintValidator<FilterCon
         if (filter.and != null) {
             count++;
         }
-        if (filter.equals != null) {
+        if (filter.or != null) {
             count++;
         }
         if (filter.not != null) {
             count++;
         }
-        if (filter.or != null) {
+        if (filter.empty != null) {
+            count++;
+        }
+        if (filter.exists != null) {
+            count++;
+        }
+        if (filter.equals != null) {
             count++;
         }
         if (filter.range != null) {

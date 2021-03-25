@@ -7,8 +7,11 @@ import org.hibernate.validator.constraints.Range;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 
 public class AbstractCsvMappingDefinition {
 
@@ -30,25 +33,31 @@ public class AbstractCsvMappingDefinition {
     @JsonPropertyDescription("The value to use when it can't be found or is null.")
     private Object defaultValue = null;
 
+    @Valid
     @JsonProperty
-    @JsonPropertyDescription("A template string which replaces the token '" + TEMPLATE_REPLACE_TOKEN + "' with the calculated value and outputs it.")
-    private String templateDefinition = null;
+    @JsonPropertyDescription("Filter to limit the elements in this column")
+    private Filter filter;
 
+    @Valid
     @JsonProperty
-    @JsonPropertyDescription("The regexp defintion to use when extracting the data.")
-    private String regexpDefinition;
-
-    @JsonProperty
-    @JsonPropertyDescription("Flags to use with the 'regexpDefinition' when compiling the Pattern.")
-    private Integer regexpFlags = 0;
-
-    @JsonProperty
-    @JsonPropertyDescription("The regexp template which renders the result with all placeholders replaced.")
-    private String regexpTemplate;
+    @JsonPropertyDescription("Mappings for how booleans should be mapped")
+    private BooleanMapping booleanMapping;
 
     @JsonProperty
     @JsonPropertyDescription("The option of the config to get the display-value.")
     private String configKey;
+
+    @JsonProperty
+    @JsonPropertyDescription("The format of how the date should be formatted for this column")
+    private String dateFormat;
+
+    @JsonProperty
+    @JsonPropertyDescription("The locale to use when formatting the date")
+    private String dateLocale;
+
+    @JsonProperty
+    @JsonPropertyDescription("The time-zone to use when formatting the date")
+    private String dateZone;
 
     @JsonProperty
     @JsonPropertyDescription("The types inside of the list.")
@@ -63,14 +72,41 @@ public class AbstractCsvMappingDefinition {
     @JsonPropertyDescription("Limit of how many elements this column is able to output")
     private Integer listExpandLimit;
 
-    @JsonProperty(defaultValue = "YYYY-MM-dd hh:mm:ss")
-    @JsonPropertyDescription("The format of how the date should be formatted for this column")
-    private String dateFormat;
-
-    @Valid
     @JsonProperty
-    @JsonPropertyDescription("Filter to limit the elements in this column")
-    private Filter filter;
+    @JsonPropertyDescription("The locale of how to format the number")
+    private String numberLocale;
+
+    @JsonProperty
+    @JsonPropertyDescription("The style in which the number should be formatted")
+    private NumberStyle numberStyle;
+
+    @JsonProperty
+    @JsonPropertyDescription("The currency to use when formatting the number as currency")
+    private String numberCurrency;
+
+    @JsonProperty
+    @JsonPropertyDescription("The minimum amount of fractions to show in the output")
+    private Integer numberFractionMinimum;
+
+    @JsonProperty
+    @JsonPropertyDescription("The maximum amount of fractions to show in the output")
+    private Integer numberFractionMaximum;
+
+    @JsonProperty
+    @JsonPropertyDescription("The regexp definition to use when extracting the data.")
+    private String regexpDefinition;
+
+    @JsonProperty
+    @JsonPropertyDescription("Flags to use with the 'regexpDefinition' when compiling the Pattern.")
+    private Integer regexpFlags = 0;
+
+    @JsonProperty
+    @JsonPropertyDescription("The regexp template which renders the result with all placeholders replaced.")
+    private String regexpTemplate;
+
+    @JsonProperty
+    @JsonPropertyDescription("A template string which replaces the token '" + TEMPLATE_REPLACE_TOKEN + "' with the calculated value and outputs it.")
+    private String templateDefinition = null;
 
     public static List<String> pathStringAsList(String path) {
         return Arrays.asList(StringUtils.trimToEmpty(path).split("\\."));
@@ -98,16 +134,18 @@ public class AbstractCsvMappingDefinition {
         return type == CsvMappingDataType.LIST ? listType : type;
     }
 
-    public void setType(@NotNull CsvMappingDataType type) {
+    public AbstractCsvMappingDefinition setType(@NotNull CsvMappingDataType type) {
         this.type = type;
+        return this;
     }
 
     public String getLabel() {
         return label;
     }
 
-    public void setLabel(String label) {
+    public AbstractCsvMappingDefinition setLabel(String label) {
         this.label = label;
+        return this;
     }
 
     public Object getDefaultValue() {
@@ -119,12 +157,164 @@ public class AbstractCsvMappingDefinition {
         return this;
     }
 
-    public String getTemplateDefinition() {
-        return templateDefinition;
+    public Filter getFilter() {
+        return filter;
     }
 
-    public AbstractCsvMappingDefinition setTemplateDefinition(String templateDefinition) {
-        this.templateDefinition = templateDefinition;
+    public AbstractCsvMappingDefinition setFilter(Filter filter) {
+        this.filter = filter;
+        return this;
+    }
+
+    public BooleanMapping getBooleanMapping() {
+        return booleanMapping;
+    }
+
+    public AbstractCsvMappingDefinition setBooleanMapping(BooleanMapping booleanMapping) {
+        this.booleanMapping = booleanMapping;
+        return this;
+    }
+
+    public String getConfigKey() {
+        return configKey;
+    }
+
+    public AbstractCsvMappingDefinition setConfigKey(String configKey) {
+        this.configKey = configKey;
+        return this;
+    }
+
+    public String getDateFormat() {
+        return dateFormat;
+    }
+
+    public AbstractCsvMappingDefinition setDateFormat(String dateFormat) {
+        this.dateFormat = dateFormat;
+        return this;
+    }
+
+    public String getDateLocale() {
+        return dateLocale;
+    }
+
+    public AbstractCsvMappingDefinition setDateLocale(String dateLocale) {
+        this.dateLocale = dateLocale;
+        return this;
+    }
+
+    public String getDateZone() {
+        return dateZone;
+    }
+
+    public AbstractCsvMappingDefinition setDateZone(String dateZone) {
+        this.dateZone = dateZone;
+        return this;
+    }
+
+    public CsvMappingDataType getListType() {
+        return listType;
+    }
+
+    public AbstractCsvMappingDefinition setListType(CsvMappingDataType listType) {
+        this.listType = listType;
+        return this;
+    }
+
+    public boolean getListExpand() {
+        return listExpand != null && listExpand;
+    }
+
+    public AbstractCsvMappingDefinition setListExpand(Boolean listExpand) {
+        this.listExpand = listExpand;
+        return this;
+    }
+
+    public Integer getListExpandLimit() {
+        return listExpandLimit;
+    }
+
+    public AbstractCsvMappingDefinition setListExpandLimit(Integer listExpandLimit) {
+        this.listExpandLimit = listExpandLimit;
+        return this;
+    }
+
+    public NumberFormat getNumberFormatter() {
+        NumberFormat formatter;
+
+        switch (numberStyle) {
+            case NUMBER:
+                formatter = NumberFormat.getNumberInstance(Locale.forLanguageTag(numberLocale));
+                break;
+            case INTEGER:
+                formatter = NumberFormat.getIntegerInstance(Locale.forLanguageTag(numberLocale));
+                break;
+            case PERCENT:
+                formatter = NumberFormat.getPercentInstance(Locale.forLanguageTag(numberLocale));
+                break;
+            case CURRENCY:
+                formatter = NumberFormat.getNumberInstance(Locale.forLanguageTag(numberLocale));
+                if (numberCurrency != null) {
+                    formatter.setCurrency(Currency.getInstance(numberCurrency));
+                }
+                break;
+            default:
+                return null;
+        }
+
+        if (formatter != null && numberStyle != NumberStyle.CURRENCY) {
+            if (numberFractionMinimum != null) {
+                formatter.setMinimumFractionDigits(numberFractionMinimum);
+            }
+            if (numberFractionMaximum != null) {
+                formatter.setMaximumFractionDigits(numberFractionMaximum);
+            }
+        }
+
+        return formatter;
+    }
+
+    public String getNumberLocale() {
+        return numberLocale;
+    }
+
+    public AbstractCsvMappingDefinition setNumberLocale(String numberLocale) {
+        this.numberLocale = numberLocale;
+        return this;
+    }
+
+    public NumberStyle getNumberStyle() {
+        return numberStyle;
+    }
+
+    public AbstractCsvMappingDefinition setNumberStyle(NumberStyle numberStyle) {
+        this.numberStyle = numberStyle;
+        return this;
+    }
+
+    public String getNumberCurrency() {
+        return numberCurrency;
+    }
+
+    public AbstractCsvMappingDefinition setNumberCurrency(String numberCurrency) {
+        this.numberCurrency = numberCurrency;
+        return this;
+    }
+
+    public Integer getNumberFractionMinimum() {
+        return numberFractionMinimum;
+    }
+
+    public AbstractCsvMappingDefinition setNumberFractionMinimum(Integer numberFractionMinimum) {
+        this.numberFractionMinimum = numberFractionMinimum;
+        return this;
+    }
+
+    public Integer getNumberFractionMaximum() {
+        return numberFractionMaximum;
+    }
+
+    public AbstractCsvMappingDefinition setNumberFractionMaximum(Integer numberFractionMaximum) {
+        this.numberFractionMaximum = numberFractionMaximum;
         return this;
     }
 
@@ -138,7 +328,7 @@ public class AbstractCsvMappingDefinition {
     }
 
     public Integer getRegexpFlags() {
-        return regexpFlags == null ? 0 : regexpFlags;
+        return regexpFlags;
     }
 
     public AbstractCsvMappingDefinition setRegexpFlags(Integer regexpFlags) {
@@ -155,51 +345,12 @@ public class AbstractCsvMappingDefinition {
         return this;
     }
 
-    public String getConfigKey() {
-        return configKey;
+    public String getTemplateDefinition() {
+        return templateDefinition;
     }
 
-    public void setConfigKey(String configKey) {
-        this.configKey = configKey;
-    }
-
-    public CsvMappingDataType getListType() {
-        return listType;
-    }
-
-    public void setListType(CsvMappingDataType listType) {
-        this.listType = listType;
-    }
-
-    public Boolean getListExpand() {
-        return listExpand == null ? false : listExpand;
-    }
-
-    public void setListExpand(Boolean listExpand) {
-        this.listExpand = listExpand;
-    }
-
-    public Integer getListExpandLimit() {
-        return listExpandLimit;
-    }
-
-    public void setListExpandLimit(Integer listExpandLimit) {
-        this.listExpandLimit = listExpandLimit;
-    }
-
-    public String getDateFormat() {
-        return dateFormat;
-    }
-
-    public void setDateFormat(String dateFormat) {
-        this.dateFormat = dateFormat;
-    }
-
-    public Filter getFilter() {
-        return filter;
-    }
-
-    public void setFilter(Filter filter) {
-        this.filter = filter;
+    public AbstractCsvMappingDefinition setTemplateDefinition(String templateDefinition) {
+        this.templateDefinition = templateDefinition;
+        return this;
     }
 }

@@ -3,6 +3,8 @@ package com.gentics.mesh.plugin.export.handler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.export.CsvConverter;
 import com.gentics.mesh.plugin.export.exception.GraphQLRestException;
@@ -33,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -61,21 +62,6 @@ public class CsvHandler implements Handler<PluginContext> {
 		ResponseData() {}
 	}
 
-	private static class Storage<T> {
-		private T value;
-
-		public Storage() {}
-
-		public T getValue() {
-			return value;
-		}
-
-		public Storage<T> setValue(T value) {
-			this.value = value;
-			return this;
-		}
-	}
-
 	private final MeshRestClient client;
 	private final MappingService mapping;
 
@@ -88,15 +74,17 @@ public class CsvHandler implements Handler<PluginContext> {
 	@Override
 	public void handle(PluginContext rc) {
 		String projectName = rc.projectName();
-		CsvRequest request = rc.get(DecodeValidateHandler.CONTEXT_PROPERTY_NAME);
-		request.setProjectName(projectName);
 		log.debug("Received Request on project '" + projectName + "'!");
+
 		rc.response().setChunked(true);
 		AtomicBoolean wroteHeader = new AtomicBoolean(false);
 
+		CsvRequest request = rc.get(DecodeValidateHandler.CONTEXT_PROPERTY_NAME);
+		request.setProjectName(projectName);
+
 		Disposable subscription = this.mapping.getConfigValues(projectName)
 			.doOnSuccess(request::setConfigValues)
-			.flatMapObservable(config -> this.streamDataRows(request))
+			.flatMapObservable(config -> this.streamDataRows(rc, request))
 			.subscribe(str -> {
 				if (!wroteHeader.get()) {
 					rc.response().putHeader(CONTENT_TYPE_KEY, CONTENT_TYPE_VALUE);
@@ -127,7 +115,7 @@ public class CsvHandler implements Handler<PluginContext> {
 		});
 	}
 
-	public Observable<String> streamDataRows(CsvRequest request) {
+	public Observable<String> streamDataRows(PluginContext rc, CsvRequest request) {
 		List<CsvMappingDefinition> referenceEntries = request
 			.getMapping()
 			.stream()
@@ -137,7 +125,10 @@ public class CsvHandler implements Handler<PluginContext> {
 		GraphQLRequest graphRequest = request.buildGraphQLRequest();
 		CsvConverter converter = new CsvConverter()
 			.setMapping(request.getMapping())
-			.setConfigValues(request.getConfigValues());
+			.setConfigValues(request.getConfigValues())
+			.setBooleanMapping(request.getBooleanMapping())
+			.setDateFormatter(request.getDateFormatter())
+			.setNumberFormatter(request.getNumberFormatter());
 
 		log.debug("Has Reference Mapping Fields: " + hasReferenceField);
 
@@ -154,99 +145,77 @@ public class CsvHandler implements Handler<PluginContext> {
 			graphRequest.getVariables().put(VARIABLE_KEY_PER_PAGE, 1);
 		}
 
-		// Custom observable which repeats loading of pages after the previous page
-		// has been processed.
-		// It's not using "retryWhen" to reduce the memory footprint.
-		// "retryWhen" performs all retries first before sending all responses while
-		// keeping everything in memory.
-		// With this one, we process a page, flush it to the response and are done with it.
-		return Observable.create(sub -> {
+		return Observable.defer(() -> {
 			AtomicBoolean hasMore = new AtomicBoolean(false);
 			AtomicBoolean foundElements = new AtomicBoolean(false);
-			AtomicBoolean hadErrors = new AtomicBoolean(false);
 			AtomicInteger totalNodes = new AtomicInteger(0);
-			Storage<Callable<Void>> loader = new Storage<>();
 
-			loader.setValue(() -> {
-				hadErrors.set(false);
-				if (sub.isDisposed()) {
-					sub.onComplete();
-					loader.setValue(null); // Delete reference for GC
-					return null;
-				}
+			return this.loadData(rc, request, graphRequest)
+				.flatMapObservable(response -> {
+					hasMore.set(response.hasMore);
+					foundElements.set(response.foundElements);
+					totalNodes.set(totalNodes.get() + response.elements.size());
 
-				Disposable disposable = this.loadData(request, graphRequest)
-					.flatMapObservable(response -> {
-						hasMore.set(response.hasMore);
-						foundElements.set(response.foundElements);
-						totalNodes.set(totalNodes.get() + response.elements.size());
+					return Observable.fromIterable(response.elements);
+				})
+				.filter(element -> request.getElementFilter() == null || request.getElementFilter().isAllowed(element))
+				.flatMapSingle(element -> {
+					if (!hasReferenceField) {
+						return Single.just(element);
+					} else {
+						return this.enrichObjectsWithReferences(element, referenceEntries, request.getProjectName());
+					}
+				})
+				.flatMap(node -> Observable.just(converter.transformToCsv(node)), false, 1)
+				.repeatWhen(t -> t.takeWhile(n -> {
+					boolean takeMore = foundElements.get() && hasMore.get();
+					int perPage = graphRequest.getVariables().getInteger(VARIABLE_KEY_PER_PAGE);
 
-						return Observable.fromIterable(response.elements);
-					})
-					.filter(element -> request.getElementFilter() == null || request.getElementFilter().isAllowed(element))
-					.flatMapSingle(element -> {
-						if (!hasReferenceField) {
-							return Single.just(element);
-						} else {
-							return this.enrichObjectsWithReferences(element, referenceEntries, request.getProjectName());
-						}
-					})
-					.map(converter::transformToCsv)
-					.subscribe(rows -> rows.forEach(sub::onNext), err -> {
-						hadErrors.set(true);
-						sub.onError(err);
-					}, () -> {
-						boolean takeMore = foundElements.get() && hasMore.get();
-						int perPage = graphRequest.getVariables().getInteger(VARIABLE_KEY_PER_PAGE);
+					if (hasMore.get() && graphRequest.getVariables().containsKey(VARIABLE_KEY_PAGE)) {
+						long nextPageNr = graphRequest.getVariables().getLong(VARIABLE_KEY_PAGE) + 1;
 
-						if (hasMore.get() && graphRequest.getVariables().containsKey(VARIABLE_KEY_PAGE)) {
-							Long nextPageNr = graphRequest.getVariables().getLong(VARIABLE_KEY_PAGE) + 1;
-
-							if (request.getMaximalNodes() != null && request.getMaximalNodes() > 0) {
-								long count = totalNodes.get();
-								if (count >= request.getMaximalNodes()) {
-									log.debug("Maximal nodes of {} has been reached!", request.getMaximalNodes());
-									takeMore = false;
-								} else {
-									count += perPage;
-									long diff = count - request.getMaximalNodes();
-									if (count > request.getMaximalNodes() && diff < perPage) {
-										log.debug("Page size has to be decreased to limit results");
-										graphRequest.getVariables().put(VARIABLE_KEY_PER_PAGE, perPage - diff);
-									}
+						if (request.getMaximalNodes() != null && request.getMaximalNodes() > 0) {
+							long count = totalNodes.get();
+							if (count >= request.getMaximalNodes()) {
+								log.debug("Maximal nodes of {} has been reached!", request.getMaximalNodes());
+								takeMore = false;
+							} else {
+								count += perPage;
+								long diff = count - request.getMaximalNodes();
+								if (count > request.getMaximalNodes() && diff < perPage) {
+									log.debug("Page size has to be decreased to limit results");
+									graphRequest.getVariables().put(VARIABLE_KEY_PER_PAGE, perPage - diff);
 								}
 							}
-
-							if (takeMore) {
-								log.debug("Result has next page, repeating with next page {}", nextPageNr);
-								graphRequest.getVariables().put(VARIABLE_KEY_PAGE, nextPageNr);
-							}
-						} else {
-							log.debug("Current page is the last, we don't need to fetch more pages.");
 						}
 
-						if (!takeMore || hadErrors.get()) {
-							sub.onComplete();
-							return;
+						if (takeMore) {
+							log.debug("Result has next page, repeating with next page {}", nextPageNr);
+							graphRequest.getVariables().put(VARIABLE_KEY_PAGE, nextPageNr);
 						}
+					} else {
+						log.debug("Current page is the last, we don't need to fetch more pages.");
+					}
 
-						loader.getValue().call();
-					});
-
-				sub.setDisposable(disposable);
-				return null;
-			});
-
-			loader.getValue().call();
+					return takeMore;
+				}))
+				.flatMap(Observable::fromIterable);
 		});
 	}
 
-	private Single<ResponseData> loadData(CsvRequest csvRequest, GraphQLRequest graphRequest) {
+	private Single<ResponseData> loadData(PluginContext rc, CsvRequest csvRequest, GraphQLRequest graphRequest) {
 		return Single.defer(() -> {
 			log.debug("Getting Results from page: " + graphRequest.getVariables().getLong(VARIABLE_KEY_PAGE));
+			ParameterProvider params = new GenericParametersImpl();
+			if (rc.request().params().contains("wait")) {
+				params.setParameter("wait", rc.request().params().get("wait"));
+			}
+			if (rc.request().params().contains("lang")) {
+				params.setParameter("lang", rc.request().params().get("lang"));
+			}
 
 			return this.client
-				.graphql(csvRequest.getProjectName(), graphRequest)
+				.graphql(csvRequest.getProjectName(), graphRequest, params)
 				.toSingle()
 				.map(response -> {
 					if (response.getErrors() != null && !response.getErrors().isEmpty()) {

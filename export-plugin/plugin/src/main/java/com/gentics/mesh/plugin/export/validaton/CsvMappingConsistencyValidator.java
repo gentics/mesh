@@ -4,6 +4,8 @@ import com.gentics.mesh.plugin.export.util.Utils;
 import com.gentics.mesh.plugin.export.model.AbstractCsvMappingDefinition;
 import com.gentics.mesh.plugin.export.model.CsvMappingDefinition;
 import com.gentics.mesh.plugin.export.model.CsvSubMappingDefinition;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.ConstraintValidator;
@@ -82,6 +84,48 @@ public class CsvMappingConsistencyValidator implements ConstraintValidator<CsvMa
 					return false;
 				}
 				break;
+		}
+
+		if (mapping.getDefaultValue() != null) {
+			Object val = mapping.getDefaultValue();
+			boolean validDefault = true;
+
+			switch (mapping.getType()) {
+				case LIST:
+					if (!(val instanceof JsonArray)) {
+						validDefault = false;
+					}
+					break;
+				case NUMBER:
+					if (!(val instanceof Number)) {
+						validDefault = false;
+					}
+					break;
+				case CONFIG_VALUE:
+				case STRING:
+				case REGEXP:
+				case DATE:
+					if (!(val instanceof String)) {
+						validDefault = false;
+					}
+					break;
+				case FOREIGN_REFERENCE:
+				case SUB_NODE:
+					if (!(val instanceof JsonObject)) {
+						validDefault = false;
+					}
+					break;
+				case BOOLEAN:
+					if (!(val instanceof Boolean)) {
+						validDefault = false;
+					}
+					break;
+			}
+
+			if (!validDefault) {
+				Utils.addMessageToContext(context, "The default value has to match with the Mapping type!");
+				return false;
+			}
 		}
 
 		return true;

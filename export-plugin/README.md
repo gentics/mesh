@@ -22,6 +22,8 @@ A Mesh-Plugin to export any Mesh content dynamically into a CSV File.
     - [Equals](#equals)
     - [Range](#range)
     - [In](#in)
+  - [Misc Configurations](#misc-configurations)
+    - [Boolean Mapping](#boolean-mapping)
 
 ## Building
 
@@ -51,11 +53,12 @@ You can then manually deploy it when the server is still running or restart the 
 
 In the configuration you may configure webroot-paths to fetch configuration-nodes; cache-times for config-values provided by `MappingProviders`; and the role-name to access the export endpoint.
 
-| Setting                  | Type                         | Default Value   | Description |
-| ------------------------ | ---------------------------- | --------------- | ----------- |
-| `webrootPaths`           | `WebrootPathConfiguration[]` | null            | Webroot Paths to the configuration nodes. |
+| Setting                  | Type                         | Default Value   | Description                                                        |
+| ------------------------ | ---------------------------- | --------------- | ------------------------------------------------------------------ |
+| `webrootPaths`           | `WebrootPathConfiguration[]` | null            | Webroot Paths to the configuration nodes.                          |
 | `cacheTime`              | `Integer`                    | `600000`        | How long the configuration nodes are being cached in milliseconds. |
-| `roleName`               | `String`                     | `plugin_export` | The Role name to control who has access to the export |
+| `roleCheck`              | `Boolean`                    | `false`         | If it should check and create the role (if needed) on startup.     |
+| `roleName`               | `String`                     | `plugin_export` | The Role name to control who has access to the export.             |
 
 ### WebrootPathConfiguration
 
@@ -251,11 +254,20 @@ The body has following format:
 | ----------------- | --------------------------- | -------- | ------------------------------------------------------------------------------------- |
 | `query`           | String                      | Required | The GraphQL Query to execute to get elements to export.                               |
 | `variables`       | [`Variables`](#variables)   | Required | Variables for the GraphQL Query.                                                      |
-| `mapping`         | List<[`Mapping`](#mapping)> | Required | The mapping definitions to map the data to CSV colums.                                |
+| `mapping`         | [`Mapping`](#mapping)[]     | Required | The mapping definitions to map the data to CSV colums.                                |
 | `maximalNodes`    | Integer                     | Optional | Limits the amount of Nodes (*NOT* Rows!) to export.                                   |
 | `elementsPath`    | String                      | Optional | Path to where the root of the elements to export start. Defaults to `nodes.elements`. |
 | `hasNextPagePath` | String                      | Optional | Path to the "hasNextPage" flag to determine if more Pages exist. Defauls to `nodes.hasNextPage`. |
 | `elementFilter`   | [`Filter`](#filtering)      | Optional | Filter which filters out elements.                                                    |
+| `booleanMappiung` | [`BooleanMapping`](#boolean-mapping) | Optional | Mapping for boolean values.                                                  |
+| `dateFormat`      | String                      | Optional | Date-Format to use for dates.                                                         |
+| `dateLocale`      | String                      | Optional | The Locale in which the date should be formatted.                                     |
+| `dateZone`        | String                      | Optional | The zone-name in which the date should be formatted.                                  |
+| `numberLocale`    | String                      | Optional | The Locale in which the number should be formatted.                                   |
+| `numberStyle`     | `NUMBER`, `INTEGER`, `CURRENCY`, or `PERCENT` | Optional | The number style. Defaults to `NUMBER`.                             |
+| `numberCurrency`  | String                      | Optional | Currency to display when the `numberStyle` is `CURRENCY`.                             |
+| `numberFractionMinimum` | Number                | Optional | Minimum amount of fraction-digits to render. Defaults to `0`.                         |
+| `numberFractionMaximum` | Number                | Optional | Maximum amount of fraction-digits to render. Defaults to `10`.                        |
 
 ### Query
 
@@ -295,14 +307,22 @@ Following properties are available for mappings:
 | `type`                  | [Type](#types)        | All            | Required                   | The Type of the property that should be rendered. See next section for further info. |
 | `label`                 | String                | All            | Required for single-column | The label for the Column. |
 | `filter`                | [Filter](#filtering)  | All            | Optional                   | A filter object to filter the entire (multi) column. See #Filtering for further info. |
-| `defaultValue`          | Any                   | All            | Optional                   | The value it should use when the value could not be found or when it's null. |
-| `dateFormat`            | String                | `DATE`         | Optional                   | Custom Date (`java.time.format.DateTimeFormatter`) Format. |
-| `configKey`             | String                | `CONFIG_VALUE` | Reqiured                   | The key from the combined config to load the mapping from. |
-| `listType`              | [Type](#types)        | `LIST`         | Required                   | The type of element that is in the list.
-| `listExpand`            | Boolean               | `LIST`         | Optional                   | If it should create a new Row for each value instead of joining all values together. |
-| `listExpandLimit`       | Integer               | `LIST`         | Optional                   | The limit of how many elements should be expanded into their own Row. |
 | `subMapping`            | [Mapping](#mapping)[] | `SUB_NODE`, `FOREIGN_REFERENCE` | Required  | An addtional Array of Mappings for the sub-elements, relative to each element. |
 | `subFilter`             | [Filter](#filtering)  | `SUB_NODE`, `FOREIGN_REFERENCE` | Optional  | A Filter to filter out individual sub-elements. |
+| `defaultValue`          | Any                   | All            | Optional                   | The value it should use when the value could not be found or when it's null. |
+| `booleanMappiung`       | [`BooleanMapping`](#boolean-mapping) | `BOOLEAN` | Optional         | Mapping for boolean values.                        |
+| `configKey`             | String                | `CONFIG_VALUE` | Reqiured                   | The key from the combined config to load the mapping from. |
+| `dateFormat`            | String                | `DATE`         | Optional                   | Custom Date (`java.time.format.DateTimeFormatter`) Format. |
+| `dateLocale`            | String                | `DATE`         | Optional | The Locale in which the date should be formatted.                    |
+| `dateZone`              | String                | `DATE`         | Optional | The zone-name in which the date should be formatted.                 |
+| `listType`              | [Type](#types)        | `LIST`         | Required                   | The type of element that is in the list.            |
+| `listExpand`            | Boolean               | `LIST`         | Optional                   | If it should create a new Row for each value instead of joining all values together. |
+| `listExpandLimit`       | Integer               | `LIST`         | Optional                   | The limit of how many elements should be expanded into their own Row. |
+| `numberLocale`          | String                | `NUMBER`       | Optional | The Locale in which the number should be formatted.                  |
+| `numberStyle`           | `NUMBER`, `INTEGER`, `CURRENCY`, or `PERCENT` | `NUMBER` | Optional | The number style. Defaults to `NUMBER`.            |
+| `numberCurrency`        | String                | `NUMBER`       | Optional | Currency to display when the `numberStyle` is `CURRENCY`.            |
+| `numberFractionMinimum` | Number                | `NUMBER`       | Optional | Minimum amount of fraction-digits to render. Defaults to `0`.        |
+| `numberFractionMaximum` | Number                | `NUMBER`       | Optional | Maximum amount of fraction-digits to render. Defaults to `10`.       |
 | `referenceGraphQuery`   | String                | `FOREIGN_REFERENCE`             | Required  | The GraphQL query for loading the foreign Node References. |
 | `referenceSearchQuery`  | String                | `FOREIGN_REFERENCE`             | Required  | The ElasticSearch query for filtering the foreign Node References. It replaces `%uuid%` with the current Node UUID, and `%value%` with the Value. If there's multiple values, the query is executed for each one. |
 | `referenceMaximalNodes` | Integer               | `FOREIGN_REFERENCE`             | Optional  | Maximal amount of Nodes that should be loaded/output. |
@@ -333,30 +353,89 @@ Following properties are available for mappings:
 With Multi-Column mappings, you need to specify a `subMapping`, which is relative to the current object.
 The label in this Mapping is getting ignored and is not required.
 
-You can also filter each element of the result via the `subFilter` property.
-The paths for filtering are then relative to the filtered object instead of the root-node.
-
 When the elements are getting expended to multiple rows with the combination of the `LIST` Type,
 then each element stays inside of the boundry of the group-column and creates a proper matrix with
-all variations in the resulting CSV file. 
+all variations in the resulting CSV file.
+
+You can also filter each element of the result via the `subFilter` property.
+The paths for filtering are then relative to the filtered object instead of the root-node.
+To access the root-node again, you may use `$` as first entry.
+Example:
+
+*Node:*
+```json
+{
+  "uuid": "00112233445566778899aabbccddeeff",
+  "fields": {
+    "someOtherField": true,
+    "myMicroNode": [{
+      "fields": {
+        "nestedField": "value123"
+      }
+    }, {
+      "fields": {
+        "missingNestedField": "hello world"
+      }
+    }]
+  }
+}
+```
+
+*Mapping:*
+```json
+{
+  "type": "SUB_NODE",
+  "path": "fields.myMicroNode",
+  "label": "Sample",
+  "subFilter": {
+    "and": [
+      {
+        "equals": {
+          "path": "$.fields.someOtherField",
+          "value": true
+        },
+        {
+          "exists": "fields.nestedField"
+        }
+      }
+    ]
+  },
+  "subMapping": [
+    {
+      "type": "STRING",
+      "path": "fields.nestedField",
+      "label": "My cool value"
+    }
+  ]
+}
+```
+
+In this example, only the first element would pass through.
 
 ## Filtering
 
- Filtering is done on a (Single or Multi-)Column basis and should only be used where regular ElasticSearch filtering does not work.
- It allows you to filter out elements which you might not want to output in the CSV File.
+Filtering is done on a (Single or Multi-)Column basis and should only be used where regular ElasticSearch filtering does not work.
+It allows you to filter out elements which you might not want to output in the CSV File.
 
- There's currently only two filters which can be used together with grouping- and meta-filters.
- You may ever only specify one type of filter in a filter object (similar to an elasticsearch query-object).
- Following Types are available:
+There's currently only two filters which can be used together with grouping- and meta-filters.
+You may ever only specify one type of filter in a filter object (similar to an elasticsearch query-object).
 
- | Name     | Type    | Value    | Description                                                           |
- | -------- | ------- | -------- | --------------------------------------------------------------------- |
- | `and`    | Group   | Filter[] | All provided filters must match. Must specify at least one filter.    |
- | `or`     | Group   | Filter[] | One or more of provided filter must match.                            |
- | `not`    | Meta    | Filter   | Inverts the result of the provided Filter.                            |
- | `equals` | [Equals](#equals) || Checks if the element-value and the filter-value are the same.        |
- | `range`  | [Range](#range)   || Checks if the element-value is in the range of the filter-range.      |
- | `in`     | [In](#in)         || Checks if the element-value and any of the filter-values are the same.|
+Paths are specified by each segment separated by `.`-characters, just like in elasticsearch or in the mapping-path.
+Additionally, when using filtering in the sub-filter context, you can start the path with `$` to get back
+to the root object.
+
+Following Types are available:
+
+| Name     | Type    | Value    | Description                                                           |
+| -------- | ------- | -------- | --------------------------------------------------------------------- |
+| `and`    | Group   | Filter[] | All provided filters must match. Must specify at least one filter.    |
+| `or`     | Group   | Filter[] | One or more of provided filter must match.                            |
+| `not`    | Meta    | Filter   | Inverts the result of the provided Filter.                            |
+| `empty`  | Meta    | String   | If the value on the specified path is `null`.                         |
+| `exists` | Meta    | String   | If the value on the specified path is present.                        |
+| `equals` | [Equals](#equals) || Checks if the element-value and the filter-value are the same.        |
+| `range`  | [Range](#range)   || Checks if the element-value is in the range of the filter-range.      |
+| `in`     | [In](#in)         || Checks if the element-value and any of the filter-values are the same.|
 
 ---
 
@@ -403,10 +482,11 @@ Example:
 
 Checks if the element-value and the filter-value are the same.
 
-| Property  | Type     | Required | Description                                            |
-| --------- | -------- | -------- | ------------------------------------------------------ |
-| `path`    | String   | Required | Path to the element-value.                             |
-| `value`   | Anything | Optional | The filter-value to check against. Defaults to `null`. |
+| Property    | Type     | Required | Description                                                                            |
+| ----------- | -------- | -------- | -------------------------------------------------------------------------------------- |
+| `path`      | String   | Required | Path to the element-value.                                                             |
+| `value`     | Anything | Optional | The filter-value to check against. Defaults to `null`.                                 |
+| `valuePath` | String   | Optional | The path to the other value to compare against. May only be set if `value` is not set! |
 
 The Equality check is based on the `java.util.Objects.equals` implementation: `Objects.equals(filterValue, elementValue)`.
 
@@ -451,8 +531,39 @@ You may also not define `gt` and `gte`, or `lt` and `lte` together:
 ### In
 
 Checks if any element-value equals one of the filter-values.
+If the value on `path` is an array, it'll check if there's at least one element in the cross-section.
+To fail on these arrays, use the `strict` option.
 
-| Property | Type         | Required | Description                                                        |
-| -------- | ------------ | -------- | ------------------------------------------------------------------ |
-| `path`   | String       | Required | Path to the element-value.                                         |
-| `values` | Array        | Required | An array of any value which is compared against the element-value. |
+| Property     | Type         | Required | Description                                                                                      |
+| ------------ | ------------ | -------- | ------------------------------------------------------------------------------------------------ |
+| `path`       | String       | Required | Path to the element-value(s).                                                                    |
+| `values`     | Array        | Optional | An array of any value which is compared against the element-value.                               |
+| `valuesPath` | String       | Optional | Path to the values to check against.                                                             |
+| `strict`     | Boolean      | Optional | If the filter should fail when the `path` does not point to a single value. Defaults to `false`. |
+
+## Misc Configurations
+
+Formatters like for Dates (`dateFormat`, `dateLocale`, and `dateZone`) or Numbers (`numberLocale`, `numberStyle`, `numberCurrency`, `numberFractionMinimum`, and `numberFractionMaximum`) or inline mappings like `booleanMapping` are defaulted on default.
+You can then override these defaults for the request by overriding them on the root of the request, or go even more detailed by providing it in the mapping option for a column.
+
+Override Hierachy:
+* Default Value
+* Request Value
+* Mapping Value
+
+### Boolean Mapping
+
+With this option you can configure the output of boolean values.
+The mapping is a simple object like this:
+
+```json
+{
+  "true": "yes",
+  "false": "no",
+  "null": "unknown"
+}
+```
+
+On default, the mapping is set to the following:
+* `true`: `"1"`
+* `false` and `null`: `"0"`

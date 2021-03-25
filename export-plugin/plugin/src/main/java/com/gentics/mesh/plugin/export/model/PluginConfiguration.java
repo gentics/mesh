@@ -22,6 +22,11 @@ public class PluginConfiguration implements Option {
 	private Long cacheTime = DEFAULT_CACHE_TIME;
 
 	@JsonProperty()
+	@JsonPropertyDescription("If it should check and create the role on startup")
+	@EnvironmentVariable(name = "MESH_PLUGIN_EXPORT_ROLE_CHECK", description = "If it should check and create the role on startup")
+	private boolean roleCheck = false;
+
+	@JsonProperty()
 	@JsonPropertyDescription("The role-name used for permitting exporting of data. Defaults to 'plugin_export'")
 	@EnvironmentVariable(name = "MESH_PLUGIN_EXPORT_ROLE_NAME", description = "The role-name used for permitting exporting of data. Defaults to 'plugin_export'")
 	private String roleName = "plugin_export";
@@ -42,6 +47,15 @@ public class PluginConfiguration implements Option {
 
 	public void setCacheTime(Long cacheTime) {
 		this.cacheTime = cacheTime;
+	}
+
+	public boolean isRoleCheck() {
+		return roleCheck;
+	}
+
+	public PluginConfiguration setRoleCheck(boolean roleCheck) {
+		this.roleCheck = roleCheck;
+		return this;
 	}
 
 	public String getRoleName() {

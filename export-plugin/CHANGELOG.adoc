@@ -10,6 +10,23 @@
 
 = Mesh Export Plugin
 
+[[v2.1.0]]
+== 2.1.0
+
+icon:plus[] Options to configure the formatting of dates are more detailed and can be set on request and per column basis.
+
+icon:plus[] Options to configure the formatting of booleans which can be set on request and per column basis.
+
+icon:plus[] Options to configure the formatting of numbers which can be set on request and per column basis.
+
+icon:plus[] Option to disable automatic startup-checks for roles and creation of it.
+
+icon:plus[] `+Equals+` and `+In+` Filter can now compare against values provided by another path.
+
+icon:plus[] Sub-Filters now also contain the root-node which can be accessed via the `$` propery.
+
+icon:plus[] Filter `+exists+` and `+empty+` which check if a value is present or not.
+
 [[v2.0.0]]
 == 2.0.0
 

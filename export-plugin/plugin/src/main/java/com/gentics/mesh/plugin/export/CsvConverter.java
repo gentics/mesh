@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.export;
 
 import com.gentics.mesh.plugin.export.model.*;
+import com.gentics.mesh.plugin.export.util.Utils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -15,28 +16,68 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CsvConverter {
 
 	private static final Logger log = LoggerFactory.getLogger(CsvConverter.class);
 
 	private static final String REFERENCE_CONTENT_CONTAINER_NAME = "__refs";
-	private static final DateTimeFormatter DEFAULT_DATE_FORMAT = DateTimeFormatter
-		.ofPattern("yyyy-MM-dd HH:mm:ss")
-		.withLocale(Locale.GERMAN)
-		.withZone(ZoneId.of("Europe/Vienna"));
-	private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance(Locale.GERMANY);
-
+	private static final String ROOT_CONTENT_NAME = "$";
 	// Additional static setup
-	static {
-		NUMBER_FORMAT.setMinimumFractionDigits(0);
-		NUMBER_FORMAT.setMaximumFractionDigits(10);
-	}
 
+	private BooleanMapping booleanMapping;
+	private NumberFormat numberFormatter;
+	private DateTimeFormatter dateFormatter;
 	private Map<String, Map<String, String>> configValues = new HashMap<>();
 	private List<CsvMappingDefinition> mapping = new ArrayList<>();
 
 	public CsvConverter() {
+	}
+
+	public Map<String, Map<String, String>> getConfigValues() {
+		return configValues;
+	}
+
+	public CsvConverter setConfigValues(Map<String, Map<String, String>> configValues) {
+		this.configValues = configValues;
+		return this;
+	}
+
+	public List<CsvMappingDefinition> getMapping() {
+		return mapping;
+	}
+
+	public CsvConverter setMapping(List<CsvMappingDefinition> mapping) {
+		this.mapping = mapping;
+		return this;
+	}
+
+	public DateTimeFormatter getDateFormatter() {
+		return dateFormatter;
+	}
+
+	public CsvConverter setDateFormatter(DateTimeFormatter dateFormatter) {
+		this.dateFormatter = dateFormatter;
+		return this;
+	}
+
+	public NumberFormat getNumberFormatter() {
+		return numberFormatter;
+	}
+
+	public CsvConverter setNumberFormatter(NumberFormat numberFormatter) {
+		this.numberFormatter = numberFormatter;
+		return this;
+	}
+
+	public BooleanMapping getBooleanMapping() {
+		return booleanMapping;
+	}
+
+	public CsvConverter setBooleanMapping(BooleanMapping booleanMapping) {
+		this.booleanMapping = booleanMapping;
+		return this;
 	}
 
 	public List<String> transformToCsv(JsonObject node) {
@@ -83,30 +124,29 @@ public class CsvConverter {
 		// Check if the values are present and not empty. If they are, we have to return
 		// empty columns to not screw up the layout.
 		if (!values.isPresent() || ((values.get().isEmpty()) && this.mapping.size() > 1)) {
-			log.debug("No values present, generating empty cells instead.");
 			return generateEmptyMatrix(definition);
 		}
-
-		log.debug("Found values to export: {}", values.get());
 
 		CsvMatrix matrix = new CsvMatrix();
 
 		values.get().stream()
-			.map(singleValue -> transformToColumnGroup(definition, singleValue))
+			.map(singleValue -> transformToColumnGroup(definition, singleValue, node))
 			.map(group -> limitGroup(definition, group))
 			.forEach(matrix::add);
 
 		return matrix;
 	}
 
-	private ColumnGroup transformToColumnGroup(CsvMappingDefinition definition, Object data) {
+	private ColumnGroup transformToColumnGroup(CsvMappingDefinition definition, Object data, JsonObject node) {
 		if (data instanceof JsonArray) {
 			JsonArray arr = (JsonArray) data;
-			return mapMultipleValues(definition, arr);
+			return mapMultipleValues(definition, arr, node);
 		}
 
 		if (definition.getActualType().isMultiColumn()) {
 			JsonObject element = (JsonObject) data;
+			putRootIntoElement(definition, element, node);
+
 			if (definition.getSubFilter() != null && !definition.getSubFilter().isAllowed(element)) {
 				return generateEmptyMatrix(definition).get(0);
 			}
@@ -114,6 +154,31 @@ public class CsvConverter {
 		}
 
 		return new ColumnGroup(new Column(mapSingleValue(definition, data)));
+	}
+
+	private JsonObject putRootIntoElement(CsvMappingDefinition definition, JsonObject element, JsonObject node) {
+		// Clone the node
+		JsonObject root = new JsonObject(node.getMap());
+
+		// Remove the elements in the root to prevent recursion
+		List<String> path = new ArrayList<>(definition.getPathAsList());
+		String last = path.remove(path.size() - 1);
+		Optional<Object> found = Utils.getValueByPath(root, path);
+		if (found.isPresent()) {
+			if (found.get() instanceof JsonObject) {
+				((JsonObject) found.get()).remove(last);
+			} else if (found.get() instanceof JsonArray) {
+				for (Object o : ((JsonArray) found.get())) {
+					if (o instanceof JsonObject) {
+						((JsonObject) o).remove(last);
+					}
+				}
+			}
+		}
+
+		element.put(ROOT_CONTENT_NAME, root);
+
+		return element;
 	}
 
 	private ColumnGroup limitGroup(CsvMappingDefinition definition, ColumnGroup group) {
@@ -229,9 +294,9 @@ public class CsvConverter {
 		JsonArray values = check.get();
 
 		// Fix the values size if it's not allowed to be expanded and it's a multi-column type
-		if ((!definition.getListExpand() || definition.getType() != CsvMappingDataType.LIST) &&
-			definition.getActualType().isMultiColumn() &&
-			values.size() > 1) {
+		if ((!CsvMappingDataType.LIST.equals(definition.getType()) || !definition.getListExpand())
+			&& values.size() > 1
+		) {
 			values = new JsonArray().add(values.getValue(0));
 		}
 
@@ -317,7 +382,7 @@ public class CsvConverter {
 		return Optional.of(obj instanceof JsonArray ? (JsonArray) obj : new JsonArray().add(obj));
 	}
 
-	private ColumnGroup mapMultipleValues(CsvMappingDefinition definition, JsonArray values) {
+	private ColumnGroup mapMultipleValues(CsvMappingDefinition definition, JsonArray values, JsonObject node) {
 		if (values.isEmpty() && this.mapping.size() > 1) {
 			return generateEmptyMatrix(definition).get(0);
 		}
@@ -325,21 +390,34 @@ public class CsvConverter {
 		// When it's a multi-column, then we iterate over each element and generate a column value for it
 		// Each column-value has to be evenly applied to all columns, otherwise we get a wrong amount.
 		if (definition.getActualType().isMultiColumn()) {
-			return mapMultipleValuesToMultiColumn(definition, values);
+			return mapMultipleValuesToMultiColumn(definition, values, node);
 		}
 
 		return mapMultipleValuesToSingleColumn(definition, values);
 	}
 
-	private ColumnGroup mapMultipleValuesToMultiColumn(CsvMappingDefinition definition, JsonArray values) {
-		List<ColumnGroup> groups = values.stream()
-			.map(obj -> (JsonObject) obj)
+	private ColumnGroup mapMultipleValuesToMultiColumn(
+		CsvMappingDefinition definition,
+		JsonArray values,
+		JsonObject node
+	) {
+		Stream<JsonObject> valueStream = values.stream()
+			.filter(element -> element instanceof JsonObject)
+			.map(obj -> putRootIntoElement(definition, (JsonObject) obj, node))
 			.filter(obj -> {
 				if (definition.getSubFilter() != null) {
 					return definition.getSubFilter().isAllowed(obj);
 				}
 				return true;
-			})
+			});
+
+		// If the mapping is not a list and should not expand, then we may only
+		// use the first value.
+		if (!CsvMappingDataType.LIST.equals(definition.getType()) || !definition.getListExpand()) {
+			valueStream = valueStream.limit(1);
+		}
+
+		List<ColumnGroup> groups = valueStream
 			.map(obj -> mapMultiColumns(definition, obj))
 			.collect(Collectors.toList());
 
@@ -449,22 +527,26 @@ public class CsvConverter {
 			return "";
 		}
 
-		final CsvMappingDataType type =
-			definition.getType() == CsvMappingDataType.LIST ? definition.getListType() : definition.getType();
+		final CsvMappingDataType type = definition.getActualType();
 
 		try {
 			switch (type) {
 				case BOOLEAN:
+					Boolean bool = null;
+
 					if (value instanceof Boolean) {
-						return (Boolean) value ? "1" : "0";
+						bool = (Boolean) value;
 					} else {
-						return Boolean.parseBoolean(value.toString()) ? "1" : "0";
+						if ("true".equalsIgnoreCase(value.toString())) {
+							bool = true;
+						} else if ("false".equalsIgnoreCase(value.toString())) {
+							bool = false;
+						}
 					}
+
+					return Utils.mergeMappings(booleanMapping, definition.getBooleanMapping()).getStringValue(bool);
 				case NUMBER:
-					if (value instanceof Number) {
-						return NUMBER_FORMAT.format(value);
-					}
-					return "0";
+					return this.mapNumberValue(value, definition);
 				case STRING:
 					return value.toString();
 				case TEMPLATE:
@@ -493,7 +575,7 @@ public class CsvConverter {
 					} else {
 						date = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(value.toString()));
 					}
-					return mapDateValue(date, definition.getDateFormat());
+					return mapDateValue(date, definition);
 				case CONFIG_VALUE:
 					return mapValueFromConfig(definition.getConfigKey(), value.toString());
 			}
@@ -505,17 +587,42 @@ public class CsvConverter {
 		return "";
 	}
 
-	private String mapDateValue(Instant date, String formatString) {
-		try {
-			DateTimeFormatter formatter;
-			try {
-				formatter = DateTimeFormatter
-					.ofPattern(formatString)
-					.withLocale(Locale.GERMAN)
-					.withZone(ZoneId.of("Europe/Vienna"));
-			} catch (Exception e) {
-				formatter = DEFAULT_DATE_FORMAT;
+	private String mapNumberValue(Object value, AbstractCsvMappingDefinition definition) {
+		if (!(value instanceof Number)) {
+			if (definition.getDefaultValue() == null || !(definition.getDefaultValue() instanceof Number)) {
+				return "0";
 			}
+			value = definition.getDefaultValue();
+		}
+
+		Number num = (Number) value;
+		NumberFormat formatter = definition.getNumberFormatter();
+
+		if (formatter == null) {
+			formatter = this.numberFormatter;
+		}
+
+		return formatter.format(num);
+	}
+
+	private String mapDateValue(Instant date, AbstractCsvMappingDefinition definition) {
+		try {
+			DateTimeFormatter formatter = dateFormatter;
+
+			try {
+				if (definition.getDateFormat() != null) {
+					formatter = DateTimeFormatter.ofPattern(definition.getDateFormat());
+				}
+				if (definition.getDateLocale() != null) {
+					formatter = formatter.withLocale(Locale.forLanguageTag(definition.getDateLocale()));
+				}
+				if (definition.getDateZone() != null) {
+					formatter = formatter.withZone(ZoneId.of(definition.getDateZone()));
+				}
+			} catch (Exception e) {
+				log.warn("Error while creating custom column date formatter", e);
+			}
+
 			return formatter.format(date);
 		} catch (Exception e) {
 			// do nothing
@@ -601,23 +708,5 @@ public class CsvConverter {
 				printMatrix.addAll(tmp);
 			}
 		}
-	}
-
-	public Map<String, Map<String, String>> getConfigValues() {
-		return configValues;
-	}
-
-	public CsvConverter setConfigValues(Map<String, Map<String, String>> configValues) {
-		this.configValues = configValues;
-		return this;
-	}
-
-	public List<CsvMappingDefinition> getMapping() {
-		return mapping;
-	}
-
-	public CsvConverter setMapping(List<CsvMappingDefinition> mapping) {
-		this.mapping = mapping;
-		return this;
 	}
 }

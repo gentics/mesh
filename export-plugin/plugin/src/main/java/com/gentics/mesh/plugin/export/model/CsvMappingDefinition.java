@@ -40,24 +40,27 @@ public class CsvMappingDefinition extends AbstractCsvMappingDefinition {
         return subMapping;
     }
 
-    public void setSubMapping(List<CsvSubMappingDefinition> subMapping) {
+    public CsvMappingDefinition setSubMapping(List<CsvSubMappingDefinition> subMapping) {
         this.subMapping = subMapping;
+        return this;
     }
 
     public String getReferenceGraphQuery() {
         return referenceGraphQuery;
     }
 
-    public void setReferenceGraphQuery(String referenceGraphQuery) {
+    public CsvMappingDefinition setReferenceGraphQuery(String referenceGraphQuery) {
         this.referenceGraphQuery = referenceGraphQuery;
+        return this;
     }
 
     public String getReferenceSearchQuery() {
         return referenceSearchQuery;
     }
 
-    public void setReferenceSearchQuery(String referenceSearchQuery) {
+    public CsvMappingDefinition setReferenceSearchQuery(String referenceSearchQuery) {
         this.referenceSearchQuery = referenceSearchQuery;
+        return this;
     }
 
     public Integer getReferenceMaximalNodes() {
@@ -68,8 +71,9 @@ public class CsvMappingDefinition extends AbstractCsvMappingDefinition {
         return referenceMaximalNodes;
     }
 
-    public void setReferenceMaximalNodes(Integer referenceMaximalNodes) {
+    public CsvMappingDefinition setReferenceMaximalNodes(Integer referenceMaximalNodes) {
         this.referenceMaximalNodes = referenceMaximalNodes;
+        return this;
     }
 
     public String getReferenceElementsPath() {
