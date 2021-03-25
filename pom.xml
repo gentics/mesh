@@ -51,15 +51,6 @@
 	</parent>
 
 	<developers>
-		<developer>
-			<name>Johannes Schüth</name>
-			<url>https://github.com/Jotschi</url>
-			<email>git@jotschi.de</email>
-			<organization>Gentics Software</organization>
-			<roles>
-				<role>Core Developer</role>
-			</roles>
-		</developer>
 	</developers>
 
 	<organization>
