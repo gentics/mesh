@@ -8,7 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.Wait;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
