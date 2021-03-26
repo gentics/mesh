@@ -1,10 +1,10 @@
 {
-	"name": "Invalid form with dropdown element with a missing value",
+	"name": "Invalid form with selectgroup element with a missing value",
 	"elements": [
 		{
-			"type": "dropdown",
-			"name": "dropdown1",
-			"label": "Dropdown",
+			"type": "selectgroup",
+			"name": "selectgroup1",
+			"label": "Select Group",
 			"listelements": [
 				{
 					"label": "No value"
