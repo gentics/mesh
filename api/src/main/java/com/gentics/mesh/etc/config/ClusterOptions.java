@@ -22,7 +22,7 @@ public class ClusterOptions implements Option {
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final int DEFAULT_VERTX_PORT = 4848;
 	public static final long DEFAULT_TOPOLOGY_LOCK_TIMEOUT = 0;
-	public static final long DEFAULT_TOPOLOGY_LOCK_DELAY = 20_000; // 20 seconds
+	public static final long DEFAULT_TOPOLOGY_LOCK_DELAY = 0; // 20 seconds
 
 	public static final String MESH_CLUSTER_NETWORK_HOST_ENV = "MESH_CLUSTER_NETWORK_HOST";
 	public static final String MESH_CLUSTER_ENABLED_ENV = "MESH_CLUSTER_ENABLED";
