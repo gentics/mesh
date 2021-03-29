@@ -23,6 +23,8 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
@@ -238,6 +240,15 @@ public final class HibClassConverter {
 	 */
 	public static Binary toGraph(HibBinary binary) {
 		return checkAndCast(binary, Binary.class);
+	}
+	/**
+	 * Convert the s3binary to a graph element.
+	 *
+	 * @param s3binary
+	 * @return
+	 */
+	public static S3Binary toGraph(S3HibBinary s3binary) {
+		return checkAndCast(s3binary, S3Binary.class);
 	}
 
 	/**

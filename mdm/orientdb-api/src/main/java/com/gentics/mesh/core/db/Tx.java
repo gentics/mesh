@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 /**
@@ -92,4 +93,6 @@ public interface Tx extends BaseTransaction, DaoCollection {
 	HibProject getProject(InternalActionContext ac);
 
 	Binaries binaries();
+
+	S3Binaries s3binaries();
 }

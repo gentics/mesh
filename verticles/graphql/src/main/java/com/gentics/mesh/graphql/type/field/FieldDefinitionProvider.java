@@ -71,6 +71,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 	public static final String BINARY_FIELD_TYPE_NAME = "BinaryField";
+	public static final String S3_BINARY_FIELD_TYPE_NAME = "S3BinaryField";
 
 	@Inject
 	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
@@ -173,6 +174,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return container.getBinary(schema.getName());
 			}).build();
 
+	}
+
+	public GraphQLFieldDefinition createS3BinaryDef(FieldSchema schema) {
+		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(S3_BINARY_FIELD_TYPE_NAME))
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					return container.getBinary(schema.getName());
+				}).build();
 	}
 
 	public GraphQLFieldDefinition createBooleanDef(FieldSchema schema) {
