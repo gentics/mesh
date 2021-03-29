@@ -10,8 +10,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -102,7 +100,6 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	@Override
 	public void onDatabaseChangeStatus(String nodeName, String iDatabaseName, DB_STATUS iNewStatus) {
-		log.warn(ExceptionUtils.getFullStackTrace(new Exception("!!!!!!!!!")));
 		if (iNewStatus == DB_STATUS.ONLINE) {
 			// Delay the online status a few seconds
 			long postOnlineDelay = clusterOptions.getTopologyLockDelay();
