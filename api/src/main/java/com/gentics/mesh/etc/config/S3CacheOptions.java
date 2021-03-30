@@ -13,6 +13,7 @@ import com.gentics.mesh.etc.config.env.Option;
 public class S3CacheOptions implements Option {
 
     public static final int DEFAULT_EXPIRATION_TIME_CACHE_DOWNLOAD = 360_000;
+    public static final int DEFAULT_EXPIRATION_TIME_CACHE_UPLOAD = 60_000;
 
     public static final String MESH_S3_BINARY_CACHE_AWS_KEY_ENV = "MESH_S3_BINARY_CACHE_AWS_KEY";
     public static final String MESH_S3_BINARY_CACHE_BUCKET_ENV = "MESH_S3_BINARY_CACHE_BUCKET";
@@ -35,6 +36,8 @@ public class S3CacheOptions implements Option {
     @EnvironmentVariable(name = MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD_ENV, description = "Override the configured AWS S3 download time.")
     private int expirationTimeDownload = DEFAULT_EXPIRATION_TIME_CACHE_DOWNLOAD;
 
+    //As this will only be used internally, we can hardcode a sensible time
+    private int expirationTimeUpload = DEFAULT_EXPIRATION_TIME_CACHE_UPLOAD;
 
     @JsonProperty(required = false)
     @JsonPropertyDescription("AWS S3 region for transformed / resized images")
