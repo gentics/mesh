@@ -49,6 +49,15 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	public static void init(TypeHandler type, IndexHandler index) {
 	}
 
+	/** Transform S3 binary if not null
+	 * @param container
+	 * @param ac
+	 * @param fieldKey
+	 * @param fieldSchema
+	 * @param languageTags
+	 * @param level
+	 * @param parentNode
+	 */
 	public static FieldTransformer<S3BinaryField> S3_BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		S3BinaryGraphField graphBinaryField = container.getS3Binary(fieldKey);
 		if (graphBinaryField == null) {
@@ -58,6 +67,14 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 		}
 	};
 
+	/** Update S3 binary
+	 * @param container
+	 * @param ac
+	 * @param fieldMap
+	 * @param fieldKey
+	 * @param fieldSchema
+	 * @param schema
+	 */
 	public static FieldUpdater S3_BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		S3BinaryGraphField graphBinaryField = container.getS3Binary(fieldKey);
 		S3BinaryField binaryField = fieldMap.getS3BinaryField(fieldKey);
@@ -155,8 +172,12 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 
-	public static FieldGetter BINARY_GETTER = (container, fieldSchema) -> {
-		return container.getBinary(fieldSchema.getName());
+	/** Get S3 Binary
+	 * @param container
+	 * @param fieldSchema
+	 */
+	public static FieldGetter S3_BINARY_GETTER = (container, fieldSchema) -> {
+		return container.getS3Binary(fieldSchema.getName());
 	};
 
 	@Override
