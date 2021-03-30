@@ -1,0 +1,91 @@
+package com.gentics.mesh.etc.config;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
+import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
+
+import java.util.Set;
+
+/**
+ * S3 configuration POJO.
+ */
+@GenerateDocumentation
+public class S3Options implements Option {
+
+    public static final int DEFAULT_EXPIRATION_TIME_UPLOAD = 60_000;
+    public static final int DEFAULT_EXPIRATION_TIME_DOWNLOAD = 360_000;
+    public static final int DEFAULT_PARSER_LIMIT = 40_000;
+
+    public static final String MESH_S3_BINARY_AWS_KEY_ENV = "MESH_S3_BINARY_AWS_KEY";
+    public static final String MESH_S3_BINARY_BUCKET_ENV = "MESH_S3_BINARY_BUCKET";
+    public static final String MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD_ENV = "MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD";
+    public static final String MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD_ENV = "MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD";
+    public static final String MESH_S3_BINARY_LINK_RESOLVER_ENV = "MESH_S3_BINARY_LINK_RESOLVER";
+    public static final String MESH_S3_BINARY_METADATA_WHITELIST_ENV = "MESH_S3_BINARY_METADATA_WHITELIST";
+    public static final String MESH_S3_BINARY_PARSER_LIMIT_ENV = "MESH_S3_BINARY_PARSER_LIMIT";
+    public static final String MESH_S3_BINARY_REGION_ENV = "MESH_S3_BINARY_REGION";
+    public static final String MESH_S3_BINARY_SECRET_ENV = "MESH_S3_BINARY_SECRET";
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("Used for authentication with Amazon Web Services")
+    @EnvironmentVariable(name = MESH_S3_BINARY_AWS_KEY_ENV, description = "Override the configured awskey.")
+    private String awsKey;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("AWS S3 bucket where binaries will be uploaded to and downloaded from")
+    @EnvironmentVariable(name = MESH_S3_BINARY_BUCKET_ENV, description = "Override the configured AWS S3 bucket.")
+    private String bucket;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("After this time in milliseconds the AWS S3 URL used for upload will expire.")
+    @EnvironmentVariable(name = MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD_ENV, description = "Override the configured AWS S3 upload time.")
+    private int expirationTimeUpload = DEFAULT_EXPIRATION_TIME_UPLOAD;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("After this time in milliseconds the AWS S3 URL used for download will expire.")
+    @EnvironmentVariable(name = MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD_ENV, description = "Override the configured AWS S3 download time.")
+    private int expirationTimeDownload = DEFAULT_EXPIRATION_TIME_DOWNLOAD;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("Style of linkResolving:'s3' (default) resolved Links will render a pre-signed URL directly to S3 OR 'mesh' resolved Links will render a mesh-url")
+    @EnvironmentVariable(name = MESH_S3_BINARY_LINK_RESOLVER_ENV, description = "Override the configured AWS S3 link resolver.")
+    private String linkResolver;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("If set, the parser will only extract metadata with the keys specified in the list.")
+    @EnvironmentVariable(name = MESH_S3_BINARY_METADATA_WHITELIST_ENV, description = "Override the metadata whitelist")
+    private Set<String> metadataWhitelist;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("The parser limit for uploaded documents (pdf, doc, docx). ")
+    @EnvironmentVariable(name = MESH_S3_BINARY_PARSER_LIMIT_ENV, description = "Override the configured parser limit.")
+    private int parserLimit = DEFAULT_PARSER_LIMIT;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("AWS S3 region")
+    @EnvironmentVariable(name = MESH_S3_BINARY_REGION_ENV, description = "Override the configured AWS S3 region.")
+    private String region;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("AWS S3 key")
+    @EnvironmentVariable(name = MESH_S3_BINARY_SECRET_ENV, description = "Override the configured AWS S3 secret.")
+    private String secret;
+
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("S3 Cache Bucket Options.")
+    private S3CacheOptions s3cacheOptions = new S3CacheOptions();
+
+    @JsonProperty("cache")
+    public S3CacheOptions getS3CacheOptions() {
+        return this.s3cacheOptions;
+    }
+
+    @Setter
+    public S3Options setS3CacheOptions(S3CacheOptions s3cacheOptions) {
+        this.s3cacheOptions = s3cacheOptions;
+        return this;
+    }
+}

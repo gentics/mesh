@@ -86,6 +86,10 @@ public class MeshOptions implements Option {
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("S3 options.")
+	private S3Options s3options = new S3Options();
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Authentication options.")
 	private AuthenticationOptions authenticationOptions = new AuthenticationOptions();
 
@@ -208,6 +212,17 @@ public class MeshOptions implements Option {
 	@Setter
 	public MeshOptions setStorageOptions(GraphStorageOptions storageOptions) {
 		this.storageOptions = storageOptions;
+		return this;
+	}
+
+	@JsonProperty("s3binary")
+	public S3Options getS3Options() {
+		return s3options;
+	}
+
+	@Setter
+	public MeshOptions setS3Options(S3Options s3options) {
+		this.s3options = s3options;
 		return this;
 	}
 
