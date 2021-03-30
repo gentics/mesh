@@ -1,0 +1,130 @@
+---
+defaultMaxDepth: 10
+defaultLanguage: "en"
+languagesFilePath: null
+updateCheck: true
+vertxOptions:
+  workerPoolSize: 20
+  eventPoolSize: 16
+tempDirectory: "data/tmp"
+pluginDirectory: "plugins"
+pluginTimeout: 120
+nodeName: "Linear Jynx"
+startInReadOnly: false
+versionPurgeMaxBatchSize: 10
+httpServer:
+  port: 8080
+  sslPort: 8443
+  host: "0.0.0.0"
+  corsAllowedOriginPattern: ""
+  corsAllowCredentials: false
+  enableCors: false
+  http: true
+  ssl: false
+  certPath: "config/cert.pem"
+  keyPath: "config/key.pem"
+  clientAuthMode: "NONE"
+  trustedCertPaths: []
+  verticleAmount: 16
+  serverTokens: true
+monitoring:
+  enabled: true
+  port: 8081
+  host: "127.0.0.1"
+  jvmMetricsEnabled: true
+cluster:
+  networkHost: null
+  enabled: false
+  clusterName: null
+  vertxPort: 4848
+  coordinatorMode: "DISABLED"
+  coordinatorRegex: null
+  topologyLockTimeout: 0
+  topologyLockDelay: 20000
+  coordinatorTopology: "UNMANAGED"
+storage:
+  directory: "data/graphdb"
+  backupDirectory: "data/backup"
+  exportDirectory: "data/export"
+  startServer: false
+  synchronizeWrites: true
+  synchronizeWritesTimeout: 60000
+  txRetryDelay: 10
+  txRetryLimit: 10
+  txCommitTimeout: 0
+  parameters: {}
+search:
+  url: "http://localhost:9200"
+  username: null
+  password: null
+  certPath: null
+  caPath: null
+  hostnameVerification: true
+  timeout: 60000
+  startupTimeout: 45
+  startEmbedded: true
+  embeddedArguments: "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75\
+    \ -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true\
+    \ -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true\
+    \ -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0\
+    \ -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError"
+  prefix: "mesh-"
+  bulkLimit: 100
+  bulkLengthLimit: 5000000
+  eventBufferSize: 1000
+  bulkDebounceTime: 2000
+  idleDebounceTime: 100
+  retryInterval: 5000
+  retryLimit: 3
+  waitForIdle: true
+  includeBinaryFields: true
+  mappingMode: "DYNAMIC"
+  complianceMode: "ES_6"
+  syncBatchSize: 50000
+upload:
+  byteLimit: 262144000
+  directory: "data/binaryFiles"
+  tempDirectory: "data/tmp/file-uploads"
+  parserLimit: 40000
+  parser: true
+  metadataWhitelist: null
+s3binary:
+  awsKey: null
+  bucket: null
+  expirationTimeUpload: 60000
+  expirationTimeDownload: 360000
+  linkResolver: "s3"
+  metadataWhitelist: null
+  parserLimit: 40000
+  region: null
+  secret: null
+  cache:
+    awsKey: null
+    bucket: null
+    expirationTimeDownload: 360000
+    region: null
+    secret: null
+security:
+  tokenExpirationTime: 3600
+  keystorePassword: "562bff021c4b46f88c3d70843713a8db"
+  keystorePath: "config/keystore.jceks"
+  algorithm: "HS256"
+  enableAnonymousAccess: true
+  publicKeysPath: "config/public-keys.json"
+image:
+  imageCacheDirectory: "data/binaryImageCache"
+  maxWidth: 2048
+  maxHeight: 2048
+  jpegQuality: 0.95
+  resampleFilter: "LANCZOS"
+content:
+  autoPurge: true
+cache:
+  pathCacheSize: 20000
+debugInfo:
+  logFolder: "debuginfo"
+  logFileSize: "5MB"
+  logEnabled: true
+  logPattern: "%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n"
+graphQL:
+  slowThreshold: 60000
