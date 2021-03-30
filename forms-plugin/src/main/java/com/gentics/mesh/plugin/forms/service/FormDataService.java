@@ -94,9 +94,11 @@ public class FormDataService {
 
 	private final HandlebarsTemplateEngine templateEngine;
 
+	private final StatusService statusService;
+
 	@Inject
 	public FormDataService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient, Vertx vertx, FormsConfig configuration, ObjectMapper objectMapper,
-						   FormService formService, PagingService pagingService, MailService mailService, HandlebarsTemplateEngine templateEngine) {
+						   FormService formService, PagingService pagingService, MailService mailService, HandlebarsTemplateEngine templateEngine, StatusService statusService) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.vertx = vertx;
@@ -106,6 +108,7 @@ public class FormDataService {
 		this.pagingService = pagingService;
 		this.mailService = mailService;
 		this.templateEngine = templateEngine;
+		this.statusService = statusService;
 	}
 
 	/**
@@ -183,7 +186,8 @@ public class FormDataService {
 	public Single<String> export(String projectName, String formUuid, PluginContext context, String...lang) {
 		Exporter exporter = Exporter.create(configuration, userClient, context, formUuid, SchemaService.getSchemaName(formUuid));
 
-		return formService.load(projectName, formUuid, lang)
+		return statusService.languageFallback(projectName, lang)
+			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
 			.flatMap(formNode -> formService.toForm(formNode))
 			.flatMap(form -> {
 				exporter.setFieldLabels(form.getReportableFields());
@@ -545,10 +549,13 @@ public class FormDataService {
 		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
 		graphQLParams.put("query", esQuery.toString());
 
-		return formService.load(projectName, formUuid).flatMap(formService::toForm).flatMap(form -> {
+		return statusService.languageFallback(projectName)
+				.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
+				.flatMap(formService::toForm)
+				.flatMap(form -> {
 			Map<String, String> context = new HashMap<>();
 			context.put("schemaName", SchemaService.getSchemaName(formUuid));
-			context.put("fieldNames", String.join("\n", String.join("\n", form.getReportableElementNamesForGraphQL()), "errors"));
+			context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
 			String graphQLQuery = new Handlebars().compileInline(rawGraphQLQuery).apply(Context.newContext(context));
 			GraphQLRequest graphQLRequest = new GraphQLRequest();
 			graphQLRequest.setQuery(graphQLQuery).setVariables(graphQLParams);

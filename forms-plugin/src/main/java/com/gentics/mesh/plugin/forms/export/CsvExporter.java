@@ -172,6 +172,7 @@ public class CsvExporter extends Exporter {
 		}
 
 		fieldNames = new ArrayList<>(data.getJsonObject(0).getJsonObject("fields").fieldNames());
+		fieldNames.remove("errors");
 		Collections.sort(fieldNames);
 	}
 

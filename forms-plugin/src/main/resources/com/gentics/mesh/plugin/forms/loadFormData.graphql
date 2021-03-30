@@ -15,6 +15,7 @@ query ($uuid: String, $perPage: Long = 2147483647, $page: Long = 1) {
         fields {
           ... on {{{ schemaName }}} {
           	{{{ fieldNames }}}
+            errors
           }
         }
       }

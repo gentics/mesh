@@ -36,6 +36,7 @@ import com.gentics.mesh.plugin.forms.model.FileElement;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
+import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
@@ -57,6 +58,7 @@ public class LoadFilesZipHandler extends AbstractFormsHandler {
 	private final MeshRestClient adminClient;
 	private final FormService formService;
 	private final File storageDir;
+	private final StatusService statusService;
 
 	/**
 	 * Get the next filename to try
@@ -92,10 +94,11 @@ public class LoadFilesZipHandler extends AbstractFormsHandler {
 	}
 
 	@Inject
-	public LoadFilesZipHandler(@AdminClient MeshRestClient adminClient, FormService formService, @StorageDir File storageDir) {
+	public LoadFilesZipHandler(@AdminClient MeshRestClient adminClient, FormService formService, @StorageDir File storageDir, StatusService statusService) {
 		this.adminClient = adminClient;
 		this.formService = formService;
 		this.storageDir = storageDir;
+		this.statusService = statusService;
 	}
 
 	@Override
@@ -103,7 +106,8 @@ public class LoadFilesZipHandler extends AbstractFormsHandler {
 		String projectName = context.project().getString("name");
 		String uuid = context.pathParam("formUuid");
 
-		return formService.load(projectName, uuid)
+		return statusService.languageFallback(projectName)
+			.flatMap(langFallback -> formService.load(projectName, uuid, langFallback))
 			.flatMap(formService::toForm)
 			.flatMapCompletable(form -> {
 				Set<String> fileElementNames = form.flattened().filter(elem -> elem instanceof FileElement).map(FormElement::getName)
