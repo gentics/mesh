@@ -289,6 +289,6 @@ public class Form {
 	public Map<String, String> getReportableFields() {
 		return flattened()
 			.filter(FormElement::isReportable)
-			.collect(Collectors.toMap(FormElement::getName, FormElement::getLabel));
+			.collect(Collectors.toMap(FormElement::getName, FormElement::getLabelOrName));
 	}
 }

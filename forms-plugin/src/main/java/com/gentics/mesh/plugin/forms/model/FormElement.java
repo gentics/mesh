@@ -87,6 +87,15 @@ public abstract class FormElement {
 	}
 
 	/**
+	 * If the label is not null, return the label, otherwise return the name (which must not be null)
+	 * @return label (if not null) or name
+	 */
+	@JsonIgnore
+	public String getLabelOrName() {
+		return label != null ? label : name;
+	}
+
+	/**
 	 * Get active flag
 	 * @return active flag
 	 */
