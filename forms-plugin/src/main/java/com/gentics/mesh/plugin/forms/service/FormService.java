@@ -504,6 +504,7 @@ public class FormService {
 	public void markFormpages(JsonObject form, Set<String> completed) {
 		JsonArray elements = form.getJsonArray("elements");
 		if (elements != null) {
+			boolean activePageFound = false;
 			for (int i = 0; i < elements.size(); i++) {
 				JsonObject element = elements.getJsonObject(i);
 				if (!"formpage".equals(element.getString("type"))) {
@@ -512,10 +513,13 @@ public class FormService {
 				String name = element.getString("name");
 				if (completed.contains(name)) {
 					element.put("class", "is-completed");
-				} else {
+					element.put("active", false);
+				} else if (!activePageFound) {
 					element.put("class", "is-active");
 					element.put("active", true);
-					break;
+					activePageFound = true;
+				} else {
+					element.put("active", false);
 				}
 			}
 		}

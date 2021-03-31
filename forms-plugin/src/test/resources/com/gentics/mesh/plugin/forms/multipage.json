@@ -5,6 +5,7 @@
 			"type": "formpage",
 			"name": "page1",
 			"label": "Page 1",
+			"active": true,
 			"elements": [
 				{
 					"type": "input",
@@ -27,6 +28,7 @@
 			"type": "formpage",
 			"name": "page2",
 			"label": "Page 2",
+			"active": true,
 			"elements": [
 				{
 					"type": "input",
