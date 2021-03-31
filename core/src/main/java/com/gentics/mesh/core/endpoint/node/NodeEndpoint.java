@@ -59,18 +59,21 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private BinaryDownloadHandler binaryDownloadHandler;
 
+	private S3BinaryUploadHandlerImpl s3binaryUploadHandler;
+
 	public NodeEndpoint() {
 		super("nodes", null, null);
 	}
 
 	@Inject
 	public NodeEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandlerImpl binaryUploadHandler,
-		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler) {
+		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, S3BinaryUploadHandlerImpl s3binaryUploadHandler) {
 		super("nodes", chain, boot);
 		this.crudHandler = crudHandler;
 		this.binaryUploadHandler = binaryUploadHandler;
 		this.binaryTransformHandler = binaryTransformHandler;
 		this.binaryDownloadHandler = binaryDownloadHandler;
+		this.s3binaryUploadHandler = s3binaryUploadHandler;
 	}
 
 	@Override
@@ -95,6 +98,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addTagsHandler();
 		addMoveHandler();
 		addBinaryHandlers();
+		addS3BinaryHandlers();
 		addLanguageHandlers();
 		addNavigationHandlers();
 		addPublishHandlers();
@@ -216,6 +220,27 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			binaryDownloadHandler.handleReadBinaryField(rc, uuid, fieldName);
 		});
 
+	}
+
+	private void addS3BinaryHandlers() {
+		InternalEndpointRoute fieldUpdate = createRoute();
+		fieldUpdate.path("/:nodeUuid/s3binary/:fieldName");
+		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldUpdate.method(POST);
+		fieldUpdate.produces(APPLICATION_JSON);
+		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
+		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldUpdate.description("Update the binaryfield with the given name.");
+		fieldUpdate.events(NODE_UPDATED);
+		fieldUpdate.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			MultiMap attributes = rc.request().formAttributes();
+			InternalActionContext ac = wrap(rc);
+			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
+		});
 	}
 
 	private void addMoveHandler() {

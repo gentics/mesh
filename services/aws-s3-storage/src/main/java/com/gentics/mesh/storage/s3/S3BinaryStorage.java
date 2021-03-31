@@ -3,19 +3,27 @@ package com.gentics.mesh.storage.s3;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.binary.HibBinaryField;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.storage.AbstractBinaryStorage;
 import com.gentics.mesh.util.RxUtil;
 
+import hu.akarnokd.rxjava2.interop.SingleInterop;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
@@ -29,13 +37,11 @@ import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 /**
  * Initial S3 Storage implementation.
@@ -47,69 +53,39 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 
 	private S3AsyncClient client;
 
-	private S3StorageOptions options;
+	private S3Presigner presigner;
+
+	private S3Options options;
 
 	private final Vertx rxVertx;
 
 	private FileSystem fs;
 
 	@Inject
-	public S3BinaryStorage(S3StorageOptions options, Vertx rxVertx) {
-		this.options = options;
+	public S3BinaryStorage(MeshOptions options, Vertx rxVertx) {
+		this.options = options.getS3Options();
 		this.rxVertx = rxVertx;
 		this.fs = rxVertx.fileSystem();
 		init();
 	}
 
 	private void init() {
-		AwsCredentials credentials = AwsBasicCredentials.create(options.getAccessId(), options.getAccessKey());
-		// ClientConfiguration clientConfiguration = new ClientConfiguration();
-		// clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-		// ClientAsyncHttpConfiguration asyncHttpConfiguration = ClientAsyncHttpConfiguration.builder().build();
-		// S3AdvancedConfiguration advancedConfiguration = S3AdvancedConfiguration.builder().build();
-
-		// DefaultCredentialsProvider.create();
-		System.setProperty("aws.accessKeyId", options.getAccessId());
-		System.setProperty("aws.secretAccessKey", options.getAccessKey());
+		AwsCredentials credentials = AwsBasicCredentials.create(options.getAccessKeyId(), options.getSecretAccessKey());
+		System.setProperty("aws.accessKeyId", options.getAccessKeyId());
+		System.setProperty("aws.secretAccessKey", options.getSecretAccessKey());
 
 		client = S3AsyncClient.builder()
-			// .advancedConfiguration(advancedConfiguration)
-			// .asyncHttpConfiguration(asyncHttpConfiguration)
-			.region(Region.of(options.getRegion()))
-			.endpointOverride(URI.create(options.getUrl()))
-			.credentialsProvider(StaticCredentialsProvider.create(credentials))
-			.build();
+				.region(Region.of(options.getRegion()))
+				.credentialsProvider(StaticCredentialsProvider.create(credentials))
+				.build();
 
-		String bucketName = options.getBucketName();
-		// try {
-		// HeadBucketResponse response = client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build()).get();
-		// } catch (InterruptedException | ExecutionException e) {
-		// TODO Auto-generated catch block
-		// e.printStackTrace();
-		// } catch (NoSuchKeyException e) {
-		try {
-			CreateBucketResponse response2 = client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build()).get();
-		} catch (InterruptedException | ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// }
+		this.presigner = S3Presigner.builder()
+				.region(Region.of(options.getRegion()))
+				.credentialsProvider(StaticCredentialsProvider.create(credentials))
+				.build();
 
-		// s3Client = AmazonS3ClientBuilder
-		// .standard()
-		// .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(options.getUrl(), options.getRegion()))
-		// .withPathStyleAccessEnabled(true)
-		// .withClientConfiguration(clientConfiguration)
-		// .withCredentials(new AWSStaticCredentialsProvider(credentials))
-		// .build();
-		//
-		// String bucketName = options.getBucketName();
-		// if (!s3Client.doesBucketExist(bucketName)) {
-		// log.info("Did not find bucket {" + bucketName + "}. Creating it...");
-		// s3Client.createBucket(new CreateBucketRequest(bucketName));
-		// }
-
+		String bucketName = options.getBucket();
+		createBucket(bucketName);
 	}
 
 	@Override
@@ -118,15 +94,56 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 		// NoSuchKeyException
 		try {
 			HeadObjectResponse headResponse = client.headObject(HeadObjectRequest.builder()
-				.bucket(options.getBucketName())
-				.key(id)
-				.build()).get();
+					.bucket(options.getBucket())
+					.key(id)
+					.build()).get();
 		} catch (InterruptedException | ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
+	}
 
+	public void createBucket(String bucketName) {
+
+		HeadBucketRequest headRequest = HeadBucketRequest.builder()
+				.bucket(bucketName)
+				.build();
+		CreateBucketRequest createRequest = CreateBucketRequest.builder()
+				.bucket(bucketName)
+				.build();
+		Single<HeadBucketResponse> bucketHead = SingleInterop.fromFuture(client.headBucket(headRequest));
+		bucketHead.map(e -> e != null)
+				.onErrorResumeNext(e -> {
+					//try to create new bucket if bucket cannot be found
+					if (e instanceof CompletionException && e.getCause() != null) {
+						return SingleInterop.fromFuture(client.createBucket(createRequest)).map(r -> r != null);
+					} else {
+						return Single.error(e);
+					}
+				}).subscribe(b -> {
+			log.info("Created bucket {}", bucketName);
+		}, e -> {
+			log.error("Error while creating bucket", e);
+		});
+	}
+
+	public void createPresignedUrl(String nodeUuid, String fieldName) {
+		String bucketName = options.getBucket();
+		String objectKey = nodeUuid + "/" + fieldName;
+
+		PresignedPutObjectRequest presignedRequest =
+				presigner.presignPutObject(r -> r.signatureDuration(Duration.ofMinutes(5))
+						.putObjectRequest(por -> por.bucket(bucketName).key(objectKey)));
+
+		System.out.println("Pre-signed URL to upload a file to: " +
+				presignedRequest.url());
+		System.out.println("Which HTTP method needs to be used when uploading a file: " +
+				presignedRequest.httpRequest().method());
+		System.out.println("Which headers need to be sent with the upload: " +
+				presignedRequest.signedHeaders());
+
+		presigner.close();
 	}
 
 	@Override
@@ -136,7 +153,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 				log.debug("Loading data for hash {" + hashsum + "}");
 			}
 			// GetObjectRequest rangeObjectRequest = new GetObjectRequest(options.getBucketName(), hashsum);
-			GetObjectRequest request = GetObjectRequest.builder().bucket(options.getBucketName()).build();
+			GetObjectRequest request = GetObjectRequest.builder().bucket(options.getBucket()).build();
 			client.getObject(request, new AsyncResponseTransformer<GetObjectResponse, String>() {
 
 				@Override
@@ -189,15 +206,15 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	public Completable storeInTemp(Flowable<Buffer> stream, String temporaryId) {
 		return Completable.create(sub -> {
 			PutObjectRequest request = PutObjectRequest.builder()
-				.bucket(options.getBucketName())
-				.key(temporaryId)
-				.build();
+					.bucket(options.getBucket())
+					.key(temporaryId)
+					.build();
 
 			/*
 			 * client.putObject(request, new AsyncRequestBody() {
-			 * 
+			 *
 			 * @Override public void subscribe(Subscriber<? super ByteBuffer> s) { stream.map(Buffer::getByteBuf).map(ByteBuf::nioBuffer).subscribe(s); }
-			 * 
+			 *
 			 * @Override public Optional<Long> contentLength() { // return Optional.from(10L); return null; } });
 			 */
 		});
