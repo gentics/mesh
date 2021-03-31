@@ -302,7 +302,8 @@ public class FormDataService {
 
 				// add id
 				formJson.put("id", formUuid);
-
+				// add property "multipage"
+				formJson.put("multipage", formService.isMultipage(formJson));
 				// add options
 				formJson.put("options", JsonObject.mapFrom(configuration));
 

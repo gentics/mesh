@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -432,6 +433,8 @@ public class FormService {
 
 					// add id
 					formJson.put("id", uuid);
+					// add property "multipage"
+					formJson.put("multipage", isMultipage(formJson));
 					// add options
 					formJson.put("options", JsonObject.mapFrom(configuration));
 					markFormpages(formJson, Collections.emptySet());
@@ -455,6 +458,8 @@ public class FormService {
 
 		// add id
 		formJson.put("id", uuid);
+		// add property "multipage"
+		formJson.put("multipage", isMultipage(formJson));
 		// add options
 		formJson.put("options", JsonObject.mapFrom(configuration));
 		markFormpages(formJson, Collections.emptySet());
@@ -477,6 +482,8 @@ public class FormService {
 
 		// add id
 		formJson.put("id", uuid);
+		// add property "multipage"
+		formJson.put("multipage", isMultipage(formJson));
 		// add options
 		formJson.put("options", JsonObject.mapFrom(configuration));
 		markFormpages(formJson, Collections.emptySet());
@@ -523,6 +530,24 @@ public class FormService {
 		if (elements != null) {
 			form.put("elements", removeInactiveElements(elements));
 		}
+	}
+
+	/**
+	 * Check whether the form is "multipage" (i.e. contains at least one element of type "formpage")
+	 * @param form form
+	 * @return true if the form is "multipage"
+	 */
+	public boolean isMultipage(JsonObject form) {
+		JsonArray elements = form.getJsonArray("elements");
+		if (elements != null) {
+			for (int i = 0; i < elements.size(); i++) {
+				JsonObject element = elements.getJsonObject(i);
+				if (Objects.equals("formpage", element.getString("type"))) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

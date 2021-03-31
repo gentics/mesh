@@ -160,4 +160,19 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 		Response response = client().newCall(renderRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isFalse();
 	}
+
+	/**
+	 * Test rendering a multipage form
+	 * @throws IOException
+	 */
+	@Test
+	public void testRenderMultipage() throws IOException {
+		String uuid = createForm("multipage.json");
+
+		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid)).header("Accept", "text/html").get().build();
+		Response response = client().newCall(renderRequest).execute();
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("multipage.html"));
+	}
 }
