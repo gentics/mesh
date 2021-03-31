@@ -1,5 +1,9 @@
 package com.gentics.mesh.dagger.module;
 
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
+import com.gentics.mesh.core.data.s3binary.impl.S3BinariesImpl;
+import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandlerImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -185,6 +189,9 @@ public abstract class CommonBindModule {
 	abstract Binaries bindBinaries(BinariesImpl e);
 
 	@Binds
+	abstract S3Binaries bindS3Binaries(S3BinariesImpl e);
+
+	@Binds
 	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);
 
 	@Binds
@@ -264,6 +271,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract BinaryUploadHandler binaryUploadHandler(BinaryUploadHandlerImpl e);
+
+	@Binds
+	abstract S3BinaryUploadHandler s3binaryUploadHandler(S3BinaryUploadHandlerImpl e);
 
 	@Binds
 	abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(ProjectVersionPurgeHandlerImpl e);

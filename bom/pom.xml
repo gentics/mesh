@@ -30,7 +30,7 @@
 		<jackson-databind.version>2.9.10</jackson-databind.version>
 		<netty.version>4.1.42.Final</netty.version>
 		<tika.version>1.22</tika.version>
-		<aws.sdk.version>2.1.0</aws.sdk.version>
+		<aws.sdk.version>2.15.62</aws.sdk.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
@@ -178,6 +178,12 @@
 				<groupId>com.fasterxml.jackson.module</groupId>
 				<artifactId>jackson-module-jsonSchema</artifactId>
 				<version>${jackson.version}</version>
+			</dependency>
+			<!-- Default storage provider -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-service-aws-s3-storage</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- YAML -->
