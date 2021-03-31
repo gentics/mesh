@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.forms.model;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -64,5 +65,10 @@ public class SelectgroupElement extends CombiElement {
 			}
 		}
 		return value;
+	}
+
+	@Override
+	public boolean isMultivalue() {
+		return Objects.equals("multiselect", getSelectType());
 	}
 }
