@@ -18,7 +18,6 @@ import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.parameter.client.BackupParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)

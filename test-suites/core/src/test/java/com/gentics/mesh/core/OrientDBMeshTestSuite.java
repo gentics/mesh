@@ -3,14 +3,16 @@ package com.gentics.mesh.core;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
-import com.gentics.mesh.dagger.MeshComponent.Builder;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.test.context.MeshOptionsProvider;
+import com.gentics.mesh.test.MeshOptionsProvider;
+import com.gentics.mesh.test.context.MeshTestContextProvider;
 import com.gentics.mesh.test.context.MeshTestContextSuite;
-import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 
+/**
+ * OrientDB-contexted {@link MeshTestContextSuite} implementation.
+ * 
+ * @author plyhun
+ *
+ */
 public class OrientDBMeshTestSuite extends MeshTestContextSuite {
 	
     public OrientDBMeshTestSuite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
@@ -18,17 +20,12 @@ public class OrientDBMeshTestSuite extends MeshTestContextSuite {
     }
 
 	@Override
-	protected MeshOptions spawnOptions() {
-		return new OrientDBMeshOptions();
+	protected Class<? extends MeshTestContextProvider> getTestContextProviderClass() {
+		return OrientDBTestContextProvider.class;
 	}
 
 	@Override
-	protected MeshOptionsProvider spawnOptionsProvider() {
-		return new OrientDBMeshOptionsProvider();
-	}
-
-	@Override
-	protected Builder spawnComponentBuilder() {
-		return DaggerOrientDBMeshComponent.builder();
+	protected Class<? extends MeshOptionsProvider> getOptionsProviderClass() {
+		return OrientDBMeshOptionsProvider.class;
 	}
 }

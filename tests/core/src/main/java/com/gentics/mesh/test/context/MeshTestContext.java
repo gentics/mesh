@@ -121,7 +121,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private Mesh mesh;
 	
-	private MeshOptionsProvider meshOptionsProvider;
+	private MeshTestContextProvider meshTestContextProvider;
 
 	@Override
 	protected void starting(Description description) {
@@ -435,7 +435,7 @@ public class MeshTestContext extends TestWatcher {
 		} else {
 			meshDagger.database().stop();
 			
-			meshOptionsProvider.cleanupPhysicalStorage();
+			meshTestContextProvider.getInstanceProvider().cleanupPhysicalStorage();
 			
 			meshDagger.database().setupConnectionPool();
 		}
@@ -472,7 +472,9 @@ public class MeshTestContext extends TestWatcher {
 			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
 		}
 		
-		meshOptionsProvider = MeshTestContextSuite.getOptionsProvider();
+		meshTestContextProvider = MeshTestContextProvider.getProvider();
+		
+		MeshInstanceProvider meshInstanceProvider = meshTestContextProvider.getInstanceProvider();
 		
 		MeshOptions meshOptions = getOptions();
 
@@ -536,7 +538,7 @@ public class MeshTestContext extends TestWatcher {
 		MonitoringConfig monitoringOptions = meshOptions.getMonitoringOptions();
 		monitoringOptions.setPort(monitoringPort);
 
-		meshOptionsProvider.initStorage(settings);
+		meshInstanceProvider.initStorage(settings);
 
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		searchOptions.setTimeout(10_000L);
@@ -626,7 +628,7 @@ public class MeshTestContext extends TestWatcher {
 		String plugindirPath = newFolder("plugins");
 		meshOptions.setPluginDirectory(plugindirPath);
 		
-		meshOptionsProvider.initFolders(this::newFolder);
+		meshTestContextProvider.getInstanceProvider().initFolders(this::newFolder);
 	}
 
 	/**
@@ -683,7 +685,7 @@ public class MeshTestContext extends TestWatcher {
 
 	@NotNull
 	private MeshComponent.Builder getMeshDaggerBuilder() {
-		return MeshTestContextSuite.getBuilderFactory();
+		return meshTestContextProvider.getInstanceProvider().getComponentBuilder();
 	}
 
 	public MonitoringRestClient getMonitoringClient() {
@@ -760,11 +762,11 @@ public class MeshTestContext extends TestWatcher {
 		return mesh;
 	}
 	
-	public MeshOptionsProvider getOptionsProvider() {
-		return meshOptionsProvider;
+	public MeshInstanceProvider getInstanceProvider() {
+		return meshTestContextProvider.getInstanceProvider();
 	}
 	
 	public MeshOptions getOptions() {
-		return meshOptionsProvider.getOptions();
+		return meshTestContextProvider.getOptions();
 	}
 }
