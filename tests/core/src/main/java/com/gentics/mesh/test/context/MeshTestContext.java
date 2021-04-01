@@ -474,9 +474,9 @@ public class MeshTestContext extends TestWatcher {
 		
 		meshTestContextProvider = MeshTestContextProvider.getProvider();
 		
-		MeshInstanceProvider meshInstanceProvider = meshTestContextProvider.getInstanceProvider();
+		MeshInstanceProvider<? extends MeshOptions> meshInstanceProvider = meshTestContextProvider.getInstanceProvider();
 		
-		MeshOptions meshOptions = getOptions();
+		MeshOptions meshOptions = meshInstanceProvider.getOptions();
 
 		// Clustering options
 		if (settings.clusterMode()) {
@@ -762,7 +762,7 @@ public class MeshTestContext extends TestWatcher {
 		return mesh;
 	}
 	
-	public MeshInstanceProvider getInstanceProvider() {
+	public MeshInstanceProvider<? extends MeshOptions> getInstanceProvider() {
 		return meshTestContextProvider.getInstanceProvider();
 	}
 	

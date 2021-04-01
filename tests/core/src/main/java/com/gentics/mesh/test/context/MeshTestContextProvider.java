@@ -30,10 +30,6 @@ public interface MeshTestContextProvider extends MeshOptionsProvider {
 	 * @return
 	 */
 	public static MeshTestContextProvider getProvider() {
-		try {
-			return (MeshTestContextProvider) MeshTestContextProvider.class.getClassLoader().loadClass(System.getProperty(ENV_TEST_CONTEXT_PROVIDER_CLASS)).getConstructor().newInstance();
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+		return MeshOptionsProvider.spawnProviderInstance(System.getProperty(ENV_TEST_CONTEXT_PROVIDER_CLASS), MeshTestContextProvider.class);
 	}
 }
