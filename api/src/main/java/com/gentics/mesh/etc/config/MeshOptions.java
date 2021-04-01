@@ -217,6 +217,9 @@ public class MeshOptions implements Option {
 
 	@JsonProperty("s3binary")
 	public S3Options getS3Options() {
+		if (s3options == null) {
+			s3options = new S3Options();
+		}
 		return s3options;
 	}
 
@@ -530,6 +533,9 @@ public class MeshOptions implements Option {
 		}
 		if (getGraphQLOptions() != null) {
 			getGraphQLOptions().validate(this);
+		}
+		if (getS3Options() != null) {
+			getS3Options().validate(this);
 		}
 		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
 		if (getVersionPurgeMaxBatchSize() <= 0) {

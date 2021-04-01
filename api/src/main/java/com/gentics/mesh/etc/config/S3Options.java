@@ -80,6 +80,9 @@ public class S3Options implements Option {
 
     @JsonProperty("cache")
     public S3CacheOptions getS3CacheOptions() {
+        if (s3cacheOptions == null) {
+            s3cacheOptions = new S3CacheOptions();
+        }
         return this.s3cacheOptions;
     }
 
