@@ -149,4 +149,14 @@ public class S3Options implements Option {
         this.bucket = bucket;
         return this;
     }
+
+    public int getExpirationTimeUpload() {
+        return expirationTimeUpload;
+    }
+
+    @Setter
+    public S3Options setExpirationTimeUpload(int expirationTimeUpload) {
+        this.expirationTimeUpload = expirationTimeUpload;
+        return this;
+    }
 }

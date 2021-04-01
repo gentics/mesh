@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.binary.HibBinaryField;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.storage.AbstractBinaryStorage;
@@ -128,12 +129,13 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 		});
 	}
 
-	public void createPresignedUrl(String nodeUuid, String fieldName) {
+	public S3RestResponse createPresignedUrl(String nodeUuid, String fieldName) {
 		String bucketName = options.getBucket();
+		int expirationTimeUpload = options.getExpirationTimeUpload();
 		String objectKey = nodeUuid + "/" + fieldName;
 
 		PresignedPutObjectRequest presignedRequest =
-				presigner.presignPutObject(r -> r.signatureDuration(Duration.ofMinutes(5))
+				presigner.presignPutObject(r -> r.signatureDuration(Duration.ofSeconds(expirationTimeUpload))
 						.putObjectRequest(por -> por.bucket(bucketName).key(objectKey)));
 
 		System.out.println("Pre-signed URL to upload a file to: " +
@@ -142,8 +144,9 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 				presignedRequest.httpRequest().method());
 		System.out.println("Which headers need to be sent with the upload: " +
 				presignedRequest.signedHeaders());
-
+		S3RestResponse s3RestResponse = new S3RestResponse(presignedRequest.url().toString(), presignedRequest.httpRequest().method().toString(), presignedRequest.signedHeaders());
 		presigner.close();
+		return s3RestResponse;
 	}
 
 	@Override

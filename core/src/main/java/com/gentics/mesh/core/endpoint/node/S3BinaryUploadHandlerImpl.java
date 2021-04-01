@@ -6,7 +6,7 @@ import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
-import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -22,8 +22,11 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 import javax.inject.Inject;
+
+import java.util.Set;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
@@ -112,8 +115,19 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
-		s3binaryStorage.createPresignedUrl(nodeUuid,fieldName);
-		Observable.just(new NodeResponse()).subscribe(model ->
+
+		String languageTag = attributes.get("language");
+		if (isEmpty(languageTag)) {
+			throw error(BAD_REQUEST, "upload_error_no_language");
+		}
+
+		String nodeVersion = attributes.get("version");
+		if (isEmpty(nodeVersion)) {
+			throw error(BAD_REQUEST, "upload_error_no_version");
+		}
+
+		S3RestResponse s3RestResponse = s3binaryStorage.createPresignedUrl(nodeUuid, fieldName);
+		Observable.just(s3RestResponse).subscribe(model ->
 				ac.send(model, FOUND), ac::fail);
 	}
 
