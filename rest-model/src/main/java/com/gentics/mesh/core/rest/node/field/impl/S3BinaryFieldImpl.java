@@ -23,7 +23,7 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     @JsonPropertyDescription("Uuid of the s3 binary data. Two fields which share the same s3 binary data will also share the same Uuid.")
     private String s3binaryUuid;
 
-    @JsonProperty(required = true)
+    @JsonProperty(required = false)
     @JsonPropertyDescription("File name of the s3 binary data. This information can also be use to locate the node via the webroot API. The segment field must be set accordingly.")
     private String fileName;
 
@@ -35,15 +35,15 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     @JsonPropertyDescription("Height of the image.")
     private Integer height;
 
-    @JsonProperty(required = true)
+    @JsonProperty(required = false)
     @JsonPropertyDescription("SHA 512 checksum of the file.")
     private String sha512sum;
 
-    @JsonProperty(required = true)
+    @JsonProperty(required = false)
     @JsonPropertyDescription("Size of the file in bytes.")
-    private long fileSize;
+    private Long fileSize;
 
-    @JsonProperty(required = true)
+    @JsonProperty(required = false)
     @JsonPropertyDescription("Determined mimetype of the file.")
     private String mimeType;
 
@@ -63,6 +63,10 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     @JsonPropertyDescription("Plain text content of the upload. This can be the text content of a word or PDF document.")
     private String plainText;
 
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("S3 object key. Serves as reference to AWS.")
+    private String s3ObjectKey;
+
     @Override
     public String getS3BinaryUuid() {
         return s3binaryUuid;
@@ -75,12 +79,23 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     }
 
     @Override
-    public long getFileSize() {
+    public String getS3ObjectKey() {
+        return s3ObjectKey;
+    }
+
+    @Override
+    public S3BinaryField setS3ObjectKey(String s3ObjectKey) {
+        this.s3ObjectKey = s3ObjectKey;
+        return this;
+    }
+
+    @Override
+    public Long getFileSize() {
         return fileSize;
     }
 
     @Override
-    public S3BinaryField setFileSize(long fileSize) {
+    public S3BinaryField setFileSize(Long fileSize) {
         this.fileSize = fileSize;
         return this;
     }
@@ -187,7 +202,7 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     @Override
     @JsonIgnore
     public boolean hasValues() {
-        return getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null || getSha512sum() != null;
+        return getS3ObjectKey() != null || getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null || getSha512sum() != null;
     }
 }
 

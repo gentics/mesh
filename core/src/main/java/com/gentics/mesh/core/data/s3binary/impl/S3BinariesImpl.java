@@ -26,11 +26,10 @@ public class S3BinariesImpl implements S3Binaries {
 	}
 
 	@Override
-	public Transactional<S3HibBinary> create(String uuid, String sha512sum, Long size) {
+	public Transactional<S3HibBinary> create(String uuid, String objectKey) {
 		return database.transactional(tx -> {
 			S3HibBinary binary = tx.getGraph().addFramedVertex(S3BinaryImpl.class);
-			binary.setSHA512Sum(sha512sum);
-			binary.setSize(size);
+			binary.setS3ObjectKey(objectKey);
 			binary.setUuid(uuid);
 			return binary;
 		});

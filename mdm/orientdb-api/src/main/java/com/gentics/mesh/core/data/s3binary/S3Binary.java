@@ -18,6 +18,8 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 
 	String S3_BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "s3binaryImageHeight";
 
+	String S3_AWS_OBJECT_KEY = "s3ObjectKey";
+
 	/**
 	 * Return the sha512 checksum.
 	 * 
@@ -43,7 +45,7 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 	 * 
 	 * @return
 	 */
-	default long getSize() {
+	default Long getSize() {
 		Long size = property(S3_BINARY_FILESIZE_PROPERTY_KEY);
 		return size == null ? 0 : size;
 	}
@@ -54,7 +56,7 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 	 * @param sizeInBytes
 	 * @return Fluent API
 	 */
-	default S3HibBinary setSize(long sizeInBytes) {
+	default S3HibBinary setSize(Long sizeInBytes) {
 		property(S3_BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
 		return this;
 	}
@@ -75,6 +77,13 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 	 */
 	default Integer getImageWidth() {
 		return property(S3_BINARY_IMAGE_WIDTH_PROPERTY_KEY);
+	}
+
+	default String getS3ObjectKey() {	return property(S3_AWS_OBJECT_KEY);}
+
+	default S3HibBinary setS3ObjectKey(String s3objectKey) {
+		property(S3_AWS_OBJECT_KEY, s3objectKey);
+		return this;
 	}
 
 	/**

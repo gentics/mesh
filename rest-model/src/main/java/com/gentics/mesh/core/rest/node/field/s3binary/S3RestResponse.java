@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.node.field.s3binary;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 import java.util.List;
@@ -7,8 +9,16 @@ import java.util.Map;
 
 public class S3RestResponse implements RestModel {
 
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("presignedUrl")
     String presignedUrl;
+
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("httpRequestMethod")
     String httpRequestMethod;
+
+    @JsonProperty(required = true)
+    @JsonPropertyDescription("signedHeaders")
     Map<String, List<String>> signedHeaders;
 
     public S3RestResponse(String presignedUrl, String httpRequestMethod, Map<String, List<String>> signedHeaders) {

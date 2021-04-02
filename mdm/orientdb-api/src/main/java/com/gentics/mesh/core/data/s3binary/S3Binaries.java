@@ -23,24 +23,11 @@ public interface S3Binaries {
 	 * 
 	 * @param uuid
 	 *            Uuid of the binary
-	 * @param hash
-	 *            Hash sum of the binary
-	 * @param size
-	 *            Size in bytes
+	 * @param objectKey
+	 *            aws object key
 	 * @return
 	 */
-	Transactional<S3HibBinary> create(String uuid, String hash, Long size);
-
-	/**
-	 * Create a new binary.
-	 * 
-	 * @param hash
-	 * @param size
-	 * @return Transactional which executes the operation within a transaction
-	 */
-	default Transactional<S3HibBinary> create(String hash, long size) {
-		return create(UUIDUtil.randomUUID(), hash, size);
-	}
+	Transactional<S3HibBinary> create(String uuid, String objectKey);
 
 	/**
 	 * Return a transactional stream of all binaries.
