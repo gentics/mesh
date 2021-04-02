@@ -72,4 +72,9 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 	public Builder getComponentBuilder() {
 		return componentBuilder;
 	}
+	
+	@Override
+	public OrientDBMeshOptions getOptions() {
+		return meshOptions;
+	}
 }
