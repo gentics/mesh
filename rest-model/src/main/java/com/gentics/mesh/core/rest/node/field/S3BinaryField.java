@@ -11,7 +11,7 @@ public interface S3BinaryField extends Field {
      *
      * @return
      */
-    String getS3BinaryUuid();
+    String getS3binaryUuid();
 
     /**
      * Set the Uuid of the used s3binary data.
@@ -19,7 +19,7 @@ public interface S3BinaryField extends Field {
      * @param uuid
      * @return
      */
-    S3BinaryField setS3BinaryUuid(String uuid);
+    S3BinaryField setS3binaryUuid(String uuid);
 
     /**
      * Return the s3binary filesize.
@@ -184,7 +184,7 @@ public interface S3BinaryField extends Field {
 
     @Override
     default Object getValue() {
-        return getS3BinaryUuid();
+        return getS3binaryUuid();
     }
 
     /**

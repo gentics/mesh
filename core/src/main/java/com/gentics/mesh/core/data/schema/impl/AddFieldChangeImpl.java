@@ -133,16 +133,16 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			field = binaryField;
 			break;
 		case "s3binary":
-			S3BinaryFieldSchema s3BinaryField = new S3BinaryFieldSchemaImpl();
+			S3BinaryFieldSchema s3binaryField = new S3BinaryFieldSchemaImpl();
 			Boolean s3Content = getRestProperty(S3BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY);
 			Boolean s3Metadata = getRestProperty(S3BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY);
 			if (s3Metadata != null || s3Content != null) {
 				S3BinaryExtractOptions options = new S3BinaryExtractOptions();
 				options.setContent(BooleanUtils.toBoolean(s3Content));
 				options.setMetadata(BooleanUtils.toBoolean(s3Metadata));
-				s3BinaryField.setS3BinaryExtractOptions(options);
+				s3binaryField.setS3BinaryExtractOptions(options);
 			}
-			field = s3BinaryField;
+			field = s3binaryField;
 			break;
 		case "node":
 			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();

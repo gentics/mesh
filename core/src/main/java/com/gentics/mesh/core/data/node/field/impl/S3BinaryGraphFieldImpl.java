@@ -192,26 +192,14 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	@Override
 	public S3BinaryField transformToRest(ActionContext ac) {
 		S3BinaryField restModel = new S3BinaryFieldImpl();
-		restModel.setFileName(getFileName());
-		restModel.setMimeType(getMimeType());
 
 		S3HibBinary binary = getS3Binary();
 		if (binary != null) {
-			restModel.setS3BinaryUuid(binary.getUuid());
+			restModel.setS3binaryUuid(binary.getUuid());
 			restModel.setS3ObjectKey(binary.getS3ObjectKey());
-			restModel.setFileSize(binary.getSize());
-			restModel.setSha512sum(binary.getSHA512Sum());
-			restModel.setWidth(binary.getImageWidth());
-			restModel.setHeight(binary.getImageHeight());
 		}
-
-		restModel.setFocalPoint(getImageFocalPoint());
-		restModel.setDominantColor(getImageDominantColor());
-
 		S3BinaryMetadata metaData = getMetadata();
 		restModel.setMetadata(metaData);
-
-		restModel.setPlainText(getPlainText());
 		return restModel;
 	}
 

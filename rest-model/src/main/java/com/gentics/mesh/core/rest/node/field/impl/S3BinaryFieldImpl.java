@@ -68,12 +68,12 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     private String s3ObjectKey;
 
     @Override
-    public String getS3BinaryUuid() {
+    public String getS3binaryUuid() {
         return s3binaryUuid;
     }
 
     @Override
-    public S3BinaryField setS3BinaryUuid(String uuid) {
+    public S3BinaryField setS3binaryUuid(String uuid) {
         this.s3binaryUuid = uuid;
         return this;
     }
