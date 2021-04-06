@@ -12,6 +12,15 @@ import io.vertx.core.buffer.Buffer;
  */
 public interface S3BinaryStorage {
 
+
+	/**
+	 * Checks whether the binary data for the given field exists
+	 * 
+	 * @param field
+	 * @return
+	 */
+	boolean exists(S3HibBinaryField field);
+
 	/**
 	 * Read the binary data which is identified by the given binary uuid.
 	 *
