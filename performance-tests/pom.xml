@@ -47,6 +47,12 @@
 			<scope>test</scope>
 			<type>test-jar</type>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-common</artifactId>
+			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
 	</dependencies>
 
 	<build>
