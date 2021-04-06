@@ -1,9 +1,9 @@
 package com.gentics.mesh.storage.s3;
 
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
+import com.gentics.mesh.storage.S3BinaryStorage;
 import hu.akarnokd.rxjava2.interop.SingleInterop;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -30,15 +30,14 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Initial S3 Storage implementation.
  */
 @Singleton
-public class S3BinaryStorage implements com.gentics.mesh.storage.S3BinaryStorage {
+public class S3BinaryStorageImpl implements S3BinaryStorage {
 
-	private static final Logger log = LoggerFactory.getLogger(S3BinaryStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(S3BinaryStorageImpl.class);
 
 	private S3AsyncClient client;
 
@@ -51,7 +50,7 @@ public class S3BinaryStorage implements com.gentics.mesh.storage.S3BinaryStorage
 	private FileSystem fs;
 
 	@Inject
-	public S3BinaryStorage(MeshOptions options, Vertx rxVertx) {
+	public S3BinaryStorageImpl(MeshOptions options, Vertx rxVertx) {
 		this.options = options.getS3Options();
 		this.rxVertx = rxVertx;
 		this.fs = rxVertx.fileSystem();
@@ -75,22 +74,6 @@ public class S3BinaryStorage implements com.gentics.mesh.storage.S3BinaryStorage
 
 		String bucketName = options.getBucket();
 		createBucket(bucketName);
-	}
-
-	@Override
-	public boolean exists(S3HibBinaryField field) {
-		String id = field.getS3Binary().getSHA512Sum();
-		// NoSuchKeyException
-		try {
-			HeadObjectResponse headResponse = client.headObject(HeadObjectRequest.builder()
-					.bucket(options.getBucket())
-					.key(id)
-					.build()).get();
-		} catch (InterruptedException | ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return false;
 	}
 
 	@Override

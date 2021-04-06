@@ -17,13 +17,12 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.storage.s3.S3BinaryStorage;
+import com.gentics.mesh.storage.S3BinaryStorage;
 import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -52,7 +51,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 
 	private final Database db;
 
-	private final S3BinaryStorage s3binaryStorage;
+	private final S3BinaryStorage s3BinaryStorage;
 
 	private final HandlerUtilities utils;
 
@@ -62,12 +61,12 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 
 	@Inject
 	public S3BinaryUploadHandlerImpl(Database db,
-									 S3BinaryStorage s3binaryStorage,
+									 S3BinaryStorage s3BinaryStorage,
 									 HandlerUtilities utils, Vertx rxVertx,
 									 MeshOptions options,
 									 S3Binaries s3binaries) {
 		this.db = db;
-		this.s3binaryStorage = s3binaryStorage;
+		this.s3BinaryStorage = s3BinaryStorage;
 		this.utils = utils;
 		this.options = options;
 		this.s3binaries = s3binaries;
@@ -100,7 +99,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 		s3UploadContext.setS3ObjectKey(nodeUuid + "/" + fieldName);
 		s3UploadContext.setS3BinaryUuid(UUIDUtil.randomUUID());
 
-		s3binaryStorage.createPresignedUrl(nodeUuid, fieldName).flatMapObservable(s3RestResponse ->
+		s3BinaryStorage.createPresignedUrl(nodeUuid, fieldName).flatMapObservable(s3RestResponse ->
 				storeUploadInGraph(ac, s3UploadContext, nodeUuid, languageTag, nodeVersion, fieldName)
 				.flatMapObservable((x) -> Observable.just(s3RestResponse))
 		).subscribe(model ->
