@@ -1,32 +1,14 @@
 package com.gentics.mesh.storage.s3;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
-import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.StringJoiner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.core.data.binary.HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.storage.AbstractBinaryStorage;
-import com.gentics.mesh.util.RxUtil;
-
 import hu.akarnokd.rxjava2.interop.SingleInterop;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
@@ -40,15 +22,21 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Initial S3 Storage implementation.
  */
 @Singleton
-public class S3BinaryStorage extends AbstractBinaryStorage {
+public class S3BinaryStorage implements com.gentics.mesh.storage.S3BinaryStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(S3BinaryStorage.class);
 
@@ -90,8 +78,8 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public boolean exists(HibBinaryField field) {
-		String id = field.getBinary().getSHA512Sum();
+	public boolean exists(S3HibBinaryField field) {
+		String id = field.getS3Binary().getSHA512Sum();
 		// NoSuchKeyException
 		try {
 			HeadObjectResponse headResponse = client.headObject(HeadObjectRequest.builder()
@@ -105,8 +93,8 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 		return false;
 	}
 
+	@Override
 	public void createBucket(String bucketName) {
-
 		HeadBucketRequest headRequest = HeadBucketRequest.builder()
 				.bucket(bucketName)
 				.build();
@@ -129,7 +117,8 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 		});
 	}
 
-	public S3RestResponse createPresignedUrl(String nodeUuid, String fieldName) {
+	@Override
+	public Single<S3RestResponse> createPresignedUrl(String nodeUuid, String fieldName) {
 		String bucketName = options.getBucket();
 		int expirationTimeUpload = options.getExpirationTimeUpload();
 		String objectKey = nodeUuid + "/" + fieldName;
@@ -138,15 +127,13 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 				presigner.presignPutObject(r -> r.signatureDuration(Duration.ofSeconds(expirationTimeUpload))
 						.putObjectRequest(por -> por.bucket(bucketName).key(objectKey)));
 
-		System.out.println("Pre-signed URL to upload a file to: " +
-				presignedRequest.url());
-		System.out.println("Which HTTP method needs to be used when uploading a file: " +
-				presignedRequest.httpRequest().method());
-		System.out.println("Which headers need to be sent with the upload: " +
-				presignedRequest.signedHeaders());
+		if (log.isDebugEnabled()) {
+			log.debug("Creating presigned URL for nodeUuid '{}' and fieldName '{}'", nodeUuid, fieldName);
+		}
+
 		S3RestResponse s3RestResponse = new S3RestResponse(presignedRequest.url().toString(), presignedRequest.httpRequest().method().toString(), presignedRequest.signedHeaders());
 		presigner.close();
-		return s3RestResponse;
+		return Single.just(s3RestResponse);
 	}
 
 	@Override
@@ -196,82 +183,7 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public Completable storeInTemp(String sourceFilePath, String temporaryId) {
-		return fs.rxOpen(sourceFilePath, new OpenOptions()).flatMapCompletable(asyncFile -> {
-			Flowable<Buffer> stream = RxUtil.toBufferFlow(asyncFile);
-			return storeInTemp(stream, temporaryId);
-		}).doOnError(e -> {
-			log.error("Error while storing file {} in temp with id {}", sourceFilePath, temporaryId, e);
-		});
-	}
-
-	@Override
-	public Completable storeInTemp(Flowable<Buffer> stream, String temporaryId) {
-		return Completable.create(sub -> {
-			PutObjectRequest request = PutObjectRequest.builder()
-					.bucket(options.getBucket())
-					.key(temporaryId)
-					.build();
-
-			/*
-			 * client.putObject(request, new AsyncRequestBody() {
-			 *
-			 * @Override public void subscribe(Subscriber<? super ByteBuffer> s) { stream.map(Buffer::getByteBuf).map(ByteBuf::nioBuffer).subscribe(s); }
-			 *
-			 * @Override public Optional<Long> contentLength() { // return Optional.from(10L); return null; } });
-			 */
-		});
-
-		// try {
-		// if (log.isDebugEnabled()) {
-		// log.debug("Uploading {" + hashsum + "} to S3.");
-		// }
-		// try (InputStream ins = RxUtil.toInputStream(stream, new io.vertx.reactivex.core.Vertx(vertx))) {
-		// ObjectMetadata metaData = new ObjectMetadata();
-		// metaData.setContentLength(90);
-		// s3Client.putObject(new PutObjectRequest(options.getBucketName(), hashsum, ins, metaData));
-		// sub.onComplete();
-		// }
-		// } catch (AmazonServiceException ase) {
-		// log.debug(
-		// "Caught an AmazonServiceException, which means your request made it to Amazon S3, but was rejected with an error response for some reason.");
-		// log.debug("Error Message: " + ase.getMessage());
-		// log.debug("HTTP Status Code: " + ase.getStatusCode());
-		// log.debug("AWS Error Code: " + ase.getErrorCode());
-		// log.debug("Error Type: " + ase.getErrorType());
-		// log.debug("Request ID: " + ase.getRequestId());
-		// sub.onError(ase);
-		// } catch (AmazonClientException ace) {
-		// log.debug("Caught an AmazonClientException, which " + "means the client encountered " + "an internal error while trying to "
-		// + "communicate with S3, " + "such as not being able to access the network.");
-		// log.debug("Error Message: " + ace.getMessage());
-		// sub.onError(ace);
-		// }
-	}
-
-	@Override
 	public Completable delete(String uuid) {
 		return Completable.complete();
-	}
-
-	@Override
-	public Buffer readAllSync(String uuid) {
-		// TODO implement
-		return null;
-	}
-
-	@Override
-	public Completable moveInPlace(String uuid, String temporaryId) {
-		return Completable.complete();
-	}
-
-	@Override
-	public Completable purgeTemporaryUpload(String temporaryId) {
-		return Completable.complete();
-	}
-
-	@Override
-	public InputStream openBlockingStream(String uuid) throws IOException {
-		return null;
 	}
 }

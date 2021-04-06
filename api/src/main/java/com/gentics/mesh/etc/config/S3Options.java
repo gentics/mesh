@@ -19,7 +19,8 @@ public class S3Options implements Option {
     public static final int DEFAULT_EXPIRATION_TIME_DOWNLOAD = 360_000;
     public static final int DEFAULT_PARSER_LIMIT = 40_000;
 
-    public static final String MESH_S3_BINARY_AWS_KEY_ENV = "MESH_S3_BINARY_AWS_KEY";
+    public static final String MESH_S3_BINARY_SECRET_ACCESS_KEY_ENV = "MESH_S3_BINARY_SECRET_ACCESS_KEY";
+    public static final String MESH_S3_BINARY_ACCESS_KEY_ID_ENV = "MESH_S3_BINARY_ACCESS_KEY_ID";
     public static final String MESH_S3_BINARY_BUCKET_ENV = "MESH_S3_BINARY_BUCKET";
     public static final String MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD_ENV = "MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD";
     public static final String MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD_ENV = "MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD";
@@ -27,13 +28,6 @@ public class S3Options implements Option {
     public static final String MESH_S3_BINARY_METADATA_WHITELIST_ENV = "MESH_S3_BINARY_METADATA_WHITELIST";
     public static final String MESH_S3_BINARY_PARSER_LIMIT_ENV = "MESH_S3_BINARY_PARSER_LIMIT";
     public static final String MESH_S3_BINARY_REGION_ENV = "MESH_S3_BINARY_REGION";
-    public static final String MESH_S3_BINARY_SECRET_ACCESS_KEY_ENV = "MESH_S3_BINARY_SECRET_ACCESS_KEY";
-    public static final String MESH_S3_BINARY_ACCESS_KEY_ID_ENV = "MESH_S3_BINARY_ACCESS_KEY_ID";
-
-    @JsonProperty(required = false)
-    @JsonPropertyDescription("Used for authentication with Amazon Web Services")
-    @EnvironmentVariable(name = MESH_S3_BINARY_AWS_KEY_ENV, description = "Override the configured awskey.")
-    private String awsKey;
 
     @JsonProperty(required = false)
     @JsonPropertyDescription("AWS S3 bucket where binaries will be uploaded to and downloaded from")
@@ -95,16 +89,6 @@ public class S3Options implements Option {
     @Setter
     public S3Options setS3CacheOptions(S3CacheOptions s3cacheOptions) {
         this.s3cacheOptions = s3cacheOptions;
-        return this;
-    }
-
-    public String getAwsKey() {
-        return awsKey;
-    }
-
-    @Setter
-    public S3Options setAwsKey(String awsKey) {
-        this.awsKey = awsKey;
         return this;
     }
 
