@@ -294,7 +294,8 @@ public class FormDataService {
 	 * @return single buffer of rendered form
 	 */
 	public Single<Buffer> render(String projectName, String formUuid, String formDataUuid, RoutingContext rc, String...lang) {
-		return Single.zip(formService.loadAsAdmin(projectName, formUuid, true, lang), load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
+		return Single.zip(statusService.languageFallback(projectName, lang).flatMap(langFallback -> formService.loadAsAdmin(projectName, formUuid, true, langFallback)),
+				load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
 			(formNode, formDataNode) -> {
 				JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 
