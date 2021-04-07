@@ -12,9 +12,9 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 /**
  * Reproducer for https://github.com/gentics/mesh/issues/1041

@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 /**
  * Test functionality of the default mapper when no plugin is in use.

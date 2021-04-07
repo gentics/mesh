@@ -23,8 +23,8 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 

@@ -12,8 +12,8 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = false)
 public class DynamicTransformablePageTest extends AbstractMeshTest {

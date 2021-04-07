@@ -372,6 +372,18 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<!-- Mesh tests -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-tests-context-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-tests-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<!-- Default storage provider -->
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>

@@ -18,9 +18,9 @@ import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.CollectionUtil;
 
 import io.vertx.core.buffer.Buffer;

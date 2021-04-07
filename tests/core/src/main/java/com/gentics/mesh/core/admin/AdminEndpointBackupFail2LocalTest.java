@@ -2,8 +2,8 @@ package com.gentics.mesh.core.admin;
 
 import static com.gentics.mesh.MeshStatus.READY;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.junit.Assert.assertEquals;
 
@@ -13,8 +13,8 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
 public class AdminEndpointBackupFail2LocalTest extends AbstractMeshTest {

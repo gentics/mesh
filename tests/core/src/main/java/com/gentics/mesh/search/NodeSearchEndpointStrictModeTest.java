@@ -15,9 +15,9 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshOptionChanger;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 

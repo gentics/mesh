@@ -27,8 +27,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)

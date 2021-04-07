@@ -23,9 +23,9 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.category.FailingTests;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;

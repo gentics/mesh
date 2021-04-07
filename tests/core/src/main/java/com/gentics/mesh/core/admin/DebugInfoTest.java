@@ -18,8 +18,8 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 

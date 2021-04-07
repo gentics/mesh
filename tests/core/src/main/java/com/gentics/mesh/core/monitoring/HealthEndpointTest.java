@@ -8,9 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class HealthEndpointTest extends AbstractMeshTest {

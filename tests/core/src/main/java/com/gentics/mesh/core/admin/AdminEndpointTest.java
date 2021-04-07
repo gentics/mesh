@@ -10,8 +10,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class AdminEndpointTest extends AbstractMeshTest {

@@ -32,7 +32,7 @@ import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {

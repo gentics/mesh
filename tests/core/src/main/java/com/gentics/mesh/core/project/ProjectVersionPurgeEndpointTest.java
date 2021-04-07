@@ -2,7 +2,7 @@ package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -21,9 +21,9 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = TestSize.FULL, startServer = true)

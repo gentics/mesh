@@ -8,8 +8,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)

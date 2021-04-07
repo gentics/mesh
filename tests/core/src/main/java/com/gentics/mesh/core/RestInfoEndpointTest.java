@@ -10,8 +10,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.orientechnologies.orient.core.OConstants;
 
 import io.vertx.core.impl.launcher.commands.VersionCommand;

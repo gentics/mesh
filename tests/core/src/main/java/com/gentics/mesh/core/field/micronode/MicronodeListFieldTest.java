@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {

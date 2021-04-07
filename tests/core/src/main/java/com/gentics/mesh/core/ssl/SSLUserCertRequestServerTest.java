@@ -8,9 +8,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.ssl.SSLTestClient.ClientCert;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @Category({FailingTests.class})
 @MeshTestSetting(testSize = FULL, startServer = true, ssl = CLIENT_CERT_REQUEST)

@@ -14,8 +14,8 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;

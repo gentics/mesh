@@ -15,7 +15,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 

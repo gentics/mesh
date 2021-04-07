@@ -2,7 +2,7 @@ package com.gentics.mesh.test.context;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.UNREACHABLE;
+import static com.gentics.mesh.test.ElasticsearchTestMode.UNREACHABLE;
 import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
 import static org.junit.Assert.assertTrue;
 
@@ -59,6 +59,10 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+import com.gentics.mesh.test.MeshInstanceProvider;
+import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshTestContextProvider;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
@@ -612,7 +616,7 @@ public class MeshTestContext extends TestWatcher {
 		return meshOptions;
 	}
 
-	private void initFolders(MeshOptions meshOptions) throws IOException {
+	private void initFolders(MeshOptions meshOptions) throws Exception {
 		String tmpDir = newFolder("tmpDir");
 		meshOptions.setTempDirectory(tmpDir);
 

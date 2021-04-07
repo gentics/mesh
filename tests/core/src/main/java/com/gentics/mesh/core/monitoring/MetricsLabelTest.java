@@ -12,10 +12,10 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.plugin.DummyPlugin;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 

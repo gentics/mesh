@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,8 +15,8 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)

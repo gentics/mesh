@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorListSchemaTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MicroschemaComparatorListSchemaTest extends AbstractComparatorListSchemaTest<MicroschemaModel> {

@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.node.NodeFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implements NodeFieldTestHelper {

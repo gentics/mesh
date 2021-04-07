@@ -4,7 +4,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.MicroschemaTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
+
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MicroschemaTest

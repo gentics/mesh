@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.number.NumberListFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest implements NumberListFieldTestHelper {

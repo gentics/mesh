@@ -6,7 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.MicroschemaTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @MicroschemaTest
 @MeshTestSetting(testSize = FULL, startServer = false)

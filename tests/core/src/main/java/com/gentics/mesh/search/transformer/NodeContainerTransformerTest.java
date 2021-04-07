@@ -15,8 +15,8 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

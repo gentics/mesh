@@ -1,7 +1,7 @@
 package com.gentics.mesh.auth;
 
+import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -12,7 +12,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.auth.util.Auth0Utils;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 

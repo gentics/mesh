@@ -37,8 +37,8 @@ import com.gentics.mesh.core.rest.validation.ValidationStatus;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
 import io.vertx.core.json.JsonArray;

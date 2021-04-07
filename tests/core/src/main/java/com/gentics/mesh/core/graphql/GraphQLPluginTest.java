@@ -12,8 +12,8 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.plugin.AbstractPluginTest;
 import com.gentics.mesh.plugin.ClonePlugin;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 

@@ -28,8 +28,8 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshRestClientUtil;
 import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;

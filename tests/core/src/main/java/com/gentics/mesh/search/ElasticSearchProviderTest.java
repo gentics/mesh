@@ -1,6 +1,6 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
+import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -11,9 +11,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Observable;

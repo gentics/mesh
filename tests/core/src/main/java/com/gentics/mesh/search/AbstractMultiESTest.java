@@ -10,12 +10,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshOptionChanger;
 import com.gentics.mesh.test.context.MeshTestContext;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.context.PluginHelper;
 import com.gentics.mesh.test.context.TestGraphHelper;
 import com.gentics.mesh.test.context.TestHttpMethods;

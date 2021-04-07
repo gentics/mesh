@@ -2,16 +2,16 @@ package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
+import static com.gentics.mesh.test.MeshOptionChanger.INITIAL_ADMIN_PASSWORD;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
-import static com.gentics.mesh.test.context.MeshOptionChanger.INITIAL_ADMIN_PASSWORD;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT_AND_NODE, startServer = true, optionChanger = INITIAL_ADMIN_PASSWORD)
 public class InitialAdminPasswordTest extends AbstractMeshTest {

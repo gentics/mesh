@@ -24,8 +24,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.madl.field.FieldType;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class DatabaseTest extends AbstractMeshTest {

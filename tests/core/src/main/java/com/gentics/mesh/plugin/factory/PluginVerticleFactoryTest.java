@@ -4,8 +4,8 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class PluginVerticleFactoryTest extends AbstractMeshTest {

@@ -19,6 +19,9 @@
 	<modules>
 		<module>core</module>
 		<module>api</module>
+		<module>context-orientdb</module>
+		<module>context-api</module>
+		<module>core-runner</module>
 	</modules>
 
 	<dependencyManagement>
@@ -78,6 +81,12 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>toxiproxy</artifactId>
 			<version>1.11.1</version>
+		</dependency>
+		<dependency>
+			<groupId>io.takari.junit</groupId>
+			<artifactId>takari-cpsuite</artifactId>
+			<version>1.2.7</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>

@@ -1,8 +1,8 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
-import static com.gentics.mesh.test.context.MeshOptionChanger.RANDOM_ES_PORT;
+import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
+import static com.gentics.mesh.test.MeshOptionChanger.RANDOM_ES_PORT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
@@ -14,9 +14,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;

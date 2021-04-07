@@ -32,7 +32,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
+import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.util.IndexOptionHelper;
 import com.gentics.mesh.util.Tuple;
 

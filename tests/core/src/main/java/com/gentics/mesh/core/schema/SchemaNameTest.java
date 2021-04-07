@@ -1,16 +1,17 @@
 package com.gentics.mesh.core.schema;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractNaughtyStringTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
+
 import org.junit.Test;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.fail;

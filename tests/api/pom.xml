@@ -7,8 +7,8 @@
 		<artifactId>mesh-tests</artifactId>
 		<version>1.7.6-SNAPSHOT</version>
 	</parent>
-	<artifactId>mesh-test-api</artifactId>
-	<name>Mesh - Test API</name>
+	<artifactId>mesh-tests-api</artifactId>
+	<name>Mesh - Tests API</name>
 
 	<dependencies>
 		<dependency>

@@ -6,9 +6,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.IOException;
@@ -19,8 +19,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
 public class AdminEndpointBackupRestoreLocalTest extends AbstractMeshTest {

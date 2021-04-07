@@ -8,8 +8,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true)
 public class ProjectInfoEndpointTest extends AbstractMeshTest {

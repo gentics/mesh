@@ -16,8 +16,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)

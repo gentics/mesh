@@ -1,14 +1,15 @@
 package com.gentics.mesh.core;
 
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
+
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
+import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true)
 public class ApiVersionTest extends AbstractMeshTest {

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.graphql;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +17,8 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.FULL, startServer = true)
 @RunWith(Parameterized.class)
 public class GraphQLNodeScrollSearchEndpointTest extends AbstractGraphQLSearchEndpointTest {

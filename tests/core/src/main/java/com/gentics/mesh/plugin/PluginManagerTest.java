@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.twelvemonkeys.io.FileUtil;
 
 import io.vertx.core.http.HttpHeaders;

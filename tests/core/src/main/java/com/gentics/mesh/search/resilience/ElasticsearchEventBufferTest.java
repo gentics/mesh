@@ -2,8 +2,9 @@ package com.gentics.mesh.search.resilience;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.junit.Test;
@@ -11,9 +12,9 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
+import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6_TOXIC;
+import static com.gentics.mesh.test.MeshOptionChanger.SMALL_EVENT_BUFFER;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6_TOXIC;
-import static com.gentics.mesh.test.context.MeshOptionChanger.SMALL_EVENT_BUFFER;
 import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(elasticsearch = CONTAINER_ES6_TOXIC, startServer = true, testSize = FULL, optionChanger = SMALL_EVENT_BUFFER)

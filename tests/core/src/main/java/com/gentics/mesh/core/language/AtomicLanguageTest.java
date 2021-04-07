@@ -10,8 +10,8 @@ import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(testSize = PROJECT, startServer = false)
 public class AtomicLanguageTest extends AbstractMeshTest {
 

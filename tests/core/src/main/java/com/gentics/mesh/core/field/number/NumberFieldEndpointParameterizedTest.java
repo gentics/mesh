@@ -20,8 +20,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.test.Assert;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)

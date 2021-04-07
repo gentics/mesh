@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.EMBEDDED;
+import static com.gentics.mesh.test.ElasticsearchTestMode.EMBEDDED;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.TimeUnit;
@@ -11,9 +11,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;

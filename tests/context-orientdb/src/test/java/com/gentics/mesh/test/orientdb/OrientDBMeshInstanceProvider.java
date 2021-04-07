@@ -1,9 +1,10 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.test.orientdb;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.testcontainers.utility.ThrowingFunction;
 
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -11,9 +12,8 @@ import com.gentics.mesh.dagger.MeshComponent.Builder;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.test.context.MeshInstanceProvider;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.context.ThrowingFunction;
+import com.gentics.mesh.test.MeshInstanceProvider;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -53,7 +53,7 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 	}
 
 	@Override
-	public void initFolders(ThrowingFunction<String, String, IOException> pathProvider) throws IOException {
+	public void initFolders(ThrowingFunction<String, String> pathProvider) throws Exception {
 		String backupPath = pathProvider.apply("backups");
 		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
 

@@ -11,8 +11,8 @@ import javax.net.ssl.SSLHandshakeException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.ssl.SSLTestClient.ClientCert;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true, ssl = CLIENT_CERT_REQUIRED)
 public class SSLUserCertRequireServerTest extends AbstractMeshTest {

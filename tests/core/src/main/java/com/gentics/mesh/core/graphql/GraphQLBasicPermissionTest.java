@@ -8,9 +8,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class GraphQLBasicPermissionTest extends AbstractMeshTest {

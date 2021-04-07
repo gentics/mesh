@@ -1,4 +1,5 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.test.orientdb;
+
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;

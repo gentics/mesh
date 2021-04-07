@@ -4,7 +4,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Ignore;
 
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @Ignore
 @MeshTestSetting(testSize = FULL, startServer = true)

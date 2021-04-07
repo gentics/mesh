@@ -55,8 +55,8 @@ import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.URIUtils;
 
 @MeshTestSetting(testSize = FULL, startServer = true)

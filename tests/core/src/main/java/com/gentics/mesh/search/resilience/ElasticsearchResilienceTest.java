@@ -3,15 +3,16 @@ package com.gentics.mesh.search.resilience;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
+
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6_TOXIC;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6_TOXIC;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 

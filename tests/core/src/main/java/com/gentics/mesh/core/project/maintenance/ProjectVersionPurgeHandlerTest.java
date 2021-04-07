@@ -1,16 +1,16 @@
 package com.gentics.mesh.core.project.maintenance;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = TestSize.FULL, startServer = true)
 public class ProjectVersionPurgeHandlerTest extends AbstractMeshTest {

@@ -10,8 +10,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.AbstractActionContext;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class I18NTest extends AbstractMeshTest {

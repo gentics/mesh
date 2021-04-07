@@ -2,9 +2,9 @@ package com.gentics.mesh.core.webroot;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.MeshOptionChanger.NO_PATH_CACHE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshOptionChanger.NO_PATH_CACHE;
 
 import java.io.IOException;
 
@@ -15,8 +15,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true, optionChanger = NO_PATH_CACHE)
 public class WebRootEndpointNoCacheTest extends AbstractMeshTest {
