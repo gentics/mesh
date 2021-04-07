@@ -9,14 +9,11 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 
 import io.reactivex.Completable;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class LoadFormDataBinaryHandler extends AbstractFormsHandler {
-
-	private static final Logger log = LoggerFactory.getLogger(LoadFormDataBinaryHandler.class);
 
 	private final FormDataService formDataService;
 
@@ -35,16 +32,17 @@ public class LoadFormDataBinaryHandler extends AbstractFormsHandler {
 		return formDataService.loadBinary(projectName, formUuid, formDataUuid, binaryFieldName).doOnSuccess(meshResponse -> {
 			MeshBinaryResponse downloadResponse = meshResponse.getBody();
 			HttpServerResponse response = context.response();
-			response.headers().add("Content-Type", downloadResponse.getContentType());
-			response.headers().add("Content-Length", meshResponse.getHeader("Content-Length").get());
-			response.headers().add("Content-Disposition", "attachment; filename=\"" + downloadResponse.getFilename() + "\"");
-			downloadResponse.getFlowable().subscribe(b -> {
-				response.write(Buffer.buffer(b));
-			}, err -> {
-				log.error("Error while reading download for {" + formUuid + "} {" + formDataUuid + "} {" + binaryFieldName + "}", err);
-			}, () -> {
-				response.end();
-			});
+
+			// Set to IDENTITY to avoid gzip compression
+			// this is necessary, so that the binary data can be streamed to the client. Using gzip compression could lead to OOM when large binaries are requested
+			response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+
+			response.putHeader(HttpHeaders.CONTENT_LENGTH, meshResponse.getHeader("Content-Length").get());
+			response.putHeader(HttpHeaders.CONTENT_TYPE, downloadResponse.getContentType());
+			response.putHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + downloadResponse.getFilename() + "\"");
+
+			downloadResponse.getFlowable().map(b -> Buffer.buffer(b)).subscribe(response::write, context::fail, response::end);
+
 		}).ignoreElement();
 	}
 }
