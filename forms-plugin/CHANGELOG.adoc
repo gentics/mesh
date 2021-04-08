@@ -12,5 +12,8 @@
 
 
 [[v1.6.3]]
-== 1.6.3 (TBD)
+== 1.6.3 (2021-04-08)
 
+icon:plus[] New Forms Plugin derived from formgenerator plugin, adapted for use with Gentics CMP
+icon:plus[] improved binary handling
+icon:plus[] multi language support
