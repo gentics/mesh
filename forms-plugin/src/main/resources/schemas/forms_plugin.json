@@ -1,0 +1,21 @@
+{
+	"name": "formgenerator_plugin",
+	"displayField": "name",
+	"segmentField": "name",
+	"container": true,
+	"fields": [
+		{
+			"name": "name",
+			"label": "Name",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "languages",
+			"label": "Languages",
+			"type": "list",
+			"listType": "string",
+			"required": false
+		}
+	]
+}

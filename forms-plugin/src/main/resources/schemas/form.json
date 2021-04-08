@@ -1,0 +1,31 @@
+{
+	"name": "formgenerator",
+	"displayField": "name",
+	"container": true,
+	"fields": [
+		{
+			"name": "name",
+			"label": "",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "json",
+			"label": "",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "cms_id",
+			"label": "",
+			"type": "number",
+			"required": false
+		},
+		{
+			"name": "online",
+			"label": "",
+			"type": "boolean",
+			"required": true
+		}
+	]
+}

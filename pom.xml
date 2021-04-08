@@ -32,6 +32,7 @@
 		<module>keycloak-plugin</module>
 		<module>gcms-plugin</module>
 		<module>export-plugin</module>
+		<module>forms-plugin</module>
 	</modules>
 
 	<dependencyManagement>

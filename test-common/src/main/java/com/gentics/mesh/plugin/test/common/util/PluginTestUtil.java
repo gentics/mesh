@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.test.common.util;
 
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -53,7 +54,7 @@ public final class PluginTestUtil {
 			eb.events().subscribe(ignore -> {
 				latch.countDown();
 			}, err -> err.printStackTrace());
-			latch.await(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
+			assertThat(latch.await(timeoutInMilliseconds, TimeUnit.MILLISECONDS)).as(String.format("Plugin %s was registered within %d ms", pluginId, timeoutInMilliseconds)).isTrue();
 		} finally {
 			eb.close();
 		}

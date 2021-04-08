@@ -1,0 +1,9 @@
+Formpage
+	name: {{ name }}
+	label: {{ label }}
+	active: {{ active }}
+	elements:
+{{#each elements}}
+{{> (formsElementTemplate type) }}
+{{/each}}
+/Formpage

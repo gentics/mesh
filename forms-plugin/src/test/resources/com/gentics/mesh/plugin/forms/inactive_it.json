@@ -1,0 +1,38 @@
+{
+	"name": "Form with Inactive Textfield",
+	"language": "it",
+	"elements": [
+		{
+			"type": "input",
+			"name": "input1",
+			"placeholderName": "",
+			"label": "Text",
+			"mandatory": false,
+			"active": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		},
+		{
+			"type": "input",
+			"name": "input2",
+			"placeholderName": "",
+			"label": "Text",
+			"mandatory": true,
+			"active": false,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		}
+	]
+}
