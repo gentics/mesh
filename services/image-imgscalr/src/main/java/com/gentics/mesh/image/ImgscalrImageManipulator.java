@@ -22,6 +22,9 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.storage.S3BinaryStorage;
+import io.vertx.reactivex.core.buffer.Buffer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -360,6 +363,67 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				}
 			});
 	}
+
+	/*public Single<String> handleResize(S3HibBinary s3binary, ImageManipulationParameters parameters) {
+		// Validate the resize parameters
+		parameters.validate();
+		parameters.validateLimits(options);
+
+
+		return getCacheFilePath(binary.getSHA512Sum(), parameters)
+				.flatMap(cacheFileInfo -> {
+					if (cacheFileInfo.exists) {
+						return Single.just(cacheFileInfo.path);
+					} else {
+						// TODO handle execution timeout
+						// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the
+						// regular worker
+						// pool
+						return workerPool.<String>rxExecuteBlocking(bh -> {
+							try (
+									InputStream is = stream.get();
+									ImageInputStream ins = ImageIO.createImageInputStream(is)) {
+								BufferedImage image;
+								ImageReader reader = getImageReader(ins);
+
+								try {
+									image = reader.read(0);
+								} catch (IOException e) {
+									log.error("Could not read input image", e);
+
+									throw error(BAD_REQUEST, "image_error_reading_failed");
+								}
+
+								if (log.isDebugEnabled()) {
+									log.debug("Read image from stream " + ins.hashCode() + " with reader " + reader.getClass().getName());
+								}
+
+								image = cropAndResize(image, parameters);
+
+								String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+								String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+								String cacheFilePath = cacheFileInfo.path + "." + extension;
+								File outCacheFile = new File(cacheFilePath);
+
+								// Write image
+								try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+									ImageWriteParam params = getImageWriteparams(extension);
+
+									// same as write(image), but with image parameters
+									getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
+								} catch (Exception e) {
+									throw error(BAD_REQUEST, "image_error_writing_failed");
+								}
+
+								// Return buffer to written cache file
+								bh.complete(cacheFilePath);
+							} catch (Exception e) {
+								bh.fail(e);
+							}
+						}, false).toSingle();
+					}
+				});
+	}*/
 
 	private ImageWriteParam getImageWriteparams(String extension) {
 		if (isJpeg(extension)) {

@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
 import io.reactivex.Single;
+import io.vertx.reactivex.core.buffer.Buffer;
 
 /**
  * SPI provider interface for image manipulators.
@@ -22,6 +23,15 @@ public interface ImageManipulator {
 	 * @return The path to the resized file.
 	 */
 	Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters);
+/*
+	*//**
+	 * Resize the given s3 binary data and return the path to the resized file.
+	 *
+	 * @param s3binary
+	 * @param parameters
+	 * @return The path to the resized file.
+	 *//*
+	Single<String> handleResize(Buffer s3binary, ImageManipulationParameters parameters);*/
 
 	/**
 	 * Return the cache file for the given binary and image parameters.

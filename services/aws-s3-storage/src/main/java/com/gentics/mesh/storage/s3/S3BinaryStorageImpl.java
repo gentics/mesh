@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.storage.S3BinaryStorage;
+import hu.akarnokd.rxjava2.interop.FlowableInterop;
 import hu.akarnokd.rxjava2.interop.SingleInterop;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -149,49 +150,20 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Flowable<Buffer> read(String hashsum) {
-		return Flowable.generate(sub -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Loading data for hash {" + hashsum + "}");
-			}
-			// GetObjectRequest rangeObjectRequest = new GetObjectRequest(options.getBucketName(), hashsum);
-			GetObjectRequest request = GetObjectRequest.builder().bucket(options.getBucket()).build();
-			client.getObject(request, new AsyncResponseTransformer<GetObjectResponse, String>() {
-
-				@Override
-				public CompletableFuture<String> prepare() {
-					// TODO Auto-generated method stub
-					return null;
+		public Flowable<Buffer> read(String objectKey) {
+			return Flowable.defer(() -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Loading data for uuid {" + objectKey + "}");
 				}
-
-				@Override
-				public void onResponse(GetObjectResponse response) {
-					// TODO Auto-generated method stub
-
-				}
-
-				@Override
-				public void onStream(SdkPublisher<ByteBuffer> publisher) {
-					// TODO Auto-generated method stub
-
-				}
-
-				@Override
-				public void exceptionOccurred(Throwable error) {
-					// TODO Auto-generated method stub
-
-				}
+				GetObjectRequest request = GetObjectRequest.builder()
+						.bucket(options.getBucket())
+						.key(objectKey)
+						.build();
+				return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
+			}).map(f ->{
+				System.out.println(f.asByteArray().length);
+				return	Buffer.buffer(f.asByteArray());
 			});
-
-			// try (InputStream stream = objectPortion.getObjectContent()) {
-			//
-			// if (log.isDebugEnabled()) {
-			// log.debug("Printing bytes retrieved:");
-			// displayTextInputStream(stream);
-			// }
-			// }
-			// sub.onComplete();
-		});
 	}
 
 	@Override
