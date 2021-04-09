@@ -19,11 +19,14 @@ import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.async.SdkPublisher;
+import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 import javax.inject.Inject;
@@ -31,6 +34,8 @@ import javax.inject.Singleton;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -130,6 +135,37 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 
 		S3RestResponse s3RestResponse = new S3RestResponse(presignedRequest.url().toString(), presignedRequest.httpRequest().method().toString(), presignedRequest.signedHeaders());
 		presigner.close();
+		return Single.just(s3RestResponse);
+	}
+
+	@Override
+	public Single<S3RestResponse> getPresignedUrl(String objectKey) {
+		String bucketName = options.getBucket();
+		//TODO expiration time download
+
+		GetObjectRequest getObjectRequest =
+				GetObjectRequest.builder()
+						.bucket(bucketName)
+						.key(objectKey)
+						.build();
+
+		GetObjectPresignRequest getObjectPresignRequest =
+				GetObjectPresignRequest.builder()
+						.signatureDuration(Duration.ofMinutes(10))
+						.getObjectRequest(getObjectRequest)
+						.build();
+
+		// Generate the presigned request
+		PresignedGetObjectRequest presignedGetObjectRequest =
+				presigner.presignGetObject(getObjectPresignRequest);
+
+		// Log the presigned URL
+		System.out.println("Presigned URL: " + presignedGetObjectRequest.url());
+
+		String host = presignedGetObjectRequest.url().toString();
+		SdkHttpMethod method = presignedGetObjectRequest.httpRequest().method();
+		Map<String, List<String>> headers = presignedGetObjectRequest.httpRequest().headers();
+		S3RestResponse s3RestResponse = new S3RestResponse(host, method.toString(), headers);
 		return Single.just(s3RestResponse);
 	}
 

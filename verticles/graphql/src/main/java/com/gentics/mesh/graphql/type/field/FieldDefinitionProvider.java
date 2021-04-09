@@ -180,7 +180,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(S3_BINARY_FIELD_TYPE_NAME))
 				.dataFetcher(env -> {
 					GraphFieldContainer container = env.getSource();
-					return container.getBinary(schema.getName());
+					return container.getS3Binary(schema.getName());
 				}).build();
 	}
 

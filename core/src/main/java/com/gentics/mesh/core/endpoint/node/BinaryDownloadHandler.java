@@ -81,6 +81,8 @@ public class BinaryDownloadHandler extends AbstractHandler {
 				binaryFieldResponseHandler.handle(rc, field);
 			}
 			else if ((fieldSchema instanceof S3BinaryFieldSchema)) {
+
+
 				S3BinaryGraphField field = fieldContainer.getS3Binary(fieldName);
 				if (field == null) {
 					//TODO fix error name
