@@ -29,6 +29,7 @@ public interface S3BinaryStorage {
 	 * @return
 	 */
 	Single<S3RestResponse> createPresignedUrl(String nodeUuid, String fieldName);
+	Single<S3RestResponse> getPresignedUrl(String objectKey);
 
 	/**
 	 * Creates a S3 bucket for a given name if doesn't exists..
@@ -37,6 +38,7 @@ public interface S3BinaryStorage {
 	 * @return
 	 */
 	 void createBucket(String bucketName);
+
 
 	/**
 	 * Delete the binary with the given uuid.

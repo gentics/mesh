@@ -94,17 +94,17 @@ public class S3BinaryFieldResponseHandler {
 	}
 
 	private void respond(RoutingContext rc, S3BinaryGraphField s3binaryField) {
-		HttpServerResponse response = rc.response();
-		response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-		response.putHeader(HttpHeaders.CONTENT_LENGTH, "11581");
-		response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
-		response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-		s3Binarystorage.read(s3binaryField.getS3ObjectKey()).subscribe(
-				response::write, rc::fail, response::end);
+		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+		s3Binarystorage.getPresignedUrl(s3ObjectKey)
+				.subscribe(model ->{
+					rc.response().setStatusCode(302);
+					rc.response().headers().set("Location", model.getPresignedUrl());
+					rc.response().end();
+				});
 	}
 
 	private void resizeAndRespond(RoutingContext rc, S3BinaryGraphField s3binaryField, ImageManipulationParameters imageParams) {
-/*		HttpServerResponse response = rc.response();
+		/*HttpServerResponse response = rc.response();
 		// We can maybe enhance the parameters using stored parameters.
 		if (!imageParams.hasFocalPoint()) {
 			FocalPoint fp = s3binaryField.getImageFocalPoint();

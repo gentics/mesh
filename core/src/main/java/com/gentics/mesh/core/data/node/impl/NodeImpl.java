@@ -1996,7 +1996,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 							+ "}");
 				}
 			} else {
-				String s3binaryFilename = s3Binary.getFileName();
+				String s3binaryFilename = "s3";
 				if (segment.equals(s3binaryFilename)) {
 					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
 				}
