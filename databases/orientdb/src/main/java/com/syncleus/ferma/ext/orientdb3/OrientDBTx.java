@@ -24,22 +24,7 @@ import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.*;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.AbstractTx;
@@ -316,6 +301,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public BinaryDaoWrapper binaryDao() {
 		return daos.binaryDao();
+	}
+
+	@Override
+	public S3BinaryDaoWrapper s3binaryDao() {
+		return daos.s3binaryDao();
 	}
 
 	@Override

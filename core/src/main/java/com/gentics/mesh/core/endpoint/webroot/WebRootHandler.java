@@ -20,11 +20,13 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
+import com.gentics.mesh.core.endpoint.node.S3BinaryFieldResponseHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -55,12 +57,15 @@ public class WebRootHandler extends AbstractWebrootHandler {
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
+	private final S3BinaryFieldResponseHandler s3binaryFieldResponseHandler;
 
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
-		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
+						  S3BinaryFieldResponseHandler s3binaryFieldResponseHandler,
+						  NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
+		this.s3binaryFieldResponseHandler = s3binaryFieldResponseHandler;
 	}
 
 	/**
@@ -98,7 +103,25 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				}
 				binaryFieldResponseHandler.handle(rc, binaryField);
 				return null;
-			} else {
+			}
+			if (field instanceof S3BinaryGraphField) {
+				S3BinaryGraphField s3binaryField = (S3BinaryGraphField) field;
+				/*String sha512sum = s3binaryField.getBinary().getSHA512Sum();
+
+				// Check the etag
+				String etagKey = sha512sum;
+				if (binaryField.hasProcessableImage()) {
+					etagKey += ac.getImageParameters().getQueryParameters();
+				}
+				String etag = ETag.hash(etagKey);
+				ac.setEtag(etag, false);
+				if (ac.matches(etag, false)) {
+					throw new NotModifiedException();
+				}*/
+				s3binaryFieldResponseHandler.handle(rc, s3binaryField, node.getUuid(), field.getFieldKey());
+				return null;
+			}
+			else {
 				String etag = nodeDao.getETag(node, ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {

@@ -8,19 +8,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.*;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -174,6 +162,9 @@ public interface BootstrapInitializer {
 
 	@Getter
 	BinaryDaoWrapper binaryDao();
+
+	@Getter
+	S3BinaryDaoWrapper s3binaryDao();
 
 	/**
 	 * Return the mesh root element. All other mesh graph elements are connected to this element. It represents the main root of the whole mesh graph.

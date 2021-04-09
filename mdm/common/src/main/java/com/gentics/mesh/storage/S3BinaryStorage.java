@@ -15,10 +15,10 @@ public interface S3BinaryStorage {
 	/**
 	 * Read the binary data which is identified by the given binary uuid.
 	 *
-	 * @param uuid
+	 * @param objectKey
 	 * @return
 	 */
-	Flowable<Buffer> read(String uuid);
+	Flowable<Buffer> read(String objectKey);
 
 
 	/**
