@@ -15,3 +15,9 @@
 
 icon:plus[] It's now possible to define roles that are managed by the plugin icon:plus[] The configuration can now be
 accessed in the mapper script via `config` variable
+
+[[v1.4.19]]
+== 1.4.19 (tbd)
+
+icon:plus[] The configuration to load the public keys can now be changed via the environment
+variable `MESH_PLUGIN_KEYCLOAK_LOAD_PUBLIC_KEYS`
