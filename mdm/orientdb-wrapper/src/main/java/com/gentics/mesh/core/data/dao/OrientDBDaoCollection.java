@@ -54,6 +54,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 
 	private final LanguageDaoWrapper languageDao;
 	private final BinaryDaoWrapper binaryDao;
+	private final S3BinaryDaoWrapper s3binaryDao;
 	private final JobDaoWrapper jobDao;
 
 	@Inject
@@ -90,6 +91,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 
 		LanguageDaoWrapper languageDao,
 		BinaryDaoWrapper binaryDao,
+		S3BinaryDaoWrapper s3binaryDao,
 		JobDaoWrapper jobDao,
 
 		ContextDataRegistry contextDataRegistry) {
@@ -125,6 +127,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 
 		this.languageDao = languageDao;
 		this.binaryDao = binaryDao;
+		this.s3binaryDao=s3binaryDao;
 		this.jobDao = jobDao;
 	}
 
@@ -231,6 +234,11 @@ public class OrientDBDaoCollection implements DaoCollection {
 	@Override
 	public BinaryDaoWrapper binaryDao() {
 		return binaryDao;
+	}
+
+	@Override
+	public S3BinaryDaoWrapper s3binaryDao() {
+		return s3binaryDao;
 	}
 
 	@Override

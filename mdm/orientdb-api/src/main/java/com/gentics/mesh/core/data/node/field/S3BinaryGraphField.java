@@ -18,7 +18,7 @@ import java.util.Objects;
  */
 public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, MeshEdge, DisplayField, S3HibBinaryField {
 
-	String S3_BINARY_FILENAME_PROPERTY_KEY = "s3binaryFilename";
+	String S3_BINARY_FILENAME_PROPERTY_KEY = "fileName";
 
 	String S3_BINARY_SHA512SUM_PROPERTY_KEY = "s3binarySha512Sum";
 

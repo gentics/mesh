@@ -26,6 +26,7 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static java.util.Objects.nonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.core.data.node.field.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -59,10 +61,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.DisplayField;
-import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
@@ -724,9 +722,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		// 3. Try to load the path segment using the binary field since the string field could not be found
 		if (stringField == null) {
-			BinaryGraphField binaryField = getBinary(segmentFieldKey);
-			if (binaryField != null) {
-				return binaryField.getFileName();
+			S3BinaryGraphField s3binaryField = getS3Binary(segmentFieldKey);
+			if (nonNull(s3binaryField) && nonNull(s3binaryField.getS3Binary())) {
+				return s3binaryField.getS3Binary().getFileName();
+			}
+			BinaryGraphField binary = getBinary(segmentFieldKey);
+			if (nonNull(binary)) {
+				return binary.getFileName();
 			}
 		}
 		return null;
