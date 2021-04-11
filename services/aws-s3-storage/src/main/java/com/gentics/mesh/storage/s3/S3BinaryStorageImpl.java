@@ -20,6 +20,7 @@ import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
@@ -28,6 +29,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -62,13 +64,24 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 		System.setProperty("aws.accessKeyId", options.getAccessKeyId());
 		System.setProperty("aws.secretAccessKey", options.getSecretAccessKey());
 
-		client = S3AsyncClient.builder()
-				.region(Region.of(options.getRegion()))
+		S3AsyncClientBuilder clientBuilder = S3AsyncClient.builder();
+
+		// Endpoint override is optional
+		if (options.getEndpoint() != null) {
+			clientBuilder.endpointOverride(URI.create(options.getEndpoint()));
+		}
+
+		client = clientBuilder.region(Region.of(options.getRegion()))
 				.credentialsProvider(StaticCredentialsProvider.create(credentials))
 				.build();
 
-		this.presigner = S3Presigner.builder()
-				.region(Region.of(options.getRegion()))
+		S3Presigner.Builder presignerBuilder = S3Presigner.builder();
+
+		if (options.getEndpoint() != null) {
+			presignerBuilder.endpointOverride(URI.create(options.getEndpoint()));
+		}
+
+		this.presigner = presignerBuilder.region(Region.of(options.getRegion()))
 				.credentialsProvider(StaticCredentialsProvider.create(credentials))
 				.build();
 
