@@ -25,9 +25,11 @@ public interface S3Binaries {
 	 *            Uuid of the binary
 	 * @param objectKey
 	 *            aws object key
+	 * @param fileName
+	 *            fileName
 	 * @return
 	 */
-	Transactional<S3HibBinary> create(String uuid, String objectKey);
+	Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName);
 
 	/**
 	 * Return a transactional stream of all binaries.
