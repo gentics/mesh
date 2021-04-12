@@ -21,6 +21,7 @@ public class S3Options implements Option {
 
     public static final String MESH_S3_BINARY_SECRET_ACCESS_KEY_ENV = "MESH_S3_BINARY_SECRET_ACCESS_KEY";
     public static final String MESH_S3_BINARY_ACCESS_KEY_ID_ENV = "MESH_S3_BINARY_ACCESS_KEY_ID";
+    public static final String MESH_S3_BINARY_ENDPOINT_ENV = "MESH_S3_BINARY_ENDPOINT";
     public static final String MESH_S3_BINARY_BUCKET_ENV = "MESH_S3_BINARY_BUCKET";
     public static final String MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD_ENV = "MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD";
     public static final String MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD_ENV = "MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD";
@@ -74,6 +75,11 @@ public class S3Options implements Option {
     @EnvironmentVariable(name = MESH_S3_BINARY_ACCESS_KEY_ID_ENV, description = "Override the configured AWS S3 access key id.")
     private String accessKeyId;
 
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("AWS S3 custom endpoint")
+    @EnvironmentVariable(name = MESH_S3_BINARY_ENDPOINT_ENV, description = "Override the configured AWS S3 custom endpoint.")
+    private String endpoint;
+
     @JsonProperty(required = true)
     @JsonPropertyDescription("S3 Cache Bucket Options.")
     private S3CacheOptions s3cacheOptions = new S3CacheOptions();
@@ -120,6 +126,16 @@ public class S3Options implements Option {
     @Setter
     public S3Options setRegion(String region) {
         this.region = region;
+        return this;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    @Setter
+    public S3Options setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
         return this;
     }
 
