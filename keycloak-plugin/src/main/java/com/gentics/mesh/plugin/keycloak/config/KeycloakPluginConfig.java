@@ -14,6 +14,7 @@ public class KeycloakPluginConfig implements Option {
 
 	private static final String ENV_URL = ENV_PREFIX + "URL";
 	private static final String ENV_REALM = ENV_PREFIX + "REALM_NAME";
+	private static final String ENV_LOAD_PUBLIC_KEYS = ENV_PREFIX + "LOAD_PUBLIC_KEYS";
 
 	/**
 	 * URL to keycloak server
@@ -43,6 +44,7 @@ public class KeycloakPluginConfig implements Option {
 	 */
 	@JsonProperty(defaultValue = "false")
 	@JsonPropertyDescription("Whether to load the realms public keys from the Keycloak server")
+	@EnvironmentVariable(name = ENV_LOAD_PUBLIC_KEYS, description = "Override if the Public keys should be loaded")
 	private boolean loadPublicKeys = false;
 
 	public String getUrl() {
