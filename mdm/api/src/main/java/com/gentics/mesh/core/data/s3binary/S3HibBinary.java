@@ -82,9 +82,33 @@ public interface S3HibBinary extends HibBaseElement {
 	 */
 	void setUuid(String uuid);
 
-
+	/**
+	 * Return the s3 object key
+	 *
+	 * @return s3 key or null when the information could not be determined
+	 */
 	String getS3ObjectKey();
 
-
+	/**
+	 * Set the S3 Object key
+	 *
+	 * @param s3ObjectKey
+	 * @return
+	 */
 	S3HibBinary setS3ObjectKey(String s3ObjectKey);
+
+	/**
+	 * Return the filename
+	 *
+	 * @return Filename or null when the information could not be determined
+	 */
+	String getFileName();
+
+	/**
+	 * Set the S3 Binary Filename
+	 *
+	 * @param fileName
+	 * @return
+	 */
+	S3HibBinary setFileName(String fileName);
 }

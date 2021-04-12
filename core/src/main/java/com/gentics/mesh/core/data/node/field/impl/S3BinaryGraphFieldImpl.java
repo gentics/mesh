@@ -197,6 +197,7 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 		if (binary != null) {
 			restModel.setS3binaryUuid(binary.getUuid());
 			restModel.setS3ObjectKey(binary.getS3ObjectKey());
+			restModel.setFileName(binary.getFileName());
 		}
 		S3BinaryMetadata metaData = getMetadata();
 		restModel.setMetadata(metaData);

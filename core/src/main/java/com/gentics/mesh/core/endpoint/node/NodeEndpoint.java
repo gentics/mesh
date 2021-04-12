@@ -224,9 +224,10 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private void addS3BinaryHandlers() {
 		InternalEndpointRoute fieldUpdate = createRoute();
-		fieldUpdate.path("/:nodeUuid/s3binary/:fieldName");
+		fieldUpdate.path("/:nodeUuid/s3binary/:fieldName/:fileName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldUpdate.addUriParameter("fileName", "Name of the file which should be created.", "stringField");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
@@ -237,9 +238,10 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
+			String fileName = rc.request().getParam("fileName");
 			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = wrap(rc);
-			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
+			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName,fileName, attributes);
 		});
 	}
 

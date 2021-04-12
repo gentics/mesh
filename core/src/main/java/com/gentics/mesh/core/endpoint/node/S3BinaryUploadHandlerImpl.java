@@ -78,11 +78,13 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 	 * @param ac
 	 * @param nodeUuid   UUID of the node which should be updated
 	 * @param fieldName  Name of the field which should be created
+	 * @param fileName  Name of the file which should be created
 	 * @param attributes Additional form data attributes
 	 */
-	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
+	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, String fileName, MultiMap attributes) {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
+		validateParameter(fileName, "fileName");
 
 		String languageTag = attributes.get("language");
 		if (isEmpty(languageTag)) {
@@ -98,9 +100,10 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 		// Create a new s3 binary uuid if the data was not already stored
 		s3UploadContext.setS3ObjectKey(nodeUuid + "/" + fieldName);
 		s3UploadContext.setS3BinaryUuid(UUIDUtil.randomUUID());
+		s3UploadContext.setFileName(fileName);
 
 		s3BinaryStorage.createPresignedUrl(nodeUuid, fieldName).flatMapObservable(s3RestResponse ->
-				storeUploadInGraph(ac, s3UploadContext, nodeUuid, languageTag, nodeVersion, fieldName)
+				storeUploadInGraph(ac, s3UploadContext, nodeUuid, languageTag, nodeVersion,fieldName)
 				.flatMapObservable((x) -> Observable.just(s3RestResponse))
 		).subscribe(model ->
 				ac.send(model, FOUND), ac::fail);
@@ -112,6 +115,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 													String fieldName) {
 		String s3binaryUuid = context.getS3BinaryUuid();
 		String s3ObjectKey = context.getS3ObjectKey();
+		String fileName = context.getFileName();
 
 		return db.singleTxWriteLock(tx -> {
 			ContentDaoWrapper contentDao = tx.contentDao();
@@ -123,7 +127,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 			utils.eventAction(batch -> {
 
 				// We need to check whether someone else has stored the s3 binary in the meanwhile
-				S3HibBinary s3HibBinary = s3binaries.create(s3binaryUuid, s3ObjectKey).runInExistingTx(tx);
+				S3HibBinary s3HibBinary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName).runInExistingTx(tx);
 				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);

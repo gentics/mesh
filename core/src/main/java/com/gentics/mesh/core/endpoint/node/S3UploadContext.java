@@ -11,6 +11,8 @@ public class S3UploadContext {
 
 	private String s3ObjectKey;
 
+	private String fileName;
+
 	public S3UploadContext() {
 	}
 
@@ -30,5 +32,14 @@ public class S3UploadContext {
 
 	public String getS3ObjectKey() {
 		return s3ObjectKey;
+	}
+
+	@Setter
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getFileName() {
+		return fileName;
 	}
 }

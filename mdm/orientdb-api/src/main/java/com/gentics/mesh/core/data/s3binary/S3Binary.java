@@ -20,6 +20,8 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 
 	String S3_AWS_OBJECT_KEY = "s3ObjectKey";
 
+	String S3_AWS_FILENAME = "filename";
+
 	/**
 	 * Return the sha512 checksum.
 	 * 
@@ -83,6 +85,14 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 
 	default S3HibBinary setS3ObjectKey(String s3objectKey) {
 		property(S3_AWS_OBJECT_KEY, s3objectKey);
+		return this;
+	}
+
+
+	default String getFileName() {	return property(S3_AWS_FILENAME);}
+
+	default S3HibBinary setFileName(String fileName) {
+		property(S3_AWS_FILENAME, fileName);
 		return this;
 	}
 
