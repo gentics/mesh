@@ -26,6 +26,7 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static java.util.Objects.nonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -723,11 +724,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// 3. Try to load the path segment using the binary field since the string field could not be found
 		if (stringField == null) {
 			S3BinaryGraphField s3binaryField = getS3Binary(segmentFieldKey);
-			if (s3binaryField != null) {
-				return "s3";
+			if (nonNull(s3binaryField) && nonNull(s3binaryField.getS3Binary())) {
+				return s3binaryField.getS3Binary().getFileName();
 			}
 			BinaryGraphField binary = getBinary(segmentFieldKey);
-			if (binary != null) {
+			if (nonNull(binary) && nonNull(binary.getBinary())) {
 				return binary.getFileName();
 			}
 
