@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import java.util.Set;
-
-import com.gentics.mesh.core.data.perm.InternalPermission;
-
 public interface HibBaseElement extends HibElement {
 
 	/**
@@ -19,14 +15,6 @@ public interface HibBaseElement extends HibElement {
 	 * @return
 	 */
 	Object getId();
-
-	/**
-	 * Set the role uuid for the given permission.
-	 * 
-	 * @param permission
-	 * @param allowedRoles
-	 */
-	void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles);
 
 	/**
 	 * Tests if the {@link GraphPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.

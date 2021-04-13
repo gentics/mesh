@@ -112,7 +112,8 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public void grantPermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
+	public void grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+		MeshVertex vertex = (MeshVertex) element;
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles == null) {
@@ -125,8 +126,9 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public void revokePermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
+	public void revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
 		boolean permissionRevoked = false;
+		MeshVertex vertex = (MeshVertex) element;
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles != null) {

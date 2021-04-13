@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -11,7 +9,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -84,14 +81,12 @@ public class UserDAOActionsImpl implements UserDAOActions {
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibUser user) {
-		User graphUser = toGraph(user);
-		return graphUser.getAPIPath(ac);
+		return tx.userDao().getAPIPath(user, ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibUser user) {
-		User graphUser = toGraph(user);
-		return graphUser.getETag(ac);
+		return tx.userDao().getETag(user, ac);
 	}
 
 }

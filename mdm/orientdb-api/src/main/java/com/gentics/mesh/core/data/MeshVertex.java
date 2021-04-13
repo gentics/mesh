@@ -73,4 +73,12 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 	 * @return
 	 */
 	Set<String> getRoleUuidsForPerm(InternalPermission permission);
+	
+	/**
+	 * Set the role uuid for the given permission.
+	 * 
+	 * @param permission
+	 * @param allowedRoles
+	 */
+	void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles);
 }

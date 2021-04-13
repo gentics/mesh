@@ -27,6 +27,15 @@ import com.gentics.mesh.parameter.PagingParameters;
 public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
 
 	/**
+	 * Return the api path for the user.
+	 * 
+	 * @param user
+	 * @param ac
+	 * @return
+	 */
+	String getAPIPath(HibUser user, InternalActionContext ac);
+
+	/**
 	 * 
 	 * @return
 	 */
@@ -385,6 +394,14 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @return
 	 */
 	Result<? extends HibGroup> getGroups(HibUser user);
+
+	/**
+	 * A CRC32 hash of the user roles {@link #getRoles roles}.
+	 *
+	 * @param user
+	 * @return A hash of the user roles
+	 */
+	String getRolesHash(HibUser user);
 
 	/**
 	 * Return the ETag of the user.
