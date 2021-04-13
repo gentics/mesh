@@ -8,6 +8,7 @@ import com.jayway.jsonpath.PathNotFoundException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.assertj.core.api.AbstractAssert;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,7 +110,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		return compliesToAssertions(ins);
 	}
 
-	public JsonObjectAssert compliesToAssertions(String name, String version) {
+	public @NotNull JsonObjectAssert compliesToAssertions(String name, String version) {
 		InputStream ins = Optional.ofNullable(getClass().getResourceAsStream("/graphql/" + name + "." + version))
 			.orElseGet(() -> getClass().getResourceAsStream("/graphql/" + name));
 		if (ins == null) {
@@ -118,6 +119,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		return compliesToAssertions(ins);
 	}
 
+	@NotNull
 	private JsonObjectAssert compliesToAssertions(InputStream ins) {
 		try (Scanner scanner = new Scanner(ins)) {
 			compliesToAssertions(scanner);

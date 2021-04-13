@@ -269,12 +269,12 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 
 	public void killContainer() {
-		dockerClient.killContainerCmd(getContainerId()).withSignal("SIGTERM").exec();
+		dockerClient.killContainerCmd(containerId).withSignal("SIGTERM").exec();
 		super.stop();
 	}
 
 	public void killHardContainer() {
-		dockerClient.killContainerCmd(getContainerId()).withSignal("SIGKILL").exec();
+		dockerClient.killContainerCmd(containerId).withSignal("SIGKILL").exec();
 		super.stop();
 	}
 
@@ -475,10 +475,10 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			throw new IllegalStateException("Container is not running so exec cannot be run");
 		}
 
-		this.dockerClient.execCreateCmd(this.getContainerId()).withCmd(command);
+		this.dockerClient.execCreateCmd(this.containerId).withCmd(command);
 
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
-		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.getContainerId()).withAttachStdout(true).withAttachStderr(true)
+		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
 			.withUser("root")
 			.withPrivileged(true)
 			.withCmd(command).exec();
@@ -492,14 +492,11 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 		dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
 
-//		Integer exitCode = dockerClient.inspectExecCmd(execCreateCmdResponse.getId()).exec().getExitCode();
-//
-//		final ExecResult result = new ExecResult(exitCode, stdoutConsumer.toString(outputCharset), stderrConsumer.toString(outputCharset));
-//
-//		logger().trace("stdout: " + result.getStdout());
-//		logger().trace("stderr: " + result.getStderr());
-//		return result;
-		return null;
+		final ExecResult result = new ExecResult(stdoutConsumer.toString(outputCharset), stderrConsumer.toString(outputCharset));
+
+		logger().trace("stdout: " + result.getStdout());
+		logger().trace("stderr: " + result.getStderr());
+		return result;
 	}
 
 	public MeshContainer login() {
@@ -647,7 +644,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		if (containerHost != null) {
 			return containerHost;
 		} else {
-			return "127.0.0.1";
+			return super.getContainerIpAddress();
 		}
 	}
 

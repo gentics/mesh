@@ -72,10 +72,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 			throw new IllegalStateException("Container is not running so exec cannot be run");
 		}
 
-		this.dockerClient.execCreateCmd(this.getContainerId()).withCmd(command);
+		this.dockerClient.execCreateCmd(this.containerId).withCmd(command);
 
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
-		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.getContainerId()).withAttachStdout(true).withAttachStderr(true)
+		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
 			.withUser("root")
 			.withPrivileged(true)
 			.withCmd(command).exec();
@@ -89,12 +89,11 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
 		dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
 
-//		final ExecResult result = new ExecResult(stdoutConsumer.toString(outputCharset), stderrConsumer.toString(outputCharset));
-//
-//		logger().debug("stdout: " + result.getStdout());
-//		logger().debug("stderr: " + result.getStderr());
-//		return result;
-		return null;
+		final ExecResult result = new ExecResult(stdoutConsumer.toString(outputCharset), stderrConsumer.toString(outputCharset));
+
+		logger().debug("stdout: " + result.getStdout());
+		logger().debug("stderr: " + result.getStderr());
+		return result;
 	}
 
 	@Override
