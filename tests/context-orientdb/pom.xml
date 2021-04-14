@@ -6,7 +6,7 @@
     <version>1.7.6-SNAPSHOT</version>
   </parent>
   <artifactId>mesh-tests-context-orientdb</artifactId>
-  <name>Mesh - Tests context implementation - OrientDB</name>
+  <name>Mesh - Tests context - OrientDB</name>
   
   	<dependencies>
 		<dependency>

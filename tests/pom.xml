@@ -17,11 +17,26 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<modules>
-		<module>core</module>
+		<!-- General -->
 		<module>api</module>
-		<module>context-orientdb</module>
+		<module>common</module>
 		<module>context-api</module>
-		<module>core-runner</module>
+		
+		<!-- Actual project tests -->
+		<module>tests-api</module>
+		<module>tests-core</module>
+		<module>tests-common</module>
+		
+		<!-- Other tests -->
+		<module>tests-distributed</module>
+		<module>tests-performance</module>
+		<module>tests-integration</module>
+		
+		<!-- Default context - OrientDB -->
+		<module>context-orientdb</module>
+		
+		<!-- Tests runner over OrientDB default context -->
+		<module>orientdb-runner</module>
 	</modules>
 
 	<dependencyManagement>
