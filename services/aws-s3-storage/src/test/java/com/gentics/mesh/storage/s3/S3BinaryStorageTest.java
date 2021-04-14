@@ -2,6 +2,8 @@ package com.gentics.mesh.storage.s3;
 
 import static org.junit.Assert.assertTrue;
 
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.S3Options;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -14,8 +16,6 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.reactivex.core.Vertx;
 
 @Ignore
@@ -36,17 +36,19 @@ public class S3BinaryStorageTest {
 		.withExposedPorts(9000)
 		.waitingFor(Wait.forHttp("/").forStatusCode(403));
 
-	private S3BinaryStorage storage;
+	private S3BinaryStorageImpl storage;
 
 	@Before
 	public void setup() {
-		S3StorageOptions options = new S3StorageOptions();
-		options.setAccessId(ACCESS_KEY);
-		options.setAccessKey(SECRET_KEY);
+		MeshOptions meshOptions = new MeshOptions();
+		S3Options options = new S3Options();
+		options.setAccessKeyId(ACCESS_KEY);
+		options.setSecretAccessKey(SECRET_KEY);
 		options.setRegion("US_EAST_1");
-		options.setBucketName(BUCKET_NAME);
-		options.setUrl("http://localhost:" + minio.getMappedPort(9000));
-		storage = new S3BinaryStorage(options, vertx);
+		options.setBucket(BUCKET_NAME);
+		meshOptions.setS3Options(options);
+		//options.setUrl("http://localhost:" + minio.getMappedPort(9000));
+		storage = new S3BinaryStorageImpl(meshOptions, vertx);
 	}
 
 	@Test
@@ -56,8 +58,8 @@ public class S3BinaryStorageTest {
 		Mockito.when(mockField.getBinary()).thenReturn(binary);
 		Mockito.when(binary.getSHA512Sum()).thenReturn("test");
 //		assertFalse(storage.exists(mockField));
-		storage.store(Flowable.just(Buffer.buffer("test")), "test").blockingAwait();
-		assertTrue(storage.exists(mockField));
+//		storage.store(Flowable.just(Buffer.buffer("test")), "test").blockingAwait();
+//		assertTrue(storage.exists(mockField));
 		storage.read("test").ignoreElements().blockingAwait();
 	}
 

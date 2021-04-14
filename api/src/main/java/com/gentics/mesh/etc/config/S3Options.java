@@ -19,7 +19,9 @@ public class S3Options implements Option {
     public static final int DEFAULT_EXPIRATION_TIME_DOWNLOAD = 360_000;
     public static final int DEFAULT_PARSER_LIMIT = 40_000;
 
-    public static final String MESH_S3_BINARY_AWS_KEY_ENV = "MESH_S3_BINARY_AWS_KEY";
+    public static final String MESH_S3_BINARY_SECRET_ACCESS_KEY_ENV = "MESH_S3_BINARY_SECRET_ACCESS_KEY";
+    public static final String MESH_S3_BINARY_ACCESS_KEY_ID_ENV = "MESH_S3_BINARY_ACCESS_KEY_ID";
+    public static final String MESH_S3_BINARY_ENDPOINT_ENV = "MESH_S3_BINARY_ENDPOINT";
     public static final String MESH_S3_BINARY_BUCKET_ENV = "MESH_S3_BINARY_BUCKET";
     public static final String MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD_ENV = "MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD";
     public static final String MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD_ENV = "MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD";
@@ -27,12 +29,6 @@ public class S3Options implements Option {
     public static final String MESH_S3_BINARY_METADATA_WHITELIST_ENV = "MESH_S3_BINARY_METADATA_WHITELIST";
     public static final String MESH_S3_BINARY_PARSER_LIMIT_ENV = "MESH_S3_BINARY_PARSER_LIMIT";
     public static final String MESH_S3_BINARY_REGION_ENV = "MESH_S3_BINARY_REGION";
-    public static final String MESH_S3_BINARY_SECRET_ENV = "MESH_S3_BINARY_SECRET";
-
-    @JsonProperty(required = false)
-    @JsonPropertyDescription("Used for authentication with Amazon Web Services")
-    @EnvironmentVariable(name = MESH_S3_BINARY_AWS_KEY_ENV, description = "Override the configured awskey.")
-    private String awsKey;
 
     @JsonProperty(required = false)
     @JsonPropertyDescription("AWS S3 bucket where binaries will be uploaded to and downloaded from")
@@ -70,9 +66,19 @@ public class S3Options implements Option {
     private String region;
 
     @JsonProperty(required = false)
-    @JsonPropertyDescription("AWS S3 key")
-    @EnvironmentVariable(name = MESH_S3_BINARY_SECRET_ENV, description = "Override the configured AWS S3 secret.")
-    private String secret;
+    @JsonPropertyDescription("AWS S3 secret access key")
+    @EnvironmentVariable(name = MESH_S3_BINARY_SECRET_ACCESS_KEY_ENV, description = "Override the configured AWS S3 secret access key.")
+    private String secretAccessKey;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("AWS S3 access key id")
+    @EnvironmentVariable(name = MESH_S3_BINARY_ACCESS_KEY_ID_ENV, description = "Override the configured AWS S3 access key id.")
+    private String accessKeyId;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("AWS S3 custom endpoint")
+    @EnvironmentVariable(name = MESH_S3_BINARY_ENDPOINT_ENV, description = "Override the configured AWS S3 custom endpoint.")
+    private String endpoint;
 
     @JsonProperty(required = true)
     @JsonPropertyDescription("S3 Cache Bucket Options.")
@@ -89,6 +95,68 @@ public class S3Options implements Option {
     @Setter
     public S3Options setS3CacheOptions(S3CacheOptions s3cacheOptions) {
         this.s3cacheOptions = s3cacheOptions;
+        return this;
+    }
+
+    public String getSecretAccessKey() {
+        return secretAccessKey;
+    }
+
+    @Setter
+    public S3Options setSecretAccessKey(String secretAccessKey) {
+        this.secretAccessKey = secretAccessKey;
+        return this;
+    }
+
+    public String getAccessKeyId() {
+        return accessKeyId;
+    }
+
+    @Setter
+    public S3Options setAccessKeyId(String accessKeyId) {
+        this.accessKeyId = accessKeyId;
+        return this;
+    }
+
+
+    public String getRegion() {
+        return region;
+    }
+
+    @Setter
+    public S3Options setRegion(String region) {
+        this.region = region;
+        return this;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    @Setter
+    public S3Options setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+        return this;
+    }
+
+
+    public String getBucket() {
+        return bucket;
+    }
+
+    @Setter
+    public S3Options setBucket(String bucket) {
+        this.bucket = bucket;
+        return this;
+    }
+
+    public int getExpirationTimeUpload() {
+        return expirationTimeUpload;
+    }
+
+    @Setter
+    public S3Options setExpirationTimeUpload(int expirationTimeUpload) {
+        this.expirationTimeUpload = expirationTimeUpload;
         return this;
     }
 }
