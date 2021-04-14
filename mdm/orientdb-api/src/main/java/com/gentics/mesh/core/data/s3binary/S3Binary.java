@@ -47,7 +47,7 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 	 * 
 	 * @return
 	 */
-	default long getSize() {
+	default Long getSize() {
 		Long size = property(S3_BINARY_FILESIZE_PROPERTY_KEY);
 		return size == null ? 0 : size;
 	}
@@ -58,7 +58,7 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 	 * @param sizeInBytes
 	 * @return Fluent API
 	 */
-	default S3HibBinary setSize(long sizeInBytes) {
+	default S3HibBinary setSize(Long sizeInBytes) {
 		property(S3_BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
 		return this;
 	}
