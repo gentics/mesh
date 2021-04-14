@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +24,13 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.storage.S3BinaryStorage;
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.vertx.reactivex.core.buffer.Buffer;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -65,20 +71,22 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	private FocalPointModifier focalPointModifier;
 
 	private WorkerExecutor workerPool;
+	private S3BinaryStorage s3BinaryStorage;
 
 	private final BootstrapInitializer boot;
 
-	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, BootstrapInitializer boot) {
-		this(vertx, options.getImageOptions(), boot);
+	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, BootstrapInitializer boot, S3BinaryStorage s3BinaryStorage) {
+		this(vertx, options.getImageOptions(), boot, s3BinaryStorage);
 		
 	}
 
-	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, BootstrapInitializer boot) {
+	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, BootstrapInitializer boot, S3BinaryStorage s3BinaryStorage) {
 		super(vertx, options);
 		focalPointModifier = new FocalPointModifier(options);
 		// 10 seconds
 		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
 		this.boot = boot;
+		this.s3BinaryStorage = s3BinaryStorage;
 	}
 
 	/**
@@ -364,66 +372,77 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			});
 	}
 
-	/*public Single<String> handleResize(S3HibBinary s3binary, ImageManipulationParameters parameters) {
+	@Override
+	public Completable handleS3Resize(S3HibBinary s3binary, ImageManipulationParameters parameters) {
 		// Validate the resize parameters
 		parameters.validate();
 		parameters.validateLimits(options);
 
-
-		return getCacheFilePath(binary.getSHA512Sum(), parameters)
-				.flatMap(cacheFileInfo -> {
-					if (cacheFileInfo.exists) {
-						return Single.just(cacheFileInfo.path);
+		return s3BinaryStorage
+				//read from aws and return buffer with data
+				.read(s3binary.getS3ObjectKey(), parameters)
+				.flatMapCompletable(cacheFileInfo -> {
+					if (cacheFileInfo.getBytes().length > 0) {
+						return Completable.complete();
 					} else {
 						// TODO handle execution timeout
 						// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the
 						// regular worker
 						// pool
-						return workerPool.<String>rxExecuteBlocking(bh -> {
-							try (
-									InputStream is = stream.get();
-									ImageInputStream ins = ImageIO.createImageInputStream(is)) {
-								BufferedImage image;
-								ImageReader reader = getImageReader(ins);
+					return s3BinaryStorage
+								.read(s3binary.getS3ObjectKey())
+								.flatMapSingle(originalFile ->
+										workerPool.<File>rxExecuteBlocking(bh -> {
+											try (
+													InputStream is = new ByteArrayInputStream(originalFile.getBytes());
+													ImageInputStream ins = ImageIO.createImageInputStream(is)) {
+												BufferedImage image;
+												ImageReader reader = getImageReader(ins);
 
-								try {
-									image = reader.read(0);
-								} catch (IOException e) {
-									log.error("Could not read input image", e);
+												try {
+													image = reader.read(0);
+												} catch (IOException e) {
+													log.error("Could not read input image", e);
 
-									throw error(BAD_REQUEST, "image_error_reading_failed");
-								}
+													throw error(BAD_REQUEST, "image_error_reading_failed");
+												}
 
-								if (log.isDebugEnabled()) {
-									log.debug("Read image from stream " + ins.hashCode() + " with reader " + reader.getClass().getName());
-								}
+												if (log.isDebugEnabled()) {
+													log.debug("Read image from stream " + ins.hashCode() + " with reader " + reader.getClass().getName());
+												}
 
-								image = cropAndResize(image, parameters);
+												image = cropAndResize(image, parameters);
 
-								String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-								String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-								String cacheFilePath = cacheFileInfo.path + "." + extension;
-								File outCacheFile = new File(cacheFilePath);
+												String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+												String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+												String cacheFilePath = s3binary.getFileName() + "." + extension;
+												File outCacheFile = new File(cacheFilePath);
 
-								// Write image
-								try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-									ImageWriteParam params = getImageWriteparams(extension);
+												// Write image
+												try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+													ImageWriteParam params = getImageWriteparams(extension);
 
-									// same as write(image), but with image parameters
-									getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
-								} catch (Exception e) {
-									throw error(BAD_REQUEST, "image_error_writing_failed");
-								}
+													// same as write(image), but with image parameters
+													getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
+												} catch (Exception e) {
+													throw error(BAD_REQUEST, "image_error_writing_failed");
+												}
+												// Return buffer to written cache file
+												bh.complete(outCacheFile);
+											} catch (Exception e) {
+												bh.fail(e);
+											}
+										}).toSingle()
+								)
+								.flatMapSingle(file ->
+										//write cache to AWS
+										s3BinaryStorage.write(null, s3binary.getS3ObjectKey(), file))
+								.ignoreElements();
 
-								// Return buffer to written cache file
-								bh.complete(cacheFilePath);
-							} catch (Exception e) {
-								bh.fail(e);
-							}
-						}, false).toSingle();
 					}
 				});
-	}*/
+
+	}
 
 	private ImageWriteParam getImageWriteparams(String extension) {
 		if (isJpeg(extension)) {

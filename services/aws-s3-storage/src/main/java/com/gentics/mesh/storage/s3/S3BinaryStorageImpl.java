@@ -3,7 +3,9 @@ package com.gentics.mesh.storage.s3;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.S3BinaryStorage;
+import hu.akarnokd.rxjava2.interop.CompletableInterop;
 import hu.akarnokd.rxjava2.interop.FlowableInterop;
 import hu.akarnokd.rxjava2.interop.SingleInterop;
 import io.reactivex.Completable;
@@ -17,6 +19,7 @@ import io.vertx.reactivex.core.file.FileSystem;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.http.SdkHttpMethod;
@@ -31,6 +34,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.net.URI;
@@ -92,7 +96,9 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 				.build();
 
 		String bucketName = options.getBucket();
+		String cacheBucketName = options.getS3CacheOptions().getBucket();
 		createBucket(bucketName);
+		createCacheBucket(cacheBucketName);
 	}
 
 	@Override
@@ -120,8 +126,31 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Single<S3RestResponse> createPresignedUrl(String nodeUuid, String fieldName) {
-		String bucketName = options.getBucket();
+	public void createCacheBucket(String cacheBucketName) {
+		HeadBucketRequest headRequest = HeadBucketRequest.builder()
+				.bucket(cacheBucketName)
+				.build();
+		CreateBucketRequest createRequest = CreateBucketRequest.builder()
+				.bucket(cacheBucketName)
+				.build();
+		Single<HeadBucketResponse> bucketHead = SingleInterop.fromFuture(client.headBucket(headRequest));
+		bucketHead.map(e -> e != null)
+				.onErrorResumeNext(e -> {
+					//try to create new bucket if bucket cannot be found
+					if (e instanceof CompletionException && e.getCause() != null) {
+						return SingleInterop.fromFuture(client.createBucket(createRequest)).map(r -> r != null);
+					} else {
+						return Single.error(e);
+					}
+				}).subscribe(b -> {
+			log.info("Created cache bucket {}", cacheBucketName);
+		}, e -> {
+			log.error("Error while creating cache bucket", e);
+		});
+	}
+
+	@Override
+	public Single<S3RestResponse> createPresignedUrl(String bucketName ,String nodeUuid, String fieldName) {
 		int expirationTimeUpload = options.getExpirationTimeUpload();
 		String objectKey = nodeUuid + "/" + fieldName;
 
@@ -139,13 +168,12 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Single<S3RestResponse> getPresignedUrl(String objectKey) {
-		String bucketName = options.getBucket();
+	public Single<S3RestResponse> getPresignedUrl(String bucket, String objectKey) {
 		//TODO expiration time download
 
 		GetObjectRequest getObjectRequest =
 				GetObjectRequest.builder()
-						.bucket(bucketName)
+						.bucket(bucket)
 						.key(objectKey)
 						.build();
 
@@ -184,6 +212,39 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 				System.out.println(f.asByteArray().length);
 				return	Buffer.buffer(f.asByteArray());
 			});
+	}
+
+	@Override
+	public Single<S3RestResponse> write(String bucket, String objectKey, File file) {
+
+		PutObjectRequest objectRequest = PutObjectRequest.builder()
+				.bucket(bucket)
+				.key(objectKey)
+				.build();
+		String[] split = objectKey.split("/");
+
+		// Put the object into the bucket
+		Completable completable = CompletableInterop.fromFuture(client.putObject(objectRequest,
+				AsyncRequestBody.fromFile(file)
+		));
+		return completable
+				.andThen(createPresignedUrl(bucket, split[0], split[1]))
+				.doOnError(err -> Single.error(err));
+	}
+
+	@Override
+	public Flowable<Buffer> read(String objectKey, ImageManipulationParameters parameters) {
+		String baseName = "image-" + parameters.getCacheKey();
+		return Flowable.defer(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Loading data for uuid {" + objectKey + "}");
+			}
+			GetObjectRequest request = GetObjectRequest.builder()
+					.bucket(options.getS3CacheOptions().getBucket())
+					.key(objectKey)
+					.build();
+			return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
+		}).map(f -> Buffer.buffer(f.asByteArray()));
 	}
 
 	@Override
