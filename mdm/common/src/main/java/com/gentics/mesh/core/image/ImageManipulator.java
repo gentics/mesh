@@ -5,8 +5,10 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.buffer.Buffer;
 
@@ -23,6 +25,7 @@ public interface ImageManipulator {
 	 * @return The path to the resized file.
 	 */
 	Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters);
+	Completable handleS3Resize(S3HibBinary s3binary, ImageManipulationParameters parameters);
 /*
 	*//**
 	 * Resize the given s3 binary data and return the path to the resized file.

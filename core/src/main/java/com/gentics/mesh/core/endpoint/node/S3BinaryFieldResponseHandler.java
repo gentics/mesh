@@ -10,6 +10,8 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
+import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -18,6 +20,7 @@ import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.MimeTypeUtils;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
@@ -45,16 +48,19 @@ public class S3BinaryFieldResponseHandler {
 
 	private final S3BinaryStorage s3Binarystorage;
 
+	private final S3Options s3Options;
+
 	private final Vertx rxVertx;
 
 	private final RangeRequestHandler rangeRequestHandler;
 
 	@Inject
-	public S3BinaryFieldResponseHandler(ImageManipulator imageManipulator,S3BinaryStorage s3Binarystorage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler) {
+	public S3BinaryFieldResponseHandler(ImageManipulator imageManipulator,S3BinaryStorage s3Binarystorage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, S3Options s3Options) {
 		this.imageManipulator = imageManipulator;
 		this.s3Binarystorage = s3Binarystorage;
 		this.rxVertx = rxVertx;
 		this.rangeRequestHandler = rangeRequestHandler;
+		this.s3Options = s3Options;
 	}
 
 	/**
@@ -95,7 +101,7 @@ public class S3BinaryFieldResponseHandler {
 
 	private void respond(RoutingContext rc, S3BinaryGraphField s3binaryField) {
 		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
-		s3Binarystorage.getPresignedUrl(s3ObjectKey)
+		s3Binarystorage.getPresignedUrl(s3Options.getBucket(), s3ObjectKey)
 				.subscribe(model ->{
 					rc.response().setStatusCode(302);
 					rc.response().headers().set("Location", model.getPresignedUrl());
@@ -104,7 +110,7 @@ public class S3BinaryFieldResponseHandler {
 	}
 
 	private void resizeAndRespond(RoutingContext rc, S3BinaryGraphField s3binaryField, ImageManipulationParameters imageParams) {
-		/*HttpServerResponse response = rc.response();
+		HttpServerResponse response = rc.response();
 		// We can maybe enhance the parameters using stored parameters.
 		if (!imageParams.hasFocalPoint()) {
 			FocalPoint fp = s3binaryField.getImageFocalPoint();
@@ -122,21 +128,20 @@ public class S3BinaryFieldResponseHandler {
 			imageParams.setWidth(originalWidth);
 		}
 		String fileName = s3binaryField.getFileName();
-		imageManipulator.handleResize(s3binaryField.getS3Binary(), imageParams)
-			.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
-				.doOnSuccess(props -> {
-					response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
-					response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
-					response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-					response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-					// Set to IDENTITY to avoid gzip compression
-					response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
-
-					addContentDispositionHeader(response, fileName, "inline");
-
-					response.sendFile(cachedFilePath);
+		imageManipulator
+				.handleS3Resize(s3binaryField.getS3Binary(), imageParams)
+				.andThen(Single.defer(() -> {
+					String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+					Single<S3RestResponse> presignedUrl = s3Binarystorage.getPresignedUrl(s3Options.getS3CacheOptions().getBucket(), s3ObjectKey);
+					return presignedUrl;
 				}))
-			.subscribe(ignore -> {}, rc::fail);*/
+				.doOnSuccess(model -> {
+					rc.response().setStatusCode(302);
+					rc.response().headers().set("Location", model.getPresignedUrl());
+					rc.response().end();
+				})
+				.subscribe(ignore -> {
+				}, rc::fail);
 	}
 
 	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
