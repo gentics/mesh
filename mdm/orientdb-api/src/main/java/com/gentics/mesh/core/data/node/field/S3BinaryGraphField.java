@@ -38,7 +38,9 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	String S3_BINARY_ALT_KEY = "metadata-alt";
 
-	String PLAIN_TEXT_KEY = "plainText"; 
+	String PLAIN_TEXT_KEY = "plainText";
+
+	String AWS_S3_OBJECT_KEY = "s3ObjectKey";
 
 	/**
 	 * Return the binary filename.
@@ -298,4 +300,22 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	 */
 	String getPlainText();
 
+
+	/**
+	 * Return the S3 Object Key that serves as reference to AWS
+	 *
+	 * @return
+	 */
+	default String getS3ObjectKey() {
+		return property(AWS_S3_OBJECT_KEY);
+	}
+
+	/**
+	 * Set the S3 Object key
+	 *
+	 * @param key
+	 */
+	default void setS3ObjectKey(String key) {
+		property(AWS_S3_OBJECT_KEY, key);
+	}
 }

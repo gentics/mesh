@@ -4,6 +4,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.*;
 import com.gentics.mesh.core.data.s3binary.S3Binary;
@@ -11,6 +12,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
@@ -76,18 +78,18 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	 * @param schema
 	 */
 	public static FieldUpdater S3_BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		S3BinaryGraphField graphBinaryField = container.getS3Binary(fieldKey);
-		S3BinaryField binaryField = fieldMap.getS3BinaryField(fieldKey);
-		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
+		S3BinaryGraphField graphS3BinaryField = container.getS3Binary(fieldKey);
+		S3BinaryField s3binaryField = fieldMap.getS3BinaryField(fieldKey);
+		boolean isS3BinaryFieldSetToNull = fieldMap.hasField(fieldKey) && s3binaryField == null && graphS3BinaryField != null;
 
-		GraphField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnDeletionOfRequiredField(graphS3BinaryField, isS3BinaryFieldSetToNull, fieldSchema, fieldKey, schema);
 
-		boolean restIsNull = binaryField == null;
+		boolean restIsNull = s3binaryField == null;
 		// The required check for binary fields is not enabled since binary fields can only be created using the field api
 
 		// Handle Deletion
-		if (isBinaryFieldSetToNull && graphBinaryField != null) {
-			graphBinaryField.removeField(container);
+		if (isS3BinaryFieldSetToNull && graphS3BinaryField != null) {
+			graphS3BinaryField.removeField(container);
 			return;
 		}
 
@@ -99,75 +101,82 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 		// The S3binary field does not yet exist but the update request already contains some binary field info. We can use this info to create a new binary
 		// field. We locate the binary vertex by using the given hashsum. This case usually happens during schema migrations in which the binary graph field is
 		// in fact initially being removed from the container.
-		String hash = binaryField.getSha512sum();
-		if (graphBinaryField == null && hash != null) {
+		String hash = s3binaryField.getSha512sum();
+		if (graphS3BinaryField == null && hash != null) {
 			S3HibBinary binary = Tx.get().s3binaries().findByHash(hash).runInExistingTx(Tx.get());
 			if (binary != null) {
-				graphBinaryField = container.createS3Binary(fieldKey, binary);
+				graphS3BinaryField = container.createS3Binary(fieldKey, binary);
 			} else {
 				log.debug("Could not find binary for hash {" + hash + "}");
 			}
 		}
 
-		// Otherwise we can't update the binaryfield
-		if (graphBinaryField == null && binaryField.hasValues()) {
+		// Otherwise we can't update the s3binaryField
+		if (graphS3BinaryField == null && s3binaryField.hasValues()) {
 			throw error(BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", fieldKey);
 		}
 
 		// Handle Update - Dominant Color
-		if (binaryField.getDominantColor() != null) {
-			graphBinaryField.setImageDominantColor(binaryField.getDominantColor());
+		if (s3binaryField.getDominantColor() != null) {
+			graphS3BinaryField.setImageDominantColor(s3binaryField.getDominantColor());
 		}
 
 		// Handle Update - Focal point
-		FocalPoint newFocalPoint = binaryField.getFocalPoint();
+		FocalPoint newFocalPoint = s3binaryField.getFocalPoint();
 		if (newFocalPoint != null) {
-			S3HibBinary binary = graphBinaryField.getS3Binary();
+			S3HibBinary binary = graphS3BinaryField.getS3Binary();
 			Point imageSize = binary.getImageSize();
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
 					throw error(BAD_REQUEST, "field_binary_error_image_focalpoint_out_of_bounds", fieldKey, newFocalPoint.toString(),
-						imageSize.toString());
+							imageSize.toString());
 				}
 			}
-			graphBinaryField.setImageFocalPoint(newFocalPoint);
+			graphS3BinaryField.setImageFocalPoint(newFocalPoint);
 		}
 
 		// Handle Update - Filename
-		if (binaryField.getFileName() != null) {
-			if (isEmpty(binaryField.getFileName())) {
+		if (s3binaryField.getFileName() != null) {
+			if (isEmpty(s3binaryField.getFileName())) {
 				throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldKey);
 			} else {
-				graphBinaryField.setFileName(binaryField.getFileName());
+				graphS3BinaryField.setFileName(s3binaryField.getFileName());
 			}
 		}
 
 		// Handle Update - MimeType
-		if (binaryField.getMimeType() != null) {
-			if (isEmpty(binaryField.getMimeType())) {
+		if (s3binaryField.getMimeType() != null) {
+			if (isEmpty(s3binaryField.getMimeType())) {
 				throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldKey);
 			}
-			graphBinaryField.setMimeType(binaryField.getMimeType());
+			graphS3BinaryField.setMimeType(s3binaryField.getMimeType());
 		}
 
 		// Handle Update - Metadata
-		S3BinaryMetadata metaData = binaryField.getMetadata();
+		S3BinaryMetadata metaData = s3binaryField.getMetadata();
 		if (metaData != null) {
-			graphBinaryField.clearMetadata();
+			graphS3BinaryField.clearMetadata();
 			for (Entry<String, String> entry : metaData.getMap().entrySet()) {
-				graphBinaryField.setMetadata(entry.getKey(), entry.getValue());
+				graphS3BinaryField.setMetadata(entry.getKey(), entry.getValue());
 			}
 			Location loc = metaData.getLocation();
 			if (loc != null) {
-				graphBinaryField.setLocation(loc);
+				graphS3BinaryField.setLocation(loc);
 			}
 		}
 
 		// Handle Update - Plain text
-		String text = binaryField.getPlainText();
+		String text = s3binaryField.getPlainText();
 		if (text != null) {
-			graphBinaryField.setPlainText(text);
+			graphS3BinaryField.setPlainText(text);
 		}
+
+		// Handle Update - Plain text
+		String s3ObjectKey = s3binaryField.getS3ObjectKey();
+		if (s3ObjectKey != null) {
+			graphS3BinaryField.setS3ObjectKey(s3ObjectKey);
+		}
+
 
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
@@ -183,25 +192,15 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	@Override
 	public S3BinaryField transformToRest(ActionContext ac) {
 		S3BinaryField restModel = new S3BinaryFieldImpl();
-		restModel.setFileName(getFileName());
-		restModel.setMimeType(getMimeType());
 
 		S3HibBinary binary = getS3Binary();
 		if (binary != null) {
-			restModel.setS3BinaryUuid(binary.getUuid());
-			restModel.setFileSize(binary.getSize());
-			restModel.setSha512sum(binary.getSHA512Sum());
-			restModel.setWidth(binary.getImageWidth());
-			restModel.setHeight(binary.getImageHeight());
+			restModel.setS3binaryUuid(binary.getUuid());
+			restModel.setS3ObjectKey(binary.getS3ObjectKey());
+			restModel.setFileName(binary.getFileName());
 		}
-
-		restModel.setFocalPoint(getImageFocalPoint());
-		restModel.setDominantColor(getImageDominantColor());
-
 		S3BinaryMetadata metaData = getMetadata();
 		restModel.setMetadata(metaData);
-
-		restModel.setPlainText(getPlainText());
 		return restModel;
 	}
 
@@ -295,6 +294,13 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 		if (obj instanceof S3BinaryField) {
 			S3BinaryField s3binaryField = (S3BinaryField) obj;
 
+			boolean matchingS3ObjectKey = true;
+			if (s3binaryField.getS3ObjectKey() != null) {
+				String s3ObjectKeyA = getS3ObjectKey();
+				String s3ObjectKeyB = s3binaryField.getS3ObjectKey();
+				matchingS3ObjectKey = Objects.equals(s3ObjectKeyA, s3ObjectKeyB);
+			}
+
 			boolean matchingFilename = true;
 			if (s3binaryField.getFileName() != null) {
 				String filenameA = getFileName();
@@ -336,7 +342,7 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 				S3BinaryMetadata restMetadata = s3binaryField.getMetadata();
 				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
 			}
-			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata;
+			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata && matchingS3ObjectKey;
 		}
 		return false;
 	}

@@ -11,7 +11,7 @@ public interface S3BinaryField extends Field {
      *
      * @return
      */
-    String getS3BinaryUuid();
+    String getS3binaryUuid();
 
     /**
      * Set the Uuid of the used s3binary data.
@@ -19,14 +19,14 @@ public interface S3BinaryField extends Field {
      * @param uuid
      * @return
      */
-    S3BinaryField setS3BinaryUuid(String uuid);
+    S3BinaryField setS3binaryUuid(String uuid);
 
     /**
      * Return the s3binary filesize.
      *
      * @return Filesize in bytes
      */
-    long getFileSize();
+    Long getFileSize();
 
     /**
      * Set the s3binary filesize.
@@ -35,7 +35,7 @@ public interface S3BinaryField extends Field {
      *            Filesize in bytes
      * @return Fluent API
      */
-    S3BinaryField setFileSize(long fileSize);
+    S3BinaryField setFileSize(Long fileSize);
 
     /**
      * Return the image height.
@@ -184,7 +184,7 @@ public interface S3BinaryField extends Field {
 
     @Override
     default Object getValue() {
-        return getS3BinaryUuid();
+        return getS3binaryUuid();
     }
 
     /**
@@ -200,5 +200,19 @@ public interface S3BinaryField extends Field {
      * @return
      */
     S3BinaryField setPlainText(String text);
+
+    /**
+     * Returns the S3 Object Key which is the reference to AWS.
+     *
+     * @return
+     */
+    String getS3ObjectKey();
+
+    /**
+     * Set the S3 Object Key.
+     *
+     * @return
+     */
+    S3BinaryField setS3ObjectKey(String objectKey);
 
 }
