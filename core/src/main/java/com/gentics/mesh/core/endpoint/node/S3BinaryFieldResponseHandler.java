@@ -11,6 +11,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
@@ -55,12 +56,12 @@ public class S3BinaryFieldResponseHandler {
 	private final RangeRequestHandler rangeRequestHandler;
 
 	@Inject
-	public S3BinaryFieldResponseHandler(ImageManipulator imageManipulator,S3BinaryStorage s3Binarystorage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, S3Options s3Options) {
+	public S3BinaryFieldResponseHandler(ImageManipulator imageManipulator,S3BinaryStorage s3Binarystorage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, MeshOptions meshOptions) {
 		this.imageManipulator = imageManipulator;
 		this.s3Binarystorage = s3Binarystorage;
 		this.rxVertx = rxVertx;
 		this.rangeRequestHandler = rangeRequestHandler;
-		this.s3Options = s3Options;
+		this.s3Options = meshOptions.getS3Options();
 	}
 
 	/**
@@ -73,7 +74,9 @@ public class S3BinaryFieldResponseHandler {
 		//rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		ImageManipulationParameters imageParams = ac.getImageParameters();
-		if (s3binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
+		boolean b = s3binaryField.hasProcessableImage();
+		boolean b1 = imageParams.hasResizeParams();
+		if (true&& imageParams.hasResizeParams()) {
 			resizeAndRespond(rc, s3binaryField, imageParams);
 		} else {
 			respond(rc, s3binaryField);
@@ -127,11 +130,11 @@ public class S3BinaryFieldResponseHandler {
 		if ("auto".equals(imageParams.getWidth())) {
 			imageParams.setWidth(originalWidth);
 		}
-		String fileName = s3binaryField.getFileName();
+		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+		String fileName = s3binaryField.getS3Binary().getFileName();
 		imageManipulator
-				.handleS3Resize(s3binaryField.getS3Binary(), imageParams)
+				.handleS3Resize(s3Options.getS3CacheOptions().getBucket(), s3ObjectKey, fileName, imageParams)
 				.andThen(Single.defer(() -> {
-					String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
 					Single<S3RestResponse> presignedUrl = s3Binarystorage.getPresignedUrl(s3Options.getS3CacheOptions().getBucket(), s3ObjectKey);
 					return presignedUrl;
 				}))

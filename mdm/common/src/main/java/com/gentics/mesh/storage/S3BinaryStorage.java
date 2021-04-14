@@ -36,6 +36,7 @@ public interface S3BinaryStorage {
 	 Flowable<Buffer> read(String objectKey,  ImageManipulationParameters parameters);
 	 void createCacheBucket(String cacheBucketName);
 	 Single<S3RestResponse> write(String bucket, String objectKey, File file);
+	 Single<Boolean> exists(String bucket, String objectKey);
 		/**
          * Creates a S3 bucket for a given name if doesn't exists..
          *

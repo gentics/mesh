@@ -28,6 +28,7 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
@@ -58,6 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+
+import static java.util.Objects.isNull;
 
 /**
  * Initial S3 Storage implementation.
@@ -233,9 +236,12 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	@Override
 	public Single<S3RestResponse> write(String bucket, String objectKey, File file) {
 
+		String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(file.getName());
+
 		PutObjectRequest objectRequest = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(objectKey)
+				.contentType(mimeTypeForFilename)
 				.build();
 		String[] split = objectKey.split("/");
 
@@ -246,6 +252,24 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 		return completable
 				.andThen(createPresignedUrl(bucket, split[0], split[1]))
 				.doOnError(err -> Single.error(err));
+	}
+
+	@Override
+	public Single<Boolean> exists(String bucket, String objectKey) {
+		HeadObjectRequest request = HeadObjectRequest.builder()
+				.bucket(bucket)
+				.key(objectKey)
+				.build();
+
+		return SingleInterop.fromFuture(client.headObject(request)).map(r -> r != null).onErrorResumeNext(e -> {
+			if (e instanceof CompletionException && e.getCause() != null && e.getCause() instanceof NoSuchKeyException) {
+				return Single.just(false);
+			} else {
+				return Single.error(e);
+			}
+		}).doOnError(e -> {
+			log.error("Error while checking for field {" + objectKey + "}", objectKey, e);
+		});
 	}
 
 	@Override
@@ -260,7 +284,13 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 					.key(objectKey)
 					.build();
 			return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
-		}).map(f -> Buffer.buffer(f.asByteArray()));
+		}).onErrorReturn(
+				null)
+				.map(f -> {
+				if(isNull(f))
+					return Buffer.buffer();
+				return Buffer.buffer(f.asByteArray());
+		});
 	}
 
 	@Override

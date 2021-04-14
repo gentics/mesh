@@ -373,24 +373,28 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Completable handleS3Resize(S3HibBinary s3binary, ImageManipulationParameters parameters) {
+	public Completable handleS3Resize(String bucket, String s3ObjectKey,String filename , ImageManipulationParameters parameters) {
 		// Validate the resize parameters
 		parameters.validate();
 		parameters.validateLimits(options);
 
 		return s3BinaryStorage
+				.exists(bucket, s3ObjectKey)
 				//read from aws and return buffer with data
-				.read(s3binary.getS3ObjectKey(), parameters)
-				.flatMapCompletable(cacheFileInfo -> {
-					if (cacheFileInfo.getBytes().length > 0) {
-						return Completable.complete();
-					} else {
+				.flatMapCompletable(res -> {
+					if (res) return s3BinaryStorage.read(s3ObjectKey, parameters)
+							.flatMapCompletable(cacheFileInfo -> {
+								if (cacheFileInfo.getBytes().length > 0) {
+									return Completable.complete();
+								} else return Completable.complete();
+							});
+					else {
 						// TODO handle execution timeout
 						// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the
 						// regular worker
 						// pool
-					return s3BinaryStorage
-								.read(s3binary.getS3ObjectKey())
+						return s3BinaryStorage
+								.read(s3ObjectKey)
 								.flatMapSingle(originalFile ->
 										workerPool.<File>rxExecuteBlocking(bh -> {
 											try (
@@ -415,7 +419,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 												String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
 												String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-												String cacheFilePath = s3binary.getFileName() + "." + extension;
+												String cacheFilePath = filename;
 												File outCacheFile = new File(cacheFilePath);
 
 												// Write image
@@ -436,7 +440,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 								)
 								.flatMapSingle(file ->
 										//write cache to AWS
-										s3BinaryStorage.write(null, s3binary.getS3ObjectKey(), file))
+										s3BinaryStorage.write(bucket, s3ObjectKey, file))
 								.ignoreElements();
 
 					}

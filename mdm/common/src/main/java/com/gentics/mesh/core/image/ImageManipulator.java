@@ -25,7 +25,7 @@ public interface ImageManipulator {
 	 * @return The path to the resized file.
 	 */
 	Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters);
-	Completable handleS3Resize(S3HibBinary s3binary, ImageManipulationParameters parameters);
+	Completable handleS3Resize(String bucketName, String s3ObjectKey,String filename ,ImageManipulationParameters parameters);
 /*
 	*//**
 	 * Resize the given s3 binary data and return the path to the resized file.
