@@ -131,11 +131,12 @@ public class S3BinaryFieldResponseHandler {
 			imageParams.setWidth(originalWidth);
 		}
 		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+		String cacheS3ObjectKey = s3ObjectKey + "/image-" + imageParams.getCacheKey();
 		String fileName = s3binaryField.getS3Binary().getFileName();
 		imageManipulator
-				.handleS3Resize(s3Options.getS3CacheOptions().getBucket(), s3ObjectKey, fileName, imageParams)
+				.handleS3Resize(s3Options.getS3CacheOptions().getBucket(), cacheS3ObjectKey, fileName, imageParams)
 				.andThen(Single.defer(() -> {
-					Single<S3RestResponse> presignedUrl = s3Binarystorage.getPresignedUrl(s3Options.getS3CacheOptions().getBucket(), s3ObjectKey);
+					Single<S3RestResponse> presignedUrl = s3Binarystorage.getPresignedUrl(s3Options.getS3CacheOptions().getBucket(), cacheS3ObjectKey);
 					return presignedUrl;
 				}))
 				.doOnSuccess(model -> {

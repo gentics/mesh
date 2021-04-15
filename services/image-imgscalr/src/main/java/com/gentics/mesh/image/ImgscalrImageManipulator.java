@@ -2,6 +2,8 @@ package com.gentics.mesh.image;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static java.util.Objects.isNull;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -384,9 +386,11 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				.flatMapCompletable(res -> {
 					if (res) return s3BinaryStorage.read(s3ObjectKey, parameters)
 							.flatMapCompletable(cacheFileInfo -> {
-								if (cacheFileInfo.getBytes().length > 0) {
+								if (isNull(cacheFileInfo) ||cacheFileInfo.getBytes().length > 0) {
 									return Completable.complete();
-								} else return Completable.complete();
+								} else {
+									log.error("Could not read input image");
+									return Completable.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));}
 							});
 					else {
 						// TODO handle execution timeout

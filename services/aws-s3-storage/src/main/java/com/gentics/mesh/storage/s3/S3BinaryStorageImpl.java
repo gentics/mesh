@@ -1,22 +1,6 @@
 package com.gentics.mesh.storage.s3;
 
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
-import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.StringJoiner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.core.data.binary.HibBinaryField;
-import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -38,7 +22,6 @@ import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
-import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
@@ -52,12 +35,10 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.time.Duration;
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static java.util.Objects.isNull;
@@ -274,7 +255,6 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 
 	@Override
 	public Flowable<Buffer> read(String objectKey, ImageManipulationParameters parameters) {
-		String baseName = "image-" + parameters.getCacheKey();
 		return Flowable.defer(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Loading data for uuid {" + objectKey + "}");
@@ -287,10 +267,10 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 		}).onErrorReturn(
 				null)
 				.map(f -> {
-				if(isNull(f))
-					return Buffer.buffer();
-				return Buffer.buffer(f.asByteArray());
-		});
+					if (isNull(f))
+						return Buffer.buffer();
+					return Buffer.buffer(f.asByteArray());
+				});
 	}
 
 	@Override
