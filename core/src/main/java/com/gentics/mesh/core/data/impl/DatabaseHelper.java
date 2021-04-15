@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
+import com.gentics.mesh.core.data.job.impl.NodePublishStatusChangeScheduleJobImpl;
 import com.gentics.mesh.core.data.job.impl.VersionPurgeJobImpl;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
@@ -141,6 +142,7 @@ public final class DatabaseHelper {
 		VersionPurgeJobImpl.init(type, index);
 		MicronodeMigrationJobImpl.init(type, index);
 		BranchMigrationJobImpl.init(type, index);
+		NodePublishStatusChangeScheduleJobImpl.init(type, index);
 
 		// Field changes
 		FieldTypeChangeImpl.init(type, index);

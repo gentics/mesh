@@ -6,13 +6,18 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -23,6 +28,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
@@ -31,11 +37,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -501,5 +508,38 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}, model -> {
 			ac.send(model, OK);
 		});
+	}
+	
+	
+	protected void validateScheduleTime(ZonedDateTime value, String name) {
+		if (value == null) {
+			throw error(BAD_REQUEST, "error_request_parameter_missing", name);
+		}
+		if (ZonedDateTime.now().isAfter(value)) {
+			throw error(BAD_REQUEST, "error_date_format_invalid", value.toString());
+		}
+	}
+	
+	
+	public void handleScheduleTakeOffline(InternalActionContext ac, String uuid, ZonedDateTime fireAt, Optional<String> maybeLanguageTag) {
+		validateScheduleTime(fireAt, "fireAt");
+		
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				if (!ac.getUser().isAdmin()) {
+					throw error(FORBIDDEN, "error_admin_permission_required"); // TODO allow non-admins?
+				}
+				RootVertex<Node> root = getRootVertex(ac);
+				MeshAuthUser user = ac.getUser();
+				Project project = ac.getProject();
+				Node node = root.loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+				db.tx(() -> {
+					boot.jobRoot().enqueueNodePublishStatusChangeSchedule(user, project, node, maybeLanguageTag, fireAt, false);					
+				});
+				MeshEvent.triggerJobWorker(boot.mesh());
+
+				return message(ac, "project_version_purge_enqueued");
+			}, message -> ac.send(message, OK));
+		}
 	}
 }

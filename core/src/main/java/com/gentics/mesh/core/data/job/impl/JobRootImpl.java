@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
@@ -168,6 +170,27 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued project version purge job {" + job.getUuid() + "} for project {" + project.getName() + "}");
+		}
+		return job;
+	}
+	
+
+	@Override
+	public Job enqueueNodePublishStatusChangeSchedule(User user, Project project, Node node, Optional<String> maybeLanguageTag, ZonedDateTime fireAt,
+			boolean publish) {
+		NodePublishStatusChangeScheduleJobImpl job = getGraph().addFramedVertex(NodePublishStatusChangeScheduleJobImpl.class);
+		// TODO Don't add the user to reduce contention
+		// job.setCreated(user);
+		job.setType(JobType.versionpurge);
+		job.setStatus(QUEUED);
+		job.setProject(project);
+		job.setNode(node);
+		job.setFireAt(fireAt);
+		job.setLanguage(maybeLanguageTag);
+		job.setPublish(publish);
+		addItem(job);
+		if (log.isDebugEnabled()) {
+			log.debug("Enqueued node publish status change scheduler job {" + job.getUuid() + "} for node {" + node.getUuid() + "}");
 		}
 		return job;
 	}

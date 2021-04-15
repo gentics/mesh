@@ -254,6 +254,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
 			Map<String, Map<String, NodeGraphFieldContainer>> map = version.getFieldContainers(branchUuid, bucket)
+					.map(c -> (NodeGraphFieldContainer) c)
 				.filter(c -> c.isType(type, branchUuid))
 				.collect(Collectors.groupingBy(content -> {
 					String languageTag = content.getLanguageTag();

@@ -24,6 +24,7 @@ import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.NodePublishStatusChangeScheduleHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -107,6 +108,8 @@ public interface MeshComponent {
 	MicronodeMigrationHandler micronodeMigrationHandler();
 
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
+	
+	NodePublishStatusChangeScheduleHandler nodePublishStatusChangeScheduleHandler();
 
 	MeshLocalClientImpl meshLocalClientImpl();
 
