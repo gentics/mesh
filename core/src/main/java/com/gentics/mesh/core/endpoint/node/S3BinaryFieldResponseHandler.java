@@ -65,43 +65,27 @@ public class S3BinaryFieldResponseHandler {
 	}
 
 	/**
-	 * Handle the binary field response.
+	 * Handle the S3 binary field response.
 	 *
 	 * @param rc
 	 * @param s3binaryField
 	 */
-	public void handle(RoutingContext rc, S3BinaryGraphField s3binaryField,String uuid, String fieldName) {
-		//rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
+	public void handle(RoutingContext rc, S3BinaryGraphField s3binaryField) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		ImageManipulationParameters imageParams = ac.getImageParameters();
-		boolean b = s3binaryField.hasProcessableImage();
-		boolean b1 = imageParams.hasResizeParams();
-		if (true&& imageParams.hasResizeParams()) {
+		if (s3binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
 			resizeAndRespond(rc, s3binaryField, imageParams);
 		} else {
 			respond(rc, s3binaryField);
 		}
 	}
 
-	private boolean checkETag(RoutingContext rc, S3BinaryGraphField s3binaryField) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		String sha512sum = s3binaryField.getS3Binary().getSHA512Sum();
-		String etagKey = sha512sum;
-		if (s3binaryField.hasProcessableImage()) {
-			etagKey += ac.getImageParameters().getQueryParameters();
-		}
-
-		String etagHeaderValue = ETag.prepareHeader(ETag.hash(etagKey), false);
-		HttpServerResponse response = rc.response();
-		response.putHeader(ETAG, etagHeaderValue);
-		String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
-		if (requestETag != null && requestETag.equals(etagHeaderValue)) {
-			response.setStatusCode(NOT_MODIFIED.code()).end();
-			return true;
-		}
-		return false;
-	}
-
+	/**
+	 * Handle the S3 binary field response when the S3 file is already there.
+	 *
+	 * @param rc
+	 * @param s3binaryField
+	 */
 	private void respond(RoutingContext rc, S3BinaryGraphField s3binaryField) {
 		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
 		s3Binarystorage.getPresignedUrl(s3Options.getBucket(), s3ObjectKey)
@@ -111,7 +95,13 @@ public class S3BinaryFieldResponseHandler {
 					rc.response().end();
 				});
 	}
-
+	/**
+	 * Handle the S3 binary field response when the S3 file does not exist or should be resized/manipulated first.
+	 *
+	 * @param rc
+	 * @param s3binaryField
+	 * @param imageParams
+	 */
 	private void resizeAndRespond(RoutingContext rc, S3BinaryGraphField s3binaryField, ImageManipulationParameters imageParams) {
 		HttpServerResponse response = rc.response();
 		// We can maybe enhance the parameters using stored parameters.
@@ -147,16 +137,4 @@ public class S3BinaryFieldResponseHandler {
 				.subscribe(ignore -> {
 				}, rc::fail);
 	}
-
-	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
-		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
-		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
-
-		StringBuilder value = new StringBuilder();
-		value.append(type + ";");
-		value.append(" filename=\"" + encodedFileNameISO + "\";");
-		value.append(" filename*=" + encodedFileNameUTF8);
-		response.putHeader("content-disposition", value.toString());
-	}
-
 }

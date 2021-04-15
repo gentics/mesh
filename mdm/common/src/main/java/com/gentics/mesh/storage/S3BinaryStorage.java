@@ -1,8 +1,6 @@
 package com.gentics.mesh.storage;
 
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -16,12 +14,13 @@ import java.io.File;
 public interface S3BinaryStorage {
 
 	/**
-	 * Read the binary data which is identified by the given binary uuid.
+	 * Read the S3 binary data which is identified by the given bucketname and objectkey.
 	 *
+	 * @param bucketName
 	 * @param objectKey
 	 * @return
 	 */
-	Flowable<Buffer> read(String objectKey);
+	Flowable<Buffer> read(String bucketName, String objectKey);
 
 
 	/**
@@ -32,12 +31,36 @@ public interface S3BinaryStorage {
 	 * @return
 	 */
 	Single<S3RestResponse> createPresignedUrl(String bucketName, String nodeUuid, String fieldName);
+
+	/**
+	 * Get a presigned URL that can be used for a given time period.
+	 *
+	 * @param bucketName
+	 * @param objectKey
+	 * @return
+	 */
 	Single<S3RestResponse> getPresignedUrl(String bucketName, String objectKey);
-	 Flowable<Buffer> read(String objectKey,  ImageManipulationParameters parameters);
-	 void createCacheBucket(String cacheBucketName);
-	 Single<S3RestResponse> write(String bucket, String objectKey, File file);
-	 Single<Boolean> exists(String bucket, String objectKey);
-		/**
+
+	/**
+	 * Upload file into a s3bucket using the objectKey.
+	 *
+	 * @param bucketName
+	 * @param objectKey
+	 * @param file
+	 * @return
+	 */
+	Single<S3RestResponse> uploadFile(String bucketName, String objectKey, File file);
+
+	/**
+	 * Check if objectKey in a bucket exists.
+	 *
+	 * @param bucketName
+	 * @param objectKey
+	 * @return
+	 */
+	Single<Boolean> exists(String bucketName, String objectKey);
+
+	/**
          * Creates a S3 bucket for a given name if doesn't exists..
          *
          * @param bucketName

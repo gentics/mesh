@@ -85,10 +85,9 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 				S3BinaryGraphField field = fieldContainer.getS3Binary(fieldName);
 				if (field == null) {
-					//TODO fix error name
-					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
 				}
-				s3binaryFieldResponseHandler.handle(rc, field, uuid, fieldName);
+				s3binaryFieldResponseHandler.handle(rc, field);
 			} else {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
