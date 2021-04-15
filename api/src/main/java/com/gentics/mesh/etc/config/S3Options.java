@@ -159,4 +159,12 @@ public class S3Options implements Option {
         this.expirationTimeUpload = expirationTimeUpload;
         return this;
     }
+
+    public int getExpirationTimeDownload() {
+        return expirationTimeDownload;
+    }
+
+    public void setExpirationTimeDownload(int expirationTimeDownload) {
+        this.expirationTimeDownload = expirationTimeDownload;
+    }
 }

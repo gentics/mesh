@@ -88,7 +88,7 @@ public class S3BinaryFieldResponseHandler {
 	 */
 	private void respond(RoutingContext rc, S3BinaryGraphField s3binaryField) {
 		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
-		s3Binarystorage.getPresignedUrl(s3Options.getBucket(), s3ObjectKey)
+		s3Binarystorage.createDownloadPresignedUrl(s3Options.getBucket(), s3ObjectKey, false)
 				.subscribe(model ->{
 					rc.response().setStatusCode(302);
 					rc.response().headers().set("Location", model.getPresignedUrl());
@@ -124,9 +124,9 @@ public class S3BinaryFieldResponseHandler {
 		String cacheS3ObjectKey = s3ObjectKey + "/image-" + imageParams.getCacheKey();
 		String fileName = s3binaryField.getS3Binary().getFileName();
 		imageManipulator
-				.handleS3Resize(s3Options.getS3CacheOptions().getBucket(), cacheS3ObjectKey, fileName, imageParams)
+				.handleS3Resize(s3Options.getBucket(), s3Options.getS3CacheOptions().getBucket(), s3ObjectKey, cacheS3ObjectKey, fileName, imageParams)
 				.andThen(Single.defer(() -> {
-					Single<S3RestResponse> presignedUrl = s3Binarystorage.getPresignedUrl(s3Options.getS3CacheOptions().getBucket(), cacheS3ObjectKey);
+					Single<S3RestResponse> presignedUrl = s3Binarystorage.createDownloadPresignedUrl(s3Options.getS3CacheOptions().getBucket(), cacheS3ObjectKey, true);
 					return presignedUrl;
 				}))
 				.doOnSuccess(model -> {

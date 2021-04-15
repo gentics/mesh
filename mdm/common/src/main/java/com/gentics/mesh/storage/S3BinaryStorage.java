@@ -30,7 +30,7 @@ public interface S3BinaryStorage {
 	 * @param fieldName
 	 * @return
 	 */
-	Single<S3RestResponse> createPresignedUrl(String bucketName, String nodeUuid, String fieldName);
+	Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName, boolean isCache);
 
 	/**
 	 * Get a presigned URL that can be used for a given time period.
@@ -39,7 +39,7 @@ public interface S3BinaryStorage {
 	 * @param objectKey
 	 * @return
 	 */
-	Single<S3RestResponse> getPresignedUrl(String bucketName, String objectKey);
+	Single<S3RestResponse> createDownloadPresignedUrl(String bucketName, String objectKey, boolean isCache);
 
 	/**
 	 * Upload file into a s3bucket using the objectKey.

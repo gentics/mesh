@@ -123,8 +123,14 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Single<S3RestResponse> createPresignedUrl(String bucketName ,String nodeUuid, String fieldName) {
-		int expirationTimeUpload = options.getExpirationTimeUpload();
+	public Single<S3RestResponse> createUploadPresignedUrl(String bucketName ,String nodeUuid, String fieldName, boolean isCache) {
+		int expirationTimeUpload;
+		//we need to establish a fixed expiration time upload for the cache
+		if (isCache && options.getS3CacheOptions().getExpirationTimeUpload() > 0)
+			expirationTimeUpload = options.getS3CacheOptions().getExpirationTimeUpload();
+		else {
+			expirationTimeUpload = options.getExpirationTimeUpload();
+		}
 		String objectKey = nodeUuid + "/" + fieldName;
 
 		PresignedPutObjectRequest presignedRequest =
@@ -141,9 +147,12 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Single<S3RestResponse> getPresignedUrl(String bucket, String objectKey) {
-		//TODO expiration time download
-
+	public Single<S3RestResponse> createDownloadPresignedUrl(String bucket, String objectKey, boolean isCache) {
+		int expirationTimeDownload;
+		if (isCache) expirationTimeDownload = options.getS3CacheOptions().getExpirationTimeDownload();
+		else {
+			expirationTimeDownload = options.getExpirationTimeDownload();
+		}
 		GetObjectRequest getObjectRequest =
 				GetObjectRequest.builder()
 						.bucket(bucket)
@@ -152,7 +161,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 
 		GetObjectPresignRequest getObjectPresignRequest =
 				GetObjectPresignRequest.builder()
-						.signatureDuration(Duration.ofMinutes(10))
+						.signatureDuration(Duration.ofSeconds(expirationTimeDownload))
 						.getObjectRequest(getObjectRequest)
 						.build();
 
@@ -181,15 +190,11 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 						.key(objectKey)
 						.build();
 				return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
-			}).map(f ->{
-				System.out.println(f.asByteArray().length);
-				return	Buffer.buffer(f.asByteArray());
-			});
+			}).map(f ->Buffer.buffer(f.asByteArray()));
 	}
 
 	@Override
 	public Single<S3RestResponse> uploadFile(String bucket, String objectKey, File file) {
-
 		String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(file.getName());
 
 		PutObjectRequest objectRequest = PutObjectRequest.builder()
@@ -204,7 +209,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 				AsyncRequestBody.fromFile(file)
 		));
 		return completable
-				.andThen(createPresignedUrl(bucket, split[0], split[1]))
+				.andThen(createUploadPresignedUrl(bucket, split[0], split[1], true))
 				.doOnError(err -> Single.error(err));
 	}
 
