@@ -90,9 +90,8 @@
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
+			<artifactId>mesh-tests-api</artifactId>
 			<scope>test</scope>
-			<type>test-jar</type>
 		</dependency>
 
 	</dependencies>

@@ -17,8 +17,26 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<modules>
-		<module>core</module>
+		<!-- General -->
 		<module>api</module>
+		<module>common</module>
+		<module>context-api</module>
+		
+		<!-- Actual project tests -->
+		<module>tests-api</module>
+		<module>tests-core</module>
+		<module>tests-common</module>
+		
+		<!-- Other tests -->
+		<module>tests-distributed</module>
+		<module>tests-performance</module>
+		<module>tests-integration</module>
+		
+		<!-- Default context - OrientDB -->
+		<module>context-orientdb</module>
+		
+		<!-- Tests runner over OrientDB default context -->
+		<module>orientdb-runner</module>
 	</modules>
 
 	<dependencyManagement>
@@ -78,6 +96,12 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>toxiproxy</artifactId>
 			<version>1.11.1</version>
+		</dependency>
+		<dependency>
+			<groupId>io.takari.junit</groupId>
+			<artifactId>takari-cpsuite</artifactId>
+			<version>1.2.7</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
