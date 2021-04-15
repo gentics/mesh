@@ -3,7 +3,6 @@ package com.gentics.mesh.storage.s3;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.S3BinaryStorage;
 import hu.akarnokd.rxjava2.interop.CompletableInterop;
 import hu.akarnokd.rxjava2.interop.FlowableInterop;
@@ -40,8 +39,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
-
-import static java.util.Objects.isNull;
 
 /**
  * Initial S3 Storage implementation.
@@ -98,7 +95,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 		String bucketName = options.getBucket();
 		String cacheBucketName = options.getS3CacheOptions().getBucket();
 		createBucket(bucketName);
-		createCacheBucket(cacheBucketName);
+		createBucket(cacheBucketName);
 	}
 
 	@Override
@@ -122,30 +119,6 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 			log.info("Created bucket {}", bucketName);
 		}, e -> {
 			log.error("Error while creating bucket", e);
-		});
-	}
-
-	@Override
-	public void createCacheBucket(String cacheBucketName) {
-		HeadBucketRequest headRequest = HeadBucketRequest.builder()
-				.bucket(cacheBucketName)
-				.build();
-		CreateBucketRequest createRequest = CreateBucketRequest.builder()
-				.bucket(cacheBucketName)
-				.build();
-		Single<HeadBucketResponse> bucketHead = SingleInterop.fromFuture(client.headBucket(headRequest));
-		bucketHead.map(e -> e != null)
-				.onErrorResumeNext(e -> {
-					//try to create new bucket if bucket cannot be found
-					if (e instanceof CompletionException && e.getCause() != null) {
-						return SingleInterop.fromFuture(client.createBucket(createRequest)).map(r -> r != null);
-					} else {
-						return Single.error(e);
-					}
-				}).subscribe(b -> {
-			log.info("Created cache bucket {}", cacheBucketName);
-		}, e -> {
-			log.error("Error while creating cache bucket", e);
 		});
 	}
 
@@ -198,13 +171,13 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-		public Flowable<Buffer> read(String objectKey) {
+		public Flowable<Buffer> read(String bucketName, String objectKey) {
 			return Flowable.defer(() -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Loading data for uuid {" + objectKey + "}");
 				}
 				GetObjectRequest request = GetObjectRequest.builder()
-						.bucket(options.getBucket())
+						.bucket(bucketName)
 						.key(objectKey)
 						.build();
 				return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
@@ -215,7 +188,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Single<S3RestResponse> write(String bucket, String objectKey, File file) {
+	public Single<S3RestResponse> uploadFile(String bucket, String objectKey, File file) {
 
 		String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(file.getName());
 
@@ -251,26 +224,6 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 		}).doOnError(e -> {
 			log.error("Error while checking for field {" + objectKey + "}", objectKey, e);
 		});
-	}
-
-	@Override
-	public Flowable<Buffer> read(String objectKey, ImageManipulationParameters parameters) {
-		return Flowable.defer(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Loading data for uuid {" + objectKey + "}");
-			}
-			GetObjectRequest request = GetObjectRequest.builder()
-					.bucket(options.getS3CacheOptions().getBucket())
-					.key(objectKey)
-					.build();
-			return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
-		}).onErrorReturn(
-				null)
-				.map(f -> {
-					if (isNull(f))
-						return Buffer.buffer();
-					return Buffer.buffer(f.asByteArray());
-				});
 	}
 
 	@Override
