@@ -23,6 +23,11 @@ All fixes and changes in LTS releases will be released the next minor release. C
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
 
 [[v1.6.9]]
+== 1.6.10 (TBD)
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
+
+[[v1.6.9]]
 == 1.6.9 (11.03.2021)
 
 icon:plus[] Core: Added support for looking up the node field content by webroot path and a field name.

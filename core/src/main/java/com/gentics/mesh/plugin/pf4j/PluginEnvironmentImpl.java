@@ -5,13 +5,13 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
-import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 
@@ -85,8 +85,7 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 	@Override
 	public MeshRestClient createClient(String token) {
 		int port = options.getHttpServerOptions().getPort();
-		String host = options.getHttpServerOptions().getHost();
-
+		String host = determineHostString(options);
 		MeshRestClient client = MeshRestClient.create(new MeshRestClientConfig.Builder()
 			.setHost(host)
 			.setPort(port)
