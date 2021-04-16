@@ -181,7 +181,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		NodePublishStatusChangeScheduleJobImpl job = getGraph().addFramedVertex(NodePublishStatusChangeScheduleJobImpl.class);
 		// TODO Don't add the user to reduce contention
 		// job.setCreated(user);
-		job.setType(JobType.versionpurge);
+		job.setType(JobType.dolater);
 		job.setStatus(QUEUED);
 		job.setProject(project);
 		job.setNode(node);

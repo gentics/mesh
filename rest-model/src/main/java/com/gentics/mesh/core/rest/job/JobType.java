@@ -9,7 +9,5 @@ public enum JobType {
 
 	versionpurge,
 
-	publishlater,
-	
-	unpublishlater
+	dolater // TODO name it better
 }

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
@@ -17,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -31,7 +33,9 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.job.impl.NodePublishStatusChangeScheduleJobImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -508,6 +512,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}, model -> {
 			ac.send(model, OK);
 		});
+		
+		// TEST PURPOSES
+		handleScheduleTakeOffline(ac, uuid, ZonedDateTime.now().plusMinutes(5), Optional.empty());
+		
+		List<? extends NodePublishStatusChangeScheduleJobImpl> nodes = db.tx(() -> {
+			RootVertex<Node> root = getRootVertex(ac);
+			Node node = root.loadObjectByUuid(ac, uuid, PUBLISH_PERM);		
+			return node.in(HAS_NODE, NodePublishStatusChangeScheduleJobImpl.class).list();
+		});
+		assert(nodes.size() > -1);
 	}
 	
 	

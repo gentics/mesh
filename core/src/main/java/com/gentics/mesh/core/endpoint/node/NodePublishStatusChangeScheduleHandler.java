@@ -6,6 +6,8 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.NodePublishStatusChangeContextImpl;
 import com.gentics.mesh.core.data.Project;
@@ -36,10 +38,14 @@ public class NodePublishStatusChangeScheduleHandler {
 		this.utils = utils;
     }
 	
-	// TODO log, document
-	public Completable purgeVersions(Project project, Node node, Optional<String> maybeLanguageTag, ZonedDateTime fireAt,
+	// TODO document
+	public Completable schedulePublishStatusChange(Project project, Node node, Optional<String> maybeLanguageTag, ZonedDateTime fireAt,
 			boolean publish, Optional<Job> maybeJob) {
-		maybeJob.ifPresent(job -> job.setStatus(JobStatus.RUNNING));
+		
+		String jobDescription = logMessageFromJobDescription(project, node, maybeLanguageTag, fireAt, publish, maybeJob);
+		log.debug("Scheduling job for " + jobDescription);
+
+		maybeJob.ifPresent(job -> db.tx(() -> job.setStatus(JobStatus.RUNNING)));
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
 				ZonedDateTime now = ZonedDateTime.now();
@@ -48,34 +54,43 @@ public class NodePublishStatusChangeScheduleHandler {
 				
 				if (fireAt.isAfter(now)) {
 					boot.vertx().setTimer(fireAt.toInstant().toEpochMilli() - now.toInstant().toEpochMilli(), l -> {
-						db.tx(tx1 -> {
-							utils.bulkableAction(bac -> {
-								NodePublishStatusChangeContextImpl iac = new NodePublishStatusChangeContextImpl();
-								if (maybeLanguageTag.isPresent()) {
-									if (publish) {
-										node.publish(iac, bac, maybeLanguageTag.get());
-									} else {
-										node.takeOffline(iac, bac, null, maybeLanguageTag.get());
-									}
+						db.tx(() -> utils.bulkableAction(bac -> {
+							log.debug("Triggering job " + jobDescription);
+							NodePublishStatusChangeContextImpl iac = new NodePublishStatusChangeContextImpl();
+							if (maybeLanguageTag.isPresent()) {
+								if (publish) {
+									node.publish(iac, bac, maybeLanguageTag.get());
 								} else {
-									if (publish) {
-										node.publish(iac, bac);
-									} else {
-										node.takeOffline(iac, bac);
-									}
+									node.takeOffline(iac, bac, null, maybeLanguageTag.get());
 								}
-								maybeJob.ifPresent(job -> job.setStatus(JobStatus.COMPLETED));
-							});							
-						});
+							} else {
+								if (publish) {
+									node.publish(iac, bac);
+								} else {
+									node.takeOffline(iac, bac);
+								}
+							}
+							maybeJob.ifPresent(job -> job.setStatus(JobStatus.COMPLETED));
+							log.info("Job done: " + jobDescription);
+						}));
 					});
 				} else {
-					maybeJob.ifPresent(job -> job.setStatus(JobStatus.FAILED));
+					log.error("Job is outdated: " + jobDescription);
+					maybeJob.ifPresent(job -> {
+						job.setStatus(JobStatus.FAILED);
+						job.delete();
+					});
 					// TODO proper error
-					throw new RuntimeException("Failure");
+					
 				}
-				
-				return null;
 			});
 		});
+	}
+	
+	protected String logMessageFromJobDescription(Project project, Node node, Optional<String> maybeLanguageTag, ZonedDateTime fireAt,
+			boolean publish, Optional<Job> maybeJob) {
+		return db.tx(() -> "project:{" + project.getName() + "} node:{" + node.getUuid() + "}, "
+				+ (publish ? StringUtils.EMPTY : "un") + "publish "
+				+ (maybeLanguageTag.isPresent() ? maybeLanguageTag.get() : StringUtils.EMPTY));
 	}
 }

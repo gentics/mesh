@@ -89,7 +89,12 @@ public class NodePublishStatusChangeScheduleJobImpl extends JobImpl {
 	protected Completable processTask() {
 		// TODO publish events?
 		NodePublishStatusChangeScheduleHandler handler = mesh().nodePublishStatusChangeScheduleHandler();
-		return handler.purgeVersions(getProject(), getNode(), getLanguage(), getFireAt(), isPublish(), Optional.of(this));		
+		Project project = db().tx(() -> getProject());
+		Node node = db().tx(() -> getNode());
+		Optional<String> maybeLanguageTag = db().tx(() -> getLanguage());
+		ZonedDateTime fireAt = db().tx(() -> getFireAt());
+		boolean publish = db().tx(() -> isPublish());
+		return handler.schedulePublishStatusChange(project, node, maybeLanguageTag, fireAt, publish, Optional.of(this));		
 	}	
 
 }
