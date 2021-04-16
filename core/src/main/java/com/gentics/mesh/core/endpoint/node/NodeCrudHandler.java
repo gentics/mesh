@@ -514,7 +514,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		});
 		
 		// TEST PURPOSES
-		handleScheduleTakeOffline(ac, uuid, ZonedDateTime.now().plusMinutes(5), Optional.empty());
+		handleSchedulePublishStatusChange(ac, uuid, ZonedDateTime.now().plusMinutes(5), false, Optional.empty());
 		
 		List<? extends NodePublishStatusChangeScheduleJobImpl> nodes = db.tx(() -> {
 			RootVertex<Node> root = getRootVertex(ac);
@@ -522,6 +522,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return node.in(HAS_NODE, NodePublishStatusChangeScheduleJobImpl.class).list();
 		});
 		assert(nodes.size() > -1);
+		
+		handleSchedulePublishStatusChange(ac, uuid, ZonedDateTime.now().plusMinutes(15), true, Optional.empty());
 	}
 	
 	
@@ -535,7 +537,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 	
 	
-	public void handleScheduleTakeOffline(InternalActionContext ac, String uuid, ZonedDateTime fireAt, Optional<String> maybeLanguageTag) {
+	public void handleSchedulePublishStatusChange(InternalActionContext ac, String uuid, ZonedDateTime fireAt, boolean publish, Optional<String> maybeLanguageTag) {
 		validateScheduleTime(fireAt, "fireAt");
 		
 		try (WriteLock lock = writeLock.lock(ac)) {
@@ -548,11 +550,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				Project project = ac.getProject();
 				Node node = root.loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				db.tx(() -> {
-					boot.jobRoot().enqueueNodePublishStatusChangeSchedule(user, project, node, maybeLanguageTag, fireAt, false);					
+					boot.jobRoot().enqueueNodePublishStatusChangeSchedule(user, project, node, maybeLanguageTag, fireAt, publish);					
 				});
 				MeshEvent.triggerJobWorker(boot.mesh());
 
-				return message(ac, "project_version_purge_enqueued");
+				return message(ac, "project_version_purge_enqueued"); // TODO proper messages
 			}, message -> ac.send(message, OK));
 		}
 	}
