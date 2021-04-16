@@ -29,6 +29,11 @@ icon:check[] Plugins: An issue in the plugin environment has been fixed which pr
 icon:check[] Upload: The document processing library _tika_ has been updated to version `1.26` to fix the PDF parser failing on files with some Adobe fonts.
 
 [[v1.6.9]]
+== 1.6.10 (TBD)
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
+
+[[v1.6.9]]
 == 1.6.9 (11.03.2021)
 
 icon:plus[] Core: Added support for looking up the node field content by webroot path and a field name.

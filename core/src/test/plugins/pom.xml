@@ -15,6 +15,7 @@
 	<modules>
 		<module>basic</module>
 		<module>basic2</module>
+		<module>client</module>
 		<module>non-mesh</module>
 		<module>failing</module>
 		<module>classloader</module>
