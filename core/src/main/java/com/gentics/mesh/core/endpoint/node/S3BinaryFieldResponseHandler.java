@@ -115,7 +115,7 @@ public class S3BinaryFieldResponseHandler {
 		String cacheS3ObjectKey = s3ObjectKey + "/image-" + imageParams.getCacheKey();
 		String fileName = s3binaryField.getS3Binary().getFileName();
 		imageManipulator
-				.handleS3Resize(s3Options.getBucket(), s3Options.getS3CacheOptions().getBucket(), s3ObjectKey, cacheS3ObjectKey, fileName, imageParams)
+				.handleS3CacheResize(s3Options.getBucket(), s3Options.getS3CacheOptions().getBucket(), s3ObjectKey, cacheS3ObjectKey, fileName, imageParams)
 				.andThen(Single.defer(() -> {
 					Single<S3RestResponse> presignedUrl = s3Binarystorage.createDownloadPresignedUrl(s3Options.getS3CacheOptions().getBucket(), cacheS3ObjectKey, true);
 					return presignedUrl;

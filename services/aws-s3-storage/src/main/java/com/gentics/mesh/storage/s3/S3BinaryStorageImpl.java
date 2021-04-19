@@ -170,7 +170,9 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 				presigner.presignGetObject(getObjectPresignRequest);
 
 		// Log the presigned URL
-		System.out.println("Presigned URL: " + presignedGetObjectRequest.url());
+		if (log.isDebugEnabled()) {
+			log.debug("Presigned URL: '{}'", presignedGetObjectRequest.url());
+		}
 
 		String host = presignedGetObjectRequest.url().toString();
 		SdkHttpMethod method = presignedGetObjectRequest.httpRequest().method();
@@ -180,17 +182,17 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-		public Flowable<Buffer> read(String bucketName, String objectKey) {
-			return Flowable.defer(() -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Loading data for uuid {" + objectKey + "}");
-				}
-				GetObjectRequest request = GetObjectRequest.builder()
-						.bucket(bucketName)
-						.key(objectKey)
-						.build();
-				return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
-			}).map(f ->Buffer.buffer(f.asByteArray()));
+	public Flowable<Buffer> read(String bucketName, String objectKey) {
+		return Flowable.defer(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Loading data for uuid {" + objectKey + "}");
+			}
+			GetObjectRequest request = GetObjectRequest.builder()
+					.bucket(bucketName)
+					.key(objectKey)
+					.build();
+			return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
+		}).map(f -> Buffer.buffer(f.asByteArray()));
 	}
 
 	@Override
