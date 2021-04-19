@@ -6,6 +6,7 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -33,7 +34,18 @@ public interface ImageManipulator {
      * @param filename
      * @param parameters
      */
-    Completable handleS3Resize(String bucketName, String cacheBucketName, String s3ObjectKey, String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
+    Completable handleS3CacheResize(String bucketName, String cacheBucketName, String s3ObjectKey, String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
+
+    /**
+     * Resize the given s3 binary data and return the result.
+     *
+     * @param bucketName
+     * @param s3ObjectKey
+     * @param filename
+     * @param parameters
+     */
+    Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename, ImageManipulationParameters parameters);
+
 
     /**
      * Return the cache file for the given binary and image parameters.

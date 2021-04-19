@@ -3,7 +3,9 @@ package com.gentics.mesh.core.endpoint.node;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -202,7 +204,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			binaryTransformHandler.handleTransformImage(rc, uuid, fieldName);
+			binaryTransformHandler.handle(rc, uuid, fieldName);
 		});
 
 		InternalEndpointRoute fieldGet = createRoute();
