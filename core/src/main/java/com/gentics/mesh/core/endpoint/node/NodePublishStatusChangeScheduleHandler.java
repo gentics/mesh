@@ -44,19 +44,20 @@ public class NodePublishStatusChangeScheduleHandler {
 		
 		String jobDescription = logMessageFromJobDescription(project, node, maybeLanguageTag, fireAt, publish, maybeJob);
 		log.debug("Scheduling job for " + jobDescription);
+		
+		// TODO expected version / publish status check, see NodeImpl#setFields()
 
-		maybeJob.ifPresent(job -> db.tx(() -> job.setStatus(JobStatus.RUNNING)));
+		maybeJob.ifPresent(job -> db.tx(() -> job.setStatus(JobStatus.STARTING)));
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
 				ZonedDateTime now = ZonedDateTime.now();
-				
-				// TODO cluster: optionally check the published status + version of the currently stored node, to avoid double publish. 
 				
 				if (fireAt.isAfter(now)) {
 					boot.vertx().setTimer(fireAt.toInstant().toEpochMilli() - now.toInstant().toEpochMilli(), l -> {
 						db.tx(() -> utils.bulkableAction(bac -> {
 							log.debug("Triggering job " + jobDescription);
 							NodePublishStatusChangeContextImpl iac = new NodePublishStatusChangeContextImpl();
+
 							if (maybeLanguageTag.isPresent()) {
 								if (publish) {
 									node.publish(iac, bac, maybeLanguageTag.get());
@@ -74,6 +75,7 @@ public class NodePublishStatusChangeScheduleHandler {
 							log.info("Job done: " + jobDescription);
 						}));
 					});
+					maybeJob.ifPresent(job -> db.tx(() -> job.setStatus(JobStatus.RUNNING)));
 				} else {
 					log.error("Job is outdated: " + jobDescription);
 					maybeJob.ifPresent(job -> {
