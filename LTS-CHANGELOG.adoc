@@ -81,6 +81,8 @@ icon:check[] Logging: Failing readiness checks are now logged using the `WARN` l
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
 
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.26` to fix the PDF parser failing on files with some Adobe fonts.
+
 [[v1.4.19]]
 == 1.4.19 (17.12.2020)
 
