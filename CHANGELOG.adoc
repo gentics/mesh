@@ -23,6 +23,15 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.8]]
+== 1.7.8 (TBD)
+
+icon:check[] Upload: More user-friendly message + HTTP 400 error on an attempt to upload an empty file.
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
+
 [[v1.7.7]]
 == 1.7.7  (10.03.2021)
 
