@@ -1,17 +1,5 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -36,12 +24,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.S3BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
@@ -52,11 +37,9 @@ import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.S3BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
-
 import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -68,6 +51,16 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Handler for binary transformer requests.
@@ -82,7 +75,6 @@ public class BinaryTransformHandler extends AbstractHandler {
 	private final Vertx rxVertx;
 	private final Lazy<BootstrapInitializer> boot;
 	private final BinaryStorage binaryStorage;
-	private final S3BinaryStorage s3binaryStorage;
 	private final Database db;
 	private final Binaries binaries;
 	private final S3Binaries s3binaries;
@@ -91,7 +83,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	@Inject
 	public BinaryTransformHandler(Database db, HandlerUtilities utils, Vertx rxVertx, ImageManipulator imageManipulator,
 								  Lazy<BootstrapInitializer> boot,
-								  BinaryStorage binaryStorage, Binaries binaries, S3Binaries s3binaries, S3BinaryStorage s3binaryStorage, MeshOptions options) {
+								  BinaryStorage binaryStorage, Binaries binaries, S3Binaries s3binaries, MeshOptions options) {
 		this.db = db;
 		this.utils = utils;
 		this.rxVertx = rxVertx;
@@ -101,7 +93,6 @@ public class BinaryTransformHandler extends AbstractHandler {
 		this.binaries = binaries;
 		this.s3binaries = s3binaries;
 		this.s3Options = options.getS3Options();
-		this.s3binaryStorage = s3binaryStorage;
 	}
 
 	public void handle(RoutingContext rc, String uuid, String fieldName) {
@@ -413,7 +404,6 @@ public class BinaryTransformHandler extends AbstractHandler {
 		});
 	}
 
-
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, HibNode node,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
@@ -513,9 +503,9 @@ public class BinaryTransformHandler extends AbstractHandler {
 			throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 		}
 
-		//if (!initialField.hasProcessableImage()) {
-		//	throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
-		//}
+		if (!initialField.hasProcessableImage()) {
+			throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
+		}
 		return initialField;
 	}
 }
