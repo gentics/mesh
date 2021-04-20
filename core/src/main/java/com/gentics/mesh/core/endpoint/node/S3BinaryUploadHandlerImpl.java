@@ -78,13 +78,16 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 	 * @param ac
 	 * @param nodeUuid   UUID of the node which should be updated
 	 * @param fieldName  Name of the field which should be created
-	 * @param fileName  Name of the file which should be created
 	 * @param attributes Additional form data attributes
 	 */
-	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, String fileName, MultiMap attributes) {
+	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
-		validateParameter(fileName, "fileName");
+
+		String fileName = attributes.get("filename");
+		if (isEmpty(fileName)) {
+			throw error(BAD_REQUEST, "upload_error_body_no_filename");
+		}
 
 		String languageTag = attributes.get("language");
 		if (isEmpty(languageTag)) {
