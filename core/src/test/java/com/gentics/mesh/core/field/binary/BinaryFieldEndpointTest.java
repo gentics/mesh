@@ -8,6 +8,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -417,17 +419,22 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			}
 		};
 
-		client().updateNodeBinaryField(
-			PROJECT_NAME,
-			binaryNode.getUuid(),
-			binaryNode.getLanguage(),
-			binaryNode.getVersion(),
-			"binary",
-			emptyStream,
-			0,
-			"emptyFile",
-			"application/binary"
-		).blockingAwait();
+		try {
+			client().updateNodeBinaryField(
+				PROJECT_NAME,
+				binaryNode.getUuid(),
+				binaryNode.getLanguage(),
+				binaryNode.getVersion(),
+				"binary",
+				emptyStream,
+				0,
+				"emptyFile",
+				"application/binary"
+			).blockingAwait();
+			fail("Empty file upload should not pass");
+		} catch (Exception e) {
+			assertTrue(e.getMessage().indexOf("Error:400 in POST") > -1);
+		}
 	}
 
 }

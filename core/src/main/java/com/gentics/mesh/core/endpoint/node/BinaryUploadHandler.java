@@ -129,6 +129,9 @@ public class BinaryUploadHandler extends AbstractHandler {
 		if (isEmpty(ul.contentType())) {
 			throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldName);
 		}
+		if (ul.size() < 1) {
+			throw error(BAD_REQUEST, "field_binary_error_emptyfile", fieldName, ul.fileName());
+		}
 	}
 
 	/**

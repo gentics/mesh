@@ -20,6 +20,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.10]]
 == 1.6.10 (TBD)
 
+icon:check[] Upload: More user-friendly message + HTTP 400 error on an attempt to upload an empty file.
+
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
 
 [[v1.6.9]]
