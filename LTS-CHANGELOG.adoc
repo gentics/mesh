@@ -115,6 +115,11 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.10]]
+== 1.5.10 (TBD)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
 [[v1.5.9]]
 == 1.5.9 (18.12.2020)
 
@@ -168,6 +173,11 @@ icon:plus[] Monitoring: The liveness probe will now check for plugin status. Fai
 icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+[[v1.4.20]]
+== 1.4.20 (TBD)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
 
 
 [[v1.4.19]]
