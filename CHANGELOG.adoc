@@ -32,6 +32,8 @@ icon:check[] OrientDB: The included OrientDB version has been updated to version
 
 icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
 
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.26` to fix the PDF parser failing on files with some Adobe fonts.
+
 [[v1.7.7]]
 == 1.7.7  (10.03.2021)
 
