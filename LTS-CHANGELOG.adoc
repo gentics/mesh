@@ -24,6 +24,8 @@ icon:check[] Upload: More user-friendly message + HTTP 400 error on an attempt t
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
 
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.26` to fix the PDF parser failing on files with some Adobe fonts.
+
 [[v1.6.9]]
 == 1.6.10 (TBD)
 
@@ -124,6 +126,8 @@ icon:check[] Logging: Failing readiness checks are now logged using the `WARN` l
 == 1.5.10 (TBD)
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.26` to fix the PDF parser failing on files with some Adobe fonts.
 
 [[v1.5.9]]
 == 1.5.9 (18.12.2020)
