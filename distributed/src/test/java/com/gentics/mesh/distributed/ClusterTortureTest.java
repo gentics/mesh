@@ -3,7 +3,9 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import org.junit.Test;
+import org.testcontainers.containers.BindMode;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -23,7 +26,6 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.test.docker.MeshContainer;
-import com.gentics.mesh.test.docker.StartupLatchingConsumer.UnresponsiveContainerError;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -69,6 +71,22 @@ public class ClusterTortureTest extends AbstractClusterTest {
 					serverB.killHardContainer();
 					serverA.killHardContainer();
 			}).run();
+		});
+	}
+	
+	@Test
+	public void testSecondaryBackupCreated() throws Exception {
+		torture((a, b, c) -> {
+			MeshContainer serverB2 = prepareSlave("dockerCluster" + clusterPostFix, "nodeB2", randomToken(), true, true, 1);
+			File backupFolder = new File("target/backup-" + serverB2.getDataPathPostfix());
+			backupFolder.mkdirs();
+			serverB2.overrideODBClusterBackupFolder(backupFolder.getAbsolutePath(), BindMode.READ_WRITE);
+			serverB2.start();
+			
+			File plannedBackup = new File(backupFolder.getAbsolutePath() + "/databases/storage");
+			assertTrue("Backup does not exist", plannedBackup.exists());
+			assertTrue("Backup is not a directory", plannedBackup.isDirectory());
+			assertTrue("Backup is empty", plannedBackup.list().length > 0);
 		});
 	}
 
