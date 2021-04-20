@@ -263,7 +263,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 						loc.setLon(Double.valueOf(value));
 						continue;
 					}
-					if (name.equals("GPS_Altitude")) {
+					if (name.equals("GPS_GPS_Altitude")) {
 						String v = value.replaceAll(" .*", "");
 						loc.setAlt(Integer.parseInt(v));
 						continue;
