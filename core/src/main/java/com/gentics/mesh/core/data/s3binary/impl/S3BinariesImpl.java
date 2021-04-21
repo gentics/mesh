@@ -37,8 +37,8 @@ public class S3BinariesImpl implements S3Binaries {
 	}
 
 	@Override
-	public Transactional<S3HibBinary> findByHash(String hash) {
-		return database.transactional(tx -> database.getVerticesTraversal(S3BinaryImpl.class, S3Binary.SHA512SUM_KEY, hash).nextOrNull());
+	public Transactional<S3HibBinary> findByS3ObjectKey(String s3ObjectKey) {
+		return database.transactional(tx -> database.getVerticesTraversal(S3BinaryImpl.class, S3Binary.S3_AWS_OBJECT_KEY, s3ObjectKey).nextOrNull());
 	}
 
 	@Override
