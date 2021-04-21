@@ -11,12 +11,12 @@ import java.util.stream.Stream;
 public interface S3Binaries {
 
 	/**
-	 * Find the binary with the given hashsum.
+	 * Find the s3 binary with the given s3ObjectKey.
 	 * 
-	 * @param hash
+	 * @param s3ObjectKey
 	 * @return
 	 */
-	Transactional<S3HibBinary> findByHash(String hash);
+	Transactional<S3HibBinary> findByS3ObjectKey(String s3ObjectKey);
 
 	/**
 	 * Create a new binary.
