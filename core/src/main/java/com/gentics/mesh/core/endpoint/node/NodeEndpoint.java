@@ -231,6 +231,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.path("/:nodeUuid/s3binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldUpdate.addUriParameter("fileName", "Name of the file which should be created.", "stringField");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
@@ -243,25 +244,6 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
 			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName);
-		});
-
-		InternalEndpointRoute fieldMetadataExtraction = createRoute();
-		fieldMetadataExtraction.path("/:nodeUuid/s3binary/:fieldName/parseMetadata");
-		fieldMetadataExtraction.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
-		fieldMetadataExtraction.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
-		fieldMetadataExtraction.method(POST);
-		fieldMetadataExtraction.produces(APPLICATION_JSON);
-		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
-		fieldMetadataExtraction.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
-		fieldMetadataExtraction.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
-		fieldMetadataExtraction.description("Update the binaryfield with the given name.");
-		fieldMetadataExtraction.events(NODE_UPDATED);
-		fieldMetadataExtraction.blockingHandler(rc -> {
-			String uuid = rc.request().getParam("nodeUuid");
-			String fieldName = rc.request().getParam("fieldName");
-			MultiMap attributes = rc.request().formAttributes();
-			InternalActionContext ac = wrap(rc);
-			s3BinaryMetadataExtractionHandler.handleMetadataExtraction(ac, uuid, fieldName, attributes);
 		});
 
 		InternalEndpointRoute fieldMetadataExtraction = createRoute();
