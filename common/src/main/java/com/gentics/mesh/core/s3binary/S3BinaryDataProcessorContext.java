@@ -4,7 +4,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import io.vertx.ext.web.FileUpload;
 
 /**
- * Information required by s3 binary processors.
+ * Information required by binary processors.
  */
 public class S3BinaryDataProcessorContext {
 
