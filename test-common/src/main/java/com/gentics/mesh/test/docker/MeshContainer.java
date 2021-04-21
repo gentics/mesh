@@ -11,12 +11,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
@@ -49,6 +52,12 @@ import io.vertx.core.json.JsonObject;
  * @param <SELF>
  */
 public class MeshContainer extends GenericContainer<MeshContainer> {
+
+	private static final String PATH_UPLOADS = "/uploads";
+
+	private static final String PATH_BACKUP = "/backup";
+
+	private static final String PATH_GRAPHDB = "/graphdb";
 
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -112,15 +121,25 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	private String coordinatorPlaneRegex;
 
 	private boolean useFilesystem = false;
-
+	
+	private Map<String, ContainerPath> pathOverrides = new HashMap<>(3);
+	
 	public MeshContainer(Supplier<ImageFromDockerfile> imageProvider) {
+		init();
 		setImage(imageProvider.get());
 		setWaitStrategy(new NoWaitStrategy());
 	}
 
 	public MeshContainer(String imageName) {
+		init();
 		this.setDockerImageName(imageName);
 		setWaitStrategy(new NoWaitStrategy());
+	}
+	
+	protected void init() {
+		pathOverrides.put(PATH_GRAPHDB, new ContainerPath(StringUtils.EMPTY, BindMode.READ_WRITE));
+		pathOverrides.put(PATH_BACKUP, new ContainerPath(StringUtils.EMPTY, BindMode.READ_WRITE));
+		pathOverrides.put(PATH_UPLOADS, new ContainerPath(StringUtils.EMPTY, BindMode.READ_WRITE));
 	}
 
 	@Override
@@ -132,8 +151,13 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		log.info("Using base folder {}", basePath);
 		String confPath = basePath + "/config";
 		if (useFilesystem) {
-			String dataGraphDBPath = basePath + "/data-graphdb" + dataPathPostfix;
-			String dataUploadsPath = basePath + "/data-uploads" + dataPathPostfix;
+			ContainerPath graphDbPath = pathOverrides.get(PATH_GRAPHDB);
+			ContainerPath backupPath = pathOverrides.get(PATH_BACKUP);
+			ContainerPath uploadsPath = pathOverrides.get(PATH_UPLOADS);
+			
+			String dataGraphDBPath = StringUtils.isNotBlank(graphDbPath.hostPath) ? graphDbPath.hostPath : (basePath + "/data-graphdb-" + dataPathPostfix);
+			String dataBackupPath = StringUtils.isNotBlank(backupPath.hostPath) ? backupPath.hostPath : (basePath + "/data-backup-" + dataPathPostfix);			
+			String dataUploadsPath = StringUtils.isNotBlank(uploadsPath.hostPath) ? uploadsPath.hostPath : (basePath + "/data-uploads-" + dataPathPostfix);
 
 			// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
 			// Otherwise the folder would be created by docker using root.
@@ -145,15 +169,19 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 					fail("Could not setup bind folder {" + dataGraphDBPath + "}");
 				}
 				try {
+					prepareFolder(dataBackupPath);
+				} catch (Exception e) {
+					fail("Could not setup bind folder {" + dataBackupPath + "}");
+				}
+				try {
 					prepareFolder(dataUploadsPath);
 				} catch (Exception e) {
 					fail("Could not setup bind folder {" + dataUploadsPath + "}");
 				}
 			}
-			new File(dataGraphDBPath).mkdirs();
-			new File(dataUploadsPath).mkdirs();
-			addFileSystemBind(dataGraphDBPath, "/graphdb", BindMode.READ_WRITE);
-			addFileSystemBind(dataUploadsPath, "/uploads", BindMode.READ_WRITE);
+			addFileSystemBind(dataGraphDBPath, PATH_GRAPHDB, graphDbPath.bindMode);
+			addFileSystemBind(dataBackupPath, PATH_BACKUP, backupPath.bindMode);
+			addFileSystemBind(dataUploadsPath, PATH_UPLOADS, uploadsPath.bindMode);
 			// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
 		}
 
@@ -198,6 +226,8 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 		if (!useFilesystem) {
 			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
+		} else {
+			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "/graphdb");
 		}
 
 		if (coordinatorMode != null) {
@@ -615,6 +645,27 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		this.useFilesystem = true;
 		return this;
 	}
+	
+	public MeshContainer overrideODBClusterBackupFolder(String folder, BindMode bindMode) {
+		ContainerPath override = this.pathOverrides.get(PATH_BACKUP);
+		override.hostPath = folder;
+		override.bindMode = bindMode;
+		return this;
+	}
+	
+	public MeshContainer overrideGraphDbFolder(String folder, BindMode bindMode) {
+		ContainerPath override = this.pathOverrides.get(PATH_GRAPHDB);
+		override.hostPath = folder;
+		override.bindMode = bindMode;
+		return this;
+	}
+	
+	public MeshContainer overrideUploadsFolder(String folder, BindMode bindMode) {
+		ContainerPath override = this.pathOverrides.get(PATH_UPLOADS);
+		override.hostPath = folder;
+		override.bindMode = bindMode;
+		return this;
+	}
 
 	/**
 	 * Set the data path postfix. This will append the postfix to all data folders in order to make them unique.
@@ -686,6 +737,22 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	private boolean isClustered() {
 		return clusterName != null;
+	}
+	
+	protected class ContainerPath {
+		String hostPath;
+		BindMode bindMode;
+		
+		/**
+		 * Container path constructor
+		 * 
+		 * @param hostPath set an empty string or null for a default value, or provide an initialized and accessible folder otherwise
+		 * @param bindMode 
+		 */
+		public ContainerPath(String hostPath, BindMode bindMode) {
+			this.hostPath = hostPath;
+			this.bindMode = bindMode;
+		}
 	}
 
 }
