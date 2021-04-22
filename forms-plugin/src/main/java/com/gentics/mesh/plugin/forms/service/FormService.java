@@ -327,12 +327,12 @@ public class FormService {
 				new FormsError(HttpResponseStatus.BAD_REQUEST.code(), error.get().getMessage()));
 		}
 
-		return statusService.getRootNode(projectName, userClient).flatMap(rootNodeUuid -> {
+		return statusService.getRootNode(projectName, userClient).flatMap(rootNode -> {
 			String language = formData.getString("language", "en");
 			NodeParameters languageParameter = new NodeParametersImpl().setLanguages(language);
 			NodeUpsertRequest request = new NodeUpsertRequest()
 					.setSchemaName(SchemaInitializer.SCHEMA_NAME)
-					.setParentNodeUuid(rootNodeUuid.getUuid())
+					.setParentNodeUuid(rootNode.getUuid())
 					.setLanguage(language);
 
 			request.getFields().put("name", new StringFieldImpl().setString(formData.getString("name")));
