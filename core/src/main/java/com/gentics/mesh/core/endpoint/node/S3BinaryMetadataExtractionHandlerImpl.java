@@ -126,7 +126,8 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				//TODO create temp with proper name
 				//TODO create fileUpload object
 				return readS3Binary(ac, nodeUuid, fieldName).flatMap(s3BinaryGraphField -> {
-					String fileName = s3BinaryGraphField.getFileName();
+					S3HibBinary s3Binary = s3BinaryGraphField.getS3Binary();
+					String fileName = s3BinaryGraphField.getS3Binary().getFileName();
 					String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(fileName);
 					File tmpFile = new File(System.getProperty("java.io.tmpdir"), fileName);
 					byte[] fileData = fileBuffer.getBytes();
@@ -316,7 +317,8 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 	}
 
 	private Single<S3BinaryGraphField> readS3Binary(InternalActionContext ac, String nodeUuid, String fieldName) {
-		return db.tx(tx -> {
+		S3BinaryGraphField s3BinaryGraphField = null;
+		db.tx(tx -> {
 			HibProject project = tx.getProject(ac);
 			HibNode node = tx.nodeDao().loadObjectByUuid(project, ac, nodeUuid, READ_PUBLISHED_PERM);
 
@@ -340,7 +342,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 			} else {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
-		});
+		}));
 	}
 
 	private Observable<Consumer<S3BinaryGraphField>> postProcessUpload(S3BinaryDataProcessorContext ctx) {
