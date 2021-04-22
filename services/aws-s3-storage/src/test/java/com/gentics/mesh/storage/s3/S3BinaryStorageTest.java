@@ -60,7 +60,7 @@ public class S3BinaryStorageTest {
 //		assertFalse(storage.exists(mockField));
 //		storage.store(Flowable.just(Buffer.buffer("test")), "test").blockingAwait();
 //		assertTrue(storage.exists(mockField));
-		storage.read("test").ignoreElements().blockingAwait();
+		storage.read("test", "test").ignoreElements().blockingAwait();
 	}
 
 }

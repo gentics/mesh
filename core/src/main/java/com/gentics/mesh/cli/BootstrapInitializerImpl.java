@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.dao.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -46,20 +47,6 @@ import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -974,6 +961,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public BinaryDaoWrapper binaryDao() {
 		return daoCollection.binaryDao();
+	}
+
+	@Override
+	public S3BinaryDaoWrapper s3binaryDao() {
+		return daoCollection.s3binaryDao();
 	}
 
 	/**

@@ -80,6 +80,9 @@ public interface DaoCollection {
 	BinaryDaoWrapper binaryDao();
 
 	@Getter
+	S3BinaryDaoWrapper s3binaryDao();
+
+	@Getter
 	NodeDaoWrapper nodeDao();
 
 	@Getter

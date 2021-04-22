@@ -15,16 +15,9 @@ public class S3CacheOptions implements Option {
     public static final int DEFAULT_EXPIRATION_TIME_CACHE_DOWNLOAD = 360_000;
     public static final int DEFAULT_EXPIRATION_TIME_CACHE_UPLOAD = 60_000;
 
-    public static final String MESH_S3_BINARY_CACHE_AWS_KEY_ENV = "MESH_S3_BINARY_CACHE_AWS_KEY";
     public static final String MESH_S3_BINARY_CACHE_BUCKET_ENV = "MESH_S3_BINARY_CACHE_BUCKET";
     public static final String MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD_ENV = "MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD";
     public static final String MESH_S3_BINARY_CACHE_REGION_ENV = "MESH_S3_BINARY_CACHE_REGION";
-    public static final String MESH_S3_BINARY_CACHE_SECRET_ENV = "MESH_S3_BINARY_CACHE_SECRET";
-
-    @JsonProperty(required = false)
-    @JsonPropertyDescription("Used for authentication with Amazon Web Services for cached images (binary transformation variants).")
-    @EnvironmentVariable(name = MESH_S3_BINARY_CACHE_AWS_KEY_ENV, description = "Override the configured awskey.")
-    private String awsKey;
 
     @JsonProperty(required = false)
     @JsonPropertyDescription("AWS S3 bucket where transformed/resized images will be uploaded to and downloaded from.")
@@ -44,8 +37,35 @@ public class S3CacheOptions implements Option {
     @EnvironmentVariable(name = MESH_S3_BINARY_CACHE_REGION_ENV, description = "Override the configured AWS S3 region.")
     private String region;
 
-    @JsonProperty(required = false)
-    @JsonPropertyDescription("AWS S3 Cache key")
-    @EnvironmentVariable(name = MESH_S3_BINARY_CACHE_SECRET_ENV, description = "Override the configured AWS S3 secret.")
-    private String secret;
+    public String getBucket() {
+        return bucket;
+    }
+
+    public void setBucket(String bucket) {
+        this.bucket = bucket;
+    }
+
+    public int getExpirationTimeDownload() {
+        return expirationTimeDownload;
+    }
+
+    public void setExpirationTimeDownload(int expirationTimeDownload) {
+        this.expirationTimeDownload = expirationTimeDownload;
+    }
+
+    public int getExpirationTimeUpload() {
+        return expirationTimeUpload;
+    }
+
+    public void setExpirationTimeUpload(int expirationTimeUpload) {
+        this.expirationTimeUpload = expirationTimeUpload;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
 }

@@ -26,4 +26,12 @@ public class S3RestResponse implements RestModel {
         this.httpRequestMethod = httpRequestMethod;
         this.signedHeaders = signedHeaders;
     }
+
+    public Map<String, List<String>> getSignedHeaders() {
+        return signedHeaders;
+    }
+
+    public String getPresignedUrl() {
+        return presignedUrl;
+    }
 }

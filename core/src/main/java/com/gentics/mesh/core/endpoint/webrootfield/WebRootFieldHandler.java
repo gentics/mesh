@@ -98,6 +98,10 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			FieldTypes fieldType = FieldTypes.valueByName(fieldSchema.getType());
 
 			switch (fieldType) {
+			case S3BINARY:
+				log.debug("S3 Binary field {} for node with uuid:{} found at {} for reading", fieldName, node.getUuid(), path);
+				binaryDownloadHandler.handleReadBinaryField(rc, node.getUuid(), fieldName);
+				return null;
 			case BINARY:
 				log.debug("Binary field {} for node with uuid:{} found at {} for reading", fieldName, node.getUuid(), path);
 				binaryDownloadHandler.handleReadBinaryField(rc, node.getUuid(), fieldName);
