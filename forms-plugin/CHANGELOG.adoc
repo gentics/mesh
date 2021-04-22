@@ -10,9 +10,14 @@
 
 = Mesh Forms Plugin
 
+[[v1.6.8]]
+== 1.6.8 (2021-04-22)
 
-[[v1.6.3]]
-== 1.6.3 (2021-04-08)
+icon:check[] Using the Forms Plugin in a cluster will now work also for new activated projects. Before this fix, newly activated projects were
+not usable in all cluster nodes until the node was restarted.
+
+[[v1.6.7]]
+== 1.6.7 (2021-04-08)
 
 icon:plus[] New Forms Plugin derived from formgenerator plugin, adapted for use with Gentics CMP
 icon:plus[] improved binary handling

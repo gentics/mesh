@@ -12,10 +12,14 @@ import javax.inject.Singleton;
 import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
@@ -24,6 +28,7 @@ import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -44,17 +49,14 @@ public class StatusService {
 
 	private final SchemaInitializer schemaInitializer;
 
-	private final SchemaService schemaService;
-
 	private final String pluginRootNodeQuery;
 
 	@Inject
 	public StatusService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient,
-			SchemaInitializer schemaInitializer, SchemaService schemaService) {
+			SchemaInitializer schemaInitializer) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.schemaInitializer = schemaInitializer;
-		this.schemaService = schemaService;
 
 		try {
 			pluginRootNodeQuery = IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8");
@@ -154,8 +156,7 @@ public class StatusService {
 	 * @return single languages
 	 */
 	public Single<LanguagesModel> getLanguages(String projectName) {
-		return userClient.findNodeByUuid(projectName, schemaService.getRootNodeUuid(projectName),
-				new GenericParametersImpl().setETag(false).setFields("fields")).toSingle().flatMap(response -> {
+		return getRootNode(projectName, userClient).flatMap(response -> {
 					FieldMap fields = response.getFields();
 					return Single.just(new LanguagesModel().setLanguages(
 							fields.hasField("languages") ? fields.getStringFieldList("languages").getItems() : null));
@@ -168,8 +169,7 @@ public class StatusService {
 	 * @return single languages
 	 */
 	public Single<String[]> languageFallback(String projectName, String...langs) {
-		return adminClient.findNodeByUuid(projectName, schemaService.getRootNodeUuid(projectName),
-				new GenericParametersImpl().setETag(false).setFields("fields")).toSingle().flatMap(response -> {
+		return getRootNode(projectName, adminClient).flatMap(response -> {
 					FieldMap fields = response.getFields();
 					List<String> langList = new ArrayList<>();
 					langList.addAll(Arrays.asList(langs));
@@ -196,15 +196,17 @@ public class StatusService {
 		update.setVersion("draft");
 		update.setLanguage("en");
 		update.getFields().put("languages", new StringFieldListImpl().setItems(languages));
-		return userClient.updateNode(projectName, schemaService.getRootNodeUuid(projectName), update,
-				new GenericParametersImpl().setETag(false).setFields("fields", "uuid")).toSingle().flatMap(response -> {
-					return userClient.publishNode(projectName, response.getUuid()).toSingle().flatMap(r -> {
-						FieldMap fields = response.getFields();
-						return Single.just(new LanguagesModel().setLanguages(
-								fields.hasField("languages") ? fields.getStringFieldList("languages").getItems()
-										: null));
+		return getRootNode(projectName, userClient).flatMap(rootNode -> {
+			return userClient.updateNode(projectName, rootNode.getUuid(), update,
+					new GenericParametersImpl().setETag(false).setFields("fields", "uuid")).toSingle().flatMap(response -> {
+						return userClient.publishNode(projectName, response.getUuid()).toSingle().flatMap(r -> {
+							FieldMap fields = response.getFields();
+							return Single.just(new LanguagesModel().setLanguages(
+									fields.hasField("languages") ? fields.getStringFieldList("languages").getItems()
+											: null));
+						});
 					});
-				});
+		});
 	}
 
 	/**
@@ -221,6 +223,35 @@ public class StatusService {
 						return Observable.empty();
 					}
 				});
+			});
+	}
+
+	/**
+	 * Load the FormsPlugin Root Node for the project
+	 * @param projectName project name
+	 * @param client client to use
+	 * @return single node response
+	 */
+	public Single<NodeResponse> getRootNode(String projectName, MeshRestClient client) {
+		return client
+				.webroot(projectName, "/Forms Plugin",
+						new GenericParametersImpl().setETag(false).setFields("fields", "uuid"))
+				.toSingle().map(MeshWebrootResponse::getNodeResponse);
+	}
+
+	/**
+	 * Gets the base url of the project
+	 *
+	 * @param projectName project name
+	 * @return single base URL
+	 */
+	public Single<String> getBaseUrl(String projectName) {
+		return adminClient.findProjectByName(projectName).toSingle()
+			.flatMap(projectResponse -> {
+				String link = String.format("{{mesh.link(\"%s\", \"en\")}}", projectResponse.getRootNode().getUuid());
+				ParameterProvider params = new NodeParametersImpl().setResolveLinks(LinkType.SHORT);
+
+				return adminClient.resolveLinks(link, params).toSingle();
 			});
 	}
 }

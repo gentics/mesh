@@ -120,8 +120,6 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		return DaggerFormsPluginComponent.builder()
 			.adminClient(adminClient())
 			.userClient(userClient)
-			.rootNodeUuids(rootNodeUuids)
-			.baseUrls(baseUrls)
 			.configuration(configuration)
 			.vertx(vertx())
 			.storageDir(getStorageDir())
