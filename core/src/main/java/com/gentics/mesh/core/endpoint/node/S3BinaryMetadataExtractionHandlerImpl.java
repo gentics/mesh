@@ -3,7 +3,6 @@ package com.gentics.mesh.core.endpoint.node;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -28,7 +27,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.storage.S3BinaryStorage;
 import com.gentics.mesh.util.NodeUtil;
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -45,7 +43,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -72,6 +69,8 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 
 	private final S3BinaryProcessorRegistryImpl s3binaryProcessorRegistry;
 
+	private final Vertx vertx;
+
 	@Inject
 	public S3BinaryMetadataExtractionHandlerImpl(Database db,
 												 S3BinaryStorage s3BinaryStorage,
@@ -79,6 +78,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 												 MeshOptions options,
 												 S3Binaries s3binaries, S3BinaryProcessorRegistryImpl s3binaryProcessorRegistry) {
 		this.db = db;
+		this.vertx = rxVertx;
 		this.s3BinaryStorage = s3BinaryStorage;
 		this.utils = utils;
 		this.options = options;
@@ -125,59 +125,60 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				//TODO get filename
 				//TODO create temp with proper name
 				//TODO create fileUpload object
-				return readS3Binary(ac, nodeUuid, fieldName).flatMap(s3BinaryGraphField -> {
-					S3HibBinary s3Binary = s3BinaryGraphField.getS3Binary();
-					String fileName = s3BinaryGraphField.getS3Binary().getFileName();
-					String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(fileName);
-					File tmpFile = new File(System.getProperty("java.io.tmpdir"), fileName);
-					byte[] fileData = fileBuffer.getBytes();
-					FileUpload fileUpload = new FileUpload() {
+				return db.singleTx(tx -> s3binaries
+						.findByS3ObjectKey(nodeUuid + "/" + fieldName)
+						.runInExistingTx(tx)
+						.getFileName())
+						.flatMap(fileName -> {
+							String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(fileName);
+							File tmpFile = new File(System.getProperty("java.io.tmpdir"), fileName);
+							vertx.fileSystem().writeFileBlocking(tmpFile.getAbsolutePath(), fileBuffer);
+							byte[] fileData = fileBuffer.getBytes();
+							FileUpload fileUpload = new FileUpload() {
 
-						@Override
-						public String uploadedFileName() {
-							return tmpFile.getAbsolutePath();
-						}
+								@Override
+								public String uploadedFileName() {
+									return tmpFile.getAbsolutePath();
+								}
 
-						@Override
-						public long size() {
-							return fileData.length;
-						}
+								@Override
+								public long size() {
+									return fileData.length;
+								}
 
-						@Override
-						public String name() {
-							return fileName;
-						}
+								@Override
+								public String name() {
+									return fileName;
+								}
 
-						@Override
-						public String fileName() {
-							return fileName;
-						}
+								@Override
+								public String fileName() {
+									return fileName;
+								}
 
-						@Override
-						public String contentType() {
-							return mimeTypeForFilename;
-						}
+								@Override
+								public String contentType() {
+									return mimeTypeForFilename;
+								}
 
-						@Override
-						public String contentTransferEncoding() {
-							// TODO Auto-generated method stub
-							return null;
-						}
+								@Override
+								public String contentTransferEncoding() {
+									// TODO Auto-generated method stub
+									return null;
+								}
 
-						@Override
-						public String charSet() {
-							// TODO Auto-generated method stub
-							return null;
-						}
-					};
-					ctx.setFileUpload(fileUpload);
-					return Single.just(fileUpload);
-				}).flatMap(fileUpload -> {
-					return postProcessUpload(new S3BinaryDataProcessorContext(ac, nodeUuid, fieldName, fileUpload))
-							.toList();
-				}).flatMap(postProcess -> {
-					return storeUploadInGraph(ac, postProcess, ctx, nodeUuid, languageTag, nodeVersion, fieldName);
-				});
+								@Override
+								public String charSet() {
+									// TODO Auto-generated method stub
+									return null;
+								}
+							};
+							ctx.setFileUpload(fileUpload);
+							ctx.setS3ObjectKey(nodeUuid + "/" + fieldName);
+							ctx.setFileName(fileName);
+							return Single.just(fileUpload);
+						}).flatMap(fileUpload -> postProcessUpload(new S3BinaryDataProcessorContext(ac, nodeUuid, fieldName, fileUpload))
+									.toList()).flatMap(postProcess ->  storeUploadInGraph(ac, postProcess, ctx, nodeUuid, languageTag, nodeVersion, fieldName));
 //TODO call Binary Metadata processors
 //TODO do the actual processing
 //TODO Upload in graph
@@ -289,9 +290,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				}
 
 				// Now set the field infos. This will override any copied values as well.
-				field.setFileName(upload.fileName());
 				field.setMimeType(upload.contentType());
-				field.getS3Binary().setSize(upload.size());
 
 				for (Consumer<S3BinaryGraphField> modifier : fieldModifier) {
 					modifier.accept(field);
@@ -314,35 +313,6 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 			});
 			return nodeDao.transformToRestSync(node, ac, 0);
 		});
-	}
-
-	private Single<S3BinaryGraphField> readS3Binary(InternalActionContext ac, String nodeUuid, String fieldName) {
-		S3BinaryGraphField s3BinaryGraphField = null;
-		db.tx(tx -> {
-			HibProject project = tx.getProject(ac);
-			HibNode node = tx.nodeDao().loadObjectByUuid(project, ac, nodeUuid, READ_PUBLISHED_PERM);
-
-			HibBranch branch = tx.getBranch(ac, node.getProject());
-			NodeGraphFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
-					branch.getUuid(),
-					ac.getVersioningParameters().getVersion());
-			if (fieldContainer == null) {
-				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
-			}
-			FieldSchema fieldSchema = fieldContainer.getSchemaContainerVersion().getSchema().getField(fieldName);
-			if (fieldSchema == null) {
-				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-			}
-			if ((fieldSchema instanceof S3BinaryFieldSchema)) {
-				S3BinaryGraphField field = fieldContainer.getS3Binary(fieldName);
-				if (field == null) {
-					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
-				}
-				return Single.just(field);
-			} else {
-				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
-			}
-		}));
 	}
 
 	private Observable<Consumer<S3BinaryGraphField>> postProcessUpload(S3BinaryDataProcessorContext ctx) {
