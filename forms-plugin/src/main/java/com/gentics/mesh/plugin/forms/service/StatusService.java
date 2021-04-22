@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -252,6 +253,6 @@ public class StatusService {
 				ParameterProvider params = new NodeParametersImpl().setResolveLinks(LinkType.SHORT);
 
 				return adminClient.resolveLinks(link, params).toSingle();
-			});
+			}).map(baseUrl -> StringUtils.removeEnd(baseUrl, "/"));
 	}
 }
