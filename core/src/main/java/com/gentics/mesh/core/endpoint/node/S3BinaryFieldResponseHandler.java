@@ -2,42 +2,22 @@ package com.gentics.mesh.core.endpoint.node;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.S3BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.handler.RangeRequestHandler;
-import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.S3BinaryStorage;
-import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.EncodeUtil;
-import com.gentics.mesh.util.MimeTypeUtils;
-import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import java.io.ByteArrayInputStream;
-
-import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
-import static java.util.Objects.isNull;
 
 /**
  * Handler which will accept {@link S3BinaryGraphField} elements and return the binary data using the given context.

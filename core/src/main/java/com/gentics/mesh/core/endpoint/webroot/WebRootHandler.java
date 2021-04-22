@@ -104,7 +104,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				binaryFieldResponseHandler.handle(rc, binaryField);
 				return null;
 			}
-			if (field instanceof S3BinaryGraphField) {
+			else if (field instanceof S3BinaryGraphField) {
 				S3BinaryGraphField s3binaryField = (S3BinaryGraphField) field;
 				s3binaryFieldResponseHandler.handle(rc, s3binaryField);
 				return null;

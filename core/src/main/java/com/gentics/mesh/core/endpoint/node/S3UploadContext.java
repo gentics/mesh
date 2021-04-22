@@ -30,7 +30,6 @@ public class S3UploadContext {
 		this.s3ObjectKey = s3ObjectKey;
 	}
 
-
 	public String getS3ObjectKey() {
 		return s3ObjectKey;
 	}

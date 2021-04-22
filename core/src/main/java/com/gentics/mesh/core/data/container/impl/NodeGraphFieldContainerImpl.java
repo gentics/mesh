@@ -727,10 +727,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				return s3binaryField.getS3Binary().getFileName();
 			}
 			BinaryGraphField binary = getBinary(segmentFieldKey);
-			if (nonNull(binary) && nonNull(binary.getBinary())) {
+			if (nonNull(binary)) {
 				return binary.getFileName();
 			}
-
 		}
 		return null;
 	}

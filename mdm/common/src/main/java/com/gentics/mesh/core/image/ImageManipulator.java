@@ -35,36 +35,38 @@ public interface ImageManipulator {
      */
     Completable handleS3Resize(String bucketName, String cacheBucketName, String s3ObjectKey, String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
 
-    /**
-     * Return the cache file for the given binary and image parameters.
-     *
-     * @param sha512sum  Hashsum of the source binary
-     * @param parameters Resize parameters
-     * @return
-     */
-    Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters);
+	/**
+	 * Return the cache file for the given binary and image parameters.
+	 *
+	 * @param sha512sum
+	 *            Hashsum of the source binary
+	 * @param parameters
+	 *            Resize parameters
+	 * @return
+	 */
+	Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters);
 
-    /**
-     * Read the image information from image file.
-     *
-     * @param file
-     * @return
-     */
-    Single<ImageInfo> readImageInfo(String file);
+	/**
+	 * Read the image information from image file.
+	 *
+	 * @param file
+	 * @return
+	 */
+	Single<ImageInfo> readImageInfo(String file);
 
-    /**
-     * Return the dominant color in the image.
-     *
-     * @param image
-     * @return
-     */
-    int[] calculateDominantColor(BufferedImage image);
+	/**
+	 * Return the dominant color in the image.
+	 *
+	 * @param image
+	 * @return
+	 */
+	int[] calculateDominantColor(BufferedImage image);
 
-    /**
-     * Extract the metadata from the image data stream.
-     *
-     * @param ins
-     * @return
-     */
-    Single<Map<String, String>> getMetadata(InputStream ins);
+	/**
+	 * Extract the metadata from the image data stream.
+	 *
+	 * @param ins
+	 * @return
+	 */
+	Single<Map<String, String>> getMetadata(InputStream ins);
 }
