@@ -3,7 +3,6 @@ package com.gentics.mesh.plugin.forms.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -18,7 +17,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MailOptions;
-import com.gentics.mesh.plugin.forms.dagger.BaseUrls;
 import com.gentics.mesh.plugin.forms.model.FileElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
@@ -52,7 +50,7 @@ public class MailService {
 
 	private final HandlebarsTemplateEngine templateEngine;
 
-	private final Map<String, String> baseUrls;
+	private final StatusService statusService;
 
 	@Inject
 	public MailService(
@@ -60,12 +58,12 @@ public class MailService {
 			Vertx vertx,
 			FormsConfig configuration,
 			HandlebarsTemplateEngine templateEngine,
-			@BaseUrls Map<String, String> baseUrls) {
+			StatusService statusService) {
 		this.adminClient = adminClient;
 		this.vertx = vertx;
 		this.configuration = configuration;
 		this.templateEngine = templateEngine;
-		this.baseUrls = baseUrls;
+		this.statusService = statusService;
 	}
 
 	/**
@@ -140,32 +138,34 @@ public class MailService {
 			boolean attachFiles) {
 		String from = configuration.getFromAddress();
 
-		rc.put("baseUrl", baseUrls.get(projectName));
-		rc.put("form", new JsonObject(JsonUtil.toJson(form)));
-		rc.put("data", form.getReportableFormData(formDataNode));
-		rc.put("dataUuid", formDataNode.getUuid());
-		templateEngine.render(rc.data(), template, res -> {
-			if (res.succeeded()) {
-				MailMessage message = new MailMessage().setTo(to).setFrom(from).setSubject(subject).setHtml(res.result().toString());
-
-				Consumer<MailMessage> send = m -> {
-					MailClient client = MailClient.createShared(vertx, convertConfig(configuration.getMailOptions()), "client");
-					client.sendMail(m, sendRes -> {
-						if (sendRes.succeeded()) {
-							log.info(sendRes.result());
-						} else {
-							log.error("Error while sending mail", sendRes.cause());
-						}
-					});
-				};
-				if (attachFiles) {
-					addAttachments(projectName, form, formDataNode, message).subscribe(send);
+		statusService.getBaseUrl(projectName).subscribe(baseUrl -> {
+			rc.put("baseUrl", baseUrl);
+			rc.put("form", new JsonObject(JsonUtil.toJson(form)));
+			rc.put("data", form.getReportableFormData(formDataNode));
+			rc.put("dataUuid", formDataNode.getUuid());
+			templateEngine.render(rc.data(), template, res -> {
+				if (res.succeeded()) {
+					MailMessage message = new MailMessage().setTo(to).setFrom(from).setSubject(subject).setHtml(res.result().toString());
+					
+					Consumer<MailMessage> send = m -> {
+						MailClient client = MailClient.createShared(vertx, convertConfig(configuration.getMailOptions()), "client");
+						client.sendMail(m, sendRes -> {
+							if (sendRes.succeeded()) {
+								log.info(sendRes.result());
+							} else {
+								log.error("Error while sending mail", sendRes.cause());
+							}
+						});
+					};
+					if (attachFiles) {
+						addAttachments(projectName, form, formDataNode, message).subscribe(send);
+					} else {
+						Single.just(message).subscribe(send);
+					}
 				} else {
-					Single.just(message).subscribe(send);
+					log.error("Error while rendering mail body", res.cause());
 				}
-			} else {
-				log.error("Error while rendering mail body", res.cause());
-			}
+			});
 		});
 	}
 

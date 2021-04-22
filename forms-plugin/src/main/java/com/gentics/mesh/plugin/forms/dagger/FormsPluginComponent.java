@@ -119,12 +119,6 @@ public interface FormsPluginComponent {
 		Builder userClient(@UserClient @Nullable MeshRestClient client);
 
 		@BindsInstance
-		Builder rootNodeUuids(@RootNodeUuids Map<String, String> rootNodeUuids);
-
-		@BindsInstance
-		Builder baseUrls(@BaseUrls Map<String, String> baseUrls);
-
-		@BindsInstance
 		Builder vertx(Vertx vertx);
 
 		@BindsInstance

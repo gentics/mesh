@@ -259,7 +259,7 @@ public class FormService {
 		try {
 			String graphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("forms.graphql"), StandardCharsets.UTF_8);
 
-			return userClient.findNodeByUuid(projectName, schemaService.getRootNodeUuid(projectName)).toSingle()
+			return statusService.getRootNode(projectName, userClient)
 					.flatMap(rootNode -> {
 						JsonObject variables = new JsonObject().mergeIn(pagingParams, true).put("rootNodeUuid", rootNode.getUuid());
 						return userClient
@@ -327,48 +327,50 @@ public class FormService {
 				new FormsError(HttpResponseStatus.BAD_REQUEST.code(), error.get().getMessage()));
 		}
 
-		String language = formData.getString("language", "en");
-		NodeParameters languageParameter = new NodeParametersImpl().setLanguages(language);
-		NodeUpsertRequest request = new NodeUpsertRequest()
-				.setSchemaName(SchemaInitializer.SCHEMA_NAME)
-				.setParentNodeUuid(schemaService.getRootNodeUuid(projectName))
-				.setLanguage(language);
+		return statusService.getRootNode(projectName, userClient).flatMap(rootNode -> {
+			String language = formData.getString("language", "en");
+			NodeParameters languageParameter = new NodeParametersImpl().setLanguages(language);
+			NodeUpsertRequest request = new NodeUpsertRequest()
+					.setSchemaName(SchemaInitializer.SCHEMA_NAME)
+					.setParentNodeUuid(rootNode.getUuid())
+					.setLanguage(language);
 
-		request.getFields().put("name", new StringFieldImpl().setString(formData.getString("name")));
-		request.getFields().put("json", new StringFieldImpl().setString(formData.encodePrettily()));
-		// always set the form "online"
-		request.getFields().put(FormOnlineStatusService.FIELD_NAME, new BooleanFieldImpl().setValue(true));
-		Object cmsIdObject = formData.getValue("cms_id", null);
-		if (cmsIdObject != null) {
-			try {
-				int cmsId = Integer.parseInt(cmsIdObject.toString());
-				request.getFields().put("cms_id", new NumberFieldImpl().setNumber(cmsId));
-			} catch (NumberFormatException e) {
-				log.error(String.format("Error while saving form: %s is not a valid cmsId", cmsIdObject));
+			request.getFields().put("name", new StringFieldImpl().setString(formData.getString("name")));
+			request.getFields().put("json", new StringFieldImpl().setString(formData.encodePrettily()));
+			// always set the form "online"
+			request.getFields().put(FormOnlineStatusService.FIELD_NAME, new BooleanFieldImpl().setValue(true));
+			Object cmsIdObject = formData.getValue("cms_id", null);
+			if (cmsIdObject != null) {
+				try {
+					int cmsId = Integer.parseInt(cmsIdObject.toString());
+					request.getFields().put("cms_id", new NumberFieldImpl().setNumber(cmsId));
+				} catch (NumberFormatException e) {
+					log.error(String.format("Error while saving form: %s is not a valid cmsId", cmsIdObject));
+				}
 			}
-		}
 
-		return userClient.upsertNode(projectName, uuid, request, languageParameter)
-				.toSingle() /* .flatMap(formNode -> loadAsAdminWithLanguageFallback(projectName, formNode.getUuid(), false)) */
-				.flatMap(formNode -> {
-					return schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), false)
-							.flatMap(optSchema -> {
-								if (optSchema.isPresent()) {
-									log.info("Found schema {}. Schema has uuid {}", SchemaService.getSchemaName(uuid),
-											optSchema.get().getUuid());
-									// update schema
-									return updateSchema(projectName, formNode, optSchema.get())
-											.map(response -> formNode);
-								} else {
-									log.info("Did not find schema {}.", SchemaService.getSchemaName(uuid));
-									// create schema
-									return createAndAssignSchema(projectName, formNode).map(schemaResponse -> formNode);
-								}
-							});
-				}).flatMap(updatedForm -> {
-					return userClient.publishNode(projectName, updatedForm.getUuid(), languageParameter).toSingle()
-							.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
-				});
+			return userClient.upsertNode(projectName, uuid, request, languageParameter)
+					.toSingle() /* .flatMap(formNode -> loadAsAdminWithLanguageFallback(projectName, formNode.getUuid(), false)) */
+					.flatMap(formNode -> {
+						return schemaService.loadSchemaByName(SchemaService.getSchemaName(uuid), false)
+								.flatMap(optSchema -> {
+									if (optSchema.isPresent()) {
+										log.info("Found schema {}. Schema has uuid {}", SchemaService.getSchemaName(uuid),
+												optSchema.get().getUuid());
+										// update schema
+										return updateSchema(projectName, formNode, optSchema.get())
+												.map(response -> formNode);
+									} else {
+										log.info("Did not find schema {}.", SchemaService.getSchemaName(uuid));
+										// create schema
+										return createAndAssignSchema(projectName, formNode).map(schemaResponse -> formNode);
+									}
+								});
+					}).flatMap(updatedForm -> {
+						return userClient.publishNode(projectName, updatedForm.getUuid(), languageParameter).toSingle()
+								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
+					});
+		});
 	}
 
 	/**

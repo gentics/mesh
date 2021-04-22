@@ -1,26 +1,25 @@
 package com.gentics.mesh.plugin.forms.service;
 
-import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.forms.FormsError;
-import com.gentics.mesh.plugin.forms.dagger.RootNodeUuids;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 
 import io.reactivex.Single;
 
 @Singleton
 public class SchemaService {
 	private final MeshRestClient userClient;
-
-	private final Map<String, String> rootNodeUuids;
 
 	public static final String SCHEMA_NAME = "form";
 
@@ -38,9 +37,8 @@ public class SchemaService {
 	}
 
 	@Inject
-	public SchemaService(@UserClient @Nullable MeshRestClient userClient, @RootNodeUuids Map<String, String> rootNodeUuids) {
+	public SchemaService(@UserClient @Nullable MeshRestClient userClient) {
 		this.userClient = userClient;
-		this.rootNodeUuids = rootNodeUuids;
 	}
 
 	/**
@@ -72,23 +70,5 @@ public class SchemaService {
 		} else {
 			return single;
 		}
-	}
-
-	/**
-	 * Set the uuid of the FormsPlugin Root node for the project
-	 * @param projectName project name
-	 * @param uuid root node uuid
-	 */
-	public void setRootNodeUuid(String projectName, String uuid) {
-		rootNodeUuids.put(projectName, uuid);
-	}
-
-	/**
-	 * Get the uuid of the FormsPlugin Root node for the project
-	 * @param projectName project name
-	 * @return uuid or null, if not found
-	 */
-	public String getRootNodeUuid(String projectName) {
-		return rootNodeUuids.get(projectName);
 	}
 }
