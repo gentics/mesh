@@ -1,6 +1,6 @@
 package com.gentics.mesh.test.docker;
 
-import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
+import org.testcontainers.containers.GenericContainer.AbstractWaitStrategy;
 
 public class NoWaitStrategy extends AbstractWaitStrategy {
 
