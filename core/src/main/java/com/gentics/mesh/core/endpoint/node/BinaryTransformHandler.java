@@ -22,6 +22,7 @@ import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
+import com.gentics.mesh.core.rest.node.field.S3BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -146,7 +147,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		FileSystem fs = rxVertx.fileSystem();
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+		S3BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), S3BinaryFieldTransformRequest.class);
 		if (isEmpty(transformation.getLanguage())) {
 			throw error(BAD_REQUEST, "image_error_language_not_set");
 		}
