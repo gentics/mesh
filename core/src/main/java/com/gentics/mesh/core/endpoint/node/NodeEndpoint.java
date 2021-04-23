@@ -238,9 +238,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = wrap(rc);
-			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
+			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName);
 		});
 	}
 

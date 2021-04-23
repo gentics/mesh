@@ -17,16 +17,17 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.storage.S3BinaryStorage;
 import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
@@ -78,23 +79,23 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 	 * @param ac
 	 * @param nodeUuid   UUID of the node which should be updated
 	 * @param fieldName  Name of the field which should be created
-	 * @param attributes Additional form data attributes
 	 */
-	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
+	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName) {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 
-		String fileName = attributes.get("filename");
+		S3BinaryUploadRequest s3BinaryUploadRequest = JsonUtil.readValue(ac.getBodyAsString(), S3BinaryUploadRequest.class);
+		String fileName = s3BinaryUploadRequest.getFilename();
 		if (isEmpty(fileName)) {
 			throw error(BAD_REQUEST, "upload_error_body_no_filename");
 		}
 
-		String languageTag = attributes.get("language");
+		String languageTag = s3BinaryUploadRequest.getLanguage();
 		if (isEmpty(languageTag)) {
 			throw error(BAD_REQUEST, "upload_error_no_language");
 		}
 
-		String nodeVersion = attributes.get("version");
+		String nodeVersion = s3BinaryUploadRequest.getVersion();
 		if (isEmpty(nodeVersion)) {
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
@@ -109,7 +110,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 				storeUploadInGraph(ac, s3UploadContext, nodeUuid, languageTag, nodeVersion,fieldName)
 				.flatMapObservable((x) -> Observable.just(s3RestResponse))
 		).subscribe(model ->
-				ac.send(model, FOUND), ac::fail);
+				ac.send(model, CREATED), ac::fail);
 	}
 
 	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, S3UploadContext context,
