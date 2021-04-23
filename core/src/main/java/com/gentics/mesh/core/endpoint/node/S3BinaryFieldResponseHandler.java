@@ -19,6 +19,9 @@ import io.vertx.reactivex.core.Vertx;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
 /**
  * Handler which will accept {@link S3BinaryGraphField} elements and return the binary data using the given context.
  */
@@ -68,12 +71,20 @@ public class S3BinaryFieldResponseHandler {
 	 */
 	private void respond(RoutingContext rc, S3BinaryGraphField s3binaryField) {
 		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
-		s3Binarystorage.createDownloadPresignedUrl(s3Options.getBucket(), s3ObjectKey, false)
-				.subscribe(model ->{
-					rc.response().setStatusCode(302);
-					rc.response().headers().set("Location", model.getPresignedUrl());
-					rc.response().end();
-				});
+		s3Binarystorage.exists(s3Options.getBucket(), s3ObjectKey).flatMap(
+				(res) -> {
+					if (res) {
+						return s3Binarystorage.createDownloadPresignedUrl(s3Options.getBucket(), s3ObjectKey, false);
+					} else {
+						throw error(NOT_FOUND, "error_aws_s3binaryfield_not_found_with_name", s3ObjectKey);
+					}
+				}
+		).doOnSuccess(model -> {
+			rc.response().setStatusCode(302);
+			rc.response().headers().set("Location", model.getPresignedUrl());
+			rc.response().end();
+		}).subscribe(ignore -> {
+		}, rc::fail);
 	}
 	/**
 	 * Handle the S3 binary field response when the S3 file does not exist or should be resized/manipulated first.
