@@ -122,9 +122,6 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 					} else return null;
 				}).flatMap(fileBuffer -> {
 			if (nonNull(fileBuffer) || fileBuffer.getBytes().length > 0) {
-				//TODO get filename
-				//TODO create temp with proper name
-				//TODO create fileUpload object
 				return db.singleTx(tx -> s3binaries
 						.findByS3ObjectKey(nodeUuid + "/" + fieldName)
 						.runInExistingTx(tx)
@@ -179,10 +176,6 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 							return Single.just(fileUpload);
 						}).flatMap(fileUpload -> postProcessUpload(new S3BinaryDataProcessorContext(ac, nodeUuid, fieldName, fileUpload))
 									.toList()).flatMap(postProcess ->  storeUploadInGraph(ac, postProcess, ctx, nodeUuid, languageTag, nodeVersion, fieldName));
-//TODO call Binary Metadata processors
-//TODO do the actual processing
-//TODO Upload in graph
-//TODO return json
 			} else {
 				log.error("Could not read input image");
 				return Single.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
