@@ -34,7 +34,17 @@ public interface ImageManipulator {
      * @param filename
      * @param parameters
      */
-    Completable handleS3Resize(String bucketName, String cacheBucketName, String s3ObjectKey, String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
+    Completable handleS3CacheResize(String bucketName, String cacheBucketName, String s3ObjectKey, String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
+
+    /**
+     * Resize the given s3 binary data and return the result.
+     *
+     * @param bucketName
+     * @param s3ObjectKey
+     * @param filename
+     * @param parameters
+     */
+    Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename, ImageManipulationParameters parameters);
 
 	/**
 	 * Return the cache file for the given binary and image parameters.
