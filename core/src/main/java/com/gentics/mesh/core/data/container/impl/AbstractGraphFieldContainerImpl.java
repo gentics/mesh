@@ -403,8 +403,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 		return Stream.of(
 			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
-			(Stream<Node>) getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
-			(Stream<Node>) getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
+			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
+			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
 		).flatMap(Function.identity())::iterator;
 	}
 

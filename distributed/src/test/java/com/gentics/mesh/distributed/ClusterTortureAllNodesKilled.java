@@ -7,14 +7,14 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 
+/**
+ * Cluster Torture: SIGKILL all nodes during sync process.
+ * 
+ * @author plyhun
+ *
+ */
 public class ClusterTortureAllNodesKilled extends AbstractClusterTortureTest {
 	
-	/**
-	 * Kill all nodes during sync process
-	 * 
-	 * @throws Exception
-	 */
-	// Fails as of OrientDB 3.1.11.
 	@Test
 	public void testAllKilled() throws Exception {
 		torture((serverA, serverB, contentSchema) -> {

@@ -80,7 +80,7 @@ public abstract class AbstractClusterTest {
 		server.start();
 		return server;
 	}
-	
+
 	protected MeshContainer prepareSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
 		return prepareSlave(clusterName, nodeName, dataPathPostfix, clearFolders, true, writeQuorum);
 	}

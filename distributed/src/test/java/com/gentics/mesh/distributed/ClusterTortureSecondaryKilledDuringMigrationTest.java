@@ -8,13 +8,14 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.test.docker.MeshContainer;
 
+/**
+ * Cluster Torture: Kill the secondary node during the sync process caused by a massive node migration.
+ * 
+ * @author plyhun
+ *
+ */
 public class ClusterTortureSecondaryKilledDuringMigrationTest extends AbstractClusterTortureTest {
 
-	/**
-	 * Kill the secondary node during the sync process.
-	 * 
-	 * @throws Exception
-	 */
 	@Test
 	public void testSecondaryKilledDuringMigration() throws Exception {		
 		torture((a, b, c) -> {
@@ -27,6 +28,9 @@ public class ClusterTortureSecondaryKilledDuringMigrationTest extends AbstractCl
 			new Thread(() -> {
 					SchemaUpdateRequest schemaUpdateRequest = c.toUpdateRequest();
 					schemaUpdateRequest.removeField("teaser");
+					
+					// We make a new field of the same name different by type for a reason - there will be conflicts during the processing
+					// of each node, that still have to be correctly processed and recovered.
 					schemaUpdateRequest.addField(new DateFieldSchemaImpl().setName("teaser"), "content");
 					
 					call(() -> a.client().updateSchema(schemaUuid, schemaUpdateRequest));
