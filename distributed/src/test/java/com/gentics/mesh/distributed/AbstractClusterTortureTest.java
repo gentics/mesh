@@ -1,11 +1,8 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
-import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,18 +10,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import org.junit.Test;
-import org.testcontainers.containers.BindMode;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.test.docker.MeshContainer;
 
 import io.vertx.core.logging.Logger;
@@ -32,90 +24,20 @@ import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Tests for cluster nodes reliability under utter circumstances.
+ * The cluster tests cannot be merged into a single unit test file because of the memory leaks happening on the in-memory DB mode.
  * 
  * @author plyhun
  *
  */
-public class ClusterTortureTest extends AbstractClusterTest {
+public abstract class AbstractClusterTortureTest extends AbstractClusterTest {
 
-	private static final Logger log = LoggerFactory.getLogger(ClusterConcurrencyTest.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractClusterTortureTest.class);
 
 	private static final int TEST_DATA_SIZE = 1000;
 
 	private final int NUM_PROJECTS = 80;
 	
-	private static String clusterPostFix = randomUUID();
-	
-	/**
-	 * Kill all nodes during sync process
-	 * 
-	 * @throws Exception
-	 */
-	// Ignored - the nodes never respond started after being killed. Bug?
-	// @Test
-	public void testAllKilled() throws Exception {
-		torture((serverA, serverB, contentSchema) -> {
-			String schemaUuid = contentSchema.getUuid();
-			
-			new Thread(() -> {
-					SchemaUpdateRequest schemaUpdateRequest = contentSchema.toUpdateRequest();
-					schemaUpdateRequest.removeField("teaser");
-					schemaUpdateRequest.addField(new DateFieldSchemaImpl().setName("teaser"), "content");
-					
-					call(() -> serverA.client().updateSchema(schemaUuid, schemaUpdateRequest));
-			}).run();
-			
-			Thread.sleep(5000);
-			
-			new Thread(() -> {
-					serverB.killHardContainer();
-					serverA.killHardContainer();
-			}).run();
-		});
-	}
-	
-	@Test
-	public void testSecondaryBackupCreated() throws Exception {
-		torture((a, b, c) -> {
-			MeshContainer serverB2 = prepareSlave("dockerCluster" + clusterPostFix, "nodeB2", randomToken(), true, true, 1);
-			File backupFolder = new File("target/backup-" + serverB2.getDataPathPostfix());
-			backupFolder.mkdirs();
-			serverB2.overrideODBClusterBackupFolder(backupFolder.getAbsolutePath(), BindMode.READ_WRITE);
-			serverB2.start();
-			
-			File plannedBackup = new File(backupFolder.getAbsolutePath() + "/databases/storage");
-			assertTrue("Backup does not exist", plannedBackup.exists());
-			assertTrue("Backup is not a directory", plannedBackup.isDirectory());
-			assertTrue("Backup is empty", plannedBackup.list().length > 0);
-		});
-	}
-
-	/**
-	 * Kill the secondary node during the sync process.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testSecondaryKilledDuringMigration() throws Exception {		
-		torture((a, b, c) -> {
-			String schemaUuid = c.getUuid();
-			b.stop();
-			
-			MeshContainer serverB1 = prepareSlave("dockerCluster" + clusterPostFix, "nodeB", b.getDataPathPostfix(), false, false, 1);
-			serverB1.start();
-			
-			new Thread(() -> {
-					SchemaUpdateRequest schemaUpdateRequest = c.toUpdateRequest();
-					schemaUpdateRequest.removeField("teaser");
-					schemaUpdateRequest.addField(new DateFieldSchemaImpl().setName("teaser"), "content");
-					
-					call(() -> a.client().updateSchema(schemaUuid, schemaUpdateRequest));
-			}).run();
-			
-			Thread.sleep(4000);
-			serverB1.killHardContainer();
-		});
-	}
+	protected static String clusterPostFix = randomUUID();
 	
 	protected void torture(Torture torture) throws Exception {
 		MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
@@ -246,7 +168,7 @@ public class ClusterTortureTest extends AbstractClusterTest {
 			
 			// Read project data
 			for (NodeResponse node: entry.getValue()) {
-				serverA.client().findProjectByUuid(entry.getKey().getUuid()).blockingGet();
+				serverA.client().findNodeByUuid(entry.getKey().getName(), node.getUuid()).blockingGet();
 				serverB1.client().findNodeByUuid(entry.getKey().getName(), node.getUuid()).blockingGet();
 			}
 		}
