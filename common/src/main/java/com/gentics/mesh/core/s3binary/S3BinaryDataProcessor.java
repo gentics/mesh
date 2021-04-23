@@ -8,7 +8,7 @@ import io.reactivex.Maybe;
 import java.util.function.Consumer;
 
 /**
- * A binary data processor accepts a fileupload in order to extract specific information from the data. The found data can later be stored in the binary field
+ * A S3 binary data processor accepts a fileupload in order to extract specific information from the data. The found data can later be stored in the binary field
  * to be finally persisted along with the binary data.
  */
 public interface S3BinaryDataProcessor {
@@ -22,11 +22,10 @@ public interface S3BinaryDataProcessor {
 	boolean accepts(String contentType);
 
 	/**
-	 * Process the binary data and return a consumer for the binary field.
+	 * Process the s3 binary data and return a consumer for the binary field.
 	 * 
-	 * @param upload
-	 * @param hash SHA512 sum of the upload
-	 * @return Modifier for the binary graph field.
+	 * @param context
+	 * @return Modifier for the s3 binary graph field.
 	 */
 	Maybe<Consumer<S3BinaryGraphField>> process(S3BinaryDataProcessorContext context);
 
