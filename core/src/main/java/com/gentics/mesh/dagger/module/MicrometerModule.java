@@ -58,6 +58,7 @@ public class MicrometerModule {
 	}
 
 	private static final List<PathMatcher> regexMatcher = Arrays.asList(
+		StaticRegexMatcher.projectMatch("webrootfield", "/webrootfield/([_a-zA-Z][_a-zA-Z0-9]*)/(.*)"),
 		StaticRegexMatcher.projectMatch("webroot", "/webroot"),
 		StaticRegexMatcher.projectMatch("graphql", "/graphql"),
 		StaticRegexMatcher.projectMatch("search", "/search"),
