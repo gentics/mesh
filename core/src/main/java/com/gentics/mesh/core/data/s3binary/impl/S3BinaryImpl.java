@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.storage.S3BinaryStorage;
 
 import java.util.Base64;
 
@@ -44,8 +45,8 @@ public class S3BinaryImpl extends MeshVertexImpl implements S3Binary {
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		BinaryStorage storage = mesh().binaryStorage();
-		bac.add(storage.delete(getUuid()));
+		S3BinaryStorage storage = mesh().s3binaryStorage();
+		bac.add(storage.delete(getS3ObjectKey()));
 		getElement().remove();
 	}
 
