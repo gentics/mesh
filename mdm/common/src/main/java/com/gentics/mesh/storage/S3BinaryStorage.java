@@ -70,10 +70,17 @@ public interface S3BinaryStorage {
 
 
 	/**
-	 * Delete the binary with the given uuid.
+	 * Delete the S3 binary with the given bucket name and s3 object key.
 	 * 
-	 * @param uuid
+	 * @param bucket
+	 * @param s3ObjectKey
 	 */
-	Completable delete(String uuid);
+	Completable delete(String bucket, String s3ObjectKey);
 
+	/**
+	 * Delete the S3 binary in the default bucket and s3 object key.
+	 *
+	 * @param s3ObjectKey
+	 */
+	Completable delete(String s3ObjectKey);
 }
