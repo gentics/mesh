@@ -202,7 +202,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			binaryTransformHandler.handleTransformImage(rc, uuid, fieldName);
+			binaryTransformHandler.handle(rc, uuid, fieldName);
 		});
 
 		InternalEndpointRoute fieldGet = createRoute();
