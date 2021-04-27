@@ -18,7 +18,9 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.6.10]]
-== 1.6.10 (TBD)
+== 1.6.10 (27.04.2021)
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
 
 icon:check[] Upload: More user-friendly message + HTTP 400 error on an attempt to upload an empty file.
 
@@ -123,7 +125,9 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
 [[v1.5.10]]
-== 1.5.10 (TBD)
+== 1.5.10 (27.04.2021)
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
 
@@ -184,7 +188,9 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
 [[v1.4.20]]
-== 1.4.20 (TBD)
+== 1.4.20 (27.04.2021)
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
 
