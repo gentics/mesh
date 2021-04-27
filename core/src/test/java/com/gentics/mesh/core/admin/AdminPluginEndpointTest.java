@@ -280,7 +280,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testClientPlugin() throws IOException {
-		grantAdmin();
+		grantAdminRole();
 
 		copyAndDeploy(CLIENT_PATH, "client.jar");
 		assertEquals(1, pluginManager().getPluginIds().size());
