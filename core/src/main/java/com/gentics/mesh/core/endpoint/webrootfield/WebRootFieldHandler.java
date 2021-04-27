@@ -2,7 +2,6 @@ package com.gentics.mesh.core.endpoint.webrootfield;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,6 @@ import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
-import com.gentics.mesh.util.NumberUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpHeaders;
@@ -143,7 +141,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 				String contentType = rc.response().headers().get(HttpHeaders.CONTENT_TYPE);
 				ac.send(
 					HttpConstants.APPLICATION_JSON_UTF8.equals(contentType) ? field.toJson() : field.toString(),
-					HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().get("statuscode").toString(), OK.code())),
+					HttpResponseStatus.valueOf(rc.response().getStatusCode()),
 					contentType);
 			}
 		});

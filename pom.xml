@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.7.8-SNAPSHOT</version>
+	<version>1.7.9-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -51,15 +51,6 @@
 	</parent>
 
 	<developers>
-		<developer>
-			<name>Johannes Schüth</name>
-			<url>https://github.com/Jotschi</url>
-			<email>git@jotschi.de</email>
-			<organization>Gentics Software</organization>
-			<roles>
-				<role>Core Developer</role>
-			</roles>
-		</developer>
 	</developers>
 
 	<organization>
