@@ -69,15 +69,11 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadFolderContentFieldByPathAndResolveLinks() throws Exception {
 		HibNode content = content("news_2015");
-		String nodeUuid = tx(() -> content.getUuid());
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.contentDao();
-			// 1. Transform the node into a binary content
-			HibSchema container = schemaContainer("binary_content");
-			content.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(content, english()).setSchemaContainerVersion(container.getLatestVersion());
-			prepareSchema(content, "image/*", "binary");
+			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
+				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 			tx.success();
 		}
 
