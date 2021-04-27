@@ -122,6 +122,11 @@ public abstract class AbstractWebrootHandler {
 		}
 
 		PathSegment lastSegment = nodePath.getLast();
+
+		// Check whether the path actually points to a valid node
+		if (lastSegment == null) {
+			throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(projectPath));
+		}
 		PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
 		NodeGraphFieldContainer container = graphSegment.getContainer();
 		if (container == null) {
