@@ -167,4 +167,12 @@ public class S3Options implements Option {
     public void setExpirationTimeDownload(int expirationTimeDownload) {
         this.expirationTimeDownload = expirationTimeDownload;
     }
+
+    public String getLinkResolver() {
+        return linkResolver;
+    }
+
+    public void setLinkResolver(String linkResolver) {
+        this.linkResolver = linkResolver;
+    }
 }
