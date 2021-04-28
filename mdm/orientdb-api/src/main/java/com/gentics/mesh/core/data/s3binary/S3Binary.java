@@ -98,9 +98,9 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 		return this;
 	}
 
-	default String getS3MimeType() {	return property(S3_BINARY_CONTENT_TYPE);}
+	default String getMimeType() {	return property(S3_BINARY_CONTENT_TYPE);}
 
-	default S3HibBinary setS3MimeType(String mimeType) {
+	default S3HibBinary setMimeType(String mimeType) {
 		property(S3_BINARY_CONTENT_TYPE, mimeType);
 		return this;
 	}
