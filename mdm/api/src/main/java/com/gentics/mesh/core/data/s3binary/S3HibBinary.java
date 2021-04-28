@@ -31,6 +31,21 @@ public interface S3HibBinary extends HibBaseElement {
 	S3HibBinary setSize(Long sizeInBytes);
 
 	/**
+	 * Return the mime type of the s3binary data.
+	 *
+	 * @return
+	 */
+	String getMimeType();
+
+	/**
+	 * Set the mime type of the s3binary data
+	 *
+	 * @param mimeType
+	 * @return S3HibBinary
+	 */
+	S3HibBinary setMimeType(String mimeType);
+
+	/**
 	 * Return the image height of the s3binary
 	 * 
 	 * @return Image height or null when the height could not be determined

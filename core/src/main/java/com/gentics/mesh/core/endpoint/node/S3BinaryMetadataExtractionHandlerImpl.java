@@ -177,6 +177,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 							ctx.setFileUpload(fileUpload);
 							ctx.setS3ObjectKey(nodeUuid + "/" + fieldName);
 							ctx.setFileName(fileName);
+							ctx.setFileSize(fileData.length);
 							return Single.just(fileUpload);
 						}).flatMap(fileUpload -> postProcessUpload(new S3BinaryDataProcessorContext(ac, nodeUuid, fieldName, fileUpload))
 									.toList()).flatMap(postProcess ->  storeUploadInGraph(ac, postProcess, ctx, nodeUuid, languageTag, nodeVersion, fieldName));
@@ -185,7 +186,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				return Single.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
 			}
 		}).subscribe(model ->
-				ac.send(model, FOUND), ac::fail);
+				ac.send(model, OK), ac::fail);
 	}
 
 	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<S3BinaryGraphField>> fieldModifier, S3UploadContext context,
@@ -288,6 +289,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 
 				// Now set the field infos. This will override any copied values as well.
 				field.setMimeType(upload.contentType());
+				field.setFileSize(upload.size());
 
 				for (Consumer<S3BinaryGraphField> modifier : fieldModifier) {
 					modifier.accept(field);
