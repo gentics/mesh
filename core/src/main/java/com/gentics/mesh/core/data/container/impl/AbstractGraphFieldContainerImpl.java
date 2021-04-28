@@ -212,7 +212,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public S3BinaryGraphField getS3Binary(String key) {
-		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(S3BinaryGraphFieldImpl.class, null);
+		return outE(HAS_FIELD)
+				.has(S3BinaryGraphFieldImpl.class)
+				.has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+				.nextOrDefaultExplicit(S3BinaryGraphFieldImpl.class, null);
 	}
 
 	@Override
