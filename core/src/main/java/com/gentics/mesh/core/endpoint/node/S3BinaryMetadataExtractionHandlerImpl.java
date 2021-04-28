@@ -18,6 +18,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.s3binary.S3BinaryDataProcessor;
@@ -26,9 +27,8 @@ import com.gentics.mesh.core.s3binary.S3BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.storage.S3BinaryStorage;
-import com.gentics.mesh.util.NodeUtil;
-import io.reactivex.Completable;
 import com.gentics.mesh.util.NodeUtil;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -102,12 +101,13 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 
-		String languageTag = attributes.get("language");
+		S3BinaryMetadataRequest request = JsonUtil.readValue(ac.getBodyAsString(), S3BinaryMetadataRequest.class);
+		String languageTag = request.getLanguage();
 		if (isEmpty(languageTag)) {
 			throw error(BAD_REQUEST, "upload_error_no_language");
 		}
 
-		String nodeVersion = attributes.get("version");
+		String nodeVersion = request.getVersion();
 		if (isEmpty(nodeVersion)) {
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
