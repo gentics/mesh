@@ -191,19 +191,4 @@ public class S3Options implements Option {
     public void setLinkResolver(String linkResolver) {
         this.linkResolver = linkResolver;
     }
-    public Set<String> getMetadataWhitelist() {
-        return metadataWhitelist;
-    }
-
-    public void setMetadataWhitelist(Set<String> metadataWhitelist) {
-        this.metadataWhitelist = metadataWhitelist;
-    }
-
-    public int getParserLimit() {
-        return parserLimit;
-    }
-
-    public void setParserLimit(int parserLimit) {
-        this.parserLimit = parserLimit;
-    }
 }
