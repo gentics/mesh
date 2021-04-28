@@ -14,6 +14,8 @@ public class S3UploadContext {
 
 	private String fileName;
 
+	private long fileSize;
+
 	private FileUpload fileUpload;
 
 	public S3UploadContext() {
@@ -52,5 +54,13 @@ public class S3UploadContext {
 
 	public void setFileUpload(FileUpload fileUpload) {
 		this.fileUpload = fileUpload;
+	}
+
+	public long getFileSize() {
+		return fileSize;
+	}
+
+	public void setFileSize(long fileSize) {
+		this.fileSize = fileSize;
 	}
 }

@@ -167,4 +167,20 @@ public class S3Options implements Option {
     public void setExpirationTimeDownload(int expirationTimeDownload) {
         this.expirationTimeDownload = expirationTimeDownload;
     }
+
+    public Set<String> getMetadataWhitelist() {
+        return metadataWhitelist;
+    }
+
+    public void setMetadataWhitelist(Set<String> metadataWhitelist) {
+        this.metadataWhitelist = metadataWhitelist;
+    }
+
+    public int getParserLimit() {
+        return parserLimit;
+    }
+
+    public void setParserLimit(int parserLimit) {
+        this.parserLimit = parserLimit;
+    }
 }
