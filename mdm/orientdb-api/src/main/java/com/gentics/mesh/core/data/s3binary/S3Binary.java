@@ -20,6 +20,8 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 
 	String S3_AWS_OBJECT_KEY = "s3ObjectKey";
 
+	String S3_BINARY_CONTENT_TYPE = "s3binaryContentType";
+
 	String S3_AWS_FILENAME = "filename";
 
 	/**
@@ -96,6 +98,12 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 		return this;
 	}
 
+	default String getMimeType() {	return property(S3_BINARY_CONTENT_TYPE);}
+
+	default S3HibBinary setMimeType(String mimeType) {
+		property(S3_BINARY_CONTENT_TYPE, mimeType);
+		return this;
+	}
 	/**
 	 * Set the with of the s3binary image. You can set this null to indicate that the s3binary data has no height.
 	 * 

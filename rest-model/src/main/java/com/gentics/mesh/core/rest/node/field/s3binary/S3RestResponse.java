@@ -21,6 +21,10 @@ public class S3RestResponse implements RestModel {
     @JsonPropertyDescription("signedHeaders")
     Map<String, List<String>> signedHeaders;
 
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("version")
+    String version;
+
     public S3RestResponse(String presignedUrl, String httpRequestMethod, Map<String, List<String>> signedHeaders) {
         this.presignedUrl = presignedUrl;
         this.httpRequestMethod = httpRequestMethod;
@@ -33,5 +37,9 @@ public class S3RestResponse implements RestModel {
 
     public String getPresignedUrl() {
         return presignedUrl;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

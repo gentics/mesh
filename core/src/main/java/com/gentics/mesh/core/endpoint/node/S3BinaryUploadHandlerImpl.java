@@ -106,9 +106,12 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 		s3UploadContext.setS3BinaryUuid(UUIDUtil.randomUUID());
 		s3UploadContext.setFileName(fileName);
 
-		s3BinaryStorage.createUploadPresignedUrl(options.getS3Options().getBucket(), nodeUuid, fieldName,false).flatMapObservable(s3RestResponse ->
-				storeUploadInGraph(ac, s3UploadContext, nodeUuid, languageTag, nodeVersion,fieldName)
-				.flatMapObservable((x) -> Observable.just(s3RestResponse))
+		s3BinaryStorage.createUploadPresignedUrl(options.getS3Options().getBucket(), nodeUuid, fieldName, nodeVersion, false).flatMapObservable(s3RestResponse ->
+				storeUploadInGraph(ac, s3UploadContext, nodeUuid, languageTag, nodeVersion, fieldName)
+						.flatMapObservable((uploadedNode) -> {
+							s3RestResponse.setVersion(uploadedNode.getVersion());
+							return Observable.just(s3RestResponse);
+						})
 		).subscribe(model ->
 				ac.send(model, CREATED), ac::fail);
 	}

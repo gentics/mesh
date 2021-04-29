@@ -33,8 +33,8 @@ public class S3BinaryDaoWrapperImpl extends AbstractDaoWrapper<S3HibBinary> impl
 	}
 
 	@Override
-	public Transactional<? extends S3HibBinary> findByHash(String hash) {
-		return s3binaries.findByHash(hash);
+	public Transactional<? extends S3HibBinary> findByS3ObjectKey(String s3ObjectKey) {
+		return s3binaries.findByS3ObjectKey(s3ObjectKey);
 	}
 
 	@Override
