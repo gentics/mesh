@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.admin;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,11 +20,10 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-@MeshTestSetting(testSize = FULL, startServer = true, optionsProvider = OrientDBMeshOptionsProvider.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class DebugInfoTest extends AbstractMeshTest {
 	@Test
 	public void testAsAnonymous() {

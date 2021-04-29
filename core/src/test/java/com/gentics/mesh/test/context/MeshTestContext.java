@@ -28,7 +28,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -40,12 +39,11 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
-import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
-import com.gentics.mesh.dagger.MeshBuilderFactory;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
@@ -123,7 +121,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private Mesh mesh;
 	
-	private MeshOptionsProvider meshOptionsProvider;
+	private MeshTestContextProvider meshTestContextProvider;
 
 	@Override
 	protected void starting(Description description) {
@@ -437,7 +435,7 @@ public class MeshTestContext extends TestWatcher {
 		} else {
 			meshDagger.database().stop();
 			
-			meshOptionsProvider.cleanupPhysicalStorage();
+			meshTestContextProvider.getInstanceProvider().cleanupPhysicalStorage();
 			
 			meshDagger.database().setupConnectionPool();
 		}
@@ -474,9 +472,11 @@ public class MeshTestContext extends TestWatcher {
 			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
 		}
 		
-		meshOptionsProvider = settings.optionsProvider().getConstructor().newInstance();
+		meshTestContextProvider = MeshTestContextProvider.getProvider();
 		
-		MeshOptions meshOptions = getOptions();
+		MeshInstanceProvider<? extends MeshOptions> meshInstanceProvider = meshTestContextProvider.getInstanceProvider();
+		
+		MeshOptions meshOptions = meshInstanceProvider.getOptions();
 
 		// Clustering options
 		if (settings.clusterMode()) {
@@ -538,7 +538,7 @@ public class MeshTestContext extends TestWatcher {
 		MonitoringConfig monitoringOptions = meshOptions.getMonitoringOptions();
 		monitoringOptions.setPort(monitoringPort);
 
-		meshOptionsProvider.initStorage(settings);
+		meshInstanceProvider.initStorage(settings);
 
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		searchOptions.setTimeout(10_000L);
@@ -612,7 +612,7 @@ public class MeshTestContext extends TestWatcher {
 		return meshOptions;
 	}
 
-	private void initFolders(MeshOptions meshOptions) throws IOException {
+	private void initFolders(MeshOptions meshOptions) throws Exception {
 		String tmpDir = newFolder("tmpDir");
 		meshOptions.setTempDirectory(tmpDir);
 
@@ -628,7 +628,7 @@ public class MeshTestContext extends TestWatcher {
 		String plugindirPath = newFolder("plugins");
 		meshOptions.setPluginDirectory(plugindirPath);
 		
-		meshOptionsProvider.initFolders(this::newFolder);
+		meshTestContextProvider.getInstanceProvider().initFolders(this::newFolder);
 	}
 
 	/**
@@ -659,8 +659,9 @@ public class MeshTestContext extends TestWatcher {
 	public void initDagger(MeshOptions options, MeshTestSetting settings) throws Exception {
 		log.info("Initializing dagger context");
 		try {
-			mesh = Mesh.create(options);
-			meshDagger = getMeshDaggerBuilder()
+			@NotNull MeshComponent.Builder builder = getMeshDaggerBuilder();
+			mesh = new MeshImpl(options, builder);
+			meshDagger = builder
 				.configuration(options)
 				.searchProviderType(settings.elasticsearch().toSearchProviderType())
 				.mesh(mesh)
@@ -684,18 +685,7 @@ public class MeshTestContext extends TestWatcher {
 
 	@NotNull
 	private MeshComponent.Builder getMeshDaggerBuilder() {
-//		String builderFactoryName = System.getenv("MESH_BUILDER_FACTORY");
-		String builderFactoryName = System.getProperty("mesh.mdm.provider.factory");
-		if (StringUtils.isEmpty(builderFactoryName) || builderFactoryName.equals("TODO")) {
-			return DaggerOrientDBMeshComponent.builder();
-		} else {
-			try {
-				MeshBuilderFactory builderFactory = (MeshBuilderFactory) Class.forName(builderFactoryName).getDeclaredConstructor().newInstance();
-				return builderFactory.getBuilder();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
+		return meshTestContextProvider.getInstanceProvider().getComponentBuilder();
 	}
 
 	public MonitoringRestClient getMonitoringClient() {
@@ -772,11 +762,11 @@ public class MeshTestContext extends TestWatcher {
 		return mesh;
 	}
 	
-	public MeshOptionsProvider getOptionsProvider() {
-		return meshOptionsProvider;
+	public MeshInstanceProvider<? extends MeshOptions> getInstanceProvider() {
+		return meshTestContextProvider.getInstanceProvider();
 	}
 	
 	public MeshOptions getOptions() {
-		return meshOptionsProvider.getOptions();
+		return meshTestContextProvider.getOptions();
 	}
 }

@@ -26,9 +26,8 @@ import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 
-@MeshTestSetting(testSize = FULL, startServer = false, optionsProvider = OrientDBMeshOptionsProvider.class)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class DatabaseTest extends AbstractMeshTest {
 
 	private File outputDirectory;

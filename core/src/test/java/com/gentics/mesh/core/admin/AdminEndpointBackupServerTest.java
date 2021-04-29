@@ -15,9 +15,8 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.context.OrientDBMeshOptionsProvider;
 
-@MeshTestSetting(testSize = FULL, startServer = true, startStorageServer = true, clusterMode = false, inMemoryDB = false, optionsProvider = OrientDBMeshOptionsProvider.class)
+@MeshTestSetting(testSize = FULL, startServer = true, startStorageServer = true, clusterMode = false, inMemoryDB = false)
 public class AdminEndpointBackupServerTest extends AbstractMeshTest {
 
 	@Test

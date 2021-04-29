@@ -7,7 +7,6 @@ import static com.gentics.mesh.test.context.MeshOptionChanger.NO_CHANGE;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestSize;
 
@@ -86,11 +85,4 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	MeshOptionChanger optionChanger() default NO_CHANGE;
-	
-	/**
-	 * {@link MeshOptions} provider, that is also used to change options-related configuration.
-	 * 
-	 * @return
-	 */
-	Class<? extends MeshOptionsProvider> optionsProvider() default OrientDBMeshOptionsProvider.class;
 }
