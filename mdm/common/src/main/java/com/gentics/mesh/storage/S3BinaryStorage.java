@@ -4,7 +4,7 @@ import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.reactivex.core.buffer.Buffer;
 
 import java.io.File;
 
@@ -30,7 +30,7 @@ public interface S3BinaryStorage {
 	 * @param fieldName
 	 * @return
 	 */
-	Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName, boolean isCache);
+	Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName, String nodeVersion, boolean isCache);
 
 	/**
 	 * Get a presigned URL that can be used for a given time period.

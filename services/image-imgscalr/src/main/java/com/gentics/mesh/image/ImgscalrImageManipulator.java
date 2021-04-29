@@ -415,9 +415,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
                         //write cache to AWS
                         s3BinaryStorage.uploadFile(bucketName, s3ObjectKey, file)
                                 .flatMap(
-                                ignoreElement -> Single.just(file))
-
-                )
+                                ignoreElement -> Single.just(file)))
                 .singleOrError();
     }
 

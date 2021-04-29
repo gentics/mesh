@@ -227,7 +227,6 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.path("/:nodeUuid/s3binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
-		fieldUpdate.addUriParameter("fileName", "Name of the file which should be created.", "stringField");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());

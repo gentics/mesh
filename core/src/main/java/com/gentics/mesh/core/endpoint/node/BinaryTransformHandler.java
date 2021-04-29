@@ -205,7 +205,6 @@ public class BinaryTransformHandler extends AbstractHandler {
 				.flatMap(file -> {
 					// The image was stored and hashed. Now we need to load the stored file again and check the image properties
 					Single<ImageInfo> info = imageManipulator.readImageInfo(file.getName());
-
 					Single<FileProps> fileProps = fs.rxProps(file.getName());
 					return Single.zip(info, fileProps, (infoV, props) -> {
 						// Return a POJO which hold all information that is needed to update the field
