@@ -57,8 +57,6 @@ public abstract class AbstractClusterTortureTest extends AbstractClusterTest {
 		SchemaResponse contentSchema = schemas.getData().stream().filter(s -> s.getName().equals("content")).findFirst().get();
 		String schemaUuid = contentSchema.getUuid();
 		
-		log.info("Created at localhost:" + serverA.getPort());
-
 		Map<ProjectResponse, List<NodeResponse>> projects = new HashMap<>();
 		
 		for (int i = 0; i < NUM_PROJECTS; i++) {
