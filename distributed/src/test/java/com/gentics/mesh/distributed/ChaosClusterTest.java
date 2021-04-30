@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.test.docker.MeshContainer;
-import com.gentics.mesh.test.docker.MeshContainer;
 
 /**
  * A test which will randomly add, remove, utilize and stop nodes in a mesh cluster.
@@ -42,7 +41,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	private static int nAction = 0;
 
 	private enum Actions {
-		ADD, REMOVE, UTILIZE, STOP, START;
+		ADD, REMOVE, UTILIZE, STOP, START, TERMINATE, KILL;
 
 		public static Actions random() {
 			return values()[random.nextInt(values().length)];
@@ -96,7 +95,8 @@ public class ChaosClusterTest extends AbstractClusterTest {
 			.withNodeName("master")
 			.withClearFolders()
 			.withDataPathPostfix("master")
-			.waitForStartup();
+			.waitForStartup()
+			.withFilesystem();
 
 		server.start();
 		server.awaitStartup(STARTUP_TIMEOUT);
@@ -106,7 +106,9 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private void applyAction() throws InterruptedException {
 		while (true) {
-			switch (Actions.random()) {
+			Actions action = Actions.random();
+			System.out.println(" ... " + action);
+			switch (action) {
 			case ADD:
 				if (runningServers.size() < SERVER_LIMIT) {
 					addServer();
@@ -122,6 +124,18 @@ public class ChaosClusterTest extends AbstractClusterTest {
 			case UTILIZE:
 				if (!runningServers.isEmpty()) {
 					utilizeServer();
+					return;
+				}
+				break;
+			case TERMINATE:
+				if (!runningServers.isEmpty()) {
+					terminateServer();
+					return;
+				}
+				break;
+			case KILL:
+				if (!runningServers.isEmpty()) {
+					killServer();
 					return;
 				}
 				break;
@@ -163,7 +177,21 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		runningServers.add(server);
 	}
 
+	private void terminateServer() {
+		MeshContainer s = randomServer();
+		System.err.println("Stopping server: " + s.getNodeName());
+		s.killContainer();
+		runningServers.remove(s);
+		stoppedServers.add(s);
+	}
 	
+	private void killServer() {
+		MeshContainer s = randomServer();
+		System.err.println("Stopping server: " + s.getNodeName());
+		s.killHardContainer();
+		runningServers.remove(s);
+		stoppedServers.add(s);
+	}
 
 	private void stopServer() {
 		MeshContainer s = randomServer();
