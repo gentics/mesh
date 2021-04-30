@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
-import com.gentics.mesh.core.s3binary.AbstractS3BinaryProcessor;
+import com.gentics.mesh.core.s3binary.S3BinaryDataProcessor;
 import com.gentics.mesh.core.s3binary.S3BinaryDataProcessorContext;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -46,7 +46,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
  * from the parsing result.
  */
 @Singleton
-public class TikaS3BinaryProcessor extends AbstractS3BinaryProcessor {
+public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 
 	private static final Logger log = LoggerFactory.getLogger(TikaS3BinaryProcessor.class);
 

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * Registry which holds all binary data processors.
  */
 @Singleton
-public class S3BinaryProcessorRegistryImpl implements S3BinaryProcessorRegistry {
+public class S3BinaryProcessorRegistryImpl {
 
 	private List<S3BinaryDataProcessor> processors = new ArrayList<>();
 

@@ -75,11 +75,8 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 	private final Vertx vertx;
 
 	@Inject
-	public S3BinaryMetadataExtractionHandlerImpl(Database db,
-												 S3BinaryStorage s3BinaryStorage,
-												 HandlerUtilities utils, Vertx rxVertx,
-												 MeshOptions options,
-												 S3Binaries s3binaries, S3BinaryProcessorRegistryImpl s3binaryProcessorRegistry) {
+	public S3BinaryMetadataExtractionHandlerImpl(Database db, S3BinaryStorage s3BinaryStorage, HandlerUtilities utils,
+												 Vertx rxVertx, MeshOptions options, S3Binaries s3binaries, S3BinaryProcessorRegistryImpl s3binaryProcessorRegistry) {
 		this.db = db;
 		this.vertx = rxVertx;
 		this.s3BinaryStorage = s3BinaryStorage;
