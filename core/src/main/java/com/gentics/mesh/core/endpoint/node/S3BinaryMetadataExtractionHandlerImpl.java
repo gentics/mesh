@@ -168,7 +168,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 								@Override
 								public String charSet() {
 									// TODO Auto-generated method stub
-									return null;
+									return "UTF-8";
 								}
 							};
 							ctx.setFileUpload(fileUpload);
