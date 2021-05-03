@@ -4,7 +4,6 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.*;
 import com.gentics.mesh.core.data.s3binary.S3Binary;
@@ -12,7 +11,6 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
@@ -101,13 +99,13 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 		// The S3binary field does not yet exist but the update request already contains some binary field info. We can use this info to create a new binary
 		// field. We locate the binary vertex by using the given hashsum. This case usually happens during schema migrations in which the binary graph field is
 		// in fact initially being removed from the container.
-		String hash = s3binaryField.getSha512sum();
-		if (graphS3BinaryField == null && hash != null) {
-			S3HibBinary binary = Tx.get().s3binaries().findByHash(hash).runInExistingTx(Tx.get());
+		String s3ObjectKey = s3binaryField.getS3ObjectKey();
+		if (graphS3BinaryField == null && s3ObjectKey != null) {
+			S3HibBinary binary = Tx.get().s3binaries().findByS3ObjectKey(s3ObjectKey).runInExistingTx(Tx.get());
 			if (binary != null) {
 				graphS3BinaryField = container.createS3Binary(fieldKey, binary);
 			} else {
-				log.debug("Could not find binary for hash {" + hash + "}");
+				log.debug("Could not find binary for s3ObjectKey {" + s3ObjectKey + "}");
 			}
 		}
 
@@ -172,9 +170,9 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 		}
 
 		// Handle Update - Plain text
-		String s3ObjectKey = s3binaryField.getS3ObjectKey();
+		String key = s3binaryField.getS3ObjectKey();
 		if (s3ObjectKey != null) {
-			graphS3BinaryField.setS3ObjectKey(s3ObjectKey);
+			graphS3BinaryField.setS3ObjectKey(key);
 		}
 
 
@@ -198,9 +196,15 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 			restModel.setS3binaryUuid(binary.getUuid());
 			restModel.setS3ObjectKey(binary.getS3ObjectKey());
 			restModel.setFileName(binary.getFileName());
+			restModel.setFileSize(binary.getSize());
+			restModel.setWidth(binary.getImageWidth());
+			restModel.setHeight(binary.getImageHeight());
 		}
 		S3BinaryMetadata metaData = getMetadata();
 		restModel.setMetadata(metaData);
+		restModel.setMimeType(getMimeType());
+		restModel.setFileSize(getFileSize());
+		restModel.setDominantColor(getImageDominantColor());
 		return restModel;
 	}
 

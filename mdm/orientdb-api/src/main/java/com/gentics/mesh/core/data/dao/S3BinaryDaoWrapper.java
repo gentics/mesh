@@ -17,12 +17,12 @@ import java.util.stream.Stream;
  */
 public interface S3BinaryDaoWrapper extends S3BinaryDao, DaoWrapper<S3HibBinary> {
 	/**
-	 * Find the s3 binary with the given hashsum.
+	 * Find the s3 binary with the given s3ObjectKey.
 	 *
-	 * @param hash
+	 * @param s3ObjectKey
 	 * @return
 	 */
-	Transactional<? extends S3HibBinary> findByHash(String hash);
+	Transactional<? extends S3HibBinary> findByS3ObjectKey(String s3ObjectKey);
 
 	/**
 	 * Create a new s3 binary.

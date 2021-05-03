@@ -20,8 +20,6 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	String S3_BINARY_FILENAME_PROPERTY_KEY = "fileName";
 
-	String S3_BINARY_SHA512SUM_PROPERTY_KEY = "s3binarySha512Sum";
-
 	String S3_BINARY_CONTENT_TYPE_PROPERTY_KEY = "s3binaryContentType";
 
 	String S3_BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "s3binaryImageDominantColor";
@@ -41,6 +39,8 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	String PLAIN_TEXT_KEY = "plainText";
 
 	String AWS_S3_OBJECT_KEY = "s3ObjectKey";
+
+	String S3_FILE_SIZE = "s3FileSize";
 
 	/**
 	 * Return the binary filename.
@@ -318,4 +318,22 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	default void setS3ObjectKey(String key) {
 		property(AWS_S3_OBJECT_KEY, key);
 	}
+	/**
+	 * Return the S3 file size
+	 *
+	 * @return
+	 */
+	default Long getFileSize() {
+		return property(S3_FILE_SIZE);
+	}
+
+	/**
+	 * Set the S3 file size
+	 *
+	 * @param fileSize
+	 */
+	default void setFileSize(Long fileSize) {
+		property(S3_FILE_SIZE, fileSize);
+	}
+
 }

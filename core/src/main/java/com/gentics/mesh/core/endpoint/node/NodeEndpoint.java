@@ -61,19 +61,23 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private S3BinaryUploadHandlerImpl s3binaryUploadHandler;
 
+	private S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler;
+
 	public NodeEndpoint() {
 		super("nodes", null, null);
 	}
 
 	@Inject
 	public NodeEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandlerImpl binaryUploadHandler,
-		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, S3BinaryUploadHandlerImpl s3binaryUploadHandler) {
+		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, S3BinaryUploadHandlerImpl s3binaryUploadHandler,
+						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler) {
 		super("nodes", chain, boot);
 		this.crudHandler = crudHandler;
 		this.binaryUploadHandler = binaryUploadHandler;
 		this.binaryTransformHandler = binaryTransformHandler;
 		this.binaryDownloadHandler = binaryDownloadHandler;
 		this.s3binaryUploadHandler = s3binaryUploadHandler;
+		this.s3BinaryMetadataExtractionHandler = s3BinaryMetadataExtractionHandler;
 	}
 
 	@Override
@@ -239,6 +243,25 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
 			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName);
+		});
+
+		InternalEndpointRoute fieldMetadataExtraction = createRoute();
+		fieldMetadataExtraction.path("/:nodeUuid/s3binary/:fieldName/parseMetadata");
+		fieldMetadataExtraction.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldMetadataExtraction.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldMetadataExtraction.method(POST);
+		fieldMetadataExtraction.produces(APPLICATION_JSON);
+		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldMetadataExtraction.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
+		fieldMetadataExtraction.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldMetadataExtraction.description("Update the binaryfield with the given name.");
+		fieldMetadataExtraction.events(NODE_UPDATED);
+		fieldMetadataExtraction.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			MultiMap attributes = rc.request().formAttributes();
+			InternalActionContext ac = wrap(rc);
+			s3BinaryMetadataExtractionHandler.handleMetadataExtraction(ac, uuid, fieldName, attributes);
 		});
 	}
 
