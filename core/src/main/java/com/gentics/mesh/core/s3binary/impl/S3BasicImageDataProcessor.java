@@ -3,7 +3,7 @@ package com.gentics.mesh.core.s3binary.impl;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.image.ImageManipulator;
-import com.gentics.mesh.core.s3binary.S3BinaryDataProcessor;
+import com.gentics.mesh.core.s3binary.AbstractS3BinaryProcessor;
 import com.gentics.mesh.core.s3binary.S3BinaryDataProcessorContext;
 import com.gentics.mesh.util.NodeUtil;
 import io.reactivex.Maybe;
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
  * Processor which extracts basic image information (e.g. size, DPI)
  */
 @Singleton
-public class S3BasicImageDataProcessor implements S3BinaryDataProcessor {
+public class S3BasicImageDataProcessor extends AbstractS3BinaryProcessor {
 
 	private static final Logger log = LoggerFactory.getLogger(S3BasicImageDataProcessor.class);
 

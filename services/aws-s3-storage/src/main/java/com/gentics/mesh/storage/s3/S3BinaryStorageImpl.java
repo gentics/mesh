@@ -10,11 +10,11 @@ import hu.akarnokd.rxjava2.interop.SingleInterop;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.file.FileSystem;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
@@ -123,7 +123,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Single<S3RestResponse> createUploadPresignedUrl(String bucketName ,String nodeUuid, String fieldName,String nodeVersion, boolean isCache) {
+	public Single<S3RestResponse> createUploadPresignedUrl(String bucketName ,String nodeUuid, String fieldName, boolean isCache) {
 		int expirationTimeUpload;
 		//we need to establish a fixed expiration time upload for the cache
 		if (isCache && options.getS3CacheOptions().getExpirationTimeUpload() > 0)
@@ -142,7 +142,6 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 		}
 
 		S3RestResponse s3RestResponse = new S3RestResponse(presignedRequest.url().toString(), presignedRequest.httpRequest().method().toString(), presignedRequest.signedHeaders());
-		s3RestResponse.setVersion(nodeVersion);
 		presigner.close();
 		return Single.just(s3RestResponse);
 	}
@@ -212,7 +211,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 				AsyncRequestBody.fromFile(file)
 		));
 		return completable
-				.andThen(createUploadPresignedUrl(bucket, split[0], split[1], null,true))
+				.andThen(createUploadPresignedUrl(bucket, split[0], split[1], true))
 				.doOnError(err -> Single.error(err));
 	}
 
