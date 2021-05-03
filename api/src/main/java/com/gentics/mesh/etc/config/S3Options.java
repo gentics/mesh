@@ -168,6 +168,13 @@ public class S3Options implements Option {
         this.expirationTimeDownload = expirationTimeDownload;
     }
 
+    public String getLinkResolver() {
+        return linkResolver;
+    }
+
+    public void setLinkResolver(String linkResolver) {
+        this.linkResolver = linkResolver;
+    }
     public Set<String> getMetadataWhitelist() {
         return metadataWhitelist;
     }

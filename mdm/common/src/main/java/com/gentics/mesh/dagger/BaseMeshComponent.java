@@ -109,7 +109,6 @@ public interface BaseMeshComponent {
 	@Getter
 	S3BinaryStorage s3binaryStorage();
 
-
 	@Getter
 	Provider<BulkActionContext> bulkProvider();
 
