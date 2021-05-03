@@ -2,15 +2,22 @@ package com.gentics.mesh.core.link;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
+import com.gentics.mesh.storage.S3BinaryStorage;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,10 +53,13 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 	private final MeshOptions options;
 
+	private S3BinaryStorage s3BinaryStorage;
+
 	@Inject
-	public WebRootLinkReplacerImpl(BootstrapInitializer boot, MeshOptions options) {
+	public WebRootLinkReplacerImpl(BootstrapInitializer boot, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
 		this.boot = boot;
 		this.options = options;
+		this.s3BinaryStorage = s3BinaryStorage;
 	}
 
 	@Override
@@ -132,7 +142,24 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = boot.meshRoot().findNodeByUuid(uuid);
-
+		String language;
+		if (languageTags == null || languageTags.length == 0) {
+			String defaultLanguage = options.getDefaultLanguage();
+			language = defaultLanguage;
+		} else {
+			language = languageTags[0];
+		}
+		NodeGraphFieldContainer graphFieldContainer = node.getGraphFieldContainer(language);
+		// check if there is a S3 field in this node.
+		List<FieldSchema> fields = graphFieldContainer.getSchemaContainerVersion().getSchema().getFields();
+		Optional<FieldSchema> s3binaryFieldSchema = fields.stream().filter(x -> x instanceof S3BinaryFieldSchema).findAny();
+		String linkResolver = options.getS3Options().getLinkResolver();
+		//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
+		if (s3binaryFieldSchema.isPresent() && (isNull(linkResolver) || linkResolver.equals("s3"))) {
+			String fieldName = s3binaryFieldSchema.get().getName();
+			S3HibBinary s3Binary = graphFieldContainer.getS3Binary(fieldName).getS3Binary();
+			return s3BinaryStorage.createDownloadPresignedUrl(options.getS3Options().getBucket(), s3Binary.getS3ObjectKey(), false).blockingGet().getPresignedUrl();
+		}
 		// check for null
 		if (node == null) {
 			if (log.isDebugEnabled()) {

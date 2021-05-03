@@ -256,7 +256,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 		}
 
 		if (parseMetadata) {
-			Set<String> metadataWhitelist = options.getS3Options().getMetadataWhitelist();
+			Set<String> metadataWhitelist = options.getUploadOptions().getMetadataWhitelist();
 			String[] metadataNames = metadata.names();
 			for (String name : metadataNames) {
 				String value = metadata.get(name);
@@ -326,7 +326,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 			return contentType.startsWith(type);
 		});
 		if (isDocument && options.getUploadOptions() != null) {
-			return options.getS3Options().getParserLimit();
+			return options.getUploadOptions().getParserLimit();
 		} else {
 			return DEFAULT_NON_DOC_TIKA_PARSE_LIMIT;
 		}
