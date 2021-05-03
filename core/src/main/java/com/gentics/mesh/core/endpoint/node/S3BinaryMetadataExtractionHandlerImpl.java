@@ -3,7 +3,6 @@ package com.gentics.mesh.core.endpoint.node;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -18,6 +17,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.s3binary.S3BinaryDataProcessor;
@@ -26,9 +26,8 @@ import com.gentics.mesh.core.s3binary.S3BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.storage.S3BinaryStorage;
-import com.gentics.mesh.util.NodeUtil;
-import io.reactivex.Completable;
 import com.gentics.mesh.util.NodeUtil;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -46,7 +45,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -102,12 +100,13 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 
-		String languageTag = attributes.get("language");
+		S3BinaryMetadataRequest request = JsonUtil.readValue(ac.getBodyAsString(), S3BinaryMetadataRequest.class);
+		String languageTag = request.getLanguage();
 		if (isEmpty(languageTag)) {
 			throw error(BAD_REQUEST, "upload_error_no_language");
 		}
 
-		String nodeVersion = attributes.get("version");
+		String nodeVersion = request.getVersion();
 		if (isEmpty(nodeVersion)) {
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
@@ -171,12 +170,13 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 								@Override
 								public String charSet() {
 									// TODO Auto-generated method stub
-									return null;
+									return "UTF-8";
 								}
 							};
 							ctx.setFileUpload(fileUpload);
 							ctx.setS3ObjectKey(nodeUuid + "/" + fieldName);
 							ctx.setFileName(fileName);
+							ctx.setFileSize(fileData.length);
 							return Single.just(fileUpload);
 						}).flatMap(fileUpload -> postProcessUpload(new S3BinaryDataProcessorContext(ac, nodeUuid, fieldName, fileUpload))
 									.toList()).flatMap(postProcess ->  storeUploadInGraph(ac, postProcess, ctx, nodeUuid, languageTag, nodeVersion, fieldName));
@@ -185,7 +185,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				return Single.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
 			}
 		}).subscribe(model ->
-				ac.send(model, FOUND), ac::fail);
+				ac.send(model, OK), ac::fail);
 	}
 
 	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<S3BinaryGraphField>> fieldModifier, S3UploadContext context,
@@ -288,6 +288,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 
 				// Now set the field infos. This will override any copied values as well.
 				field.setMimeType(upload.contentType());
+				field.setFileSize(upload.size());
 
 				for (Consumer<S3BinaryGraphField> modifier : fieldModifier) {
 					modifier.accept(field);
