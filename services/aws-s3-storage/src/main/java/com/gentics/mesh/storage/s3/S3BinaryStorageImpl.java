@@ -235,7 +235,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 	}
 
 	@Override
-	public Completable delete(String bucket,String s3ObjectKey) {
+	public Completable delete(String bucket, String s3ObjectKey) {
 		DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
 				.key(s3ObjectKey)
 				.bucket(bucket)

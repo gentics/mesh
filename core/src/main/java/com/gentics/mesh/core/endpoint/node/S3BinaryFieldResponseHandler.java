@@ -13,12 +13,15 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.S3BinaryStorage;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.eventbus.EventBus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static com.gentics.mesh.core.rest.MeshEvent.S3BINARY_DELETED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -29,13 +32,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 public class S3BinaryFieldResponseHandler {
 
 	private final ImageManipulator imageManipulator;
-
 	private final S3BinaryStorage s3Binarystorage;
-
 	private final S3Options s3Options;
-
 	private final Vertx rxVertx;
-
 	private final RangeRequestHandler rangeRequestHandler;
 
 	@Inject
@@ -71,6 +70,12 @@ public class S3BinaryFieldResponseHandler {
 	 */
 	private void respond(RoutingContext rc, S3BinaryGraphField s3binaryField) {
 		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+//TODO remove this before opening PR
+		EventBus eb = rxVertx.eventBus();
+		eb.<JsonObject>consumer(S3BINARY_DELETED.getAddress(),x -> {
+			JsonObject body = x.body();
+			System.out.println("hi");
+		});
 		s3Binarystorage.exists(s3Options.getBucket(), s3ObjectKey).flatMap(
 				(res) -> {
 					if (res) {
