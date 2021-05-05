@@ -70,12 +70,6 @@ public class S3BinaryFieldResponseHandler {
 	 */
 	private void respond(RoutingContext rc, S3BinaryGraphField s3binaryField) {
 		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
-//TODO remove this before opening PR
-		EventBus eb = rxVertx.eventBus();
-		eb.<JsonObject>consumer(S3BINARY_DELETED.getAddress(),x -> {
-			JsonObject body = x.body();
-			System.out.println("hi");
-		});
 		s3Binarystorage.exists(s3Options.getBucket(), s3ObjectKey).flatMap(
 				(res) -> {
 					if (res) {
