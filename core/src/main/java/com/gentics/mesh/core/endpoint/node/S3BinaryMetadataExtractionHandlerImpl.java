@@ -46,6 +46,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
@@ -58,19 +59,12 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(S3BinaryMetadataExtractionHandlerImpl.class);
-
 	private final Database db;
-
 	private final S3BinaryStorage s3BinaryStorage;
-
 	private final HandlerUtilities utils;
-
 	private final MeshOptions options;
-
 	private final S3Binaries s3binaries;
-
 	private final S3BinaryProcessorRegistryImpl s3binaryProcessorRegistry;
-
 	private final Vertx vertx;
 
 	@Inject
@@ -305,6 +299,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				}
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				batch.add(toGraph(s3binary).onMetadataExtracted(nodeUuid,s3ObjectKey));
 			});
 			return nodeDao.transformToRestSync(node, ac, 0);
 		});

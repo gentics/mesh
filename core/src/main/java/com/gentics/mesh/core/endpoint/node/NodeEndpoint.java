@@ -21,16 +21,7 @@ import org.raml.model.Resource;
 
 import javax.inject.Inject;
 
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.*;
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
@@ -237,7 +228,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Update the binaryfield with the given name.");
-		fieldUpdate.events(NODE_UPDATED);
+		fieldUpdate.events(NODE_UPDATED, S3BINARY_CREATED);
 		fieldUpdate.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
@@ -255,7 +246,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldMetadataExtraction.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldMetadataExtraction.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldMetadataExtraction.description("Update the binaryfield with the given name.");
-		fieldMetadataExtraction.events(NODE_UPDATED);
+		fieldMetadataExtraction.events(S3BINARY_METADATA_EXTRACTED);
 		fieldMetadataExtraction.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");

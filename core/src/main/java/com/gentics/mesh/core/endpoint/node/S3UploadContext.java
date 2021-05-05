@@ -9,13 +9,9 @@ import io.vertx.ext.web.FileUpload;
 public class S3UploadContext {
 
 	private String s3binaryUuid;
-
 	private String s3ObjectKey;
-
 	private String fileName;
-
 	private long fileSize;
-
 	private FileUpload fileUpload;
 
 	public S3UploadContext() {
