@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.s3binary;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
+import com.gentics.mesh.core.rest.event.s3binary.S3BinaryEventModel;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.result.Result;
 
@@ -143,9 +144,35 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 
 	/**
 	 * Find all s3binary fields which make use of this s3binary.
-	 * 
+	 *
 	 * @return
 	 */
 	Result<S3BinaryGraphField> findFields();
 
+	/**
+	 * Create the specific delete event.
+	 *
+	 * @param uuid
+	 * @param s3ObjectKey
+	 * @return
+	 */
+	S3BinaryEventModel onDeleted(String uuid, String s3ObjectKey);
+
+	/**
+	 * Create the specific create event.
+	 *
+	 * @param uuid
+	 * @param s3ObjectKey
+	 * @return
+	 */
+	S3BinaryEventModel onCreated(String uuid, String s3ObjectKey);
+
+	/**
+	 * Create the specific metadata extraction event.
+	 *
+	 * @param uuid
+	 * @param s3ObjectKey
+	 * @return
+	 */
+	S3BinaryEventModel onMetadataExtracted(String uuid, String s3ObjectKey);
 }
