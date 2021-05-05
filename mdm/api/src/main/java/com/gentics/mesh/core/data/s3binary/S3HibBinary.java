@@ -20,7 +20,7 @@ public interface S3HibBinary extends HibBaseElement {
 	 * 
 	 * @return
 	 */
-	long getSize();
+	Long getSize();
 
 	/**
 	 * Set the size of the s3binary data
@@ -28,7 +28,7 @@ public interface S3HibBinary extends HibBaseElement {
 	 * @param sizeInBytes
 	 * @return Fluent API
 	 */
-	S3HibBinary setSize(long sizeInBytes);
+	S3HibBinary setSize(Long sizeInBytes);
 
 	/**
 	 * Return the mime type of the s3binary data.
