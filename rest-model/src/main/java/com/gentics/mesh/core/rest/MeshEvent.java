@@ -627,11 +627,11 @@ public enum MeshEvent {
 
 	S3BINARY_CREATED("mesh.s3binary.created",
 			S3BinaryEventModel.class,
-		"Emitted when a user was created."),
+		"Emitted when a S3 binary field was created."),
 
 	S3BINARY_DELETED("mesh.s3binary.deleted",
 			S3BinaryEventModel.class,
-		"Emitted when an S3 binary field gets deleted."),
+		"Emitted when a S3 binary field gets deleted."),
 
 	S3BINARY_METADATA_EXTRACTED("mesh.s3binary.metadata.extracted",
 			S3BinaryEventModel.class,
