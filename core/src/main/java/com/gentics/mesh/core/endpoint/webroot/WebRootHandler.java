@@ -61,8 +61,8 @@ public class WebRootHandler extends AbstractWebrootHandler {
 
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
-						  S3BinaryFieldResponseHandler s3binaryFieldResponseHandler,
-						  NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
+	  	S3BinaryFieldResponseHandler s3binaryFieldResponseHandler,
+		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 		this.s3binaryFieldResponseHandler = s3binaryFieldResponseHandler;

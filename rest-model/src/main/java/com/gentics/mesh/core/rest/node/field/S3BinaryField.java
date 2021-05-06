@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
 
+/**
+ * Interface for the s3 binary field
+ */
 public interface S3BinaryField extends Field {
 
     /**

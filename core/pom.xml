@@ -225,7 +225,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-service-aws-s3-storage</artifactId>
 		</dependency>
-
 	</dependencies>
 
 

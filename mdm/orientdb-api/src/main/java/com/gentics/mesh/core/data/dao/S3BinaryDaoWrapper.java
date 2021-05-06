@@ -3,13 +3,9 @@ package com.gentics.mesh.core.data.dao;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.util.UUIDUtil;
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 
-import java.io.InputStream;
 import java.util.stream.Stream;
 
 /**
@@ -46,7 +42,7 @@ public interface S3BinaryDaoWrapper extends S3BinaryDao, DaoWrapper<S3HibBinary>
 	}
 
 	/**
-	 * Return a stream of binaries.
+	 * Return a stream of S3 binaries.
 	 * 
 	 * @return
 	 */

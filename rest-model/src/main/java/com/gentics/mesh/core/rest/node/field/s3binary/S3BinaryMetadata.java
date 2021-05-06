@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * RestModel for Metadata of s3binaries.
+ * RestModel for S3 Binary Metadata
  */
 public class S3BinaryMetadata implements RestModel {
 

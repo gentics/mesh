@@ -725,7 +725,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			return stringField.getString();
 		}
 
-		// 3. Try to load the path segment using the binary field since the string field could not be found
+		// 3. Try to load the path segment using the binary field or the s3 binary since the string field could not be found
 		if (stringField == null) {
 			S3BinaryGraphField s3binaryField = getS3Binary(segmentFieldKey);
 			if (nonNull(s3binaryField)) {

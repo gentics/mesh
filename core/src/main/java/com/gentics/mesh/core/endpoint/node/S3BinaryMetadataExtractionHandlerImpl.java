@@ -54,7 +54,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
- * @see S3BinaryUploadHandler
+ * Handler for the metadata extraction of the S3 Binaries.
  */
 public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 

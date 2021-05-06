@@ -227,7 +227,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
-		fieldUpdate.description("Update the binaryfield with the given name.");
+		fieldUpdate.description("Create the s3 binaryfield with the given name.");
 		fieldUpdate.events(NODE_UPDATED, S3BINARY_CREATED);
 		fieldUpdate.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
@@ -245,7 +245,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
 		fieldMetadataExtraction.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldMetadataExtraction.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
-		fieldMetadataExtraction.description("Update the binaryfield with the given name.");
+		fieldMetadataExtraction.description("Parse metadata of s3 binaryfield with the given name.");
 		fieldMetadataExtraction.events(S3BINARY_METADATA_EXTRACTED);
 		fieldMetadataExtraction.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");

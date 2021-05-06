@@ -1,15 +1,12 @@
 package com.gentics.mesh.core.s3binary;
 
-import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import io.reactivex.Maybe;
 
 import java.util.function.Consumer;
 
 /**
- * A S3 binary data processor accepts a fileupload in order to extract specific information from the data. The found data can later be stored in the binary field
- * to be finally persisted along with the binary data.
+ * A S3 binary data processor accepts a fileupload in order to extract specific information from the data.
  */
 public interface S3BinaryDataProcessor {
 

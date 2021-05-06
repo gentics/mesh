@@ -1986,8 +1986,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
 				}
 			}
-			// No luck yet - lets check whether a binary field matches the
-			// segmentField
+			// No luck yet - lets check whether a S3 binary field matches the segmentField
 			S3BinaryGraphField s3Binary = container.getS3Binary(segmentFieldName);
 			if (s3Binary == null) {
 				if (log.isDebugEnabled()) {

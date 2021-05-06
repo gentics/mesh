@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Registry which holds all binary data processors.
+ * Registry which holds all S3 binary data processors.
  */
 @Singleton
 public class S3BinaryProcessorRegistryImpl implements S3BinaryProcessorRegistry {

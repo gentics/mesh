@@ -45,7 +45,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
- * @see S3BinaryUploadHandler
+ * Handler for s3binary upload requests. This class is responsible only for the creation of the necessary Mesh fields. The real upload is done between the client and the AWS.
  */
 public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3BinaryUploadHandler {
 

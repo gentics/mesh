@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * RestModel for the request of a S3 Binary Metadata
+ */
 public class S3BinaryMetadataRequest implements RestModel {
     @JsonProperty(required = true)
     @JsonPropertyDescription("Version number which must be provided in order to handle and detect concurrent changes to the node content.")

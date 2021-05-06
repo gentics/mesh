@@ -13,20 +13,17 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.S3BinaryStorage;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.eventbus.EventBus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static com.gentics.mesh.core.rest.MeshEvent.S3BINARY_DELETED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
- * Handler which will accept {@link S3BinaryGraphField} elements and return the binary data using the given context.
+ * Handler which will accept {@link S3BinaryGraphField} elements and return the s3 binary data using the given context.
  */
 @Singleton
 public class S3BinaryFieldResponseHandler {

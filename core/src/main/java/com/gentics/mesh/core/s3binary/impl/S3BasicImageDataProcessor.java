@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 import java.util.function.Consumer;
 
 /**
- * Processor which extracts basic image information (e.g. size, DPI)
+ * Processor which extracts basic image information (e.g. size, DPI) fpr S3 binaries
  */
 @Singleton
 public class S3BasicImageDataProcessor implements S3BinaryDataProcessor {

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.s3binary;
 
 import com.gentics.mesh.graphdb.spi.Transactional;
-import com.gentics.mesh.util.UUIDUtil;
 
 import java.util.stream.Stream;
 
@@ -19,7 +18,7 @@ public interface S3Binaries {
 	Transactional<S3HibBinary> findByS3ObjectKey(String s3ObjectKey);
 
 	/**
-	 * Create a new binary.
+	 * Create a new S3 binary.
 	 * 
 	 * @param uuid
 	 *            Uuid of the binary
@@ -32,7 +31,7 @@ public interface S3Binaries {
 	Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName);
 
 	/**
-	 * Return a transactional stream of all binaries.
+	 * Return a transactional stream of all S3 binaries.
 	 * 
 	 * @return
 	 */

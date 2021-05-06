@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 
 /**
- * Domain model for binaries.
+ * Domain model for s3 binaries.
  */
 public interface S3HibBinary extends HibBaseElement {
 

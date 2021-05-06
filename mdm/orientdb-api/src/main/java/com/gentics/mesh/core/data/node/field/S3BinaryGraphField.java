@@ -43,7 +43,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	String S3_FILE_SIZE = "s3FileSize";
 
 	/**
-	 * Return the binary filename.
+	 * Return the S3 binary filename.
 	 * 
 	 * @return
 	 */
@@ -60,7 +60,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	S3BinaryGraphField copyTo(S3BinaryGraphField target);
 
 	/**
-	 * Set the binary filename.
+	 * Set the S3 binary filename.
 	 * 
 	 * @param fileName
 	 * @return Fluent API
@@ -90,7 +90,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	}
 
 	/**
-	 * Return the binary mime type of the node.
+	 * Return the S3 binary mime type of the node.
 	 * 
 	 * @return
 	 */
@@ -99,7 +99,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	}
 
 	/**
-	 * Set the binary mime type of the node.
+	 * Set the S3 binary mime type of the node.
 	 * 
 	 * @param mimeType
 	 * @return Fluent API
@@ -117,7 +117,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	boolean hasProcessableImage();
 
 	/**
-	 * Set the binary image dominant color.
+	 * Set the S3 binary image dominant color.
 	 * 
 	 * @param dominantColor
 	 * @return Fluent API
@@ -128,7 +128,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	}
 
 	/**
-	 * Return the binary image dominant color.
+	 * Return the S3 binary image dominant color.
 	 * 
 	 * @return
 	 */
@@ -295,7 +295,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	void setPlainText(String text);
 
 	/**
-	 * Return the extracted plain text content of the binary.
+	 * Return the extracted plain text content of the S3 binary.
 	 * @return
 	 */
 	String getPlainText();

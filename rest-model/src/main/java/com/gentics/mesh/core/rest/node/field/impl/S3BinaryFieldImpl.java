@@ -205,4 +205,3 @@ public class S3BinaryFieldImpl implements S3BinaryField {
         return getS3ObjectKey() != null || getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null || getSha512sum() != null;
     }
 }
-

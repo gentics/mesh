@@ -62,7 +62,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
- * Handler for binary transformer requests.
+ * Handler for binary or s3binary transformer requests.
  */
 @Singleton
 public class BinaryTransformHandler extends AbstractHandler {
@@ -94,6 +94,15 @@ public class BinaryTransformHandler extends AbstractHandler {
 		this.s3Options = options.getS3Options();
 	}
 
+	/**
+	 * Handle image transformation. This method does a filtering of the required field and
+	 * calls the specific binary or s3binary field
+	 *
+	 * @param rc
+	 *            routing context
+	 * @param uuid
+	 * @param fieldName
+	 */
 	public void handle(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
@@ -140,6 +149,15 @@ public class BinaryTransformHandler extends AbstractHandler {
 		});
 	}
 
+	/**
+	 * Handle S3 image transformation. This operation will utilize the S3 binary data of the existing field and apply the transformation options. The new binary data
+	 * will be stored and the field will be updated accordingly.
+	 *
+	 * @param rc
+	 *            routing context
+	 * @param uuid
+	 * @param fieldName
+	 */
 	public void handleS3TransformImage(RoutingContext rc, String uuid, String fieldName) {
 		validateParameter(uuid, "uuid");
 		validateParameter(fieldName, "fieldName");

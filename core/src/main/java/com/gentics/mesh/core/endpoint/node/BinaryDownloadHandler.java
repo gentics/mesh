@@ -26,7 +26,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * Handler for binary download requests.
+ * Handler for binary or s3binary download requests.
  */
 @Singleton
 public class BinaryDownloadHandler extends AbstractHandler {
@@ -45,7 +45,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Handle the binary download request.
+	 * Handle the binary or s3binary download request.
 	 * 
 	 * @param rc
 	 *            The routing context for the request.
@@ -64,8 +64,8 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 			HibBranch branch = tx.getBranch(ac, node.getProject());
 			NodeGraphFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
-					branch.getUuid(),
-					ac.getVersioningParameters().getVersion());
+				branch.getUuid(),
+				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}

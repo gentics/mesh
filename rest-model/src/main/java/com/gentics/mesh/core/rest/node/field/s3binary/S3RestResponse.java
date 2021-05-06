@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * RestModel for the S3 binary upload response
+ */
 public class S3RestResponse implements RestModel {
 
     @JsonProperty(required = true)
