@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>mesh-distributed</artifactId>
+	<artifactId>tests-mesh-distributed</artifactId>
 	<packaging>jar</packaging>
-	<name>Mesh - Distributed</name>
+	<name>Mesh Distributed - Shared tests</name>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
-		<artifactId>mesh</artifactId>
+		<artifactId>mesh-tests</artifactId>
 		<version>1.7.6-SNAPSHOT</version>
 	</parent>
 
@@ -33,19 +33,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-orientdb</artifactId>
+			<artifactId>mesh-distributed</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-		</dependency>
-
-		<!-- Test -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

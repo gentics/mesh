@@ -7,25 +7,24 @@
 		<artifactId>mesh-tests</artifactId>
 		<version>1.7.6-SNAPSHOT</version>
 	</parent>
-	<artifactId>mest-core-tests-runner</artifactId>
+	<artifactId>mest-orientdb-tests-runner</artifactId>
+	<name>Mesh - Tests Runner - OrientDB</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>tests-mesh-core</artifactId>
-			<version>${parent.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>tests-mesh-api</artifactId>
-			<version>${parent.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-tests-context-orientdb</artifactId>
-			<version>${parent.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -38,6 +37,21 @@
 					<dependenciesToScan>
 						<dependency>com.gentics.mesh:tests-mesh-api</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-core</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-rest-model</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-server</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-demo</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-changelog-system</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-elasticsearch</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-distributed</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-aws-s3-storage</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-image-imgscalr</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-jwt-auth</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-local-storage</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-admin-gui</dependency>>
 					</dependenciesToScan>
 				</configuration>
 			</plugin>

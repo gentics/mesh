@@ -1,0 +1,60 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| storageOptions.directory
+| true
+| string
+| Path to the graph database data directory.
+
+| storageOptions.backupDirectory
+| true
+| string
+| Path to the graph database backup directory.
+
+| storageOptions.exportDirectory
+| true
+| string
+| Path to the graph database export directory.
+
+| storageOptions.startServer
+| true
+| boolean
+| Flag which indicates whether the graph database admin web server should be started. Default: false
+
+| storageOptions.synchronizeWrites
+| true
+| boolean
+| Flag which controls whether writes to the graph database should be synchronized. Default: true
+
+| storageOptions.synchronizeWritesTimeout
+| true
+| long
+| Set the timeout in milliseconds for the sync write lock. Default: 60000
+
+| storageOptions.txRetryDelay
+| false
+| int
+| The delay in milliseconds when a transaction has to be retried.
+
+| storageOptions.txRetryLimit
+| false
+| int
+| The limit for the tx retires.
+
+| storageOptions.txCommitTimeout
+| false
+| long
+| The transaction commit timeout in milliseconds. A timeout value of zero means that transaction commit operations will never timeout.
+
+| storageOptions.parameters
+| false
+| map
+| Additional set of graph database parameters.
+
+|======

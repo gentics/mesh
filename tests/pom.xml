@@ -26,9 +26,23 @@
 		<module>tests-api</module>
 		<module>tests-core</module>
 		<module>tests-common</module>
-		
-		<!-- Other tests -->
+		<module>tests-rest-model</module>
+		<module>tests-rest-client</module>
+		<module>tests-plugin-api</module>
+		<module>tests-server</module>
+		<module>tests-demo</module>
+		<module>tests-changelog-system</module>
+		<module>tests-elasticsearch</module>
 		<module>tests-distributed</module>
+		<module>tests-distributed-coordinator</module>
+		<module>tests-service-aws-s3-storage</module>
+		<module>tests-service-image-imgscalr</module>
+		<module>tests-service-jwt-auth</module>
+		<module>tests-service-local-storage</module>
+		<module>tests-service-metrics-prometheus</module>
+		<module>tests-admin-gui</module>
+
+		<!-- Other tests -->
 		<module>tests-performance</module>
 		<module>tests-integration</module>
 		

@@ -30,8 +30,7 @@
 
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-			<type>test-jar</type>
+			<artifactId>tests-mesh-rest-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

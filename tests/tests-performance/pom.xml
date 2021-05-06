@@ -43,9 +43,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core</artifactId>
+			<artifactId>tests-mesh-core</artifactId>
 			<scope>test</scope>
-			<type>test-jar</type>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

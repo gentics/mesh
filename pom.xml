@@ -95,6 +95,7 @@
 		<module>changelog-system</module>
 		<module>databases</module>
 		<module>services</module>
+		<module>distributed</module>
 		<module>distributed-coordinator</module>
 		<module>core</module>
 		<module>verticles</module>

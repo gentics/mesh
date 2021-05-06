@@ -23,13 +23,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-			<type>test-jar</type>
+			<artifactId>tests-mesh-common</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-			<type>test-jar</type>
+			<artifactId>tests-mesh-rest-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -37,8 +35,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
-			<type>test-jar</type>
+			<artifactId>tests-mesh-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
