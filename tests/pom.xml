@@ -43,8 +43,10 @@
 		<module>tests-admin-gui</module>
 
 		<!-- Other tests -->
-		<module>tests-performance</module>
+<!-- Move here from the root as soon as https://issues.jenkins.io/browse/JENKINS-26472 is fixed -->
+<!--		<module>tests-performance</module>
 		<module>tests-integration</module>
+-->
 		
 		<!-- Default context - OrientDB -->
 		<module>context-orientdb</module>

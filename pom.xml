@@ -103,6 +103,8 @@
 		<module>demo</module>
 		<module>doc</module>
 		<module>tests</module>
+		<module>integration-tests</module>
+		<module>performance-tests</module>
 	</modules>
 
 	<dependencies>
