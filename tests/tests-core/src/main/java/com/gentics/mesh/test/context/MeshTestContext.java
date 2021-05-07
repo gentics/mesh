@@ -473,7 +473,7 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public MeshOptions init(MeshTestSetting settings) throws Exception {
 		if (settings == null) {
-			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
+			throw new RuntimeException("Settings could not be found. Did you forget to add the @MeshTestSetting annotation to your test?");
 		}
 		
 		meshTestContextProvider = MeshTestContextProvider.getProvider();

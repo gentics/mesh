@@ -19,7 +19,7 @@ public interface MeshOptionsTypeUnawareContext {
 	 */
 	default MeshOptions getOptions() {
 		try {
-			return ((MeshOptionsProvider) getClass().getClassLoader().loadClass(System.getProperty("optionsProviderClass")).getConstructor().newInstance()).getOptions();
+			return MeshOptionsProvider.getProvider().getOptions();
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}

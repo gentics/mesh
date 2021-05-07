@@ -48,8 +48,13 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core-tests</artifactId>
+			<artifactId>mesh-tests-context-orientdb</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tests-context-api</artifactId>
 		</dependency>
 	</dependencies>
 

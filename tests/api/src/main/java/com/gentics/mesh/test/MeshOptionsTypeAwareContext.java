@@ -21,7 +21,7 @@ public interface MeshOptionsTypeAwareContext<T extends MeshOptions> {
 	@SuppressWarnings("unchecked")
 	default T getOptions() {
 		try {
-			return (T) ((MeshOptionsProvider) getClass().getClassLoader().loadClass(System.getProperty(MeshOptionsProvider.ENV_OPTIONS_PROVIDER_CLASS)).getConstructor().newInstance()).getOptions();
+			return (T) MeshOptionsProvider.getProvider().getOptions();
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
