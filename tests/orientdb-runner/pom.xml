@@ -36,6 +36,7 @@
 				<configuration>
 					<dependenciesToScan>
 						<dependency>com.gentics.mesh:tests-mesh-api</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-core</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-rest-model</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>
