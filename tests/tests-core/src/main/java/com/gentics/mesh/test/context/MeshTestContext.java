@@ -337,9 +337,13 @@ public class MeshTestContext extends TestWatcher {
 
 			case CLIENT_CERT_REQUEST:
 			case CLIENT_CERT_REQUIRED:
-				httpsConfigBuilder.addTrustedCA("src/test/resources/client-ssl/server.pem");
-				httpsConfigBuilder.setClientCert("src/test/resources/client-ssl/alice.pem");
-				httpsConfigBuilder.setClientKey("src/test/resources/client-ssl/alice.key");
+				File serverPem = MeshTestHelper.extractResource("/client-ssl/server.pem");
+				File alicePem = MeshTestHelper.extractResource("/client-ssl/alice.pem");
+				File aliceKey = MeshTestHelper.extractResource("/client-ssl/alice.key");
+				
+				httpsConfigBuilder.addTrustedCA(serverPem.getAbsolutePath());
+				httpsConfigBuilder.setClientCert(alicePem.getAbsolutePath());
+				httpsConfigBuilder.setClientKey(aliceKey.getAbsolutePath());
 				httpsConfig = httpsConfigBuilder.build();
 				break;
 
@@ -514,28 +518,37 @@ public class MeshTestContext extends TestWatcher {
 			break;
 
 		case NORMAL:
+			File certPem = MeshTestHelper.extractResource("/ssl/cert.pem");
+			File keyPem = MeshTestHelper.extractResource("/ssl/key.pem");
+			
 			httpOptions.setSsl(true);
 			httpOptions.setSslPort(httpsPort);
-			httpOptions.setCertPath("src/test/resources/ssl/cert.pem");
-			httpOptions.setKeyPath("src/test/resources/ssl/key.pem");
+			httpOptions.setCertPath(certPem.getAbsolutePath());
+			httpOptions.setKeyPath(keyPem.getAbsolutePath());
 			break;
 
 		case CLIENT_CERT_REQUEST:
+			File serverPem = MeshTestHelper.extractResource("/client-ssl/server.pem");
+			File serverKey = MeshTestHelper.extractResource("/server.key");
+			
 			httpOptions.setClientAuthMode(ClientAuth.REQUEST);
 			httpOptions.setSsl(true);
 			httpOptions.setSslPort(httpsPort);
-			httpOptions.setCertPath("src/test/resources/client-ssl/server.pem");
-			httpOptions.setKeyPath("src/test/resources/client-ssl/server.key");
-			httpOptions.setTrustedCertPaths(Arrays.asList("src/test/resources/client-ssl/server.pem"));
+			httpOptions.setCertPath(serverPem.getAbsolutePath());
+			httpOptions.setKeyPath(serverKey.getAbsolutePath());
+			httpOptions.setTrustedCertPaths(Arrays.asList(serverPem.getAbsolutePath()));
 			break;
 
 		case CLIENT_CERT_REQUIRED:
+			serverPem = MeshTestHelper.extractResource("/client-ssl/server.pem");
+			serverKey = MeshTestHelper.extractResource("/client-ssl/server.key");
+			
 			httpOptions.setClientAuthMode(ClientAuth.REQUIRED);
 			httpOptions.setSsl(true);
 			httpOptions.setSslPort(httpsPort);
-			httpOptions.setCertPath("src/test/resources/client-ssl/server.pem");
-			httpOptions.setKeyPath("src/test/resources/client-ssl/server.key");
-			httpOptions.setTrustedCertPaths(Arrays.asList("src/test/resources/client-ssl/server.pem"));
+			httpOptions.setCertPath(serverPem.getAbsolutePath());
+			httpOptions.setKeyPath(serverKey.getAbsolutePath());
+			httpOptions.setTrustedCertPaths(Arrays.asList(serverPem.getAbsolutePath()));
 			break;
 		}
 

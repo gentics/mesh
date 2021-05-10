@@ -1,11 +1,11 @@
 package com.gentics.mesh.test.context;
 
-import com.gentics.mesh.core.rest.common.AbstractResponse;
-import com.gentics.mesh.rest.client.MeshRequest;
-import io.reactivex.Observable;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import static org.junit.Assert.assertFalse;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +13,14 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.junit.Assert.assertFalse;
+import org.apache.commons.io.IOUtils;
+
+import com.gentics.mesh.core.rest.common.AbstractResponse;
+import com.gentics.mesh.rest.client.MeshRequest;
+
+import io.reactivex.Observable;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Collection of helper methods which are useful for testing mesh.
@@ -92,5 +99,17 @@ public final class MeshTestHelper {
 	public static <T> Consumer<T> noopConsumer() {
 		return t -> {
 		};
+	}
+	
+	public static File extractResource(String path) throws IOException {
+		File file = new File("target", path);
+		try (InputStream is = MeshTestHelper.class.getResourceAsStream(path)) {
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+			try (FileOutputStream fos = new FileOutputStream(file)) {
+				IOUtils.copy(is, fos);
+			}
+		}
+		return file;
 	}
 }
