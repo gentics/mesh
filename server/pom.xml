@@ -57,7 +57,7 @@
 					<execution>
 						<?m2e ignore?>
 						<id>copy-sharedlib-dependencies</id>
-						<phase>package</phase>
+						<phase>compile</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>
