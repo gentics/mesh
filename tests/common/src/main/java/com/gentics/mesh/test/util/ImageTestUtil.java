@@ -70,7 +70,11 @@ public final class ImageTestUtil {
 	}
 
 	public static BufferedImage readImage(String imageName) throws IOException {
-		InputStream is = ImageTestUtil.class.getResourceAsStream("/pictures/" + imageName);
+		return readImage(imageName, "/pictures");
+	}
+
+	public static BufferedImage readImage(String imageName, String fromResourcePath) throws IOException {
+		InputStream is = ImageTestUtil.class.getResourceAsStream(fromResourcePath + "/" + imageName);
 		ImageInputStream ins = ImageIO.createImageInputStream(is);
 		Iterator<ImageReader> it = ImageIO.getImageReaders(ins);
 		ImageReader reader = it.next();

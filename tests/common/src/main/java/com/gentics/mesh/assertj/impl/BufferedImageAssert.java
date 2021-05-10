@@ -5,12 +5,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-
 import org.assertj.core.api.AbstractAssert;
+
+import com.gentics.mesh.test.util.ImageTestUtil;
 
 public class BufferedImageAssert extends AbstractAssert<BufferedImageAssert, BufferedImage> {
 
@@ -39,7 +38,7 @@ public class BufferedImageAssert extends AbstractAssert<BufferedImageAssert, Buf
 	 */
 	public BufferedImageAssert matchesReference(String name) {
 		try {
-			BufferedImage refImage = ImageIO.read(new File("src/test/resources/references/" + name));
+			BufferedImage refImage = ImageTestUtil.readImage(name, "/references");
 			assertNotNull("Could not find reference image", refImage);
 			matches(refImage);
 		} catch (IOException e) {

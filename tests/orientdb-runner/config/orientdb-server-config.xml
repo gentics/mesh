@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<orient-server>
+	<handlers>
+		<handler class="com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin">
+			<parameters>
+				<parameter name="nodeName" value="${ORIENTDB_NODE_NAME}" />
+				<parameter name="enabled" value="${ORIENTDB_DISTRIBUTED}" />
+				<parameter name="configuration.db.default" value="${ORIENTDB_HOME}/${ORIENTDB_CONFDIR_NAME}/default-distributed-db-config.json" />
+				<parameter name="configuration.hazelcast" value="${ORIENTDB_HOME}/${ORIENTDB_CONFDIR_NAME}/hazelcast.xml" />
+			</parameters>
+		</handler>
+
+		<handler class="com.orientechnologies.orient.server.handler.OJMXPlugin">
+			<parameters>
+				<parameter name="enabled" value="false" />
+				<parameter name="profilerManaged" value="true" />
+			</parameters>
+		</handler>
+
+		<handler class="com.orientechnologies.orient.server.handler.OAutomaticBackup">
+			<parameters>
+				<parameter name="enabled" value="false" />
+				<parameter name="config" value="${ORIENTDB_HOME}/${ORIENTDB_CONFDIR_NAME}/automatic-backup.json" />
+			</parameters>
+		</handler>
+
+		<handler class="com.orientechnologies.orient.server.handler.OServerSideScriptInterpreter">
+			<parameters>
+				<parameter name="enabled" value="true"/>
+				<parameter name="allowedLanguages" value="SQL"/>
+			</parameters>
+		</handler>
+
+	</handlers>
+	<network>
+		<protocols>
+			<protocol name="binary" implementation="com.orientechnologies.orient.server.network.protocol.binary.ONetworkProtocolBinary" />
+			<protocol name="http" implementation="com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb" />
+		</protocols>
+		<listeners>
+			<listener protocol="binary" ip-address="${ORIENTDB_NETWORK_HOST}" port-range="2424-2430" socket="default" />
+			<listener protocol="http" ip-address="${ORIENTDB_NETWORK_HOST}" port-range="2480-2490" socket="default">
+				<parameters>
+					<!-- Connection's custom parameters. If not specified the global configuration will be taken -->
+					<parameter name="network.http.charset" value="utf-8" />
+					<parameter value="true" name="network.http.jsonResponseError" />
+				</parameters>
+				<commands>
+					<command pattern="GET|www GET|studio/ GET| GET|*.htm GET|*.html GET|*.xml GET|*.jpeg GET|*.jpg GET|*.png GET|*.gif GET|*.js GET|*.css GET|*.swf GET|*.ico GET|*.txt GET|*.otf GET|*.pjs GET|*.svg GET|*.json GET|*.woff GET|*.woff2 GET|*.ttf GET|*.svgz"
+						implementation="com.orientechnologies.orient.server.network.protocol.http.command.get.OServerCommandGetStaticContent">
+						<parameters>
+							<!-- Don't cache html resources in development mode -->
+							<entry name="http.cache:*.htm *.html" value="Cache-Control: no-cache, no-store, max-age=0, must-revalidate\r\nPragma: no-cache" />
+							<!-- Default caching -->
+							<entry name="http.cache:default" value="Cache-Control: max-age=120" />
+						</parameters>
+					</command>
+					<command pattern="GET|gephi/*" implementation="com.orientechnologies.orient.server.network.protocol.http.command.get.OServerCommandGetGephi" />
+				</commands>
+			</listener>
+		</listeners>
+		<cluster>
+		</cluster>
+	</network>
+	<users>
+		<user name="root" password="finger" resources="*" />
+		<user name="admin" password="finger" resources="*" />
+	</users>
+	<properties>
+		<entry name="profiler.enabled" value="false" />
+		<entry name="server.database.path" value="${ORIENTDB_DB_PATH}" />
+		<entry name="plugin.directory" value="${ORIENTDB_PLUGIN_DIR}" />
+
+		<!-- LOG: enable/Disable logging. Levels are: finer, fine, finest, info, warning -->
+		<entry name="log.console.level" value="finest" />
+		<entry name="log.file.level" value="finest" />
+	</properties>
+</orient-server>
