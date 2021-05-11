@@ -8,8 +8,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
 @MeshTestSetting(testSize = FULL, startServer = true)

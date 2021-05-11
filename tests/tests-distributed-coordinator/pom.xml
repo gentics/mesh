@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh-tests</artifactId>
+		<version>1.7.6-SNAPSHOT</version>
+	</parent>
+	<artifactId>tests-mesh-distributed-coordinator</artifactId>
+	<name>Mesh Distributed Coordinator - Shared tests</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-distributed-coordinator</artifactId>
+		</dependency>
+	</dependencies>
+</project>

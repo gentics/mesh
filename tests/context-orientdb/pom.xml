@@ -1,0 +1,17 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-tests</artifactId>
+    <version>1.7.6-SNAPSHOT</version>
+  </parent>
+  <artifactId>mesh-tests-context-orientdb</artifactId>
+  <name>Mesh - Tests context - OrientDB</name>
+  
+  	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tests-context-api</artifactId>
+		</dependency>
+	</dependencies>
+</project>

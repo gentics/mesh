@@ -133,7 +133,7 @@
 			<dependency>
 				<groupId>org.raml</groupId>
 				<artifactId>raml-parser</artifactId>
-				<version>0.8.14</version>
+				<version>0.8.17</version>
 			</dependency>
 
 			<!-- Json -->
@@ -372,6 +372,18 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<!-- Mesh tests -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-tests-context-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-tests-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<!-- Default storage provider -->
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
@@ -484,21 +496,18 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-common</artifactId>
+				<artifactId>tests-mesh-common</artifactId>
 				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-core</artifactId>
+				<artifactId>tests-mesh-core</artifactId>
 				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-rest-model</artifactId>
+				<artifactId>tests-mesh-rest-model</artifactId>
 				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
@@ -507,11 +516,79 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-api</artifactId>
+				<artifactId>tests-mesh-api</artifactId>
 				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
-
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-rest-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-plugin-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-demo</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-changelog-system</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-elasticsearch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-distributed</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-distributed-coordinator</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-aws-s3-storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-image-imgscalr</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-jwt-auth</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-local-storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-metrics-prometheus</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-admin-gui</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.github.stefanbirkner</groupId>
 				<artifactId>system-rules</artifactId>
