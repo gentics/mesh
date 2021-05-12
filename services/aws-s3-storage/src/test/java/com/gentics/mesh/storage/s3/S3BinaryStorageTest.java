@@ -33,8 +33,8 @@ public class S3BinaryStorageTest {
     private static S3AsyncClient client = null;
     private S3BinaryStorage s3BinaryStorage;
     private static final Logger log = LoggerFactory.getLogger(S3BinaryStorageTest.class);
-    MeshOptions meshOptions;
-    AWSContainer container;
+    private MeshOptions meshOptions;
+    private AWSContainer container;
 
     @Before
     public void setup() {
@@ -89,7 +89,7 @@ public class S3BinaryStorageTest {
     @Test
     public void testCreateBucket() {
         String newBucketName = "new-bucket";
-        s3BinaryStorage.createAsyncBucket(newBucketName).blockingGet();
+        s3BinaryStorage.createBucket(newBucketName).blockingGet();
         Boolean aBoolean = s3BinaryStorage.exists(newBucketName).blockingGet();
         assertTrue(aBoolean);
     }

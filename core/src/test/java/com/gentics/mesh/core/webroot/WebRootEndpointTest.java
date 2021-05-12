@@ -132,7 +132,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		));
 		//uploading
 		File tempFile = createTempFile();
-		s3BinaryStorage().createAsyncBucket("test-bucket").blockingGet();
+		s3BinaryStorage().createBucket("test-bucket").blockingGet();
 		s3BinaryStorage().uploadFile("test-bucket", node.getUuid() + "/s3", tempFile, false).blockingGet();
 
 

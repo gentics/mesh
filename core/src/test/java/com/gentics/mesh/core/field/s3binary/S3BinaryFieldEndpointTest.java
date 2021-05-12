@@ -121,7 +121,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", uploadBody));
         //uploading
         File tempFile = createTempFile();
-        s3BinaryStorage().createAsyncBucket("test-bucket").blockingGet();
+        s3BinaryStorage().createBucket("test-bucket").blockingGet();
         s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3", tempFile, false).blockingGet();
         s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3").blockingGet();
 
@@ -141,8 +141,8 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", uploadBody));
         //uploading
         File tempFile = createTempFile();
-        s3BinaryStorage().createAsyncBucket("test-bucket").blockingGet();
-        s3BinaryStorage().createAsyncBucket("test-cache-bucket").blockingGet();
+        s3BinaryStorage().createBucket("test-bucket").blockingGet();
+        s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
         s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3", tempFile, false).blockingGet();
         NodeResponse s3 = call(() -> client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", metadataBody));
         assertEquals("test.jpg", s3.getFields().getS3BinaryField(FIELD_NAME).getFileName());
@@ -159,8 +159,8 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", uploadBody));
         //uploading
         File tempFile = createTempFile();
-        s3BinaryStorage().createAsyncBucket("test-bucket").blockingGet();
-        s3BinaryStorage().createAsyncBucket("test-cache-bucket").blockingGet();
+        s3BinaryStorage().createBucket("test-bucket").blockingGet();
+        s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
         //here the call should fail since there is no file uploaded.
         try {
             client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", metadataBody).blockingGet();
@@ -180,8 +180,8 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", uploadBody));
         //uploading
         File tempFile = createTempFile();
-        s3BinaryStorage().createAsyncBucket("test-bucket").blockingGet();
-        s3BinaryStorage().createAsyncBucket("test-cache-bucket").blockingGet();
+        s3BinaryStorage().createBucket("test-bucket").blockingGet();
+        s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
         s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3", tempFile, false).blockingGet();
         s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3").blockingGet();
 
@@ -220,7 +220,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
             ));
             //uploading
             File tempFile = createTempFile();
-            s3BinaryStorage().createAsyncBucket("test-bucket").blockingGet();
+            s3BinaryStorage().createBucket("test-bucket").blockingGet();
             s3RestResponse1 = s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3", tempFile, false).blockingGet();
         }
         Boolean doesObjectExists = s3BinaryStorage().exists("test-bucket", s3binaryNode.getUuid() + "/s3").blockingGet();

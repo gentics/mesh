@@ -29,11 +29,6 @@
 			<artifactId>aws-sdk-java</artifactId>
 			<version>2.15.62</version>
 		</dependency>
-		<dependency>
-			<groupId>software.amazon.awssdk</groupId>
-			<artifactId>s3</artifactId>
-			<version>2.15.62</version>
-		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
@@ -41,11 +36,10 @@
 			<artifactId>mesh-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/io.minio/minio -->
 		<dependency>
-			<groupId>io.minio</groupId>
-			<artifactId>minio</artifactId>
-			<version>8.0.3</version>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-buffer</artifactId>
+			<version>4.1.48.Final</version>
 		</dependency>
 	</dependencies>
 

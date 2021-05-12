@@ -75,17 +75,7 @@ public interface S3BinaryStorage {
          * @param bucketName
          * @return
          */
-	 void createBucket(String bucketName);
-
-
-	/**
-	 * Creates a S3 bucket for a given name if doesn't exists in an async way
-	 *
-	 * @param bucketName
-	 * @return
-	 */
-	Single<Boolean> createAsyncBucket(String bucketName);
-
+	Single<Boolean> createBucket(String bucketName);
 
 	/**
 	 * Delete the S3 binary with the given bucket name and s3 object key.
