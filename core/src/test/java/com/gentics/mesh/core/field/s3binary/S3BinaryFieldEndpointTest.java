@@ -174,7 +174,6 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         S3RestResponse s3RestResponse = new S3RestResponse();
         s3RestResponse.setVersion("1");
         NodeResponse s3binaryNode = createNodeWithField();
-        S3RestResponse s3RestResponse1 = null;
         BufferedImage buf = null;
         //creating
         call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", uploadBody));
@@ -202,6 +201,24 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         assertNotNull(response);
         assertEquals("image/jpeg", response.getContentType());
         response.close();
+    }
+
+    @Test
+    public void testTransformS3BinarySuccessful() {
+        S3RestResponse s3RestResponse = new S3RestResponse();
+        s3RestResponse.setVersion("1");
+        NodeResponse s3binaryNode = createNodeWithField();
+        //creating
+        call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", uploadBody));
+        //uploading
+        File tempFile = createTempFile();
+        s3BinaryStorage().createBucket("test-bucket").blockingGet();
+        s3BinaryStorage().createBucket("test-cache-bucket").blockingGet();
+        s3BinaryStorage().uploadFile("test-bucket", s3binaryNode.getUuid() + "/s3", tempFile, false).blockingGet();
+        client().extractMetadataNodeS3BinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "s3", metadataBody).blockingGet();
+        NodeResponse call = call(() -> client().transformNodeBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "1.0", "s3", new ImageManipulationParametersImpl().setWidth(250)));
+        assertNotNull(call);
+        assertEquals(250, call.getFields().getS3BinaryField(FIELD_NAME).getWidth().intValue());
     }
 
     @Test
