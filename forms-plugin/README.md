@@ -18,9 +18,9 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 | `elements` | map of strings | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class | |
 | `mail` | object | Mail settings | |
 | `fromAddress` | string | Address to use as `from` when sending mails | |
-| `adminMailTemplate` | string | Path to the default template for admin mails | |
+| `adminMailTemplate` | string | Path to the default template for admin mails, relative to `templatesPath` | |
 | `adminMailSubject` | string | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form | |
-| `userMailTemplate` | string | Path to the default template for user mails | |
+| `userMailTemplate` | string | Path to the default template for user mails, relative to `templatesPath` | |
 | `userMailSubject` | string | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form | |
 | `defaultExportFormat` | string | Default export format. Currently, only `CSV` is supported | CSV |
 | `reCaptcha` | object | Recaptcha settings | |
@@ -44,9 +44,9 @@ mail:
   maxPoolSize: 10
   ownHostname:
 fromAddress: "webmaster@gentics.com"
-adminMailTemplate: "mail/adminemail.hbs"
+adminMailTemplate: "adminemail"
 adminMailSubject: "Formular [[FORMNAME]] ausgefüllt"
-userMailTemplate: "mail/useremail.hbs"
+userMailTemplate: "useremail"
 userMailSubject: "Herzlichen Dank"
 defaultExportFormat: CSV
 reCaptcha:
