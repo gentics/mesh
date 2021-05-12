@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.gentics.mesh.core.rest.schema.impl.*;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -51,17 +52,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
-import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -94,7 +84,46 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	public void testBinaryFieldNotExists() throws IOException {
 		testBinary(false, false);
 	}
-	
+
+	@Test
+	public void testS3BinaryExists() throws IOException {
+		testS3Binary(true, true);
+	}
+
+	@Test
+	public void testS3BinaryNotExists() throws IOException {
+		testS3Binary(true, false);
+	}
+
+
+	@Test
+	public void testS3BinaryFieldNotExists() throws IOException {
+		testS3Binary(false, false);
+	}
+
+
+	public void testS3Binary(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
+		String fileName = "somefile.dat";
+
+		Optional<FieldSchema> maybeS3BinaryField = fieldShouldExist
+				? Optional.of(new S3BinaryFieldSchemaImpl().setAllowedMimeTypes("image/*").setName("s3binary").setLabel("S3 Binary content"))
+				: Optional.empty();
+
+		Optional<Consumer<Node>> maybeS3BinaryContentSupplier = contentShouldExist
+				? Optional.of(node -> {
+			String contentType = "application/octet-stream";
+			int binaryLen = 8000;
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+		})
+				: Optional.empty();
+
+		Consumer<MeshWebrootFieldResponse> resultsConsumer = response -> {
+			assertTrue( response.isRedirected());
+		};
+
+		testS3Field("/News/2015/" + fileName, maybeS3BinaryField, maybeS3BinaryContentSupplier, resultsConsumer, true);
+	}
+
 	private void testBinary(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
 		String fileName = "somefile.dat";
 		
@@ -739,7 +768,59 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		
 		testField("/News/2015/News_2015.en.html", maybeField, maybeContentSupplier, resultsConsumer, false);
 	}
-	
+
+	private <F extends FieldSchema> void testS3Field(
+			String path,
+			Optional<F> field,
+			Optional<Consumer<Node>> contentSupplier,
+			Consumer<MeshWebrootFieldResponse> resultsConsumer,
+			boolean isS3BinaryContent
+	) throws IOException {
+		HibNode node = content("news_2015");
+		String nodeUuid = tx(() -> node.getUuid());
+		String fieldName;
+
+		if (field.isPresent()) {
+			try (Tx tx = tx()) {
+				ContentDaoWrapper contentDao = tx.contentDao();
+				HibSchema container = schemaContainer("content");
+				node.setSchemaContainer(container);
+				contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+				FieldSchema schema = field.get();
+				prepareTypedSchema(node, schema);
+				tx.success();
+				fieldName = schema.getName();
+			}
+			if (contentSupplier.isPresent()) {
+				contentSupplier.get().accept((Node) node);
+			}
+		} else {
+			fieldName = "field";
+		}
+
+		if (field.isPresent()) {
+			if (contentSupplier.isPresent()) {
+				MeshWebrootFieldResponse response = call(() -> client().webrootField(PROJECT_NAME, fieldName, path, new VersioningParametersImpl().draft(),
+						new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
+
+				assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
+				resultsConsumer.accept(response);
+			} else {
+				if (isS3BinaryContent) {
+					call(() -> client().webrootField(PROJECT_NAME, fieldName, path), NOT_FOUND, "node_not_found_for_path", path);
+				} else {
+					call(() -> client().webrootField(PROJECT_NAME, fieldName, path), NOT_FOUND, "error_field_not_found_with_name", fieldName);
+				}
+			}
+		} else {
+			if (isS3BinaryContent) {
+				call(() -> client().webrootField(PROJECT_NAME, fieldName, path), NOT_FOUND, "node_not_found_for_path", path);
+			} else {
+				call(() -> client().webrootField(PROJECT_NAME, fieldName, path), NOT_FOUND, "error_field_not_found_with_name", fieldName);
+			}
+		}
+	}
+
 	private <F extends FieldSchema> void testField(
 			String path,
 			Optional<F> field, 
@@ -768,12 +849,12 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		} else {
 			fieldName = "field";
 		}
-		
+
 		if (field.isPresent()) {
 			if (contentSupplier.isPresent()) {
 				MeshWebrootFieldResponse response = call(() -> client().webrootField(PROJECT_NAME, fieldName, path, new VersioningParametersImpl().draft(),
 						new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-				
+
 				assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
 				resultsConsumer.accept(response);
 			} else {

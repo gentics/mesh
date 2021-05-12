@@ -6,19 +6,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.test.context.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
-import com.gentics.mesh.test.context.MeshOptionChanger;
-import com.gentics.mesh.test.context.MeshTestContext;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.context.PluginHelper;
-import com.gentics.mesh.test.context.TestGraphHelper;
-import com.gentics.mesh.test.context.TestHttpMethods;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.util.MeshAssert;
 
@@ -115,6 +109,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		@Override
 		public ElasticsearchTestMode elasticsearch() {
 			return elasticsearch;
+		}
+
+		@Override
+		public AWSTestMode awsContainer() {
+			return delegate.awsContainer();
 		}
 
 		@Override

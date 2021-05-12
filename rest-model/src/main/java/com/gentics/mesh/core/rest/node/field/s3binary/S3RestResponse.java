@@ -28,6 +28,9 @@ public class S3RestResponse implements RestModel {
     @JsonPropertyDescription("version")
     String version;
 
+    public S3RestResponse(){
+    }
+
     public S3RestResponse(String presignedUrl, String httpRequestMethod, Map<String, List<String>> signedHeaders) {
         this.presignedUrl = presignedUrl;
         this.httpRequestMethod = httpRequestMethod;

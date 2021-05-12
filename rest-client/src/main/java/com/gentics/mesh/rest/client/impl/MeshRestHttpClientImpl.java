@@ -56,6 +56,7 @@ import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -1117,6 +1118,24 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
 			NodeResponse.class, completeStream, fileSize, bodyContentType);
+	}
+
+	@Override
+	public MeshRequest<S3RestResponse> updateNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey, String body) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+
+		return handleTextRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/s3binary/" + fieldKey ,
+				S3RestResponse.class, body);
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> extractMetadataNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey, String body) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+
+		return handleTextRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/s3binary/" + fieldKey + "/parseMetadata",
+				NodeResponse.class, body);
 	}
 
 	@Override

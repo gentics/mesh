@@ -250,9 +250,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldMetadataExtraction.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = wrap(rc);
-			s3BinaryMetadataExtractionHandler.handleMetadataExtraction(ac, uuid, fieldName, attributes);
+			s3BinaryMetadataExtractionHandler.handleMetadataExtraction(ac, uuid, fieldName);
 		});
 	}
 

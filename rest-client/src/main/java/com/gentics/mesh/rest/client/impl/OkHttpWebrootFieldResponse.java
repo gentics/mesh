@@ -41,6 +41,16 @@ public class OkHttpWebrootFieldResponse implements MeshWebrootFieldResponse {
 	}
 
 	@Override
+	public boolean isS3Binary() {
+		return "s3binary".equals(response.header(WEBROOT_RESPONSE_TYPE));
+	}
+
+	@Override
+	public boolean isRedirected() {
+		return response.isRedirect();
+	}
+
+	@Override
 	public String getNodeUuid() {
 		return response.header(WEBROOT_NODE_UUID);
 	}

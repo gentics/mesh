@@ -1,66 +1,111 @@
 package com.gentics.mesh.storage.s3;
 
-import static org.junit.Assert.assertTrue;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
+import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.test.docker.AWSContainer;
+import hu.akarnokd.rxjava2.interop.SingleInterop;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.Wait;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import java.net.URI;
 
-import io.vertx.reactivex.core.Vertx;
+import static org.junit.Assert.*;
 
-@Ignore
+
 public class S3BinaryStorageTest {
+    private static final String ACCESS_KEY = "accessKey";
+    private static final String SECRET_KEY = "secretKey";
+    private static final String BUCKET = "bucket";
+    private static S3AsyncClient client = null;
+    private S3BinaryStorage s3BinaryStorage;
+    private static final Logger log = LoggerFactory.getLogger(S3BinaryStorageTest.class);
+    MeshOptions meshOptions;
+    AWSContainer container;
 
-	public static final String VERSION = "RELEASE.2018-01-18T20-33-21Z";
-	public static final String ACCESS_KEY = "myKey";
-	public static final String SECRET_KEY = "mySecret";
-	public static final String BUCKET_NAME = "mesh-test";
+    @Before
+    public void setup() {
+        S3Options s3Options = new S3Options();
+        s3Options.setBucket(BUCKET);
+        s3Options.setSecretAccessKey(SECRET_KEY);
+        s3Options.setAccessKeyId(ACCESS_KEY);
+        meshOptions = new MeshOptions();
+        meshOptions.setS3Options(s3Options);
+         container = new AWSContainer(
+                new AWSContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY));
+        container.start();
+        S3AsyncClient client = getClient();
+        createBucket(BUCKET);
+        s3BinaryStorage = new S3BinaryStorageImpl(meshOptions, client);
+    }
 
-	private static Vertx vertx = Vertx.vertx();
+    @AfterClass
+    public static void shutDown() {
+        if (client != null) {
+            DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(BUCKET).build();
+            client.deleteBucket(deleteBucketRequest);
+        }
+    }
 
-	@ClassRule
-	public static GenericContainer<?> minio = new GenericContainer<>("minio/minio:" + VERSION)
-		.withCommand("server /data")
-		.withEnv("MINIO_ACCESS_KEY", ACCESS_KEY)
-		.withEnv("MINIO_SECRET_KEY", SECRET_KEY)
-		.withExposedPorts(9000)
-		.waitingFor(Wait.forHttp("/").forStatusCode(403));
+    @Test
+    public void textExists() {
+            Boolean aBoolean = s3BinaryStorage.exists(BUCKET).blockingGet();
+            assertNotNull(BUCKET);
+            assertTrue(aBoolean);
+    }
 
-	private S3BinaryStorageImpl storage;
+    @Test
+    public void textNotExists() {
+        Boolean aBoolean = s3BinaryStorage.exists("notexists").blockingGet();
+        assertFalse(aBoolean);
+    }
 
-	@Before
-	public void setup() {
-		MeshOptions meshOptions = new MeshOptions();
-		S3Options options = new S3Options();
-		options.setAccessKeyId(ACCESS_KEY);
-		options.setSecretAccessKey(SECRET_KEY);
-		options.setRegion("US_EAST_1");
-		options.setBucket(BUCKET_NAME);
-		meshOptions.setS3Options(options);
-		//options.setUrl("http://localhost:" + minio.getMappedPort(9000));
-		storage = new S3BinaryStorageImpl(meshOptions, vertx);
-	}
+    private S3AsyncClient getClient() {
+        client = getClient(container);
+        return client;
+    }
 
-	@Test
-	public void testStore() {
-		BinaryGraphField mockField = Mockito.mock(BinaryGraphField.class);
-		HibBinary binary = Mockito.mock(Binary.class);
-		Mockito.when(mockField.getBinary()).thenReturn(binary);
-		Mockito.when(binary.getSHA512Sum()).thenReturn("test");
-//		assertFalse(storage.exists(mockField));
-//		storage.store(Flowable.just(Buffer.buffer("test")), "test").blockingAwait();
-//		assertTrue(storage.exists(mockField));
-		storage.read("test", "test").ignoreElements().blockingAwait();
-	}
+    private S3AsyncClient createBucket(String bucket) {
+            CreateBucketRequest createRequest = CreateBucketRequest.builder()
+                    .bucket(bucket)
+                    .build();
+            SingleInterop.fromFuture(this.client.createBucket(createRequest)).map(r -> r != null).blockingGet();
+            return client;
+    }
 
+    @Test
+    public void testCreateBucket() {
+        String newBucketName = "new-bucket";
+        s3BinaryStorage.createAsyncBucket(newBucketName).blockingGet();
+        Boolean aBoolean = s3BinaryStorage.exists(newBucketName).blockingGet();
+        assertTrue(aBoolean);
+    }
+
+    private S3AsyncClient getClient(AWSContainer container) {
+        S3Configuration config = S3Configuration.builder()
+                .pathStyleAccessEnabled(true)
+                .checksumValidationEnabled(false)
+                .build();
+        S3AsyncClientBuilder clientBuilder = S3AsyncClient.builder();
+            clientBuilder.endpointOverride(URI.create("http://" + container.getHostAddress()));
+        AwsCredentials credentials = AwsBasicCredentials.create(ACCESS_KEY, SECRET_KEY);
+        client = clientBuilder.region(Region.of("eu-central-1"))
+                .serviceConfiguration(config)
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build();
+        return client;
+    }
 }

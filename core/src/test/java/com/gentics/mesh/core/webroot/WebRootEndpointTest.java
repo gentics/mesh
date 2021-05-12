@@ -9,17 +9,26 @@ import static com.gentics.mesh.parameter.LinkType.SHORT;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -59,7 +68,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.URIUtils;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(awsContainer = MINIO, testSize = FULL, startServer = true)
 public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -92,6 +101,46 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
 		assertTrue(response.isBinary());
 		assertNotNull(downloadResponse);
+	}
+
+	@Test
+	public void testReadS3BinaryNode() {
+		HibNode node = content("news_2015");
+
+		try (Tx tx = tx()) {
+			SchemaVersionModel schema = schemaContainer("content").getLatestVersion().getSchema();
+			S3BinaryFieldSchema s3BinaryFieldSchema = new S3BinaryFieldSchemaImpl();
+			s3BinaryFieldSchema.setName("s3");
+			s3BinaryFieldSchema.setLabel("Some label");
+			schema.addField(s3BinaryFieldSchema);
+			schema.setSegmentField("s3");
+			schemaContainer("content").getLatestVersion().setSchema(schema);
+			tx.success();
+		}
+		String uploadBody = "{\n" +
+				"\t\"language\":\"en\",\n" +
+				"\t\"version\":\"1.0\",\n" +
+				"\t\"filename\":\"test.jpg\"\n" +
+				"}";
+
+		// 2. Update the binary data
+		call(() -> client().updateNodeS3BinaryField(
+				PROJECT_NAME,
+				node.getUuid(),
+				"s3",
+				uploadBody
+		));
+		//uploading
+		File tempFile = createTempFile();
+		s3BinaryStorage().createAsyncBucket("test-bucket").blockingGet();
+		s3BinaryStorage().uploadFile("test-bucket", node.getUuid() + "/s3", tempFile, false).blockingGet();
+
+
+		// 3. Try to resolve the path
+		String path = "/News/2015/test.jpg";
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+				new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
+		assertNotNull(response);
 	}
 
 	@Test

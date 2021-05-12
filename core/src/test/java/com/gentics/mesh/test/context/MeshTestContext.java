@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import com.gentics.mesh.etc.config.*;
+import com.gentics.mesh.test.docker.AWSContainer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -47,11 +50,6 @@ import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshBuilderFactory;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -551,6 +549,7 @@ public class MeshTestContext extends TestWatcher {
 		}
 		// Increase timeout to high load during testing
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
+		S3Options s3Options = meshOptions.getS3Options();
 		searchOptions.setTimeout(10_000L);
 		storageOptions.setDirectory(graphPath);
 		storageOptions.setSynchronizeWrites(true);
@@ -608,6 +607,25 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		default:
 			break;
+		}
+		switch (settings.awsContainer()) {
+			case AWS:
+				break;
+			case MINIO:
+				AWSContainer awsContainer = new AWSContainer(
+						new AWSContainer.CredentialsProvider("accessKey", "secretKey"));
+				awsContainer.start();
+				String ACCESS_KEY = "accessKey";
+				String SECRET_KEY = "secretKey";
+				s3Options.setAccessKeyId(ACCESS_KEY);
+				s3Options.setBucket("test-bucket");
+				S3CacheOptions s3CacheOptions = new S3CacheOptions();
+				s3CacheOptions.setBucket("test-cache-bucket");
+				s3Options.setS3CacheOptions(s3CacheOptions);
+				s3Options.setSecretAccessKey(SECRET_KEY);
+				s3Options.setRegion("eu-central-1");
+				s3Options.setEndpoint("http://" + awsContainer.getHostAddress());
+				break;
 		}
 
 		if (settings.useKeycloak()) {

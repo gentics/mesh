@@ -85,9 +85,8 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 	 * @param ac
 	 * @param nodeUuid   UUID of the node which should be updated
 	 * @param fieldName  Name of the field which should be created
-	 * @param attributes Additional form data attributes
 	 */
-	public void handleMetadataExtraction(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
+	public void handleMetadataExtraction(InternalActionContext ac, String nodeUuid, String fieldName) {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 
@@ -113,8 +112,10 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				.flatMap(res -> {
 					if (res) {
 						return s3BinaryStorage.read(bucket, objectKey).singleOrError();
-					} else return null;
-				}).flatMap(fileBuffer -> {
+					} else return Single.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
+				})
+				.onErrorResumeNext(e ->  Single.error(e))
+				.flatMap(fileBuffer -> {
 			if (nonNull(fileBuffer) || fileBuffer.getBytes().length > 0) {
 				return db.singleTx(tx -> s3binaries
 						.findByS3ObjectKey(nodeUuid + "/" + fieldName)
@@ -175,7 +176,8 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				log.error("Could not read input image");
 				return Single.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
 			}
-		}).subscribe(model ->
+		}).onErrorResumeNext(e ->  Single.error(e))
+				.subscribe(model ->
 				ac.send(model, OK), ac::fail);
 	}
 

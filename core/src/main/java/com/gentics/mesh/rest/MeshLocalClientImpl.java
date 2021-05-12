@@ -9,6 +9,9 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.endpoint.node.*;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,8 +24,6 @@ import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
-import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.endpoint.project.ProjectCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.endpoint.schema.SchemaCrudHandler;
@@ -171,6 +172,12 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Inject
 	public BinaryUploadHandlerImpl fieldAPIHandler;
+
+	@Inject
+	public S3BinaryUploadHandlerImpl s3fieldAPIHandler;
+
+	@Inject
+	public S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler;
 
 	@Inject
 	public WebRootHandler webrootHandler;
@@ -1232,6 +1239,34 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		String fieldKey, ImageManipulationParameters imageManipulationParameter) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<S3RestResponse> updateNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey, String body) {
+
+		LocalActionContextImpl<S3RestResponse> ac = createContext(S3RestResponse.class);
+		ac.setProject(projectName);
+		ac.setBody(body);
+
+		Runnable task = () -> {
+			s3fieldAPIHandler.handleUpdateField(ac, nodeUuid, fieldKey);
+		};
+		new Thread(task).start();
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> extractMetadataNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey, String body) {
+
+		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
+		ac.setProject(projectName);
+		ac.setBody(body);
+
+		Runnable task = () -> {
+			s3BinaryMetadataExtractionHandler.handleMetadataExtraction(ac, nodeUuid, fieldKey);
+		};
+		new Thread(task).start();
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
