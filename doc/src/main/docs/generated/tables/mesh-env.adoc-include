@@ -14,11 +14,11 @@
 | *MESH_PLUGIN_DIR*
 | Override the configured plugin directory.
 
-| *MESH_HTTP_SSL_CERT_PATH*
-| Override the configured SSL enable flag.
-
 | *MESH_CLUSTER_COORDINATOR_REGEX*
 | Override the cluster coordinator regex.
+
+| *MESH_HTTP_SSL_CERT_PATH*
+| Override the configured SSL enable flag.
 
 | *MESH_CONTENT_AUTO_PURGE*
 | Override the content versioning flag
@@ -47,17 +47,17 @@
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
 
-| *MESH_CACHE_PATH_SIZE*
-| Override the path cache size.
-
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
 
-| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
-| Override the configured client certificate handling mode.
+| *MESH_CACHE_PATH_SIZE*
+| Override the path cache size.
 
 | *MESH_ELASTICSEARCH_CERT_PATH*
 | Override the configured trusted server certificate.
+
+| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
+| Override the configured client certificate handling mode.
 
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
@@ -68,11 +68,11 @@
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
 
-| *MESH_DEBUGINFO_LOG_ENABLED*
-| Enables the debug info log
-
 | *MESH_IMAGE_CACHE_DIRECTORY*
 | Override the path for image cache directory.
+
+| *MESH_DEBUGINFO_LOG_ENABLED*
+| Enables the debug info log
 
 | *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
 | Override the batch bulk length limit. Default: 5000000
@@ -98,11 +98,11 @@
 | *MESH_ELASTICSEARCH_USERNAME*
 | Override the configured Elasticsearch connection username.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
-| Override the cluster topology lock timeout in ms.
-
 | *MESH_GRAPH_BACKUP_DIRECTORY*
 | Override the graph database backup directory.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
+| Override the cluster topology lock timeout in ms.
 
 | *MESH_DEFAULT_LANG*
 | Override the configured default language.
@@ -152,11 +152,11 @@
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.
 
-| *MESH_HTTP_SSL_ENABLE*
-| Override the configured https server flag.
-
 | *MESH_GRAPH_STARTSERVER*
 | Override the graph database server flag.
+
+| *MESH_HTTP_SSL_ENABLE*
+| Override the configured https server flag.
 
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
@@ -176,11 +176,11 @@
 | *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
 | Override the configured parser limit.
 
-| *MESH_ELASTICSEARCH_MAPPING_MODE*
-| Override the search mapping mode. 
-
 | *MESH_IMAGE_MAX_HEIGHT*
 | Override the max height for image resize operations.
+
+| *MESH_ELASTICSEARCH_MAPPING_MODE*
+| Override the search mapping mode. 
 
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
@@ -206,11 +206,11 @@
 | *MESH_AUTH_PUBLIC_KEYS_PATH*
 | Override the configured public keys file path.
 
-| *MESH_ELASTICSEARCH_PREFIX*
-| Override the configured elasticsearch prefix.
-
 | *MESH_LANGUAGES_FILE_PATH*
 | Override the path to the optional languages file
+
+| *MESH_ELASTICSEARCH_PREFIX*
+| Override the configured elasticsearch prefix.
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
 | Override the cluster topology lock delay in ms.
@@ -269,11 +269,11 @@
 | *MESH_MAX_PURGE_BATCH_SIZE*
 | Override the maximum purge batch size.
 
-| *MESH_HTTPS_PORT*
-| Override the configured server https port.
-
 | *MESH_IMAGE_MAX_WIDTH*
 | Override the max width for image resize operations.
+
+| *MESH_HTTPS_PORT*
+| Override the configured server https port.
 
 | *MESH_CLUSTER_INIT*
 | Enable or disable the initial cluster database setup. This is useful for testing.
