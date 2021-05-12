@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,6 +57,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
@@ -82,6 +84,10 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	private final PluginFactory pluginFactory;
 
 	private final MeshOptions options;
+	
+	private final Database database;
+	
+	private final List<PluginWrapper> failedPlugins = new ArrayList<>(0);
 
 	// We track our own plugin status since the PF4J state is not extendible.
 	private final Map<String, PluginStatus> pluginStatusMap = new HashedMap<>();
@@ -89,10 +95,11 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	private final DelegatingPluginRegistry pluginRegistry;
 
 	@Inject
-	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry) {
+	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry, Database database) {
 		this.pluginFactory = pluginFactory;
 		this.options = options;
 		this.pluginRegistry = pluginRegistry;
+		this.database = database;
 		delayedInitialize();
 	}
 
@@ -140,29 +147,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	@Override
 	public void startPlugins() {
-		for (PluginWrapper pluginWrapper : resolvedPlugins) {
-			PluginState pluginState = pluginWrapper.getPluginState();
-			if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
-				try {
-					log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
-					Plugin plugin = pluginWrapper.getPlugin();
-					plugin.start();
-					// Set state for PF4J
-					pluginWrapper.setPluginState(PluginState.STARTED);
-					if (plugin instanceof MeshPlugin) {
-						// Set status for Mesh
-						MeshPlugin meshPlugin = (MeshPlugin) plugin;
-						setStatus(meshPlugin.id(), PluginStatus.STARTED);
-						pluginRegistry.preRegister(meshPlugin);
-					}
-					startedPlugins.add(pluginWrapper);
-
-					firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
-				} catch (Throwable e) {
-					log.error("Error while starting plugins " + e.getMessage(), e);
-				}
-			}
-		}
+		startPluginsFrom(resolvedPlugins);
+		startPluginsFrom(failedPlugins);
 	}
 
 	@Override
@@ -588,4 +574,55 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		return response;
 	}
 
+	protected void startPluginsFrom(List<PluginWrapper> source) {
+		List<PluginWrapper> sourceCopy;
+		
+		if (source == failedPlugins) {
+			sourceCopy = new ArrayList<>(source);
+		} else {
+			sourceCopy = source;
+		}
+		
+		for (PluginWrapper pluginWrapper : sourceCopy) {
+			PluginState pluginState = pluginWrapper.getPluginState();
+			if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
+				try {
+					log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
+
+					Plugin plugin = pluginWrapper.getPlugin();
+
+					//if (plugin.isUsingRestClient()) {
+						database.blockingTopologyLockCheck();
+					//}
+
+					plugin.start();
+					// Set state for PF4J
+					pluginWrapper.setPluginState(PluginState.STARTED);
+					if (plugin instanceof MeshPlugin) {
+						// Set status for Mesh
+						MeshPlugin meshPlugin = (MeshPlugin) plugin;
+						setStatus(meshPlugin.id(), PluginStatus.STARTED);
+						pluginRegistry.preRegister(meshPlugin);
+					}
+					startedPlugins.add(pluginWrapper);
+					
+					if (source == failedPlugins) {
+						source.remove(pluginWrapper);
+					}
+					
+					firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
+				} catch (Throwable e) {
+					if (source == failedPlugins) {
+						log.error("Error while starting plugin {" + pluginWrapper.getPluginId() + "}: " + e.getMessage(), e);
+					} else {
+						log.warn("First error while starting plugin {" + pluginWrapper.getPluginId() + "}: " + e.getMessage() + ", giving a retry...", e);
+						failedPlugins.add(pluginWrapper);
+						pluginWrapper.getPlugin().stop();
+					}
+				}
+			} else {
+				log.info("Skipping plugin '{}' due to the state {}", getPluginLabel(pluginWrapper.getDescriptor()), pluginState);
+			}
+		}
+	}
 }
