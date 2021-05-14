@@ -18,6 +18,7 @@
 		<module>client</module>
 		<module>non-mesh</module>
 		<module>failing</module>
+		<module>failing-first</module>
 		<module>classloader</module>
 		<module>common</module>
 		<module>extension-provider</module>

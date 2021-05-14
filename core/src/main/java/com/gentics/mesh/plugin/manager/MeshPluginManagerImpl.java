@@ -603,10 +603,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 						pluginRegistry.preRegister(meshPlugin);
 
 						// If the plugin has failed to init once - 1st fail case.
-						if (getStatus(meshPlugin.id()) == PluginStatus.FAILED && source != failedPlugins) {
-							pluginWrapper.setPluginState(PluginState.RESOLVED);
-							setStatus(meshPlugin.id(), PluginStatus.LOADED);
-							throw new IllegalStateException("Plugin " + meshPlugin.id() + " failed to initialize once!");
+						if (getStatus(meshPlugin.id()) == PluginStatus.FAILED) {
+							if (source != failedPlugins) {
+								// Plugin failed for the first time - give it another try
+								pluginWrapper.setPluginState(PluginState.RESOLVED);
+								setStatus(meshPlugin.id(), PluginStatus.LOADED);
+								throw new IllegalStateException("Plugin " + meshPlugin.id() + " failed to initialize once!");
+							}
 						} else {
 							setStatus(meshPlugin.id(), PluginStatus.STARTED);
 						}
