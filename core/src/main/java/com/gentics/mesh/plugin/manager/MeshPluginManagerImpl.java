@@ -602,7 +602,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 						pluginRegistry.preRegister(meshPlugin);
 
-						// If the plugin has failed to init once
+						// If the plugin has failed to init once - 1st fail case.
 						if (getStatus(meshPlugin.id()) == PluginStatus.FAILED && source != failedPlugins) {
 							pluginWrapper.setPluginState(PluginState.RESOLVED);
 							setStatus(meshPlugin.id(), PluginStatus.LOADED);
@@ -622,6 +622,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					if (source == failedPlugins) {
 						log.error("Error while starting plugin {" + pluginWrapper.getPluginId() + "}: " + e.getMessage(), e);
 					} else {
+						// If the plugin has thrown an exception without setting the FAILED status - 2nd fail case.
 						log.warn("First error while starting plugin {" + pluginWrapper.getPluginId() + "}: " + e.getMessage() + ", giving a retry...", e);
 						failedPlugins.add(pluginWrapper);
 						pluginWrapper.getPlugin().stop();
