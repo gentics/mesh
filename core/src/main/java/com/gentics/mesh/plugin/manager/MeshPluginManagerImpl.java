@@ -587,13 +587,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			PluginState pluginState = pluginWrapper.getPluginState();
 			if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
 				try {
-					log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
-
 					Plugin plugin = pluginWrapper.getPlugin();
-
-					//if (plugin.isUsingRestClient()) {
-						database.blockingTopologyLockCheck();
-					//}
 
 					plugin.start();
 					// Set state for PF4J
@@ -601,8 +595,21 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					if (plugin instanceof MeshPlugin) {
 						// Set status for Mesh
 						MeshPlugin meshPlugin = (MeshPlugin) plugin;
-						setStatus(meshPlugin.id(), PluginStatus.STARTED);
+
+						//if (plugin.isUsingRestClient()) {
+							database.blockingTopologyLockCheck();
+						//}
+
 						pluginRegistry.preRegister(meshPlugin);
+
+						// If the plugin has failed to init once
+						if (getStatus(meshPlugin.id()) == PluginStatus.FAILED && source != failedPlugins) {
+							pluginWrapper.setPluginState(PluginState.RESOLVED);
+							setStatus(meshPlugin.id(), PluginStatus.LOADED);
+							throw new IllegalStateException("Plugin " + meshPlugin.id() + " failed to initialize once!");
+						} else {
+							setStatus(meshPlugin.id(), PluginStatus.STARTED);
+						}
 					}
 					startedPlugins.add(pluginWrapper);
 					
