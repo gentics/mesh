@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinationTopologyLockHeldStrategy;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
 /**
@@ -15,11 +16,13 @@ public class Coordinator {
 
 	private final MasterElector elector;
 	private CoordinatorMode mode = CoordinatorMode.DISABLED;
+	private CoordinationTopologyLockHeldStrategy topologyLockHeldStrategy = CoordinationTopologyLockHeldStrategy.PASS_AND_WAIT_ALL;
 
 	@Inject
 	public Coordinator(MasterElector elector, MeshOptions options) {
 		this.elector = elector;
 		this.mode = options.getClusterOptions().getCoordinatorMode();
+		this.setTopologyLockHeldStrategy(options.getClusterOptions().getCoordinatorTopologyLockHeldStrategy());
 	}
 
 	public MasterServer getMasterMember() {
@@ -33,6 +36,14 @@ public class Coordinator {
 	public Coordinator setCoordinatorMode(CoordinatorMode mode) {
 		this.mode = mode;
 		return this;
+	}
+
+	public CoordinationTopologyLockHeldStrategy getTopologyLockHeldStrategy() {
+		return topologyLockHeldStrategy;
+	}
+
+	public void setTopologyLockHeldStrategy(CoordinationTopologyLockHeldStrategy topologyLockHeldStrategy) {
+		this.topologyLockHeldStrategy = topologyLockHeldStrategy;
 	}
 
 	public void setMaster() {

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
+import com.gentics.mesh.etc.config.cluster.CoordinationTopologyLockHeldStrategy;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -33,6 +34,7 @@ public class ClusterOptions implements Option {
 	public static final String MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT_ENV = "MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT";
 	public static final String MESH_CLUSTER_TOPOLOGY_LOCK_DELAY_ENV = "MESH_CLUSTER_TOPOLOGY_LOCK_DELAY";
 	public static final String MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV = "MESH_CLUSTER_COORDINATOR_TOPOLOGY";
+	public static final String MESH_CLUSTER_COORDINATOR_TOPOLOGY_LOCK_HELD_STRATEGY_ENV = "MESH_CLUSTER_COORDINATOR_TOPOLOGY_LOCK_HELD_STRATEGY";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
@@ -84,6 +86,20 @@ public class ClusterOptions implements Option {
 	@JsonPropertyDescription("The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.")
 	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV, description = "Override the cluster coordinator topology management mode.")
 	private CoordinationTopology coordinatorTopology = CoordinationTopology.UNMANAGED;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The coordinator strategy controls the behavior of the DB access requests hit the held topology lock. By default all the requests wait for the topology lock being freed.")
+	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_TOPOLOGY_LOCK_HELD_STRATEGY_ENV, description = "Override the cluster coordinator strategy on topology lock being held.")
+	private CoordinationTopologyLockHeldStrategy coordinatorTopologyLockHeldStrategy = CoordinationTopologyLockHeldStrategy.PASS_AND_WAIT_ALL;
+
+	public CoordinationTopologyLockHeldStrategy getCoordinatorTopologyLockHeldStrategy() {
+		return coordinatorTopologyLockHeldStrategy;
+	}
+
+	public void setCoordinatorTopologyLockHeldStrategy(
+			CoordinationTopologyLockHeldStrategy coordinatorTopologyLockHeldStrategy) {
+		this.coordinatorTopologyLockHeldStrategy = coordinatorTopologyLockHeldStrategy;
+	}
 
 	public boolean isEnabled() {
 		return enabled;

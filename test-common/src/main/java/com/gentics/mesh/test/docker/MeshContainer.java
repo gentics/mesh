@@ -37,6 +37,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinationTopologyLockHeldStrategy;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -117,6 +118,8 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	private boolean startEmbeddedES = false;
 
 	private CoordinatorMode coordinatorMode = null;
+
+	private CoordinationTopologyLockHeldStrategy topologyHeldStrategy = null;
 
 	private String coordinatorPlaneRegex;
 
@@ -232,6 +235,10 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 		if (coordinatorMode != null) {
 			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, coordinatorMode.name());
+		}
+		
+		if (topologyHeldStrategy != null) {
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_TOPOLOGY_LOCK_HELD_STRATEGY_ENV, topologyHeldStrategy.name());
 		}
 
 		if (coordinatorPlaneRegex != null) {
@@ -615,6 +622,11 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	public MeshContainer withCoordinatorPlane(CoordinatorMode coordinatorMode) {
 		this.coordinatorMode = coordinatorMode;
+		return this;
+	}
+
+	public MeshContainer withTopologyLockHeldStrategy(CoordinationTopologyLockHeldStrategy strategy) {
+		this.topologyHeldStrategy = strategy;
 		return this;
 	}
 

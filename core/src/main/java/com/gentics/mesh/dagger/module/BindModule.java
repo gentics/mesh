@@ -29,6 +29,8 @@ import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.cluster.ClusterManager;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
@@ -121,4 +123,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract BucketManager bindBucketManager(BucketManagerImpl e);
+
+	@Binds
+	abstract ClusterManager bindClusterManager(OrientDBClusterManager clusterManager);
 }

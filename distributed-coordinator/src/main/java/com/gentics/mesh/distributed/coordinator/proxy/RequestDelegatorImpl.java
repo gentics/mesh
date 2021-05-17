@@ -11,8 +11,12 @@ import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinationTopologyLockHeldStrategy;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
+import com.gentics.mesh.graphdb.cluster.ClusterManager;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http2.Http2Error;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -36,13 +40,15 @@ public class RequestDelegatorImpl implements RequestDelegator {
 	private final Coordinator coordinator;
 	private final HttpClient httpClient;
 	private final MeshOptions options;
+	private final ClusterManager clusterManager;
 
 	private static final Set<Pattern> readOnlyPathPatternSet = createReadOnlyPatternSet();
 	private static final Set<Pattern> whiteListPathPatternSet = createWhitelistPatternSet();
 
 	@Inject
-	public RequestDelegatorImpl(Coordinator coordinator, Vertx vertx, MeshOptions options) {
+	public RequestDelegatorImpl(Coordinator coordinator, Vertx vertx, ClusterManager clusterManager, MeshOptions options) {
 		this.coordinator = coordinator;
+		this.clusterManager = clusterManager;
 		this.httpClient = vertx.createHttpClient();
 		this.options = options;
 	}
@@ -68,6 +74,14 @@ public class RequestDelegatorImpl implements RequestDelegator {
 				log.debug("Skipping delegation since coordination is disabled.");
 			}
 			rc.next();
+			return;
+		}
+
+		if (CoordinationTopologyLockHeldStrategy.DROP_CUD == coordinator.getTopologyLockHeldStrategy()
+				&& !isReadRequest(method, path)
+				&& clusterManager != null
+				&& clusterManager.isClusterTopologyLocked()) {
+			rc.fail(HttpResponseStatus.SERVICE_UNAVAILABLE.code());
 			return;
 		}
 
