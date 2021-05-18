@@ -27,6 +27,7 @@ public class FailingFirstPlugin extends AbstractPlugin implements RestPlugin {
 				return Completable.complete();
 			} catch (Exception e) {
 				log.error("Failing failed!", e);
+				Thread.sleep(1000 * 60 * 5);
 				environment().vertx().fileSystem().createFileBlocking(FILENAME);
 				return Completable.error(e);
 			}
