@@ -156,7 +156,10 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				for (PluginWrapper wrapper : startingPlugins) {
 					log.info("Restarting plugin {" + wrapper.getPluginId() + "} because of an unavailable database.");
 
-					// TODO stop the pf4j part?
+					if (wrapper.getPlugin() instanceof MeshPlugin) {
+						MeshPlugin meshPlugin = (MeshPlugin) wrapper.getPlugin();
+						meshPlugin.shutdown();
+					}
 					restartingPlugins.add(wrapper);
 				}
 				startingPlugins.clear();
