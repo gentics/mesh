@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin.manager;
 
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.rxError;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.LOADED;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,6 +42,7 @@ import org.pf4j.JarPluginLoader;
 import org.pf4j.JarPluginRepository;
 import org.pf4j.Plugin;
 import org.pf4j.PluginClassLoader;
+import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginFactory;
@@ -65,9 +68,15 @@ import com.gentics.mesh.plugin.impl.MeshPluginDescriptorImpl;
 import com.gentics.mesh.plugin.pf4j.MeshPluginFactory;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.util.PluginUtils;
+import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
+import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -81,13 +90,15 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	public static final String PLUGINS_DIR_CONFIG_PROPERTY_NAME = "pf4j.pluginsConfigDir";
 
+	private final Lazy<Vertx> vertx;
+
 	private final PluginFactory pluginFactory;
 
 	private final MeshOptions options;
-	
-	private final Database database;
-	
-	private final List<PluginWrapper> failedPlugins = new ArrayList<>(0);
+
+	private final List<PluginWrapper> restartingPlugins = Collections.synchronizedList(new ArrayList<>(0));
+
+	private final List<PluginWrapper> startingPlugins = Collections.synchronizedList(new ArrayList<>(1));
 
 	// We track our own plugin status since the PF4J state is not extendible.
 	private final Map<String, PluginStatus> pluginStatusMap = new HashedMap<>();
@@ -95,21 +106,68 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	private final DelegatingPluginRegistry pluginRegistry;
 
 	@Inject
-	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry, Database database) {
+	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory,
+			DelegatingPluginRegistry pluginRegistry, Database database, Lazy<Vertx> vertx) {
 		this.pluginFactory = pluginFactory;
 		this.options = options;
 		this.pluginRegistry = pluginRegistry;
-		this.database = database;
+		this.vertx = vertx;
 		delayedInitialize();
 	}
 
 	protected void delayedInitialize() {
 		super.initialize();
+		registerEventListeners();
+	}
+
+	protected void registerEventListeners() {
+		if (options.getClusterOptions().isEnabled()) {
+			EventBus eb = vertx.get().eventBus();
+
+			eb.consumer(CLUSTER_DATABASE_CHANGE_STATUS.address, (Message<JsonObject> handler) -> {
+				JsonObject info = handler.body();
+				Boolean isMe = info.getBoolean("isMe");
+
+				if (isMe != null && isMe) {
+					DB_STATUS status = DB_STATUS.valueOf(info.getString("status"));
+					log.info("Received local database status update - " + status.name());
+
+					switch (status) {
+					case NOT_AVAILABLE:
+					case OFFLINE:
+					case SYNCHRONIZING:
+					case BACKUP:
+						handleDatabaseAvailability(false);
+						break;
+					case ONLINE:
+						handleDatabaseAvailability(true);
+						break;
+					}
+				}
+			});
+		}
+	}
+
+	protected synchronized void handleDatabaseAvailability(boolean available) {
+		if (available) {
+			startPluginsFrom(restartingPlugins);
+		} else {
+			synchronized (startingPlugins) {
+				for (PluginWrapper wrapper : startingPlugins) {
+					log.info("Restarting plugin {" + wrapper.getPluginId() + "} because of an unavailable database.");
+
+					// TODO stop the pf4j part?
+					restartingPlugins.add(wrapper);
+				}
+				startingPlugins.clear();
+			}
+		}
 	}
 
 	@Override
 	protected void initialize() {
-		// Don't invoke super init here since we need to do this after dagger has injected the dependencies.
+		// Don't invoke super init here since we need to do this after dagger has
+		// injected the dependencies.
 		log.info("PF4J version {} in '{}' mode", getVersion(), getRuntimeMode());
 	}
 
@@ -148,7 +206,81 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	@Override
 	public void startPlugins() {
 		startPluginsFrom(resolvedPlugins);
-		startPluginsFrom(failedPlugins);
+	}
+
+	private void startPluginsFrom(List<PluginWrapper> pluginStorage) {
+		for (PluginWrapper pluginWrapper : pluginStorage) {
+			PluginState pluginState = pluginWrapper.getPluginState();
+			if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
+				try {
+					log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
+					Plugin plugin = pluginWrapper.getPlugin();
+					plugin.start();
+					// Set state for PF4J
+					pluginWrapper.setPluginState(PluginState.STARTED);
+
+					registerMeshPlugin(pluginWrapper.getPluginId());
+				} catch (Throwable e) {
+					log.error("Error while starting plugins " + e.getMessage(), e);
+				}
+			}
+		}
+		if (pluginStorage == restartingPlugins) {
+			pluginStorage.clear();
+		}
+	}
+
+	/**
+	 * Start the specified plugin and its dependencies.
+	 */
+	@Override
+	public PluginState startPlugin(String pluginId) {
+		if (!plugins.containsKey(pluginId)) {
+			throw new IllegalArgumentException(String.format("Unknown pluginId %s", pluginId));
+		}
+
+		PluginWrapper pluginWrapper = getPlugin(pluginId);
+		PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
+		PluginState pluginState = pluginWrapper.getPluginState();
+		if (PluginState.STARTED == pluginState) {
+			log.debug("Already started plugin '{}'", getPluginLabel(pluginDescriptor));
+			return PluginState.STARTED;
+		}
+
+		if (!resolvedPlugins.contains(pluginWrapper)) {
+			log.warn("Cannot start an unresolved plugin '{}'", getPluginLabel(pluginDescriptor));
+			return pluginState;
+		}
+
+		// TODO Are we allowed to enable plugins by ourselves?
+		// Enabling non-Mesh plugins left for backwards compatibility.
+		if (PluginState.DISABLED == pluginState) {
+			if (pluginWrapper.getPlugin() instanceof MeshPlugin) {
+				log.warn("Cannot start a disabled Mesh plugin '{}'", getPluginLabel(pluginDescriptor));
+				return pluginState;
+			} else {
+				// automatically enable plugin on manual plugin start
+				if (!enablePlugin(pluginId)) {
+					return pluginState;
+				}
+			}
+		}
+
+		for (PluginDependency dependency : pluginDescriptor.getDependencies()) {
+			startPlugin(dependency.getPluginId());
+		}
+
+		log.info("Start plugin '{}'", getPluginLabel(pluginDescriptor));
+		pluginWrapper.getPlugin().start();
+		pluginWrapper.setPluginState(PluginState.STARTED);
+
+		// MeshPlugins have to be registered before setting as Started
+		if (!(pluginWrapper.getPlugin() instanceof MeshPlugin)) {
+			startedPlugins.add(pluginWrapper);
+			firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
+		}
+
+		return pluginWrapper.getPluginState();
 	}
 
 	@Override
@@ -179,12 +311,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 		}
 		if (id == null) {
-			log.warn("The plugin was not registered after deployment. Maybe the initialisation failed. Going to unload the plugin.");
+			log.warn(
+					"The plugin was not registered after deployment. Maybe the initialisation failed. Going to unload the plugin.");
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register", name);
 		}
 		setStatus(id, LOADED);
 
-		// 3. Invoke the loading of the plugin class
+		// 3. Invoke the validation of the plugin class
 		try {
 			PluginWrapper plugin = getPlugin(id);
 			if (plugin == null || plugin.getPlugin() == null) {
@@ -218,14 +351,9 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name);
 		}
 
-		// 5. Register the plugin
+		// 5. Pre-Register the plugin
 		try {
-			PluginWrapper wrapper = getPlugin(id);
-			Plugin plugin = wrapper.getPlugin();
-			if (plugin instanceof MeshPlugin) {
-				MeshPlugin meshPlugin = (MeshPlugin) plugin;
-				pluginRegistry.preRegister(meshPlugin);
-			}
+			registerMeshPlugin(id);
 		} catch (Throwable e) {
 			log.error("Plugin registration failed with error", e);
 			rollback(id);
@@ -233,6 +361,24 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		}
 
 		return Single.just(id);
+	}
+
+	private void registerMeshPlugin(String id) {
+		PluginWrapper wrapper = getPlugin(id);
+		Plugin plugin = wrapper.getPlugin();
+
+		if (plugin instanceof MeshPlugin) {
+			startingPlugins.add(wrapper);
+
+			PluginState oldState = wrapper.getPluginState();
+
+			MeshPlugin meshPlugin = (MeshPlugin) plugin;
+			pluginRegistry.preRegister(meshPlugin);
+
+			startingPlugins.remove(wrapper);
+			startedPlugins.add(wrapper);
+			firePluginStateEvent(new PluginStateEvent(this, wrapper, oldState));
+		}
 	}
 
 	private void removePlugin(String id) {
@@ -244,8 +390,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	 * Try to unload the plugin with the id.
 	 * 
 	 * @param id
-	 * @param true
-	 *            if the plugin was unloaded - Otherwise false
+	 * @param true if the plugin was unloaded - Otherwise false
 	 */
 	private boolean rollback(String id) {
 		try {
@@ -318,7 +463,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			if (plugin instanceof MeshPlugin) {
 				MeshPlugin meshPlugin = (MeshPlugin) plugin;
 				try {
-					withTimeout(meshPlugin.id(), "shtdown", pluginRegistry.deregister((MeshPlugin) plugin).andThen(meshPlugin.shutdown()));
+					withTimeout(meshPlugin.id(), "shtdown",
+							pluginRegistry.deregister((MeshPlugin) plugin).andThen(meshPlugin.shutdown()));
 				} catch (Exception e) {
 					log.error("Shutdown call of plugin {" + meshPlugin.id() + "} failed. Unloading anyway.", e);
 				}
@@ -339,7 +485,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		String pluginClassName = clazz.getName();
 		log.debug("Class '{}' for plugin", pluginClassName);
 
-		PluginClassLoader pluginClassLoader = new PluginClassLoader(this, pluginDescriptor, getClass().getClassLoader());
+		PluginClassLoader pluginClassLoader = new PluginClassLoader(this, pluginDescriptor,
+				getClass().getClassLoader());
 
 		// create the plugin wrapper
 		log.debug("Creating wrapper for plugin '{}'", pluginClassName);
@@ -401,7 +548,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				if (wrapper == null || wrapper.getPlugin() == null) {
 					log.error("The plugin {" + name + "/" + id + "} could not be loaded.");
 					removePlugin(id);
-					return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name).ignoreElement();
+					return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name)
+							.ignoreElement();
 				}
 				validate(wrapper.getPlugin());
 				setStatus(id, VALIDATED);
@@ -421,7 +569,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			} catch (Throwable e) {
 				log.error("Error while starting plugin", e);
 				rollback(id);
-				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name).ignoreElement();
+				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name)
+						.ignoreElement();
 			}
 
 			// 4. Register plugin
@@ -465,7 +614,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		} catch (Throwable t) {
 			if (t instanceof TimeoutException) {
 				log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
-					+ "} seconds. Unloading plugin.");
+						+ "} seconds. Unloading plugin.");
 				throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_timeout", id);
 			}
 			throw t;
@@ -500,11 +649,9 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	/**
 	 * Load a plugin from disk. If the path is a zip file, first unpack.
 	 *
-	 * @param pluginPath
-	 *            plugin location on disk
+	 * @param pluginPath plugin location on disk
 	 * @return PluginWrapper for the loaded plugin or null if not loaded
-	 * @throws PluginRuntimeException
-	 *             if problems during load
+	 * @throws PluginRuntimeException if problems during load
 	 */
 	@Override
 	protected PluginWrapper loadPluginFromPath(Path pluginPath) {
@@ -556,14 +703,12 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	@Override
 	protected PluginRepository createPluginRepository() {
-		return new CompoundPluginRepository()
-			.add(new JarPluginRepository(getPluginsRoot()), this::isNotDevelopment);
+		return new CompoundPluginRepository().add(new JarPluginRepository(getPluginsRoot()), this::isNotDevelopment);
 	}
 
 	@Override
 	protected PluginLoader createPluginLoader() {
-		return new CompoundPluginLoader()
-			.add(new JarPluginLoader(this), this::isNotDevelopment);
+		return new CompoundPluginLoader().add(new JarPluginLoader(this), this::isNotDevelopment);
 	}
 
 	@Override
@@ -574,66 +719,4 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		return response;
 	}
 
-	protected void startPluginsFrom(List<PluginWrapper> source) {
-		List<PluginWrapper> sourceCopy;
-		
-		if (source == failedPlugins) {
-			sourceCopy = new ArrayList<>(source);
-		} else {
-			sourceCopy = source;
-		}
-		
-		for (PluginWrapper pluginWrapper : sourceCopy) {
-			PluginState pluginState = pluginWrapper.getPluginState();
-			if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
-				try {
-					Plugin plugin = pluginWrapper.getPlugin();
-
-					plugin.start();
-					// Set state for PF4J
-					pluginWrapper.setPluginState(PluginState.STARTED);
-					if (plugin instanceof MeshPlugin) {
-						// Set status for Mesh
-						MeshPlugin meshPlugin = (MeshPlugin) plugin;
-
-						//if (plugin.isUsingRestClient()) {
-							database.blockingTopologyLockCheck();
-						//}
-
-						pluginRegistry.preRegister(meshPlugin);
-
-						// If the plugin has failed to init once - 1st fail case.
-						if (getStatus(meshPlugin.id()) == PluginStatus.FAILED) {
-							if (source != failedPlugins) {
-								// Plugin failed for the first time - give it another try
-								pluginWrapper.setPluginState(PluginState.RESOLVED);
-								setStatus(meshPlugin.id(), PluginStatus.LOADED);
-								throw new IllegalStateException("Plugin " + meshPlugin.id() + " failed to initialize once!");
-							}
-						} else {
-							setStatus(meshPlugin.id(), PluginStatus.STARTED);
-						}
-					}
-					startedPlugins.add(pluginWrapper);
-					
-					if (source == failedPlugins) {
-						source.remove(pluginWrapper);
-					}
-					
-					firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
-				} catch (Throwable e) {
-					if (source == failedPlugins) {
-						log.error("Error while starting plugin {" + pluginWrapper.getPluginId() + "}: " + e.getMessage(), e);
-					} else {
-						// If the plugin has thrown an exception without setting the FAILED status - 2nd fail case.
-						log.warn("First error while starting plugin {" + pluginWrapper.getPluginId() + "}: " + e.getMessage() + ", giving a retry...", e);
-						failedPlugins.add(pluginWrapper);
-						pluginWrapper.getPlugin().stop();
-					}
-				}
-			} else {
-				log.info("Skipping plugin '{}' due to the state {}", getPluginLabel(pluginWrapper.getDescriptor()), pluginState);
-			}
-		}
-	}
 }

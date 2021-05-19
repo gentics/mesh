@@ -113,14 +113,16 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		}
 		databaseStatusMap.put(nodeName, iNewStatus);
 		log.info("Node {" + nodeName + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
+		boolean isMe = "storage".equals(iDatabaseName) && nodeName.equals(manager.getNodeName());
 		if (isVertxReady()) {
 			JsonObject statusInfo = new JsonObject();
 			statusInfo.put("node", nodeName);
 			statusInfo.put("database", iDatabaseName);
 			statusInfo.put("status", iNewStatus.name());
+			statusInfo.put("isMe", isMe);
 			getEventBus().publish(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
 		}
-		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && nodeName.equals(manager.getNodeName())) {
+		if (isMe && iNewStatus == DB_STATUS.ONLINE) {
 			nodeJoinLatch.countDown();
 		}
 	}
