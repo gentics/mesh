@@ -319,8 +319,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 		}
 		if (id == null) {
-			log.warn(
-					"The plugin was not registered after deployment. Maybe the initialisation failed. Going to unload the plugin.");
+			log.warn("The plugin was not registered after deployment. Maybe the initialisation failed. Going to unload the plugin.");
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register", name);
 		}
 		setStatus(id, LOADED);
@@ -359,7 +358,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name);
 		}
 
-		// 5. Pre-Register the plugin
+		// 5. Register the plugin
 		try {
 			registerMeshPlugin(id);
 		} catch (Throwable e) {
