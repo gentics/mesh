@@ -20,6 +20,10 @@ import io.reactivex.Single;
  * The plugin manager can be used to deploy plugins and register them in Gentics Mesh.
  */
 public interface MeshPluginManager {
+	/**
+	 * Initialize the internals after Vert.x is up.
+	 */
+	default void init() {}
 
 	/**
 	 * Initialize the plugin manager.

@@ -117,7 +117,6 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	protected void delayedInitialize() {
 		super.initialize();
-		registerEventListeners();
 	}
 
 	protected void registerEventListeners() {
@@ -145,6 +144,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					}
 				}
 			});
+			log.info("Distributed DB status event listener registered.");
 		}
 	}
 
@@ -165,6 +165,11 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				startingPlugins.clear();
 			}
 		}
+	}
+	
+	@Override
+	public void init() {
+		registerEventListeners();
 	}
 
 	@Override
