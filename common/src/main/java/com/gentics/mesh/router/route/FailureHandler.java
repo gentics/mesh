@@ -140,7 +140,15 @@ public class FailureHandler implements Handler<RoutingContext> {
 			default:
 				log.error("Error for request in path: " + toPath(rc));
 				if (failure != null) {
-					log.error("Error:", failure);
+					boolean logStackTrace = true;
+					if (failure instanceof AbstractRestException) {
+						logStackTrace = ((AbstractRestException) failure).isLogStackTrace();
+					}
+					if (logStackTrace) {
+						log.error("Error:", failure);
+					} else {
+						log.error("Error: {}", failure.toString());
+					}
 				}
 			}
 

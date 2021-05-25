@@ -55,6 +55,12 @@ public class APIRouter {
 	private void initHandlers(RouterStorage storage) {
 		// Add the coordinator delegator handler
 		ClusterOptions clusterOptions = options.getClusterOptions();
+
+		// add topology readonly handler
+		if (clusterOptions.isEnabled() && clusterOptions.isTopologyChangeReadOnly()) {
+			router.route().handler(root.getStorage().getTopologyChangeReadonlyHandler());
+		}
+
 		if (clusterOptions.isEnabled() && clusterOptions.getCoordinatorMode() != CoordinatorMode.DISABLED) {
 			router.route().handler(root.getStorage().getDelegator());
 		}

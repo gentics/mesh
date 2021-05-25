@@ -23,6 +23,7 @@ public class ClusterOptions implements Option {
 	public static final int DEFAULT_VERTX_PORT = 4848;
 	public static final long DEFAULT_TOPOLOGY_LOCK_TIMEOUT = 0;
 	public static final long DEFAULT_TOPOLOGY_LOCK_DELAY = 20_000; // 20 seconds
+	public static final boolean DEFAULT_TOPOLOGY_CHANGE_READONLY = DISABLED;
 
 	public static final String MESH_CLUSTER_NETWORK_HOST_ENV = "MESH_CLUSTER_NETWORK_HOST";
 	public static final String MESH_CLUSTER_ENABLED_ENV = "MESH_CLUSTER_ENABLED";
@@ -33,6 +34,7 @@ public class ClusterOptions implements Option {
 	public static final String MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT_ENV = "MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT";
 	public static final String MESH_CLUSTER_TOPOLOGY_LOCK_DELAY_ENV = "MESH_CLUSTER_TOPOLOGY_LOCK_DELAY";
 	public static final String MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV = "MESH_CLUSTER_COORDINATOR_TOPOLOGY";
+	public static final String MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY_ENV = "MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
@@ -84,6 +86,11 @@ public class ClusterOptions implements Option {
 	@JsonPropertyDescription("The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.")
 	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV, description = "Override the cluster coordinator topology management mode.")
 	private CoordinationTopology coordinatorTopology = CoordinationTopology.UNMANAGED;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag to enable or disable setting the cluster in readonly mode, when the topology changes.")
+	@EnvironmentVariable(name = MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY_ENV, description = "Override the topology change readonly flag.")
+	private boolean topologyChangeReadOnly = DEFAULT_TOPOLOGY_CHANGE_READONLY;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -163,6 +170,24 @@ public class ClusterOptions implements Option {
 
 	public ClusterOptions setTopologyLockDelay(long topologyLockDelay) {
 		this.topologyLockDelay = topologyLockDelay;
+		return this;
+	}
+
+	/**
+	 * Set the topology change readonly flag
+	 * @return flag value
+	 */
+	public boolean isTopologyChangeReadOnly() {
+		return topologyChangeReadOnly;
+	}
+
+	/**
+	 * Get the topology change readonly flag
+	 * @param topologyChangeReadOnly flag
+	 * @return fluent API
+	 */
+	public ClusterOptions setTopologyChangeReadOnly(boolean topologyChangeReadOnly) {
+		this.topologyChangeReadOnly = topologyChangeReadOnly;
 		return this;
 	}
 
