@@ -142,6 +142,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				if (failure != null) {
 					boolean logStackTrace = true;
 					if (failure instanceof AbstractRestException) {
+						// AbstractRestExceptions may suppress logging of the stack trace
 						logStackTrace = ((AbstractRestException) failure).isLogStackTrace();
 					}
 					if (logStackTrace) {

@@ -176,6 +176,10 @@ public class RouterStorage {
 		return delegator;
 	}
 
+	/**
+	 * Get the topology change read-only handler
+	 * @return handler
+	 */
 	public TopologyChangeReadonlyHandler getTopologyChangeReadonlyHandler() {
 		return topologyChangeReadonlyHandler;
 	}

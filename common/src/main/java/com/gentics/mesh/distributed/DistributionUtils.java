@@ -9,6 +9,9 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utility methods for distributed computing
+ */
 public class DistributionUtils {
 	private static final Logger log = LoggerFactory.getLogger(DistributionUtils.class);
 
@@ -41,6 +44,11 @@ public class DistributionUtils {
 		}
 	}
 
+	/**
+	 * Check whether the given path matches one of the known read-only paths.
+	 * @param path path
+	 * @return true if the request to the given path is considered read-only
+	 */
 	public static boolean isReadOnly(String path) {
 		for (Pattern pattern : readOnlyPathPatternSet) {
 			Matcher m = pattern.matcher(path);
@@ -51,6 +59,10 @@ public class DistributionUtils {
 		return false;
 	}
 
+	/**
+	 * Create the set of read-only patterns
+	 * @return pattern set
+	 */
 	private static Set<Pattern> createReadOnlyPatternSet() {
 		Set<Pattern> patterns = new HashSet<>();
 		patterns.add(Pattern.compile("/api/v[0-9]+/auth/login/?"));
