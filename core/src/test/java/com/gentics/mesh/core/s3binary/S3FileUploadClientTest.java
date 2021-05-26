@@ -1,18 +1,22 @@
 package com.gentics.mesh.core.s3binary;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Optional;
+
+import org.junit.Test;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Optional;
 
 public class S3FileUploadClientTest {
 
@@ -61,14 +65,14 @@ public class S3FileUploadClientTest {
 			nodeCreateRequest.setParentNodeUuid(project.getRootNode().getUuid());
 			NodeResponse binaryNode = client.createNode(PROJECT_NAME, nodeCreateRequest).blockingGet();
 			PublishStatusResponse publishStatusResponse = client.publishNode(PROJECT_NAME, binaryNode.getUuid()).blockingGet();
+
+			assertTrue(publishStatusResponse.getAvailableLanguages().size() > 0);
 			// 6. Upload to binary field
 			String nodeUuid = binaryNode.getUuid();
-			String body = "{\n" +
-					"\t\"language\":\"en\",\n" +
-					"\t\"version\":\"1.0\",\n" +
-					"\t\"filename\":\"img2.jpg\"\n" +
-					"}";
-			client.updateNodeS3BinaryField(PROJECT_NAME, nodeUuid, "en", body)
+
+			S3BinaryUploadRequest request = new S3BinaryUploadRequest().setFilename(filename).setLanguage("en").setVersion("1.0");
+
+			client.updateNodeS3BinaryField(PROJECT_NAME, nodeUuid, "en", request)
 					.blockingGet();
 		} catch (Throwable t) {
 			System.out.println("Failure creating node for " + filename);
