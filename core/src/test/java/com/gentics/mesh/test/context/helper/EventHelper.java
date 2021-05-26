@@ -76,7 +76,9 @@ public interface EventHelper extends BaseHelper {
 			}
 		});
 		try {
-			latch.await(timeoutMs, TimeUnit.MILLISECONDS);
+			if (!latch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+				throw new RuntimeException("Timeout while waiting for event");
+			}
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
