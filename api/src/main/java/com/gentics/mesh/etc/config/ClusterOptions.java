@@ -200,6 +200,12 @@ public class ClusterOptions implements Option {
 		if (isEnabled()) {
 			Objects.requireNonNull(getClusterName(), "No cluster.clusterName was specified within mesh options.");
 			Objects.requireNonNull(meshOptions.getNodeName(), "No nodeName was specified within mesh options.");
+
+			if (getTopologyLockTimeout() > 0 && isTopologyChangeReadOnly()) {
+				log.warn(
+						"cluster.topologyLockTimeout has been set to {} and cluster.topologyChangeReadOnly to {}. It is recommended to either activate the lock or the read-only mode, but not both.",
+						getTopologyLockTimeout(), isTopologyChangeReadOnly());
+			}
 		}
 	}
 
