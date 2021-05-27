@@ -35,6 +35,11 @@ public enum PluginStatus {
 	/**
 	 * The plugin is in a failed state.
 	 */
-	FAILED;
+	FAILED,
+
+	/**
+	 * The plugin is in a failed state, but will be retried when the storages become available again.
+	 */
+	FAILED_RETRY;
 
 }
