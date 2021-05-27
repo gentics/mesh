@@ -9,6 +9,8 @@ import static com.gentics.mesh.rest.client.impl.Util.lazily;
 
 import java.util.function.Supplier;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
@@ -37,12 +39,8 @@ public class OkHttpWebrootFieldResponse implements MeshWebrootFieldResponse {
 
 	@Override
 	public boolean isBinary() {
-		return "binary".equals(response.header(WEBROOT_RESPONSE_TYPE));
-	}
-
-	@Override
-	public boolean isS3Binary() {
-		return "s3binary".equals(response.header(WEBROOT_RESPONSE_TYPE));
+		String webResponseTypeHeader = response.header(WEBROOT_RESPONSE_TYPE);
+		return "binary".equals(webResponseTypeHeader) || StringUtils.isBlank(webResponseTypeHeader);
 	}
 
 	@Override

@@ -9,6 +9,8 @@ import okhttp3.Response;
 
 import java.util.function.Supplier;
 
+import org.apache.commons.lang.StringUtils;
+
 import static com.gentics.mesh.http.MeshHeaders.WEBROOT_RESPONSE_TYPE;
 import static com.gentics.mesh.http.MeshHeaders.WEBROOT_NODE_UUID;
 import static com.gentics.mesh.rest.client.impl.Util.lazily;
@@ -33,7 +35,8 @@ public class OkHttpWebrootResponse implements MeshWebrootResponse {
 
 	@Override
 	public boolean isBinary() {
-		return "binary".equals(response.header(WEBROOT_RESPONSE_TYPE));
+		String webResponseTypeHeader = response.header(WEBROOT_RESPONSE_TYPE);
+		return "binary".equals(webResponseTypeHeader) || StringUtils.isBlank(webResponseTypeHeader);
 	}
 
 	@Override

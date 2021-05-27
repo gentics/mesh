@@ -30,7 +30,7 @@ public class S3BinaryImpl extends MeshVertexImpl implements S3Binary {
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(S3BinaryImpl.class, MeshVertexImpl.class);
 		index.createIndex(vertexIndex(S3BinaryImpl.class)
-			.withField(S3Binary.SHA512SUM_KEY, FieldType.STRING)
+			.withField(S3Binary.S3_AWS_OBJECT_KEY, FieldType.STRING)
 			.unique());
 	}
 

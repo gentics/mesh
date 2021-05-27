@@ -586,7 +586,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @throws IOException
 	 */
 	default public void prepareSchema(HibNode node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
-		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
+		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"), true);
 	}
 	
 	/**
@@ -596,11 +596,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @param fieldSchema filled field
 	 * @throws IOException
 	 */
-	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema) throws IOException {
+	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(fieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		mesh().serverSchemaStorage().clear();
+		if (setAsSegmentField) {
+			schema.setSegmentField(fieldSchema.getName());
+		}
+ 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		// mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
 	}
 

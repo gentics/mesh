@@ -194,6 +194,9 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         // 2. Download the data using the REST API
         MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, s3binaryNode.getUuid(), "en", "s3",
                 new ImageManipulationParametersImpl().setWidth(100)));
+
+        assertNotNull(response);
+
         try {
             byte[] downloadBytes = IOUtils.toByteArray(response.getStream());
             InputStream in = new ByteArrayInputStream(downloadBytes);
@@ -201,9 +204,8 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
         } catch (IOException ioException) {
             fail();
         }
-        assertEquals(100, buf.getWidth());
-        assertNotNull(response);
         assertEquals("image/jpeg", response.getContentType());
+        assertEquals(100, buf.getWidth());
         response.close();
     }
 

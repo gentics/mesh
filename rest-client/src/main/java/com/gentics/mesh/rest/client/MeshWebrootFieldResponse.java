@@ -16,13 +16,6 @@ public interface MeshWebrootFieldResponse {
 	boolean isBinary();
 
 	/**
-	 * Tests if the response is s3 binary data.
-	 *
-	 * @return
-	 */
-	boolean isS3Binary();
-
-	/**
 	 * Tests if the response is redirected(302)
 	 *
 	 * @return

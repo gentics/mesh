@@ -290,10 +290,10 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 			S3HibBinary s3binaryA = getS3Binary();
 			S3HibBinary s3binaryB = s3binaryField.getS3Binary();
 
-			String hashSumA = s3binaryA != null ? s3binaryA.getSHA512Sum() : null;
-			String hashSumB = s3binaryB != null ? s3binaryB.getSHA512Sum() : null;
-			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
-			return filename && mimetype && sha512sum;
+			String s3ObjectKeyA = s3binaryA != null ? s3binaryA.getS3ObjectKey() : null;
+			String s3ObjectKeyB = s3binaryB != null ? s3binaryB.getS3ObjectKey() : null;
+			boolean s3ObjectKey = Objects.equals(s3ObjectKeyA, s3ObjectKeyB);
+			return filename && mimetype && s3ObjectKey;
 		}
 		if (obj instanceof S3BinaryField) {
 			S3BinaryField s3binaryField = (S3BinaryField) obj;
@@ -334,9 +334,9 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 			}
 
 			boolean matchingSha512sum = true;
-			if (s3binaryField.getSha512sum() != null) {
-				String hashSumA = getS3Binary() != null ? getS3Binary().getSHA512Sum() : null;
-				String hashSumB = s3binaryField.getSha512sum();
+			if (s3binaryField.getS3ObjectKey() != null) {
+				String hashSumA = getS3Binary() != null ? getS3Binary().getS3ObjectKey() : null;
+				String hashSumB = s3binaryField.getS3ObjectKey();
 				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
 			}
 

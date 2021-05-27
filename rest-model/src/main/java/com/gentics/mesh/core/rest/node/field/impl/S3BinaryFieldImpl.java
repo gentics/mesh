@@ -36,10 +36,6 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     private Integer height;
 
     @JsonProperty(required = false)
-    @JsonPropertyDescription("SHA 512 checksum of the file.")
-    private String sha512sum;
-
-    @JsonProperty(required = false)
     @JsonPropertyDescription("Size of the file in bytes.")
     private Long fileSize;
 
@@ -134,17 +130,6 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     }
 
     @Override
-    public String getSha512sum() {
-        return sha512sum;
-    }
-
-    @Override
-    public S3BinaryField setSha512sum(String sha512sum) {
-        this.sha512sum = sha512sum;
-        return this;
-    }
-
-    @Override
     public String getFileName() {
         return fileName;
     }
@@ -202,6 +187,6 @@ public class S3BinaryFieldImpl implements S3BinaryField {
     @Override
     @JsonIgnore
     public boolean hasValues() {
-        return getS3ObjectKey() != null || getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null || getSha512sum() != null;
+        return getS3ObjectKey() != null || getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null || getS3ObjectKey() != null;
     }
 }

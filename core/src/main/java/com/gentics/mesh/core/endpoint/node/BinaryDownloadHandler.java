@@ -84,7 +84,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 				if (field == null) {
 					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
 				}
-				s3binaryFieldResponseHandler.handle(rc, field);
+				s3binaryFieldResponseHandler.handle(rc, node, field);
 			} else {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
