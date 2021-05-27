@@ -17,6 +17,12 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.6.1]]
+== 1.6.6.1 (02.06.2021)
+
+icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
+status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
+
 [[v1.6.6]]
 == 1.6.6 (11.11.2020)
 
