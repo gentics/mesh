@@ -12,6 +12,7 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
@@ -69,12 +70,14 @@ public class RouterStorage {
 
 	private final RequestDelegator delegator;
 
+	private final TopologyChangeReadonlyHandler topologyChangeReadonlyHandler;
+
 	@Inject
 	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandler versionHandler,
 		RouterStorageRegistry routerStorageRegistry,
-		RequestDelegator delegator) {
+		RequestDelegator delegator, TopologyChangeReadonlyHandler topologyChangeReadonlyHandler) {
 		this.vertx = vertx;
 		this.options = options;
 		this.boot = boot;
@@ -85,6 +88,7 @@ public class RouterStorage {
 		this.versionHandler = versionHandler;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.delegator = delegator;
+		this.topologyChangeReadonlyHandler = topologyChangeReadonlyHandler;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
 		rootRouter = new RootRouter(vertx, this, options);
@@ -172,4 +176,11 @@ public class RouterStorage {
 		return delegator;
 	}
 
+	/**
+	 * Get the topology change read-only handler
+	 * @return handler
+	 */
+	public TopologyChangeReadonlyHandler getTopologyChangeReadonlyHandler() {
+		return topologyChangeReadonlyHandler;
+	}
 }

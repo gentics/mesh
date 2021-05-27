@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.distributed.DistributionUtils;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
@@ -37,7 +38,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 	private final HttpClient httpClient;
 	private final MeshOptions options;
 
-	private static final Set<Pattern> readOnlyPathPatternSet = createReadOnlyPatternSet();
 	private static final Set<Pattern> whiteListPathPatternSet = createWhitelistPatternSet();
 
 	@Inject
@@ -90,7 +90,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 		// In CUD mode we only delegate mutating requests to the master
 		if (mode == CoordinatorMode.CUD) {
-			if (isReadRequest(method, path)) {
+			if (DistributionUtils.isReadRequest(method, path)) {
 				rc.next();
 				return;
 			}
@@ -217,45 +217,8 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 	}
 
-	/**
-	 * Check whether the request is a read request.
-	 * 
-	 * @param method
-	 * @param path
-	 * @return
-	 */
-	private boolean isReadRequest(HttpMethod method, String path) {
-		switch (method) {
-		case CONNECT:
-		case OPTIONS:
-		case GET:
-			return true;
-		case DELETE:
-		case PATCH:
-		case PUT:
-			return false;
-		case POST:
-			// Lets check whether the request is actually a read request.
-			// In this case we don't need to delegate it.
-			return isReadOnly(path);
-		default:
-			log.debug("Unhandled methd {" + method + "} in path {" + path + "}");
-			return false;
-		}
-	}
-
 	public static boolean isWhitelisted(String path) {
 		for (Pattern pattern : whiteListPathPatternSet) {
-			Matcher m = pattern.matcher(path);
-			if (m.matches()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean isReadOnly(String path) {
-		for (Pattern pattern : readOnlyPathPatternSet) {
 			Matcher m = pattern.matcher(path);
 			if (m.matches()) {
 				return true;
@@ -270,20 +233,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		patterns.add(Pattern.compile("/api/v[0-9]+/admin/.*"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/health/live/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/health/ready/?"));
-		return patterns;
-	}
-
-	private static Set<Pattern> createReadOnlyPatternSet() {
-		Set<Pattern> patterns = new HashSet<>();
-		patterns.add(Pattern.compile("/api/v[0-9]+/auth/login/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]+/.*/graphql/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]+/search/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]+/rawSearch/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]+/.*/search/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]+/.*/rawSearch/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/linkResolver/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateSchema/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateMicroschema/?"));
 		return patterns;
 	}
 
