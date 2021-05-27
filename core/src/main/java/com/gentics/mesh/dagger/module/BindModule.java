@@ -25,10 +25,14 @@ import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
+import com.gentics.mesh.distributed.TopologyChangeReadonlyHandlerImpl;
 import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.cluster.ClusterManager;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
@@ -121,4 +125,10 @@ public abstract class BindModule {
 
 	@Binds
 	abstract BucketManager bindBucketManager(BucketManagerImpl e);
+
+	@Binds
+	abstract TopologyChangeReadonlyHandler bindTopologyChangeReadonlyHandler(TopologyChangeReadonlyHandlerImpl e);
+
+	@Binds
+	abstract ClusterManager bindClusterManager(OrientDBClusterManager e);
 }
