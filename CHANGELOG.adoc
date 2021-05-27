@@ -23,6 +23,15 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.10]]
+== 1.7.10 (02.06.2021)
+
+icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` environment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
+when the cluster topology changes, which will let reading requests pass and writing requests fail (immediately), instead of blocking all requests, which happens when the `cluster.topologyLockTimeout` is set to a positive value.
+
+icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
+status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
+
 [[v1.7.9]]
 == 1.7.9 (12.05.2021)
 
