@@ -11,12 +11,15 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import javax.jws.soap.SOAPBinding.Use;
+
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.plugin.BackupPlugin;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.context.ClientHandler;
@@ -49,17 +52,39 @@ public interface EventHelper extends BaseHelper {
 	 * 
 	 * @param address
 	 * @param code
-	 * @throws TimeoutException
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
 	 */
 	default void waitForEvent(String address, Action code) {
 		waitForEvent(address, code, 10_000);
 	}
 
+	/**
+	 * Wait until the given event has been received.
+	 * 
+	 * @param event
+	 * @param timeoutMs
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
+	 */
 	default void waitForEvent(MeshEvent event, int timeoutMs) {
 		waitForEvent(event.getAddress(), () -> {
 		}, timeoutMs);
 	}
 
+	/**
+	 * Wait for the event to be fired. Because this method has to first add the event handler
+	 * (which is done after the code, which will fire the event has been executed)
+	 * it may be, that the expected event has already been fired. In this case
+	 * (or when the event is never fired), this method will wait for the timeout and then succeed.<br>
+	 * It is therefore recommended to refactor all tests, which currently use this method to use {@link #expectEvent(String, Action, int)}
+	 * instead.
+	 * 
+	 * @param address event address
+	 * @param code code that is executed when the event has been fired
+	 * @param timeoutMs timeout in milliseconds
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 */
 	default void waitForEvent(String address, Action code, int timeoutMs) {
 		CountDownLatch latch = new CountDownLatch(1);
 		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
@@ -81,6 +106,36 @@ public interface EventHelper extends BaseHelper {
 			throw new RuntimeException(e);
 		}
 		consumer.unregister();
+	}
+
+	/**
+	 * Variant of {@link #expectEvent(String, Action, int)}
+	 * @param event mesh event
+	 * @param timeoutMs timeout in milliseconds
+	 * @return AutoClosable instance
+	 */
+	default ExpectedEvent expectEvent(MeshEvent event, int timeoutMs) {
+		return expectEvent(event.getAddress(), () -> {
+		}, timeoutMs);
+	}
+
+	/**
+	 * Create an {@link AutoCloseable} which will register an event handler for the event with given address (when created) and
+	 * will wait for the event to be fired (at least once) in {@link AutoCloseable#close()}.<br>
+	 * This method should be used like this:
+	 * <blockquote><pre>
+	 * try (ExpectEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+	 * 	// code, which is expected to fire the event
+	 * 	...
+	 * }
+	 * </pre></blockquote>
+	 * @param address event address
+	 * @param code action code, which is executed when the event was fired
+	 * @param timeoutMs timeout in milliseconds
+	 * @return AutoClosable instance
+	 */
+	default ExpectedEvent expectEvent(String address, Action code, int timeoutMs) {
+		return new ExpectedEvent(vertx(), address, code, timeoutMs);
 	}
 
 	default void waitForSearchIdleEvent() {
@@ -120,7 +175,8 @@ public interface EventHelper extends BaseHelper {
 	 *
 	 * @param event
 	 * @param code
-	 * @throws TimeoutException
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
 	 */
 	default void waitForEvent(MeshEvent event, Action code) {
 		waitForEvent(event.address, code);
@@ -130,13 +186,18 @@ public interface EventHelper extends BaseHelper {
 	 * Wait until the given event has been received.
 	 *
 	 * @param event
-	 * @throws TimeoutException
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
 	 */
 	default void waitForEvent(MeshEvent event) {
 		waitForEvent(event.address, () -> {
 		});
 	}
 
+	/**
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
+	 */
 	default void waitForPluginRegistration() {
 		waitForEvent(MeshEvent.PLUGIN_REGISTERED, 20_000);
 	}
