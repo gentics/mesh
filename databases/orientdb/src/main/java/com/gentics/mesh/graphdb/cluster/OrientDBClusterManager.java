@@ -504,6 +504,7 @@ public class OrientDBClusterManager implements ClusterManager {
 	 * @see TopologyEventBridge#isClusterTopologyLocked()
 	 * @return
 	 */
+	@Override
 	public boolean isClusterTopologyLocked() {
 		if (topologyEventBridge == null) {
 			return false;
