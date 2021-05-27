@@ -149,17 +149,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		} else {
 			language = languageTags[0];
 		}
-		NodeGraphFieldContainer graphFieldContainer = node.getGraphFieldContainer(language);
-		// check if there is a S3 field in this node.
-		List<FieldSchema> fields = graphFieldContainer.getSchemaContainerVersion().getSchema().getFields();
-		Optional<FieldSchema> s3binaryFieldSchema = fields.stream().filter(x -> x instanceof S3BinaryFieldSchema).findAny();
-		String linkResolver = options.getS3Options().getLinkResolver();
-		//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
-		if (s3binaryFieldSchema.isPresent() && (isNull(linkResolver) || linkResolver.equals("s3"))) {
-			String fieldName = s3binaryFieldSchema.get().getName();
-			S3HibBinary s3Binary = graphFieldContainer.getS3Binary(fieldName).getS3Binary();
-			return s3BinaryStorage.createDownloadPresignedUrl(options.getS3Options().getBucket(), s3Binary.getS3ObjectKey(), false).blockingGet().getPresignedUrl();
-		}
+
 		// check for null
 		if (node == null) {
 			if (log.isDebugEnabled()) {
@@ -174,6 +164,18 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 				return VersionHandlerImpl.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
+			}
+		} else {
+			NodeGraphFieldContainer graphFieldContainer = node.getGraphFieldContainer(language);
+			// check if there is a S3 field in this node.
+			List<FieldSchema> fields = graphFieldContainer.getSchemaContainerVersion().getSchema().getFields();
+			Optional<FieldSchema> s3binaryFieldSchema = fields.stream().filter(x -> x instanceof S3BinaryFieldSchema).findAny();
+			String linkResolver = options.getS3Options().getLinkResolver();
+			//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
+			if (s3binaryFieldSchema.isPresent() && (isNull(linkResolver) || linkResolver.equals("s3"))) {
+				String fieldName = s3binaryFieldSchema.get().getName();
+				S3HibBinary s3Binary = graphFieldContainer.getS3Binary(fieldName).getS3Binary();
+				return s3BinaryStorage.createDownloadPresignedUrl(options.getS3Options().getBucket(), s3Binary.getS3ObjectKey(), false).blockingGet().getPresignedUrl();
 			}
 		}
 		return resolve(ac, branch, edgeType, node, type, forceAbsolute, languageTags);
