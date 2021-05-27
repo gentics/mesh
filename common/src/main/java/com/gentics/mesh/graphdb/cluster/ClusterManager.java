@@ -54,4 +54,10 @@ public interface ClusterManager {
 	 */
 	Completable waitUntilWriteQuorumReached();
 
+	/**
+	 * Checks if the cluster storage is locked cluster-wide.
+	 * 
+	 * @return
+	 */
+	boolean isClusterTopologyLocked();
 }
