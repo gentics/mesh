@@ -93,5 +93,9 @@ public abstract class AbstractClusterTest {
 		}
 		return server;
 	}
-
+	
+	protected void login(MeshDockerServer server) {
+		server.client().setLogin("admin", "admin");
+		server.client().login().blockingGet();
+	}
 }
