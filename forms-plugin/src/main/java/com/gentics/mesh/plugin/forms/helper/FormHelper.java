@@ -14,6 +14,7 @@ import io.vertx.core.json.JsonObject;
  */
 public class FormHelper {
 	public final static String SUBTYPE_PARAMETER_NAME = "subtype";
+	public final static String DEFAULT_SUBTYPE_PARAMETER_NAME = "defaultSubtype";
 
 	/**
 	 * Create an instance
@@ -40,11 +41,18 @@ public class FormHelper {
 	 */
 	public CharSequence formsElementTemplate(Object elementType, Options options) {
 		Object elementSubType = options.hash.get(SUBTYPE_PARAMETER_NAME);
+		// to prevent and endless loop if the helper is called with "null" in the subtype parameter
+		// require a default subtype parameter to fallback to
+		// example:
+		//   (formsElementTemplate selectgroup subtype=null defaultSubtype="singleselect")
+		//   ... this will get the template selectgroup_singleselect
+		if (elementSubType == null) {
+			elementSubType = options.hash.get(DEFAULT_SUBTYPE_PARAMETER_NAME);
+		}
 		if (elementSubType != null) {
 			return String.format("elements/%s_%s", elementType, elementSubType);	
-		} else {
-			return String.format("elements/%s", elementType);
 		}
+		return String.format("elements/%s", elementType);
 	}
 
 	/**
