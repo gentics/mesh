@@ -25,6 +25,7 @@ public class GraphStorageOptions implements Option {
 	public static final int DEFAULT_TX_RETRY_DELAY = 10;
 	public static final int DEFAULT_TX_RETRY_LIMIT = 10;
 	public static final long DEFAULT_TX_COMMIT_TIMEOUT = 0;
+	public static final int DEFAULT_CLUSTER_JOIN_TIMEOUT = 500_000;
 
 	public static final String MESH_GRAPH_DB_DIRECTORY_ENV = "MESH_GRAPH_DB_DIRECTORY";
 	public static final String MESH_GRAPH_BACKUP_DIRECTORY_ENV = "MESH_GRAPH_BACKUP_DIRECTORY";
@@ -35,6 +36,7 @@ public class GraphStorageOptions implements Option {
 	public static final String MESH_GRAPH_TX_RETRY_DELAY_ENV = "MESH_GRAPH_TX_RETRY_DELAY";
 	public static final String MESH_GRAPH_TX_RETRY_LIMIT_ENV = "MESH_GRAPH_TX_RETRY_LIMIT";
 	public static final String MESH_GRAPH_TX_COMMIT_TIMEOUT_ENV = "MESH_GRAPH_TX_COMMIT_TIMEOUT";
+	public static final String MESH_GRAPH_CLUSTER_JOIN_TIMEOUT_ENV = "MESH_GRAPH_CLUSTER_JOIN_TIMEOUT";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
@@ -87,6 +89,11 @@ public class GraphStorageOptions implements Option {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional set of graph database parameters.")
 	private Map<String, String> parameters = new HashMap<>();
+
+	@JsonProperty(defaultValue = DEFAULT_CLUSTER_JOIN_TIMEOUT + " ms")
+	@JsonPropertyDescription("The timeout for joining the graphdb cluster in milliseconds. This also includes the time it takes to synchronize the graphdb over the network.")
+	@EnvironmentVariable(name = MESH_GRAPH_CLUSTER_JOIN_TIMEOUT_ENV, description = "Override the graphdb cluster join timeout. Default: " + DEFAULT_CLUSTER_JOIN_TIMEOUT + " ms")
+	private int clusterJoinTimeout = DEFAULT_CLUSTER_JOIN_TIMEOUT;
 
 	public String getDirectory() {
 		return directory;
@@ -188,6 +195,24 @@ public class GraphStorageOptions implements Option {
 
 	public GraphStorageOptions setTxCommitTimeout(long txCommitTimeout) {
 		this.txCommitTimeout = txCommitTimeout;
+		return this;
+	}
+
+	/**
+	 * Get the cluster join timeout in ms
+	 * @return cluster join timeout
+	 */
+	public int getClusterJoinTimeout() {
+		return clusterJoinTimeout;
+	}
+
+	/**
+	 * Set the cluster join timeout in ms
+	 * @param clusterJoinTimeout timeout in ms
+	 * @return fluent API
+	 */
+	public GraphStorageOptions setClusterJoinTimeout(int clusterJoinTimeout) {
+		this.clusterJoinTimeout = clusterJoinTimeout;
 		return this;
 	}
 
