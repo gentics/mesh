@@ -26,6 +26,8 @@ when the cluster topology changes, which will let reading requests pass and writ
 icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
 status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
 
+icon:plus[] Clustering: The timeout for waiting to join the cluster (which includes the time for synchronizing the graphdb storage), which was hardcoded to 500_000 milliseconds, can now be configured with the setting `storage.clusterJoinTimeout` or the environment variable `MESH_GRAPH_CLUSTER_JOIN_TIMEOUT`.
+
 [[v1.5.11]]
 == 1.5.11 (12.05.2021)
 
@@ -94,7 +96,6 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
-
 [[v1.4.22]]
 == 1.4.22 (02.06.2021)
 
@@ -103,6 +104,8 @@ when the cluster topology changes, which will let reading requests pass and writ
 
 icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
 status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
+
+icon:plus[] Clustering: The timeout for waiting to join the cluster (which includes the time for synchronizing the graphdb storage), which was hardcoded to 500_000 milliseconds, can now be configured with the setting `storage.clusterJoinTimeout` or the environment variable `MESH_GRAPH_CLUSTER_JOIN_TIMEOUT`.
 
 [[v1.4.21]]
 == 1.4.21 (12.05.2021)
