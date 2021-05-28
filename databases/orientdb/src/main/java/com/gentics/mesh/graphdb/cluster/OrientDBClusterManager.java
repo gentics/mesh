@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphdb.cluster;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -452,10 +453,10 @@ public class OrientDBClusterManager implements ClusterManager {
 	 */
 	private void joinCluster() throws InterruptedException {
 		// Wait until another node joined the cluster
-		int timeout = 500;
-		log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
-		if (!topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
-			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} seconds.");
+		int timeout = options.getStorageOptions().getClusterJoinTimeout();
+		log.info("Waiting {" + timeout + "} milliseconds for other nodes in the cluster.");
+		if (!topologyEventBridge.waitForMainGraphDB(timeout, MILLISECONDS)) {
+			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} milliseconds.");
 		}
 	}
 
