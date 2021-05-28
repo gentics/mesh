@@ -13,27 +13,26 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
-import com.gentics.mesh.storage.S3BinaryStorage;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.storage.S3BinaryStorage;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -143,13 +142,6 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		uuid = uuid.trim();
 		Node node = boot.meshRoot().findNodeByUuid(uuid);
 		String language;
-		if (languageTags == null || languageTags.length == 0) {
-			String defaultLanguage = options.getDefaultLanguage();
-			language = defaultLanguage;
-		} else {
-			language = languageTags[0];
-		}
-
 		// check for null
 		if (node == null) {
 			if (log.isDebugEnabled()) {
@@ -166,16 +158,33 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
 		} else {
-			NodeGraphFieldContainer graphFieldContainer = node.getGraphFieldContainer(language);
-			// check if there is a S3 field in this node.
-			List<FieldSchema> fields = graphFieldContainer.getSchemaContainerVersion().getSchema().getFields();
-			Optional<FieldSchema> s3binaryFieldSchema = fields.stream().filter(x -> x instanceof S3BinaryFieldSchema).findAny();
-			String linkResolver = options.getS3Options().getLinkResolver();
-			//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
-			if (s3binaryFieldSchema.isPresent() && (isNull(linkResolver) || linkResolver.equals("s3"))) {
-				String fieldName = s3binaryFieldSchema.get().getName();
-				S3HibBinary s3Binary = graphFieldContainer.getS3Binary(fieldName).getS3Binary();
-				return s3BinaryStorage.createDownloadPresignedUrl(options.getS3Options().getBucket(), s3Binary.getS3ObjectKey(), false).blockingGet().getPresignedUrl();
+			if (languageTags == null || languageTags.length == 0) {
+				String defaultLanguage = options.getDefaultLanguage();
+				language = defaultLanguage;
+			} else {
+				language = languageTags[0];
+			}
+
+			NodeGraphFieldContainer nullableGraphFieldContainer = node.getGraphFieldContainer(language);
+			Optional<NodeGraphFieldContainer> maybeGraphFieldContainer = Optional.ofNullable(nullableGraphFieldContainer);
+
+			Optional<S3HibBinary> maybeBinaryField = maybeGraphFieldContainer
+				.flatMap(graphFieldContainer -> Optional.ofNullable(graphFieldContainer.getSchemaContainerVersion()))
+				.flatMap(schemaContainerVersion -> Optional.ofNullable(schemaContainerVersion.getSchema()))
+				.flatMap(schema -> Optional.ofNullable(schema.getFields()))
+				.flatMap(fields -> fields.stream().filter(x -> x instanceof S3BinaryFieldSchema).findAny())
+				.flatMap(s3binaryFieldSchema -> {
+					String linkResolver = options.getS3Options().getLinkResolver();
+					//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
+					if (isNull(linkResolver) || linkResolver.equals("s3")) {
+						String fieldName = s3binaryFieldSchema.getName();
+						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName).getS3Binary());
+					} else {
+						return Optional.empty();
+					}
+				});
+			if (maybeBinaryField.isPresent()) {
+				return s3BinaryStorage.createDownloadPresignedUrl(options.getS3Options().getBucket(), maybeBinaryField.get().getS3ObjectKey(), false).blockingGet().getPresignedUrl();
 			}
 		}
 		return resolve(ac, branch, edgeType, node, type, forceAbsolute, languageTags);

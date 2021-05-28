@@ -2,8 +2,11 @@ package com.gentics.mesh.linkrenderer;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
@@ -18,18 +21,20 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
-@MeshTestSetting(testSize = FULL, startServer = false)
+@MeshTestSetting(awsContainer = MINIO, testSize = FULL, startServer = false)
 public class LinkRendererTest extends AbstractMeshTest {
 
 	private WebRootLinkReplacer replacer;
@@ -317,6 +322,40 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, meshLink, LinkType.FULL, null,
 					null);
 			assertEquals("Check rendered content", CURRENT_API_BASE_PATH + "/dummy/webroot/News/somefile.dat", replacedContent);
+		}
+	}
+
+	@Test
+	public void testS3BinaryFieldLinkResolving() {
+		String fileName = "somefile.jpg";
+		String s3Bucket = getTestContext().getOptions().getS3Options().getBucket();
+
+		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.contentDao();
+			HibNode node = content("news overview");
+			String uuid = node.getUuid();
+
+			// Transform the node into a node with a S3 binary field.
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(new S3BinaryFieldSchemaImpl().setName("s3binary").setLabel("Binary content"));
+			schema.setSegmentField("s3binary");
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+
+			S3HibBinary binary = tx.s3binaries().create(UUIDUtil.randomUUID(), s3Bucket, fileName).runInExistingTx(tx);
+			contentDao.getLatestDraftFieldContainer(node, english()).createS3Binary("s3binary", binary).setFileName(fileName);
+
+			// uploading
+			File tempFile = createTempFile();
+			s3BinaryStorage().createBucket(s3Bucket)
+					.flatMap(unused -> s3BinaryStorage().uploadFile(s3Bucket, uuid + "/s3binary", tempFile, false))
+					.blockingGet();
+
+			// Render the link
+			final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, meshLink, LinkType.FULL, null,
+					null);
+			assertTrue(replacedContent.matches("https?:\\/\\/[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)\\/" + s3Bucket + "/" + s3Bucket + "\\?X-Amz-Algorithm=[-A-Z0-9]{1,256}&X-Amz-Date=[0-9]{8}T[0-9]{6}Z&X-Amz-SignedHeaders=host&X-Amz-Expires=[0-9]{1,256}&X-Amz-Credential=accessKey%2F[0-9]{8}%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Signature=[a-z0-9]{1,256}"));
 		}
 	}
 
