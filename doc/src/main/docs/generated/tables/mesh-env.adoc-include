@@ -8,6 +8,12 @@
 | *MESH_GRAPH_TX_RETRY_LIMIT*
 | Override the transaction retry limit. Default: 10
 
+| *MESH_GRAPH_CLUSTER_JOIN_TIMEOUT*
+| Override the graphdb cluster join timeout. Default: 500000 ms
+
+| *MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY*
+| Override the topology change readonly flag.
+
 | *MESH_LOCK_PATH*
 | Path to the mesh lock file.
 
