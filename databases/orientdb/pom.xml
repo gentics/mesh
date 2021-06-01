@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-databases</artifactId>
-		<version>1.5.12</version>
+		<version>1.5.13-SNAPSHOT</version>
 	</parent>
 
 	<properties>

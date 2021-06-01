@@ -42,6 +42,7 @@ cluster:
   topologyLockTimeout: 0
   topologyLockDelay: 20000
   coordinatorTopology: "UNMANAGED"
+  topologyChangeReadOnly: false
 storage:
   directory: "data/graphdb"
   backupDirectory: "data/backup"
@@ -53,6 +54,7 @@ storage:
   txRetryLimit: 10
   txCommitTimeout: 0
   parameters: {}
+  clusterJoinTimeout: 500000
 search:
   url: "http://localhost:9200"
   username: null
