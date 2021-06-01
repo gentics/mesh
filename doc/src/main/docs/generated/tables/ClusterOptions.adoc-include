@@ -37,11 +37,6 @@
 | string
 | IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.
 
-| topologyChangeReadOnly
-| false
-| boolean
-| Flag to enable or disable setting the cluster in readonly mode, when the topology changes.
-
 | topologyLockDelay
 | false
 | integer

@@ -64,7 +64,7 @@
       "type" : "string",
       "required" : true,
       "description" : "Status of the plugin",
-      "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED", "FAILED_RETRY" ]
+      "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED" ]
     }
   }
 }
