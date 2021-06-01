@@ -167,6 +167,11 @@
 | coordinationtopology
 | The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.
 
+| clusterOptions.topologyChangeReadOnly
+| false
+| boolean
+| Flag to enable or disable setting the cluster in readonly mode, when the topology changes.
+
 | storageOptions.directory
 | true
 | string
@@ -216,6 +221,11 @@
 | false
 | map
 | Additional set of graph database parameters.
+
+| storageOptions.clusterJoinTimeout
+| false
+| int
+| The timeout for joining the graphdb cluster in milliseconds. This also includes the time it takes to synchronize the graphdb over the network.
 
 | searchOptions.url
 | false

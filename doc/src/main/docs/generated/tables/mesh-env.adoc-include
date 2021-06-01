@@ -8,17 +8,23 @@
 | *MESH_GRAPH_TX_RETRY_LIMIT*
 | Override the transaction retry limit. Default: 10
 
+| *MESH_GRAPH_CLUSTER_JOIN_TIMEOUT*
+| Override the graphdb cluster join timeout. Default: 500000 ms
+
+| *MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY*
+| Override the topology change readonly flag.
+
 | *MESH_LOCK_PATH*
 | Path to the mesh lock file.
 
 | *MESH_PLUGIN_DIR*
 | Override the configured plugin directory.
 
-| *MESH_CLUSTER_COORDINATOR_REGEX*
-| Override the cluster coordinator regex.
-
 | *MESH_HTTP_SSL_CERT_PATH*
 | Override the configured SSL enable flag.
+
+| *MESH_CLUSTER_COORDINATOR_REGEX*
+| Override the cluster coordinator regex.
 
 | *MESH_CONTENT_AUTO_PURGE*
 | Override the content versioning flag
@@ -53,11 +59,11 @@
 | *MESH_CACHE_PATH_SIZE*
 | Override the path cache size.
 
-| *MESH_ELASTICSEARCH_CERT_PATH*
-| Override the configured trusted server certificate.
-
 | *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
 | Override the configured client certificate handling mode.
+
+| *MESH_ELASTICSEARCH_CERT_PATH*
+| Override the configured trusted server certificate.
 
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
@@ -182,11 +188,11 @@
 | *MESH_ELASTICSEARCH_MAPPING_MODE*
 | Override the search mapping mode. 
 
-| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
-| Override the search idle wait flag.
-
 | *MESH_DEBUGINFO_LOG_FOLDER*
 | Override the path to the debug info log folder
+
+| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
+| Override the search idle wait flag.
 
 | *MESH_GRAPH_SYNC_WRITES*
 | Override the graph database sync writes flag.
@@ -206,20 +212,20 @@
 | *MESH_AUTH_PUBLIC_KEYS_PATH*
 | Override the configured public keys file path.
 
-| *MESH_LANGUAGES_FILE_PATH*
-| Override the path to the optional languages file
-
 | *MESH_ELASTICSEARCH_PREFIX*
 | Override the configured elasticsearch prefix.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
-| Override the cluster topology lock delay in ms.
+| *MESH_LANGUAGES_FILE_PATH*
+| Override the path to the optional languages file
 
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
 
 | *MESH_AUTH_KEYSTORE_PASS*
 | Override the configured keystore password.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
+| Override the cluster topology lock delay in ms.
 
 | *MESH_GRAPHQL_SLOW_THRESHOLD*
 | Override the configured slow graphQl query threshold.
@@ -248,11 +254,11 @@
 | *MESH_UPDATECHECK*
 | Override the configured updatecheck flag.
 
-| *MESH_ELASTICSEARCH_START_EMBEDDED*
-| Override the start embedded elasticsearch server flag.
-
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
+
+| *MESH_ELASTICSEARCH_START_EMBEDDED*
+| Override the start embedded elasticsearch server flag.
 
 | *MESH_ELASTICSEARCH_RETRY_INTERVAL*
 | Override the retry interval.
