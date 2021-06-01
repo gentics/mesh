@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.10</version>
+		<version>1.7.11-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-distributed-coordinator</artifactId>
