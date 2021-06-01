@@ -69,6 +69,17 @@ icon:check[] Jobs: A race condition within the job processing mechanism has been
 
 icon:check[] Search: Fixed potential `NullPointerException` that could occur during search index synchronization.
 
+[[v1.6.6.1]]
+== 1.6.6.1 (02.06.2021)
+
+icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` environment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
+when the cluster topology changes, which will let reading requests pass and writing requests fail (immediately), instead of blocking all requests, which happens when the `cluster.topologyLockTimeout` is set to a positive value.
+
+icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
+status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
+
+icon:plus[] Clustering: The timeout for waiting to join the cluster (which includes the time for synchronizing the graphdb storage), which was hardcoded to 500_000 milliseconds, can now be configured with the setting `storage.clusterJoinTimeout` or the environment variable `MESH_GRAPH_CLUSTER_JOIN_TIMEOUT`.
+
 [[v1.6.6]]
 == 1.6.6 (11.11.2020)
 
