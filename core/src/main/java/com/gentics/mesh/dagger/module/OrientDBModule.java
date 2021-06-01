@@ -56,28 +56,12 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.cluster.ClusterManager;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.dagger.OrientDBCoreModule;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.RangeRequestHandler;
-import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
-import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.metric.MetricsServiceImpl;
-import com.gentics.mesh.plugin.env.PluginEnvironment;
-import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
-import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
-import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
-import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
-import com.gentics.mesh.router.RouterStorageRegistry;
-import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.BucketManagerImpl;
-import com.gentics.mesh.search.index.common.DropIndexHandler;
-import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
-import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.syncleus.ferma.ext.orientdb3.PermissionRootsImpl;
 
 import dagger.Binds;
@@ -156,6 +140,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
+
+	@Binds
+	abstract ClusterManager bindClusterManager(OrientDBClusterManager e);
 
 	/**
 	 * Return a list of all consistency checks.
