@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.11]]
+== 1.7.11 (03.06.2021)
+
+icon:plus[] Core: Added support for storing/referencing the binary data at Amazon Web Services S3 container.
+
 [[v1.7.8]]
 == 1.7.8 (27.04.2021)
 
