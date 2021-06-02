@@ -116,7 +116,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				})
 				.onErrorResumeNext(e ->  Single.error(e))
 				.flatMap(fileBuffer -> {
-			if (nonNull(fileBuffer) || fileBuffer.getBytes().length > 0) {
+			if (nonNull(fileBuffer) && fileBuffer.getBytes().length > 0) {
 				return db.singleTx(tx -> s3binaries
 						.findByS3ObjectKey(nodeUuid + "/" + fieldName)
 						.runInExistingTx(tx)
