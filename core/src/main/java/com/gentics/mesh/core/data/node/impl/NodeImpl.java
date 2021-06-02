@@ -82,6 +82,7 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
@@ -1958,6 +1959,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
 					return new PathSegment(container, binaryField, container.getLanguageTag(), segment);
+				}
+			}
+			// No luck yet - lets check whether a S3 binary field matches the segmentField
+			S3BinaryGraphField s3Binary = container.getS3Binary(segmentFieldName);
+			if (s3Binary == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
+				if (segment.equals(s3binaryFilename)) {
+					return new PathSegment(container, s3Binary, container.getLanguageTag(), segment);
 				}
 			}
 		}

@@ -18,6 +18,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
@@ -62,6 +63,7 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.gentics.mesh.storage.S3BinaryStorage;
 
 import dagger.BindsInstance;
 import dagger.Component;
@@ -86,6 +88,8 @@ public interface MeshComponent {
 
 	Provider<RouterStorage> routerStorageProvider();
 
+	S3BinaryStorage s3binaryStorage();
+	
 	BinaryStorage binaryStorage();
 
 	default TrackingSearchProvider trackingSearchProvider() {
@@ -165,6 +169,8 @@ public interface MeshComponent {
 	RouterStorageRegistry routerStorageRegistry();
 
 	Binaries binaries();
+	
+	S3Binaries s3binaries();
 
 	UserProperties userProperties();
 

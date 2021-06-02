@@ -18,11 +18,13 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
+import com.gentics.mesh.core.endpoint.node.S3BinaryFieldResponseHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -49,12 +51,15 @@ public class WebRootHandler extends AbstractWebrootHandler {
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
+	private final S3BinaryFieldResponseHandler s3binaryFieldResponseHandler;
 
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
+	  	S3BinaryFieldResponseHandler s3binaryFieldResponseHandler,
 		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
+		this.s3binaryFieldResponseHandler = s3binaryFieldResponseHandler;
 	}
 
 	/**
@@ -87,6 +92,23 @@ public class WebRootHandler extends AbstractWebrootHandler {
 					throw new NotModifiedException();
 				}
 				binaryFieldResponseHandler.handle(rc, binaryField);
+				return null;
+			} else if (field instanceof S3BinaryGraphField) {
+				S3BinaryGraphField s3binaryField = (S3BinaryGraphField) field;
+				String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+				String version = s3binaryField.getElementVersion();
+
+				// Check the etag
+				String etagKey = s3ObjectKey + version;
+				if (s3binaryField.hasProcessableImage()) {
+					etagKey += ac.getImageParameters().getQueryParameters();
+				}
+				String etag = ETag.hash(etagKey);
+				ac.setEtag(etag, false);
+				if (ac.matches(etag, false)) {
+					throw new NotModifiedException();
+				}
+				s3binaryFieldResponseHandler.handle(rc, node, s3binaryField);
 				return null;
 			} else {
 				String etag = node.getETag(ac);

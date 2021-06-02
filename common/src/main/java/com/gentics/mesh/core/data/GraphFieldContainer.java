@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
@@ -23,6 +24,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -67,6 +69,23 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @return
 	 */
 	BinaryGraphField createBinary(String fieldKey, Binary binary);
+
+	/**
+	 * Return the s3 binary graph field for the given key.
+	 *
+	 * @param key
+	 * @return
+	 */
+	S3BinaryGraphField getS3Binary(String key);
+
+	/**
+	 * Create a s3 binary field and use the given binary to be referenced by the field.
+	 *
+	 * @param fieldKey
+	 * @param s3binary
+	 * @return
+	 */
+	S3BinaryGraphField createS3Binary(String fieldKey, S3Binary s3binary);
 
 	/**
 	 * Return the node graph field for the given key.

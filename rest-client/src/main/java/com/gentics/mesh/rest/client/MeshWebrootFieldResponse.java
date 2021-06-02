@@ -14,6 +14,13 @@ public interface MeshWebrootFieldResponse {
 	 * @return
 	 */
 	boolean isBinary();
+
+	/**
+	 * Tests if the response is redirected(302)
+	 *
+	 * @return
+	 */
+	boolean isRedirected();
 	
 	/**
 	 * Tests if the response is plain text data, i.e. not a binary, not a JSON structure/array.
