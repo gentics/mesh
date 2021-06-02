@@ -24,35 +24,35 @@ public interface ImageManipulator {
 	 */
 	Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters);
 
-    /**
-     * Resize the given s3 binary data and return the result.
-     *
-     * @param bucketName
-     * @param cacheBucketName
-     * @param s3ObjectKey
-     * @param cacheS3ObjectKey
-     * @param filename
-     * @param parameters
-     */
-    Completable handleS3CacheResize(String bucketName, String cacheBucketName, String s3ObjectKey, String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
+	/**
+	 * Resize the given s3 binary data and return the result.
+	 *
+	 * @param bucketName
+	 * @param cacheBucketName
+	 * @param s3ObjectKey
+	 * @param cacheS3ObjectKey
+	 * @param filename
+	 * @param parameters
+	 */
+	Completable handleS3CacheResize(String bucketName, String cacheBucketName, String s3ObjectKey,
+			String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
 
-    /**
-     * Resize the given s3 binary data and return the result.
-     *
-     * @param bucketName
-     * @param s3ObjectKey
-     * @param filename
-     * @param parameters
-     */
-    Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename, ImageManipulationParameters parameters);
+	/**
+	 * Resize the given s3 binary data and return the result.
+	 *
+	 * @param bucketName
+	 * @param s3ObjectKey
+	 * @param filename
+	 * @param parameters
+	 */
+	Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename,
+			ImageManipulationParameters parameters);
 
 	/**
 	 * Return the cache file for the given binary and image parameters.
 	 *
-	 * @param sha512sum
-	 *            Hashsum of the source binary
-	 * @param parameters
-	 *            Resize parameters
+	 * @param sha512sum  Hashsum of the source binary
+	 * @param parameters Resize parameters
 	 * @return
 	 */
 	Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters);

@@ -18,22 +18,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- <dependency> <groupId>com.amazonaws</groupId> <artifactId>aws-java-sdk-bom</artifactId>
-				<version>${aws.sdk.version}</version> <type>pom</type> <scope>import</scope>
-				</dependency> -->
-
-			<dependency>
-				<groupId>software.amazon.awssdk</groupId>
-				<artifactId>aws-sdk-java</artifactId>
-				<version>2.15.62</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 
 	<dependencies>
 		<dependency>
@@ -42,7 +26,8 @@
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
-			<artifactId>s3</artifactId>
+			<artifactId>aws-sdk-java</artifactId>
+			<version>2.15.62</version>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -50,6 +35,11 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-buffer</artifactId>
+			<version>4.1.48.Final</version>
 		</dependency>
 	</dependencies>
 

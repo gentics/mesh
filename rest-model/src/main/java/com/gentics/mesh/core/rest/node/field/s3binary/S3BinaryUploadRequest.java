@@ -24,23 +24,26 @@ public class S3BinaryUploadRequest implements RestModel {
 		return version;
 	}
 
-	public void setVersion(String version) {
+	public S3BinaryUploadRequest setVersion(String version) {
 		this.version = version;
+		return this;
 	}
 
 	public String getLanguage() {
 		return language;
 	}
 
-	public void setLanguage(String language) {
+	public S3BinaryUploadRequest setLanguage(String language) {
 		this.language = language;
+		return this;
 	}
 
 	public String getFilename() {
 		return filename;
 	}
 
-	public void setFilename(String filename) {
+	public S3BinaryUploadRequest setFilename(String filename) {
 		this.filename = filename;
+		return this;
 	}
 }

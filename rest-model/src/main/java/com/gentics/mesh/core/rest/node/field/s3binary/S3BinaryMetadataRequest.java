@@ -20,15 +20,17 @@ public class S3BinaryMetadataRequest implements RestModel {
         return version;
     }
 
-    public void setVersion(String version) {
+    public S3BinaryMetadataRequest setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     public String getLanguage() {
         return language;
     }
 
-    public void setLanguage(String language) {
+    public S3BinaryMetadataRequest setLanguage(String language) {
         this.language = language;
+        return this;
     }
 }

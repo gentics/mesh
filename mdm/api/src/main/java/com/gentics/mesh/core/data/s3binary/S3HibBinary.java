@@ -9,13 +9,6 @@ import com.gentics.mesh.core.rest.node.field.image.Point;
 public interface S3HibBinary extends HibBaseElement {
 
 	/**
-	 * Return the SHA512Sum of the s3binary.
-	 * 
-	 * @return
-	 */
-	String getSHA512Sum();
-
-	/**
 	 * Return the size of the s3binary data.
 	 * 
 	 * @return
@@ -81,14 +74,6 @@ public interface S3HibBinary extends HibBaseElement {
 	 * @return Image size or null when the information could not be determined
 	 */
 	Point getImageSize();
-
-	/**
-	 * Set the SHA 512 Checksum
-	 * 
-	 * @param sha512sum
-	 * @return
-	 */
-	S3HibBinary setSHA512Sum(String sha512sum);
 
 	/**
 	 * Set the s3binary uuid.

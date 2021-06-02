@@ -103,13 +103,24 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				}
 				binaryFieldResponseHandler.handle(rc, binaryField);
 				return null;
-			}
-			else if (field instanceof S3BinaryGraphField) {
+			} else if (field instanceof S3BinaryGraphField) {
 				S3BinaryGraphField s3binaryField = (S3BinaryGraphField) field;
-				s3binaryFieldResponseHandler.handle(rc, s3binaryField);
+				String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+				String version = s3binaryField.getElementVersion();
+
+				// Check the etag
+				String etagKey = s3ObjectKey + version;
+				if (s3binaryField.hasProcessableImage()) {
+					etagKey += ac.getImageParameters().getQueryParameters();
+				}
+				String etag = ETag.hash(etagKey);
+				ac.setEtag(etag, false);
+				if (ac.matches(etag, false)) {
+					throw new NotModifiedException();
+				}
+				s3binaryFieldResponseHandler.handle(rc, node, s3binaryField);
 				return null;
-			}
-			else {
+			} else {
 				String etag = nodeDao.getETag(node, ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {

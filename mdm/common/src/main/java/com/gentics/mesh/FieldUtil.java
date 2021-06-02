@@ -5,21 +5,8 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
-import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.*;
+import com.gentics.mesh.core.rest.node.field.impl.*;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -140,6 +127,12 @@ public final class FieldUtil {
 		field.setBinaryUuid(uuid);
 		field.setFileName(fileName);
 		field.setSha512sum(hashSum);
+		return field;
+	}
+
+	public static S3BinaryField createS3BinaryField(String fileName) {
+		S3BinaryField field = new S3BinaryFieldImpl();
+		field.setFileName(fileName);
 		return field;
 	}
 

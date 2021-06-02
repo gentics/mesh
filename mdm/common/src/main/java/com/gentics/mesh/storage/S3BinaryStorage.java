@@ -49,7 +49,7 @@ public interface S3BinaryStorage {
 	 * @param file
 	 * @return
 	 */
-	Single<S3RestResponse> uploadFile(String bucketName, String objectKey, File file);
+	Single<S3RestResponse> uploadFile(String bucketName, String objectKey, File file, boolean isCache);
 
 	/**
 	 * Check if objectKey in a bucket exists.
@@ -61,13 +61,21 @@ public interface S3BinaryStorage {
 	Single<Boolean> exists(String bucketName, String objectKey);
 
 	/**
+	 * Check if bucket exists.
+	 *
+	 * @param bucketName
+	 * @return
+	 */
+	Single<Boolean> exists(String bucketName);
+
+
+	/**
          * Creates a S3 bucket for a given name if doesn't exists..
          *
          * @param bucketName
          * @return
          */
-	 void createBucket(String bucketName);
-
+	Single<Boolean> createBucket(String bucketName);
 
 	/**
 	 * Delete the S3 binary with the given bucket name and s3 object key.

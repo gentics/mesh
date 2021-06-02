@@ -11,8 +11,6 @@ import com.gentics.mesh.core.result.Result;
  */
 public interface S3Binary extends MeshVertex, S3HibBinary {
 
-	String SHA512SUM_KEY = "sha512sum";
-
 	String S3_BINARY_FILESIZE_PROPERTY_KEY = "s3binaryFileSize";
 
 	String S3_BINARY_IMAGE_WIDTH_PROPERTY_KEY = "s3binaryImageWidth";
@@ -24,26 +22,6 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 	String S3_BINARY_CONTENT_TYPE = "s3binaryContentType";
 
 	String S3_AWS_FILENAME = "filename";
-
-	/**
-	 * Return the sha512 checksum.
-	 * 
-	 * @return
-	 */
-	default String getSHA512Sum() {
-		return property(SHA512SUM_KEY);
-	}
-
-	/**
-	 * Set the SHA512 checksum.
-	 * 
-	 * @param sha512sum
-	 * @return
-	 */
-	default S3HibBinary setSHA512Sum(String sha512sum) {
-		property(SHA512SUM_KEY, sha512sum);
-		return this;
-	}
 
 	/**
 	 * Return the s3binary size in bytes.

@@ -89,22 +89,6 @@ public interface S3BinaryField extends Field {
     S3BinaryField setMimeType(String mimeType);
 
     /**
-     * Return the sha512 checksum.
-     *
-     * @return Checksum
-     */
-    String getSha512sum();
-
-    /**
-     * Set the s3binary sha512 checksum.
-     *
-     * @param sha512sum
-     *            Checksum
-     * @return Fluent API
-     */
-    S3BinaryField setSha512sum(String sha512sum);
-
-    /**
      * Return the s3binary filename of the node (may be null when no s3binary value was set)
      *
      * @return Filename
