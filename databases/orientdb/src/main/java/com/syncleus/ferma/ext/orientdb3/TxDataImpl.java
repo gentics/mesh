@@ -5,18 +5,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.db.TxData;
-import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.CacheConfig;
-import com.gentics.mesh.etc.config.ClusterOptions;
-import com.gentics.mesh.etc.config.ContentConfig;
-import com.gentics.mesh.etc.config.DebugInfoOptions;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.etc.config.MonitoringConfig;
-import com.gentics.mesh.etc.config.VertxOptions;
+import com.gentics.mesh.etc.config.*;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 /**
@@ -182,6 +171,24 @@ public class TxDataImpl implements TxData {
 	@Setter
 	public MeshOptions setPluginDirectory(String pluginDirectory) {
 		return options.setPluginDirectory(pluginDirectory);
+	}
+
+	public S3Options getS3Options() {
+		return options.getS3Options();
+	}
+
+	@Setter
+	public MeshOptions setS3Options(S3Options s3Options) {
+		return options.setS3Options(s3Options);
+	}
+
+	public S3CacheOptions getS3CacheOptions() {
+		return options.getS3Options().getS3CacheOptions();
+	}
+
+	@Setter
+	public S3Options setS3CacheOptions(S3CacheOptions s3cacheOptions) {
+		return options.getS3Options().setS3CacheOptions(s3cacheOptions);
 	}
 
 	public ImageManipulatorOptions getImageOptions() {

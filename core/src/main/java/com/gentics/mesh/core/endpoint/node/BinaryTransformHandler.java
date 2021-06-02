@@ -1,16 +1,5 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -24,7 +13,10 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -33,7 +25,10 @@ import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -44,7 +39,6 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
-
 import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -57,8 +51,18 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 /**
- * Handler for binary transformer requests.
+ * Handler for binary or s3binary transformer requests.
  */
 @Singleton
 public class BinaryTransformHandler extends AbstractHandler {
@@ -72,11 +76,13 @@ public class BinaryTransformHandler extends AbstractHandler {
 	private final BinaryStorage binaryStorage;
 	private final Database db;
 	private final Binaries binaries;
+	private final S3Binaries s3binaries;
+	private final S3Options s3Options;
 
 	@Inject
 	public BinaryTransformHandler(Database db, HandlerUtilities utils, Vertx rxVertx, ImageManipulator imageManipulator,
-		Lazy<BootstrapInitializer> boot,
-		BinaryStorage binaryStorage, Binaries binaries) {
+								  Lazy<BootstrapInitializer> boot,
+								  BinaryStorage binaryStorage, Binaries binaries, S3Binaries s3binaries, MeshOptions options) {
 		this.db = db;
 		this.utils = utils;
 		this.rxVertx = rxVertx;
@@ -84,6 +90,147 @@ public class BinaryTransformHandler extends AbstractHandler {
 		this.boot = boot;
 		this.binaryStorage = binaryStorage;
 		this.binaries = binaries;
+		this.s3binaries = s3binaries;
+		this.s3Options = options.getS3Options();
+	}
+
+	/**
+	 * Handle image transformation. This method does a filtering of the required field and
+	 * calls the specific binary or s3binary field
+	 *
+	 * @param rc
+	 *            routing context
+	 * @param uuid
+	 * @param fieldName
+	 */
+	public void handle(RoutingContext rc, String uuid, String fieldName) {
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+		if (isEmpty(transformation.getLanguage())) {
+			throw error(BAD_REQUEST, "image_error_language_not_set");
+		}
+		String languageTag = transformation.getLanguage();
+
+		// Load needed elements
+		HibNode node = db.tx(tx -> {
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
+			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+
+			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
+			}
+			return n;
+		});
+
+		db.tx(() -> {
+			NodeGraphFieldContainer fieldContainer = loadTargetedContent(node, languageTag, fieldName);
+			if (fieldContainer == null) {
+				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
+			}
+			FieldSchema fieldSchema = fieldContainer.getSchemaContainerVersion().getSchema().getField(fieldName);
+			if (fieldSchema == null) {
+				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+			}
+			if ((fieldSchema instanceof BinaryFieldSchema)) {
+				BinaryGraphField field = fieldContainer.getBinary(fieldName);
+				if (field == null) {
+					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+				}
+				handleTransformImage(rc, uuid, fieldName);
+			} else if ((fieldSchema instanceof S3BinaryFieldSchema)) {
+				S3BinaryGraphField field = fieldContainer.getS3Binary(fieldName);
+				if (field == null) {
+					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
+				}
+				handleS3TransformImage(rc, uuid, fieldName);
+			}
+		});
+	}
+
+	/**
+	 * Handle S3 image transformation. This operation will utilize the S3 binary data of the existing field and apply the transformation options. The new binary data
+	 * will be stored and the field will be updated accordingly.
+	 *
+	 * @param rc
+	 *            routing context
+	 * @param uuid
+	 * @param fieldName
+	 */
+	public void handleS3TransformImage(RoutingContext rc, String uuid, String fieldName) {
+		validateParameter(uuid, "uuid");
+		validateParameter(fieldName, "fieldName");
+
+		FileSystem fs = rxVertx.fileSystem();
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+		if (isEmpty(transformation.getLanguage())) {
+			throw error(BAD_REQUEST, "image_error_language_not_set");
+		}
+
+		String languageTag = transformation.getLanguage();
+
+		// Load needed elements
+		HibNode node = db.tx(tx -> {
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
+			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+
+			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
+			}
+			return n;
+		});
+
+		// Prepare the imageManipulationParameter using the transformation request as source
+		ImageManipulationParameters parameters = new ImageManipulationParametersImpl();
+		parameters.setWidth(transformation.getWidth());
+		parameters.setHeight(transformation.getHeight());
+		parameters.setRect(transformation.getCropRect());
+		parameters.setCropMode(transformation.getCropMode());
+		parameters.setResizeMode(transformation.getResizeMode());
+		parameters.setFocalPoint(transformation.getFocalPoint());
+		if (parameters.getRect() != null) {
+			parameters.setCropMode(CropMode.RECT);
+		}
+		if (parameters.getResizeMode() == null) {
+			parameters.setResizeMode(ResizeMode.SMART);
+		}
+		// Lookup the s3 binary and set the focal point parameters
+		S3HibBinary s3binaryField = db.tx(() -> {
+			NodeGraphFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
+			S3BinaryGraphField field = loadS3BinaryField(container, fieldName);
+			// Use the focal point which is stored along with the s3 binary field if no custom point was included in the query parameters.
+			// Otherwise the query parameter focal point will be used and thus override the stored focal point.
+			FocalPoint focalPoint = field.getImageFocalPoint();
+			if (!parameters.hasFocalPoint() && focalPoint != null) {
+				parameters.setFocalPoint(focalPoint);
+			}
+			return field.getS3Binary();
+		});
+
+		parameters.validate();
+		S3UploadContext s3UploadContext = new S3UploadContext();
+		String s3ObjectKey = s3binaryField.getS3ObjectKey();
+		String fileName = s3binaryField.getFileName();
+		s3UploadContext.setFileName(fileName);
+		s3UploadContext.setS3BinaryUuid(UUIDUtil.randomUUID());
+		s3UploadContext.setS3ObjectKey(s3ObjectKey);
+		imageManipulator
+				.handleS3Resize(s3Options.getBucket(), s3ObjectKey, fileName, parameters)
+				.flatMap(file -> {
+					// The image was stored and hashed. Now we need to load the stored file again and check the image properties
+					Single<ImageInfo> info = imageManipulator.readImageInfo(file.getName());
+					Single<FileProps> fileProps = fs.rxProps(file.getName());
+					return Single.zip(info, fileProps, (infoV, props) -> {
+						// Return a POJO which hold all information that is needed to update the field
+						return new TransformationResult(null, props.size(), infoV, file.getName());
+					});
+				})
+				.flatMap(transformationResult ->  Single.just(updateNodeInGraph(ac, s3UploadContext, transformationResult, node, languageTag, fieldName, parameters)))
+				.subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -213,6 +360,66 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 	}
 
+	private NodeResponse updateNodeInGraph(InternalActionContext ac, S3UploadContext s3UploadContext, TransformationResult result, HibNode node,
+										   String languageTag, String fieldName, ImageManipulationParameters parameters) {
+		return utils.eventAction((tx, batch) -> {
+			ContentDaoWrapper contentDao = tx.contentDao();
+
+			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
+
+			HibBranch branch = tx.getBranch(ac);
+
+			// Create a new node version field container to store the upload
+			NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+					latestDraftVersion, true);
+
+			// TODO Add conflict checking
+
+			// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
+			S3HibBinary s3HibBinary = s3binaries.create(s3UploadContext.getS3BinaryUuid(), s3UploadContext.getS3ObjectKey(), s3UploadContext.getFileName()).runInExistingTx(tx);
+
+			// Now create the binary field in which we store the information about the file
+			S3BinaryGraphField oldField = newDraftVersion.getS3Binary(fieldName);
+			S3BinaryGraphField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
+			if (oldField != null) {
+				oldField.copyTo(field);
+				oldField.remove();
+			}
+			S3HibBinary currentS3Binary = field.getS3Binary();
+
+			// TODO should we rename the image, if the extension is wrong?
+			if (nonNull(result)) {
+				currentS3Binary.setSize(result.getSize());
+				if (nonNull(result.getMimeType())) {
+					field.setMimeType(result.getMimeType());
+				}
+				if (nonNull(result.getImageInfo())) {
+					currentS3Binary.setImageHeight(result.getImageInfo().getHeight());
+					currentS3Binary.setImageWidth(result.getImageInfo().getWidth());
+				}
+			}
+
+			if (parameters.hasFocalPoint()) {
+				field.setImageFocalPoint(parameters.getFocalPoint());
+			}
+			// If the s3 binary field is the segment field, we need to update the webroot info in the node
+			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
+			}
+			BranchDaoWrapper branchDao = tx.branchDao();
+			// TODO maybe use a fixed method in project?
+			String branchUuid = branchDao.getLatestBranch(node.getProject()).getUuid();
+
+			// Purge the old draft
+			if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+				contentDao.purge(latestDraftVersion);
+			}
+
+			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
+			return tx.nodeDao().transformToRestSync(node, ac, 0);
+		});
+	}
+
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, HibNode node,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
@@ -287,7 +494,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		if (fieldSchema == null) {
 			throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 		}
-		if (!(fieldSchema instanceof BinaryFieldSchema)) {
+		if (!(fieldSchema instanceof BinaryFieldSchema)&&!(fieldSchema instanceof S3BinaryFieldSchema)) {
 			throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 		}
 		return latestDraftVersion;
@@ -305,4 +512,16 @@ public class BinaryTransformHandler extends AbstractHandler {
 		return initialField;
 	}
 
+
+	private S3BinaryGraphField loadS3BinaryField(NodeGraphFieldContainer container, String fieldName) {
+		S3BinaryGraphField initialField = container.getS3Binary(fieldName);
+		if (initialField == null) {
+			throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+		}
+
+		if (!initialField.hasProcessableImage()) {
+			throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
+		}
+		return initialField;
+	}
 }

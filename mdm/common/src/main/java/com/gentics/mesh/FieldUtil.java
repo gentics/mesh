@@ -5,21 +5,8 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
-import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.*;
+import com.gentics.mesh.core.rest.node.field.impl.*;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -28,28 +15,8 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
-import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
-import com.gentics.mesh.core.rest.schema.DateFieldSchema;
-import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
-import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.*;
+import com.gentics.mesh.core.rest.schema.impl.*;
 import com.gentics.mesh.util.Tuple;
 
 /**
@@ -160,6 +127,12 @@ public final class FieldUtil {
 		field.setBinaryUuid(uuid);
 		field.setFileName(fileName);
 		field.setSha512sum(hashSum);
+		return field;
+	}
+
+	public static S3BinaryField createS3BinaryField(String fileName) {
+		S3BinaryField field = new S3BinaryFieldImpl();
+		field.setFileName(fileName);
 		return field;
 	}
 
@@ -283,6 +256,12 @@ public final class FieldUtil {
 
 	public static BinaryFieldSchema createBinaryFieldSchema(String name) {
 		BinaryFieldSchema field = new BinaryFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static S3BinaryFieldSchema createS3BinaryFieldSchema(String name) {
+		S3BinaryFieldSchema field = new S3BinaryFieldSchemaImpl();
 		field.setName(name);
 		return field;
 	}

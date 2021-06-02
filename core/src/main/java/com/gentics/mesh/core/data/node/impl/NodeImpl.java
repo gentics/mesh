@@ -53,6 +53,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -1985,6 +1986,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
 				}
 			}
+			// No luck yet - lets check whether a S3 binary field matches the segmentField
+			S3BinaryGraphField s3Binary = container.getS3Binary(segmentFieldName);
+			if (s3Binary == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
+				if (segment.equals(s3binaryFilename)) {
+					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
+				}
+			}
+
 		}
 		return null;
 	}

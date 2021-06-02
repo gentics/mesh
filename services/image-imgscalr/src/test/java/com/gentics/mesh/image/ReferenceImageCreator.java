@@ -47,7 +47,7 @@ public class ReferenceImageCreator {
 
 		BootstrapInitializer boot = mock(BootstrapInitializer.class);
 		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null, null));
-		ImgscalrImageManipulator manipulator = new ImgscalrImageManipulator(vertx, options, boot);
+		ImgscalrImageManipulator manipulator = new ImgscalrImageManipulator(vertx, options, boot, null);
 
 		readImageConfig().blockingForEach(image -> {
 			String imageName = image.getString("name");
