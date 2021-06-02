@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.7.8"
+version: "1.7.10"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -8924,7 +8924,7 @@ mediaType: application/json
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "Status of the plugin",
-                                      "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED" ]
+                                      "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED", "FAILED_RETRY" ]
                                     }
                                   }
                                 }
@@ -9024,7 +9024,7 @@ mediaType: application/json
                                             "type" : "string",
                                             "required" : true,
                                             "description" : "Status of the plugin",
-                                            "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED" ]
+                                            "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED", "FAILED_RETRY" ]
                                           }
                                         }
                                       }
@@ -9188,7 +9188,7 @@ mediaType: application/json
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "Status of the plugin",
-                                      "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED" ]
+                                      "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED", "FAILED_RETRY" ]
                                     }
                                   }
                                 }
@@ -9289,7 +9289,7 @@ mediaType: application/json
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "Status of the plugin",
-                                      "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED" ]
+                                      "enum" : [ "LOADED", "VALIDATED", "STARTED", "PRE_REGISTERED", "INITIALIZED", "REGISTERED", "FAILED", "FAILED_RETRY" ]
                                     }
                                   }
                                 }
@@ -13693,7 +13693,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.7.8",
+                                  "meshVersion" : "1.7.10",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

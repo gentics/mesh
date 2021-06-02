@@ -86,6 +86,8 @@ import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
+import com.gentics.mesh.distributed.TopologyChangeReadonlyHandlerImpl;
 import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
@@ -333,4 +335,7 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract MeshLocalClient meshLocalClient(MeshLocalClientImpl e);
+
+	@Binds
+	abstract TopologyChangeReadonlyHandler bindTopologyChangeReadonlyHandler(TopologyChangeReadonlyHandlerImpl e);
 }

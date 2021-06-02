@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin.manager;
 
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.rxError;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.LOADED;
@@ -12,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,6 +22,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -56,6 +59,8 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.cluster.ClusterManager;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
@@ -64,8 +69,13 @@ import com.gentics.mesh.plugin.pf4j.MeshPluginFactory;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.util.PluginUtils;
 
+import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -79,25 +89,81 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	public static final String PLUGINS_DIR_CONFIG_PROPERTY_NAME = "pf4j.pluginsConfigDir";
 
+	private final Lazy<Vertx> vertx;
+
 	private final PluginFactory pluginFactory;
 
 	private final MeshOptions options;
 
 	// We track our own plugin status since the PF4J state is not extendible.
-	private final Map<String, PluginStatus> pluginStatusMap = new HashedMap<>();
+	private final Map<String, PluginStatus> pluginStatusMap = Collections.synchronizedMap(new HashedMap<>());
+
+	private final AtomicBoolean dbReady = new AtomicBoolean(true);
 
 	private final DelegatingPluginRegistry pluginRegistry;
 
+	private final ClusterManager clusterManager;
+
 	@Inject
-	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry) {
+	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry, Database database, Lazy<Vertx> vertx) {
 		this.pluginFactory = pluginFactory;
 		this.options = options;
 		this.pluginRegistry = pluginRegistry;
+		this.vertx = vertx;
+		this.clusterManager = database.clusterManager();
 		delayedInitialize();
 	}
 
 	protected void delayedInitialize() {
 		super.initialize();
+	}
+
+	/**
+	 * Register event handlers
+	 */
+	protected void registerEventListeners() {
+		if (options.getClusterOptions().isEnabled()) {
+			EventBus eb = vertx.get().eventBus();
+
+			eb.consumer(CLUSTER_DATABASE_CHANGE_STATUS.address, (Message<JsonObject> handler) -> {
+				// at least one database in the cluster changed its status
+				if (clusterManager != null) {
+					// we are interested in the cluster-wide locking of storages
+					handleDatabaseAvailability(!clusterManager.isClusterTopologyLocked());
+				}
+			});
+			log.info("Distributed DB status event listener registered.");
+		}
+	}
+
+	/**
+	 * Handle change in database availability in the cluster
+	 * @param available availability status
+	 */
+	protected synchronized void handleDatabaseAvailability(boolean available) {
+		if (available) {
+			boolean wasAvailable = dbReady.getAndSet(true);
+			if (!wasAvailable) {
+				log.info("Database changed to be available. Plugin stati are {}", pluginStatusMap);
+
+				List<String> failedPluginIds = pluginStatusMap.entrySet().stream().filter(entry -> entry.getValue() == PluginStatus.FAILED_RETRY)
+						.map(entry -> entry.getKey()).collect(Collectors.toList());
+
+				for (String id : failedPluginIds) {
+					preRegisterMeshPlugin(id);
+				}
+			}
+		} else {
+			boolean wasAvailable = dbReady.getAndSet(false);
+			if (wasAvailable) {
+				log.info("Database changed to be unavailable. Plugin stati are {}", pluginStatusMap);
+			}
+		}
+	}
+
+	@Override
+	public void init() {
+		registerEventListeners();
 	}
 
 	@Override
@@ -234,12 +300,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 		// 5. Pre-Register the plugin
 		try {
-			PluginWrapper wrapper = getPlugin(id);
-			Plugin plugin = wrapper.getPlugin();
-			if (plugin instanceof MeshPlugin) {
-				MeshPlugin meshPlugin = (MeshPlugin) plugin;
-				pluginRegistry.preRegister(meshPlugin);
-			}
+			preRegisterMeshPlugin(id);
 		} catch (Throwable e) {
 			log.error("Plugin registration failed with error", e);
 			rollback(id);
@@ -247,6 +308,20 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		}
 
 		return Single.just(id);
+	}
+
+	/**
+	 * Pre-register the plugin with given ID (which will also start the initialization and registration)
+	 * @param id plugin ID
+	 */
+	private void preRegisterMeshPlugin(String id) {
+		PluginWrapper wrapper = getPlugin(id);
+		Plugin plugin = wrapper.getPlugin();
+
+		if (plugin instanceof MeshPlugin) {
+			MeshPlugin meshPlugin = (MeshPlugin) plugin;
+			pluginRegistry.preRegister(meshPlugin);
+		}
 	}
 
 	private void removePlugin(String id) {
@@ -438,14 +513,9 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name).ignoreElement();
 			}
 
-			// 4. Register plugin
+			// 4. Pre-Register plugin
 			try {
-				PluginWrapper wrapper = getPlugin(id);
-				Plugin plugin = wrapper.getPlugin();
-				if (plugin instanceof MeshPlugin) {
-					MeshPlugin meshPlugin = (MeshPlugin) plugin;
-					pluginRegistry.preRegister(meshPlugin);
-				}
+				preRegisterMeshPlugin(id);
 			} catch (Throwable e) {
 				log.error("Plugin registration failed with error", e);
 				try {
@@ -465,11 +535,21 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	@Override
 	public void setStatus(String id, PluginStatus status) {
 		pluginStatusMap.put(id, status);
+		log.debug("Plugin {} changed to status {}", id , status);
 	}
 
 	@Override
 	public PluginStatus getStatus(String id) {
 		return pluginStatusMap.get(id);
+	}
+
+	@Override
+	public void setPluginFailed(String id) {
+		if (dbReady.get()) {
+			setStatus(id, PluginStatus.FAILED);
+		} else {
+			setStatus(id, PluginStatus.FAILED_RETRY);
+		}
 	}
 
 	private void withTimeout(String id, String operationName, Completable op) {

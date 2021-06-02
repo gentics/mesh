@@ -30,7 +30,7 @@ public class RouterStorageTest {
 		RouterStorageRegistryImpl routerStorageRegistry = mock(RouterStorageRegistryImpl.class);
 		RouterStorageImpl storage = new RouterStorageImpl(Vertx.vertx(), new MeshOptions(), chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
-		}, null, routerStorageRegistry, null);
+		}, null, routerStorageRegistry, null, null);
 
 		RoutingContext rc = mock(RoutingContextImplBase.class);
 		Route currentRoute = mock(RouteImpl.class);

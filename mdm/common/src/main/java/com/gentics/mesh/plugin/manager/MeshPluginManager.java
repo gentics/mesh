@@ -20,6 +20,10 @@ import io.reactivex.Single;
  * The plugin manager can be used to deploy plugins and register them in Gentics Mesh.
  */
 public interface MeshPluginManager {
+	/**
+	 * Initialize the internals after Vert.x is up.
+	 */
+	void init();
 
 	/**
 	 * Initialize the plugin manager.
@@ -145,6 +149,15 @@ public interface MeshPluginManager {
 	 * @return
 	 */
 	PluginStatus getStatus(String id);
+
+	/**
+	 * Set the plugin status to either {@link PluginStatus#FAILED} or {@link PluginStatus#FAILED_RETRY},
+	 * depending on whether the manager is aware of the reason, why the plugin initialization probably failed,
+	 * and will retry initialization, if possible.
+	 * 
+	 * @param id plugin ID
+	 */
+	void setPluginFailed(String id);
 
 	/**
 	 * Create a REST response for the given plugin.

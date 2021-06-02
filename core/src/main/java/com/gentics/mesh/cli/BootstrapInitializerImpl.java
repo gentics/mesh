@@ -343,6 +343,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Finally start ES integration
 				searchProvider.init();
 				searchProvider.start();
+				pluginManager.init();
 				if (flags.isReindex()) {
 					createSearchIndicesAndMappings();
 				}
@@ -364,6 +365,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Finally start ES integration
 				searchProvider.init();
 				searchProvider.start();
+				pluginManager.init();
 				initLocalData(flags, options, true);
 			}
 
@@ -386,6 +388,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initVertx(options);
 			searchProvider.init();
 			searchProvider.start();
+			pluginManager.init();
 			initLocalData(flags, options, false);
 		}
 
