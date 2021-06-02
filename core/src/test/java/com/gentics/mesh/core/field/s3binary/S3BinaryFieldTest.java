@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.s3binary;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -24,9 +25,14 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import org.junit.Test;
 
+import static com.gentics.mesh.core.field.binary.BinaryFieldTestHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.s3binary.S3BinaryFieldTestHelper.FETCH;
+import static com.gentics.mesh.core.field.s3binary.S3BinaryFieldTestHelper.FILL_BASIC;
+import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE)
+@MeshTestSetting(awsContainer = MINIO, testSize = TestSize.PROJECT_AND_NODE)
 public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
 
     private static final String S3_BINARY_FIELD = "s3binaryField";
@@ -75,19 +81,77 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Test
     @Override
     public void testFieldUpdate() {
+        try (Tx tx = tx()) {
+            NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+            S3HibBinary s3binary = tx.s3binaries().create("1234", "1234/s3", "img.jpg").runInExistingTx(tx);
+            S3BinaryGraphField field = container.createS3Binary(S3_BINARY_FIELD, s3binary);
+            field.getS3Binary().setSize(Long.valueOf(220));
+            assertNotNull(field);
+            assertEquals(S3_BINARY_FIELD, field.getFieldKey());
 
+            field.setFileName("blume.jpg");
+            field.setMimeType("image/jpg");
+            field.setImageDominantColor("#22A7F0");
+            field.getS3Binary().setImageHeight(133);
+            field.getS3Binary().setImageWidth(7);
+
+            S3BinaryGraphField loadedField = container.getS3Binary(S3_BINARY_FIELD);
+            S3HibBinary loadedS3Binary = loadedField.getS3Binary();
+            assertNotNull("The previously created field could not be found.", loadedField);
+            assertEquals(220, loadedS3Binary.getSize().intValue());
+
+            assertEquals("blume.jpg", loadedField.getFileName());
+            assertEquals("image/jpg", loadedField.getMimeType());
+            assertEquals("#22A7F0", loadedField.getImageDominantColor());
+            assertEquals(133, loadedField.getS3Binary().getImageHeight().intValue());
+            assertEquals(7, loadedField.getS3Binary().getImageWidth().intValue());
+        }
     }
 
     @Test
     @Override
     public void testClone() {
+        try (Tx tx = tx()) {
+            NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
+            S3HibBinary s3binary = tx.s3binaries().create("1234","1234/s3","img.jg").runInExistingTx(tx);
+            S3BinaryGraphField field = container.createS3Binary("s3", s3binary);
+            field.getS3Binary().setSize(Long.valueOf(220));
+            assertNotNull(field);
+            assertEquals("s3", field.getFieldKey());
+
+            field.setFileName("blume.jpg");
+            field.setMimeType("image/jpg");
+            field.setImageDominantColor("#22A7F0");
+            field.getS3Binary().setImageHeight(133);
+            field.getS3Binary().setImageWidth(7);
+
+            NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+            field.cloneTo(otherContainer);
+
+            S3BinaryGraphField clonedField = otherContainer.getS3Binary("s3");
+            assertThat(clonedField).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(field, "outV", "id", "uuid", "element");
+            assertThat(clonedField.getS3Binary()).as("referenced binary of cloned field").isNotNull().isEqualToComparingFieldByField(field.getS3Binary());
+        }
     }
 
     @Test
     @Override
     public void testEquals() {
+        try (Tx tx = tx()) {
+            NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+            S3HibBinary s3binary = tx.s3binaries().create("1234","1234/s3","img.jg").runInExistingTx(tx);
+            S3BinaryGraphField fieldA = container.createS3Binary("fieldA", s3binary);
+            S3BinaryGraphField fieldB = container.createS3Binary("fieldB", s3binary);
+            assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+            fieldA.setFileName("someText");
+            assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
+            assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+            assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+            fieldB.setFileName("someText");
+            assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+        }
     }
 
     @Test
@@ -131,30 +195,55 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Test
     @Override
     public void testUpdateFromRestNullOnCreate() {
-
+        try (Tx tx = tx()) {
+            invokeUpdateFromRestTestcase(S3_BINARY_FIELD, FETCH, CREATE_EMPTY);
+        }
     }
 
     @Test
     @Override
     public void testUpdateFromRestNullOnCreateRequired() {
-
+        try (Tx tx = tx()) {
+            invokeUpdateFromRestNullOnCreateRequiredTestcase(S3_BINARY_FIELD, FETCH, false);
+        }
     }
 
     @Test
     @Override
     public void testRemoveFieldViaNull() {
-
+        try (Tx tx = tx()) {
+            InternalActionContext ac = mockActionContext();
+            invokeRemoveFieldViaNullTestcase(S3_BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
+                updateContainer(ac, node, S3_BINARY_FIELD, null);
+            });
+        }
     }
 
     @Test
     @Override
     public void testRemoveRequiredFieldViaNull() {
-
+        try (Tx tx = tx()) {
+            InternalActionContext ac = mockActionContext();
+            invokeRemoveRequiredFieldViaNullTestcase(S3_BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
+                updateContainer(ac, container, S3_BINARY_FIELD, null);
+            });
+        }
     }
 
     @Test
     @Override
     public void testUpdateFromRestValidSimpleValue() {
-
+        try (Tx tx = tx()) {
+            InternalActionContext ac = mockActionContext();
+            invokeUpdateFromRestValidSimpleValueTestcase(S3_BINARY_FIELD, FILL_BASIC, (container) -> {
+                S3BinaryField field = new S3BinaryFieldImpl();
+                field.setFileName("someFile.txt");
+                updateContainer(ac, container, S3_BINARY_FIELD, field);
+            }, (container) -> {
+                S3BinaryGraphField field = container.getS3Binary(S3_BINARY_FIELD);
+                assertNotNull("The graph field {" + S3_BINARY_FIELD + "} could not be found.", field);
+                assertEquals("The html of the field was not updated.", "someFile.txt", field.getFileName());
+            });
+        }
     }
 }
