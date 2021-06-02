@@ -66,117 +66,118 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 
 	private S3Presigner presigner;
 
-	private S3Options options;
+	private S3Options s3Options;
 
 	@Inject
 	public S3BinaryStorageImpl(MeshOptions options) {
-		this.options = options.getS3Options();
+		this.s3Options = options.getS3Options();
 	}
 
-    public S3BinaryStorageImpl(MeshOptions options, S3AsyncClient client) {
-        this.options = options.getS3Options();
-        this.client = client;
-    }
+	public S3BinaryStorageImpl(MeshOptions options, S3AsyncClient client) {
+		this.s3Options = options.getS3Options();
+		this.client = client;
+	}
 
-    public S3BinaryStorageImpl() {
-    }
+	public S3BinaryStorageImpl() {
+	}
 
-    public void init() {
-        if (isNull(options) || isNull(options.getAccessKeyId()) || isNull(options.getSecretAccessKey())) throw new RuntimeException();
-        try {
-            AwsCredentials credentials = AwsBasicCredentials.create(options.getAccessKeyId(), options.getSecretAccessKey());
-            System.setProperty("aws.accessKeyId", options.getAccessKeyId());
-            System.setProperty("aws.secretAccessKey", options.getSecretAccessKey());
+	public void init() {
+		if (isNull(s3Options) || !s3Options.isEnabled()) {
+			throw new IllegalStateException("S3 engine is not enabled in Mesh Options.");
+		}
+		if (isNull(s3Options.getAccessKeyId()) || isNull(s3Options.getSecretAccessKey()) || isNull(s3Options.getRegion())) {
+			throw new IllegalStateException(
+					"No S3 configuration provided. Please fill in the `accessKeyId`, `secretAccessKey`, `region`, `bucket` parameters"
+							+ " either in mesh.yml or in the corresponding environment variables.");
+		}
+
+		AwsCredentials credentials = AwsBasicCredentials.create(s3Options.getAccessKeyId(), s3Options.getSecretAccessKey());
+		System.setProperty("aws.accessKeyId", s3Options.getAccessKeyId());
+		System.setProperty("aws.secretAccessKey", s3Options.getSecretAccessKey());
 
 		S3AsyncClientBuilder clientBuilder = S3AsyncClient.builder();
 
-            // Endpoint override is optional
-            if (options.getEndpoint() != null) {
-                clientBuilder.endpointOverride(URI.create(options.getEndpoint()));
-                S3Configuration config = S3Configuration.builder()
-                        .pathStyleAccessEnabled(true)
-                        .checksumValidationEnabled(false)
-                        .build();
-                clientBuilder.serviceConfiguration(config);
-            }
+		// Endpoint override is optional
+		if (s3Options.getEndpoint() != null) {
+			clientBuilder.endpointOverride(URI.create(s3Options.getEndpoint()));
+			S3Configuration config = S3Configuration.builder().pathStyleAccessEnabled(true)
+					.checksumValidationEnabled(false).build();
+			clientBuilder.serviceConfiguration(config);
+		}
 
-		client = clientBuilder.region(Region.of(options.getRegion()))
-				.credentialsProvider(StaticCredentialsProvider.create(credentials))
-				.build();
+		client = clientBuilder.region(Region.of(s3Options.getRegion()))
+				.credentialsProvider(StaticCredentialsProvider.create(credentials)).build();
 
 		S3Presigner.Builder presignerBuilder = S3Presigner.builder();
 
-		if (options.getEndpoint() != null) {
-			presignerBuilder.endpointOverride(URI.create(options.getEndpoint()));
+		if (s3Options.getEndpoint() != null) {
+			presignerBuilder.endpointOverride(URI.create(s3Options.getEndpoint()));
 		}
 
-		this.presigner = presignerBuilder.region(Region.of(options.getRegion()))
-				.credentialsProvider(StaticCredentialsProvider.create(credentials))
-				.build();
+		this.presigner = presignerBuilder.region(Region.of(s3Options.getRegion()))
+				.credentialsProvider(StaticCredentialsProvider.create(credentials)).build();
 
-            //create buckets with CORS configuration, so that UI can request images directly.
-            String bucketName = options.getBucket();
-            String cacheBucketName = options.getS3CacheOptions().getBucket();
-			createBucket(bucketName).blockingGet();
-			createBucket(cacheBucketName).blockingGet();
-            CORSRule corsRule = CORSRule.builder().allowedHeaders("*").allowedMethods("GET", "PUT", "POST", "DELETE").allowedOrigins("*").build();
+		// create buckets with CORS configuration, so that UI can request images
+		// directly.
+		String bucketName = s3Options.getBucket();
+		String cacheBucketName = s3Options.getS3CacheOptions().getBucket();
+		createBucket(bucketName).blockingGet();
+		createBucket(cacheBucketName).blockingGet();
+		CORSRule corsRule = CORSRule.builder().allowedHeaders("*").allowedMethods("GET", "PUT", "POST", "DELETE")
+				.allowedOrigins("*").build();
 
-            CORSConfiguration corsConfiguration = CORSConfiguration.builder().corsRules(corsRule).build();
-            PutBucketCorsRequest putBucketCorsRequest = PutBucketCorsRequest.builder().bucket(bucketName).corsConfiguration(corsConfiguration).build();
-            PutBucketCorsRequest putBucketCorsRequestCache = PutBucketCorsRequest.builder().bucket(cacheBucketName).corsConfiguration(corsConfiguration).build();
-            SingleInterop.fromFuture(client.putBucketCors(putBucketCorsRequest)).blockingGet();
-            SingleInterop.fromFuture(client.putBucketCors(putBucketCorsRequestCache)).blockingGet();
-        } catch (Exception ex) {
-            log.error("Error thrown when creating init and creating buckets: " + ex.getMessage());
-        }
-    }
+		CORSConfiguration corsConfiguration = CORSConfiguration.builder().corsRules(corsRule).build();
+		PutBucketCorsRequest putBucketCorsRequest = PutBucketCorsRequest.builder().bucket(bucketName)
+				.corsConfiguration(corsConfiguration).build();
+		PutBucketCorsRequest putBucketCorsRequestCache = PutBucketCorsRequest.builder().bucket(cacheBucketName)
+				.corsConfiguration(corsConfiguration).build();
+		SingleInterop.fromFuture(client.putBucketCors(putBucketCorsRequest)).blockingGet();
+		SingleInterop.fromFuture(client.putBucketCors(putBucketCorsRequestCache)).blockingGet();
+	}
 
-    @Override
-    public Single<Boolean> createBucket(String bucketName) {
-		if(isNull(client)){
+	@Override
+	public Single<Boolean> createBucket(String bucketName) {
+		if (isNull(client)) {
 			init();
 		}
-        HeadBucketRequest headRequest = HeadBucketRequest.builder()
-                .bucket(bucketName)
-                .build();
-        CreateBucketRequest createRequest = CreateBucketRequest.builder()
-                .bucket(bucketName)
-                .build();
-        Single<HeadBucketResponse> bucketHead = SingleInterop.fromFuture(client.headBucket(headRequest));
-        return bucketHead.map(e -> e != null)
-                .onErrorResumeNext(e -> {
-                    //try to create new bucket if bucket cannot be found
-                    if (e instanceof CompletionException && e.getCause() != null) {
-                        return SingleInterop.fromFuture(client.createBucket(createRequest)).map(r -> r != null);
-                    } else {
-                        return Single.error(e);
-                    }
-                });
-    }
+		HeadBucketRequest headRequest = HeadBucketRequest.builder().bucket(bucketName).build();
+		CreateBucketRequest createRequest = CreateBucketRequest.builder().bucket(bucketName).build();
+		Single<HeadBucketResponse> bucketHead = SingleInterop.fromFuture(client.headBucket(headRequest));
+		return bucketHead.map(e -> e != null).onErrorResumeNext(e -> {
+			// try to create new bucket if bucket cannot be found
+			if (e instanceof CompletionException && e.getCause() != null) {
+				return SingleInterop.fromFuture(client.createBucket(createRequest)).map(r -> r != null);
+			} else {
+				return Single.error(e);
+			}
+		});
+	}
 
-    @Override
-    public Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName, String nodeVersion, boolean isCache) {
-		if(isNull(client)){
+	@Override
+	public Single<S3RestResponse> createUploadPresignedUrl(String bucketName, String nodeUuid, String fieldName,
+			String nodeVersion, boolean isCache) {
+		if (isNull(client)) {
 			init();
 		}
 		int expirationTimeUpload;
-        //we need to establish a fixed expiration time upload for the cache
-        if (isCache && options.getS3CacheOptions().getExpirationTimeUpload() > 0)
-            expirationTimeUpload = options.getS3CacheOptions().getExpirationTimeUpload();
-        else {
-            expirationTimeUpload = options.getExpirationTimeUpload();
-        }
-        String objectKey = nodeUuid + "/" + fieldName;
+		// we need to establish a fixed expiration time upload for the cache
+		if (isCache && s3Options.getS3CacheOptions().getExpirationTimeUpload() > 0)
+			expirationTimeUpload = s3Options.getS3CacheOptions().getExpirationTimeUpload();
+		else {
+			expirationTimeUpload = s3Options.getExpirationTimeUpload();
+		}
+		String objectKey = nodeUuid + "/" + fieldName;
 
-		PresignedPutObjectRequest presignedRequest =
-				presigner.presignPutObject(r -> r.signatureDuration(Duration.ofSeconds(expirationTimeUpload))
+		PresignedPutObjectRequest presignedRequest = presigner
+				.presignPutObject(r -> r.signatureDuration(Duration.ofSeconds(expirationTimeUpload))
 						.putObjectRequest(por -> por.bucket(bucketName).key(objectKey)));
 
 		if (log.isDebugEnabled()) {
 			log.debug("Creating presigned URL for nodeUuid '{}' and fieldName '{}'", nodeUuid, fieldName);
 		}
 
-		S3RestResponse s3RestResponse = new S3RestResponse(presignedRequest.url().toString(), presignedRequest.httpRequest().method().toString(), presignedRequest.signedHeaders());
+		S3RestResponse s3RestResponse = new S3RestResponse(presignedRequest.url().toString(),
+				presignedRequest.httpRequest().method().toString(), presignedRequest.signedHeaders());
 		s3RestResponse.setVersion(nodeVersion);
 		presigner.close();
 		return Single.just(s3RestResponse);
@@ -184,29 +185,23 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 
 	@Override
 	public Single<S3RestResponse> createDownloadPresignedUrl(String bucket, String objectKey, boolean isCache) {
-		if(isNull(client)){
+		if (isNull(client)) {
 			init();
 		}
 		int expirationTimeDownload;
-		if (isCache) expirationTimeDownload = options.getS3CacheOptions().getExpirationTimeDownload();
+		if (isCache)
+			expirationTimeDownload = s3Options.getS3CacheOptions().getExpirationTimeDownload();
 		else {
-			expirationTimeDownload = options.getExpirationTimeDownload();
+			expirationTimeDownload = s3Options.getExpirationTimeDownload();
 		}
-		GetObjectRequest getObjectRequest =
-				GetObjectRequest.builder()
-						.bucket(bucket)
-						.key(objectKey)
-						.build();
+		GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucket).key(objectKey).build();
 
-		GetObjectPresignRequest getObjectPresignRequest =
-				GetObjectPresignRequest.builder()
-						.signatureDuration(Duration.ofSeconds(expirationTimeDownload))
-						.getObjectRequest(getObjectRequest)
-						.build();
+		GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+				.signatureDuration(Duration.ofSeconds(expirationTimeDownload)).getObjectRequest(getObjectRequest)
+				.build();
 
 		// Generate the presigned request
-		PresignedGetObjectRequest presignedGetObjectRequest =
-				presigner.presignGetObject(getObjectPresignRequest);
+		PresignedGetObjectRequest presignedGetObjectRequest = presigner.presignGetObject(getObjectPresignRequest);
 
 		// Log the presigned URL
 		if (log.isDebugEnabled()) {
@@ -222,56 +217,46 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 
 	@Override
 	public Flowable<Buffer> read(String bucketName, String objectKey) {
-		if(isNull(client)){
+		if (isNull(client)) {
 			init();
 		}
 		return Flowable.defer(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Loading data for uuid {" + objectKey + "}");
 			}
-			GetObjectRequest request = GetObjectRequest.builder()
-					.bucket(bucketName)
-					.key(objectKey)
-					.build();
+			GetObjectRequest request = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 			return FlowableInterop.fromFuture(client.getObject(request, AsyncResponseTransformer.toBytes()));
 		}).map(f -> Buffer.buffer(f.asByteArray()));
 	}
 
-    @Override
-    public Single<S3RestResponse> uploadFile(String bucket, String objectKey, File file, boolean isCache) {
-		if(isNull(client)){
+	@Override
+	public Single<S3RestResponse> uploadFile(String bucket, String objectKey, File file, boolean isCache) {
+		if (isNull(client)) {
 			init();
 		}
 		String mimeTypeForFilename = MimeMapping.getMimeTypeForFilename(file.getName());
 
-		PutObjectRequest objectRequest = PutObjectRequest.builder()
-				.bucket(bucket)
-				.key(objectKey)
-				.contentType(mimeTypeForFilename)
-				.build();
+		PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucket).key(objectKey)
+				.contentType(mimeTypeForFilename).build();
 		String[] split = objectKey.split("/");
 
-        // Put the object into the bucket
-        Completable completable = CompletableInterop.fromFuture(client.putObject(objectRequest,
-                AsyncRequestBody.fromFile(file)
-        ));
-        return completable
-                .andThen(createUploadPresignedUrl(bucket, split[0], split[1], null, isCache))
-                .doOnError(err -> Single.error(err));
-    }
+		// Put the object into the bucket
+		Completable completable = CompletableInterop
+				.fromFuture(client.putObject(objectRequest, AsyncRequestBody.fromFile(file)));
+		return completable.andThen(createUploadPresignedUrl(bucket, split[0], split[1], null, isCache))
+				.doOnError(err -> Single.error(err));
+	}
 
 	@Override
 	public Single<Boolean> exists(String bucket, String objectKey) {
-		if(isNull(client)){
+		if (isNull(client)) {
 			init();
 		}
-		HeadObjectRequest request = HeadObjectRequest.builder()
-				.bucket(bucket)
-				.key(objectKey)
-				.build();
+		HeadObjectRequest request = HeadObjectRequest.builder().bucket(bucket).key(objectKey).build();
 
 		return SingleInterop.fromFuture(client.headObject(request)).map(r -> r != null).onErrorResumeNext(e -> {
-			if (e instanceof CompletionException && e.getCause() != null && e.getCause() instanceof NoSuchKeyException) {
+			if (e instanceof CompletionException && e.getCause() != null
+					&& e.getCause() instanceof NoSuchKeyException) {
 				return Single.just(false);
 			} else {
 				return Single.error(e);
@@ -281,34 +266,30 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 		});
 	}
 
-    @Override
-    public Single<Boolean> exists(String bucketName) {
-		if(isNull(client)){
+	@Override
+	public Single<Boolean> exists(String bucketName) {
+		if (isNull(client)) {
 			init();
 		}
-		HeadBucketRequest headRequest = HeadBucketRequest.builder()
-                .bucket(bucketName)
-                .build();
-        return SingleInterop.fromFuture(client.headBucket(headRequest)).map(e -> e != null).onErrorResumeNext(e -> {
-            if (e instanceof CompletionException && e.getCause() != null && e.getCause() instanceof NoSuchBucketException) {
-                return Single.just(false);
-            } else {
-                return Single.error(e);
-            }
-        }).doOnError(e -> {
-            log.error("Error while checking for bucket {" + bucketName + "}", bucketName, e);
-        });
-    }
+		HeadBucketRequest headRequest = HeadBucketRequest.builder().bucket(bucketName).build();
+		return SingleInterop.fromFuture(client.headBucket(headRequest)).map(e -> e != null).onErrorResumeNext(e -> {
+			if (e instanceof CompletionException && e.getCause() != null
+					&& e.getCause() instanceof NoSuchBucketException) {
+				return Single.just(false);
+			} else {
+				return Single.error(e);
+			}
+		}).doOnError(e -> {
+			log.error("Error while checking for bucket {" + bucketName + "}", bucketName, e);
+		});
+	}
 
-    @Override
-    public Completable delete(String bucket, String s3ObjectKey) {
-		if(isNull(client)){
+	@Override
+	public Completable delete(String bucket, String s3ObjectKey) {
+		if (isNull(client)) {
 			init();
 		}
-		DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                .key(s3ObjectKey)
-                .bucket(bucket)
-                .build();
+		DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder().key(s3ObjectKey).bucket(bucket).build();
 
 		Completable deleteAction = Completable.fromFuture(client.deleteObject(deleteRequest));
 		return deleteAction;
@@ -316,9 +297,9 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 
 	@Override
 	public Completable delete(String s3ObjectKey) {
-		if(isNull(client)){
+		if (isNull(client)) {
 			init();
 		}
-		return delete(options.getBucket(), s3ObjectKey);
+		return delete(s3Options.getBucket(), s3ObjectKey);
 	}
 }

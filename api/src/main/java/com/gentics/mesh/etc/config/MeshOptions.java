@@ -215,7 +215,7 @@ public class MeshOptions implements Option {
 		return this;
 	}
 
-	@JsonProperty("s3binary")
+	@JsonProperty("s3options")
 	public S3Options getS3Options() {
 		if (s3options == null) {
 			s3options = new S3Options();
