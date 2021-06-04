@@ -2,6 +2,7 @@ package com.gentics.mesh.dagger;
 
 import javax.inject.Provider;
 
+import com.gentics.mesh.storage.S3BinaryStorage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.annotation.Getter;
@@ -104,6 +105,9 @@ public interface BaseMeshComponent {
 
 	@Getter
 	BinaryStorage binaryStorage();
+
+	@Getter
+	S3BinaryStorage s3binaryStorage();
 
 	@Getter
 	Provider<BulkActionContext> bulkProvider();

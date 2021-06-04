@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.rest.schema.*;
+import com.gentics.mesh.core.rest.schema.impl.*;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.madl.index.IndexHandler;
@@ -20,25 +22,8 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
-import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
  * @see AddFieldChange
@@ -146,6 +131,18 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 				binaryField.setBinaryExtractOptions(options);
 			}
 			field = binaryField;
+			break;
+		case "s3binary":
+			S3BinaryFieldSchema s3binaryField = new S3BinaryFieldSchemaImpl();
+			Boolean s3Content = getRestProperty(S3BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY);
+			Boolean s3Metadata = getRestProperty(S3BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY);
+			if (s3Metadata != null || s3Content != null) {
+				S3BinaryExtractOptions options = new S3BinaryExtractOptions();
+				options.setContent(BooleanUtils.toBoolean(s3Content));
+				options.setMetadata(BooleanUtils.toBoolean(s3Metadata));
+				s3binaryField.setS3BinaryExtractOptions(options);
+			}
+			field = s3binaryField;
 			break;
 		case "node":
 			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();

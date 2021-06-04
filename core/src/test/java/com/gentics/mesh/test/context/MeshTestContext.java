@@ -52,6 +52,8 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.S3CacheOptions;
+import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -64,6 +66,7 @@ import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.docker.AWSContainer;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.MeshAssert;
@@ -551,6 +554,7 @@ public class MeshTestContext extends TestWatcher {
 		}
 		// Increase timeout to high load during testing
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
+		S3Options s3Options = meshOptions.getS3Options();
 		searchOptions.setTimeout(10_000L);
 		storageOptions.setDirectory(graphPath);
 		storageOptions.setSynchronizeWrites(true);
@@ -608,6 +612,26 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		default:
 			break;
+		}
+		switch (settings.awsContainer()) {
+			case AWS:
+				break;
+			case MINIO:
+				AWSContainer awsContainer = new AWSContainer(
+						new AWSContainer.CredentialsProvider("accessKey", "secretKey"));
+				awsContainer.start();
+				String ACCESS_KEY = "accessKey";
+				String SECRET_KEY = "secretKey";
+				s3Options.setEnabled(true);
+				s3Options.setAccessKeyId(ACCESS_KEY);
+				s3Options.setBucket("test-bucket");
+				S3CacheOptions s3CacheOptions = new S3CacheOptions();
+				s3CacheOptions.setBucket("test-cache-bucket");
+				s3Options.setS3CacheOptions(s3CacheOptions);
+				s3Options.setSecretAccessKey(SECRET_KEY);
+				s3Options.setRegion("eu-central-1");
+				s3Options.setEndpoint("http://" + awsContainer.getHostAddress());
+				break;
 		}
 
 		if (settings.useKeycloak()) {

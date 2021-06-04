@@ -68,7 +68,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		BootstrapInitializer boot = mock(BootstrapInitializer.class);
 		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null, null));
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
-		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, boot);
+		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, boot,null);
 	}
 
 	@Test
