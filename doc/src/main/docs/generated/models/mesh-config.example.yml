@@ -6,6 +6,23 @@ updateCheck: true
 vertxOptions:
   workerPoolSize: 20
   eventPoolSize: 16
+s3options:
+  enabled: false
+  bucket: null
+  expirationTimeUpload: 60000
+  expirationTimeDownload: 360000
+  linkResolver: null
+  metadataWhitelist: null
+  parserLimit: 40000
+  region: null
+  secretAccessKey: null
+  accessKeyId: null
+  endpoint: null
+  s3cacheOptions:
+    bucket: null
+    expirationTimeDownload: 360000
+    expirationTimeUpload: 60000
+    region: null
 tempDirectory: "/opt/mesh/data/tmp"
 pluginDirectory: "plugins"
 pluginTimeout: 120
