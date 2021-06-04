@@ -7,9 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import io.reactivex.Flowable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -587,7 +586,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @throws IOException
 	 */
 	default public void prepareSchema(HibNode node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
-		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
+		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"), true);
 	}
 	
 	/**
@@ -597,11 +596,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @param fieldSchema filled field
 	 * @throws IOException
 	 */
-	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema) throws IOException {
+	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(fieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		mesh().serverSchemaStorage().clear();
+		if (setAsSegmentField) {
+			schema.setSegmentField(fieldSchema.getName());
+		}
+ 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		// mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
@@ -615,6 +617,22 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName, contentType,
 			new NodeParametersImpl().setResolveLinks(LinkType.FULL));
+	}
+
+	default public File createTempFile() {
+		try {
+			InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+			byte[] bytes = IOUtils.toByteArray(ins);
+			Flowable<Buffer> obs = Flowable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
+			File file = new File("target", "blume.jpg");
+			try (FileOutputStream fos = new FileOutputStream(file)) {
+				IOUtils.write(bytes, fos);
+				fos.flush();
+			}
+			return file;
+		} catch (Exception ex) {
+			return null;
+		}
 	}
 
 	default public NodeResponse uploadImage(HibNode node, String languageTag, String fieldName) throws IOException {

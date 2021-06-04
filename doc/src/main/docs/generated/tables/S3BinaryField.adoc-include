@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| focalPoint.x
+| false
+| number
+| The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image.
+
+| focalPoint.y
+| false
+| number
+| The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image.
+
+| metadata.location
+| false
+| object
+| Geolocation information.
+
+|======

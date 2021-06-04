@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.11-SNAPSHOT</version>
+		<version>1.7.12-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -219,6 +219,11 @@
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger-compiler</artifactId>
 			<optional>true</optional>
+		</dependency>
+		<!-- Default S3 storage provider -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-service-aws-s3-storage</artifactId>
 		</dependency>
 	</dependencies>
 

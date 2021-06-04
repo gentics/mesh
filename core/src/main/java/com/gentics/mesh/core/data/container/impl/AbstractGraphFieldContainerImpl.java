@@ -25,21 +25,8 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.*;
+import com.gentics.mesh.core.data.node.field.impl.*;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
@@ -58,6 +45,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -213,6 +201,21 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	@Override
 	public BinaryGraphField getBinary(String key) {
 		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
+	}
+
+	@Override
+	public S3BinaryGraphField createS3Binary(String fieldKey, S3HibBinary s3binary) {
+		S3BinaryGraphField edge = addFramedEdge(HAS_FIELD, toGraph(s3binary), S3BinaryGraphFieldImpl.class);
+		edge.setFieldKey(fieldKey);
+		return edge;
+	}
+
+	@Override
+	public S3BinaryGraphField getS3Binary(String key) {
+		return outE(HAS_FIELD)
+				.has(S3BinaryGraphFieldImpl.class)
+				.has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+				.nextOrDefaultExplicit(S3BinaryGraphFieldImpl.class, null);
 	}
 
 	@Override

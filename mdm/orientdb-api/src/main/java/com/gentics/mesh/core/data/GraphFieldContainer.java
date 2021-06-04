@@ -6,13 +6,7 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.*;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
@@ -23,6 +17,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -67,6 +62,23 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @return
 	 */
 	BinaryGraphField createBinary(String fieldKey, HibBinary binary);
+
+	/**
+	 * Return the s3 binary graph field for the given key.
+	 *
+	 * @param key
+	 * @return
+	 */
+	S3BinaryGraphField getS3Binary(String key);
+
+	/**
+	 * Create a s3 binary field and use the given binary to be referenced by the field.
+	 *
+	 * @param fieldKey
+	 * @param s3binary
+	 * @return
+	 */
+	S3BinaryGraphField createS3Binary(String fieldKey, S3HibBinary s3binary);
 
 	/**
 	 * Return the node graph field for the given key.
