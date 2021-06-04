@@ -1,0 +1,70 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| accessKeyId
+| false
+| string
+| AWS S3 access key id
+
+| bucket
+| false
+| string
+| AWS S3 bucket where binaries will be uploaded to and downloaded from
+
+| enabled
+| false
+| boolean
+| Flag to enable or disable the S3 engine.
+
+| endpoint
+| false
+| string
+| AWS S3 custom endpoint
+
+| expirationTimeDownload
+| false
+| integer
+| After this time in milliseconds the AWS S3 URL used for download will expire.
+
+| expirationTimeUpload
+| false
+| integer
+| After this time in milliseconds the AWS S3 URL used for upload will expire.
+
+| linkResolver
+| false
+| string
+| Style of linkResolving:&#x27;s3&#x27; (default) resolved Links will render a pre-signed URL directly to S3 OR &#x27;mesh&#x27; resolved Links will render a mesh-url
+
+| metadataWhitelist
+| false
+| array
+| If set, the parser will only extract metadata with the keys specified in the list.
+
+| parserLimit
+| false
+| integer
+| The parser limit for uploaded documents (pdf, doc, docx). 
+
+| region
+| false
+| string
+| AWS S3 region
+
+| s3cacheOptions
+| false
+| object
+| S3 Cache Bucket Options.
+
+| secretAccessKey
+| false
+| string
+| AWS S3 secret access key
+
+|======

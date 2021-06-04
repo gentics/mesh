@@ -1719,3 +1719,30 @@ Emitted once a plugin has been undeployed.
 
 
 
+
+=== _mesh.s3binary.created_
+
+Emitted when a S3 binary field was created.
+
+
+
+
+
+
+=== _mesh.s3binary.deleted_
+
+Emitted when a S3 binary field gets deleted.
+
+
+
+
+
+
+=== _mesh.s3binary.metadata.extracted_
+
+Emitted when the metadata of a S3 binary field is extracted.
+
+
+
+
+
