@@ -35,5 +35,5 @@ public interface S3Binaries {
 	 * 
 	 * @return
 	 */
-	Transactional<Stream<S3Binary>> findAll();
+	Transactional<Stream<? extends S3Binary>> findAll();
 }
