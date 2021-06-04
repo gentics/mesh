@@ -225,7 +225,7 @@ public class WebRootLinkReplacer {
 				.flatMap(s3binaryFieldSchema -> {
 					String linkResolver = options.getS3Options().getLinkResolver();
 					//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
-					if (StringUtils.isNotBlank(linkResolver) || linkResolver.equals("s3")) {
+					if (StringUtils.isNotBlank(linkResolver) && linkResolver.equals("s3")) {
 						String fieldName = s3binaryFieldSchema.getName();
 						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName).getS3Binary());
 					} else {
