@@ -29,8 +29,7 @@ public class ReferenceImageCreator {
 		ImageManipulatorOptions options = new ImageManipulatorOptions();
 		String tmpDir = new File("target", "tmp_" + System.currentTimeMillis()).getAbsolutePath();
 		options.setImageCacheDirectory(tmpDir);
-		ImgscalrImageManipulator manipulator = new ImgscalrImageManipulator(vertx, options);
-
+		ImgscalrImageManipulator manipulator = new ImgscalrImageManipulator(vertx, options, null);
 		readImageConfig().blockingForEach(image -> {
 			String imageName = image.getString("name");
 			System.out.println("Transforming image " + imageName);

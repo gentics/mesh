@@ -20,6 +20,8 @@ import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
+import com.gentics.mesh.core.data.s3binary.impl.S3BinariesImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -50,6 +52,8 @@ import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.storage.s3.S3BinaryStorageImpl;
 
 import dagger.Binds;
 import dagger.Module;
@@ -68,6 +72,9 @@ public abstract class BindModule {
 
 	@Binds
 	abstract MeshOAuthService bindOAuthHandler(MeshOAuth2ServiceImpl e);
+
+	@Binds
+	abstract S3BinaryStorage bindS3BinaryStorage(S3BinaryStorageImpl e);
 
 	@Binds
 	abstract BinaryStorage bindBinaryStorage(LocalBinaryStorage e);
@@ -110,6 +117,9 @@ public abstract class BindModule {
 
 	@Binds
 	abstract Binaries bindBinaries(BinariesImpl e);
+
+	@Binds
+	abstract S3Binaries bindS3Binaries(S3BinariesImpl e);
 
 	@Binds
 	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);

@@ -217,6 +217,11 @@
 			<artifactId>dagger-compiler</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- Default S3 storage provider -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-service-aws-s3-storage</artifactId>
+		</dependency>
 	</dependencies>
 
 

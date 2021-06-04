@@ -11,14 +11,13 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
+import com.gentics.mesh.storage.S3BinaryStorage;
 import com.hazelcast.core.HazelcastInstance;
 
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
@@ -28,14 +27,12 @@ import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 @Module
 public class MeshModule {
 
-	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
-
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
 	@Provides
 	@Singleton
-	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options) {
-		return new ImgscalrImageManipulator(vertx, options);
+	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
+		return new ImgscalrImageManipulator(vertx, options, s3BinaryStorage);
 	}
 
 	@Provides

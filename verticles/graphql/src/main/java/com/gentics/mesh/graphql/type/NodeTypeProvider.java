@@ -715,6 +715,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				case BINARY:
 					root.field(fields.createBinaryDef(fieldSchema));
 					break;
+				case S3BINARY:
+					root.field(fields.createS3BinaryDef(fieldSchema));
+					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
 					root.field(fields.createListDef(context, listFieldSchema));
@@ -774,6 +777,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				case BINARY:
 					fieldsType.field(fields.createBinaryDef(fieldSchema));
 					break;
+				case S3BINARY:
+					root.field(fields.createS3BinaryDef(fieldSchema));
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
 					fieldsType.field(fields.createListDef(context, listFieldSchema));

@@ -8,6 +8,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -90,6 +92,7 @@ import com.gentics.mesh.test.context.helper.EventHelper;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.io.Resources;
 
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -579,7 +582,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @throws IOException
 	 */
 	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
-		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
+		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"), true);
 	}
 	
 	/**
@@ -589,12 +592,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @param fieldSchema filled field
 	 * @throws IOException
 	 */
-	default public void prepareTypedSchema(Node node, FieldSchema fieldSchema) throws IOException {
+	default public void prepareTypedSchema(Node node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
 		// Update the schema and enable binary support for folders
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(fieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		mesh().serverSchemaStorage().clear();
+		if (setAsSegmentField) {
+			schema.setSegmentField(fieldSchema.getName());
+		}
+ 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		// mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
@@ -608,6 +614,22 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName, contentType,
 			new NodeParametersImpl().setResolveLinks(LinkType.FULL));
+	}
+
+	default public File createTempFile() {
+		try {
+			InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+			byte[] bytes = IOUtils.toByteArray(ins);
+			Flowable<Buffer> obs = Flowable.just(Buffer.buffer(bytes)).publish().autoConnect(2);
+			File file = new File("target", "blume.jpg");
+			try (FileOutputStream fos = new FileOutputStream(file)) {
+				IOUtils.write(bytes, fos);
+				fos.flush();
+			}
+			return file;
+		} catch (Exception ex) {
+			return null;
+		}
 	}
 
 	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
