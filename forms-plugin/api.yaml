@@ -203,6 +203,13 @@ paths:
         schema:
           type: string
           default: "csv"
+      - name: headerDelimiter
+        in: query
+        required: false
+        description: Delimiter that is used between a field name and a field label in the header row of an exported CSV. The default delimiter is "|||". In case no field label is set for a field, only the field name will be exported and the delimiter is not used.
+        schema:
+          type: string
+          default: "%7C%7C%7C"
     get:
       summary: Export Form
       tags:
