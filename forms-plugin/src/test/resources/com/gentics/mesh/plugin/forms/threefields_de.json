@@ -21,7 +21,6 @@
 			"type": "input",
 			"name": "input2",
 			"placeholderName": "",
-			"label": "Zweites Feld",
 			"mandatory": true,
 			"info": "",
 			"tooltip": "",

@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,7 +78,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		// the CSV is indeterministic, so we will just check that all the records are there
 		Set<String> records = new HashSet<>();
 		// add "record" for the header
-		records.add(StringUtils.join(Arrays.asList("First Field", "Second Field", "Third Field"), ","));
+		records.add(StringUtils.join(Arrays.asList("input1|||First Field", "input2|||Second Field", "input3|||Third Field"), ","));
 
 		for (String value : Arrays.asList("one", "two", "three")) {
 			String value1 = value + " in field 1";
@@ -135,8 +136,8 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		// we collect the expected records (including the header) here as Set, because the actual order in
 		// the CSV is indeterministic, so we will just check that all the records are there
 		Set<String> records = new HashSet<>();
-		// add "record" for the header
-		records.add(StringUtils.join(Arrays.asList("Erstes Feld", "Zweites Feld", "Drittes Feld"), ","));
+		// add "record" for the header, input2 does not have a label
+		records.add(StringUtils.join(Arrays.asList("input1|||Erstes Feld", "input2", "input3|||Drittes Feld"), ","));
 
 		for (String value : Arrays.asList("one", "two", "three")) {
 			String value1 = value + " in field 1";
@@ -161,6 +162,66 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 
 		Request exportRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + uuid + "/export"))
+				.headers(auth(permission))
+				.get()
+				.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+
+		if (permission) {
+			assertThat(exportResponse.isSuccessful()).as(String.format("Response success %d (%s)", exportResponse.code(), exportResponse.message())).isTrue();
+
+			Set<String> actualRecords = new HashSet<>();
+			try (BufferedReader in = new BufferedReader(new StringReader(exportResponse.body().string()))) {
+				String line = null;
+				while ((line = in.readLine()) != null) {
+					actualRecords.add(line);
+				}
+			}
+
+			assertThat(actualRecords).as("Exported data").containsOnlyElementsOf(records);
+		} else {
+			assertForbidden(exportResponse);
+		}
+	}
+	
+	/**
+	 * Test exporting data with a custom title row header delimiter
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportDeCustomDelimiter() throws IOException {
+		String customDelimiter = "CUSTOM_DELIMITER";
+		String uuid = createForm("threefields_de.json");
+
+		// we collect the expected records (including the header) here as Set, because the actual order in
+		// the CSV is indeterministic, so we will just check that all the records are there
+		Set<String> records = new HashSet<>();
+		// add "record" for the header, input2 does not have a label
+		records.add(StringUtils.join(Arrays.asList("input1" + customDelimiter + "Erstes Feld", "input2", "input3" + customDelimiter + "Drittes Feld"), ","));
+
+		for (String value : Arrays.asList("one", "two", "three")) {
+			String value1 = value + " in field 1";
+			String value2 = value + " in field 2";
+			String value3 = value + " in field 3";
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("input1", value1)
+					.addFormDataPart("input2", value2)
+					.addFormDataPart("input3", value3)
+					.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			client().newCall(postRequest).execute();
+
+			// add the line to the set of expected records
+			records.add(StringUtils.join(Arrays.asList(value1, value2, value3), ","));
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "de", true, true);
+		}
+
+		Request exportRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/export?headerDelimiter=" + URLEncoder.encode(customDelimiter, "UTF-8")))
 				.headers(auth(permission))
 				.get()
 				.build();
