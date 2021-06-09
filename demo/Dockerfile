@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:x86_64-alpine-jre-11.0.5_10
+FROM adoptopenjdk/openjdk11:x86_64-debian-jre-11.0.11_9
 
 ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
 ENV MESH_GRAPH_BACKUP_DIRECTORY=/backups
