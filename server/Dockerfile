@@ -14,7 +14,7 @@ EXPOSE 8443
 EXPOSE 8081
 
 USER root
-RUN adduser -D -u 1000 -G root -h /mesh mesh && \
+RUN adduser --disabled-password --uid 1000 --ingroup sudo --home /mesh --gecos "Mesh Mesh,0,0,0,0" mesh && \
     mkdir /graphdb   && chown 1000:0 /graphdb  -R && chmod 770 /graphdb  && \
     mkdir /uploads   && chown 1000:0 /uploads  -R && chmod 770 /uploads  && \
     mkdir /backups   && chown 1000:0 /backups  -R && chmod 770 /backups  && \

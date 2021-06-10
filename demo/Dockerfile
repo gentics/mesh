@@ -17,7 +17,7 @@ USER root
 ADD ./target/mesh-demo*jar /mesh/meshdemo.jar
 ADD ./target/dump/data/binaryFiles /uploads
 ADD ./target/dump/data/graphdb /graphdb
-RUN adduser -D -u 1000 -G root -h /mesh mesh && \
+RUN adduser --disabled-password --uid 1000 --ingroup sudo --home /mesh --gecos "Mesh Mesh,0,0,0,0" mesh && \
     mkdir -p /graphdb   && chown 1000:0 /graphdb  -R && chmod 770 /graphdb  && \
     mkdir -p /uploads   && chown 1000:0 /uploads  -R && chmod 770 /uploads  && \
     mkdir -p /backups   && chown 1000:0 /backups  -R && chmod 770 /backups  && \
