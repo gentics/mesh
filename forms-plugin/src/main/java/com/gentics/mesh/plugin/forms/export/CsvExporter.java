@@ -30,8 +30,19 @@ import io.vertx.core.logging.LoggerFactory;
  *
  * The actual form of the generated CSV file can be specified in the {@link Exporter#PARAM_OPTIONS} query parameter. Supported values are the ones supported by
  * {@link CSVFormat} (specified in {@link Predefined}).
+ * 
+ * The headers in the first line of the generated CSV contain a concatenation of the corresponding field name and field label separated by the value specified
+ * in the {@link CsvExporter#PARAM_DELIMITER} query parameter. If no value is specified, {@link CsvExporter#DEFAULT_HEADER_DELIMITER} is used.
  */
 public class CsvExporter extends Exporter {
+	
+	private static final String PARAM_DELIMITER = "headerDelimiter";
+	
+	/**
+	 * Default delimiter to separate field name from field label.
+	 * Needed, since exported CSV has to be parsable by field name as well as human readable.
+	 */
+	private final static String DEFAULT_HEADER_DELIMITER = "|||";
 
 	private static final Logger log = LoggerFactory.getLogger(CsvExporter.class);
 
@@ -131,33 +142,23 @@ public class CsvExporter extends Exporter {
 		if (dataFields == null || dataFields.isEmpty()) {
 			return new String[0];
 		}
+		
+		String headerDelimiter = context.request().getParam(PARAM_DELIMITER);
+		if (headerDelimiter == null) {
+			headerDelimiter = CsvExporter.DEFAULT_HEADER_DELIMITER;
+		}
 
 		List<String> headers = new ArrayList<>();
 
 		for (String fieldName : fieldNames) {
-			headers.add(uniqueHeaderName(fieldLabels.getOrDefault(fieldName, fieldName), headers));
+			String fieldLabel = fieldLabels.getOrDefault(fieldName, fieldName);
+			String annotatedFieldLabel = fieldName.equals(fieldLabel)
+					? fieldName
+					: fieldName + headerDelimiter + fieldLabel;
+			headers.add(annotatedFieldLabel);
 		}
 
 		return headers.toArray(new String[headers.size()]);
-	}
-
-	/**
-	 * sometimes fieldnames in FormsPlugin are the same - then we just add a suffix to make the column unique
-	 * 
-	 * @param headerColumn
-	 *            headerColumn name
-	 * @param headers
-	 *            list with current columns
-	 * @return unique headerColumn name
-	 */
-	private String uniqueHeaderName(String headerColumn, List<String> headers) {
-		int i = 1;
-		String originColumn = headerColumn;
-		while (headers.contains(headerColumn)) {
-			headerColumn = originColumn + "_" + i;
-			i++;
-		}
-		return headerColumn;
 	}
 
 	/**
