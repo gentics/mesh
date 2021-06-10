@@ -137,23 +137,25 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		// the CSV is indeterministic, so we will just check that all the records are there
 		Set<String> records = new HashSet<>();
 		// add "record" for the header, input2 does not have a label
-		records.add(StringUtils.join(Arrays.asList("input1|||Erstes Feld", "input2", "input3|||Drittes Feld"), ","));
+		records.add(StringUtils.join(Arrays.asList("input1|||Erstes Feld", "input2", "input3|||Drittes Feld", "input4"), ","));
 
 		for (String value : Arrays.asList("one", "two", "three")) {
 			String value1 = value + " in field 1";
 			String value2 = value + " in field 2";
 			String value3 = value + " in field 3";
+			String value4 = value + " in field 4";
 			RequestBody requestBody = new MultipartBody.Builder()
 					.setType(MultipartBody.FORM)
 					.addFormDataPart("input1", value1)
 					.addFormDataPart("input2", value2)
 					.addFormDataPart("input3", value3)
+					.addFormDataPart("input4", value4)
 					.build();
 			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 
 			// add the line to the set of expected records
-			records.add(StringUtils.join(Arrays.asList(value1, value2, value3), ","));
+			records.add(StringUtils.join(Arrays.asList(value1, value2, value3, value4), ","));
 		}
 
 		if (!online) {
@@ -197,23 +199,25 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		// the CSV is indeterministic, so we will just check that all the records are there
 		Set<String> records = new HashSet<>();
 		// add "record" for the header, input2 does not have a label
-		records.add(StringUtils.join(Arrays.asList("input1" + customDelimiter + "Erstes Feld", "input2", "input3" + customDelimiter + "Drittes Feld"), ","));
+		records.add(StringUtils.join(Arrays.asList("input1" + customDelimiter + "Erstes Feld", "input2", "input3" + customDelimiter + "Drittes Feld", "input4"), ","));
 
 		for (String value : Arrays.asList("one", "two", "three")) {
 			String value1 = value + " in field 1";
 			String value2 = value + " in field 2";
 			String value3 = value + " in field 3";
+			String value4 = value + " in field 4";
 			RequestBody requestBody = new MultipartBody.Builder()
 					.setType(MultipartBody.FORM)
 					.addFormDataPart("input1", value1)
 					.addFormDataPart("input2", value2)
 					.addFormDataPart("input3", value3)
+					.addFormDataPart("input4", value4)
 					.build();
 			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
 			client().newCall(postRequest).execute();
 
 			// add the line to the set of expected records
-			records.add(StringUtils.join(Arrays.asList(value1, value2, value3), ","));
+			records.add(StringUtils.join(Arrays.asList(value1, value2, value3, value4), ","));
 		}
 
 		if (!online) {
