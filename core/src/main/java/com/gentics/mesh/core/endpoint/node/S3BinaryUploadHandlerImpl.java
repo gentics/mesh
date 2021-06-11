@@ -134,7 +134,10 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 			utils.eventAction(batch -> {
 
 				// We need to check whether someone else has stored the s3 binary in the meanwhile
-				S3Binary s3Binary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName).runInExistingTx(tx);
+				S3Binary s3Binary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
+				if (s3Binary == null) {
+					s3Binary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName).runInExistingTx(tx);
+				}
 				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
