@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-verticles</artifactId>
-		<version>1.4.22.2</version>
+		<version>1.4.22.4</version>
 	</parent>
 
 	<properties>
