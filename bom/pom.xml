@@ -25,6 +25,7 @@
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
 		<orientdb.version>3.1.11</orientdb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
+		<hazelcast.kubernetes.version>1.5.3</hazelcast.kubernetes.version>
 		<jackson.version>2.9.9</jackson.version>
 		<jackson-databind.version>2.9.10</jackson-databind.version>
 		<netty.version>4.1.42.Final</netty.version>
@@ -194,7 +195,7 @@
 			<dependency>
 				<groupId>com.hazelcast</groupId>
 				<artifactId>hazelcast-kubernetes</artifactId>
-				<version>1.2.2</version>
+				<version>${hazelcast.kubernetes.version}</version>
 			</dependency>
 
 			<!-- Test dependencies -->
