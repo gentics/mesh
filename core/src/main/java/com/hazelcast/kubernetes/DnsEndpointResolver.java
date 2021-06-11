@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * 
+ * 
+ * NOTE: this class was originally taken from https://github.com/hazelcast/hazelcast-kubernetes and modified in order to fix the DNS Resolving issues
+ * we noticed in OpenShift
  */
 
 package com.hazelcast.kubernetes;
