@@ -17,10 +17,8 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -147,7 +145,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .s3binaryUuid
 		type.field(newFieldDefinition().name("s3binaryUuid").description("UUID of the s3 binary data.").type(GraphQLString).dataFetcher(fetcher -> {
 			S3BinaryGraphField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3Binary s3Binary = field.getS3Binary();
 			return s3Binary == null ? 0 : s3Binary.getUuid();
 		}));
 
@@ -157,21 +155,21 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .width
 		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			S3BinaryGraphField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3Binary s3Binary = field.getS3Binary();
 			return s3Binary == null ? 0 : s3Binary.getImageWidth();
 		}));
 
 		// .height
 		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			S3BinaryGraphField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3Binary s3Binary = field.getS3Binary();
 			return s3Binary == null ? 0 : s3Binary.getImageHeight();
 		}));
 
 		// .fileSize
 		type.field(newFieldDefinition().name("fileSize").description("Size of the s3 binary data in bytes").type(GraphQLLong).dataFetcher(fetcher -> {
 			S3BinaryGraphField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3Binary s3Binary = field.getS3Binary();
 			return s3Binary.getSize();
 		}));
 
