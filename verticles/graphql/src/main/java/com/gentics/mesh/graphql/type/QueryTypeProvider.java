@@ -627,6 +627,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(meshTypeProvider.createType());
 		additionalTypes.add(interfaceTypeProvider.createPermInfoType());
 		additionalTypes.add(fieldDefProvider.createBinaryFieldType());
+		additionalTypes.add(fieldDefProvider.createS3BinaryFieldType());
 
 		// Shared argument types
 		additionalTypes.add(createLinkEnumType());
