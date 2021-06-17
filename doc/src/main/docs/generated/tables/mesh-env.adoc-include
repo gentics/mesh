@@ -65,17 +65,17 @@
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
 
-| *MESH_CACHE_PATH_SIZE*
-| Override the path cache size.
-
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
 
-| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
-| Override the configured client certificate handling mode.
+| *MESH_CACHE_PATH_SIZE*
+| Override the path cache size.
 
 | *MESH_ELASTICSEARCH_CERT_PATH*
 | Override the configured trusted server certificate.
+
+| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
+| Override the configured client certificate handling mode.
 
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
