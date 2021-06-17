@@ -23,6 +23,12 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.12]]
+== 1.7.12 (17.06.2021)
+
+icon:check[] AWS S3: A bug preventing the new image data from being stored into an existing `s3binary` container, has been fixed.
+icon:check[] AWS S3: An inability of changing permissions for the schema with an S3 field has been fixed.
+
 [[v1.7.11]]
 == 1.7.11 (03.06.2021)
 
