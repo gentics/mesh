@@ -11,13 +11,12 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-services</artifactId>
-		<version>1.7.12-SNAPSHOT</version>
+		<version>1.7.13-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
 
 	<dependencies>
 		<dependency>
@@ -26,7 +25,7 @@
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
-			<artifactId>aws-sdk-java</artifactId>
+			<artifactId>s3</artifactId>
 			<version>2.15.62</version>
 		</dependency>
 
