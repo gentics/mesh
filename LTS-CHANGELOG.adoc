@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.15]]
+== 1.6.15 (21.06.2021)
+
+icon:check[] Core: The included Hazelcast-Kubernetes library has been updated to version `1.5.6`, containing a DNS resolving fix.
+
 [[v1.6.14]]
 == 1.6.14 (17.06.2021)
 
@@ -146,6 +151,11 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.13]]
+== 1.5.13 (21.06.2021)
+
+icon:check[] Core: The included Hazelcast-Kubernetes library has been updated to version `1.5.6`, containing a DNS resolving fix.
+
 [[v1.5.12]]
 == 1.5.12 (02.06.2021)
 
@@ -238,6 +248,11 @@ icon:plus[] Monitoring: The liveness probe will now check for plugin status. Fai
 icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+[[v1.4.23]]
+== 1.4.23 (21.06.2021)
+
+icon:check[] Core: The included Hazelcast-Kubernetes library has been updated to version `1.5.6`, containing a DNS resolving fix.
 
 [[v1.4.22]]
 == 1.4.22 (02.06.2021)
