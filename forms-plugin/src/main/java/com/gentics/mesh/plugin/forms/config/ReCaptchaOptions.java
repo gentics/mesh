@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.forms.config;
 
+import com.gentics.mesh.plugin.forms.model.ReCaptchaElement;
+
 /**
  * reCAPTCHA options
  */
@@ -7,6 +9,8 @@ public class ReCaptchaOptions {
 	private String siteKey;
 
 	private String secretKey;
+
+	private String verificationUrl = ReCaptchaElement.VERIFICATION_URL;
 
 	/**
 	 * Site Key
@@ -38,5 +42,13 @@ public class ReCaptchaOptions {
 	 */
 	public void setSecretKey(String secretKey) {
 		this.secretKey = secretKey;
+	}
+
+	public String getVerificationUrl() {
+		return verificationUrl;
+	}
+
+	public void setVerificationUrl(String verificationUrl) {
+		this.verificationUrl = verificationUrl;
 	}
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -184,7 +185,16 @@ public class Form {
 	 */
 	public Map<String, ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
 		Map<String, ValidationError> errors = new HashMap<>();
-		flattened().filter(FormElement::isActive).filter(elem -> elem.isPosted(postedData, fileUploads)).forEach(elem -> {
+
+		// only filter out the elements, which have not been POSTed, if the form contains multiple pages
+		Predicate<FormElement> filter = null;
+		if (isMultipage()) {
+			filter = elem -> elem.isPosted(postedData, fileUploads);
+		} else {
+			filter = elem -> true;
+		}
+
+		flattened().filter(FormElement::isActive).filter(filter).forEach(elem -> {
 			ValidationError elemError = elem.validate(postedData, fileUploads, formDataNode);
 			if (elemError != null) {
 				errors.put(elem.getName(), elemError);
@@ -290,5 +300,13 @@ public class Form {
 		return flattened()
 			.filter(FormElement::isReportable)
 			.collect(Collectors.toMap(FormElement::getName, FormElement::getLabelOrName));
+	}
+
+	/**
+	 * Check whether the form contains pages
+	 * @return true if at least one FormpageElement is found
+	 */
+	public boolean isMultipage() {
+		return flattened().filter(elem -> elem instanceof FormpageElement).findFirst().isPresent();
 	}
 }
