@@ -39,7 +39,7 @@ public class ReCaptchaElement extends FormElement {
 	/**
 	 * URL for verification
 	 */
-	protected final static String VERIFICATION_URL = "https://www.google.com/recaptcha/api/siteverify";
+	public final static String VERIFICATION_URL = "https://www.google.com/recaptcha/api/siteverify";
 
 	/**
 	 * Key of the posted captcha response
@@ -118,7 +118,11 @@ public class ReCaptchaElement extends FormElement {
 			}
 
 			try (CloseableHttpClient client = clientBuilder.build()) {
-				HttpPost request = new HttpPost(VERIFICATION_URL);
+				String url = getConfiguration().getReCaptcha().getVerificationUrl();
+				if (StringUtils.isBlank(url)) {
+					url = VERIFICATION_URL;
+				}
+				HttpPost request = new HttpPost(url);
 
 				List<NameValuePair> form = new ArrayList<>();
 				form.add(new BasicNameValuePair("secret", getConfiguration().getReCaptcha().getSecretKey()));

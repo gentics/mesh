@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.forms;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
@@ -17,6 +20,7 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +32,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
@@ -40,6 +45,9 @@ import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 
 /**
  * Test cases for posting data to a form
@@ -68,14 +76,39 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	protected String inactiveForm;
 
+	/**
+	 * web server mock which will act as verification server
+	 */
+	protected MockWebServer webServer;
+
 	@Before
 	public void setup() {
 		super.setup();
+
+		// start the mock recaptcha verification server
+		webServer = new MockWebServer();
+		try {
+			webServer.start();
+		} catch (IOException e) {
+			fail("Failed to start mock web-server");
+		}
+
+		// modify the plugin configuration: set the recaptcha verification URL
+		ReCaptchaOptions reCaptchaOptions = FormsTestPlugin.instance.configuration.getReCaptcha();
+		reCaptchaOptions.setVerificationUrl(String.format("http://%s:%s/", webServer.getHostName(), webServer.getPort()));
+
 		// activate plugin
 		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
 		setLanguages(PROJECT_NAME, Arrays.asList("en", "it"));
 		inputFieldForm = "inputfield_languages_" + language + ".json";
 		inactiveForm = "inactive_" + language + ".json";
+	}
+
+	@After
+	public void tearDown() throws IOException {
+		if (webServer != null) {
+			webServer.shutdown();
+		}
 	}
 
 	/**
@@ -447,5 +480,274 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(postResponse.isSuccessful())
 				.as(String.format("Response success %d (%s)", postResponse.code(), postResponse.message())).isFalse();
 		assertThat(postResponse.code()).as("Response code").isEqualTo(404);
+	}
+
+	/**
+	 * Test posting to a form containing a recaptcha field (which is not filled)
+	 * @throws IOException
+	 */
+	@Test
+	public void testRecaptchaNotFilled() throws IOException {
+		// create the form
+		String uuid = createForm("recaptcha.json", true, true);
+
+		// post only the input field
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "someValue")
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
+
+		// we expect no calls to the recaptcha verification server
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(0);
+
+		// we expect to be redirected back to the form
+		assertRedirect(pair.getLeft());
+		// data node must not be published
+		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
+			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
+			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+		});
+		// form-data cookie must exist
+		assertThat(pair.getRight()).as("Cookie").isPresent();
+		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+	}
+
+	/**
+	 * Test posting to a form containing a recaptcha field (which is incorrectly filled)
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testRecaptchaIncorrectlyFilled() throws IOException, InterruptedException {
+		// create the form
+		String uuid = createForm("recaptcha.json", true, true);
+
+		// let the recaptcha verification server answer with success: false
+		webServer.enqueue(new MockResponse().setBody("{\"success\": false}"));
+
+		// post the input field and an incorrect recaptcha response
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "someValue")
+				.addFormDataPart("g-recaptcha-response", "incorrect")
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
+
+		// recaptcha verification server must have answered one request
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=your-secret-key&response=incorrect]");
+
+		// we expect to be redirected back to the form
+		assertRedirect(pair.getLeft());
+		// data node must not be published
+		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
+			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
+			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+		});
+		// form-data cookie must exist
+		assertThat(pair.getRight()).as("Cookie").isPresent();
+		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+	}
+
+	/**
+	 * Test posting to a form containing a recaptcha field (which is correctly filled)
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testRecaptchaCorrectlyFilled() throws IOException, InterruptedException {
+		// create the form
+		String uuid = createForm("recaptcha.json", true, true);
+
+		// let the recaptcha verification server answer with success: true
+		webServer.enqueue(new MockResponse().setBody("{\"success\": true}"));
+
+		// post the input field and a correct recaptcha response
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "someValue")
+				.addFormDataPart("g-recaptcha-response", "correct")
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
+
+		// recaptcha verification server must have answered one request
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=your-secret-key&response=correct]");
+
+		// answer to form post must have been OK
+		assertOk(pair.getLeft());
+	}
+
+	/**
+	 * Test posting to a multipage form containing a recaptcha field (which is not filled)
+	 * @throws IOException
+	 */
+	@Test
+	public void testMultipageRecaptchaNotFilled() throws IOException {
+		// create the form
+		String uuid = createForm("multipage_recaptcha.json", true, true);
+
+		// post input field from page 1
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("page1", "1")
+				.addFormDataPart("input1", "someValue")
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
+
+		// we expect no calls to the recaptcha verification server
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(0);
+
+		// we expect to be redirected back to the form
+		assertRedirect(pair.getLeft());
+		// data node must not be published and first page not completed
+		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
+			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
+			assertThat(n.getFields().getBooleanField("page1").getValue()).as("Page 1 completed").isFalse();
+			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+		});
+		// form-data cookie must be present
+		assertThat(pair.getRight()).as("Cookie").isPresent();
+		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+	}
+
+	/**
+	 * Test posting to a multipage form containing a recaptcha field (which is incorrectly filled)
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testMultipageRecaptchaIncorrectlyFilled() throws IOException, InterruptedException {
+		// create the form
+		String uuid = createForm("multipage_recaptcha.json", true, true);
+
+		// let the recaptcha verification server answer with success: false
+		webServer.enqueue(new MockResponse().setBody("{\"success\": false}"));
+
+		// post the input field from the first page and an incorrect recaptcha response
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("page1", "1")
+				.addFormDataPart("input1", "someValue")
+				.addFormDataPart("g-recaptcha-response", "incorrect")
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
+
+		// recaptcha verification server must have answered one request
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=your-secret-key&response=incorrect]");
+
+		// we expect to be redirected back to the form
+		assertRedirect(pair.getLeft());
+		// data node must not be published and first page is incomplete
+		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
+			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
+			assertThat(n.getFields().getBooleanField("page1").getValue()).as("Page 1 completed").isFalse();
+			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+		});
+		// form-data cookie must be present
+		assertThat(pair.getRight()).as("Cookie").isPresent();
+		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+	}
+
+	/**
+	 * Test posting to a multipage form containing a recaptcha field (which is correctly filled)
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testMultipageRecaptchaCorrectlyFilled() throws IOException, InterruptedException {
+		// create the form
+		String uuid = createForm("multipage_recaptcha.json", true, true);
+
+		// let the recaptcha verification server answer with success: true
+		webServer.enqueue(new MockResponse().setBody("{\"success\": true}"));
+
+		// post input field from first page and correct recaptcha response
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("page1", "1")
+				.addFormDataPart("input1", "someValue")
+				.addFormDataPart("g-recaptcha-response", "correct")
+				.build();
+		Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
+
+		// recaptcha verification server must have answered one request
+		assertThat(webServer.getRequestCount()).as("Requests to recaptcha").isEqualTo(1);
+		RecordedRequest request = webServer.takeRequest(1, TimeUnit.SECONDS);
+		assertThat(request.getBody().toString()).as("Request body").isEqualTo("[text=secret=your-secret-key&response=correct]");
+
+		// we expect to be redirected back to the form (for page 2)
+		assertRedirect(pair.getLeft());
+		// data node must not be published but first page complete
+		NodeResponse dataNode = assertSingleDataNode(uuid, n -> {
+			assertThat(n.getVersion()).as("Data Node Version").isEqualTo("0.1");
+			assertThat(n.getFields().getBooleanField("page1").getValue()).as("Page 1 completed").isTrue();
+			assertThat(n.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+		});
+		// form-data cookie must be present
+		assertThat(pair.getRight()).as("Cookie").isPresent();
+		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+	}
+
+	/**
+	 * Post the given body to the form
+	 * @param uuid form uuid
+	 * @param body post body
+	 * @return response
+	 * @throws IOException
+	 */
+	protected Pair<Response, Optional<Cookie>> postToForm(String uuid, RequestBody body) throws IOException {
+		Request postRequest = new Request.Builder()
+				.url(HttpUrl.get(projectUrl("/forms/" + uuid + "/data"))
+					.newBuilder().build())
+				.header("Referer", "ref")
+				.post(body)
+				.build();
+		Response response = client().newCall(postRequest).execute();
+		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME.equals(c.name()))
+				.findFirst();
+
+		return Pair.of(response, cookie);
+	}
+
+	/**
+	 * Assert that the response is a redirect to "ref"
+	 * @param response response
+	 */
+	protected void assertRedirect(Response response) {
+		assertThat(response.isRedirect()).as(String.format("Response redirect %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
+	}
+
+	/**
+	 * Assert that the response is 205 (Reset Content)
+	 * @param response response
+	 */
+	protected void assertOk(Response response) {
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.code()).as("Response code").isEqualTo(205);
+	}
+
+	/**
+	 * Assert that there is a single data node for the form
+	 * @param formUuid form uuid
+	 * @param asserter optional asserter for the data node
+	 * @return data node
+	 */
+	protected NodeResponse assertSingleDataNode(String formUuid, Consumer<NodeResponse> asserter) {
+		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
+		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		NodeResponse dataNode = dataNodes.getData().get(0);
+
+		if (asserter != null) {
+			asserter.accept(dataNode);
+		}
+
+		return dataNode;
 	}
 }

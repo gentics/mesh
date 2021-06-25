@@ -14,6 +14,9 @@
 == TBD (TBD)
 
 icon:check[] Form data exported as CSV now includes field names in addition to field labels in the header row. The field name and the field label of a field are separated by `|||`. A custom delimiter can be set with the query parameter `headerDelimiter`. In case no field label is set for a field or the field label has no or only whitespace characters, only the field name will be exported and the delimiter is not used.
+icon:check[] In singlepage forms, all elements will be verified for errors when POSTing, not only the elements for which data was posted.
+icon:check[] If a singlepage form is not completely filled or fails some verifications, it will now also be rendered with the incomplete
+data and the error messages.
 
 [[v1.6.9]]
 == 1.6.9 (2021-05-27)

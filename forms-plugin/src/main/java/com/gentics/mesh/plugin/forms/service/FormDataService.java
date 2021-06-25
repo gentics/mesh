@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
@@ -311,15 +312,18 @@ public class FormDataService {
 				return RxUtil.fromNullable(formDataNode)
 					.flatMapSingleElement(fdn -> formService.toForm(formNode)
 					.map(form -> {
-						// only fill in data, if form is not completed
+						// only fill in data, if form is not published
+						if (!isFormDataPublished(fdn)) {
+							JsonObject formDataJson = form.getFormDataJson(fdn);
+							formJson.put("dataid", formDataUuid);
+							mergeData(formJson, formDataJson);
+						}
+
 						if (!form.isCompleted(fdn)) {
 							// get completed formpages
 							Set<String> completed = form.flattened().filter(elem -> elem instanceof FormpageElement)
 								.filter(elem -> elem.isCompleted(fdn))
 								.map(FormElement::getName).collect(Collectors.toSet());
-							JsonObject formDataJson = form.getFormDataJson(fdn);
-							formJson.put("dataid", formDataUuid);
-							mergeData(formJson, formDataJson);
 							return completed;
 						}
 						return Collections.<String>emptySet();
@@ -633,5 +637,20 @@ public class FormDataService {
 				element.put("data", formData.getJsonObject(elementName));
 			}
 		}
+	}
+
+	/**
+	 * Check whether the form data node is published
+	 * @param formDataNode form data node
+	 * @return true when it is published
+	 */
+	private boolean isFormDataPublished(NodeResponse formDataNode) {
+		Map<String, PublishStatusModel> languages = formDataNode.getAvailableLanguages();
+		for (PublishStatusModel status : languages.values()) {
+			if (status.isPublished()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
