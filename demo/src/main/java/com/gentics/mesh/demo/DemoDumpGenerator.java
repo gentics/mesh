@@ -13,6 +13,7 @@ import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -60,7 +61,7 @@ public class DemoDumpGenerator {
 	 * @throws Exception
 	 */
 	public void init() throws Exception {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.getSearchOptions().setUrl(null);
 		options.getSearchOptions().setStartEmbedded(false);
 		options.setInitialAdminPassword("admin");

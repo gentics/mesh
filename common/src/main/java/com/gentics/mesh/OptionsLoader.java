@@ -22,6 +22,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
@@ -39,14 +40,25 @@ public final class OptionsLoader {
 	}
 
 	/**
+	 * 
+	 * @param <T>
+	 * @param optionsClass
+	 * @param args
+	 * @return
+	 */
+	public static OrientDBMeshOptions createOrloadOptions(String... args) {
+		return createOrloadOptions(OrientDBMeshOptions.class, args);
+	}
+	
+	/**
 	 * Create or load the mesh options and also parse the given args to override specific settings.
 	 * 
 	 * @param args
 	 *            Command line arguments
 	 * @return Effective mesh options
 	 */
-	public static MeshOptions createOrloadOptions(String... args) {
-		return createOrloadOptions(null, args);
+	public static <T extends MeshOptions> T createOrloadOptions(Class<T> optionsClass, String... args) {
+		return createOrloadOptions(optionsClass, null, args);
 	}
 
 	/**
@@ -56,8 +68,8 @@ public final class OptionsLoader {
 	 * @param args
 	 * @return Effective mesh options
 	 */
-	public static MeshOptions createOrloadOptions(MeshOptions defaultOption, String... args) {
-		MeshOptions options = loadMeshOptions(defaultOption);
+	public static <T extends MeshOptions> T createOrloadOptions(Class<T> optionsClass, T defaultOption, String... args) {
+		T options = loadMeshOptions(optionsClass, defaultOption);
 		applyNonYamlProperties(defaultOption, options);
 		applyEnvironmentVariables(options);
 		applyCommandLineArgs(options, args);
@@ -152,15 +164,15 @@ public final class OptionsLoader {
 	 * 
 	 * @return
 	 */
-	private static MeshOptions loadMeshOptions(MeshOptions defaultOption) {
+	private static <T extends MeshOptions> T loadMeshOptions(Class<T> optionsClass, T defaultOption) {
 
 		File confFile = new File(CONFIG_FOLDERNAME, MESH_CONF_FILENAME);
-		MeshOptions options = null;
+		T options = null;
 		InputStream ins = Mesh.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
 		// 1. Try to load from classpath
 		if (ins != null) {
 			log.info("Loading configuration file from classpath.");
-			options = loadConfiguration(ins);
+			options = loadConfiguration(optionsClass, ins);
 			if (options != null) {
 				return options;
 			} else {
@@ -173,7 +185,7 @@ public final class OptionsLoader {
 		if (confFile.exists()) {
 			try {
 				log.info("Loading configuration file {" + confFile + "}.");
-				MeshOptions configuration = loadConfiguration(new FileInputStream(confFile));
+				T configuration = loadConfiguration(optionsClass, new FileInputStream(confFile));
 				if (configuration != null) {
 					return configuration;
 				}
@@ -186,7 +198,7 @@ public final class OptionsLoader {
 			ObjectMapper mapper = getYAMLMapper();
 			try {
 				// Generate default config
-				options = generateDefaultConfig(defaultOption);
+				options = generateDefaultConfig(optionsClass, defaultOption);
 				FileUtils.writeStringToFile(confFile, mapper.writeValueAsString(options), StandardCharsets.UTF_8, false);
 				log.info("Saved default configuration to file {" + confFile.getAbsolutePath() + "}.");
 			} catch (IOException e) {
@@ -202,13 +214,19 @@ public final class OptionsLoader {
 	/**
 	 * Generate a default configuration with meaningful default settings. The keystore password will be randomly generated and set.
 	 * 
+	 * @param <T> end type class. Must have non-parameterized constructor.
+	 * @param optionsClass class of end type <T>
 	 * @param defaultOption
 	 * @return
 	 */
-	public static MeshOptions generateDefaultConfig(MeshOptions defaultOption) {
-		MeshOptions options = defaultOption;
+	public static <T extends MeshOptions> T generateDefaultConfig(Class<T> optionsClass, T defaultOption) {
+		T options = defaultOption;
 		if (options == null) {
-			options = new MeshOptions();
+			try {
+				options = optionsClass.getConstructor().newInstance();
+			} catch (Throwable t) {
+				throw new IllegalArgumentException("Cannot instantiate class '" + optionsClass.getCanonicalName() + "'", t);
+			}
 		}
 
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
@@ -235,15 +253,19 @@ public final class OptionsLoader {
 	 * @param ins
 	 * @return
 	 */
-	private static MeshOptions loadConfiguration(InputStream ins) {
+	private static <T extends MeshOptions> T loadConfiguration(Class<T> optionsClass, InputStream ins) {
 		if (ins == null) {
 			log.info("Config file {" + MESH_CONF_FILENAME + "} not found. Using default configuration.");
-			return new MeshOptions();
+			try {
+				return optionsClass.getConstructor().newInstance();
+			} catch (Throwable t) {
+				throw new IllegalArgumentException("Cannot instantiate default configuration '" + optionsClass.getCanonicalName() + "'", t);
+			}
 		}
 
 		ObjectMapper mapper = getYAMLMapper();
 		try {
-			return mapper.readValue(ins, MeshOptions.class);
+			return mapper.readValue(ins, optionsClass);
 		} catch (Exception e) {
 			log.error("Could not parse configuration.", e);
 			throw new RuntimeException("Could not parse options file", e);

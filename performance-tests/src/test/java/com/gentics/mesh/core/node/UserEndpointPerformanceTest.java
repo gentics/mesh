@@ -2,7 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
 import org.junit.Test;
@@ -14,8 +14,8 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true)
 public class UserEndpointPerformanceTest extends AbstractMeshTest {

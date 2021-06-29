@@ -96,11 +96,12 @@ import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -300,15 +301,19 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		this.mesh = (MeshImpl) mesh;
 		PostProcessFlags flags = new PostProcessFlags(forceResync, false);
 
-		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean isClustered = options.getClusterOptions().isEnabled();
 		boolean isInitMode = options.isInitClusterMode();
-		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
+		boolean startOrientServer = false;
 
 		options = prepareMeshOptions(options);
 
 		addDebugInfoLogAppender(options);
-		RequirementsCheck.init(storageOptions);
+		if (options instanceof OrientDBMeshOptions) {
+			GraphStorageOptions storageOptions = ((OrientDBMeshOptions)options).getStorageOptions();
+			startOrientServer = storageOptions != null && storageOptions.getStartServer();
+
+			RequirementsCheck.init(storageOptions);
+        }
 		try {
 			db.init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 		} catch (Exception e) {

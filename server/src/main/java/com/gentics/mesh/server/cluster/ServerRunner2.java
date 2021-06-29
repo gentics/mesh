@@ -2,7 +2,7 @@ package com.gentics.mesh.server.cluster;
 
 import java.io.File;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 
 /**
  * Cluster Runner 2
@@ -21,7 +21,7 @@ public class ServerRunner2 extends ClusterServer {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		MeshOptions options = init(args);
+		OrientDBMeshOptions options = init(args);
 		options.setNodeName("gentics-mesh-2");
 		options.getStorageOptions().setDirectory("data2/graphdb");
 		options.getClusterOptions().setVertxPort(6152);

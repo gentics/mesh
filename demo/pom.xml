@@ -40,20 +40,6 @@
 			<groupId>net.lingala.zip4j</groupId>
 			<artifactId>zip4j</artifactId>
 		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.github.fge</groupId>
-					<artifactId>json-schema-validator</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 	</dependencies>
 
 	<build>

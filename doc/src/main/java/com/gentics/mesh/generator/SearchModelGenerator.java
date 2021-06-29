@@ -57,7 +57,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
@@ -109,7 +109,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 	 * @return
 	 */
 	public static Mesh initPaths() {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.setNodeName("Example Generator");
 		options.getAuthenticationOptions().setKeystorePassword("ABCD");
 
@@ -149,7 +149,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		// outputDir.mkdirs();
 
 		meshDagger = DaggerOrientDBMeshComponent.builder()
-			.configuration(new MeshOptions())
+			.configuration(new OrientDBMeshOptions())
 			.searchProviderType(TRACKING)
 			.mesh(mesh)
 			.build();

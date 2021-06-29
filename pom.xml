@@ -90,20 +90,21 @@
 		<module>madl</module>
 		<module>mdm</module>
 		<module>common</module>
-		<module>test-common</module>
 		<module>elasticsearch</module>
 		<module>rest-client</module>
 		<module>changelog-system</module>
 		<module>databases</module>
 		<module>services</module>
+		<module>distributed</module>
 		<module>distributed-coordinator</module>
 		<module>core</module>
-		<module>performance-tests</module>
 		<module>verticles</module>
 		<module>server</module>
 		<module>demo</module>
-		<module>distributed</module>
 		<module>doc</module>
+		<module>tests</module>
+		<module>integration-tests</module>
+		<module>performance-tests</module>
 	</modules>
 
 	<dependencies>
@@ -120,7 +121,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.0.0-M3</version>
+					<version>3.0.0-M5</version>
 					<configuration>
 						<skip>${skip.unit.tests}</skip>
 					</configuration>

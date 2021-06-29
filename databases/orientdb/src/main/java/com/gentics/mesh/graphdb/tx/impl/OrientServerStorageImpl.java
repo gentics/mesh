@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
 import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
@@ -22,7 +22,7 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 
 	private OrientDB context;
 
-	public OrientServerStorageImpl(MeshOptions options, OrientDB context, MetricsService metrics) {
+	public OrientServerStorageImpl(OrientDBMeshOptions options, OrientDB context, MetricsService metrics) {
 		super(options, metrics);
 		this.context = context;
 	}

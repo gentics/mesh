@@ -36,6 +36,9 @@ public final class KeyStoreHelper {
 		File keystoreFile = new File(keystorePath);
 		if (keystoreFile.exists()) {
 			throw new FileExistsException(keystoreFile);
+		} else {
+			keystoreFile.getParentFile().mkdirs();
+			keystoreFile.createNewFile();
 		}
 
 		KeyGenerator keygen = KeyGenerator.getInstance("HmacSHA256");
@@ -46,12 +49,9 @@ public final class KeyStoreHelper {
 
 		// This call throws an exception
 		keystore.setKeyEntry("HS256", key, keystorePassword.toCharArray(), null);
-		FileOutputStream fos = new FileOutputStream(keystoreFile);
-		try {
+		try (FileOutputStream fos = new FileOutputStream(keystoreFile)) {
 			keystore.store(fos, keystorePassword.toCharArray());
 			fos.flush();
-		} finally {
-			fos.close();
 		}
 
 		// SecretKey keyRetrieved = (SecretKey) keystore.getKey("theKey", keystorePassword.toCharArray());

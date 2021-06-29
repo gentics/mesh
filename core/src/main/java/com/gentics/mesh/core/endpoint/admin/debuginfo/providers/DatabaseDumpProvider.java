@@ -10,6 +10,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoFileEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Flowable;
@@ -42,7 +43,7 @@ public class DatabaseDumpProvider implements DebugInfoProvider {
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		if (options.getStorageOptions().getDirectory() == null) {
+		if (!(options instanceof OrientDBMeshOptions) || ((OrientDBMeshOptions)options).getStorageOptions().getDirectory() == null) {
 			return Flowable.empty();
 		}
 

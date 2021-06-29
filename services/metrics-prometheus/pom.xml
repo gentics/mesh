@@ -33,13 +33,6 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-micrometer-metrics</artifactId>
 		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>

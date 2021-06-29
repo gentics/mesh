@@ -1,0 +1,5 @@
+hmac_store.jceks
+elasticsearch
+/config/
+/data/
+/debuginfo/

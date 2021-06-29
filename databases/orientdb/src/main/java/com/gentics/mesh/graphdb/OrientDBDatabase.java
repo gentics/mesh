@@ -37,7 +37,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.dagger.TransactionComponent;
@@ -67,11 +67,9 @@ import com.orientechnologies.orient.server.distributed.ODistributedConfiguration
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration.ROLES;
 import com.orientechnologies.orient.server.distributed.OModifiableDistributedConfiguration;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
-import com.sun.xml.bind.v2.model.core.Ref;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -133,7 +131,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private final TransactionComponent.Factory txFactory;
 
 	@Inject
-	public OrientDBDatabase(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
+	public OrientDBDatabase(OrientDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
 		OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
@@ -215,7 +213,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @param options
 	 * @return
 	 */
-	private int getRidBagValue(MeshOptions options) {
+	private int getRidBagValue(OrientDBMeshOptions options) {
 		boolean isClusterMode = options.getClusterOptions() != null && options.getClusterOptions().isEnabled();
 		if (isClusterMode) {
 			// This is the mandatory setting when using OrientDB in clustered mode.

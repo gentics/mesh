@@ -7,7 +7,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
@@ -38,7 +38,7 @@ public class RunnerNodeB {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getStorageOptions().setDirectory(basePath + "/graph");
 		// options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");

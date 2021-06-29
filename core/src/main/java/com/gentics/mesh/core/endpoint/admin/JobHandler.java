@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -50,7 +49,7 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 	private final PageTransformer pageTransformer;
 
 	@Inject
-	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock, JobDAOActions jobActions,
+	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, JobDAOActions jobActions,
 		PageTransformer pageTransformer) {
 		super(db, utils, writeLock, jobActions);
 		this.boot = boot;

@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
@@ -27,14 +28,14 @@ public class WriteLockImpl implements WriteLock {
 
 	private ILock clusterLock;
 	private final Semaphore localLock = new Semaphore(1);
-	private final MeshOptions options;
+	private final OrientDBMeshOptions options;
 	private final Lazy<HazelcastInstance> hazelcast;
 	private final boolean isClustered;
 	private final Timer writeLockTimer;
 	private final Counter timeoutCount;
 
 	@Inject
-	public WriteLockImpl(MeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService) {
+	public WriteLockImpl(OrientDBMeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService) {
 		this.options = options;
 		this.hazelcast = hazelcast;
 		this.isClustered = options.getClusterOptions().isEnabled();

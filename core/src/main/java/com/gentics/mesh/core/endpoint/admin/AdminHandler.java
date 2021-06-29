@@ -47,6 +47,7 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.BackupParameters;
@@ -151,12 +152,15 @@ public class AdminHandler extends AbstractHandler {
 	 * @return
 	 */
 	public String backup() {
+		if (!(options instanceof OrientDBMeshOptions)) {
+			throw error(SERVICE_UNAVAILABLE, "function_not_supported"); // TODO unsupported for non-OrientDB
+		}
 		Mesh mesh = boot.mesh();
 		MeshStatus oldStatus = mesh.getStatus();
 		try {
 			vertx.eventBus().publish(GRAPH_BACKUP_START.address, null);
 			mesh.setStatus(MeshStatus.BACKUP);
-			return db.backupGraph(options.getStorageOptions().getBackupDirectory());
+			return db.backupGraph(((OrientDBMeshOptions)options).getStorageOptions().getBackupDirectory());
 		} catch (GenericRestException e) {
 			throw e;
 		} catch (Throwable e) {
@@ -174,10 +178,13 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleRestore(InternalActionContext ac) {
-		MeshOptions config = options;
+		if (!(options instanceof OrientDBMeshOptions)) {
+			throw error(SERVICE_UNAVAILABLE, "function_not_supported"); // TODO unsupported for non-OrientDB
+		}
+		OrientDBMeshOptions config = (OrientDBMeshOptions) options;
 		Mesh mesh = boot.mesh();
 		String dir = config.getStorageOptions().getDirectory();
-		File backupDir = new File(options.getStorageOptions().getBackupDirectory());
+		File backupDir = new File(config.getStorageOptions().getBackupDirectory());
 		boolean inMemory = dir == null;
 
 		if (config.getClusterOptions() != null && config.getClusterOptions().isEnabled()) {
@@ -253,7 +260,10 @@ public class AdminHandler extends AbstractHandler {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			String exportDir = options.getStorageOptions().getExportDirectory();
+			if (!(options instanceof OrientDBMeshOptions)) {
+				throw error(SERVICE_UNAVAILABLE, "function_not_supported"); // TODO unsupported for non-OrientDB
+			}
+			String exportDir = ((OrientDBMeshOptions)options).getStorageOptions().getExportDirectory();
 			log.debug("Exporting graph to {" + exportDir + "}");
 			vertx.eventBus().publish(GRAPH_EXPORT_START.address, null);
 			db.exportGraph(exportDir);
@@ -272,8 +282,11 @@ public class AdminHandler extends AbstractHandler {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
+			if (!(options instanceof OrientDBMeshOptions)) {
+				throw error(SERVICE_UNAVAILABLE, "function_not_supported"); // TODO unsupported for non-OrientDB
+			}
 		});
-		File importsDir = new File(options.getStorageOptions().getExportDirectory());
+		File importsDir = new File(((OrientDBMeshOptions)options).getStorageOptions().getExportDirectory());
 
 		// Find the file which was last modified
 		File latestFile = Arrays.asList(importsDir.listFiles()).stream().filter(file -> file.getName().endsWith(".gz"))

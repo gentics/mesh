@@ -21,13 +21,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
 		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>

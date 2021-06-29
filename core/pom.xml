@@ -38,11 +38,11 @@
 
 
 	<dependencies>
-<!--		<dependency>-->
-<!--			<groupId>${mesh.mdm.provider.groupId}</groupId>-->
-<!--			<artifactId>${mesh.mdm.provider.artifactId}</artifactId>-->
-<!--			<version>${mesh.mdm.provider.version}</version>-->
-<!--		</dependency>-->
+		<!-- <dependency> -->
+		<!-- <groupId>${mesh.mdm.provider.groupId}</groupId> -->
+		<!-- <artifactId>${mesh.mdm.provider.artifactId}</artifactId> -->
+		<!-- <version>${mesh.mdm.provider.version}</version> -->
+		<!-- </dependency> -->
 
 		<!-- Internal dependencies -->
 		<dependency>
@@ -183,34 +183,6 @@
 
 		<!-- Test dependencies -->
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-orientdb</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 		</dependency>
@@ -221,7 +193,6 @@
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
-
 
 	<build>
 		<plugins>
@@ -273,11 +244,6 @@
 								</manifestEntries>
 							</archive>
 						</configuration>
-					</execution>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>

@@ -8,7 +8,7 @@ import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
@@ -40,7 +40,7 @@ public class RunnerNodeA {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		MeshOptions options = OptionsLoader.createOrloadOptions("-" + MeshCLI.INIT_CLUSTER);
+		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions("-" + MeshCLI.INIT_CLUSTER);
 		options.getStorageOptions().setDirectory(basePath + "/graph");
 		// options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");

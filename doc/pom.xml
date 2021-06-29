@@ -48,8 +48,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core</artifactId>
-			<type>test-jar</type>
+			<artifactId>tests-mesh-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>

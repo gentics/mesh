@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -32,7 +32,7 @@ public class OrientDBServerTest extends AbstractOrientDBTest {
 
 	@Test
 	public void testServer() throws Exception {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.getStorageOptions().setDirectory(dbDirectory.getAbsolutePath());
 		options.getStorageOptions().setStartServer(true);
 
