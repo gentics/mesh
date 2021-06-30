@@ -10,7 +10,7 @@
 
 = Mesh Forms Plugin
 
-[[1.6.10]]
+[[v1.6.10]]
 == 1.6.10 (2021-06-30)
 
 icon:check[] Form data exported as CSV now includes field names in addition to field labels in the header row. The field name and the field label of a field are separated by `|||`. A custom delimiter can be set with the query parameter `headerDelimiter`. In case no field label is set for a field or the field label has no or only whitespace characters, only the field name will be exported and the delimiter is not used.
