@@ -133,6 +133,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(10);
+		} finally {
+			meshDagger.livenessManager().shutdown();
 		}
 	}
 

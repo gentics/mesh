@@ -27,6 +27,12 @@ monitoring:
 TIP: Container deployments which need to access the monitoring API need to change the monitoring server binding in order to expose the port. +
 This can be done via the environment http host setting: `MESH_MONITORING_HTTP_HOST=0.0.0.0`
 
+== Liveness Probe in Docker
+
+The liveness of the Gentics Mesh instance running in a docker container can be checked by executing the command `java -cp mesh.jar com.gentics.mesh.monitor.jmx.JMXProbe` inside the container.
+This has some advantages over the liveness probe using the HTTP endpoint:
+Liveness checked with JMX does not depend on the http verticles and vert.x to be fully started, but only on the Java process to be running and having the JMX bean registered. This means that - especially when running Gentics Mesh in a cluster - the instances will become live very soon, whereas starting of vert.x and the http verticles may take a while, because this requires OrientDB cluster to be synchronized first.
+
 == Endpoints
 
 === Liveness Probe
