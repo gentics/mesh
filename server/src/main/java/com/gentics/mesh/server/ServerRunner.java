@@ -7,6 +7,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.monitor.jmx.Liveness;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
@@ -47,6 +48,7 @@ public class ServerRunner {
 		});
 
 		try {
+			Liveness.init();
 			mesh.run();
 		} catch (Throwable t) {
 			log.error("Error while starting mesh. Invoking shutdown.", t);
