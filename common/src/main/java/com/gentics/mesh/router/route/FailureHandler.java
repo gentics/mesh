@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.monitor.jmx.Liveness;
 
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
@@ -166,6 +167,10 @@ public class FailureHandler implements Handler<RoutingContext> {
 				translateMessage(error, rc);
 				rc.response().end(JsonUtil.toJson(error));
 			} else {
+				if (failure instanceof OutOfMemoryError) {
+					Liveness.setFalse();
+				}
+
 				// We don't want to output too much information when an unexpected error occurs.
 				// That's why we don't reuse the error message here.
 				String msg = I18NUtil.get(ac, "error_internal");

@@ -37,4 +37,5 @@ VOLUME /plugins
 VOLUME /keystore
 VOLUME /config
 
-CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
+CMD [ "java", "-Dcom.sun.management.jmxremote.port=9999", "-Dcom.sun.management.jmxremote.authenticate=false", "-Dcom.sun.management.jmxremote.ssl=false", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
+HEALTHCHECK --interval=10s --retries=1 CMD ["java", "-cp", "mesh.jar", "com.gentics.mesh.monitor.jmx.JMXProbe"]

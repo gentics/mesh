@@ -61,6 +61,7 @@ import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.monitor.jmx.Liveness;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
@@ -536,6 +537,11 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	public void setStatus(String id, PluginStatus status) {
 		pluginStatusMap.put(id, status);
 		log.debug("Plugin {} changed to status {}", id , status);
+
+		// if initialization of a plugin failed, the "liveness" is false
+		if (status == PluginStatus.FAILED) {
+			Liveness.setFalse();
+		}
 	}
 
 	@Override
