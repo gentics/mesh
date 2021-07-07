@@ -39,6 +39,12 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${mesh.database.provider}</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+		        <exclusion>
+		            <groupId>org.graalvm.tools</groupId>
+		            <artifactId>chromeinspector</artifactId>
+		        </exclusion>
+		    </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
