@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.6.11]]
+== 1.6.11 (TBD)
+
+icon:check[] The logging for the RecaptchaElement has been improved.
+
 [[v1.6.10]]
 == 1.6.10 (2021-06-30)
 
