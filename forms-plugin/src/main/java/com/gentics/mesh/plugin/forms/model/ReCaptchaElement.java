@@ -27,6 +27,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.config.ProxyOptions;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
@@ -141,13 +144,49 @@ public class ReCaptchaElement extends FormElement {
 					if (status >= 200 && status < 300) {
 						HttpEntity responseEntity = response.getEntity();
 						if (responseEntity != null) {
-							JsonObject json = new JsonObject(EntityUtils.toString(responseEntity));
+							// https://developers.google.com/recaptcha/docs/verify#api-response
+							String body = EntityUtils.toString(responseEntity);
+							JsonObject json = new JsonObject(body);
 
-							if (log.isDebugEnabled()) {
-								log.debug("Response:\n{}", json.encodePrettily());
+							boolean success = json.getBoolean("success", false);
+							boolean logError = false;
+
+							if (!success) {
+								List<String> errorCodes = JsonPath
+										.parse(body,
+												Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build())
+										.read("$.error-codes");
+
+								if (errorCodes != null) {
+									for (String code : errorCodes) {
+										switch (code) {
+										case "missing-input-secret":
+										case "invalid-input-secret":
+										case "bad-request":
+											// these are considered "abnormal" error codes (e.g. the input secret is missing or invalid or the request is invalid)
+											logError = true;
+											break;
+										case "missing-input-response":
+										case "invalid-input-response":
+										case "timeout-or-duplicate":
+											// these are considered "normal" error codes (e.g. the user did not fill out the recaptcha or filling out took too long)
+											break;
+										default:
+											break;
+										}
+									}
+								}
 							}
 
-							return json.getBoolean("success", false);
+							if (success || !logError) {
+								if (log.isDebugEnabled()) {
+									log.debug("Recaptcha validation {}. Response:\n{}", success ? "succeeded" : "failed", json.encodePrettily());
+								}
+							} else {
+								log.error("Recaptcha validation failed. Response:\n{}", json.encodePrettily());
+							}
+
+							return success;
 						} else {
 							throw new ClientProtocolException("Verification request did not return entity");
 						}
