@@ -24,70 +24,16 @@ public class CsvConverter {
 
 	private static final String REFERENCE_CONTENT_CONTAINER_NAME = "__refs";
 	private static final String ROOT_CONTENT_NAME = "$";
-	// Additional static setup
 
-	private BooleanMapping booleanMapping;
-	private NumberFormat numberFormatter;
-	private DateTimeFormatter dateFormatter;
-	private Map<String, Map<String, String>> configValues = new HashMap<>();
-	private List<CsvMappingDefinition> mapping = new ArrayList<>();
-
-	public CsvConverter() {
+	private CsvConverter() {
 	}
 
-	public Map<String, Map<String, String>> getConfigValues() {
-		return configValues;
-	}
-
-	public CsvConverter setConfigValues(Map<String, Map<String, String>> configValues) {
-		this.configValues = configValues;
-		return this;
-	}
-
-	public List<CsvMappingDefinition> getMapping() {
-		return mapping;
-	}
-
-	public CsvConverter setMapping(List<CsvMappingDefinition> mapping) {
-		this.mapping = mapping;
-		return this;
-	}
-
-	public DateTimeFormatter getDateFormatter() {
-		return dateFormatter;
-	}
-
-	public CsvConverter setDateFormatter(DateTimeFormatter dateFormatter) {
-		this.dateFormatter = dateFormatter;
-		return this;
-	}
-
-	public NumberFormat getNumberFormatter() {
-		return numberFormatter;
-	}
-
-	public CsvConverter setNumberFormatter(NumberFormat numberFormatter) {
-		this.numberFormatter = numberFormatter;
-		return this;
-	}
-
-	public BooleanMapping getBooleanMapping() {
-		return booleanMapping;
-	}
-
-	public CsvConverter setBooleanMapping(BooleanMapping booleanMapping) {
-		this.booleanMapping = booleanMapping;
-		return this;
-	}
-
-	public List<String> transformToCsv(JsonObject node) {
+	public static List<String> transformToCsv(ConvertingOptions options, JsonObject node) {
 		log.debug("Transforming Node: {}", node.getString("uuid", "[no uuid available]"));
 
-		CsvMatrix matrix = this.mapping.stream()
-			.map(definition -> createMatrix(definition, node))
-			.collect(CsvMatrix::new, CsvMatrix::addAll, CsvMatrix::addAll);
+		CsvMatrix matrix = convertToMatrix(options, node);
 
-		List<String> lines = createPrintableMatrix(matrix).stream()
+		List<String> lines = convertToPrintableMatrix(matrix).stream()
 			.map(row -> {
 				CsvStringWriter writer = new CsvStringWriter();
 				writer.writeRow(row);
@@ -98,7 +44,13 @@ public class CsvConverter {
 		return lines;
 	}
 
-	private CsvMatrix createMatrix(CsvMappingDefinition definition, JsonObject node) {
+	public static CsvMatrix convertToMatrix(ConvertingOptions options, JsonObject node) {
+		return options.getMapping().stream()
+			.map(definition -> convertToDefinitionMatrix(options, definition, node))
+			.collect(CsvMatrix::new, CsvMatrix::addAll, CsvMatrix::addAll);
+	}
+
+	public static CsvMatrix convertToDefinitionMatrix(ConvertingOptions options, CsvMappingDefinition definition, JsonObject node) {
 		List<String> path = definition.getPathAsList();
 
 		// In case it's a reference type, then rewrite the path to the correct one, since
@@ -123,24 +75,29 @@ public class CsvConverter {
 
 		// Check if the values are present and not empty. If they are, we have to return
 		// empty columns to not screw up the layout.
-		if (!values.isPresent() || ((values.get().isEmpty()) && this.mapping.size() > 1)) {
+		if (!values.isPresent() || ((values.get().isEmpty()) && options.getMapping().size() > 1)) {
 			return generateEmptyMatrix(definition);
 		}
 
 		CsvMatrix matrix = new CsvMatrix();
 
 		values.get().stream()
-			.map(singleValue -> transformToColumnGroup(definition, singleValue, node))
+			.map(singleValue -> transformToColumnGroup(options, definition, singleValue, node))
 			.map(group -> limitGroup(definition, group))
 			.forEach(matrix::add);
 
 		return matrix;
 	}
 
-	private ColumnGroup transformToColumnGroup(CsvMappingDefinition definition, Object data, JsonObject node) {
+	private static ColumnGroup transformToColumnGroup(
+		ConvertingOptions options,
+		CsvMappingDefinition definition,
+		Object data,
+		JsonObject node
+	) {
 		if (data instanceof JsonArray) {
 			JsonArray arr = (JsonArray) data;
-			return mapMultipleValues(definition, arr, node);
+			return mapMultipleValues(options, definition, arr, node);
 		}
 
 		if (definition.getActualType().isMultiColumn()) {
@@ -150,13 +107,13 @@ public class CsvConverter {
 			if (definition.getSubFilter() != null && !definition.getSubFilter().isAllowed(element)) {
 				return generateEmptyMatrix(definition).get(0);
 			}
-			return mapMultiColumns(definition, element);
+			return mapMultiColumns(options, definition, element);
 		}
 
-		return new ColumnGroup(new Column(mapSingleValue(definition, data)));
+		return new ColumnGroup(new Column(mapSingleValue(options, definition, data)));
 	}
 
-	private JsonObject putRootIntoElement(CsvMappingDefinition definition, JsonObject element, JsonObject node) {
+	private static JsonObject putRootIntoElement(CsvMappingDefinition definition, JsonObject element, JsonObject node) {
 		// Clone the node
 		JsonObject root = new JsonObject(node.getMap());
 
@@ -181,7 +138,7 @@ public class CsvConverter {
 		return element;
 	}
 
-	private ColumnGroup limitGroup(CsvMappingDefinition definition, ColumnGroup group) {
+	private static ColumnGroup limitGroup(CsvMappingDefinition definition, ColumnGroup group) {
 		int valueSize = group.get(0).getValues().size();
 
 		if (definition.getListExpand() &&
@@ -202,7 +159,7 @@ public class CsvConverter {
 		return group;
 	}
 
-	private JsonObject prepareNode(JsonObject node, CsvMappingDefinition definition, final List<String> path) {
+	private static JsonObject prepareNode(JsonObject node, CsvMappingDefinition definition, final List<String> path) {
 		JsonObject preparedNode = node;
 
 		if (definition.getSubMapping() != null && !definition.getSubMapping().isEmpty() && hasExpandableSubMapping(
@@ -239,7 +196,7 @@ public class CsvConverter {
 		return preparedNode;
 	}
 
-	private Boolean hasExpandableSubMapping(List<CsvSubMappingDefinition> subMappings) {
+	private static Boolean hasExpandableSubMapping(List<CsvSubMappingDefinition> subMappings) {
 		for (CsvSubMappingDefinition mappingDefinition : subMappings) {
 			if (mappingDefinition.getListExpand()) {
 				return true;
@@ -248,7 +205,7 @@ public class CsvConverter {
 		return false;
 	}
 
-	private void handleSubMappedList(
+	private static void handleSubMappedList(
 		JsonArray newValues,
 		CsvSubMappingDefinition subMappingDefinition,
 		Object currentSubMappedFields
@@ -280,7 +237,7 @@ public class CsvConverter {
 		}
 	}
 
-	private Optional<JsonArray> getValuesFromNode(
+	private static Optional<JsonArray> getValuesFromNode(
 		JsonObject node,
 		List<String> path,
 		CsvMappingDefinition definition
@@ -293,10 +250,8 @@ public class CsvConverter {
 
 		JsonArray values = check.get();
 
-		// Fix the values size if it's not allowed to be expanded and it's a multi-column type
-		if ((!CsvMappingDataType.LIST.equals(definition.getType()) || !definition.getListExpand())
-			&& values.size() > 1
-		) {
+		// Fix the values size
+		if (!CsvMappingDataType.LIST.equals(definition.getType()) && values.size() > 1) {
 			values = new JsonArray().add(values.getValue(0));
 		}
 
@@ -318,7 +273,7 @@ public class CsvConverter {
 		return Optional.of(values);
 	}
 
-	private CsvMatrix generateEmptyMatrix(CsvMappingDefinition definition) {
+	private static CsvMatrix generateEmptyMatrix(CsvMappingDefinition definition) {
 		CsvMatrix matrix = new CsvMatrix();
 
 		if (definition.getActualType().isMultiColumn()) {
@@ -341,7 +296,7 @@ public class CsvConverter {
 		return matrix;
 	}
 
-	private Optional<JsonArray> getValuesFromObject(JsonObject root, List<String> path) {
+	private static Optional<JsonArray> getValuesFromObject(JsonObject root, List<String> path) {
 		for (int i = 0; i < path.size() - 1; i++) {
 			final int currentIndex = i;
 			Object obj = root.getValue(path.get(i));
@@ -382,21 +337,27 @@ public class CsvConverter {
 		return Optional.of(obj instanceof JsonArray ? (JsonArray) obj : new JsonArray().add(obj));
 	}
 
-	private ColumnGroup mapMultipleValues(CsvMappingDefinition definition, JsonArray values, JsonObject node) {
-		if (values.isEmpty() && this.mapping.size() > 1) {
+	private static ColumnGroup mapMultipleValues(
+		ConvertingOptions options,
+		CsvMappingDefinition definition,
+		JsonArray values,
+		JsonObject node
+	) {
+		if (values.isEmpty() && options.getMapping().size() > 1) {
 			return generateEmptyMatrix(definition).get(0);
 		}
 
 		// When it's a multi-column, then we iterate over each element and generate a column value for it
 		// Each column-value has to be evenly applied to all columns, otherwise we get a wrong amount.
 		if (definition.getActualType().isMultiColumn()) {
-			return mapMultipleValuesToMultiColumn(definition, values, node);
+			return mapMultipleValuesToMultiColumn(options, definition, values, node);
 		}
 
-		return mapMultipleValuesToSingleColumn(definition, values);
+		return mapMultipleValuesToSingleColumn(options, definition, values);
 	}
 
-	private ColumnGroup mapMultipleValuesToMultiColumn(
+	private static ColumnGroup mapMultipleValuesToMultiColumn(
+		ConvertingOptions options,
 		CsvMappingDefinition definition,
 		JsonArray values,
 		JsonObject node
@@ -418,7 +379,7 @@ public class CsvConverter {
 		}
 
 		List<ColumnGroup> groups = valueStream
-			.map(obj -> mapMultiColumns(definition, obj))
+			.map(obj -> mapMultiColumns(options, definition, obj))
 			.collect(Collectors.toList());
 
 		if (groups.isEmpty()) {
@@ -440,9 +401,13 @@ public class CsvConverter {
 		return output;
 	}
 
-	private ColumnGroup mapMultipleValuesToSingleColumn(CsvMappingDefinition definition, JsonArray values) {
+	private static ColumnGroup mapMultipleValuesToSingleColumn(
+		ConvertingOptions options,
+		CsvMappingDefinition definition,
+		JsonArray values
+	) {
 		List<String> mapped = values.stream()
-			.map(singleValue -> mapSingleValue(definition, singleValue))
+			.map(singleValue -> mapSingleValue(options, definition, singleValue))
 			.filter(str -> str != null && !str.trim().isEmpty())
 			.collect(Collectors.toList());
 
@@ -464,7 +429,11 @@ public class CsvConverter {
 		return new ColumnGroup(col);
 	}
 
-	private ColumnGroup mapMultiColumns(CsvMappingDefinition parentMapping, JsonObject subNode) {
+	private static ColumnGroup mapMultiColumns(
+		ConvertingOptions options,
+		CsvMappingDefinition parentMapping,
+		JsonObject subNode
+	) {
 		ColumnGroup group = new ColumnGroup();
 
 		parentMapping.getSubMapping().stream().map(definition -> {
@@ -487,19 +456,20 @@ public class CsvConverter {
 				values = filtered;
 			}
 
-			return mapArrayValuesToMultiColumns(definition, parentMapping, values);
+			return mapArrayValuesToMultiColumns(options, definition, parentMapping, values);
 		}).forEach(group::add);
 
 		return group;
 	}
 
-	private Column mapArrayValuesToMultiColumns(
+	private static Column mapArrayValuesToMultiColumns(
+		ConvertingOptions options,
 		CsvSubMappingDefinition definition,
 		CsvMappingDefinition parentMapping,
 		JsonArray values
 	) {
 		List<String> mapped = values.stream()
-			.map(singleValue -> mapSingleValue(definition, singleValue))
+			.map(singleValue -> mapSingleValue(options, definition, singleValue))
 			.filter(str -> !str.trim().isEmpty())
 			.collect(Collectors.toList());
 
@@ -519,7 +489,8 @@ public class CsvConverter {
 		return new Column(mapped);
 	}
 
-	private String mapSingleValue(
+	private static String mapSingleValue(
+		ConvertingOptions options,
 		AbstractCsvMappingDefinition definition,
 		Object value
 	) {
@@ -544,9 +515,9 @@ public class CsvConverter {
 						}
 					}
 
-					return Utils.mergeMappings(booleanMapping, definition.getBooleanMapping()).getStringValue(bool);
+					return Utils.mergeMappings(options.getBooleanMapping(), definition.getBooleanMapping()).getStringValue(bool);
 				case NUMBER:
-					return this.mapNumberValue(value, definition);
+					return mapNumberValue(options, value, definition);
 				case STRING:
 					return value.toString();
 				case TEMPLATE:
@@ -559,12 +530,11 @@ public class CsvConverter {
 
 					while (matcher.find()) {
 						try {
-							for (int groupIndex = 0; groupIndex < matcher.groupCount(); groupIndex++) {
+							for (int groupIndex = 0; groupIndex <= matcher.groupCount(); groupIndex++) {
 								String tmp = matcher.group(groupIndex);
-								out = out.replace("%" + groupIndex + "%", tmp);
+								out = out.replaceAll("%" + groupIndex + "%", tmp);
 							}
-						} catch (IndexOutOfBoundsException a) {
-						}
+						} catch (IndexOutOfBoundsException ignored) { }
 					}
 
 					return out;
@@ -575,9 +545,9 @@ public class CsvConverter {
 					} else {
 						date = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(value.toString()));
 					}
-					return mapDateValue(date, definition);
+					return mapDateValue(options, date, definition);
 				case CONFIG_VALUE:
-					return mapValueFromConfig(definition.getConfigKey(), value.toString());
+					return mapValueFromConfig(options, definition.getConfigKey(), value.toString());
 			}
 		} catch (Exception e) {
 			log.debug("Error while mapping", e);
@@ -587,7 +557,7 @@ public class CsvConverter {
 		return "";
 	}
 
-	private String mapNumberValue(Object value, AbstractCsvMappingDefinition definition) {
+	private static String mapNumberValue(ConvertingOptions options, Object value, AbstractCsvMappingDefinition definition) {
 		if (!(value instanceof Number)) {
 			if (definition.getDefaultValue() == null || !(definition.getDefaultValue() instanceof Number)) {
 				return "0";
@@ -599,15 +569,15 @@ public class CsvConverter {
 		NumberFormat formatter = definition.getNumberFormatter();
 
 		if (formatter == null) {
-			formatter = this.numberFormatter;
+			formatter = options.getNumberFormatter();
 		}
 
 		return formatter.format(num);
 	}
 
-	private String mapDateValue(Instant date, AbstractCsvMappingDefinition definition) {
+	private static String mapDateValue(ConvertingOptions options, Instant date, AbstractCsvMappingDefinition definition) {
 		try {
-			DateTimeFormatter formatter = dateFormatter;
+			DateTimeFormatter formatter = options.getDateFormatter();
 
 			try {
 				if (definition.getDateFormat() != null) {
@@ -630,7 +600,8 @@ public class CsvConverter {
 		}
 	}
 
-	private String mapValueFromConfig(
+	private static String mapValueFromConfig(
+		ConvertingOptions options,
 		String configKey,
 		String id
 	) {
@@ -640,17 +611,17 @@ public class CsvConverter {
 
 		String value = "";
 
-		if (this.configValues.containsKey(configKey)) {
-			Map<String, String> options = this.configValues.get(configKey);
-			if (options.containsKey(id)) {
-				value = options.get(id);
+		if (options.getConfigValues().containsKey(configKey)) {
+			Map<String, String> values = options.getConfigValues().get(configKey);
+			if (values.containsKey(id)) {
+				value = values.get(id);
 			}
 		}
 
 		return value;
 	}
 
-	private List<List<String>> createPrintableMatrix(CsvMatrix matrix) {
+	public static List<List<String>> convertToPrintableMatrix(CsvMatrix matrix) {
 		List<List<String>> printMatrix = new ArrayList<>();
 
 		for (ColumnGroup group : matrix) {
@@ -660,7 +631,7 @@ public class CsvConverter {
 		return printMatrix;
 	}
 
-	private void appendColumnGroupToPrintMatrix(List<List<String>> printMatrix, ColumnGroup group) {
+	private static void appendColumnGroupToPrintMatrix(List<List<String>> printMatrix, ColumnGroup group) {
 		int addSize = group.get(0).getValues().size();
 		List<List<String>> copy = new ArrayList<>();
 

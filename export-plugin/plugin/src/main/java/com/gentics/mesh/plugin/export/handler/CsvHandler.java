@@ -8,11 +8,7 @@ import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.export.CsvConverter;
 import com.gentics.mesh.plugin.export.exception.GraphQLRestException;
-import com.gentics.mesh.plugin.export.model.CsvMappingDataType;
-import com.gentics.mesh.plugin.export.model.CsvMappingDefinition;
-import com.gentics.mesh.plugin.export.model.CsvRequest;
-import com.gentics.mesh.plugin.export.model.CsvStringWriter;
-import com.gentics.mesh.plugin.export.model.CsvSubMappingDefinition;
+import com.gentics.mesh.plugin.export.model.*;
 import com.gentics.mesh.plugin.export.util.MappingService;
 import com.gentics.mesh.plugin.export.util.Utils;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -54,22 +50,14 @@ public class CsvHandler implements Handler<PluginContext> {
 	private static final String CONTENT_TYPE_KEY = "content-type";
 	private static final String CONTENT_TYPE_VALUE = "text/csv;charset=UTF-8";
 
-	private static class ResponseData {
-		List<JsonObject> elements;
-		boolean foundElements;
-		boolean hasMore;
-
-		ResponseData() {}
-	}
-
-	private final MeshRestClient client;
-	private final MappingService mapping;
+	@Inject
+	public MeshRestClient client;
 
 	@Inject
-	public CsvHandler(MeshRestClient client, MappingService mapping) {
-		this.client = client;
-		this.mapping = mapping;
-	}
+	public MappingService mapping;
+
+	@Inject
+	public CsvHandler() { }
 
 	@Override
 	public void handle(PluginContext rc) {
@@ -109,6 +97,7 @@ public class CsvHandler implements Handler<PluginContext> {
 			// free the resources as it would just go into the void now.
 			if (err instanceof VertxException && "Connection was closed".equals(err.getMessage())) {
 				if (!subscription.isDisposed()) {
+					log.debug("Request got canceled and request is still running, therefore canceling it.");
 					subscription.dispose();
 				}
 			}
@@ -123,7 +112,7 @@ public class CsvHandler implements Handler<PluginContext> {
 			.collect(Collectors.toList());
 		boolean hasReferenceField = !referenceEntries.isEmpty();
 		GraphQLRequest graphRequest = request.buildGraphQLRequest();
-		CsvConverter converter = new CsvConverter()
+		ConvertingOptions options = new ConvertingOptions()
 			.setMapping(request.getMapping())
 			.setConfigValues(request.getConfigValues())
 			.setBooleanMapping(request.getBooleanMapping())
@@ -147,16 +136,16 @@ public class CsvHandler implements Handler<PluginContext> {
 
 		return Observable.defer(() -> {
 			AtomicBoolean hasMore = new AtomicBoolean(false);
-			AtomicBoolean foundElements = new AtomicBoolean(false);
+			AtomicBoolean hasFoundElement = new AtomicBoolean(false);
 			AtomicInteger totalNodes = new AtomicInteger(0);
 
 			return this.loadData(rc, request, graphRequest)
 				.flatMapObservable(response -> {
-					hasMore.set(response.hasMore);
-					foundElements.set(response.foundElements);
-					totalNodes.set(totalNodes.get() + response.elements.size());
+					hasMore.set(response.isHasMore());
+					hasFoundElement.set(response.isFoundElements());
+					totalNodes.set(totalNodes.get() + response.getElements().size());
 
-					return Observable.fromIterable(response.elements);
+					return Observable.fromIterable(response.getElements());
 				})
 				.filter(element -> request.getElementFilter() == null || request.getElementFilter().isAllowed(element))
 				.flatMapSingle(element -> {
@@ -166,9 +155,9 @@ public class CsvHandler implements Handler<PluginContext> {
 						return this.enrichObjectsWithReferences(element, referenceEntries, request.getProjectName());
 					}
 				})
-				.flatMap(node -> Observable.just(converter.transformToCsv(node)), false, 1)
+				.flatMap(node -> Observable.just(CsvConverter.transformToCsv(options, node)), false, 1)
 				.repeatWhen(t -> t.takeWhile(n -> {
-					boolean takeMore = foundElements.get() && hasMore.get();
+					boolean takeMore = hasFoundElement.get() && hasMore.get();
 					int perPage = graphRequest.getVariables().getInteger(VARIABLE_KEY_PER_PAGE);
 
 					if (hasMore.get() && graphRequest.getVariables().containsKey(VARIABLE_KEY_PAGE)) {
@@ -231,31 +220,32 @@ public class CsvHandler implements Handler<PluginContext> {
 			Optional<Object> rawHasMore = Utils.getValueByPath(data, Utils.getPathAsList(csvRequest.getHasMorePath()));
 			Optional<Object> rawElements = Utils.getValueByPath(data, Utils.getPathAsList(csvRequest.getElementsPath()));
 			ResponseData response = new ResponseData();
-			response.elements = new ArrayList<>();
-			response.hasMore = false;
-			response.foundElements = false;
+			response.setElements(new ArrayList<>());
+			response.setHasMore(false);
+			response.setFoundElements(false);
 
 			if (rawHasMore.isPresent()) {
 				Object tmp = rawHasMore.get();
 				if (tmp instanceof Boolean) {
-					response.hasMore = (Boolean) tmp;
+					response.setHasMore((Boolean) tmp);
 				} else {
 					try {
-						response.hasMore = Boolean.parseBoolean(tmp.toString());
+						response.setHasMore(Boolean.parseBoolean(tmp.toString()));
 					} catch (Exception ignored) {
 					}
 				}
 			}
 
 			if (rawElements.isPresent()) {
-				response.foundElements = true;
+				response.setFoundElements(true);
 
 				if (rawElements.get() instanceof JsonArray) {
-					response.elements = ((JsonArray) rawElements.get())
+					response.setElements(((JsonArray) rawElements.get())
 						.stream()
 						.filter(v -> v instanceof JsonObject)
 						.map(v -> (JsonObject) v)
-						.collect(Collectors.toList());
+						.collect(Collectors.toList())
+					);
 				}
 			}
 
