@@ -50,15 +50,15 @@ public class SimpleTraversal<T, C, S, M> extends AbstractTraversal<T, C, S, M> {
 	private int markId = 0;
 
 	public SimpleTraversal(final FramedGraph graph, final Graph delegate) {
-		this(graph, new FermaGremlinPipeline<>(delegate));
+		this(graph, new FermaGremlinPipeline<>(delegate, false));
 	}
 
 	public SimpleTraversal(final FramedGraph graph, final Iterator starts) {
-		super(graph, new FermaGremlinPipeline<>(starts));
+		super(graph, new FermaGremlinPipeline<>(starts, false));
 	}
 
 	public SimpleTraversal(final FramedGraph graph, final ElementFrame starts) {
-		this(graph, new FermaGremlinPipeline<>(starts.getElement()));
+		this(graph, new FermaGremlinPipeline<>(starts.getElement(), false));
 	}
 
 	public MarkId pushMark(final Traversal<?, ?, ?, ?> traversal) {

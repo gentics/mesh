@@ -18,6 +18,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -30,6 +32,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.PermissionException;
@@ -85,6 +88,12 @@ public abstract class AbstractTypeProvider {
 
 		// #perPage
 		arguments.add(newArgument().name("perPage").description("Max count of elements per page").type(GraphQLLong).build());
+		
+		// #sortBy
+		arguments.add(newArgument().name("sortBy").description("Field to sort the elements by").type(GraphQLString).build());
+
+		// #sortOrder
+		arguments.add(newArgument().name("sortOrder").defaultValue(SortOrder.ASCENDING.getSimpleName()).description("Order to sort the elements in").type(GraphQLString).build());
 		return arguments;
 	}
 
@@ -535,6 +544,14 @@ public abstract class AbstractTypeProvider {
 		if (perPage != null) {
 			parameters.setPerPage(perPage);
 		}
+		String sortBy = env.getArgument("sortBy");
+		if (StringUtils.isNotBlank(sortBy)) {
+			parameters.setSortBy(sortBy);
+		}
+		String sortOrder = env.getArgument("sortOrder");
+		if (StringUtils.isNotBlank(sortOrder)) {
+			parameters.setSortOrder(sortOrder);
+		}
 		parameters.validate();
 		return parameters;
 	}
@@ -551,9 +568,10 @@ public abstract class AbstractTypeProvider {
 		NodeRoot nodeRoot = gc.getProject().getNodeRoot();
 
 		List<String> languageTags = getLanguageArgument(env);
+		PagingParameters pagingInfo = getPagingInfo(env);
 		ContainerType type = getNodeVersion(env);
 
-		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
+		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM, pagingInfo.getSortBy(), pagingInfo.getOrder())
 			// Now lets try to load the containers for those found nodes - apply the language fallback
 			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags, type))
 			// Filter nodes without a container

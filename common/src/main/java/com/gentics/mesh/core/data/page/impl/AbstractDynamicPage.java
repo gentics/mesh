@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -17,6 +18,10 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 	protected long pageNumber;
 
 	protected Long perPage;
+	
+	protected String sortBy;
+	
+	protected SortOrder sortOrder;
 
 	protected Long lowerBound;
 
@@ -55,6 +60,8 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 			this.lowerBound = (pageNumber - 1) * perPage;
 		}
 
+		this.sortBy = pagingInfo.getSortBy();
+		this.sortOrder = pagingInfo.getOrder();
 	}
 
 	@Override

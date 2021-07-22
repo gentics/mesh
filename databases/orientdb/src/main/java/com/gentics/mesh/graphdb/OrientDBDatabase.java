@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
@@ -27,6 +29,7 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
@@ -77,6 +80,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -290,9 +294,21 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, String sortBy, SortOrder sortOrder) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+		Iterator<Vertex> ret;
+		if (StringUtils.isNotBlank(sortBy)) {
+			OrientGraphQuery query = (OrientGraphQuery) orientBaseGraph.query();
+			query.labels(classOfVertex.getSimpleName());
+			query.order(sortBy, sortOrder.getSimpleName());
+		    for (int i = 0; i < fieldNames.length; i++) {
+		      query.has(fieldNames[i], fieldValues[i]);
+		    }
+			ret = query.vertices().iterator();
+		} else {
+			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+		}
+		return ret;
 	}
 
 	@Override

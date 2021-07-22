@@ -14,6 +14,7 @@ import com.gentics.madl.tx.TxAction1;
 import com.gentics.madl.tx.TxFactory;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -291,7 +292,13 @@ public interface Database extends TxFactory {
 	 * @param fieldValues
 	 * @return
 	 */
-	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
+	default Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		return getVertices(classOfVertex, fieldNames, fieldValues, null, null);
+	}
+	
+
+	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, String sortBy,
+			SortOrder sortOrder);
 
 	/**
 	 * Utilize the index and locate the matching vertices for the given parameters and the given range.
@@ -527,5 +534,4 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	long count(Class<? extends MeshVertex> clazz);
-
 }

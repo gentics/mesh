@@ -12,6 +12,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
@@ -21,14 +23,17 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -58,12 +63,21 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param permission
 	 *            Needed permission
 	 */
-	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission, String sortBy, SortOrder sortOrder) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 
 		String idx = "e." + getRootLabel().toLowerCase() + "_out";
-		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
+		Spliterator<Edge> itemEdges;
+		if (StringUtils.isNotBlank(sortBy)) {
+			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
+			OrientGraphQuery query = (OrientGraphQuery) ograph.getBaseGraph().query();
+			
+			itemEdges = query.order(sortBy, sortOrder.getSimpleName()).has("_class", getRootLabel().toUpperCase()).edges().spliterator();
+		} else {
+			itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
+		}		
+		
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
 			.filter(vertex -> user.hasPermissionForId(vertex.getId(), permission))
