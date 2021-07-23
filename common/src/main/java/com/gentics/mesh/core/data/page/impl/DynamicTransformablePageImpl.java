@@ -222,24 +222,22 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	private void init(Class<? extends T> clazz, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
 			String rootLabel, GraphPermission perm) {
 		
-		Spliterator<Edge> itemEdges;
-		
+		Stream<Vertex> stream;
 		if (StringUtils.isNotBlank(sortBy)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			OrientGraphQuery query = (OrientGraphQuery) ograph.getBaseGraph().query();
-			
-			itemEdges = query.order(sortBy, sortOrder.getSimpleName()).has("_class", rootLabel.toUpperCase()).edges().spliterator();
+			query.labels(clazz.getSimpleName());
+			query.order(sortBy, sortOrder.getSimpleName());
+		    stream = StreamSupport.stream(query.vertices().spliterator(), false);
 		} else {
-			itemEdges = graph.getEdges(indexName, indexKey).spliterator();
+			// Iterate over all vertices that are managed by this root vertex
+			stream = StreamSupport.stream(graph.getEdges(indexName, indexKey).spliterator(), false)
+
+				// Get the vertex from the edge
+				.map(itemEdge -> {
+					return itemEdge.getVertex(vertexDirection);
+				});
 		}
-
-		// Iterate over all vertices that are managed by this root vertex
-		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
-
-			// Get the vertex from the edge
-			.map(itemEdge -> {
-				return itemEdge.getVertex(vertexDirection);
-			});
 		applyPagingAndPermChecks(stream, clazz, perm);
 
 	}

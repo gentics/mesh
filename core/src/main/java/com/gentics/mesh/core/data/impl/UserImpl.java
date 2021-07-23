@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -108,6 +109,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
+		GraphRelationships.addRelation(UserImpl.class, NodeImpl.class, "nodeReference", HAS_NODE_REFERENCE, false);
 	}
 
 	@Override

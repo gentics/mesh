@@ -80,7 +80,6 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -298,12 +297,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
 		if (StringUtils.isNotBlank(sortBy)) {
-			OrientGraphQuery query = (OrientGraphQuery) orientBaseGraph.query();
-			query.labels(classOfVertex.getSimpleName());
-			query.order(sortBy, sortOrder.getSimpleName());
-		    for (int i = 0; i < fieldNames.length; i++) {
-		      query.has(fieldNames[i], fieldValues[i]);
-		    }
+			MeshOrientGraphQuery query = new MeshOrientGraphQuery(orientBaseGraph, (Class<? extends MeshVertex>) classOfVertex);
+			query.hasAll(fieldNames, fieldValues);
+			query.order(new String[] { sortBy + " " + sortOrder.getSimpleName()});
 			ret = query.vertices().iterator();
 		} else {
 			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();

@@ -2,15 +2,31 @@ package com.gentics.mesh.core.data.relationship;
 
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.tuple.Triple;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.BranchParentEntry;
+import com.gentics.mesh.core.data.MeshVertex;
 
 /**
  * Main class that holds all the graph relationship names.
  */
 public class GraphRelationships {
-
+	
+	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, boolean hasContainerType) {
+		Map<String, Triple<String, Class<? extends MeshVertex>, Boolean>> relations = VERTEX_RELATIONS.getOrDefault(keyClass, new HashMap<>());
+		relations.put(mappingName, Triple.of(relationName, valueClass, hasContainerType));
+		VERTEX_RELATIONS.put(keyClass, relations);
+	}
+	
+	public static Map<String, Triple<String, Class<? extends MeshVertex>, Boolean>> findRelation(Class<? extends MeshVertex> keyClass) {
+		return VERTEX_RELATIONS.get(keyClass);
+	}
+	
 	/**
 	 * Initialise the graph database by adding all needed edge types and indices.
 	 * 
@@ -170,4 +186,5 @@ public class GraphRelationships {
 	// Changelog system
 	public static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";
 
+	private static final Map<Class<? extends MeshVertex>, Map<String, Triple<String, Class<? extends MeshVertex>, Boolean>>> VERTEX_RELATIONS = new HashMap<>();
 }
