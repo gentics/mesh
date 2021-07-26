@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -109,7 +110,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
-		GraphRelationships.addRelation(UserImpl.class, NodeImpl.class, "nodeReference", HAS_NODE_REFERENCE, false);
+		GraphRelationships.addRelation(UserImpl.class, NodeImpl.class, "nodeReference", HAS_NODE_REFERENCE, StringUtils.EMPTY);
 	}
 
 	@Override

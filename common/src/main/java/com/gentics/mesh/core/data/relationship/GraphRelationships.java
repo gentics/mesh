@@ -17,13 +17,13 @@ import com.gentics.mesh.core.data.MeshVertex;
  */
 public class GraphRelationships {
 	
-	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, boolean hasContainerType) {
-		Map<String, Triple<String, Class<? extends MeshVertex>, Boolean>> relations = VERTEX_RELATIONS.getOrDefault(keyClass, new HashMap<>());
-		relations.put(mappingName, Triple.of(relationName, valueClass, hasContainerType));
+	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, String edgeFieldName) {
+		Map<String, Triple<String, Class<? extends MeshVertex>, String>> relations = VERTEX_RELATIONS.getOrDefault(keyClass, new HashMap<>());
+		relations.put(mappingName, Triple.of(relationName, valueClass, edgeFieldName));
 		VERTEX_RELATIONS.put(keyClass, relations);
 	}
 	
-	public static Map<String, Triple<String, Class<? extends MeshVertex>, Boolean>> findRelation(Class<? extends MeshVertex> keyClass) {
+	public static Map<String, Triple<String, Class<? extends MeshVertex>, String>> findRelation(Class<? extends MeshVertex> keyClass) {
 		return VERTEX_RELATIONS.get(keyClass);
 	}
 	
@@ -186,5 +186,5 @@ public class GraphRelationships {
 	// Changelog system
 	public static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";
 
-	private static final Map<Class<? extends MeshVertex>, Map<String, Triple<String, Class<? extends MeshVertex>, Boolean>>> VERTEX_RELATIONS = new HashMap<>();
+	private static final Map<Class<? extends MeshVertex>, Map<String, Triple<String, Class<? extends MeshVertex>, String>>> VERTEX_RELATIONS = new HashMap<>();
 }

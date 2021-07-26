@@ -41,8 +41,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.core.data.node.field.*;
-import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,14 +59,22 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.DisplayField;
+import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -126,6 +132,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			.withField(BUCKET_ID_KEY, LONG)
 			.withType(NOTUNIQUE)
 			.withPostfix("bucket"));
+		
+		// TODO replace null with GraphField.FIELD_KEY_PROPERTY_KEY when complex SQL statements start working
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, MicronodeImpl.class, "*", HAS_FIELD, null);
 	}
 
 	@Override

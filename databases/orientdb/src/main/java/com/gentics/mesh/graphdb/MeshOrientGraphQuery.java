@@ -17,7 +17,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientElementIterable;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 public class MeshOrientGraphQuery extends OrientGraphQuery {
 	
@@ -64,27 +63,29 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 				String sanitizedPart = sanitizeInput(sortParts[0]);
 				String[] pathParts = sanitizedPart.split("\\.");
 				if (pathParts.length > 1) {
-					if (!propAndDir.equals(propsAndDirs[0])) {
-						text.append(", ");
-					}
+					text.append(", ");
 					for (String pathPart: pathParts) {
-						Map<String, Triple<String, Class<? extends MeshVertex>, Boolean>> relation = GraphRelationships.findRelation(currentMapping);
-						if (relation != null && relation.containsKey(pathPart)) {
-							text.append(", ");
-							Triple<String, Class<? extends MeshVertex>, Boolean> relationMapping = relation.get(pathPart);
-							if (currentMapping != vertexClass) {
-								text.append(".");
-							}
-							if (relationMapping.getRight()) {
-								text.append("outE(\"");
+						Map<String, Triple<String, Class<? extends MeshVertex>, String>> relation = GraphRelationships.findRelation(currentMapping);
+						if (relation != null 
+								&& !sanitizedPart.endsWith(pathPart)
+								&& (relation.containsKey(pathPart) 
+										|| (relation.containsKey("*")))) {
+							Triple<String, Class<? extends MeshVertex>, String> relationMapping = relation.get(pathPart) != null 
+									? relation.get(pathPart) 
+									: relation.get("*");
+							// TODO custom edge fetch does not work in OSQLSynchQuery as of v3.1.11
+							if (StringUtils.isNotBlank(relationMapping.getRight())) {
+								text.append("outE('");
 								text.append(relationMapping.getLeft());
-								text.append("\")[edgeType='");
+								text.append("')[");
+								text.append(relationMapping.getRight());
+								text.append("='");
 								text.append(ContainerType.PUBLISHED.getCode()); // TODO support more edge types, not only published
 								text.append("'].inV()");
 							} else {
-								text.append("out(\"");
+								text.append("out('");
 								text.append(relationMapping.getLeft());
-								text.append("\")");
+								text.append("')");
 							}
 							text.append("[0].");
 							currentMapping = relationMapping.getMiddle();
@@ -96,7 +97,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 					}
 					text.append(" as ");
 					text.append("`");
-					text.append(sanitizedPart);
+					text.append(sanitizedPart.replace(".", "-"));
 					text.append("`");
 				}
 			}
@@ -119,7 +120,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 				String[] sortParts = propAndDir.split(" ");
 				String sanitizedPart = sanitizeInput(sortParts[0]);
 				text.append("`");
-				text.append(sanitizedPart);
+				text.append(sanitizedPart.replace(".", "-"));
 				text.append("`");
 				if (sortParts.length > 1) {
 					text.append(" ");
