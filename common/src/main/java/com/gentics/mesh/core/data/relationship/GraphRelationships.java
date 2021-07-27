@@ -5,8 +5,6 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.Triple;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.BranchParentEntry;
@@ -17,13 +15,13 @@ import com.gentics.mesh.core.data.MeshVertex;
  */
 public class GraphRelationships {
 	
-	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, String edgeFieldName) {
-		Map<String, Triple<String, Class<? extends MeshVertex>, String>> relations = VERTEX_RELATIONS.getOrDefault(keyClass, new HashMap<>());
-		relations.put(mappingName, Triple.of(relationName, valueClass, edgeFieldName));
+	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, String edgeFieldName, String defaultEdgeFieldFilterValue) {
+		Map<String, GraphRelationship> relations = VERTEX_RELATIONS.getOrDefault(keyClass, new HashMap<>());
+		relations.put(mappingName, new GraphRelationship(relationName, valueClass, edgeFieldName, defaultEdgeFieldFilterValue));
 		VERTEX_RELATIONS.put(keyClass, relations);
 	}
 	
-	public static Map<String, Triple<String, Class<? extends MeshVertex>, String>> findRelation(Class<? extends MeshVertex> keyClass) {
+	public static Map<String, GraphRelationship> findRelation(Class<?> keyClass) {
 		return VERTEX_RELATIONS.get(keyClass);
 	}
 	
@@ -186,5 +184,5 @@ public class GraphRelationships {
 	// Changelog system
 	public static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";
 
-	private static final Map<Class<? extends MeshVertex>, Map<String, Triple<String, Class<? extends MeshVertex>, String>>> VERTEX_RELATIONS = new HashMap<>();
+	private static final Map<Class<? extends MeshVertex>, Map<String, GraphRelationship>> VERTEX_RELATIONS = new HashMap<>();
 }

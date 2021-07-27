@@ -72,6 +72,7 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.ext.orientdb3.OrientDBTx;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -297,10 +298,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
 		if (StringUtils.isNotBlank(sortBy)) {
-			MeshOrientGraphQuery query = new MeshOrientGraphQuery(orientBaseGraph, (Class<? extends MeshVertex>) classOfVertex);
+			MeshOrientGraphQuery query = new MeshOrientGraphQuery(orientBaseGraph)
+					.relationDirection(Direction.OUT)
+					.vertexClass((Class<? extends MeshVertex>) classOfVertex);
 			query.hasAll(fieldNames, fieldValues);
-			query.order(new String[] { sortBy + " " + sortOrder.getSimpleName()});
-			ret = query.vertices().iterator();
+			ret = query.verticesOrdered(new String[] { sortBy + " " + sortOrder.getSimpleName()}).iterator();
 		} else {
 			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
 		}

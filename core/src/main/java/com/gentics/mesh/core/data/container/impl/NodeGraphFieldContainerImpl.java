@@ -134,7 +134,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			.withPostfix("bucket"));
 		
 		// TODO replace null with GraphField.FIELD_KEY_PROPERTY_KEY when complex SQL statements start working
-		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, MicronodeImpl.class, "*", HAS_FIELD, null);
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, MicronodeImpl.class, "*", HAS_FIELD, null, StringUtils.EMPTY);
 	}
 
 	@Override

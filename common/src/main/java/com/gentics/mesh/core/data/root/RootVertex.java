@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -33,7 +34,6 @@ import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -67,14 +67,16 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 
-		String idx = "e." + getRootLabel().toLowerCase() + "_out";
 		Spliterator<Edge> itemEdges;
 		if (StringUtils.isNotBlank(sortBy)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
-			OrientGraphQuery query = (OrientGraphQuery) ograph.getBaseGraph().query();
-			
-			itemEdges = query.order(sortBy, sortOrder.getSimpleName()).has("_class", getRootLabel().toUpperCase()).edges().spliterator();
+			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
+					.vertexClass(getPersistanceClass())
+					.edgeLabel(getRootLabel().toUpperCase());
+			query.has(Direction.IN.name().toLowerCase(), id());
+			itemEdges = query.edgesOrdered(new String[] { sortBy + " " + sortOrder.getSimpleName()}).spliterator();
 		} else {
+			String idx = "e." + getRootLabel().toLowerCase() + "_out";
 			itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
 		}		
 		
