@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -41,6 +41,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -475,11 +476,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. assert published and draft node
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, PagingParameters.DEFAULT_SORT_ORDER))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, PagingParameters.DEFAULT_SORT_ORDER))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});
@@ -493,12 +494,12 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 4. assert published and draft gone
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, PagingParameters.DEFAULT_SORT_ORDER))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, PagingParameters.DEFAULT_SORT_ORDER))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
@@ -541,24 +542,24 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
 				project.getNodeRoot().findAll(mockActionContext("version=draft&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
-					10000L, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+					10000L, null, PagingParameters.DEFAULT_SORT_ORDER)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
 				project.getNodeRoot().findAll(mockActionContext("version=published&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
-					10000L, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
+					10000L, null, PagingParameters.DEFAULT_SORT_ORDER)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
 
 			// 5. assert published and draft still there for new branch
 			tx(() -> {
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
+				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, PagingParameters.DEFAULT_SORT_ORDER)).forEach(
 					node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
+				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, PagingParameters.DEFAULT_SORT_ORDER)).forEach(
 					node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});

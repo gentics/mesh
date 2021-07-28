@@ -69,6 +69,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		Spliterator<Edge> itemEdges;
 		if (StringUtils.isNotBlank(sortBy)) {
+			if (sortOrder == null) {
+				sortOrder = PagingParameters.DEFAULT_SORT_ORDER;
+			}
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.vertexClass(getPersistanceClass())

@@ -11,7 +11,7 @@ public interface PagingParameters extends ParameterProvider {
 	public static final String SORT_ORDER_PARAMETER_KEY = "order";
 
 	public static final int DEFAULT_PAGE = 1;
-	public static final SortOrder DEFAULT_SORT_ORDER = SortOrder.UNSORTED;
+	public static final SortOrder DEFAULT_SORT_ORDER = SortOrder.ASCENDING;
 
 	/**
 	 * Return the current page.

@@ -7,9 +7,7 @@ public enum SortOrder {
 
 	ASCENDING("asc"),
 
-	DESCENDING("desc"),
-
-	UNSORTED("unsorted");
+	DESCENDING("desc");
 
 	private String simpleName;
 

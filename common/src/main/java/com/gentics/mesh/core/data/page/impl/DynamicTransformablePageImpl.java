@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -223,6 +224,9 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		
 		Spliterator<Edge> itemEdges;
 		if (StringUtils.isNotBlank(sortBy)) {
+			if (sortOrder == null) {
+				sortOrder = PagingParameters.DEFAULT_SORT_ORDER;
+			}
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.relationDirection(vertexDirection)

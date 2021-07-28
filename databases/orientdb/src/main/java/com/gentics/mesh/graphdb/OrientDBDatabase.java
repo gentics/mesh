@@ -53,6 +53,7 @@ import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
@@ -298,6 +299,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
 		if (StringUtils.isNotBlank(sortBy)) {
+			if (sortOrder == null) {
+				sortOrder = PagingParameters.DEFAULT_SORT_ORDER;
+			}
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(orientBaseGraph)
 					.relationDirection(Direction.OUT)
 					.vertexClass((Class<? extends MeshVertex>) classOfVertex);
