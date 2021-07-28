@@ -3,6 +3,7 @@ package com.gentics.mesh.graphdb;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -16,8 +17,10 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientEdge;
 import com.tinkerpop.blueprints.impls.orient.OrientElementIterable;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 public class MeshOrientGraphQuery extends OrientGraphQuery {
 
@@ -60,11 +63,9 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 
 		final StringBuilder text = new StringBuilder(512);
 
-		// The default SELECT does not support joining linked edges,
-		// so some extra engineering is required.
 		text.append(QUERY_SELECT);
 		text.append("*");		
-		buildOrderFieldRequest(text, propsAndDirs, true);
+		buildOrderFieldRequest(text, propsAndDirs, true, fetchPlan == null);
 		text.append(" ");
 		text.append(QUERY_FROM);
 		text.append(OrientBaseGraph.encodeClassName(edgeLabel));
@@ -116,26 +117,29 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(limit);
 		}
 
-		final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
+		if (fetchPlan != null) {
+			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
 
-		if (fetchPlan != null)
 			query.setFetchPlan(fetchPlan);
 
-		return new OrientElementIterable<Edge>(((OrientBaseGraph) graph),
-				((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
+			return new OrientElementIterable<Edge>(((OrientBaseGraph) graph),
+					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
+		} else {
+			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(text.toString(), queryParams.toArray()), false)
+					.map(oresult -> (Edge) new OrientEdgeImpl((OrientBaseGraph) graph, oresult.toElement()))
+					.iterator();
+		}
 	}
-
+	
 	public Iterable<Vertex> verticesOrdered(String[] propsAndDirs) {
 		if (limit == 0)
 			return Collections.emptyList();
 
 		final StringBuilder text = new StringBuilder(512);
 
-		// The default SELECT does not support joining linked vertices,
-		// so some extra engineering is required.
 		text.append(QUERY_SELECT);
 		text.append("*");
-		buildOrderFieldRequest(text, propsAndDirs, false);		
+		buildOrderFieldRequest(text, propsAndDirs, false, fetchPlan == null);		
 		text.append(QUERY_FROM);
 		text.append(OrientBaseGraph.encodeClassName(vertexClass.getSimpleName()));
 
@@ -170,22 +174,27 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(LIMIT);
 			text.append(limit);
 		}
+		
+		if (fetchPlan != null) {
+			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
 
-		final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
-
-		if (fetchPlan != null)
 			query.setFetchPlan(fetchPlan);
 
-		return new OrientElementIterable<Vertex>(((OrientBaseGraph) graph),
-				((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
+			return new OrientElementIterable<Vertex>(((OrientBaseGraph) graph),
+					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
+		} else {
+			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(text.toString(), queryParams.toArray()), false)
+				.map(oresult -> (Vertex) new OrientVertex((OrientBaseGraph) graph, oresult.toElement()))
+				.iterator();
+		}
 	}
 
 	private static final String sanitizeInput(String input) {
-		// Keep match to FieldSchemaContainer.NAME_REGEX!
-		return input.replaceAll("[^.a-zA-Z0-9_-]", StringUtils.EMPTY);
+		// Keep match opposite to FieldSchemaContainer.NAME_REGEX!
+		return input.replaceAll("[^.@a-zA-Z0-9_-]", StringUtils.EMPTY);
 	}
 	
-	protected void buildOrderFieldRequest(StringBuilder text, String[] propsAndDirs, boolean isEdgeRequest) {
+	protected void buildOrderFieldRequest(StringBuilder text, String[] propsAndDirs, boolean isEdgeRequest, boolean useEdgeFilters) {
 		if (propsAndDirs != null && propsAndDirs.length > 0) {
 			// format: path.name direction, e.g. 'fields.fullname desc'
 			Direction vertexLookupDir = isEdgeRequest ? relationDirection.opposite() : relationDirection;
@@ -205,17 +214,16 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 							&& (relation.containsKey(pathPart) || (relation.containsKey("*")))) {
 						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart)
 								: relation.get("*");
-						// TODO custom edge fetch does not work in OSQLSynchQuery as of v3.1.11
-						if (StringUtils.isNotBlank(relationMapping.getEdgeFieldName())) {
+						if (useEdgeFilters 
+								&& relationMapping != null 
+								&& StringUtils.isNotBlank(relationMapping.getEdgeFieldName())) {
 							text.append(vertexLookupDir.name().toLowerCase());
 							text.append("E('");
 							text.append(relationMapping.getEdgeName());
 							text.append("')[");
 							text.append(relationMapping.getEdgeFieldName());
 							text.append("='");
-							text.append(relationMapping.getDefaultEdgeFieldFilterValue()); // TODO support more edge
-																							// types, not only
-																							// published
+							text.append(relation.get(pathPart) != null ? relationMapping.getDefaultEdgeFieldFilterValue() : pathPart); 
 							text.append("'].");
 							text.append(vertexLookupDirOpposite.name().toLowerCase());
 							text.append("V()");
@@ -240,5 +248,11 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			}
 		}
 		text.append(" ");
+	}
+	
+	private final class OrientEdgeImpl extends OrientEdge {
+		public OrientEdgeImpl(final OrientBaseGraph rawGraph, final OIdentifiable rawEdge) {
+			super(rawGraph, rawEdge);
+		}
 	}
 }
