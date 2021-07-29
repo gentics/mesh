@@ -22,6 +22,12 @@ import com.tinkerpop.blueprints.impls.orient.OrientElementIterable;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
+/**
+ * A query with sorting capabilities.
+ * 
+ * @author plyhun
+ *
+ */
 public class MeshOrientGraphQuery extends OrientGraphQuery {
 
 	protected static final String QUERY_SELECT = "select ";
@@ -35,6 +41,13 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 		super(iGraph);
 	}
 
+	/**
+	 * A shortcut method for multiple {@link OrientGraphQuery#has(String, Object) calls}
+	 * 
+	 * @param key
+	 * @param value
+	 * @return
+	 */
 	public MeshOrientGraphQuery hasAll(final String[] key, final Object[] value) {
 		for (int i = 0; i < key.length; i++) {
 			super.has(key[i], value[i]);
@@ -42,39 +55,69 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 		return this;
 	}
 
+	/**
+	 * Set sorting relation's direction
+	 * 
+	 * @param relationDirection
+	 * @return
+	 */
 	public MeshOrientGraphQuery relationDirection(Direction relationDirection) {
 		this.relationDirection = relationDirection;
 		return this;
 	}
 
+	/**
+	 * Set a vertex class, that will be used as a first label in {@link OrientGraphQuery#labels(String...)}
+	 * 
+	 * @param vertexClass
+	 * @return
+	 */
 	public MeshOrientGraphQuery vertexClass(Class<?> vertexClass) {
 		this.vertexClass = vertexClass;
 		return this;
 	}
 
+	/**
+	 * Set an edge label, that will be used as a first label in {@link OrientGraphQuery#labels(String...)}
+	 * 
+	 * @param edgeLabel
+	 * @return
+	 */
 	public MeshOrientGraphQuery edgeLabel(String edgeLabel) {
 		this.edgeLabel = edgeLabel;
 		return this;
 	}
 
+	/**
+	 * Retrieve the ordered edges
+	 * 
+	 * @param propsAndDirs sorting parameters, in a form of 'field sortOrder', 'field sortOrder', etc.
+	 * @return
+	 */
 	public Iterable<Edge> edgesOrdered(String[] propsAndDirs) {
 		if (limit == 0)
 			return Collections.emptyList();
 
 		final StringBuilder text = new StringBuilder(512);
 
+		// First build the fields to retrieve and sort by
 		text.append(QUERY_SELECT);
 		text.append("*");		
+		// Explicit fetch plan is not supported by a newer SQL API, so we use it
+		// to tell apart the usage of a new and old API. On the other hand,
+		// the old SQL API does not support custom edge filtering.
 		buildOrderFieldRequest(text, propsAndDirs, true, fetchPlan == null);
 		text.append(" ");
 		text.append(QUERY_FROM);
 		text.append(OrientBaseGraph.encodeClassName(edgeLabel));
 		text.append(" ");
 
+		// Build the query params
 		final List<Object> queryParams = manageFilters(text);
 		if (!((OrientBaseGraph) graph).isUseClassForVertexLabel())
 			manageLabels(queryParams.size() > 0, text);
 		
+		// Build the extra query param for the target vertex name, if specified with the 'vertexClass'
 		if (vertexClass != null) {
 			if (hasContainers != null && hasContainers.size() > 0) {
 				text.append(QUERY_FILTER_AND);				
@@ -89,6 +132,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append("' ");
 		}
 
+		// Build the order clause
 		if (propsAndDirs != null && propsAndDirs.length > 0) {
 			text.append(ORDERBY);
 			// format: path.name direction, e.g. 'fields.fullname desc'
@@ -117,6 +161,8 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(limit);
 		}
 
+		// Explicit fetch plan is not supported by a newer SQL API, so we use it
+		// to tell apart the usage of a new and old API.
 		if (fetchPlan != null) {
 			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
 
@@ -137,16 +183,22 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 
 		final StringBuilder text = new StringBuilder(512);
 
+		// First build the fields to retrieve and sort by
 		text.append(QUERY_SELECT);
 		text.append("*");
+		// Explicit fetch plan is not supported by a newer SQL API, so we use it
+		// to tell apart the usage of a new and old API. On the other hand,
+		// the old SQL API does not support custom edge filtering.
 		buildOrderFieldRequest(text, propsAndDirs, false, fetchPlan == null);		
 		text.append(QUERY_FROM);
 		text.append(OrientBaseGraph.encodeClassName(vertexClass.getSimpleName()));
 
+		// Build the query params, including the labels (including the one provided with vertexClass).
 		final List<Object> queryParams = manageFilters(text);
 		if (!((OrientBaseGraph) graph).isUseClassForVertexLabel())
 			manageLabels(queryParams.size() > 0, text);
 
+		// Build the order clause
 		if (propsAndDirs != null && propsAndDirs.length > 0) {
 			text.append(ORDERBY);
 			// format: path.name direction, e.g. 'fields.fullname desc'
@@ -175,6 +227,8 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(limit);
 		}
 		
+		// Explicit fetch plan is not supported by a newer SQL API, so we use it
+		// to tell apart the usage of a new and old API.
 		if (fetchPlan != null) {
 			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
 
@@ -189,11 +243,34 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 		}
 	}
 
+	/**
+	 * Sanitize the 'orderBy' input against
+	 * 1. chars disallowed in the field naming
+	 * 2. SQL injection
+	 * 
+	 * @param input
+	 * @return
+	 */
 	private static final String sanitizeInput(String input) {
 		// Keep match opposite to FieldSchemaContainer.NAME_REGEX!
 		return input.replaceAll("[^.@a-zA-Z0-9_-]", StringUtils.EMPTY);
 	}
 	
+	/**
+	 * Build the request of the fields required for the sorting. Since the sorting may ask for the 
+	 * fields hidden in a vertex relation hierarchy, we need to utilize the relation mappings, set by entities.
+	 * For instance, the request 'nodeReference.fields.fullname-string desc' on a UserImpl needs to map
+	 * 'nodeReference' part through 'HAS_NODE_REFERENCE' edge onto NodeImpl relation, further 'fields' mapped 
+	 * through 'HAS_FIELD_CONTAINER' edge onto NodeGraphFieldContainerImpl relation, and the 'fullname-string'
+	 * is the property of NodeGraphFieldContainerImpl to sort by.
+	 * 
+	 *  @see GraphRelationship
+	 * 
+	 * @param text
+	 * @param propsAndDirs
+	 * @param isEdgeRequest
+	 * @param useEdgeFilters
+	 */
 	protected void buildOrderFieldRequest(StringBuilder text, String[] propsAndDirs, boolean isEdgeRequest, boolean useEdgeFilters) {
 		if (propsAndDirs != null && propsAndDirs.length > 0) {
 			// format: path.name direction, e.g. 'fields.fullname desc'
@@ -250,6 +327,12 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 		text.append(" ");
 	}
 	
+	/**
+	 * For whatever reason Tinkerpop Blueprints ORM did not provide an edge entity, so it has to be done manually.
+	 * 
+	 * @author plyhun
+	 *
+	 */
 	private final class OrientEdgeImpl extends OrientEdge {
 		public OrientEdgeImpl(final OrientBaseGraph rawGraph, final OIdentifiable rawEdge) {
 			super(rawGraph, rawEdge);
