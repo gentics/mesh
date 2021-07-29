@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
@@ -82,7 +81,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
 			for (long i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-				Page<? extends Microschema> page = microschemaDao.findAll(ac, new PagingParametersImpl(1, i));
+				Page<? extends HibMicroschema> page = microschemaDao.findAll(ac, new PagingParametersImpl(1, i));
 
 				assertEquals(microschemaContainers().size(), page.getTotalElements());
 				assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());

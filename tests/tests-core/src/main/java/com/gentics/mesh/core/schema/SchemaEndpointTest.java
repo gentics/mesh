@@ -48,9 +48,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -613,13 +614,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibSchema reloaded = schemaDao.findByUuid(uuid);
+			NodeDao nodeDao = tx.nodeDao();
 
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(schemaDao.getNodes(reloaded)).isNotEmpty();
 			BulkActionContext context = createBulkContext();
-			for (Node node : schemaDao.getNodes(reloaded)) {
-				node.delete(context);
+			for (HibNode node : schemaDao.getNodes(getSchemaContainer())) {
+				nodeDao.delete(node, context, false, true);
 			}
 			assertThat(schemaDao.getNodes(reloaded)).isEmpty();
 			tx.success();

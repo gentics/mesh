@@ -21,6 +21,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibBinaryField;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -195,14 +196,14 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public BinaryGraphField copyTo(BinaryGraphField target) {
+	public HibBinaryField copyTo(HibBinaryField target) {
 		for (String key : getPropertyKeys()) {
 			// Don't copy the uuid
 			if ("uuid".equals(key)) {
 				continue;
 			}
 			Object value = property(key);
-			target.property(key, value);
+			((BinaryGraphField) target).property(key, value);
 		}
 		return this;
 	}

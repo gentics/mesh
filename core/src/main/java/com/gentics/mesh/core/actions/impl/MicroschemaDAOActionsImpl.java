@@ -52,13 +52,13 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo);
 		// return ac.getProject().getMicroschemaContainerRoot().findAll(ac2, pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibMicroschema> extraFilter) {
 		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo, schema -> {
 			return extraFilter.test(schema);

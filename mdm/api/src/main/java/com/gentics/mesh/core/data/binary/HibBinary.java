@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * Domain model for binaries.
@@ -82,4 +83,10 @@ public interface HibBinary extends HibBaseElement {
 	 */
 	void setUuid(String uuid);
 
+	/**
+	 * Find all binary fields which make use of this binary.
+	 * 
+	 * @return
+	 */
+	Result<HibBinaryField> findFields();
 }

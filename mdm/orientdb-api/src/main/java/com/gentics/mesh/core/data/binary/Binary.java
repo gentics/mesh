@@ -5,7 +5,6 @@ import java.io.InputStream;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.image.Point;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.spi.Supplier;
 
 import io.reactivex.Flowable;
@@ -140,12 +139,5 @@ public interface Binary extends MeshVertex, HibBinary {
 			return new Point(x, y);
 		}
 	}
-
-	/**
-	 * Find all binary fields which make use of this binary.
-	 * 
-	 * @return
-	 */
-	Result<BinaryGraphField> findFields();
 
 }

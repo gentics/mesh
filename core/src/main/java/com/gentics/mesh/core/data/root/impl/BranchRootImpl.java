@@ -26,7 +26,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
@@ -51,7 +50,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 /**
  * @see BranchRoot
  */
-public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot, BranchDao {
+public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
 
 	/**
 	 * Initialize the branch type and index.

@@ -16,10 +16,11 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -199,8 +200,9 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
-			for (Node node : schemaDao.getNodes(getSchemaContainer())) {
-				node.delete(context);
+			NodeDao nodeDao = tx.nodeDao();
+			for (HibNode node : schemaDao.getNodes(getSchemaContainer())) {
+				nodeDao.delete(node, context, false, true);
 			}
 			schemaDao.delete(getSchemaContainer(), context);
 			assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid));

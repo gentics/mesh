@@ -18,9 +18,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibBinaryField;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -88,9 +89,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = ContentDaoWrapper.composeDocumentId(nodeB.getUuid(), "en");
+			String id = ContentDao.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();
@@ -133,7 +134,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 			// file
 			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
-			BinaryGraphField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
+			HibBinaryField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
@@ -143,9 +144,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = ContentDaoWrapper.composeDocumentId(nodeB.getUuid(), "en");
+			String id = ContentDao.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.FieldUtil.createStringField;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
@@ -12,7 +13,6 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
@@ -52,6 +52,7 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -1717,8 +1718,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(uuid, "en"));
+		assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
+			ContainerType.DRAFT), ContentDao.composeDocumentId(uuid, "en"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
@@ -1746,9 +1747,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(origContainer.getPreviousVersion()).isFirst();
 
 			// Verify that exactly the selected language was updated
-			String indexName = ContentDaoWrapper.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
+			String indexName = ContentDao.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
 				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
-			String documentId = ContentDaoWrapper.composeDocumentId(uuid, "en");
+			String documentId = ContentDao.composeDocumentId(uuid, "en");
 			assertThat(trackingSearchProvider()).hasStore(indexName, documentId);
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
@@ -1796,8 +1797,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("de", restNode.getLanguage());
 		waitForSearchIdleEvent();
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
-		assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(uuid, "de"));
+		assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
+			ContainerType.DRAFT), ContentDao.composeDocumentId(uuid, "de"));
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 	}

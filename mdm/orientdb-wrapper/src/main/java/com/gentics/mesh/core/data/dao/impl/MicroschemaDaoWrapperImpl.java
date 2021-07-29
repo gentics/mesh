@@ -204,10 +204,10 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
-		Predicate<Microschema> extraFilter) {
+	public Page<? extends HibMicroschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+		Predicate<HibMicroschema> extraFilter) {
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
-		return microschemaRoot.findAll(ac, pagingInfo, extraFilter);
+		return microschemaRoot.findAll(ac, pagingInfo, microschema -> extraFilter.test(microschema));
 	}
 
 	@Override

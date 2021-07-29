@@ -9,7 +9,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -54,7 +53,7 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public Page<? extends TagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibTagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		HibProject project = ctx.project();
 		TagFamilyDaoWrapper tagFamilyDao = ctx.tx().tagFamilyDao();
 		return tagFamilyDao.findAll(project, ctx.ac(), pagingInfo);

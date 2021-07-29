@@ -305,9 +305,9 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Iterable<SchemaVersion> findAllVersions(HibSchema schema) {
+	public Iterable<HibSchemaVersion> findAllVersions(HibSchema schema) {
 		Schema graphSchema = toGraph(schema);
-		return (Iterable<SchemaVersion>) (Iterable<?>) boot.get().schemaContainerRoot().findAllVersions(graphSchema);
+		return (Iterable<HibSchemaVersion>) (Iterable<?>) boot.get().schemaContainerRoot().findAllVersions(graphSchema);
 	}
 
 	@Override
@@ -327,8 +327,8 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 			unassignEvents(graphSchema).forEach(bac::add);
 			bac.add(schema.onDeleted());
 
-			for (SchemaVersion v : findAllVersions(schema)) {
-				v.delete(bac);
+			for (HibSchemaVersion v : findAllVersions(schema)) {
+				((SchemaVersion) v).delete(bac);
 			}
 			graphSchema.remove();
 		} else {
