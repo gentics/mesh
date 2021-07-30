@@ -472,8 +472,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		
 		// 3. Unrestrict field
 		SchemaChangesListModel listOfChanges2 = new SchemaChangesListModel();
-		change = SchemaChangeModel.createUpdateSchemaChange();
-		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, null);
+		change = SchemaChangeModel.createFieldRestrictionChange("newField", null);
 		
 		listOfChanges2.getChanges().add(change);
 		

@@ -190,6 +190,19 @@ public class SchemaChangeModel implements RestModel {
 		change.getProperties().put(SchemaChangeModel.NAME_KEY, newFieldName);
 		return change;
 	}
+	
+	/**
+	 * Create an update field change to rename a field.
+	 * 
+	 * @param fieldName
+	 * @param newFieldName
+	 * @return
+	 */
+	public static SchemaChangeModel createFieldRestrictionChange(String fieldName, String[] restrictions) {
+		SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, fieldName);
+		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, restrictions);
+		return change;
+	}
 
 	/**
 	 * Create a add field change.
