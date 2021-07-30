@@ -7,12 +7,11 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.user.UserResponse;
 
 /**
  * User DAO
  */
-public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
+public interface UserDaoWrapper extends UserDao {
 
 	/**
 	 * Check whether the user has the given permission on the given element.

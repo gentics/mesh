@@ -5,5 +5,5 @@ import com.gentics.mesh.core.data.HibLanguage;
 /**
  * DAO for {@link HibLanguage} elements.
  */
-public interface LanguageDaoWrapper extends LanguageDao, DaoGlobal<HibLanguage> {
+public interface LanguageDaoWrapper extends LanguageDao {
 }

@@ -8,13 +8,12 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 
 /**
  * DAO for schema operation.
  */
-public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
+public interface SchemaDaoWrapper extends SchemaDao {
 
 	/**
 	 * Return a list of all schema container roots to which the schema container was added.

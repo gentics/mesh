@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -20,7 +21,7 @@ import io.reactivex.Completable;
 /**
  * DAO for {@link HibJob}.
  */
-public interface JobDao {
+public interface JobDao extends DaoTransformable<HibJob, JobResponse> {
 
 	/**
 	 * Find all jobs.

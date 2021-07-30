@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -16,7 +17,7 @@ import com.google.common.base.Predicate;
 /**
  * DAO for tag family operations.
  */
-public interface TagFamilyDao {
+public interface TagFamilyDao extends DaoWrapper<HibTagFamily>, DaoTransformable<HibTagFamily, TagFamilyResponse> {
 
 	/**
 	 * Update the tag family.

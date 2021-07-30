@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -26,7 +27,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibSchema}.
  */
-public interface SchemaDao {
+public interface SchemaDao extends DaoWrapper<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
 
 	/**
 	 * Load the schema by uuid.

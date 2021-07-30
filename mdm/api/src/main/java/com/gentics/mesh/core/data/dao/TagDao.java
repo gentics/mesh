@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -21,7 +22,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibTag}.
  */
-public interface TagDao {
+public interface TagDao extends DaoWrapper<HibTag>, DaoTransformable<HibTag, TagResponse> {
 
 	/**
 	 * Find all tags of the given tagfamily.

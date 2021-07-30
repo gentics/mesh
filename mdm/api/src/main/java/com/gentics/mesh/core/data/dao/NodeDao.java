@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
@@ -29,7 +30,7 @@ import com.gentics.mesh.path.Path;
 /**
  * Dao for {@link HibNode}
  */
-public interface NodeDao {
+public interface NodeDao extends DaoWrapper<HibNode>, DaoTransformable<HibNode, NodeResponse> {
 
 	/**
 	 * Load the node by uuid.

@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -19,7 +20,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibGroup}.
  */
-public interface GroupDao {
+public interface GroupDao extends DaoWrapper<HibGroup>, DaoTransformable<HibGroup, GroupResponse> {
 
 	/**
 	 * Load the group by uuid.

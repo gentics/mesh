@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -18,7 +19,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibRole}.
  */
-public interface RoleDao {
+public interface RoleDao extends DaoWrapper<HibRole>, DaoTransformable<HibRole, RoleResponse> {
 
 	/**
 	 * Create a new role with the given name.

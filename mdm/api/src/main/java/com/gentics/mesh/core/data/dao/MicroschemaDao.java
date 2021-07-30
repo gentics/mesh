@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -23,7 +24,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for microschema operations.
  */
-public interface MicroschemaDao {
+public interface MicroschemaDao extends DaoWrapper<HibMicroschema>, DaoTransformable<HibMicroschema, MicroschemaResponse> {
 
 	/**
 	 * Load the microschema by uuid.

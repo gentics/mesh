@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -21,7 +22,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for user operations.
  */
-public interface UserDao {
+public interface UserDao extends DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
 
 	/**
 	 * Return the sub etag for the given user.

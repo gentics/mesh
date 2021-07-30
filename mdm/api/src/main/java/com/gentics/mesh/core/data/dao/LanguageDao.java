@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.HibLanguage;
 /**
  * DAO for language.
  */
-public interface LanguageDao {
+public interface LanguageDao extends DaoGlobal<HibLanguage> {
 
 	/**
 	 * Return the language for the given language tag.

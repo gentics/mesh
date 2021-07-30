@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -15,7 +16,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibBranch}.
  */
-public interface BranchDao {
+public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, DaoWrapper<HibBranch> {
 
 	/**
 	 * Load all branches.

@@ -11,7 +11,7 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * DAO for {@link HibBinary} operations.
  */
-public interface BinaryDaoWrapper extends BinaryDao, DaoWrapper<HibBinary> {
+public interface BinaryDaoWrapper extends BinaryDao {
 
 	/**
 	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)
