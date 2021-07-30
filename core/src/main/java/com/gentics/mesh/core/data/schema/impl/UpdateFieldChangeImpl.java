@@ -45,6 +45,14 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 	}
 
 	@Override
+	public void setRestProperty(String key, Object value) {
+		if (SchemaChangeModel.ALLOW_KEY.equals(key) && value == null) {
+			value = new String[0];
+		}
+		super.setRestProperty(key, value);
+	}
+
+	@Override
 	public FieldSchemaContainer apply(FieldSchemaContainer container) {
 		FieldSchema fieldSchema = container.getField(getFieldName());
 
