@@ -10,6 +10,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -20,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -46,6 +46,7 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -391,6 +392,112 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
 			assertEquals("label1234", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField").getLabel());
 
+		}
+	}
+	
+	@Test
+	public void testAddRestrictedField() throws Exception {
+		SchemaContainer schemaContainer = schemaContainer("content");
+		String schemaUuid = tx(() -> schemaContainer.getUuid());
+		SchemaContainerVersion currentVersion = tx(() -> schemaContainer.getLatestVersion());
+		assertNull("The schema should not yet have any changes", tx(() -> currentVersion.getNextChange()));
+
+		// 1. Setup changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "string", "label1234");
+		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, new String[] {"5678"});
+		
+		listOfChanges.getChanges().add(change);
+
+		// 2. Invoke migration
+		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
+		assertThat(status).matches("schema_changes_applied", "content");
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+
+		waitForJobs(() -> {
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+		}, COMPLETED, 1);
+
+		try (Tx tx = tx()) {
+			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+
+			// Assert that migration worked
+			Node node = content();
+			assertNotNull("The schema of the node should contain the new field schema",
+				node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+				!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
+			assertArrayEquals(new String[] {"5678"}, node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField", StringFieldSchema.class).getAllowedValues());
+		}
+	}
+	
+	@Test
+	public void testRemoveFieldRestriction() throws Exception {
+		SchemaContainer schemaContainer = schemaContainer("content");
+		String schemaUuid = tx(() -> schemaContainer.getUuid());
+		SchemaContainerVersion currentVersion = tx(() -> schemaContainer.getLatestVersion());
+		assertNull("The schema should not yet have any changes", tx(() -> currentVersion.getNextChange()));
+
+		// 1. Setup changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "string", "label1234");
+		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, new String[] {"5678"});
+		
+		listOfChanges.getChanges().add(change);
+
+		// 2. Invoke migration
+		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
+		assertThat(status).matches("schema_changes_applied", "content");
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+
+		waitForJobs(() -> {
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+		}, COMPLETED, 1);
+
+		try (Tx tx = tx()) {
+			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+
+			// Assert that migration worked
+			Node node = content();
+			assertNotNull("The schema of the node should contain the new field schema",
+				node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+				!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
+			assertArrayEquals(new String[] {"5678"}, node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField", StringFieldSchema.class).getAllowedValues());
+		}
+		
+		// 3. Unrestrict field
+		SchemaChangesListModel listOfChanges2 = new SchemaChangesListModel();
+		change = SchemaChangeModel.createUpdateSchemaChange();
+		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, null);
+		
+		listOfChanges2.getChanges().add(change);
+		
+		// 4. Invoke migration again
+		status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges2));
+		assertThat(status).matches("schema_changes_applied", "content");
+		SchemaResponse updatedSchema2 = call(() -> client().findSchemaByUuid(schemaUuid));
+
+		waitForJobs(() -> {
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema2.getVersion())));
+		}, COMPLETED, 1);
+
+		try (Tx tx = tx()) {
+			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+
+			// Assert that migration worked
+			Node node = content();
+			assertNotNull("The schema of the node should contain the new field schema",
+				node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+				!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
+			assertArrayEquals(new String[] {}, node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField", StringFieldSchema.class).getAllowedValues());
 		}
 	}
 
