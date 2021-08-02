@@ -655,7 +655,7 @@ public class CsvConverter {
 			}
 
 			// If it is the first in the matrix, create a new Row
-			if (printMatrix.isEmpty()) {
+			if (printMatrix.isEmpty() || copy.isEmpty()) {
 				printMatrix.add(new ArrayList<>(groupRow));
 			} else if (i == 0) {
 				// if it's the first element, then append it to each row

@@ -10,6 +10,11 @@
 
 = Mesh Export Plugin
 
+[[v2.1.2]]
+== 2.1.2
+
+icon:check[] Fixed printing of multi-columns if it is the first entry.
+
 [[v2.1.1]]
 == 2.1.1
 
