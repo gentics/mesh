@@ -51,7 +51,7 @@ public class BranchEventHandler implements EventHandler {
 				return Flowable.empty();
 			} else {
 				Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
-					HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
+					HibProject project = tx.projectDao().findByUuidGlobal(model.getProject().getUuid());
 					HibBranch branch = tx.branchDao().findByUuid(project, model.getUuid());
 					return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
 				}).runInNewTx();

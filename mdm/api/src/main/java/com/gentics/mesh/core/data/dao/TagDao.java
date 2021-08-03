@@ -22,7 +22,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibTag}.
  */
-public interface TagDao extends DaoWrapper<HibTag>, DaoTransformable<HibTag, TagResponse> {
+public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagResponse>, RootDao<HibTagFamily, HibTag> {
 
 	/**
 	 * Find all tags of the given tagfamily.
@@ -187,11 +187,14 @@ public interface TagDao extends DaoWrapper<HibTag>, DaoTransformable<HibTag, Tag
 	HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm);
 
 	/**
-	 * Load all tags.
+	 * Load a page of global tags.
 	 * 
+	 * @param tagFamily
+	 * @param ac
+	 * @param pagingParameters
 	 * @return
 	 */
-	Result<? extends HibTag> findAllGlobal();
+	Page<? extends HibTag> findAllGlobal(InternalActionContext ac, PagingParameters pagingParameters);
 
 	/**
 	 * Load the tag and check permissions.

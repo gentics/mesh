@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
@@ -18,7 +19,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
-import com.gentics.mesh.test.util.MeshAssert;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(startServer = true, testSize = FULL)
@@ -55,7 +55,7 @@ public class ProjectSearchEndpointTest extends AbstractMultiESTest implements Ba
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
 		try (Tx tx = tx()) {
-			MeshAssert.assertElement(boot().projectRoot(), project.getUuid(), true);
+			assertNotNull(boot().projectDao().findByUuidGlobal(project.getUuid()));
 		}
 		waitForSearchIdleEvent();
 		ProjectListResponse response = call(() -> client().searchProjects(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(

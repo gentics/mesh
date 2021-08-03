@@ -148,7 +148,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 		return db.tx(tx -> {
 			Set<String> activeIndices = new HashSet<>();
 			ProjectDaoWrapper projectDao = tx.projectDao();
-			for (HibProject project : projectDao.findAll()) {
+			for (HibProject project : projectDao.findAllGlobal()) {
 				activeIndices.add(Tag.composeIndexName(project.getUuid()));
 			}
 			return indices.stream()

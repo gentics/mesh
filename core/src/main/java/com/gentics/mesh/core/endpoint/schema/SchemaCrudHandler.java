@@ -25,9 +25,9 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -90,7 +90,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				HibSchema schemaContainer = tx.schemaDao().findByUuid(uuid);
+				HibSchema schemaContainer = tx.schemaDao().findByUuidGlobal(uuid);
 				return schemaContainer == null;
 			});
 
@@ -142,7 +142,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 							for (String microschemaName : allowedSchemas) {
 
 								// schema_error_microschema_reference_no_perm
-								Microschema microschema = boot.get().microschemaContainerRoot().findByName(microschemaName);
+								HibMicroschema microschema = boot.get().microschemaDao().findByName(microschemaName);
 								if (microschema == null) {
 									throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
 								}

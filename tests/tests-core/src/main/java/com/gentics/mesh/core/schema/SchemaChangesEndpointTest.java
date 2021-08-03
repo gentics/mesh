@@ -92,7 +92,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			assertEquals("The name of the old version should not be updated", "content", currentVersion.getName());
 			assertEquals("The name of the schema was not updated", name, currentVersion.getNextVersion().getName());
-			HibSchema reloaded = schemaDao.findByUuid(schemaUuid);
+			HibSchema reloaded = schemaDao.findByUuidGlobal(schemaUuid);
 			assertEquals("The name should have been updated", name, reloaded.getName());
 		}
 

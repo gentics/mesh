@@ -18,7 +18,6 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -84,7 +83,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
-			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
+			assertNotNull(boot().groupDao().findByUuidGlobal(restGroup.getUuid()));
 		}
 	}
 
@@ -123,7 +122,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			HibGroup reloadedGroup = tx.groupDao().findByUuid(uuid);
+			HibGroup reloadedGroup = tx.groupDao().findByUuidGlobal(uuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -175,7 +174,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
+			assertNotNull(boot().groupDao().findByUuidGlobal(restGroup.getUuid()));
 			call(() -> client().createGroup(request), CONFLICT, "group_conflicting_name", name);
 		}
 	}
@@ -192,7 +191,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			HibGroup foundGroup = tx.groupDao().findByUuid(restGroup.getUuid());
+			HibGroup foundGroup = tx.groupDao().findByUuidGlobal(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
 
 			call(() -> client().findGroupByUuid(restGroup.getUuid()));
@@ -366,7 +365,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid);
+			HibGroup reloadedGroup = tx.groupDao().findByUuidGlobal(groupUuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -403,7 +402,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().updateGroup(groupUuid(), request), BAD_REQUEST, "error_name_must_be_set");
 
 		try (Tx tx = tx()) {
-			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid());
+			HibGroup reloadedGroup = tx.groupDao().findByUuidGlobal(groupUuid());
 			assertEquals("The group should not have been updated", oldName, reloadedGroup.getName());
 		}
 	}
@@ -419,7 +418,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid());
+			HibGroup reloadedGroup = tx.groupDao().findByUuidGlobal(groupUuid());
 			assertEquals("The group should be the same", name, reloadedGroup.getName());
 		}
 	}
@@ -444,7 +443,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.groupDao();
-			HibGroup reloadedGroup = groupDao.findByUuid(group().getUuid());
+			HibGroup reloadedGroup = groupDao.findByUuidGlobal(group().getUuid());
 			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 		}
 
@@ -502,7 +501,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(boot().groupRoot(), groupUuid(), false);
+			assertNotNull(boot().groupDao().findByUuidGlobal(uuid));
 		}
 	}
 
@@ -534,7 +533,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			call(() -> client().deleteGroup(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), DELETE_PERM.getRestPerm().getName());
-			assertElement(boot().groupRoot(), groupUuid(), true);
+			assertNotNull(boot().groupDao().findByUuidGlobal(groupUuid()));
 		}
 	}
 

@@ -50,7 +50,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		});
 
 		tx((tx) -> {
-			boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			boot().jobDao().enqueueBranchMigration(user(), initialBranch());
 		});
 
 		jobList = adminCall(() -> client().findJobs());
@@ -65,7 +65,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteFailedJob() {
 
-		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
+		String jobUuid = tx(() -> boot().jobDao().enqueueBranchMigration(user(), initialBranch()).getUuid());
 
 		call(() -> client().deleteJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
@@ -87,7 +87,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testHandlingOfFailedJobs() {
 
 		String jobUuid = tx(() -> {
-			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -114,7 +114,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testManualInvoke() {
-		String jobUuid = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()).getUuid());
+		String jobUuid = tx(() -> boot().jobDao().enqueueBranchMigration(user(), initialBranch()).getUuid());
 
 		call(() -> client().invokeJobProcessing(), FORBIDDEN, "error_admin_permission_required");
 
@@ -130,19 +130,19 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadJob() {
 		String jobUuid = tx(() -> {
-			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
 		tx(() -> {
 			HibSchema schema = schemaContainer("content");
-			HibJob job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibJob job = boot().jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
 		String job3Uuid = tx(() -> {
 			HibSchema schema = schemaContainer("folder");
-			HibJob job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibJob job = boot().jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
@@ -166,7 +166,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testRetryJob() {
 
 		String jobUuid = tx(() -> {
-			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -188,7 +188,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testProcessJob() {
-		HibJob job = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()));
+		HibJob job = tx(() -> boot().jobDao().enqueueBranchMigration(user(), initialBranch()));
 		String jobUuid = tx(() -> job.getUuid());
 
 		call(() -> client().processJob(jobUuid), FORBIDDEN, "error_admin_permission_required");

@@ -120,9 +120,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao= tx.userDao();
-			int nUserBefore = Iterables.size(userDao.findAll());
+			int nUserBefore = Iterables.size(userDao.findAllGlobal());
 			assertNotNull(userDao.create("dummy12345", user()));
-			int nUserAfter = Iterables.size(userDao.findAll());
+			int nUserAfter = Iterables.size(userDao.findAllGlobal());
 			assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 		}
 	}
@@ -250,7 +250,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.userDao();
 			String uuid = user().getUuid();
-			HibUser foundUser = userDao.findByUuid(uuid);
+			HibUser foundUser = userDao.findByUuidGlobal(uuid);
 			assertNotNull(foundUser);
 			assertEquals(uuid, foundUser.getUuid());
 		}
@@ -287,7 +287,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid = user.getUuid();
 			BulkActionContext bac = createBulkContext();
 			userDao.delete(user, bac);
-			HibUser foundUser = userDao.findByUuid(uuid);
+			HibUser foundUser = userDao.findByUuidGlobal(uuid);
 			assertNull(foundUser);
 		}
 	}
@@ -297,7 +297,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.userDao();
-			UserRoot userRoot = boot().userRoot();
+			UserRoot userRoot = boot().meshRoot().getUserRoot();
 
 			HibUser user = user();
 			HibUser newUser = userDao.create("Anton", user());
@@ -458,7 +458,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			user.setPasswordHash(PASSWDHASH);
 			assertTrue(user.isEnabled());
 
-			HibUser reloadedUser = userDao.findByUuid(user.getUuid());
+			HibUser reloadedUser = userDao.findByUuidGlobal(user.getUuid());
 			assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 			assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 			assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());

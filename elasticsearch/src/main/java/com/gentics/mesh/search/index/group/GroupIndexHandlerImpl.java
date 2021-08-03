@@ -101,7 +101,7 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 
 	@Override
 	public Stream<? extends HibGroup> loadAllElements() {
-		return Tx.get().groupDao().findAll().stream();
+		return Tx.get().groupDao().findAllGlobal().stream();
 	}
 
 	@Override

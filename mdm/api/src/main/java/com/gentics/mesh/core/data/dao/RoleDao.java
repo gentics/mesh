@@ -19,7 +19,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibRole}.
  */
-public interface RoleDao extends DaoWrapper<HibRole>, DaoTransformable<HibRole, RoleResponse> {
+public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, RoleResponse> {
 
 	/**
 	 * Create a new role with the given name.
@@ -130,14 +130,6 @@ public interface RoleDao extends DaoWrapper<HibRole>, DaoTransformable<HibRole, 
 	boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement element);
 
 	/**
-	 * Find the role by uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	HibRole findByUuid(String uuid);
-
-	/**
 	 * Find the role by name.
 	 * 
 	 * @param roleName
@@ -185,13 +177,6 @@ public interface RoleDao extends DaoWrapper<HibRole>, DaoTransformable<HibRole, 
 	 * @return true, when the role has been updated. Otherwise false.
 	 */
 	boolean update(HibRole role, InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Return all roles.
-	 * 
-	 * @return
-	 */
-	Result<? extends HibRole> findAll();
 
 	/**
 	 * Load a page of roles.

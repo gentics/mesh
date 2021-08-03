@@ -22,6 +22,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -32,7 +34,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -257,7 +258,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public void updateShortcutEdges() {
-		GroupRoot groupRoot = mesh().boot().groupRoot();
+		GroupDao groupRoot = mesh().boot().groupDao();
 		outE(ASSIGNED_TO_ROLE).removeAll();
 		for (HibGroup group : getGroups()) {
 			for (HibRole role : groupRoot.getRoles(group)) {
@@ -285,7 +286,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Deprecated
 	@Override
 	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		UserDaoWrapper userDao = mesh().boot().userDao();
+		UserDao userDao = mesh().boot().userDao();
 		return userDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
@@ -311,7 +312,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		UserDaoWrapper userDao = mesh().boot().userDao();
+		UserDao userDao = mesh().boot().userDao();
 		userDao.delete(this, bac);
 	}
 
@@ -323,7 +324,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		UserDaoWrapper userRoot = mesh().boot().userDao();
+		UserDao userRoot = mesh().boot().userDao();
 		return userRoot.getSubETag(this, ac);
 	}
 

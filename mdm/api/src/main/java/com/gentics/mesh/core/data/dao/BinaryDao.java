@@ -10,7 +10,7 @@ import io.vertx.core.buffer.Buffer;
 /**
  * DAO for {@link HibBinary}.
  */
-public interface BinaryDao extends DaoWrapper<HibBinary> {
+public interface BinaryDao extends Dao<HibBinary> {
 
 	/**
 	 * Return the binary data stream.

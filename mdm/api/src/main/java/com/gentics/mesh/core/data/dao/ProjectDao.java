@@ -20,14 +20,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibProject}.
  */
-public interface ProjectDao extends DaoWrapper<HibProject>, DaoTransformable<HibProject, ProjectResponse> {
-
-	/**
-	 * Find all projects.
-	 * 
-	 * @return
-	 */
-	Result<? extends HibProject> findAll();
+public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibProject, ProjectResponse> {
 
 	/**
 	 * Load a page of projects.
@@ -65,14 +58,6 @@ public interface ProjectDao extends DaoWrapper<HibProject>, DaoTransformable<Hib
 	 * @return
 	 */
 	HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm);
-
-	/**
-	 * Find the project by uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	HibProject findByUuid(String uuid);
 
 	/**
 	 * Delete the project.
@@ -178,4 +163,13 @@ public interface ProjectDao extends DaoWrapper<HibProject>, DaoTransformable<Hib
 	 * @return
 	 */
 	MeshEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment);
+
+	/**
+	 * Return the sub etag for the project.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @return
+	 */
+	String getSubETag(HibProject project, InternalActionContext ac);
 }

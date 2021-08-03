@@ -51,7 +51,7 @@ public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 
-		for (HibSchema schema : schemaDao.findAll()) {
+		for (HibSchema schema : schemaDao.findAllGlobal()) {
 			for (HibSchemaVersion version : schemaDao.findAllVersions(schema)) {
 				SchemaVersionModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
@@ -59,7 +59,7 @@ public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 		}
 
 		// load all microschemas and add to storage
-		for (HibMicroschema container : microschemaDao.findAll()) {
+		for (HibMicroschema container : microschemaDao.findAllGlobal()) {
 			for (HibMicroschemaVersion version : microschemaDao.findAllVersions(container)) {
 				MicroschemaVersionModel restMicroschema = version.getSchema();
 				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);

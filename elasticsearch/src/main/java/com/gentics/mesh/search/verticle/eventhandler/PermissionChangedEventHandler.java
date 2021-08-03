@@ -86,7 +86,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 			BranchDaoWrapper branchDao = tx.branchDao();
 			NodeDaoWrapper nodeDao = tx.nodeDao();
 
-			return ofNullable(projectDao.findByUuid(model.getProject().getUuid()))
+			return ofNullable(projectDao.findByUuidGlobal(model.getProject().getUuid()))
 				.flatMap(project -> ofNullable(nodeDao.findByUuid(project, model.getUuid()))
 					.flatMap(node -> branchDao.findAll(project).stream().map(HibBaseElement::getUuid)
 						.flatMap(branchUuid -> Util.latestVersionTypes()

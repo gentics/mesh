@@ -135,7 +135,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 		return db.tx(tx -> {
 			ProjectDaoWrapper projectDao = tx.projectDao();
 			Set<String> activeIndices = new HashSet<>();
-			for (HibProject project : projectDao.findAll()) {
+			for (HibProject project : projectDao.findAllGlobal()) {
 				activeIndices.add(TagFamily.composeIndexName(project.getUuid()));
 			}
 

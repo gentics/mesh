@@ -42,11 +42,12 @@ import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibMeshVersion;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -63,19 +64,10 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
-import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.MicroschemaRoot;
-import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaRoot;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -96,13 +88,13 @@ import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -637,7 +629,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private void handleLocalData(PostProcessFlags flags, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Load the verticles
 		List<String> initialProjects = db.tx(tx -> {
-			return tx.projectDao().findAll().stream()
+			return tx.projectDao().findAllGlobal().stream()
 				.map(HibProject::getName)
 				.collect(Collectors.toList());
 		});
@@ -855,15 +847,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (anonymousRole == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Load the role if it has not been yet loaded
-				anonymousRole = roleRoot().findByName("anonymous");
+				anonymousRole = roleDao().findByName("anonymous");
 			}
 		}
 		return anonymousRole;
-	}
-
-	@Override
-	public SchemaRoot schemaContainerRoot() {
-		return meshRoot().getSchemaContainerRoot();
 	}
 
 	@Override
@@ -872,18 +859,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public MicroschemaRoot microschemaContainerRoot() {
-		return meshRoot().getMicroschemaContainerRoot();
-	}
-
-	@Override
 	public MicroschemaDaoWrapper microschemaDao() {
 		return daoCollection.microschemaDao();
-	}
-
-	@Override
-	public RoleRoot roleRoot() {
-		return meshRoot().getRoleRoot();
 	}
 
 	@Override
@@ -892,18 +869,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public TagRoot tagRoot() {
-		return meshRoot().getTagRoot();
-	}
-
-	@Override
 	public TagDaoWrapper tagDao() {
 		return daoCollection.tagDao();
-	}
-
-	@Override
-	public TagFamilyRoot tagFamilyRoot() {
-		return meshRoot().getTagFamilyRoot();
 	}
 
 	@Override
@@ -922,18 +889,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public UserRoot userRoot() {
-		return meshRoot().getUserRoot();
-	}
-
-	@Override
 	public UserDaoWrapper userDao() {
 		return daoCollection.userDao();
-	}
-
-	@Override
-	public GroupRoot groupRoot() {
-		return meshRoot().getGroupRoot();
 	}
 
 	@Override
@@ -942,23 +899,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public JobRoot jobRoot() {
-		return meshRoot().getJobRoot();
-	}
-
-	@Override
 	public JobDaoWrapper jobDao() {
 		return daoCollection.jobDao();
-	}
-
-	@Override
-	public LanguageRoot languageRoot() {
-		return meshRoot().getLanguageRoot();
-	}
-
-	@Override
-	public ProjectRoot projectRoot() {
-		return meshRoot().getProjectRoot();
 	}
 
 	@Override
@@ -979,6 +921,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public BinaryDaoWrapper binaryDao() {
 		return daoCollection.binaryDao();
+	}
+
+	@Override
+	public BranchDao branchDao() {
+		return daoCollection.branchDao();
 	}
 
 	/**
@@ -1266,7 +1213,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language = meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
+			HibLanguage language = languageDao().findByLanguageTag(languageTag);
 			if (language == null) {
 				language = root.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
@@ -1293,7 +1240,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
-			for (Language l : languageRoot().findAll()) {
+			for (HibLanguage l : languageDao().findAllGlobal()) {
 				String tag = l.getLanguageTag();
 				allLanguageTags.add(tag);
 			}

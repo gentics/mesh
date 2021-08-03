@@ -117,7 +117,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindByUUID() {
 		try (Tx tx = tx()) {
-			HibGroup group = tx.groupDao().findByUuid(group().getUuid());
+			HibGroup group = tx.groupDao().findByUuidGlobal(group().getUuid());
 			assertNotNull(group);
 		}
 	}

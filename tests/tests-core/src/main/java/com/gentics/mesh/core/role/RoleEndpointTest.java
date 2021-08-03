@@ -81,7 +81,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.userDao();
-			HibRole createdRole = tx.roleDao().findByUuid(restRole.getUuid());
+			HibRole createdRole = tx.roleDao().findByUuidGlobal(restRole.getUuid());
 			assertTrue(userDao.hasPermission(user(), createdRole, UPDATE_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, READ_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, DELETE_PERM));
@@ -90,7 +90,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String roleUuid = restRole.getUuid();
 			restRole = call(() -> client().findRoleByUuid(roleUuid));
 			assertThat(restRole).matches(request);
-			assertNotNull(tx.roleDao().findByUuid(restRole.getUuid()));
+			assertNotNull(tx.roleDao().findByUuidGlobal(restRole.getUuid()));
 		}
 	}
 
@@ -369,7 +369,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			// Check that the extra role was updated as expected
-			HibRole reloadedRole = tx.roleDao().findByUuid(extraRoleUuid);
+			HibRole reloadedRole = tx.roleDao().findByUuidGlobal(extraRoleUuid);
 			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 		}
 	}
@@ -433,7 +433,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Check that the role was updated
 		try (Tx tx = tx()) {
-			HibRole reloadedRole = tx.roleDao().findByUuid(roleUuid());
+			HibRole reloadedRole = tx.roleDao().findByUuidGlobal(roleUuid());
 			assertEquals(restRole.getName(), reloadedRole.getName());
 		}
 

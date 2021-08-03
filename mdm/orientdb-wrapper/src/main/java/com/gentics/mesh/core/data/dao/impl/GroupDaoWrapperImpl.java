@@ -99,7 +99,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 		HibUser requestUser = ac.getUser();
 		UserDaoWrapper userDao = Tx.get().userDao();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
@@ -150,14 +150,14 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	@Override
 	public Result<? extends HibUser> getUsers(HibGroup group) {
 		Group graphGroup = toGraph(group);
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.getUsers(graphGroup);
 	}
 
 	@Override
 	public Result<? extends HibRole> getRoles(HibGroup group) {
 		Group graphGroup = toGraph(group);
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.getRoles(graphGroup);
 	}
 
@@ -202,14 +202,14 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public Page<? extends HibUser> getVisibleUsers(HibGroup group, HibUser user, PagingParameters pagingInfo) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		Group graphGroup = toGraph(group);
 		return groupRoot.getVisibleUsers(graphGroup, user, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends Role> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		Group graphGroup = toGraph(group);
 		return groupRoot.getRoles(graphGroup, user, pagingInfo);
 	}
@@ -283,14 +283,14 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	@Override
 	public void addGroup(HibGroup group) {
 		Group graphGroup = toGraph(group);
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		groupRoot.addItem(graphGroup);
 	}
 
 	@Override
 	public void removeGroup(HibGroup group) {
 		Group graphGroup = toGraph(group);
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		groupRoot.removeItem(graphGroup);
 	}
 
@@ -313,7 +313,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public HibGroup create(String name, HibUser creator, String uuid) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		Group group = groupRoot.create();
 		if (uuid != null) {
 			group.setUuid(uuid);
@@ -328,42 +328,37 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public HibGroup findByName(String name) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findByName(name);
 	}
 
 	@Override
-	public HibGroup findByUuid(String uuid) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+	public HibGroup findByUuidGlobal(String uuid) {
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public HibGroup findByUuidGlobal(String uuid) {
-		return findByUuid(uuid);
-	}
-
-	@Override
-	public Result<? extends HibGroup> findAll() {
-		GroupRoot groupRoot = boot.get().groupRoot();
+	public Result<? extends HibGroup> findAllGlobal() {
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findAll();
 	}
 
 	@Override
 	public long globalCount() {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.globalCount();
 	}
 
 	@Override
 	public Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibGroup> extraFilter) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findAll(ac, pagingInfo, group -> {
 			return extraFilter.test(group);
 		});
@@ -371,13 +366,13 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
 	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		GroupRoot groupRoot = boot.get().groupRoot();
+		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
@@ -391,7 +386,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	public String getETag(HibGroup group, InternalActionContext ac) {
 		Group graphGroup = toGraph(group);
 		return graphGroup.getETag(ac);
-		// return boot.get().groupRoot().getETag(graphGroup, ac);
+		// return boot.get().meshRoot().getGroupRoot().getETag(graphGroup, ac);
 	}
 
 }

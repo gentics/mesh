@@ -7,10 +7,10 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -28,7 +28,7 @@ public class AtomicTagTest extends AbstractMeshTest {
 			TagDaoWrapper tagDao = tx.tagDao();
 
 			HibUser user = userDao.create("test", null);
-			LanguageRoot languageRoot = boot().languageRoot();
+			LanguageDao languageRoot = boot().languageDao();
 			assertNotNull(languageRoot);
 
 			HibProject project = project();
@@ -41,7 +41,7 @@ public class AtomicTagTest extends AbstractMeshTest {
 			tag.setName("renamed tag");
 			assertEquals("renamed tag", tag.getName());
 
-			HibTag reloadedTag = boot().tagRoot().findByUuid(uuid);
+			HibTag reloadedTag = boot().tagDao().findByUuidGlobal(uuid);
 			assertNotNull(reloadedTag);
 			assertEquals("renamed tag", reloadedTag.getName());
 		}

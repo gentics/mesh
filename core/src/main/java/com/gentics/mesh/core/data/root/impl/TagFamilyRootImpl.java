@@ -73,7 +73,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		tagFamily.setProject(getProject());
 
 		// Add created tag family to tag family root
-		TagFamilyRoot root = mesh().boot().tagFamilyRoot();
+		TagFamilyRoot root = mesh().boot().meshRoot().getTagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
 		}

@@ -244,7 +244,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			ProjectDaoWrapper projectDao = tx.projectDao();
 			BranchDaoWrapper branchDao = tx.branchDao();
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
-			for (HibProject currentProject : projectDao.findAll()) {
+			for (HibProject currentProject : projectDao.findAllGlobal()) {
 				for (HibBranch branch : branchDao.findAll(currentProject)) {
 					for (HibSchemaVersion version : schemaDao.findActiveSchemaVersions(branch)) {
 						if (log.isDebugEnabled()) {
@@ -281,9 +281,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		return Flowable.defer(() -> db.tx(tx -> {
 			ProjectDaoWrapper projectDao = tx.projectDao();
 			BranchDaoWrapper branchDao = tx.branchDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
-
-			return projectDao.findAll().stream()
+			
+			return projectDao.findAllGlobal().stream()
 				.flatMap(project -> branchDao.findAll(project).stream()
 					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
 						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
@@ -642,7 +641,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return
 	 */
 	public Observable<BulkEntry> moveForBulk(MoveDocumentEntry entry) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getBranchUuid();
@@ -668,7 +667,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return
 	 */
 	private Completable deleteContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
 		String projectUuid = contentDao.getNode(container).getProject().getUuid();
 		return searchProvider.deleteDocument(contentDao.getIndexName(container, projectUuid, branchUuid, type), contentDao.getDocumentId(container));
 	}
@@ -682,7 +681,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return Single with affected index name
 	 */
 	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = contentDao.getNode(container).getProject().getUuid();
 		String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
@@ -703,7 +702,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return Single with the bulk entry
 	 */
 	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = contentDao.getNode(container).getProject().getUuid();
 		String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
@@ -748,8 +747,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
 					for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branch, type)) {
-						String indexName = boot.contentDao().getIndexName(container, project.getUuid(), branch.getUuid(), type);
-						String documentId = boot.contentDao().getDocumentId(container);
+						String indexName = contentDao.getIndexName(container, project.getUuid(), branch.getUuid(), type);
+						String documentId = contentDao.getDocumentId(container);
 						entries.add(new UpdateBulkEntry(indexName, documentId, json, complianceMode));
 					}
 				}

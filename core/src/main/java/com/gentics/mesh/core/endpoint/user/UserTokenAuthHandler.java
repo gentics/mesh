@@ -60,7 +60,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 			MeshAuthUser lastEditor = db.tx(tx -> {
 				// 1. Load the element from the root element using the given uuid
 				UserDaoWrapper userDao = tx.userDao();
-				HibUser element = userDao.findByUuid(uuid);
+				HibUser element = userDao.findByUuidGlobal(uuid);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);

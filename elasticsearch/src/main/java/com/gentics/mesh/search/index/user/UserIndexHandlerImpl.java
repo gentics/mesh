@@ -107,7 +107,7 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Stream<? extends HibUser> loadAllElements() {
-		return Tx.get().userDao().findAll().stream();
+		return Tx.get().userDao().findAllGlobal().stream();
 	}
 
 	@Override

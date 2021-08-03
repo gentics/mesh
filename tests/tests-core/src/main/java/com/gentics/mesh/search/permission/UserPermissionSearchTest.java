@@ -51,7 +51,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
-			HibUser user = userDao.findByUuid(response.getUuid());
+			HibUser user = userDao.findByUuidGlobal(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), user, InternalPermission.READ_PERM);
 			tx.success();

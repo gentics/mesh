@@ -8,8 +8,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
@@ -72,15 +70,5 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	@Override
 	public Result<HibBinaryField> findFields(HibBinary binary) {
 		return toGraph(binary).findFields();
-	}
-
-	@Override
-	public HibBinary findByUuidGlobal(String uuid) {
-		throw new NotImplementedException("Not supported");
-	}
-
-	@Override
-	public long globalCount() {
-		throw new NotImplementedException("Not supported");
 	}
 }

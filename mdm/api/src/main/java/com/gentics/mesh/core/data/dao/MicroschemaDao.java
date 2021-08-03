@@ -24,7 +24,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for microschema operations.
  */
-public interface MicroschemaDao extends DaoWrapper<HibMicroschema>, DaoTransformable<HibMicroschema, MicroschemaResponse> {
+public interface MicroschemaDao extends DaoGlobal<HibMicroschema>, DaoTransformable<HibMicroschema, MicroschemaResponse> {
 
 	/**
 	 * Load the microschema by uuid.
@@ -35,17 +35,6 @@ public interface MicroschemaDao extends DaoWrapper<HibMicroschema>, DaoTransform
 	 * @return
 	 */
 	HibMicroschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm);
-
-	/**
-	 * Find microschema by uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	HibMicroschema findByUuid(String uuid);
-
-	// boolean update(MicroschemaContainer microschema, InternalActionContext ac,
-	// EventQueueBatch batch);
 
 	/**
 	 * Create a new microschema container.
@@ -122,13 +111,6 @@ public interface MicroschemaDao extends DaoWrapper<HibMicroschema>, DaoTransform
 	 * @return
 	 */
 	HibMicroschema findByName(String name);
-
-	/**
-	 * Return all microschemas.
-	 * 
-	 * @return
-	 */
-	Result<? extends HibMicroschema> findAll();
 
 	/**
 	 * Load the microschema version via the given reference.

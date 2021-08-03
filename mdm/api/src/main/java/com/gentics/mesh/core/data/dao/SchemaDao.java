@@ -27,15 +27,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibSchema}.
  */
-public interface SchemaDao extends DaoWrapper<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
-
-	/**
-	 * Load the schema by uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	HibSchema findByUuid(String uuid);
+public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
 
 	/**
 	 * Load the schema by name.
@@ -76,13 +68,6 @@ public interface SchemaDao extends DaoWrapper<HibSchema>, DaoTransformable<HibSc
 	 * @return
 	 */
 	HibSchema loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
-
-	/**
-	 * Return all schemas.
-	 * 
-	 * @return
-	 */
-	Result<HibSchema> findAll();
 
 	/**
 	 * Load the page of schemas.

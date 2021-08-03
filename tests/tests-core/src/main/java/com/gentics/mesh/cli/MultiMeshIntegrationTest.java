@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshOptionsTypeAwareContext;
@@ -36,8 +35,6 @@ public abstract class MultiMeshIntegrationTest<T extends MeshOptions> implements
 			MeshComponent meshInternal = mesh.internal();
 			meshInternal.database().tx(tx -> {
 				UserDaoWrapper userDao = tx.userDao();
-				UserRoot userRoot = meshInternal.boot().userRoot();
-				System.out.println(userRoot.getUuid());
 				System.out.println("Admin: " + userDao.findByName("admin").getUuid());
 			});
 			meshes.add(mesh);

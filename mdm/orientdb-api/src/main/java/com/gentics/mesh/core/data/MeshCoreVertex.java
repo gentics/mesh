@@ -16,7 +16,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  * @param <R>
  *            Rest model class of the core vertex
  */
-public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, TransformableElement<R>, HasPermissions, HibCoreElement {
+public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, TransformableElement<R>, HasPermissions, HibCoreElement<R> {
 
 	/**
 	 * Update the vertex using the action context information.

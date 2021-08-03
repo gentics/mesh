@@ -22,12 +22,12 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
@@ -103,14 +103,14 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			String invalidName = "thereIsNoMicroschemaWithThisName";
 
 			for (String name : microschemaContainers().keySet()) {
-				HibMicroschema container = boot().microschemaContainerRoot().findByName(name);
+				HibMicroschema container = boot().microschemaDao().findByName(name);
 				assertNotNull("Could not find microschema container for name " + name, container);
 				MicroschemaModel microschemaModel = container.getLatestVersion().getSchema();
 				assertNotNull("Container for microschema " + name + " did not contain a microschema", microschemaModel);
 				assertEquals("Check microschema name", name, microschemaModel.getName());
 			}
 
-			assertNull("Must not find microschema with name " + invalidName, boot().microschemaContainerRoot().findByName(invalidName));
+			assertNull("Must not find microschema with name " + invalidName, boot().microschemaDao().findByName(invalidName));
 		}
 	}
 
@@ -120,13 +120,13 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 		try (Tx tx = tx()) {
 			String invalidUUID = UUIDUtil.randomUUID();
 
-			MicroschemaRoot root = boot().microschemaContainerRoot();
+			MicroschemaDao root = boot().microschemaDao();
 			for (HibMicroschema container : microschemaContainers().values()) {
 				String uuid = container.getUuid();
-				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid));
+				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuidGlobal(uuid));
 			}
 
-			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID));
+			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuidGlobal(invalidUUID));
 		}
 	}
 

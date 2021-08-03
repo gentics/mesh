@@ -35,7 +35,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	public HibMicroschema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
-			return microschemaDao.findByUuid(uuid);
+			return microschemaDao.findByUuidGlobal(uuid);
 		} else {
 			return microschemaDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}

@@ -386,7 +386,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 0, 1, 0, 0);
 
-			HibTag reloadedTag = boot().tagRoot().findByUuid(tagUuid);
+			HibTag reloadedTag = boot().tagDao().findByUuidGlobal(tagUuid);
 			assertNull("The tag should have been deleted", reloadedTag);
 
 			HibProject project = tx.projectDao().findByName(PROJECT_NAME);

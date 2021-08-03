@@ -28,10 +28,12 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -42,7 +44,6 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
@@ -176,7 +177,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	@Deprecated
 	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		ProjectDaoWrapper projectDao = mesh().boot().projectDao();
+		ProjectDao projectDao = mesh().boot().projectDao();
 		return projectDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
@@ -188,7 +189,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
-			Language language = mesh().boot().languageRoot().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
+			HibLanguage language = mesh().boot().languageDao().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
 			baseNode.createGraphFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
 			setBaseNode(baseNode);
 		}
@@ -201,7 +202,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	@Deprecated
 	public void delete(BulkActionContext bac) {
-		ProjectDaoWrapper projectDao = mesh().boot().projectDao();
+		ProjectDao projectDao = mesh().boot().projectDao();
 		projectDao.delete(this, bac);
 	}
 
@@ -243,7 +244,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		ProjectRoot projectRoot = mesh().boot().projectRoot();
+		ProjectDao projectRoot = mesh().boot().projectDao();
 		return projectRoot.getSubETag(this, ac);
 	}
 

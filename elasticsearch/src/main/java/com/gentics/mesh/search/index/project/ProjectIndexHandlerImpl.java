@@ -108,7 +108,7 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 
 	@Override
 	public Stream<? extends HibProject> loadAllElements() {
-		return Tx.get().projectDao().findAll().stream();
+		return Tx.get().projectDao().findAllGlobal().stream();
 	}
 
 	@Override

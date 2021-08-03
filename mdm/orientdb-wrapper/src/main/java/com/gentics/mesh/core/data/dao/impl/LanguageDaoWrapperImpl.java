@@ -41,136 +41,136 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 	 * @see LanguageRoot
 	 */
 	public Language create(String languageName, String languageTag) {
-		return boot.get().languageRoot().create(languageName, languageTag);
+		return boot.get().meshRoot().getLanguageRoot().create(languageName, languageTag);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language create(String languageName, String languageTag, String uuid) {
-		return boot.get().languageRoot().create(languageName, languageTag, uuid);
+		return boot.get().meshRoot().getLanguageRoot().create(languageName, languageTag, uuid);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public void addLanguage(Language language) {
-		boot.get().languageRoot().addLanguage(language);
+		boot.get().meshRoot().getLanguageRoot().addLanguage(language);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language findByLanguageTag(String languageTag) {
-		return boot.get().languageRoot().findByLanguageTag(languageTag);
+		return boot.get().meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
-	public Result<? extends Language> findAll() {
-		return boot.get().languageRoot().findAll();
+	public Result<? extends Language> findAllGlobal() {
+		return boot.get().meshRoot().getLanguageRoot().findAll();
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission) {
-		return boot.get().languageRoot().findAllStream(ac, permission);
+		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Page<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().languageRoot().findAll(ac, pagingInfo);
+		return boot.get().meshRoot().getLanguageRoot().findAll(ac, pagingInfo);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Page<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Language> extraFilter) {
-		return boot.get().languageRoot().findAll(ac, pagingInfo, extraFilter);
+		return boot.get().meshRoot().getLanguageRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Page<? extends Language> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().languageRoot().findAllNoPerm(ac, pagingInfo);
+		return boot.get().meshRoot().getLanguageRoot().findAllNoPerm(ac, pagingInfo);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language findByName(String name) {
-		return boot.get().languageRoot().findByName(name);
+		return boot.get().meshRoot().getLanguageRoot().findByName(name);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language findByName(InternalActionContext ac, String name, InternalPermission perm) {
-		return boot.get().languageRoot().findByName(ac, name, perm);
+		return boot.get().meshRoot().getLanguageRoot().findByName(ac, name, perm);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language findByUuid(String uuid) {
-		return boot.get().languageRoot().findByUuid(uuid);
+		return boot.get().meshRoot().getLanguageRoot().findByUuid(uuid);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return boot.get().languageRoot().loadObjectByUuid(ac, uuid, perm);
+		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return boot.get().languageRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return boot.get().languageRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
+		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language create(InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().languageRoot().create(ac, batch);
+		return boot.get().meshRoot().getLanguageRoot().create(ac, batch);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public Language create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return boot.get().languageRoot().create(ac, batch, uuid);
+		return boot.get().meshRoot().getLanguageRoot().create(ac, batch, uuid);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
 	public void delete(Language element, BulkActionContext bac) {
-		boot.get().languageRoot().delete(element, bac);
+		boot.get().meshRoot().getLanguageRoot().delete(element, bac);
 	}
 
 	@Override
 	public HibLanguage findByUuidGlobal(String uuid) {
-		return boot.get().languageRoot().findByUuid(uuid);
+		return boot.get().meshRoot().getLanguageRoot().findByUuid(uuid);
 	}
 
 	@Override
 	public long globalCount() {
-		return boot.get().languageRoot().globalCount();
+		return boot.get().meshRoot().getLanguageRoot().globalCount();
 	}
 
 }

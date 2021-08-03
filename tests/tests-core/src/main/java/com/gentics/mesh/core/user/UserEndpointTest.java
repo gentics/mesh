@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.User.composeIndexName;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
@@ -13,7 +14,6 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
@@ -30,6 +30,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpHeaders.HOST;
 import static io.vertx.core.http.HttpHeaders.LOCATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -945,7 +946,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	// "user_error_missing_old_password");
 	//
 	// try (Tx tx = tx()) {
-	// User reloadedUser = boot.userRoot().findByUuid(uuid);
+	// User reloadedUser = boot.userRoot().findByUuidGlobal(uuid);
 	// assertEquals("The hash should not be different since the password should
 	// not have been updated.", oldHash,
 	// reloadedUser.getPasswordHash());
@@ -970,7 +971,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	// "user_error_password_check_failed");
 	//
 	// try (Tx tx = tx()) {
-	// User reloadedUser = boot.userRoot().findByUuid(uuid);
+	// User reloadedUser = boot.userRoot().findByUuidGlobal(uuid);
 	// assertEquals("The hash should not be different since the password should
 	// not have been updated.", oldHash,
 	// reloadedUser.getPasswordHash());
@@ -996,7 +997,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (Tx tx = tx()) {
-			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
+			HibUser reloadedUser = tx.userDao().findByUuidGlobal(uuid);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 
@@ -1042,7 +1043,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(userUuid(), request), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			HibUser reloadedUser = tx.userDao().findByUuid(userUuid());
+			HibUser reloadedUser = tx.userDao().findByUuidGlobal(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
 	}
@@ -1068,7 +1069,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(userUuid(), updatedUser), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			HibUser reloadedUser = tx.userDao().findByUuid(userUuid());
+			HibUser reloadedUser = tx.userDao().findByUuidGlobal(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user().getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user().getLastname(), reloadedUser.getLastname());
@@ -1222,7 +1223,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx2 = tx()) {
 			assertThat(restUser).matches(request);
 
-			HibUser user = tx2.userDao().findByUuid(restUser.getUuid());
+			HibUser user = tx2.userDao().findByUuidGlobal(restUser.getUuid());
 			assertThat(restUser).matches(user);
 		}
 	}
@@ -1378,7 +1379,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			waitForSearchIdleEvent();
 
 			try (Tx tx2 = tx()) {
-				HibUser loadedUser = tx2.userDao().findByUuid(uuid);
+				HibUser loadedUser = tx2.userDao().findByUuidGlobal(uuid);
 				assertNull("The user should have been deleted.", loadedUser);
 			}
 
@@ -1450,7 +1451,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			uuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
 			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, extraUser));
-			HibUser user = userDao.findByUuid(uuid);
+			HibUser user = userDao.findByUuidGlobal(uuid);
 			assertEquals(1, userDao.getGroups(user).count());
 			assertTrue("The user should be enabled", user.isEnabled());
 			tx.success();

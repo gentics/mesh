@@ -411,7 +411,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				firstMicronode.createString("postcode").setString("1010");
 
 				Micronode secondMicronode = micronodeList.createMicronode();
-				secondMicronode.setSchemaContainerVersion(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
+				secondMicronode.setSchemaContainerVersion(microschemaDao.findByUuidGlobal(microschemaUuid).getLatestVersion());
 				secondMicronode.createString("text").setString("Joe");
 				secondMicronode.createNode("nodeRef", content());
 				NodeGraphFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");

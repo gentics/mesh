@@ -318,7 +318,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 			call(() -> client().updateMicroschema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			Microschema reloaded = boot().microschemaContainerRoot().findByUuid(microschema.getUuid());
+			Microschema reloaded = boot().meshRoot().getMicroschemaContainerRoot().findByUuid(microschema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -338,7 +338,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		// schema_delete_still_in_use
 
 		try (Tx tx = tx()) {
-			Microschema reloaded = boot().microschemaContainerRoot().findByUuid(uuid);
+			Microschema reloaded = boot().meshRoot().getMicroschemaContainerRoot().findByUuid(uuid);
 			assertNull("The microschema should have been deleted.", reloaded);
 		}
 	}
@@ -448,7 +448,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			microschemaContainerUuid);
 
 		try (Tx tx = tx()) {
-			Microschema reloaded = boot().microschemaContainerRoot().findByUuid(microschemaContainerUuid);
+			Microschema reloaded = boot().meshRoot().getMicroschemaContainerRoot().findByUuid(microschemaContainerUuid);
 			assertNotNull("The microschema should not have been deleted.", reloaded);
 		}
 
@@ -465,7 +465,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		call(() -> client().deleteMicroschema(microschemaContainerUuid));
 
 		try (Tx tx = tx()) {
-			Microschema searched = boot().microschemaContainerRoot().findByUuid(microschemaContainerUuid);
+			Microschema searched = boot().meshRoot().getMicroschemaContainerRoot().findByUuid(microschemaContainerUuid);
 			assertNull("The microschema should have been deleted.", searched);
 		}
 	}
@@ -486,7 +486,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid(),
 				DELETE_PERM.getRestPerm().getName());
 
-			assertElement(boot().microschemaContainerRoot(), microschema.getUuid(), true);
+			assertElement(boot().meshRoot().getMicroschemaContainerRoot(), microschema.getUuid(), true);
 		}
 	}
 

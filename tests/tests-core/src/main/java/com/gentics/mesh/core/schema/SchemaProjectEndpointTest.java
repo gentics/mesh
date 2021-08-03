@@ -82,7 +82,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			ProjectDaoWrapper projectDao = tx.projectDao();
 
-			HibProject extraProject = projectDao.findByUuid(created.getUuid());
+			HibProject extraProject = projectDao.findByUuidGlobal(created.getUuid());
 			// Add only read perms
 			HibSchema schema = schemaContainer("content");
 			roleDao.grantPermissions(role(), schema, READ_PERM);
@@ -127,7 +127,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			ProjectDaoWrapper projectDao = tx.projectDao();
 			// Revoke Update perm on project
-			HibProject p = projectDao.findByUuid(projectUuid);
+			HibProject p = projectDao.findByUuidGlobal(projectUuid);
 			roleDao.revokePermissions(role(), p, UPDATE_PERM);
 			return p;
 		});

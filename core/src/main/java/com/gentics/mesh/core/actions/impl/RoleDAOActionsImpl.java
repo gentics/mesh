@@ -32,7 +32,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	public HibRole loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		RoleDaoWrapper roleDao = ctx.tx().roleDao();
 		if (perm == null) {
-			return roleDao.findByUuid(uuid);
+			return roleDao.findByUuidGlobal(uuid);
 		} else {
 			return roleDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}

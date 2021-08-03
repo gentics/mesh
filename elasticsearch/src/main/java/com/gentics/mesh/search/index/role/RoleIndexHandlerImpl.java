@@ -112,7 +112,7 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 
 	@Override
 	public Stream<? extends HibRole> loadAllElements() {
-		return Tx.get().roleDao().findAll().stream();
+		return Tx.get().roleDao().findAllGlobal().stream();
 	}
 
 }

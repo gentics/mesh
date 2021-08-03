@@ -24,14 +24,14 @@ import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -83,6 +83,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	protected AuthServicePluginRegistry authPluginRegistry;
 	protected Database db;
 	protected BootstrapInitializer boot;
+	protected PermissionRoots permissionRoots;
 	private final AuthenticationOptions authOptions;
 	private final Provider<EventQueueBatch> batchProvider;
 
@@ -94,7 +95,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	@Inject
 	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions,
 		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
-		AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi, RequestDelegator delegator) {
+		AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi, RequestDelegator delegator, PermissionRoots permissionRoots) {
 		this.db = db;
 		this.boot = boot;
 		this.batchProvider = batchProvider;
@@ -103,6 +104,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		this.authHandlerContainer = authHandlerContainer;
 		this.localConfigApi = localConfigApi;
 		this.delegator = delegator;
+		this.permissionRoots = permissionRoots;
 	}
 
 	private JWTAuthHandler createJWTHandler() {
@@ -250,7 +252,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					.andThen(requiresWriteCompletable())
 					.andThen(db.singleTxWriteLock(tx -> {
 						UserDaoWrapper userDao = tx.userDao();
-						UserRoot userRoot = boot.userRoot();
+						HibBaseElement userRoot = permissionRoots.user();
 						HibUser admin = userDao.findByUsername("admin");
 						HibUser createdUser = userDao.create(username, admin);
 						userDao.inheritRolePermissions(admin, userRoot, createdUser);
@@ -350,11 +352,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
 		if (!plugins.isEmpty()) {
-			RoleDaoWrapper roleDao = boot.roleDao();
-			GroupDaoWrapper groupDao = boot.groupDao();
-			UserDaoWrapper userDao = boot.userDao();
-			RoleRoot roleRoot = boot.roleRoot();
-			GroupRoot groupRoot = boot.groupRoot();
+			RoleDao roleDao = boot.roleDao();
+			GroupDao groupDao = boot.groupDao();
+			UserDao userDao = boot.userDao();
+
+			HibBaseElement groupRoot = permissionRoots.group();
+			HibBaseElement roleRoot = permissionRoots.role();
 
 			for (AuthServicePlugin plugin : plugins) {
 				if (log.isDebugEnabled()) {
@@ -392,7 +395,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							String roleName = mappedRole.getName();
 							HibRole role = null;
 							if (roleUuid != null) {
-								role = roleDao.findByUuid(roleUuid);
+								role = roleDao.findByUuidGlobal(roleUuid);
 							} else if (roleName != null) {
 								role = roleDao.findByName(roleName);
 							}
@@ -423,9 +426,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							HibGroup group = null;
 
 							if (groupUuid != null) {
-								group = groupRoot.findByUuid(groupUuid);
+								group = groupDao.findByUuidGlobal(groupUuid);
 							} else if (groupName != null) {
-								group = groupRoot.findByName(groupName);
+								group = groupDao.findByName(groupName);
 							}
 
 							// Group not found - Lets create it
@@ -464,7 +467,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								if (roleName != null) {
 									role = roleDao.findByName(roleName);
 								} else if (roleUuid != null) {
-									role = roleDao.findByUuid(roleUuid);
+									role = roleDao.findByUuidGlobal(roleUuid);
 								}
 
 								// Add the role if it is missing
@@ -514,7 +517,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								if (groupName != null) {
 									group = groupDao.findByName(groupName);
 								} else if (groupUuid != null) {
-									group = groupDao.findByUuid(groupUuid);
+									group = groupDao.findByUuidGlobal(groupUuid);
 								}
 
 								// Add the role if it is missing

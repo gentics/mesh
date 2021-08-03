@@ -12,6 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -104,7 +105,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 
 	@Override
 	public GroupResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GroupDaoWrapper groupDao = mesh().boot().groupDao();
+		GroupDao groupDao = mesh().boot().groupDao();
 		return groupDao.transformToRestSync(this, ac, level, languageTags);
 	}
 

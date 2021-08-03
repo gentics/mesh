@@ -20,7 +20,7 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -125,7 +125,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void removeSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
@@ -136,7 +136,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
-		boot().schemaContainerRoot().addItem(container);
+		boot().meshRoot().getSchemaContainerRoot().addItem(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
 			removedFieldName));
 		container.setLatestVersion(versionA);
@@ -200,7 +200,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void removeMicroschemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
@@ -302,7 +302,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void renameSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 		throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 
 		String oldFieldName = "oldname";
 		String newFieldName = "newname";
@@ -313,7 +313,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
-		boot().schemaContainerRoot().addItem(container);
+		boot().meshRoot().getSchemaContainerRoot().addItem(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(oldFieldName));
 		container.setLatestVersion(versionA);
 
@@ -383,7 +383,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void renameMicroschemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 		throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 		String oldFieldName = "oldname";
 		String newFieldName = "newname";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -492,7 +492,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void changeSchemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 
 		String fieldName = "changedfield";
@@ -588,7 +588,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void changeMicroschemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher,
 		FieldSchemaCreator newField, DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 
 		String fieldName = "changedfield";
@@ -708,7 +708,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void customSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
@@ -719,7 +719,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
-		boot().schemaContainerRoot().addItem(container);
+		boot().meshRoot().getSchemaContainerRoot().addItem(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", oldField);
 		container.setLatestVersion(versionA);
 
@@ -783,7 +783,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void customMicroschemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 
 		String fieldName = "migratedField";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -885,7 +885,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDaoWrapper nodeDao = boot().nodeDao();
+		NodeDao nodeDao = boot().nodeDao();
 		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 
 		String fieldName = "migratedField";

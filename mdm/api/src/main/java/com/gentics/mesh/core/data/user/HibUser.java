@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserResponse;
 
 import io.vertx.ext.auth.User;
 
@@ -17,7 +18,7 @@ import io.vertx.ext.auth.User;
 /**
  * Domain model for user.
  */
-public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableElement {
+public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, HibBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.USER, USER_CREATED, USER_UPDATED, USER_DELETED);
 

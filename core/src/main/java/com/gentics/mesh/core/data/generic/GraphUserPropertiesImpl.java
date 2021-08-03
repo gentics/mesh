@@ -60,7 +60,7 @@ public class GraphUserPropertiesImpl implements UserProperties {
 	private HibUser getUser(MeshElement element, String propertyKey) {
 		return Optional.ofNullable(element)
 			.map(v -> v.<String>getProperty(propertyKey))
-			.map(boot.userDao()::findByUuid)
+			.map(boot.userDao()::findByUuidGlobal)
 			.orElse(null);
 	}
 

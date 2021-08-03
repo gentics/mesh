@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -43,61 +45,56 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public Result<? extends HibJob> findAll() {
-		return boot.get().jobRoot().findAll();
-	}
-
-	@Override
-	public HibJob findByUuid(String uuid) {
-		return boot.get().jobRoot().findByUuid(uuid);
+	public Result<? extends HibJob> findAllGlobal() {
+		return boot.get().meshRoot().getJobRoot().findAll();
 	}
 
 	@Override
 	public Page<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().jobRoot().findAll(ac, pagingInfo);
+		return boot.get().meshRoot().getJobRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibJob> extraFilter) {
-		return boot.get().jobRoot().findAll(ac, pagingInfo, job -> {
+		return boot.get().meshRoot().getJobRoot().findAll(ac, pagingInfo, job -> {
 			return extraFilter.test(job);
 		});
 	}
 
 	@Override
 	public HibJob findByName(String name) {
-		return boot.get().jobRoot().findByName(name);
+		return boot.get().meshRoot().getJobRoot().findByName(name);
 	}
 
 	@Override
 	public HibJob loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return boot.get().jobRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return boot.get().meshRoot().getJobRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
 	public HibJob loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return boot.get().jobRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
+		return boot.get().meshRoot().getJobRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
 	@Override
 	public HibJob enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
-		return boot.get().jobRoot().enqueueSchemaMigration(creator, branch, fromVersion, toVersion);
+		return boot.get().meshRoot().getJobRoot().enqueueSchemaMigration(creator, branch, fromVersion, toVersion);
 	}
 
 	@Override
 	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
-		return boot.get().jobRoot().enqueueBranchMigration(creator, branch, fromVersion, toVersion);
+		return boot.get().meshRoot().getJobRoot().enqueueBranchMigration(creator, branch, fromVersion, toVersion);
 	}
 
 	@Override
 	public HibJob enqueueMicroschemaMigration(HibUser creator, HibBranch branch, HibMicroschemaVersion fromVersion,
 		HibMicroschemaVersion toVersion) {
-		return boot.get().jobRoot().enqueueMicroschemaMigration(creator, branch, fromVersion, toVersion);
+		return boot.get().meshRoot().getJobRoot().enqueueMicroschemaMigration(creator, branch, fromVersion, toVersion);
 	}
 
 	@Override
 	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch) {
-		return boot.get().jobRoot().enqueueBranchMigration(creator, branch);
+		return boot.get().meshRoot().getJobRoot().enqueueBranchMigration(creator, branch);
 	}
 
 	/**
@@ -112,12 +109,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		Role graphRole = toGraph(role);
-		boot.get().jobRoot().applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
-	@Override
-	public long computeCount() {
-		return boot.get().jobRoot().computeCount();
+		boot.get().meshRoot().getJobRoot().applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override
@@ -132,17 +124,17 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 
 	@Override
 	public boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().jobRoot().update(toGraph(job), ac, batch);
+		return boot.get().meshRoot().getJobRoot().update(toGraph(job), ac, batch);
 	}
 
 	@Override
 	public HibJob create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return boot.get().jobRoot().create(ac, batch, uuid);
+		return boot.get().meshRoot().getJobRoot().create(ac, batch, uuid);
 	}
 
 	@Override
 	public void delete(HibJob job, BulkActionContext bac) {
-		boot.get().jobRoot().delete(toGraph(job), bac);
+		boot.get().meshRoot().getJobRoot().delete(toGraph(job), bac);
 	}
 
 	@Override
@@ -152,23 +144,43 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 
 	@Override
 	public void clear() {
-		boot.get().jobRoot().clear();
+		boot.get().meshRoot().getJobRoot().clear();
 	}
 
 	@Override
 	public Completable process() {
-		JobRoot jobRoot = boot.get().jobRoot();
+		JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
 		return jobRoot.process();
 	}
 
 	@Override
 	public long globalCount() {
-		return boot.get().jobRoot().computeCount();
+		return boot.get().meshRoot().getJobRoot().computeCount();
 	}
 
 	@Override
 	public HibJob findByUuidGlobal(String uuid) {
-		return boot.get().jobRoot().findByUuid(uuid);
+		return boot.get().meshRoot().getJobRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+		return boot.get().meshRoot().getJobRoot().findAllNoPerm(ac, pagingInfo);
+	}
+
+	@Override
+	public HibJob enqueueVersionPurge(HibUser user, HibProject project, ZonedDateTime before) {
+		return boot.get().meshRoot().getJobRoot().enqueueVersionPurge(user, project, before);
+	}
+
+	@Override
+	public HibJob enqueueVersionPurge(HibUser user, HibProject project) {
+		return boot.get().meshRoot().getJobRoot().enqueueVersionPurge(user, project);
+	}
+
+	@Override
+	public void purgeFailed() {
+		boot.get().meshRoot().getJobRoot().purgeFailed();
 	}
 
 }

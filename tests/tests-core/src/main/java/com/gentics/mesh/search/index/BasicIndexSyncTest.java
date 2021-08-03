@@ -313,7 +313,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		SchemaResponse response = call(() -> client().createSchema(new SchemaCreateRequest().setName("dummy")));
 		waitForSearchIdleEvent();
 		tx(() -> {
-			boot().schemaDao().findByUuid(response.getUuid()).setName("updated");
+			boot().schemaDao().findByUuidGlobal(response.getUuid()).setName("updated");
 		});
 		syncIndex();
 		assertMetrics("schema", 0, 1, 0);

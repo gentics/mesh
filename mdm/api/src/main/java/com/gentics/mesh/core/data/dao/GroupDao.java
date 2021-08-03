@@ -20,7 +20,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibGroup}.
  */
-public interface GroupDao extends DaoWrapper<HibGroup>, DaoTransformable<HibGroup, GroupResponse> {
+public interface GroupDao extends DaoGlobal<HibGroup>, DaoTransformable<HibGroup, GroupResponse> {
 
 	/**
 	 * Load the group by uuid.
@@ -31,13 +31,6 @@ public interface GroupDao extends DaoWrapper<HibGroup>, DaoTransformable<HibGrou
 	 * @return
 	 */
 	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
-
-	/**
-	 * Load all groups.
-	 * 
-	 * @return
-	 */
-	Result<? extends HibGroup> findAll();
 
 	/**
 	 * Load a page of groups.
@@ -65,14 +58,6 @@ public interface GroupDao extends DaoWrapper<HibGroup>, DaoTransformable<HibGrou
 	 * @return
 	 */
 	HibGroup findByName(String name);
-
-	/**
-	 * Load the group by uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	HibGroup findByUuid(String uuid);
 
 	/**
 	 * Create a new group and assign it to the group root.

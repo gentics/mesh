@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -34,7 +35,7 @@ public class JobTest extends AbstractMeshTest {
 	@Test
 	public void testJob() {
 		try (Tx tx = tx()) {
-			JobRoot root = boot().jobRoot();
+			JobDao root = boot().jobDao();
 			HibJob job = root.enqueueBranchMigration(user(), initialBranch());
 			// Disabled in order to apply to contention fix
 			assertNull("The creator should not be set.",job.getCreator());
@@ -54,14 +55,14 @@ public class JobTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			JobRoot root = boot().jobRoot();
-			List<? extends Job> list = TestUtils.toList(root.findAll());
+			JobDao root = boot().jobDao();
+			List<? extends HibJob> list = TestUtils.toList(root.findAllGlobal());
 			assertThat(list).hasSize(1);
-			Job job = list.get(0);
+			HibJob job = list.get(0);
 			assertEquals("some error", job.getErrorMessage());
 
 			// Verify the transformation to rest
-			JobResponse response = job.transformToRestSync(null, 0);
+			JobResponse response = root.transformToRestSync(job, null, 0);
 			assertEquals("some error", response.getErrorMessage());
 			assertNotNull(response.getErrorDetail());
 			assertEquals(job.getErrorDetail(), response.getErrorDetail());
@@ -82,7 +83,7 @@ public class JobTest extends AbstractMeshTest {
 	@Test
 	public void testJobErrorDetailTruncate() {
 		try (Tx tx = tx()) {
-			JobRoot root = boot().jobRoot();
+			JobDao root = boot().jobDao();
 			HibJob job = root.enqueueBranchMigration(user(), initialBranch());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
 			Exception ex = buildExceptionStackTraceLongerThan(Job.ERROR_DETAIL_MAX_LENGTH * 2);
@@ -95,13 +96,13 @@ public class JobTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			JobRoot root = boot().jobRoot();
-			List<? extends Job> list = TestUtils.toList(root.findAll());
+			JobDao root = boot().jobDao();
+			List<? extends HibJob> list = TestUtils.toList(root.findAllGlobal());
 			assertThat(list).hasSize(1);
-			Job job = list.get(0);
+			HibJob job = list.get(0);
 
 			// Verify the transformation to rest
-			JobResponse response = job.transformToRestSync(null, 0);
+			JobResponse response = root.transformToRestSync(job, null, 0);
 			assertNotNull(response.getErrorDetail());
 			assertThat(response.getErrorDetail().length()).isLessThanOrEqualTo(Job.ERROR_DETAIL_MAX_LENGTH);
 		}
@@ -110,12 +111,13 @@ public class JobTest extends AbstractMeshTest {
 	@Test
 	public void testJobRootTypeHandling() {
 		try (Tx tx = tx()) {
-			JobRoot root = boot().jobRoot();
+			JobDao dao = boot().jobDao();
+			JobRoot root = boot().meshRoot().getJobRoot();
 			root.addItem(tx.addVertex(NodeMigrationJobImpl.class));
 			root.addItem(tx.addVertex(MicronodeMigrationJobImpl.class));
 			root.addItem(tx.addVertex(BranchMigrationJobImpl.class));
 
-			List<String> list = TestUtils.toList(root.findAll()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
+			List<String> list = TestUtils.toList(dao.findAllGlobal()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
 			assertThat(list).containsExactly(NodeMigrationJobImpl.class.getName(), MicronodeMigrationJobImpl.class.getName(),
 					BranchMigrationJobImpl.class.getName());
 		}

@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -24,10 +25,12 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -89,18 +92,6 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 		return toGraph(project).getNodeRoot().findAll(ac, pagingInfo, node -> {
 			return extraFilter.test(node);
 		});
-	}
-
-	@Override
-	public Node findByUuidGlobal(String uuid) {
-		// TODO Probably wrong interface hierarchy. There is no need for this method
-		throw new RuntimeException("Not implemented");
-	}
-
-	@Override
-	public long globalCount() {
-		// TODO Probably wrong interface hierarchy. There is no need for this method
-		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
@@ -282,4 +273,71 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 		return graphProject.getNodeRoot().findAllStream(ac, perm);
 	}
 
+	@Override
+	public Result<? extends HibNode> findAllDynamic(HibProject root) {
+		return toGraph(root).getNodeRoot().findAllDynamic();
+	}
+
+	@Override
+	public Page<? extends HibNode> findAllNoPerm(HibProject root, InternalActionContext ac,
+			PagingParameters pagingInfo) {
+		return toGraph(root).getNodeRoot().findAllNoPerm(ac, pagingInfo);
+	}
+
+	@Override
+	public HibNode findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
+		return toGraph(root).getNodeRoot().findByName(ac, name, perm);
+	}
+
+	@Override
+	public HibNode checkPerms(HibProject root, HibNode element, String uuid, InternalActionContext ac,
+			InternalPermission perm, boolean errorIfNotFound) {
+		return toGraph(root).getNodeRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
+	}
+
+	@Override
+	public void addItem(HibProject root, HibNode item) {
+		toGraph(root).getNodeRoot().addItem(toGraph(item));
+	}
+
+	@Override
+	public void removeItem(HibProject root, HibNode item) {
+		toGraph(root).getNodeRoot().removeItem(toGraph(item));
+	}
+
+	@Override
+	public String getRootLabel(HibProject root) {
+		return toGraph(root).getNodeRoot().getRootLabel();
+	}
+
+	@Override
+	public Class<? extends HibNode> getPersistenceClass(HibProject root) {
+		return toGraph(root).getNodeRoot().getPersistanceClass();
+	}
+
+	@Override
+	public long globalCount(HibProject root) {
+		return toGraph(root).getNodeRoot().globalCount();
+	}
+
+	@Override
+	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
+			String roleUuid) {
+		return toGraph(root).getNodeRoot().getRolePermissions(element, ac, roleUuid);
+	}
+
+	@Override
+	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement vertex, InternalPermission perm) {
+		return toGraph(root).getNodeRoot().getRolesWithPerm(vertex, perm);
+	}
+
+	@Override
+	public void delete(HibProject root, HibNode element, BulkActionContext bac) {
+		toGraph(root).getNodeRoot().delete(toGraph(element), bac);
+	}
+
+	@Override
+	public boolean update(HibProject root, HibNode element, InternalActionContext ac, EventQueueBatch batch) {
+		return toGraph(root).getNodeRoot().update(toGraph(element), ac, batch);
+	}
 }

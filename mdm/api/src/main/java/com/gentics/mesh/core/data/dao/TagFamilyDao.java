@@ -17,7 +17,7 @@ import com.google.common.base.Predicate;
 /**
  * DAO for tag family operations.
  */
-public interface TagFamilyDao extends DaoWrapper<HibTagFamily>, DaoTransformable<HibTagFamily, TagFamilyResponse> {
+public interface TagFamilyDao extends DaoGlobal<HibTagFamily>, DaoTransformable<HibTagFamily, TagFamilyResponse>, RootDao<HibProject, HibTagFamily> {
 
 	/**
 	 * Update the tag family.

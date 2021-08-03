@@ -292,7 +292,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			JobDaoWrapper jobDao = tx.jobDao();
 			// No job should be scheduled since this is the first time we assign the container to the project/branch
-			assertEquals(0, TestUtils.toList(jobDao.findAll()).size());
+			assertEquals(0, TestUtils.toList(jobDao.findAllGlobal()).size());
 		}
 
 		assertThat(trackingSearchProvider()).hasCreate(ContentDao.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
@@ -995,7 +995,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		String jobUuid = tx(() -> boot().jobRoot().enqueueMicroschemaMigration(user(), initialBranch(), versionA, versionB).getUuid());
+		String jobUuid = tx(() -> boot().jobDao().enqueueMicroschemaMigration(user(), initialBranch(), versionA, versionB).getUuid());
 
 		triggerAndWaitForJob(jobUuid);
 		try (Tx tx = tx()) {
@@ -1061,7 +1061,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(user(), container, createBatch());
+			boot().meshRoot().getMicroschemaContainerRoot().addMicroschema(user(), container, createBatch());
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = createMicroschemaVersion(tx);
@@ -1199,7 +1199,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(user(), container, createBatch());
+			boot().meshRoot().getMicroschemaContainerRoot().addMicroschema(user(), container, createBatch());
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = createMicroschemaVersion(tx);
@@ -1250,7 +1250,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		String jobUuid = tx(() -> boot().jobRoot().enqueueMicroschemaMigration(user(), project().getLatestBranch(), versionA, versionB).getUuid());
+		String jobUuid = tx(() -> boot().jobDao().enqueueMicroschemaMigration(user(), project().getLatestBranch(), versionA, versionB).getUuid());
 
 		triggerAndWaitForJob(jobUuid);
 
@@ -1295,7 +1295,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
 		EventQueueBatch batch = createBatch();
-		boot().schemaContainerRoot().addSchemaContainer(user(), container, batch);
+		boot().meshRoot().getSchemaContainerRoot().addSchemaContainer(user(), container, batch);
 
 		// create version 1 of the schema
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get());
@@ -1342,7 +1342,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
-		boot().schemaContainerRoot().addSchemaContainer(user(), container, batch);
+		boot().meshRoot().getSchemaContainerRoot().addSchemaContainer(user(), container, batch);
 		return container;
 
 	}

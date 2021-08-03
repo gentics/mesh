@@ -1,17 +1,17 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.dao.DaoGlobal;
+import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
@@ -44,32 +44,37 @@ public class EntitiesProvider implements DebugInfoProvider {
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		return Flowable.mergeArray(
-			rootElements(ac, boot::jobRoot, "entities/jobs.json"),
-			rootElements(ac, boot::schemaContainerRoot, "entities/schemas.json"),
-			rootElements(ac, boot::microschemaContainerRoot, "entities/microschemas.json"),
-			rootElements(ac, boot::projectRoot, "entities/projects.json"),
+			rootElements(ac, boot::jobDao, "entities/jobs.json"),
+			rootElements(ac, boot::schemaDao, "entities/schemas.json"),
+			rootElements(ac, boot::microschemaDao, "entities/microschemas.json"),
+			rootElements(ac, boot::projectDao, "entities/projects.json"),
 			branches(ac)
 		);
 	}
 
 	private Flowable<DebugInfoEntry> branches(InternalActionContext ac) {
-		return db.singleTx(tx -> tx.projectDao().findAll().stream()
+		return db.singleTx(tx -> tx.projectDao().findAllGlobal().stream()
 			.map(project -> DebugInfoBufferEntry.fromString(
 				String.format("entities/branches/%s.json", project.getName()),
-				rootToString(ac, toGraph(project).getBranchRoot())
+				rootToString(ac, tx.branchDao().findAll(project).stream(), tx.branchDao())
 			)).collect(Collectors.toList()))
 			.flatMapPublisher(Flowable::fromIterable);
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel>> Flowable<DebugInfoEntry> rootElements(InternalActionContext ac, Supplier<RootVertex<T>> root, String filename) {
-		return db.singleTx(() -> rootToString(ac, root.get()))
+	private <
+			T extends HibCoreElement<? extends RestModel>, 
+			D extends DaoGlobal<T> & DaoTransformable<T, ? extends RestModel>
+		> Flowable<DebugInfoEntry> rootElements(
+				InternalActionContext ac, Supplier<D> root, String filename
+		) {
+		return db.singleTx(() -> rootToString(ac, root.get().findAllGlobal().stream(), root.get()))
 			.map(elementList -> DebugInfoBufferEntry.fromString(filename, elementList))
 			.toFlowable();
 	}
-
-	private <T extends MeshCoreVertex<? extends RestModel>> String rootToString(InternalActionContext ac, RootVertex<T> root) {
-		return JsonUtil.toJson(root.findAll().stream()
-			.map(branch -> branch.transformToRestSync(ac, 0))
-			.collect(Collectors.toList()));
+	
+	private <T extends HibCoreElement<? extends RestModel>> String rootToString(InternalActionContext ac, Stream<? extends T> stream, DaoTransformable<T, ? extends RestModel> dao) {
+		return JsonUtil.toJson(
+			stream.map(element -> dao.transformToRestSync(element, ac, 0))
+				.collect(Collectors.toList()));
 	}
 }
