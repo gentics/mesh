@@ -12,7 +12,12 @@ import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -654,14 +659,28 @@ public class CsvConverter {
 				}
 			}
 
-			// If it is the first in the matrix, create a new Row
-			if (printMatrix.isEmpty() || copy.isEmpty()) {
+			if (printMatrix.isEmpty()) {
+				// If it is the very first row, create a new row in the matrix
+
+				// Filtering out empty rows
+				if (groupRow.stream().allMatch(s -> s == null || s.trim().length() < 1)) {
+					continue;
+				}
 				printMatrix.add(new ArrayList<>(groupRow));
 			} else if (i == 0) {
-				// if it's the first element, then append it to each row
+				// if it's the first element, then append it to each existing row
 				for (List<String> row : printMatrix) {
 					row.addAll(groupRow);
 				}
+			} else if (copy.isEmpty()) {
+				// If copy is empty, we can't append the row to anything yet
+				// Therefore simply append it as a new row
+
+				// Filtering out empty rows
+				if (groupRow.stream().allMatch(s -> s == null || s.trim().length() < 1)) {
+					continue;
+				}
+				printMatrix.add(new ArrayList<>(groupRow));
 			} else {
 				// For each additional value in the group, a new row has to be created
 				// The `copy` is a copy before the new columns were added

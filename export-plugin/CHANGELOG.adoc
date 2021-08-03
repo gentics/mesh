@@ -10,15 +10,22 @@
 
 = Mesh Export Plugin
 
+[[v2.1.3]]
+== 2.1.3
+
+icon:check[] Fixed regression which caused wrongly ordered columns and rows.
+
+icon:check[] Skipping empty rows in the resulting output.
+
 [[v2.1.2]]
 == 2.1.2
 
-icon:check[] Fixed printing of multi-columns if it is the first entry.
+icon:check[] Fixed printing of multi-columns if it is the first mapping entry.
 
 [[v2.1.1]]
 == 2.1.1
 
-icon:check[] Fixed `+REGEXP+` types to replace all regexp groups
+icon:check[] Fixed `+REGEXP+` types to replace all regexp groups.
 
 [[v2.1.0]]
 == 2.1.0
