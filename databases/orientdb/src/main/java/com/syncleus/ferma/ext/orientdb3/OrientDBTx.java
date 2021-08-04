@@ -11,6 +11,7 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.GroupDAOActions;
@@ -94,7 +95,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private Timer commitTimer;
 
 	@Inject
-	public OrientDBTx(OrientDBMeshOptions options, Database db, BootstrapInitializer boot, DaoCollection daos, OrientStorage provider,
+	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot, DaoCollection daos, OrientStorage provider,
 		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry,
 		Binaries binaries) {
 		this.db = db;

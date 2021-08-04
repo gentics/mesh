@@ -75,7 +75,7 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			HibBaseElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+			HibBaseElement targetElement = boot.rootResolver().resolvePathToElement(pathToElement);
 			if (targetElement == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
@@ -121,7 +121,7 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				HibBaseElement element = boot.meshRoot().resolvePathToElement(pathToElement);
+				HibBaseElement element = boot.rootResolver().resolvePathToElement(pathToElement);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);

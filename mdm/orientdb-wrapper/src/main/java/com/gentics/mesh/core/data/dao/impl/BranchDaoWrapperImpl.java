@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -42,7 +42,7 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	private Lazy<Database> db;
 
 	@Inject
-	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Database> db) {
+	public BranchDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Database> db) {
 		super(boot, permissions);
 		// TODO Fix assignment - Inject DB
 		this.db = db;

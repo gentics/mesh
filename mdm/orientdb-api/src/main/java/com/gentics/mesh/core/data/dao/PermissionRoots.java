@@ -48,4 +48,11 @@ public interface PermissionRoots {
 	 * @return
 	 */
 	HibBaseElement schema();
+
+	/**
+	 * Return the topmost permission level element.
+	 * 
+	 * @return
+	 */
+	HibBaseElement mesh();
 }

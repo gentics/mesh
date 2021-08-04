@@ -160,7 +160,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			UserDaoWrapper userDao = tx.userDao();
 			roleDao.revokePermissions(role(), tx.data().permissionRoots().group(), CREATE_PERM);
 			HibUser user = user();
-			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user, meshRoot().getGroupRoot(), CREATE_PERM));
+			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user, tx.data().permissionRoots().group(), CREATE_PERM));
 		}
 	}
 

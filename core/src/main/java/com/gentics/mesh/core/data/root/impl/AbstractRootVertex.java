@@ -138,7 +138,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		 */
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				Set<InternalPermission> permSet = roleDao.getPermissions(role, element);
 				Set<String> humanNames = new HashSet<>();

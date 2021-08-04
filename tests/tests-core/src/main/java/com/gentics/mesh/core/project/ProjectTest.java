@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -66,7 +65,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
 			tx.projectDao().delete(project, bac);
-			assertElement(meshRoot().getProjectRoot(), projectUuid(), false);
+			assertElement(tx.projectDao(), projectUuid(), false);
 		}
 	}
 
@@ -85,7 +84,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
+			Page<? extends HibProject> page = tx.projectDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 		}
 	}

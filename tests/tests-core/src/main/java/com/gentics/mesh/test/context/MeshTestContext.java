@@ -38,7 +38,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.util.KeycloakUtils;
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -755,7 +755,7 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	public ElasticsearchProcessVerticle getElasticSearchVerticle() {
-		return ((BootstrapInitializerImpl) meshDagger.boot()).loader.get().getSearchVerticle();
+		return ((AbstractBootstrapInitializer) meshDagger.boot()).loader.get().getSearchVerticle();
 	}
 
 	public static ContainerProxy getProxy() {

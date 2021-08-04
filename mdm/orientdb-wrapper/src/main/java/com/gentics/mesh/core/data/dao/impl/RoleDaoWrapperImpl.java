@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -57,7 +57,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	private final CommonDaoHelper commonDaoHelper;
 
 	@Inject
-	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache,
+	public RoleDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache,
 		CommonDaoHelper commonDaoHelper) {
 		super(boot, permissions);
 		this.permissionCache = permissionCache;

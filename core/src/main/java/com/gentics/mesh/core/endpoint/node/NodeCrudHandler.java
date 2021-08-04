@@ -318,7 +318,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				HibBranch branch = tx.getBranch(ac);
 
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				HibTag tag = boot.tagDao().loadObjectByUuid(ac, tagUuid, READ_PERM);
+				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				if (tagDao.hasTag(node, tag, branch)) {
 					utils.eventAction(batch -> {

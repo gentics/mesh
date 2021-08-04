@@ -24,7 +24,7 @@ import javax.inject.Inject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
@@ -92,7 +92,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	private final Lazy<PermissionCache> permissionCache;
 
 	@Inject
-	public UserDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, PasswordEncoder passwordEncoder,
+	public UserDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, PasswordEncoder passwordEncoder,
 		Lazy<PermissionCache> permissionCache) {
 		super(boot, permissions);
 		this.passwordEncoder = passwordEncoder;
@@ -398,15 +398,6 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	public HibUser setPassword(HibUser user, String password) {
 		user.setPasswordHash(passwordEncoder.encode(password));
 		return user;
-	}
-
-	@Override
-	@Deprecated
-	public boolean hasPermission(HibUser user, MeshVertex vertex, InternalPermission permission) {
-		if (log.isTraceEnabled()) {
-			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
-		}
-		return hasPermissionForId(user, vertex.id(), permission);
 	}
 
 	@Override

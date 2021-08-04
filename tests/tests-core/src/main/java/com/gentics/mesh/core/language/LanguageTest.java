@@ -128,7 +128,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 			HibLanguage foundLanguage = tx.languageDao().findByUuid(language.getUuid());
 			assertNotNull(foundLanguage);
 
-			foundLanguage = meshRoot().getLanguageRoot().findByUuid("bogus");
+			foundLanguage = tx.languageDao().findByUuid("bogus");
 			assertNull(foundLanguage);
 		}
 

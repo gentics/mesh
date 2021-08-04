@@ -78,7 +78,7 @@ public class DemoDumpGeneratorTest {
 			HibRole role = groupDao.getRoles(group).iterator().next();
 			assertNotNull("The webclient group should also have a role assigned to it", role);
 
-			assertTrue("The webclient role has not read permission on the user.", roleDao.hasPermission(role, InternalPermission.READ_PERM, user));
+			assertTrue("The webclient role has no read permission on the user.", roleDao.hasPermission(role, InternalPermission.READ_PERM, user));
 			assertTrue("The webclient user has no permission on itself.", userDao.hasPermission(user, user, InternalPermission.READ_PERM));
 			assertTrue("The webclient user has no read permission on the user root node..", userDao.hasPermission(user, tx.data().permissionRoots().user(), InternalPermission.READ_PERM));
 

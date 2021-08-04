@@ -1342,7 +1342,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
-		boot().meshRoot().getSchemaContainerRoot().addSchemaContainer(user(), container, batch);
+		boot().schemaDao().addSchema(container, project(), user(), batch);
 		return container;
 
 	}

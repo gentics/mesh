@@ -1,11 +1,10 @@
 package com.syncleus.ferma.ext.orientdb3;
 
 import com.gentics.mesh.annotation.Setter;
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.db.TxData;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.CacheConfig;
 import com.gentics.mesh.etc.config.ClusterOptions;
@@ -14,9 +13,10 @@ import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
@@ -25,11 +25,11 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
  */
 public class TxDataImpl implements TxData {
 
-	private final BootstrapInitializer boot;
+	private final OrientDBBootstrapInitializer boot;
 	private final OrientDBMeshOptions options;
 	private final PermissionRoots permissionRoots;
 
-	public TxDataImpl(OrientDBMeshOptions options, BootstrapInitializer boot, PermissionRoots permissionRoots) {
+	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot, PermissionRoots permissionRoots) {
 		this.options = options;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;

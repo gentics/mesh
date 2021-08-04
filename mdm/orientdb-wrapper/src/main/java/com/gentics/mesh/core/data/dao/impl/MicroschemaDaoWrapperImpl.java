@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -57,7 +57,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	private final MicroschemaComparator comparator;
 
 	@Inject
-	public MicroschemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
+	public MicroschemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
 		MicroschemaComparator comparator) {
 		super(boot, permissions);
 		this.comparator = comparator;

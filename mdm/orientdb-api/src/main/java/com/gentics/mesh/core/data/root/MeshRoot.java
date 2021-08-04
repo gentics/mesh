@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
@@ -10,7 +9,7 @@ import com.gentics.mesh.core.data.node.Node;
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
  */
-public interface MeshRoot extends MeshVertex, HibMeshVersion {
+public interface MeshRoot extends RootResolver, MeshVertex, HibMeshVersion {
 
 	public static final String MESH_VERSION = "meshVersion";
 
@@ -92,14 +91,6 @@ public interface MeshRoot extends MeshVertex, HibMeshVersion {
 	 * @return
 	 */
 	MicroschemaRoot getMicroschemaContainerRoot();
-
-	/**
-	 * This method will try to resolve the given path and return the element that is matching the path.
-	 * 
-	 * @param pathToElement
-	 * @return Resolved element or null if no element could be found
-	 */
-	HibBaseElement resolvePathToElement(String pathToElement);
 
 	/**
 	 * Clear internally stored graph element references.

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.dao;
+package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;

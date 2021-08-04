@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -69,7 +69,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	private final RouterStorageRegistry routerStorageRegistry;
 
 	@Inject
-	public ProjectDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
+	public ProjectDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
 		RouterStorageRegistry routerStorageRegistry) {
 		super(boot, permissions);
 		this.routerStorageRegistry = routerStorageRegistry;

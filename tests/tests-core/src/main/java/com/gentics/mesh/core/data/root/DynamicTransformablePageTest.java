@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
@@ -21,7 +22,7 @@ public class DynamicTransformablePageTest extends AbstractMeshTest {
 	@Test
 	public void testAddNode() {
 		try (Tx tx = tx()) {
-			UserRoot root = meshRoot().getUserRoot();
+			UserRoot root = ((OrientDBBootstrapInitializer) boot()).meshRoot().getUserRoot();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(2, 2L);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project());
 			Page<?> page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);
@@ -33,7 +34,7 @@ public class DynamicTransformablePageTest extends AbstractMeshTest {
 	@Test
 	public void testEmptyPerPage() {
 		try (Tx tx = tx()) {
-			UserRoot root = meshRoot().getUserRoot();
+			UserRoot root = ((OrientDBBootstrapInitializer) boot()).meshRoot().getUserRoot();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(2, null);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project());
 			Page<?> page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);

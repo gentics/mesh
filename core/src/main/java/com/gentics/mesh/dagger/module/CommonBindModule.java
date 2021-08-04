@@ -15,8 +15,6 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.action.BranchDAOActions;
@@ -133,9 +131,6 @@ import dagger.Module;
 public abstract class CommonBindModule {
 	@Binds
 	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
-
-	@Binds
-	abstract BootstrapInitializer bindBoot(BootstrapInitializerImpl e);
 
 	@Binds
 	abstract WebRootService bindWebrootService(WebRootServiceImpl e);
