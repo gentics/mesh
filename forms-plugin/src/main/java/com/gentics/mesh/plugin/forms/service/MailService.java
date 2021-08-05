@@ -91,6 +91,10 @@ public class MailService {
 					.replace("[[FORMNAME]]", form.getName());
 
 				sendMail(projectName, form, formDataNode, rc, subject, template, emails, attachFileUploads);
+			} else {
+				log.error(
+						"Could not send admin mail for form {}, because no template configuration was found (template must be either configured in config.yml as \"adminMailTemplate\" or set in the form as \"mailtemp\").",
+						form.getName());
 			}
 		}
 
@@ -106,6 +110,9 @@ public class MailService {
 			String template = StringUtils
 				.trim(StringUtils.defaultIfBlank(element.getTemplate(), configuration.getUserMailTemplate()));
 			if (StringUtils.isBlank(template)) {
+				log.error(
+						"Could not send user mail for element {} in form {}, because no template configuration was found (template must be either configured in config.yml as \"userMailTemplate\" or set in the element as \"mailtemplate\").",
+						element.getLabelOrName(), form.getName());
 				return;
 			}
 			String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject()).replace(
@@ -137,6 +144,9 @@ public class MailService {
 	private void sendMail(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc, String subject, String template, List<String> to,
 			boolean attachFiles) {
 		String from = configuration.getFromAddress();
+		if (StringUtils.isBlank(from)) {
+			log.error("Sending mail will probably fail, because no \"fromAddress\" is configured in config.yml.");
+		}
 
 		statusService.getBaseUrl(projectName).subscribe(baseUrl -> {
 			rc.put("baseUrl", baseUrl);
