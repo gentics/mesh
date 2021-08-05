@@ -5,6 +5,13 @@
 * Create the folders `plugins/forms`, `plugins/forms/templates`
 * Create a file `plugins/forms/config.yml`. See the configuration section for more details
 * Create handlebars templates in your `plugins/forms/templates` folder
+* To enable mail sending:
+  * Configure `mail` settings in `config.yml`
+  * Add `fromAddress` in `config.yml`
+  * Create templates for usermails and adminmails
+  * Configure paths to templates as `adminMailTemplate` and `userMailTemplate` in `config.yml` (without the .hbs extension)
+  * Configure `adminMailSubject` and `userMailSubject` in `config.yml`
+
 
 # API
 
