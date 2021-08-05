@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
@@ -67,7 +68,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	 *            Per page count
 	 */
 	public PagingParametersImpl(int page, Long perPage) {
-		this(page, perPage, "uuid", SortOrder.ASCENDING);
+		this(page, perPage, StringUtils.EMPTY, SortOrder.ASCENDING);
 	}
 
 	@Override
