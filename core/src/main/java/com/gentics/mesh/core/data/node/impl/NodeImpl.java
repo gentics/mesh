@@ -197,8 +197,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.withPostfix("branch_parents")
 			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET));
 		
-		// TODO replace null with "edgeType" when complex SQL statements start working
-		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, null, ContainerType.PUBLISHED.getCode());
+		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, "edgeType", ContainerType.PUBLISHED.getCode());
 	}
 
 	@Override
