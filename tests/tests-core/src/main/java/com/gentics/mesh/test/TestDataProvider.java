@@ -144,6 +144,7 @@ public class TestDataProvider {
 				meshOptions.setInitialAdminPassword(null);
 			}
 			boot.initMandatoryData(meshOptions);
+			boot.initBasicData(meshOptions);
 			if (setAdminPassword) {
 				setAdminPassword();
 			}

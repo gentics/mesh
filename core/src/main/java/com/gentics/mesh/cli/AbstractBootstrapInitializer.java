@@ -209,7 +209,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		}
 	}
 
-	protected void initBasicData(MeshOptions config) {
+	@Override
+	public void initBasicData(MeshOptions config) {
 		db().tx(tx -> {
 			UserDao userDao = userDao();
 			SchemaDao schemaDao = schemaDao();

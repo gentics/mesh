@@ -98,12 +98,19 @@ public interface BootstrapInitializer {
 	void markChangelogApplied();
 
 	/**
-	 * Setup various mandatory data. This includes mandatory root nodes and the admin user, group.
+	 * Setup data, that is required for Mesh to start, e.g. mandatory DB structure.
 	 * 
 	 * @param config
 	 * @throws Exception
 	 */
 	void initMandatoryData(MeshOptions config) throws Exception;
+
+	/**
+	 * Setup data, that is required for Mesh to operate on a basic level, e.g. admin user, group.
+	 * 
+	 * @param meshOptions
+	 */
+	void initBasicData(MeshOptions meshOptions);
 
 	/**
 	 * Clear all caches.
