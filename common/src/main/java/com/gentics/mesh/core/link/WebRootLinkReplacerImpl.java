@@ -130,8 +130,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		HibProject project = boot.projectDao().findByName(projectName);
-		HibNode node = boot.nodeDao().findByUuid(project, uuid);
+		HibNode node = boot.nodeDao().findByUuidGlobal(uuid);
 
 		// check for null
 		if (node == null) {
