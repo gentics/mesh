@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
@@ -106,4 +107,18 @@ public interface MeshRoot extends RootResolver, MeshVertex, HibMeshVersion {
 	 */
 	Node findNodeByUuid(String uuid);
 
+	/**
+	 * Return total amount of nodes across all projects.
+	 * 
+	 * @return
+	 */
+	long nodeCount();
+
+	/**
+	 * Load all nodes.
+	 * This function is for the low level unit tests only.
+	 * 
+	 * @return
+	 */
+	Result<? extends Node> findAllNodes();
 }

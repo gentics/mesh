@@ -501,7 +501,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertNotNull(boot().groupDao().findByUuid(uuid));
+			assertNull(boot().groupDao().findByUuid(uuid));
 		}
 	}
 

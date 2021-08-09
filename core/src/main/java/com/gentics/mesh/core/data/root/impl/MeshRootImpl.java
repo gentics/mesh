@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.result.Result;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -384,6 +385,16 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public Node findNodeByUuid(String uuid) {
 		return db().getVerticesTraversal(NodeImpl.class, "uuid", uuid).nextOrNull();
+	}
+
+	@Override
+	public long nodeCount() {
+		return db().count(NodeImpl.class);
+	}
+
+	@Override
+	public Result<? extends Node> findAllNodes() {
+		return db().getVerticesTraversal(NodeImpl.class, new String[0], new String[0]);
 	}
 
 }

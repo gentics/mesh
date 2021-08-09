@@ -1290,15 +1290,17 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	private HibSchema createDummySchemaWithChanges(String oldFieldName, String newFieldName, boolean setAddRaw) {
 
+		// create version 1 of the schema
+		HibSchemaVersion versionA = createSchemaVersion(Tx.get());
 		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
+		container.setLatestVersion(versionA);
+		versionA.setSchemaContainer(container);
 		EventQueueBatch batch = createBatch();
-		boot().schemaDao().addSchema(container, project(), user(), batch);// TODO sanity check the root replacement
+		boot().schemaDao().addSchema(container, project(), user(), batch);
 
-		// create version 1 of the schema
-		HibSchemaVersion versionA = createSchemaVersion(Tx.get());
 		SchemaVersionModel schemaA = new SchemaModelImpl();
 		schemaA.setName("migratedSchema");
 		schemaA.setVersion("1.0");
@@ -1311,8 +1313,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		schemaA.validate();
 		versionA.setName("migratedSchema");
 		versionA.setSchema(schemaA);
-		versionA.setSchemaContainer(container);
-
+		
 		// create version 2 of the schema (with the field renamed)
 		HibSchemaVersion versionB = createSchemaVersion(Tx.get());
 		SchemaVersionModel schemaB = new SchemaModelImpl();
@@ -1342,7 +1343,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
-		boot().schemaDao().addSchema(container, project(), user(), batch);
+		boot().schemaDao().addSchema(container);
 		return container;
 
 	}
