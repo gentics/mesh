@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import org.assertj.core.api.AbstractObjectArrayAssert;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
@@ -284,90 +285,57 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyStringFieldAllow() {
-		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			change.setFieldName("stringAllowField");
-			change.setType("string");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"one", "two", "three"});
-			version.setSchema(schema);
-			version.setNextChange(change);
-			FieldSchemaContainer updatedSchema = mutator.apply(version);
-			assertThat(updatedSchema).hasField("stringAllowField");
-			assertThat(updatedSchema.getField("stringAllowField", StringFieldSchema.class).getAllowedValues()).as("Allowed values").containsExactly("one",
-					"two", "three");
-		}
+		testApplyStringFieldAllowance(true);
 	}
 
 	@Test
 	public void testApplyNodeFieldAllow() {
-		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			change.setFieldName("nodeAllowField");
-			change.setType("node");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
-			version.setSchema(schema);
-			version.setNextChange(change);
-			FieldSchemaContainer updatedSchema = mutator.apply(version);
-			assertThat(updatedSchema).hasField("nodeAllowField");
-			assertThat(updatedSchema.getField("nodeAllowField", NodeFieldSchema.class).getAllowedSchemas()).as("Allowed schemas").containsExactly("content");
-		}
+		testApplyNodeFieldAllowance(true);
 	}
 
 	@Test
 	public void testApplyNodeListFieldAllow() {
-		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			change.setFieldName("nodeListFieldAllow");
-			change.setType("list");
-			change.setListType("node");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
-			version.setSchema(schema);
-			version.setNextChange(change);
-			FieldSchemaContainer updatedSchema = mutator.apply(version);
-			assertThat(updatedSchema).hasField("nodeListFieldAllow");
-			assertThat(updatedSchema.getField("nodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas").containsExactly("content");
-		}
+		testApplyNodeListFieldAllowance(true);
 	}
 
 	@Test
 	public void testApplyMicronodeFieldAllow() {
-		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			change.setFieldName("micronodeAllowField");
-			change.setType("micronode");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
-			version.setSchema(schema);
-			version.setNextChange(change);
-			FieldSchemaContainer updatedSchema = mutator.apply(version);
-			assertThat(updatedSchema).hasField("micronodeAllowField");
-			assertThat(updatedSchema.getField("micronodeAllowField", MicronodeFieldSchema.class).getAllowedMicroSchemas()).as("Allowed schemas").containsExactly("content");
-		}
+		testApplyMicronodeFieldAllowance(true);
 	}
 
 	@Test
 	public void testApplyMicronodeListFieldAllow() {
-		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			change.setFieldName("micronodeListFieldAllow");
-			change.setType("list");
-			change.setListType("micronode");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
-			version.setSchema(schema);
-			version.setNextChange(change);
-			FieldSchemaContainer updatedSchema = mutator.apply(version);
-			assertThat(updatedSchema).hasField("micronodeListFieldAllow");
-			assertThat(updatedSchema.getField("micronodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas").containsExactly("content");
-		}
+		testApplyMicronodeListFieldAllowance(true);
+	}
+	
+	@Test
+	public void testApplyStringFieldDisallow() {
+		testApplyStringFieldAllowance(true);
+		testApplyStringFieldAllowance(false);
+	}
+
+	@Test
+	public void testApplyNodeFieldDisallow() {
+		testApplyNodeFieldAllowance(true);
+		testApplyNodeFieldAllowance(false);
+	}
+
+	@Test
+	public void testApplyNodeListFieldDisallow() {
+		testApplyNodeListFieldAllowance(true);
+		testApplyNodeListFieldAllowance(false);
+	}
+
+	@Test
+	public void testApplyMicronodeFieldDisallow() {
+		testApplyMicronodeFieldAllowance(true);
+		testApplyMicronodeFieldAllowance(false);
+	}
+
+	@Test
+	public void testApplyMicronodeListFieldDisallow() {
+		testApplyMicronodeListFieldAllowance(true);
+		testApplyMicronodeListFieldAllowance(false);
 	}
 
 	@Test
@@ -399,6 +367,113 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			assertEquals(change.getFieldName(), model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
 			assertEquals("The generic rest property from the change should have been set for the rest model.", "test",
 					change.getRestProperty("someProperty"));
+		}
+	}
+	
+	private void testApplyStringFieldAllowance(boolean allow) {
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaModelImpl schema = new SchemaModelImpl();
+			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			change.setFieldName("stringAllowField");
+			change.setType("string");
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"one", "two", "three"} : null);
+			version.setSchema(schema);
+			version.setNextChange(change);
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
+			assertThat(updatedSchema).hasField("stringAllowField");
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("stringAllowField", StringFieldSchema.class).getAllowedValues()).as("Allowed values");
+			if (allow) {
+				assertion.containsExactly("one", "two", "three");
+			} else {
+				assertion.isNullOrEmpty();
+			}
+		}
+	}
+
+	private void testApplyNodeFieldAllowance(boolean allow) {
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaModelImpl schema = new SchemaModelImpl();
+			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			change.setFieldName("nodeAllowField");
+			change.setType("node");
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"content"} : null);
+			version.setSchema(schema);
+			version.setNextChange(change);
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
+			assertThat(updatedSchema).hasField("nodeAllowField");			
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("nodeAllowField", NodeFieldSchema.class).getAllowedSchemas()).as("Allowed schemas");
+			if (allow) {
+				assertion.containsExactly("content");
+			} else {
+				assertion.isNullOrEmpty();
+			}
+		}
+	}
+
+	private void testApplyNodeListFieldAllowance(boolean allow) {
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaModelImpl schema = new SchemaModelImpl();
+			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			change.setFieldName("nodeListFieldAllow");
+			change.setType("list");
+			change.setListType("node");
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"content"} : null);
+			version.setSchema(schema);
+			version.setNextChange(change);
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
+			assertThat(updatedSchema).hasField("nodeListFieldAllow");
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("nodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas");
+			if (allow) {
+				assertion.containsExactly("content");
+			} else {
+				assertion.isNullOrEmpty();
+			}
+		}
+	}
+
+	private void testApplyMicronodeFieldAllowance(boolean allow) {
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaModelImpl schema = new SchemaModelImpl();
+			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			change.setFieldName("micronodeAllowField");
+			change.setType("micronode");
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"content"} : null);
+			version.setSchema(schema);
+			version.setNextChange(change);
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
+			assertThat(updatedSchema).hasField("micronodeAllowField");
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("micronodeAllowField", MicronodeFieldSchema.class).getAllowedMicroSchemas()).as("Allowed schemas");
+			if (allow) {
+				assertion.containsExactly("content");
+			} else {
+				assertion.isNullOrEmpty();
+			}
+		}
+	}
+
+	private void testApplyMicronodeListFieldAllowance(boolean allow) {
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaModelImpl schema = new SchemaModelImpl();
+			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			change.setFieldName("micronodeListFieldAllow");
+			change.setType("list");
+			change.setListType("micronode");
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"content"} : null);
+			version.setSchema(schema);
+			version.setNextChange(change);
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
+			assertThat(updatedSchema).hasField("micronodeListFieldAllow");
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("micronodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas");
+			if (allow) {
+				assertion.containsExactly("content");
+			} else {
+				assertion.isNullOrEmpty();
+			}
 		}
 	}
 }

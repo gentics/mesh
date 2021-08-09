@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.5.14]]
+== 1.5.14 (10.08.2021)
+
+icon:check[] Core: A bug preventing the string schema field restrictions from being cleared, has been fixed.
+
 [[v1.5.13]]
 == 1.5.13 (21.06.2021)
 
