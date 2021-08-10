@@ -8,7 +8,7 @@ JobContext.set(this)
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
-		booleanParam(name: 'splitTests',          defaultValue: true,  description: "Whether to split tests or not"),
+		booleanParam(name: 'splitTests',          defaultValue: false,  description: "Whether to split tests or not"),
 		booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not"),
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runUnstableTests',    defaultValue: true,  description: "Whether to run tests in failing group."),

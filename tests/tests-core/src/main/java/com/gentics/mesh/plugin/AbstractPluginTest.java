@@ -24,23 +24,23 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public class AbstractPluginTest extends AbstractMeshTest {
 
-	public static final String BASIC_PATH = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String BASIC_PATH = "../../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String BASIC2_PATH = "target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String BASIC2_PATH = "../../core/target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String FAILING_PATH = "target/test-plugins/failing/target/failing-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String FAILING_PATH = "../../core/target/test-plugins/failing/target/failing-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String NON_MESH_PATH = "target/test-plugins/non-mesh/target/non-mesh-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String NON_MESH_PATH = "../../core/target/test-plugins/non-mesh/target/non-mesh-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String CLASSLOADER_PATH = "target/test-plugins/classloader/target/classloader-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String CLASSLOADER_PATH = "../../core/target/test-plugins/classloader/target/classloader-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String EXTENSION_PROVIDER_PATH = "target/test-plugins/extension-provider/target/extension-provider-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String EXTENSION_PROVIDER_PATH = "../../core/target/test-plugins/extension-provider/target/extension-provider-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String EXTENSION_CONSUMER_PATH = "target/test-plugins/extension-consumer/target/extension-consumer-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String EXTENSION_CONSUMER_PATH = "../../core/target/test-plugins/extension-consumer/target/extension-consumer-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String GRAPHQL_PATH = "target/test-plugins/graphql/target/graphql-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String GRAPHQL_PATH = "../../core/target/test-plugins/graphql/target/graphql-plugin-0.0.1-SNAPSHOT.jar";
 	
-	public static final String INVALID_GRAPHQL_PATH = "target/test-plugins/invalid-graphql/target/invalid-graphql-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String INVALID_GRAPHQL_PATH = "../../core/target/test-plugins/invalid-graphql/target/invalid-graphql-plugin-0.0.1-SNAPSHOT.jar";
 
 	@Before
 	public void preparePluginDir() throws IOException {

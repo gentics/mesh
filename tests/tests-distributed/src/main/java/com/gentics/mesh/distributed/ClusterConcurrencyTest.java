@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.FieldUtil;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
 import io.reactivex.Completable;
@@ -33,6 +35,7 @@ import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+@Category(ClusterTests.class)
 public class ClusterConcurrencyTest extends AbstractClusterTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ClusterConcurrencyTest.class);

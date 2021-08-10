@@ -9,14 +9,17 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
 /**
  * Assert that a node will not be able to join the cluster if the mesh versions and the database revision are not matching.
  */
+@Category(ClusterTests.class)
 public class NodeRejectionClusterTest extends AbstractClusterTest {
 
 	private static final int STARTUP_TIMEOUT = 110;

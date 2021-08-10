@@ -24,7 +24,7 @@ public class ClusterCoordinatorTokenTest extends AbstractClusterCoordinatorToken
 		.withCoordinatorPlane(CoordinatorMode.CUD)
 		.withCoordinatorRegex(coordinatorRegex)
 		.withInitCluster()
-		.withPlugin(new File("../core/target/test-plugins/auth/target/auth-plugin-0.0.1-SNAPSHOT.jar"), "auth.jar")
+		.withPlugin(new File("../../core/target/test-plugins/auth/target/auth-plugin-0.0.1-SNAPSHOT.jar"), "auth.jar")
 		.withPublicKeys(getResourceAsFile("/public-keys/symmetric-key.json"))
 		.waitForStartup()
 		.withClearFolders();
@@ -35,7 +35,7 @@ public class ClusterCoordinatorTokenTest extends AbstractClusterCoordinatorToken
 		.withDataPathPostfix(randomToken())
 		.withCoordinatorPlane(CoordinatorMode.CUD)
 		.withCoordinatorRegex(coordinatorRegex)
-		.withPlugin(new File("../core/target/test-plugins/auth/target/auth-plugin-0.0.1-SNAPSHOT.jar"), "auth.jar")
+		.withPlugin(new File("../../core/target/test-plugins/auth/target/auth-plugin-0.0.1-SNAPSHOT.jar"), "auth.jar")
 		.withPublicKeys(getResourceAsFile("/public-keys/symmetric-key.json"))
 		.waitForStartup()
 		.withClearFolders();

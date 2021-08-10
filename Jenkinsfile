@@ -13,7 +13,7 @@ final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/"
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
-		booleanParam(name: 'splitTests',          defaultValue: true, description: "Whether to split tests or not"),
+		booleanParam(name: 'splitTests',          defaultValue: false, description: "Whether to split tests or not"),
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),

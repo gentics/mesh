@@ -8,15 +8,18 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.plugin.AbstractPluginTest;
 import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.category.PluginTests;
 
 import io.vertx.core.json.JsonObject;
 
+@Category(PluginTests.class)
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class GraphQLPluginTest extends AbstractPluginTest {
 
