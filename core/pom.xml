@@ -17,7 +17,6 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
-		<skip.test-plugins>true</skip.test-plugins>
 		<mesh.mdm.provider.groupId>${project.groupId}</mesh.mdm.provider.groupId>
 		<mesh.mdm.provider.artifactId>mesh-orientdb</mesh.mdm.provider.artifactId>
 		<mesh.mdm.provider.version>${project.version}</mesh.mdm.provider.version>
