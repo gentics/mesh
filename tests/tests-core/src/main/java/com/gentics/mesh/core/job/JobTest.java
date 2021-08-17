@@ -115,9 +115,9 @@ public class JobTest extends AbstractMeshTest {
 	public void testJobRootTypeHandling() {
 		try (Tx tx = tx()) {
 			JobDao dao = boot().jobDao();
-			dao.enqueueBranchMigration(user(), latestBranch());
-			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx), createMicroschemaVersion(tx));
 			dao.enqueueSchemaMigration(user(), latestBranch(), createSchemaVersion(tx), createSchemaVersion(tx));
+			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx), createMicroschemaVersion(tx));
+			dao.enqueueBranchMigration(user(), latestBranch());
 
 			List<String> list = TestUtils.toList(dao.findAll()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
 			assertThat(list).containsExactly(NodeMigrationJobImpl.class.getName(), MicronodeMigrationJobImpl.class.getName(),
