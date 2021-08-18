@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
@@ -117,4 +118,8 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 		db.index().removeVertexIndex("publishedWebrootInfoIndex", NodeGraphFieldContainerImpl.class);
 	}
 
+	@Override
+	public boolean isAllowedInCluster(MeshOptions options) {
+		return false;
+	}
 }

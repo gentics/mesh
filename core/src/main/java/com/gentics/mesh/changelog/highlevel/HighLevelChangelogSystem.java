@@ -1,13 +1,17 @@
 package com.gentics.mesh.changelog.highlevel;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -34,14 +38,22 @@ public class HighLevelChangelogSystem {
 	/**
 	 * Apply the changes which were not yet applied.
 	 * 
-	 * @param meshRoot
-	 * @return 
+	 * @param flags Flags which will be used to control the post process actions
+	 * @param meshRoot mesh root
+	 * @param filter optional filter
 	 */
-	public void apply(PostProcessFlags flags, MeshRoot meshRoot) {
+	public void apply(PostProcessFlags flags, MeshRoot meshRoot, Predicate<? super HighLevelChange> filter) {
 		List<HighLevelChange> changes = highLevelChangesList.getList();
 		for (HighLevelChange change : changes) {
 			db.tx(tx2 -> {
 				if (!isApplied(meshRoot, change)) {
+					// if a filter is given and a change does not pass its test, we fail
+					if (filter != null && !filter.test(change)) {
+						throw new RuntimeException("Cannot execute change " + change.getName()
+								+ " in cluster mode. Please restart a single instance in the cluster with the "
+								+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -"
+								+ MeshCLI.INIT_CLUSTER + " command line argument to migrate the database.");
+					}
 					try {
 						long start = System.currentTimeMillis();
 						db.tx(tx -> {
@@ -77,6 +89,9 @@ public class HighLevelChangelogSystem {
 	 * @return
 	 */
 	private boolean isApplied(MeshRoot root, HighLevelChange change) {
+		if (log.isDebugEnabled()) {
+			log.debug("Checking change {" + change.getName() + "}/{" + change.getUuid() + "}");
+		}
 		return root.getChangelogRoot().hasChange(change);
 	}
 
@@ -99,17 +114,16 @@ public class HighLevelChangelogSystem {
 	 * Check whether any high level changelog entry needs to be applied.
 	 * 
 	 * @param meshRoot
+	 * @param filter optional filter for high level changes to check (may be null to check all high level changes)
 	 * @return
 	 */
-	public boolean requiresChanges(MeshRoot meshRoot) {
+	public boolean requiresChanges(MeshRoot meshRoot, Predicate<? super HighLevelChange> filter) {
 		return db.tx(tx -> {
-			List<HighLevelChange> changes = highLevelChangesList.getList();
-			for (HighLevelChange change : changes) {
-				if (!isApplied(meshRoot, change)) {
-					return true;
-				}
+			Stream<HighLevelChange> stream = highLevelChangesList.getList().stream();
+			if (filter != null) {
+				stream = stream.filter(filter);
 			}
-			return false;
+			return stream.filter(change -> !isApplied(meshRoot, change)).findFirst().isPresent();
 		});
 	}
 

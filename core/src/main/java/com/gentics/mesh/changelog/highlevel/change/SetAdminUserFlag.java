@@ -7,6 +7,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -52,5 +53,11 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean isAllowedInCluster(MeshOptions options) {
+		// this change is allowed in cluster environments, since it only sets new properties (which will be ignored in old Mesh versions anyway)
+		return true;
 	}
 }

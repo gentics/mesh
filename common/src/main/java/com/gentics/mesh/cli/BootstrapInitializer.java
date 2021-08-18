@@ -2,12 +2,14 @@ package com.gentics.mesh.cli;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -207,6 +209,15 @@ public interface BootstrapInitializer {
 	void invokeChangelog(PostProcessFlags flags);
 
 	/**
+	 * Invoke the changelog system in a cluster. This will only apply changelog entries, which are allowed to be executed in a cluster.
+	 * 
+	 * If any other changelog entries are found, which are not allowed to be executed in a cluster, this method will throw a RuntimeException
+	 * @param flags Flags which will be used to control the post process actions
+	 * @param configuration mesh options
+	 */
+	void invokeChangelogInCluster(PostProcessFlags flags, MeshOptions configuration);
+
+	/**
 	 * Return the list of all language tags.
 	 * 
 	 * @return
@@ -271,8 +282,9 @@ public interface BootstrapInitializer {
 	/**
 	 * Check whether the execution of the changelog is required.
 	 * 
+	 * @param filter optional filter for high level changes to check (may be null to check all high level changes)
 	 * @return 
 	 */
-	boolean requiresChangelog();
+	boolean requiresChangelog(Predicate<? super HighLevelChange> filter);
 
 }
