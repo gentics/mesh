@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.dao.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -47,6 +47,22 @@ import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.changelog.HighLevelChange;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.DaoCollection;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.S3BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -266,18 +282,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 		} else {
 			handleMeshVersion();
+			initOptionalLanguages(configuration);
 			if (!isJoiningCluster) {
-				initOptionalLanguages(configuration);
 				// Only execute the changelog if there are any elements in the graph
 				invokeChangelog(flags);
-			}
-
-			if (isJoiningCluster && requiresChangelog()) {
-				// Joining of cluster members is only allowed when the changelog has been applied
-				throw new RuntimeException(
-					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
-						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER
-						+ " command line argument to migrate the database.");
+			} else {
+				invokeChangelogInCluster(flags, configuration);
 			}
 		}
 	}
@@ -773,17 +783,34 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		DatabaseHelper.init(db);
 
 		// Now run the high level changelog entries
-		highlevelChangelogSystem.apply(flags, meshRoot);
+		highlevelChangelogSystem.apply(flags, meshRoot, null);
 
 		log.info("Changelog completed.");
 		cls.setCurrentVersionAndRev();
 	}
 
 	@Override
-	public boolean requiresChangelog() {
+	public void invokeChangelogInCluster(PostProcessFlags flags, MeshOptions configuration) {
+		log.info("Invoking database changelog check...");
+		if (requiresChangelog(filter -> !filter.isAllowedInCluster(configuration))) {
+			// Joining of cluster members is only allowed when the changelog has been applied
+			throw new RuntimeException(
+					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
+							+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER + " command line argument to migrate the database.");
+		}
+
+		// Now run the high level changelog entries, which are allowed to be executed in cluase mode
+		highlevelChangelogSystem.apply(flags, meshRoot, filter -> filter.isAllowedInCluster(configuration));
+
+		log.info("Changelog completed.");
+		new ChangelogSystemImpl(db, options).setCurrentVersionAndRev();
+	}
+
+	@Override
+	public boolean requiresChangelog(Predicate<? super HighLevelChange> filter) {
 		log.info("Checking whether changelog entries need to be applied");
 		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
-		return cls.requiresChanges() || highlevelChangelogSystem.requiresChanges(meshRoot);
+		return cls.requiresChanges() || highlevelChangelogSystem.requiresChanges(meshRoot, filter);
 	}
 
 	@Override

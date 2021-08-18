@@ -10,6 +10,7 @@ import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.google.common.base.Objects;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -107,8 +108,12 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 		try {
 			Vertex root = MeshGraphHelper.getMeshRootVertex(graph);
 			String rev = db.getDatabaseRevision();
-			root.setProperty(MESH_VERSION, currentVersion);
-			root.setProperty(MESH_DB_REV, rev);
+			if (!Objects.equal(root.getProperty(MESH_VERSION), currentVersion)) {
+				root.setProperty(MESH_VERSION, currentVersion);
+			}
+			if (!Objects.equal(root.getProperty(MESH_DB_REV), rev)) {
+				root.setProperty(MESH_DB_REV, rev);
+			}
 			graph.commit();
 		} finally {
 			graph.shutdown();

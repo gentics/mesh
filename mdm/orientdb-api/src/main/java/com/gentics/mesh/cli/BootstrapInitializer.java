@@ -2,13 +2,28 @@ package com.gentics.mesh.cli;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
-import com.gentics.mesh.core.data.dao.*;
+import com.gentics.mesh.core.data.changelog.HighLevelChange;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.S3BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -267,6 +282,15 @@ public interface BootstrapInitializer {
 	void invokeChangelog(PostProcessFlags flags);
 
 	/**
+	 * Invoke the changelog system in a cluster. This will only apply changelog entries, which are allowed to be executed in a cluster.
+	 * 
+	 * If any other changelog entries are found, which are not allowed to be executed in a cluster, this method will throw a RuntimeException
+	 * @param flags Flags which will be used to control the post process actions
+	 * @param configuration mesh options
+	 */
+	void invokeChangelogInCluster(PostProcessFlags flags, MeshOptions configuration);
+
+	/**
 	 * Return the list of all language tags.
 	 * 
 	 * @return
@@ -331,8 +355,15 @@ public interface BootstrapInitializer {
 	/**
 	 * Check whether the execution of the changelog is required.
 	 * 
+<<<<<<< HEAD:mdm/orientdb-api/src/main/java/com/gentics/mesh/cli/BootstrapInitializer.java
 	 * @return
+||||||| parent of cf1d48415e... Make it possible to do a rolling update of Mesh in a cluster,
+	 * @return 
+=======
+	 * @param filter optional filter for high level changes to check (may be null to check all high level changes)
+	 * @return 
+>>>>>>> cf1d48415e... Make it possible to do a rolling update of Mesh in a cluster,:common/src/main/java/com/gentics/mesh/cli/BootstrapInitializer.java
 	 */
-	boolean requiresChangelog();
+	boolean requiresChangelog(Predicate<? super HighLevelChange> filter);
 
 }
