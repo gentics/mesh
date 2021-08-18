@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.BucketableElement;
 
@@ -81,5 +82,13 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 	@Override
 	public boolean requiresReindex() {
 		return true;
+	}
+
+	@Override
+	public boolean isAllowedInCluster(MeshOptions options) {
+		// if elasticsearch is not used, this change can be done in a cluster, because
+		// it only sets new properties (which will be ignored in old Mesh versions
+		// anyways)
+		return options.getSearchOptions().getUrl() == null;
 	}
 }

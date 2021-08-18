@@ -17,6 +17,7 @@ import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
 import com.gentics.mesh.core.binary.impl.TikaResult;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -114,4 +115,8 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 		return "Parses the uploads and extracts the plain text";
 	}
 
+	@Override
+	public boolean isAllowedInCluster(MeshOptions options) {
+		return false;
+	}
 }
