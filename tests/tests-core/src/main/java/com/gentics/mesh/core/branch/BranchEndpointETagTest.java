@@ -9,7 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -33,7 +33,7 @@ public class BranchEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.branchDao();
+			BranchDao branchDao = tx.branchDao();
 			HibBranch branch = project().getLatestBranch();
 			String actualEtag = callETag(() -> client().findBranchByUuid(PROJECT_NAME, branch.getUuid()));
 			String etag = branchDao.getETag(branch, mockActionContext());

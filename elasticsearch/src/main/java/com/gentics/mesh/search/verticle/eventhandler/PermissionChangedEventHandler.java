@@ -19,10 +19,11 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
@@ -82,15 +83,15 @@ public class PermissionChangedEventHandler implements EventHandler {
 	private Flowable<UpdateDocumentRequest> handleNodePermissionsChange(PermissionChangedProjectElementEventModel model) {
 		NodeContainerTransformer tf = (NodeContainerTransformer) meshEntities.nodeContent.getTransformer();
 		return meshHelper.getDb().tx(tx -> {
-			ProjectDaoWrapper projectDao = tx.projectDao();
-			BranchDaoWrapper branchDao = tx.branchDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			ProjectDao projectDao = tx.projectDao();
+			BranchDao branchDao = tx.branchDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			return ofNullable(projectDao.findByUuid(model.getProject().getUuid()))
 				.flatMap(project -> ofNullable(nodeDao.findByUuid(project, model.getUuid()))
 					.flatMap(node -> branchDao.findAll(project).stream().map(HibBaseElement::getUuid)
 						.flatMap(branchUuid -> Util.latestVersionTypes()
-							.flatMap(type -> tx.contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
+							.flatMap(type -> ((ContentDaoWrapper) tx.contentDao()).getGraphFieldContainers(node, branchUuid, type).stream()
 								.map(container -> meshHelper.updateDocumentRequest(
 									ContentDao.composeIndexName(
 										model.getProject().getUuid(),

@@ -13,9 +13,10 @@ import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -56,11 +57,11 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 
 	@Override
 	public void apply() {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 
 		log.info("Applying change: " + getName());
-		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
 			GraphFieldContainerEdgeImpl.class);
 		long count = 0;

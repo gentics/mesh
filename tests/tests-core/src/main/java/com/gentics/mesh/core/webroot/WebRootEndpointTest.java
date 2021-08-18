@@ -28,8 +28,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -68,7 +68,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
@@ -133,7 +133,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		HibNode content = content("news_2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 			tx.success();
@@ -169,9 +169,9 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			NodeDao nodeDao = tx.nodeDao();
+			RoleDao roleDao = tx.roleDao();
 			HibNode parentNode = folder("2015");
 			// Update content schema and add node field
 			HibSchema folderSchema = schemaContainer("folder");
@@ -338,7 +338,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String englishPath = "/News/2015";
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibNode newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			roleDao.revokePermissions(role(), newsFolder, READ_PERM);
@@ -413,7 +413,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.grantPermissions(anonymousRole(), folder("2015"), READ_PERM);
 			tx.success();
 		}
@@ -429,7 +429,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.grantPermissions(anonymousRole(), folder("2015"), READ_PUBLISHED_PERM);
 			tx.success();
 		}
@@ -458,7 +458,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Publish nodes
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(folder("news"), mockActionContext(), bac);
 			nodeDao.publish(folder("2015"), mockActionContext(), bac);
@@ -483,7 +483,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Remove read perm and grant only publish perm to node
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), folder("2015"), READ_PERM);
 			roleDao.grantPermissions(role(), folder("2015"), READ_PUBLISHED_PERM);
 			tx.success();
@@ -504,7 +504,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 1. Publish nodes
 		tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(folder("news"), mockActionContext(), bac);
 			nodeDao.publish(folder("2015"), mockActionContext(), bac);

@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -52,12 +53,12 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+			Node node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField testField = container.createNode("testField", node);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
@@ -69,9 +70,9 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNode node = tx.getGraph().addFramedVertex(NodeImpl.class);
+			HibNode node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField field = container.createNode("testNodeField", node);
 			assertNotNull(field);
 			assertEquals("testNodeField", field.getFieldKey());
@@ -93,7 +94,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 			// 1. Create the node field schema and add it to the schema of the node
@@ -124,7 +125,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("fieldA", folder("2015"));
 			NodeGraphField fieldB = container.createNode("fieldB", folder("2014"));
 			NodeGraphField fieldC = container.createNode("fieldC", folder("2015"));
@@ -140,7 +141,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("field1", content());
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -151,7 +152,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("field1", content());
 
 			// graph set - rest set - same value - different type

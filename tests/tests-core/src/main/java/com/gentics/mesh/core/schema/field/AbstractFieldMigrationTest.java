@@ -19,9 +19,9 @@ import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataAsserter;
 import com.gentics.mesh.core.field.DataProvider;
@@ -132,7 +133,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		Schema container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
@@ -145,7 +146,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", creator.create(persistentFieldName));
 
 		// link the schemas with the change in between
-		RemoveFieldChange change = Tx.get().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange change = GraphDBTx.getGraphTx().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		change.setFieldName(removedFieldName);
 		change.setPreviousContainerVersion(versionA);
 		change.setNextSchemaContainerVersion(versionB);
@@ -165,7 +166,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
@@ -208,7 +209,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String micronodeFieldName = "micronodefield";
 
 		// create version 1 of the microschema
-		HibMicroschema container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		HibMicroschema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
@@ -219,7 +220,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibMicroschemaVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", creator.create(persistentFieldName));
 
 		// link the microschemas with the change in between
-		RemoveFieldChange change = Tx.get().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange change = GraphDBTx.getGraphTx().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		change.setFieldName(removedFieldName);
 		change.setPreviousContainerVersion(versionA);
 		change.setNextSchemaContainerVersion(versionB);
@@ -234,7 +235,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
@@ -309,7 +310,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
@@ -322,11 +323,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		AddFieldChangeImpl addFieldChange = Tx.get().getGraph().addFramedVertex(AddFieldChangeImpl.class);
+		AddFieldChangeImpl addFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
 
-		RemoveFieldChange removeFieldChange = Tx.get().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange removeFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
 
 		addFieldChange.setPreviousContainerVersion(versionA);
@@ -347,7 +348,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user, versionB, batch);
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
@@ -390,7 +391,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String micronodeFieldName = "micronodefield";
 
 		// create version 1 of the microschema
-		HibMicroschema container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		HibMicroschema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
@@ -401,11 +402,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibMicroschemaVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newField);
 
 		// link the microschemas with the changes in between
-		AddFieldChangeImpl addFieldChange = Tx.getActive().getGraph().addFramedVertex(AddFieldChangeImpl.class);
+		AddFieldChangeImpl addFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
 
-		RemoveFieldChange removeFieldChange = Tx.get().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange removeFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
 
 		addFieldChange.setPreviousContainerVersion(versionA);
@@ -421,7 +422,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the micronode
 		HibJob job = project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 		if (job != null) {
 			triggerAndWaitForJob(job.getUuid());
 		} else {
@@ -493,14 +494,14 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void changeSchemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		SchemaDao schemaDao = boot().schemaDao();
 
 		String fieldName = "changedfield";
 		String schemaName = "schema_" + System.currentTimeMillis();
 
 		// create version 1 of the schema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
-		HibSchema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		HibSchema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(schemaName);
 		container.setCreated(user());
@@ -513,7 +514,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", newFieldSchema);
 
 		// link the schemas with the change in between
-		FieldTypeChange change = Tx.get().getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+		FieldTypeChange change = GraphDBTx.getGraphTx().getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
 		change.setType(newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {
@@ -543,7 +544,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
@@ -589,7 +590,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void changeMicroschemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher,
 		FieldSchemaCreator newField, DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		MicroschemaDao microschemaDao = boot().microschemaDao();
 
 		String fieldName = "changedfield";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -597,7 +598,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
-		HibMicroschema container = createMicroschema(Tx.get());
+		HibMicroschema container = createMicroschema(GraphDBTx.getGraphTx());
 		container.setName(microschemaName);
 		container.setCreated(user());
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldFieldSchema);
@@ -607,7 +608,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibMicroschemaVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newFieldSchema);
 
 		// link the schemas with the change in between
-		FieldTypeChange change = Tx.get().getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+		FieldTypeChange change = GraphDBTx.getGraphTx().getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
 		change.setType(newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {
@@ -715,7 +716,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
-		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
@@ -728,7 +729,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// Link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.get().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
@@ -748,7 +749,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
 		context.setBranch(project().getLatestBranch());
@@ -791,7 +792,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
-		Microschema container = Tx.get().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		Microschema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
@@ -802,7 +803,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibMicroschemaVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.get().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
@@ -810,7 +811,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a micronode based on the old schema
-		Tx.get().microschemaDao().addMicroschema(project(), user(), container, createBatch());
+		GraphDBTx.getGraphTx().microschemaDao().addMicroschema(project(), user(), container, createBatch());
 		HibNode node = nodeDao.create(folder("2015"), user(), schemaContainer("content").getLatestVersion(), project());
 		MicronodeGraphField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, fieldName);
 		NodeGraphFieldContainer oldContainer = boot().contentDao().getGraphFieldContainer(node, "en");
@@ -818,7 +819,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the micronode
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
@@ -886,14 +887,14 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
 		ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		SchemaDao schemaDao = boot().schemaDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
-		HibSchema container = createSchema(Tx.get());
+		HibSchema container = createSchema(GraphDBTx.getGraphTx());
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 
@@ -906,7 +907,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.get().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
@@ -926,7 +927,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user, versionB, batch);
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
 		context.setBranch(project().getLatestBranch());
@@ -957,7 +958,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
-		HibMicroschema container = createMicroschema(Tx.get());
+		HibMicroschema container = createMicroschema(GraphDBTx.getGraphTx());
 		container.setName(microschemaName);
 		container.setCreated(user());
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
@@ -967,7 +968,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibMicroschemaVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.get().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
@@ -979,7 +980,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
-		Tx.get().getGraph().commit();
+		GraphDBTx.getGraphTx().getGraph().commit();
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
@@ -1014,7 +1015,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// schema.setSegmentField("name");
 		schema.validate();
 
-		HibSchemaVersion containerVersion = createSchemaVersion(Tx.get());
+		HibSchemaVersion containerVersion = createSchemaVersion(GraphDBTx.getGraphTx());
 		containerVersion.setName(name);
 		containerVersion.setSchema(schema);
 		containerVersion.setSchemaContainer(container);
@@ -1040,7 +1041,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		for (FieldSchema field : fields) {
 			schema.addField(field);
 		}
-		HibMicroschemaVersion containerVersion = createMicroschemaVersion(Tx.get());
+		HibMicroschemaVersion containerVersion = createMicroschemaVersion(GraphDBTx.getGraphTx());
 		containerVersion.setSchema(schema);
 		containerVersion.setName(name);
 		containerVersion.setSchemaContainer(container);

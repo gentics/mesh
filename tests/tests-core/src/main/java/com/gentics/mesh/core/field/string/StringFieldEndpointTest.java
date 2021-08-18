@@ -116,7 +116,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
@@ -179,7 +179,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			StringGraphField stringField = container.createString(FIELD_NAME);
 			stringField.setString("someString");

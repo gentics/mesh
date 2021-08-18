@@ -101,7 +101,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
@@ -148,7 +148,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");
 			tx.success();

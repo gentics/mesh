@@ -52,7 +52,7 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -396,8 +396,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private boolean updateWebrootPathInfo(Node node, GraphFieldContainerEdge edge, String languageTag, String branchUuid, String segmentFieldName,
 		String conflictI18n,
 		ContainerType type) {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 
 		// Determine the webroot path of the container parent node
 		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag());

@@ -30,17 +30,16 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -223,7 +222,7 @@ public class TestDataProvider {
 	}
 
 	private void addPermissions(Collection<? extends HibBaseElement> elements) {
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		HibRole role = userInfo.getRole();
 		for (HibBaseElement meshVertex : elements) {
@@ -253,7 +252,7 @@ public class TestDataProvider {
 	}
 
 	private void addContents() {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 
 		HibSchema contentSchema = schemaContainers.get("content");
 
@@ -289,8 +288,8 @@ public class TestDataProvider {
 	}
 
 	private void addFolderStructure() {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		TagDao tagDao = Tx.get().tagDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
 
 		HibNode baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
@@ -336,9 +335,9 @@ public class TestDataProvider {
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
-		UserDaoWrapper userDao = Tx.get().userDao();
-		GroupDaoWrapper groupDao = Tx.get().groupDao();
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
+		UserDao userDao = Tx.get().userDao();
+		GroupDao groupDao = Tx.get().groupDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		String password = "test123";
 		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
@@ -379,11 +378,11 @@ public class TestDataProvider {
 	}
 
 	private void addUserGroupRoleProject() {
-		UserDaoWrapper userDao = Tx.get().userDao();
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
-		GroupDaoWrapper groupDao = Tx.get().groupDao();
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
-		ProjectDaoWrapper projectDao = Tx.get().projectDao();
+		UserDao userDao = Tx.get().userDao();
+		RoleDao roleDao = Tx.get().roleDao();
+		GroupDao groupDao = Tx.get().groupDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
+		ProjectDao projectDao = Tx.get().projectDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
@@ -429,7 +428,7 @@ public class TestDataProvider {
 	}
 
 	public void addTagFamilies() {
-		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
+		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 		HibTagFamily basicTagFamily = tagFamilyDao.create(getProject(), "basic", userInfo.getUser());
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
@@ -444,7 +443,7 @@ public class TestDataProvider {
 	}
 
 	private void addBootstrapSchemas() {
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
 
 		// folder
 		HibSchema folderSchemaContainer = schemaDao.findByName("folder");
@@ -476,7 +475,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
@@ -520,7 +519,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
@@ -598,7 +597,7 @@ public class TestDataProvider {
 	}
 
 	public HibTag addTag(String name, HibTagFamily tagFamily) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}

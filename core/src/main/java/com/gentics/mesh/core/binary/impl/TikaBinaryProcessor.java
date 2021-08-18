@@ -27,7 +27,7 @@ import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -150,7 +150,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	 */
 	private Maybe<BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
 		return db.maybeTx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);

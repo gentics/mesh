@@ -2,17 +2,17 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -59,8 +59,8 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 		// Revoke all but one permission
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			RoleDao roleDao = tx.roleDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			for (HibNode node : nodeDao.findAll(project())) {
 				if (!node.getUuid().equals(lastNodeUuid)) {

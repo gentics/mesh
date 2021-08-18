@@ -14,7 +14,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
@@ -154,7 +154,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				}
 
 				Tx tx = Tx.get();
-				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+				MicroschemaDao microschemaDao = tx.microschemaDao();
 				HibMicroschemaVersion container = microschemaDao.fromReference(tx.getProject(ac), microschemaReference, tx.getBranch(ac));
 				return Observable.just(container);
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found

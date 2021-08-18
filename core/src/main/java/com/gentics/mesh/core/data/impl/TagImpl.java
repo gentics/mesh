@@ -73,7 +73,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	@Override
 	@Deprecated
 	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 		return tagDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
@@ -107,7 +107,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 		return tagDao.update(this, ac, batch);
 	}
 

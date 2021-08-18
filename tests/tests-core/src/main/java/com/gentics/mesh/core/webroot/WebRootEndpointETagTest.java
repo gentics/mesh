@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
@@ -34,7 +34,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String path = "/News/2015/blume.jpg";
 		HibNode node;
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			node = content("news_2015");
 
 			// 1. Transform the node into a binary content
@@ -69,7 +69,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
@@ -112,7 +112,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode node = content("news_2015");
 			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, responseTag);

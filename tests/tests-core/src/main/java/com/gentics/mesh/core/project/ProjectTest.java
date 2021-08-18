@@ -14,9 +14,9 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -153,8 +153,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			UserDaoWrapper userDao = tx.userDao();
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
 			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
 			roleDao.grantPermissions(role(), tx.data().permissionRoots().project(), CREATE_PERM);
@@ -173,7 +173,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			HibProject project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());

@@ -2,6 +2,7 @@ package com.gentics.mesh.server.cluster.test.task;
 
 import java.util.concurrent.locks.Lock;
 
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
@@ -29,7 +30,7 @@ public class RoleEdgeInserterTask extends AbstractLoadTask {
 	 * @return
 	 */
 	public Vertex createRole(Tx tx, String uuid) {
-		Vertex v = tx.getGraph().addVertex("class:" + ROLE);
+		Vertex v = ((GraphDBTx) tx).getGraph().addVertex("class:" + ROLE);
 		v.setProperty("uuid", uuid);
 		v.setProperty("name", "SOME VALUE" + System.nanoTime());
 		return v;
@@ -49,7 +50,7 @@ public class RoleEdgeInserterTask extends AbstractLoadTask {
 			try {
 				String roleUuid = UUIDUtil.randomUUID();
 				test.tx(tx -> {
-					Vertex roleRoot = tx.getGraph().getVertices("@class", "RoleRootImpl").iterator().next();
+					Vertex roleRoot = ((GraphDBTx) tx).getGraph().getVertices("@class", "RoleRootImpl").iterator().next();
 					Vertex role = createRole(tx, roleUuid);
 					roleRoot.addEdge("HAS_ROLE", role);
 					role.setProperty("name", "Test@" + System.nanoTime());

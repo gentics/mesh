@@ -178,7 +178,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			// Assert that the old version was not modified
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());

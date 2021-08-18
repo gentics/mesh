@@ -118,7 +118,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			Page<? extends NodeContent> page = db.tx(tx -> {
-				ContentDaoWrapper contentDao = tx.contentDao();
+				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 				long totalCount = extractTotalCount(hitsInfo);
 				List<NodeContent> elementList = new ArrayList<>();
 				JsonArray hits = hitsInfo.getJsonArray("hits");

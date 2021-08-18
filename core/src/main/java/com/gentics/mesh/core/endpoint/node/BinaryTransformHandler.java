@@ -19,9 +19,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -110,7 +110,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		// Load needed elements
 		HibNode node = db.tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
@@ -216,7 +216,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, HibNode node,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 
 			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 
@@ -262,7 +262,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
-			BranchDaoWrapper branchDao = tx.branchDao();
+			BranchDao branchDao = tx.branchDao();
 			// TODO maybe use a fixed method in project?
 			String branchUuid = branchDao.getLatestBranch(node.getProject()).getUuid();
 

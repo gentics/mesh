@@ -41,9 +41,9 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -76,8 +76,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		final int nBasicTags = 9;
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
-			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+			TagDao tagDao = tx.tagDao();
+			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			HibTagFamily basicTagFamily = tagFamily("basic");
@@ -187,7 +187,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid;
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibTagFamily parentTagFamily = tagFamily("basic");
 			parentTagFamilyUuid = parentTagFamily.getUuid();
 			HibTag tag = tag("vehicle");
@@ -216,7 +216,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		List<? extends HibNode> nodes;
 
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 			String tagName = tag.getName();
 			assertNotNull(tag.getEditor());
 			TagResponse restTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()));
@@ -250,7 +250,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid()), TagFamily.composeDocumentId(parentTagFamilyUuid));
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			assertThat(tag2).matches(tag);
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
@@ -316,7 +316,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		HibTagFamily parentTagFamily = tagFamily("basic");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tag, UPDATE_PERM);
 			tx.success();
 		}
@@ -356,7 +356,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		}).one();
 
 		tx(tx -> {
-			TagDaoWrapper tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 			tagDao.getNodes(tag, initialBranch()).forEach(n -> {
 				String uuid = n.getUuid();
 				expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
@@ -367,7 +367,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		});
 
 		List<? extends HibNode> nodes = tx(tx -> {
-			TagDaoWrapper tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 			return tagDao.getNodes(tag, project().getLatestBranch()).list();
 		});
 		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
@@ -376,7 +376,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(tagUuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (HibNode node : nodes) {
@@ -398,7 +398,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tag("vehicle"), DELETE_PERM);
 			tx.success();
 		}
@@ -476,7 +476,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		String tagRootUuid = db().tx(() -> tagFamily("colors").getUuid());
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
@@ -624,7 +624,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid;
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibTag tag = tag("red");
 
 			HibTagFamily parentTagFamily = tagFamily("colors");

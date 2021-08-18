@@ -54,7 +54,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchNumberRange2() throws Exception {
 		int numberValue = 1200;
 		tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			addNumberSpeedFieldToOneNode(numberValue);
 			contentDao.getLatestDraftFieldContainer(content(), english()).createNumber("speed").setNumber(92.1535f);
 		});

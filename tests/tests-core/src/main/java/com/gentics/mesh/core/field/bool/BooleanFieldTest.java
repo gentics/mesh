@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -54,7 +55,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			// Update the schema and add a boolean field
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
@@ -86,7 +87,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Test
 	public void testSimpleBoolean() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphFieldImpl field = new BooleanGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
 			assertNull(container.getProperty("test-boolean"));
@@ -106,13 +107,13 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphField trueBooleanField = container.createBoolean("trueBooleanField");
 			trueBooleanField.setBoolean(true);
 			BooleanGraphField falseBooleanField = container.createBoolean("falseBooleanField");
 			falseBooleanField.setBoolean(false);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			trueBooleanField.cloneTo(otherContainer);
 			falseBooleanField.cloneTo(otherContainer);
 
@@ -127,7 +128,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphField booleanField = container.createBoolean(BOOLEAN_FIELD);
 			assertEquals(BOOLEAN_FIELD, booleanField.getFieldKey());
 			booleanField.setBoolean(true);
@@ -151,7 +152,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphField fieldA = container.createBoolean("fieldA");
 			BooleanGraphField fieldB = container.createBoolean("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -169,7 +170,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphField fieldA = container.createBoolean("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -180,7 +181,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphField fieldA = container.createBoolean("fieldA");
 
 			// graph empty - rest empty

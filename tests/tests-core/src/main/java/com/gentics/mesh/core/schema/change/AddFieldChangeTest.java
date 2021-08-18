@@ -15,6 +15,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -37,7 +38,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 
 			change.setFieldName("fieldName");
 			assertEquals("fieldName", change.getFieldName());
@@ -56,7 +57,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("name");
 			change.setType("html");
 			version.setSchema(schema);
@@ -75,7 +76,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));
 
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
 			change.setType("string");
 			change.setInsertAfterPosition("thirdField");
@@ -99,7 +100,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));
 
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
 			change.setType("string");
 			change.setInsertAfterPosition("firstField");
@@ -119,7 +120,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
 			change.setType("string");
 			version.setSchema(schema);
@@ -135,7 +136,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeField");
 			change.setType("node");
 			version.setSchema(schema);
@@ -152,7 +153,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeField");
 			change.setType("micronode");
 			version.setSchema(schema);
@@ -169,7 +170,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("dateField");
 			change.setType("date");
 			version.setSchema(schema);
@@ -185,7 +186,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("numberField");
 			change.setType("number");
 			version.setSchema(schema);
@@ -201,7 +202,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("binaryField");
 			change.setType("binary");
 			version.setSchema(schema);
@@ -217,7 +218,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("listField");
 			change.setType("list");
 			change.setListType("html");
@@ -236,7 +237,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("requiredField");
 			change.setType("string");
 			change.setRestProperty(SchemaChangeModel.REQUIRED_KEY, true);
@@ -253,7 +254,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("optionalField");
 			change.setType("string");
 			change.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
@@ -270,7 +271,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("defaultRequiredField");
 			change.setType("string");
 			version.setSchema(schema);
@@ -286,7 +287,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringAllowField");
 			change.setType("string");
 			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "one", "two", "three" });
@@ -305,7 +306,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeAllowField");
 			change.setType("node");
 			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
@@ -323,7 +324,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeListFieldAllow");
 			change.setType("list");
 			change.setListType("node");
@@ -342,7 +343,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeAllowField");
 			change.setType("micronode");
 			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
@@ -360,7 +361,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeListFieldAllow");
 			change.setType("list");
 			change.setListType("micronode");
@@ -380,7 +381,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123");
 
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.updateFromRest(model);
 			assertEquals(change.getType(), model.getProperties().get(SchemaChangeModel.TYPE_KEY));
 			assertEquals(change.getFieldName(), model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
@@ -392,7 +393,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("name");
 			change.setType("html");
 			change.setRestProperty("someProperty", "test");

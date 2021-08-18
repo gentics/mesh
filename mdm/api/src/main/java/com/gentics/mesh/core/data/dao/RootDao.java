@@ -24,6 +24,15 @@ import com.gentics.mesh.parameter.PagingParameters;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * A DAO for the entities, that has an one-to-many connection to other entities,
+ * i.e. root-leaves dependencies. This DAO allows operation on leaf entities, when a root entity is given. 
+ * 
+ * @author plyhun
+ *
+ * @param <R> root entity type
+ * @param <L> leaf entity type
+ */
 public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> {
 
 	public static final Logger log = LoggerFactory.getLogger(RootDao.class);

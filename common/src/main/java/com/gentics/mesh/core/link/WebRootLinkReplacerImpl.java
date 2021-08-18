@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -162,7 +162,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		boolean forceAbsolute,
 		String... languageTags) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		NodeDao nodeDao = tx.nodeDao();
 
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {

@@ -16,11 +16,11 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -62,12 +62,12 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		db.tx(tx -> {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			UserDaoWrapper userDao = tx.userDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
-			ProjectDaoWrapper projectDao = tx.projectDao();
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
+			GroupDao groupDao = tx.groupDao();
+			ProjectDao projectDao = tx.projectDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
 			assertTrue(nodeDao.computeCount(project) > 0);

@@ -164,7 +164,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());

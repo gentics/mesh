@@ -12,8 +12,9 @@ import javax.inject.Inject;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -54,8 +55,8 @@ public class NavRootHandler {
 			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			Path nodePath = webrootService.findByProjectPath(ac, path, type);
 			PathSegment lastSegment = nodePath.getLast();
-			UserDaoWrapper userDao = tx.userDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			UserDao userDao = tx.userDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
@@ -65,7 +66,7 @@ public class NavRootHandler {
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
-			HibNode node = tx.contentDao().getNode(container);
+			HibNode node = ((ContentDaoWrapper) tx.contentDao()).getNode(container);
 			if (!userDao.hasPermission(requestUser, node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}

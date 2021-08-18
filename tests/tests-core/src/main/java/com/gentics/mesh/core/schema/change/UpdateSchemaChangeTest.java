@@ -16,10 +16,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -40,7 +39,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			assertNull("Initially no container flag value should be set.", change.getContainerFlag());
 			change.setContainerFlag(true);
 			assertTrue("The container flag should be set to true.", change.getContainerFlag());
@@ -67,7 +66,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaVersionModel schema = new SchemaModelImpl();
-			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setIndexOptions(new JsonObject().put("key", "value"));
 			change.setName("updated");
 			version.setSchema(schema);
@@ -76,7 +75,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaModel updatedSchema = mutator.apply(version);
 			assertEquals("updated", updatedSchema.getName());
 			assertEquals("value", updatedSchema.getElasticsearch().getString("key"));
-			change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setDescription("text");
 			version.setNextChange(change);
 			updatedSchema = mutator.apply(version);
@@ -97,7 +96,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			version.setSchema(schema);
 
 			// 2. Create the schema update change
-			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setOrder("second", "first");
 			version.setNextChange(change);
 
@@ -121,7 +120,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			schema.setSegmentField("someField");
 
 			// 2. Create schema update change
-			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setSegmentField("");
 
 			version.setSchema(schema);
@@ -142,7 +141,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaVersionModel schema = new SchemaModelImpl();
 
 			// 2. Create schema update change
-			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setDisplayField("newDisplayField");
 			change.setContainerFlag(true);
 			change.setSegmentField("newSegmentField");
@@ -172,7 +171,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			model.setProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY, "displayField");
 			model.setProperty(SchemaChangeModel.NAME_KEY, "newName");
 			model.setProperty(SchemaChangeModel.FIELD_ORDER_KEY, new String[] { "A", "B", "C" });
-			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.updateFromRest(model);
 			assertTrue("The required flag should be set to true.", change.getRestProperty(REQUIRED_KEY));
 			assertEquals("description", change.getDescription());
@@ -191,7 +190,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			SchemaChangeModel model = change.transformToRest();
 			assertNotNull(model);
 			assertEquals(UpdateSchemaChange.OPERATION, model.getOperation());

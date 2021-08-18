@@ -32,7 +32,7 @@ import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
@@ -45,6 +45,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -224,7 +225,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
 
 			HibNode node = folder("2015");
 			HibNode folder = folder("news");
@@ -359,7 +360,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
+			HibBinary binary = ((GraphDBTx) tx).binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
@@ -492,7 +493,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * @param uuid
 	 */
 	private void safelySetUuid(Tx tx, HibSchema schemaContainer, String uuid) {
-		for (Vertex node : tx.getGraph().getVertices("schema", schemaContainer.getUuid())) {
+		for (Vertex node : ((GraphDBTx) tx).getGraph().getVertices("schema", schemaContainer.getUuid())) {
 			node.setProperty("schema", uuid);
 		}
 		toGraph(schemaContainer).setUuid(uuid);

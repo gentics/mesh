@@ -37,7 +37,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	public Vertex getElement() {
 		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
-		FramedGraph fg = Tx.get().getGraph();
+		FramedGraph fg = GraphDBTx.getGraphTx().getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
@@ -165,7 +165,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	@Override
 	public <T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		GraphDBTx tx = GraphDBTx.getGraphTx();
+		GraphDBBaseTransaction tx = GraphDBTx.getGraphTx();
 		if (tx == null) {
 			throw new RuntimeException("No active transaction found.");
 		}

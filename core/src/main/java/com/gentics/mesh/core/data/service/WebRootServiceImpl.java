@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -52,8 +52,8 @@ public class WebRootServiceImpl implements WebRootService {
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
-		ContentDaoWrapper contentDao = tx.contentDao();
+		NodeDao nodeDao = tx.nodeDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 		HibProject project = tx.getProject(ac);
 		HibBranch branch = tx.getBranch(ac);
 

@@ -22,7 +22,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Abstract class for CRUD REST handlers. The abstract class provides handler methods for create, read (one), read (multiple) and delete.
  */
-public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends RestModel> extends AbstractHandler implements CrudHandler {
+public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM extends RestModel> extends AbstractHandler implements CrudHandler {
 
 	public static final String TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY = "rootElement";
 

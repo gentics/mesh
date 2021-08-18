@@ -11,7 +11,7 @@ import java.util.Set;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -43,7 +43,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 
 	private void checkNode(Node node, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 
 /*
 		checkOut(node, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH);
@@ -116,7 +116,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	 * @param result check response
 	 */
 	private void checkParentNodes(Node node, ConsistencyCheckResult result) {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
 
 		Set<String> branchUuids = new HashSet<>();
 		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode())

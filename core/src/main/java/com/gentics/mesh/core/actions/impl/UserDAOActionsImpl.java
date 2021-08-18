@@ -12,7 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -33,7 +33,7 @@ public class UserDAOActionsImpl implements UserDAOActions {
 
 	@Override
 	public HibUser loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		UserDaoWrapper userDao = ctx.tx().userDao();
+		UserDao userDao = ctx.tx().userDao();
 		if (perm == null) {
 			return userDao.findByUuid(uuid);
 		} else {
@@ -43,7 +43,7 @@ public class UserDAOActionsImpl implements UserDAOActions {
 
 	@Override
 	public HibUser loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		UserDaoWrapper userDao = ctx.tx().userDao();
+		UserDao userDao = ctx.tx().userDao();
 		if (perm == null) {
 			return userDao.findByName(name);
 		} else {

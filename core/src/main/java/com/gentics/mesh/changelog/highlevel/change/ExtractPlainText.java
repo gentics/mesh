@@ -17,6 +17,7 @@ import com.gentics.mesh.core.binary.impl.TikaResult;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinaryField;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
@@ -63,9 +64,9 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 	@Override
 	public void apply() {
 		log.info("Applying change: " + getName());
-		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 		AtomicLong total = new AtomicLong(0);
-		BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
+		BinaryDaoWrapper binaryDao = (BinaryDaoWrapper) Tx.get().binaryDao();
 		binaryDao.findAll().runInExistingTx(Tx.get()).forEach(binary -> {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);

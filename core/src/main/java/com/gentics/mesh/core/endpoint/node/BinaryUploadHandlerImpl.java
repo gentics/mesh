@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -258,10 +258,10 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		String binaryUuid = context.getBinaryUuid();
 
 		return db.singleTxWriteLock(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
 			utils.eventAction(batch -> {

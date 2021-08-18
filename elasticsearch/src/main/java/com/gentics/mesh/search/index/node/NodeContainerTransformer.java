@@ -25,8 +25,8 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -478,7 +478,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @return
 	 */
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		HibProject project = node.getProject();
 
@@ -514,9 +514,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @return
 	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		TagDao tagDao = Tx.get().tagDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 
 		HibNode node = contentDao.getNode(container);
 		JsonObject document = new JsonObject();

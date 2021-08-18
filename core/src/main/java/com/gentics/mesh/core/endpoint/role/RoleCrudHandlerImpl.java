@@ -20,7 +20,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -67,7 +67,7 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 		}
 
 		utils.syncTx(ac, tx -> {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
@@ -116,7 +116,7 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 
-				RoleDaoWrapper roleDao = tx.roleDao();
+				RoleDao roleDao = tx.roleDao();
 				// 1. Load the role that should be used
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 

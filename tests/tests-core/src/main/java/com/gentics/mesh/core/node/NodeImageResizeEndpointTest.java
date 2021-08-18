@@ -61,7 +61,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 3. Validate resize
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			validateResizeImage(download, contentDao.getLatestDraftFieldContainer(node, english()).getBinary("image"), params, 100, 102);
 		}
 	}
@@ -95,7 +95,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		MeshBinaryResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "image", params));
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			assertNotNull(contentDao.getLatestDraftFieldContainer(node, english()));
 			validateResizeImage(download, contentDao.getLatestDraftFieldContainer(node, english()).getBinary("image"), params, 2048, 102);
 		}

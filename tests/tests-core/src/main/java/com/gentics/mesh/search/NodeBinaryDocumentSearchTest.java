@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.binary.HibBinaryField;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -51,7 +52,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
@@ -68,14 +69,14 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
+			HibBinary binaryA = ((GraphDBTx) tx).binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
+			HibBinary binaryB = ((GraphDBTx) tx).binaries().create("someHashB", 200L).runInExistingTx(tx);
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
 
@@ -120,20 +121,20 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
+			HibBinary binaryA = ((GraphDBTx) tx).binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
+			HibBinary binaryB = ((GraphDBTx) tx).binaries().create("someHashB", 200L).runInExistingTx(tx);
 			HibBinaryField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");

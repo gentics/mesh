@@ -13,7 +13,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -155,7 +155,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			String actualEtag = callETag(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, actualEtag);

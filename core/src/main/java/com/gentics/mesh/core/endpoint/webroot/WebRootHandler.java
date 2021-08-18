@@ -19,8 +19,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -106,8 +106,8 @@ public class WebRootHandler {
 
 		utils.syncTx(ac, tx -> {
 			HibUser requestUser = ac.getUser();
-			UserDaoWrapper userDao = tx.userDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			UserDaoWrapper userDao = (UserDaoWrapper) tx.userDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			String branchUuid = tx.getBranch(ac).getUuid();
 			// Load all nodes for the given path
@@ -129,7 +129,7 @@ public class WebRootHandler {
 			}
 
 			String version = ac.getVersioningParameters().getVersion();
-			HibNode node = tx.contentDao().getNode(container);
+			HibNode node = ((ContentDaoWrapper) tx.contentDao()).getNode(container);
 			addCacheControl(rc, node, version);
 			userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
@@ -200,7 +200,7 @@ public class WebRootHandler {
 	 */
 
 	private boolean isPublic(HibNode node, String version) {
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		HibRole anonymousRole = boot.anonymousRole();
 		AuthenticationOptions authOptions = options.getAuthenticationOptions();
@@ -234,7 +234,7 @@ public class WebRootHandler {
 		String uuid = null;
 		try (WriteLock lock = writeLock.lock(ac)) {
 			uuid = db.tx(tx -> {
-				ContentDaoWrapper contentDao = tx.contentDao();
+				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 
 				// Load all nodes for the given path
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());

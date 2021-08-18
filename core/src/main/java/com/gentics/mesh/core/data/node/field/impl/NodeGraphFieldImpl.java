@@ -25,9 +25,8 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -68,7 +67,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	public static FieldUpdater NODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		NodeDao nodeDao = tx.nodeDao();
 
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
@@ -193,7 +192,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			LinkType type = ac.getNodeParameters().getResolveLinks();
 			if (type != LinkType.OFF) {
 				Tx tx = Tx.get();
-				ContentDaoWrapper contentDao = tx.contentDao();
+				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 
 				WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
 				HibBranch branch = tx.getBranch(ac);

@@ -11,6 +11,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -56,7 +57,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 			// }
 
 			HibBranch branch = tx.getBranch(ac, node.getProject());
-			NodeGraphFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
+			NodeGraphFieldContainer fieldContainer = ((ContentDaoWrapper) tx.contentDao()).findVersion(node, ac.getNodeParameters().getLanguageList(options),
 				branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {

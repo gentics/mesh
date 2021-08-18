@@ -37,6 +37,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -173,7 +174,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			boolean bothEmpty = oldValue != null && newValue.getItems().isEmpty() && oldValue.isEmpty();
 			if (!bothEmpty) {
 				try (Tx tx = tx()) {
-					ContentDaoWrapper contentDao = tx.contentDao();
+					ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 					NodeGraphFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 					assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 					assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
@@ -224,7 +225,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
@@ -585,7 +586,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
 		try (Tx tx = tx()) {
-			TraversalResult<? extends Micronode> s = new TraversalResult<>(tx.getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class));
+			TraversalResult<? extends Micronode> s = new TraversalResult<>(((GraphDBTx) tx).getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class));
 			Set<? extends Micronode> unboundMicronodes = s.stream()
 				.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();

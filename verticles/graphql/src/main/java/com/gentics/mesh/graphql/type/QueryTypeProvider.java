@@ -49,7 +49,7 @@ import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -205,8 +205,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	private Page<NodeContent> fetchNodesByUuid(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.contentDao();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+		NodeDao nodeDao = tx.nodeDao();
 
 		List<String> uuids = env.getArgument("uuids");
 
@@ -260,10 +260,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object nodeFetcher(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			GraphQLContext gc = env.getContext();
 			HibNode node = nodeDao.findByUuid(tx.getProject(gc), uuid);
 			if (node == null) {
@@ -352,7 +352,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = tx.getProject(gc);
 		if (project != null) {

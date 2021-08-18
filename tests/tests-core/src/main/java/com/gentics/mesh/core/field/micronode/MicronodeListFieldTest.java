@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -55,7 +56,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			prepareNode(node, MICRONODE_LIST, "micronode");
 			InternalActionContext ac = mockActionContext("");
 
@@ -111,7 +112,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphFieldList list = container.createMicronodeFieldList("dummyList");
 			assertNotNull(list);
 		}
@@ -121,7 +122,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphFieldList testField = container.createMicronodeFieldList("testField");
 
 			Micronode micronode = testField.createMicronode();
@@ -134,7 +135,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			micronode.createString("firstName").setString("Mickey");
 			micronode.createString("lastName").setString("Mouse");
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph()
+			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph()
 					.addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
@@ -147,7 +148,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphFieldList fieldA = container.createMicronodeFieldList("fieldA");
 			MicronodeGraphFieldList fieldB = container.createMicronodeFieldList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -183,7 +184,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphFieldList fieldA = container.createMicronodeFieldList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -194,7 +195,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			// rest null - graph null
 			MicronodeGraphFieldList fieldA = container.createMicronodeFieldList(MICRONODE_LIST);

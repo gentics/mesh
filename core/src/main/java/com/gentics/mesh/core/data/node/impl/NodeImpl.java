@@ -68,11 +68,11 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -97,6 +97,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -262,7 +263,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		NodeDao nodeDao = GraphDBTx.getGraphTx().nodeDao();
 
 		// We want to avoid rending the path again for nodes which we have already handled.
 		// Thus utilise the action context data map to retrieve already handled paths.
@@ -302,7 +303,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			StringBuilder builder = new StringBuilder();
 
 			// Append the prefix first
-			BranchDaoWrapper branchDao = Tx.get().branchDao();
+			BranchDao branchDao = GraphDBTx.getGraphTx().branchDao();
 			HibBranch branch = branchDao.findByUuid(getProject(), branchUuid);
 			if (branch != null) {
 				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
@@ -586,8 +587,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
 		HibUser user = ac.getUser();
-		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.userDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		UserDao userDao = tx.userDao();
 		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid()))
 			.filter(node -> {
 				Object id = node.getId();
@@ -667,7 +668,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 		// Increment level for each node transformation to avoid stackoverflow situations
@@ -772,7 +773,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String[] langs = nodeParameters.getLanguages();
 		if (langs != null) {
 			for (String languageTag : langs) {
-				Iterator<?> it = Tx.get().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
+				Iterator<?> it = GraphDBTx.getGraphTx().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
 				if (!it.hasNext()) {
 					throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 				}
@@ -905,7 +906,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setChildrenInfo(InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		for (Node child : getChildren(branch.getUuid())) {
 			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
@@ -956,7 +957,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 
-			String branchUuid = Tx.get().getBranch(ac, getProject()).getUuid();
+			String branchUuid = GraphDBTx.getGraphTx().getBranch(ac, getProject()).getUuid();
 			ContainerType type = forVersion(versioiningParameters.getVersion());
 
 			LinkType linkType = ac.getNodeParameters().getResolveLinks();
@@ -973,7 +974,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
-		String branchUuid = Tx.get().getBranch(ac, getProject()).getUuid();
+		String branchUuid = GraphDBTx.getGraphTx().getBranch(ac, getProject()).getUuid();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Map<String, String> languagePaths = new HashMap<>();
@@ -1005,8 +1006,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	private Stream<HibNode> getBreadcrumbNodeStream(InternalActionContext ac) {
-		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		NodeDao nodeDao = tx.nodeDao();
 
 		String branchUuid = tx.getBranch(ac, getProject()).getUuid();
 		HibNode current = this;
@@ -1026,7 +1027,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		// TODO assure that the schema version is correct
 		if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 			throw error(BAD_REQUEST, "navigation_error_no_container");
@@ -1048,7 +1049,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public NodeVersionsResponse transformToVersionList(InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
-		getGraphFieldContainers(Tx.get().getBranch(ac), DRAFT).forEach(c -> {
+		getGraphFieldContainers(GraphDBTx.getGraphTx().getBranch(ac), DRAFT).forEach(c -> {
 			versions.put(c.getLanguageTag(), c.versions().stream()
 				.map(v -> v.transformToVersionInfo(ac))
 				.collect(Collectors.toList()));
@@ -1159,7 +1160,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeReference transformToReference(InternalActionContext ac) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 
 		NodeReference nodeReference = new NodeReference();
@@ -1193,7 +1194,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		// Create the rest field and populate the fields
 		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
 		String branchUuid = tx.getBranch(ac, getProject()).getUuid();
@@ -1215,7 +1216,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Map<String, PublishStatusModel> getLanguageInfo(InternalActionContext ac) {
 		Map<String, PublishStatusModel> languages = new HashMap<>();
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 
 		getGraphFieldContainers(branch, PUBLISHED).stream().forEach(c -> {
@@ -1242,7 +1243,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, BulkActionContext bac) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 		String branchUuid = branch.getUuid();
 
@@ -1299,7 +1300,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 		PublishParameters parameters = ac.getPublishParameters();
 		takeOffline(ac, bac, branch, parameters);
@@ -1307,7 +1308,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
@@ -1333,7 +1334,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, BulkActionContext bac, String languageTag) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 		String branchUuid = branch.getUuid();
 
@@ -1591,7 +1592,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Stream<Node> getChildren(HibUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		UserDaoWrapper userRoot = Tx.get().userDao();
+		UserDao userRoot = GraphDBTx.getGraphTx().userDao();
 
 		Predicate<Node> languageFilter = languageTags == null || languageTags.isEmpty()
 			? item -> true
@@ -1630,7 +1631,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), Tx.get().getBranch(ac, getProject()).getUuid(),
+		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), GraphDBTx.getGraphTx().getBranch(ac, getProject()).getUuid(),
 			versioningParameters
 				.getVersion());
 		if (container == null) {
@@ -1693,12 +1694,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		nodeParameters.setLanguages(languageTag);
 
-		HibLanguage language = Tx.get().languageDao().findByLanguageTag(languageTag);
+		HibLanguage language = GraphDBTx.getGraphTx().languageDao().findByLanguageTag(languageTag);
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 		}
-		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		NodeDao nodeDao = tx.nodeDao();
 		HibBranch branch = tx.getBranch(ac, getProject());
 		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(languageTag, branch, DRAFT);
 
@@ -1813,7 +1814,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		List<HibTag> tags = getTagsToSet(ac, batch);
 		HibBranch branch = tx.getBranch(ac);
 		applyTags(branch, tags, batch);
@@ -1823,7 +1824,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		List<HibTag> tags = getTagsToSet(list, ac, batch);
 		HibBranch branch = tx.getBranch(ac);
 		applyTags(branch, tags, batch);
@@ -1851,8 +1852,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void moveTo(InternalActionContext ac, Node targetNode, EventQueueBatch batch) {
-		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		NodeDao nodeDao = tx.nodeDao();
 
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
@@ -2001,7 +2002,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			log.debug("Resolving for path segment {" + segment + "}");
 		}
 
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(this, segment);
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
 		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
@@ -2033,10 +2034,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.userDao();
-		TagDaoWrapper tagDao = tx.tagDao();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		UserDao userDao = tx.userDao();
+		TagDao tagDao = tx.tagDao();
+		NodeDao nodeDao = tx.nodeDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 

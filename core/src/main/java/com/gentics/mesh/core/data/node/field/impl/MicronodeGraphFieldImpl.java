@@ -18,7 +18,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
@@ -89,7 +89,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		}
 
 		Tx tx = Tx.get();
-		MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+		MicroschemaDao microschemaDao = tx.microschemaDao();
 		HibMicroschemaVersion microschemaVersion = microschemaDao.fromReference(tx.getProject(ac), microschemaReference,
 			tx.getBranch(ac));
 

@@ -16,7 +16,6 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -58,7 +57,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	public static FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		NodeDao nodeDao = tx.nodeDao();
 
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);

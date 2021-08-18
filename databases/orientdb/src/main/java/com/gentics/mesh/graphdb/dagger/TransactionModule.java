@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.dagger;
 
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.syncleus.ferma.ext.orientdb3.OrientDBTx;
 
 import dagger.Binds;
@@ -13,6 +13,6 @@ import dagger.Module;
 public abstract class TransactionModule {
 
 	@Binds
-	abstract Tx tx(OrientDBTx tx);
+	abstract GraphDBTx tx(OrientDBTx tx);
 
 }

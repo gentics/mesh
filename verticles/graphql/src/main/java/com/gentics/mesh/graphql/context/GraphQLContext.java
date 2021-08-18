@@ -26,7 +26,7 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @return Provided element will be returned if at least one of the permissions grants access
 	 * @throws PermissionException
 	 */
-	<T extends HibCoreElement> T requiresPerm(T element, InternalPermission... permission);
+	<T extends HibCoreElement<?>> T requiresPerm(T element, InternalPermission... permission);
 
 	/**
 	 * Check whether the current user of the context has read permission on the container (via type and parent node).

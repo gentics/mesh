@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -48,7 +49,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			prepareNode(node, "numberList", "number");
 
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -69,7 +70,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldList list = container.createNumberList("dummyList");
 
 			list.createNumber(1);
@@ -87,12 +88,12 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldList testField = container.createNumberList("testField");
 			testField.createNumber(47);
 			testField.createNumber(11);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNumberList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
@@ -103,7 +104,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldList fieldA = container.createNumberList("fieldA");
 			NumberGraphFieldList fieldB = container.createNumberList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -121,7 +122,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldList fieldA = container.createNumberList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -132,7 +133,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long dummyValue = 4200L;
 
 			// rest null - graph null

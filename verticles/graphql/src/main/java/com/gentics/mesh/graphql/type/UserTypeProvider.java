@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -96,7 +96,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
 			HibUser user = env.getSource();
 			GraphQLContext gc = env.getContext();
-			UserDaoWrapper userDao = Tx.get().userDao();
+			UserDao userDao = Tx.get().userDao();
 
 			return userDao.getGroups(user, gc.getUser(), getPagingInfo(env));
 		}, GROUP_PAGE_TYPE_NAME));
@@ -105,7 +105,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newPagingFieldWithFetcher("roles", "Roles the user has", env -> {
 			HibUser user = env.getSource();
 			GraphQLContext gc = env.getContext();
-			UserDaoWrapper userDao = Tx.get().userDao();
+			UserDao userDao = Tx.get().userDao();
 
 			return userDao.getRolesViaShortcut(user, gc.getUser(), getPagingInfo(env));
 		}, ROLE_PAGE_TYPE_NAME));
@@ -124,7 +124,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference("Node"))
 			.dataFetcher(env -> {
 				Tx tx = Tx.get();
-				ContentDaoWrapper contentDao = tx.contentDao();
+				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 				GraphQLContext gc = env.getContext();
 				HibUser user = env.getSource();
 				HibNode node = (HibNode) user.getReferencedNode();

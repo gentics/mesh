@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -109,7 +109,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 
 	@Override
 	public FramedGraph getGraph() {
-		return Tx.get().getGraph();
+		return GraphDBTx.getGraphTx().getGraph();
 	}
 
 	@Override

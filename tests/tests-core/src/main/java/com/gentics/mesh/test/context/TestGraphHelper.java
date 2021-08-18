@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
@@ -34,7 +34,7 @@ public interface TestGraphHelper extends TestHelper {
 
 	default HibMicroschema createMicroschema(MicroschemaVersionModel schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 		return microschemaDao.create(schema, user(), batch);
 	}
 

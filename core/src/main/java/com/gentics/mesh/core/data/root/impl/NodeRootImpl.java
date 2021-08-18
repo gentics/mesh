@@ -35,9 +35,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -52,6 +51,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -154,7 +154,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
 		HibUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.get().getGraph();
+		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 
 		HibBranch branch = Tx.get().getBranch(ac);
 		String branchUuid = branch.getUuid();
@@ -187,8 +187,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.userDao();
-		ContentDaoWrapper contentDao = tx.contentDao();
+		UserDao userDao = tx.userDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 
 		Node element = findByUuid(uuid);
 		if (!errorIfNotFound && element == null) {
@@ -320,8 +320,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public Node create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac);
-		UserDaoWrapper userDao = tx.userDao();
-		SchemaDaoWrapper schemaDao = tx.schemaDao();
+		UserDao userDao = tx.userDao();
+		SchemaDao schemaDao = tx.schemaDao();
 
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");

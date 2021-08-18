@@ -17,11 +17,12 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -73,11 +74,11 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	private Flowable<SearchRequest> updateNodes(MeshElementEventModelImpl model) {
 		return Flowable.defer(() -> helper.getDb()
 				.transactional(tx -> entities.project.getElement(model).stream().flatMap(project -> {
-					BranchDaoWrapper branchDao = tx.branchDao();
-					NodeDaoWrapper nodeDao = tx.nodeDao();
+					BranchDao branchDao = tx.branchDao();
+					NodeDao nodeDao = tx.nodeDao();
 					List<Branch> branches = (List<Branch>) branchDao.findAll(project).list();
 					return nodeDao.findAll(project).stream().flatMap(node -> Stream.of(DRAFT, PUBLISHED)
-							.flatMap(type -> branches.stream().flatMap(branch -> tx.contentDao()
+							.flatMap(type -> branches.stream().flatMap(branch -> ((ContentDaoWrapper) tx.contentDao())
 									.getGraphFieldContainers(node, branch, type).stream()
 									.map(container -> helper.createDocumentRequest(
 											ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
@@ -99,7 +100,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	private Flowable<SearchRequest> updateTags(MeshElementEventModelImpl model) {
 		return Flowable.defer(() -> helper.getDb()
 				.transactional(tx -> entities.project.getElement(model).stream().flatMap(project -> {
-					TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+					TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 					return tagFamilyDao.findAll(project).stream()
 							.flatMap(family -> Stream.concat(Stream.of(createTagFamilyRequest(project, family)),
 									createTagRequests(family, project)));
@@ -107,7 +108,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	}
 
 	private Stream<CreateDocumentRequest> createTagRequests(HibTagFamily family, HibProject project) {
-		TagDaoWrapper tagDao = Tx.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 		return tagDao.findAll(family).stream()
 				.map(tag -> helper.createDocumentRequest(Tag.composeIndexName(project.getUuid()), tag.getUuid(),
 						entities.tag.transform(tag), complianceMode));

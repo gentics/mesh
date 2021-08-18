@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -53,7 +54,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			HibNode newsNode = folder("news");
 			prepareNode(node, NODE_LIST, "node");
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -74,8 +75,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			// Create node field
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			Node node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList list = container.createNodeList("dummyList");
 
 			// Add item
@@ -110,15 +111,15 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+			Node node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList testField = container.createNodeList("testField");
 			testField.createNode("1", node);
 			testField.createNode("2", node);
 			testField.createNode("3", node);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
@@ -129,7 +130,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
 			NodeGraphFieldList fieldB = container.createNodeList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -147,7 +148,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -158,7 +159,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			String dummyKey = "test123";
 
 			// rest null - graph null

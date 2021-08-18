@@ -20,9 +20,9 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -156,8 +156,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		long numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
+			NodeDao nodeDao = tx.nodeDao();
+			RoleDao roleDao = tx.roleDao();
 			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
 			HibUser user = user();
@@ -199,7 +199,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 
 			HibNode node = content("concorde");
 			long previousTagCount = tagDao.getTags(node, project().getLatestBranch()).count();

@@ -176,7 +176,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            Optional published container
 	 */
 	protected void postMigrationPurge(NodeGraphFieldContainer container, NodeGraphFieldContainer oldPublished) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 
 		// The purge operation was suppressed before. We need to invoke it now
 		// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.

@@ -6,7 +6,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -29,8 +29,8 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	}
 
 	@Override
-	public <T extends HibCoreElement> T requiresPerm(T element, InternalPermission... permission) {
-		UserDaoWrapper userDao = Tx.get().userDao();
+	public <T extends HibCoreElement<?>> T requiresPerm(T element, InternalPermission... permission) {
+		UserDao userDao = Tx.get().userDao();
 		for (InternalPermission perm : permission) {
 			if (userDao.hasPermission(getUser(), element, perm)) {
 				return element;
@@ -52,10 +52,10 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	@Override
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 		HibNode node = contentDao.getNode(container);
 		Object nodeId = node.getId();
-		UserDaoWrapper userDao = tx.userDao();
+		UserDao userDao = tx.userDao();
 
 		if (userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PERM)) {
 			return true;
@@ -70,7 +70,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public NodeGraphFieldContainer requiresReadPermSoft(NodeGraphFieldContainer container, DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 		if (container == null) {
 			return null;
 		}

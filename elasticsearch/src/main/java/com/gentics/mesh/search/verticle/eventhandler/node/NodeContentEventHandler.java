@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -151,7 +151,7 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private String getSchemaVersionUuid(SchemaReference reference) {
 		return helper.getDb().tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao
 				.findByUuid(reference.getUuid());
 			return schemaDao.findVersionByRev(schema, reference.getVersion()).getUuid();

@@ -12,7 +12,6 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -45,7 +44,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 		TagFamily tagFamily = HibClassConverter.toGraph(hibTagFamily);
 		if (perm == null) {
 			return tagFamily.findByUuid(tagUuid);
-			// TagDaoWrapper tagDao = tx.tagDao();
+			// TagDao tagDao = tx.tagDao();
 			// return tagDao.findByUuid(tagFamily, tagUuid);
 		} else {
 			return tagFamily.loadObjectByUuid(ctx.ac(), tagUuid, perm, errorIfNotFound);
@@ -54,7 +53,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 
 	@Override
 	public HibTag loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		TagDaoWrapper tagDao = ctx.tx().tagDao();
+		TagDao tagDao = ctx.tx().tagDao();
 		HibTagFamily tagFamily = ctx.parent();
 		if (perm == null) {
 			if (tagFamily == null) {
@@ -93,14 +92,14 @@ public class TagDAOActionsImpl implements TagDAOActions {
 
 	@Override
 	public boolean update(Tx tx, HibTag element, InternalActionContext ac, EventQueueBatch batch) {
-		TagDaoWrapper tagDao = tx.tagDao();
+		TagDao tagDao = tx.tagDao();
 		return tagDao.update(element, ac, batch);
 	}
 
 	@Override
 	public HibTag create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String tagUuid) {
 		// TODO add parent uuid parameter and utilize it instead of extracting it from ac
-		TagDaoWrapper tagDao = tx.tagDao();
+		TagDao tagDao = tx.tagDao();
 		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
 		HibTagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
 		if (tagUuid == null) {
@@ -112,25 +111,25 @@ public class TagDAOActionsImpl implements TagDAOActions {
 
 	@Override
 	public void delete(Tx tx, HibTag tag, BulkActionContext bac) {
-		TagDaoWrapper tagDao = tx.tagDao();
+		TagDao tagDao = tx.tagDao();
 		tagDao.delete(tag, bac);
 	}
 
 	@Override
 	public TagResponse transformToRestSync(Tx tx, HibTag tag, InternalActionContext ac, int level, String... languageTags) {
-		TagDaoWrapper tagDao = tx.tagDao();
+		TagDao tagDao = tx.tagDao();
 		return tagDao.transformToRestSync(tag, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibTag tag) {
-		TagDaoWrapper tagDao = tx.tagDao();
+		TagDao tagDao = tx.tagDao();
 		return tagDao.getAPIPath(tag, ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibTag tag) {
-		TagDaoWrapper tagDao = tx.tagDao();
+		TagDao tagDao = tx.tagDao();
 		return tagDao.getETag(tag, ac);
 	}
 

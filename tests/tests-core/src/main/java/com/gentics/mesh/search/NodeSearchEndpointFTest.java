@@ -19,7 +19,7 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -85,7 +85,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchMissingVertex() throws Exception {
 		recreateIndices();
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			BulkActionContext context = createBulkContext();
 			nodeDao.delete(content("honda nr"), context, false, true);
 			tx.success();

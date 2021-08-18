@@ -40,7 +40,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -53,6 +53,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -421,7 +422,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 				return true;
 			}
 
-			FramedGraph graph = Tx.get().getGraph();
+			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
 			String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
@@ -646,7 +647,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode,
 		InternalPermission... toGrant) {
 		// TODO inject dao via DI
-		RoleDaoWrapper roleDao = Tx.get().roleDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (HibRole role : sourceNode.getRolesWithPerm(permission)) {

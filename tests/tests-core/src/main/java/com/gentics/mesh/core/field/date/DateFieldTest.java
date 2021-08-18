@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -54,7 +55,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	public void testSimpleDate() {
 		try (Tx tx = tx()) {
 			Long nowEpoch = System.currentTimeMillis() / 1000;
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldImpl field = new DateGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
 			assertNull(container.getProperty("test-date"));
@@ -71,11 +72,11 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	public void testClone() {
 		try (Tx tx = tx()) {
 			Long nowEpoch = System.currentTimeMillis() / 1000;
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphField dateField = container.createDate(DATE_FIELD);
 			dateField.setDate(nowEpoch);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			dateField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getDate(DATE_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(dateField, "parentContainer");
@@ -87,7 +88,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			Long nowEpoch = System.currentTimeMillis() / 1000;
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphField dateField = container.createDate(DATE_FIELD);
 			assertEquals(DATE_FIELD, dateField.getFieldKey());
 			dateField.setDate(nowEpoch);
@@ -106,7 +107,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		HibNode node = folder("2015");
 		long date;
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 
 			// Add html field schema to the schema
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -138,7 +139,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long date = System.currentTimeMillis();
 			DateGraphField fieldA = container.createDate(DATE_FIELD);
 			DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
@@ -152,7 +153,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphField fieldA = container.createDate(DATE_FIELD);
 			DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -163,7 +164,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long date = System.currentTimeMillis();
 
 			// rest null - graph null

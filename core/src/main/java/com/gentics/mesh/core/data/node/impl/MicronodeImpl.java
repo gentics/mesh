@@ -163,7 +163,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public HibNode getNode() {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
 		NodeGraphFieldContainer container = getContainer();
 		while (container.getPreviousVersion() != null) {
 			container = container.getPreviousVersion();

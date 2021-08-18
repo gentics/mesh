@@ -18,7 +18,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
@@ -140,7 +139,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
 			try (Tx tx = tx()) {
-				ContentDaoWrapper contentDao = tx.contentDao();
+				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 				NodeGraphFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME));
@@ -168,7 +167,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();

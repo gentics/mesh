@@ -29,7 +29,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -161,7 +161,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		String microschemaRootUuid = tx(() -> Tx.get().data().permissionRoots().microschema().getUuid());
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tx.data().permissionRoots().microschema(), CREATE_PERM);
 			tx.success();
 		}
@@ -262,7 +262,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
 			uuid = vcardContainer.getUuid();
 			roleDao.grantPermissions(role(), vcardContainer, DELETE_PERM);
@@ -293,7 +293,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibMicroschema microschema = microschemaContainers().get("vcard");
 			uuid = microschema.getUuid();
 			roleDao.revokePermissions(role(), microschema, UPDATE_PERM);
@@ -474,7 +474,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		HibMicroschema microschema;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 			roleDao.revokePermissions(role(), microschema, DELETE_PERM);

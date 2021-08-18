@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -131,19 +131,19 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 
 	@Override
 	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
+		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 		return tagFamilyDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
+		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 		tagFamilyDao.delete(this, bac);
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
+		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 		return tagFamilyDao.update(this, ac, batch);
 	}
 
