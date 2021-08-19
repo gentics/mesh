@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.15]]
+== 1.7.15 (19.08.2021)
+
+icon:check[] Clustering: The high level changelog system has been extended to allow for specific changes to be executed in cluster mode.
+
 [[v1.7.14]]
 == 1.7.14 (10.08.2021)
 

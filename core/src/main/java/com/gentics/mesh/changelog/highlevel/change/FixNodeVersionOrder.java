@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Iterables;
@@ -96,6 +97,11 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		log.info("Checked {} nodes. Found and fixed {} broken nodes", nodeCount.get(), fixedNodes.get());
 		context.getConflicts()
 			.forEach(conflict -> log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved."));
+	}
+
+	@Override
+	public boolean isAllowedInCluster(MeshOptions options) {
+		return false;
 	}
 
 	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, NodeGraphFieldContainer initialContent) {
