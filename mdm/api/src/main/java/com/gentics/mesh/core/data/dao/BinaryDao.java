@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.result.Result;
 
 import io.reactivex.Flowable;

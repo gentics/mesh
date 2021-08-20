@@ -12,9 +12,9 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NamedElement;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -104,7 +104,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		schemaType
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 				Tx tx = Tx.get();
-				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+				ContentDao contentDao = tx.contentDao();
 				GraphQLContext gc = env.getContext();
 				List<String> languageTags = getLanguageArgument(env);
 				ContainerType type = getNodeVersion(env);
@@ -113,7 +113,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 					gc.getUser(),
 					ContainerType.forVersion(gc.getVersioningParameters().getVersion())).stream()
 					.map(node -> {
-						NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+						HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 						return new NodeContent(node, container, languageTags, type);
 					})
 					.filter(content -> content.getContainer() != null)

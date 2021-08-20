@@ -13,9 +13,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -282,12 +282,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
 			HibNode content = nodeDao.create(parentNode, user(), schemaVersion, project());
-			NodeGraphFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(content, german, content.getProject().getLatestBranch(), user());
+			HibNodeFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(content, german, content.getProject().getLatestBranch(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
 			HibNode content2 = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
+			HibNodeFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 
@@ -299,7 +299,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testBinaryFieldLinkResolving() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = content("news overview");
 			String uuid = node.getUuid();
 
@@ -310,7 +310,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			HibBinary binary = ((GraphDBTx) tx).binaries().create("bogus", 1L).runInExistingTx(tx);
-			contentDao.getLatestDraftFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
+			contentDao.getLatestDraftGraphFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link
 			final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";

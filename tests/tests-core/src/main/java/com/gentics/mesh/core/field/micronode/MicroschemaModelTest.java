@@ -21,7 +21,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDao;
@@ -293,21 +293,21 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			microschemaDao.applyChanges(vcard, ac, model, batch);
 			HibMicroschemaVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
-			NodeGraphFieldContainer containerWithBoth = boot().contentDao().getGraphFieldContainer(folder("2015"), "en");
+			HibNodeFieldContainer containerWithBoth = boot().contentDao().getGraphFieldContainer(folder("2015"), "en");
 			containerWithBoth.createMicronode("single", vcard);
 			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
-			NodeGraphFieldContainer containerWithField = boot().contentDao().getGraphFieldContainer(folder("news"), "en");
+			HibNodeFieldContainer containerWithField = boot().contentDao().getGraphFieldContainer(folder("news"), "en");
 			containerWithField.createMicronode("single", vcard);
 
-			NodeGraphFieldContainer containerWithList = boot().contentDao().getGraphFieldContainer(folder("products"), "en");
+			HibNodeFieldContainer containerWithList = boot().contentDao().getGraphFieldContainer(folder("products"), "en");
 			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
-			NodeGraphFieldContainer containerWithOtherVersion = boot().contentDao().getGraphFieldContainer(folder("deals"), "en");
+			HibNodeFieldContainer containerWithOtherVersion = boot().contentDao().getGraphFieldContainer(folder("deals"), "en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
 
-			List<? extends NodeGraphFieldContainer> containers = microschemaDao.findDraftFieldContainers(vcard, project().getLatestBranch().getUuid()).list();
-			assertThat(new ArrayList<NodeGraphFieldContainer>(containers)).containsOnly(containerWithBoth, containerWithField, containerWithList)
+			List<? extends HibNodeFieldContainer> containers = microschemaDao.findDraftFieldContainers(vcard, project().getLatestBranch().getUuid()).list();
+			assertThat(new ArrayList<HibNodeFieldContainer>(containers)).containsOnly(containerWithBoth, containerWithField, containerWithList)
 				.hasSize(3);
 		}
 	}

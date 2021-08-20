@@ -27,9 +27,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
@@ -421,7 +421,7 @@ public class TestDataProvider {
 		}
 		// Publish the project basenode
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		((ContentDaoWrapper) boot.contentDao()).publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
+		boot.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
 			getUserInfo().getUser());
 		contentCount++;
 
@@ -550,7 +550,7 @@ public class TestDataProvider {
 
 	public HibNode addFolder(HibNode rootNode, String englishName, String germanName, String uuid) {
 		NodeDao nodeDao = boot.nodeDao();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
+		ContentDao contentDao = boot.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
@@ -561,7 +561,7 @@ public class TestDataProvider {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project, branch, uuid);
 		}
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = contentDao.createGraphFieldContainer(folderNode, german,
+			HibNodeFieldContainer germanContainer = contentDao.createGraphFieldContainer(folderNode, german,
 				branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
@@ -571,7 +571,7 @@ public class TestDataProvider {
 			contentDao.publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = contentDao.createGraphFieldContainer(folderNode, english,
+			HibNodeFieldContainer englishContainer = contentDao.createGraphFieldContainer(folderNode, english,
 				branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
@@ -613,7 +613,7 @@ public class TestDataProvider {
 	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent,
 		String uuid) {
 		NodeDao nodeDao = boot.nodeDao();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
+		ContentDao contentDao = boot.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		HibNode node;
@@ -625,7 +625,7 @@ public class TestDataProvider {
 				project, branch, uuid);
 		}
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = contentDao.createGraphFieldContainer(node, english,
+			HibNodeFieldContainer englishContainer = contentDao.createGraphFieldContainer(node, english,
 				branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
@@ -638,7 +638,7 @@ public class TestDataProvider {
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = contentDao.createGraphFieldContainer(node, german, branch,
+			HibNodeFieldContainer germanContainer = contentDao.createGraphFieldContainer(node, german, branch,
 				userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
@@ -662,11 +662,11 @@ public class TestDataProvider {
 	 * Returns the path to the tag for the given language.
 	 */
 	public String getPathForNews2015Tag(String languageTag) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
+		ContentDao contentDao = boot.contentDao();
 
-		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name")
+		String name = contentDao.getLatestDraftGraphFieldContainer(folders.get("news"), languageTag).getString("name")
 			.getString();
-		String name2 = contentDao.getLatestDraftFieldContainer(folders.get("2015"), languageTag).getString("name")
+		String name2 = contentDao.getLatestDraftGraphFieldContainer(folders.get("2015"), languageTag).getString("name")
 			.getString();
 		return name + "/" + name2;
 	}

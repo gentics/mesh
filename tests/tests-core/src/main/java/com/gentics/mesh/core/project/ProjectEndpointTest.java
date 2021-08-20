@@ -51,7 +51,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -562,7 +561,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// since the project name is part of the search document.
 			int expectedCount = 1;
 			for (HibNode node : tx.nodeDao().findAll(project())) {
-				expectedCount += ((ContentDaoWrapper) tx.contentDao()).getGraphFieldContainerCount(node);
+				expectedCount += tx.contentDao().getGraphFieldContainerCount(node);
 			}
 			expectedCount += tx.tagDao().count();
 			expectedCount += tx.tagFamilyDao().computeCount(project);

@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import io.reactivex.Single;
 
 /**
- * A marker interface for elements that can be transformed to a rest model.
+ * An interface for elements that can be transformed to a rest model.
  */
 public interface HibTransformableElement<T extends RestModel> {
 

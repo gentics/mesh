@@ -5,9 +5,10 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static com.gentics.mesh.core.rest.admin.consistency.RepairAction.DELETE;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
@@ -43,7 +44,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 	}
 
 	private void checkGraphFieldContainer(Database db, NodeGraphFieldContainer container, ConsistencyCheckResult result, boolean attemptRepair) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		String uuid = container.getUuid();
 		if (container.getSchemaContainerVersion() == null) {
 			result.addInconsistency("The GraphFieldContainer has no assigned SchemaContainerVersion", uuid, HIGH);
@@ -57,7 +58,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		}
 
 		// GFC must either have a previous GFC, or must be the initial GFC for a Node
-		NodeGraphFieldContainer previous = container.getPreviousVersion();
+		HibNodeFieldContainer previous = container.getPreviousVersion();
 		if (previous == null) {
 			Iterable<GraphFieldContainerEdgeImpl> initialEdges = container.inE(HAS_FIELD_CONTAINER)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).frameExplicit(GraphFieldContainerEdgeImpl.class);
@@ -129,7 +130,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 				.setElementUuid(uuid).setSeverity(MEDIUM);
 			if (attemptRepair) {
 				if (contentDao.hasNextVersion(container)) {
-					NodeGraphFieldContainer next = contentDao.getNextVersions(container).iterator().next();
+					HibNodeFieldContainer next = contentDao.getNextVersions(container).iterator().next();
 					if (next != null) {
 						String tag = next.getLanguageTag();
 						if (tag != null) {
@@ -138,7 +139,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 						}
 					}
 				} else if (container.hasPreviousVersion()) {
-					NodeGraphFieldContainer prev = container.getPreviousVersion();
+					HibNodeFieldContainer prev = container.getPreviousVersion();
 					if (prev != null) {
 						String tag = prev.getLanguageTag();
 						if (tag != null) {

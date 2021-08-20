@@ -1,18 +1,19 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 
-public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGraphFieldContainerAssert, NodeGraphFieldContainer> {
+public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGraphFieldContainerAssert, HibNodeFieldContainer> {
 
-	public NodeGraphFieldContainerAssert(NodeGraphFieldContainer actual) {
+	public NodeGraphFieldContainerAssert(HibNodeFieldContainer actual) {
 		super(actual, NodeGraphFieldContainerAssert.class);
 	}
 
@@ -56,7 +57,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert isLast() {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		assertThat(contentDao.getNextVersions(actual)).as(descriptionText() + " next container").isEmpty();
 		return this;
 	}
@@ -67,9 +68,9 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @param container
 	 * @return fluent API
 	 */
-	public NodeGraphFieldContainerAssert hasNext(NodeGraphFieldContainer container) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
-		Iterable<NodeGraphFieldContainer> next = (Iterable<NodeGraphFieldContainer>) contentDao.getNextVersions(actual);
+	public NodeGraphFieldContainerAssert hasNext(HibNodeFieldContainer container) {
+		ContentDao contentDao = Tx.get().contentDao();
+		Iterable<HibNodeFieldContainer> next = contentDao.getNextVersions(actual);
 		assertThat(next).as(descriptionText() + " next container").isNotNull().usingFieldByFieldElementComparator().contains(container);
 		return this;
 	}
@@ -80,7 +81,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @param container
 	 * @return fluent API
 	 */
-	public NodeGraphFieldContainerAssert hasPrevious(NodeGraphFieldContainer container) {
+	public NodeGraphFieldContainerAssert hasPrevious(HibNodeFieldContainer container) {
 		assertThat(actual.getPreviousVersion()).as(descriptionText() + " previous container").isNotNull()
 				.isEqualToComparingFieldByField(container);
 		return this;

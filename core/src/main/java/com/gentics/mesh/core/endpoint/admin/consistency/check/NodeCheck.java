@@ -8,9 +8,9 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -43,7 +43,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 
 	private void checkNode(Node node, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
 /*
 		checkOut(node, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH);
@@ -74,7 +74,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 			result.addInconsistency("The node has no creation date", uuid, MEDIUM);
 		}
 
-		Iterable<NodeGraphFieldContainer> initialIterator = contentDao.getGraphFieldContainers(node, ContainerType.INITIAL);
+		Iterable<HibNodeFieldContainer> initialIterator = contentDao.getGraphFieldContainers(node, ContainerType.INITIAL);
 		if (!initialIterator.iterator().hasNext()) {
 			result.addInconsistency("The node has no initial field containers", uuid, HIGH);
 		}

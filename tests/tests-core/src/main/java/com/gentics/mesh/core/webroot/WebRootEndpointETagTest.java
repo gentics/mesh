@@ -12,7 +12,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -34,14 +34,14 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String path = "/News/2015/blume.jpg";
 		HibNode node;
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			node = content("news_2015");
 
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
-			contentDao.getLatestDraftFieldContainer(node, german()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftGraphFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftGraphFieldContainer(node, german()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -69,12 +69,12 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftGraphFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}

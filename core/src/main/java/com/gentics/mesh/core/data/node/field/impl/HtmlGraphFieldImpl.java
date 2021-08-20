@@ -3,12 +3,13 @@ package com.gentics.mesh.core.data.node.field.impl;
 import java.util.Objects;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -29,7 +30,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 	public static FieldTransformer<HtmlField> HTML_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		Tx tx = Tx.get();
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
-		HtmlGraphField graphHtmlField = container.getHtml(fieldKey);
+		HibHtmlField graphHtmlField = container.getHtml(fieldKey);
 		if (graphHtmlField == null) {
 			return null;
 		} else {
@@ -50,14 +51,14 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 
 	public static FieldUpdater HTML_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		HtmlField htmlField = fieldMap.getHtmlField(fieldKey);
-		HtmlGraphField htmlGraphField = container.getHtml(fieldKey);
+		HibHtmlField htmlGraphField = container.getHtml(fieldKey);
 		boolean isHtmlFieldSetToNull = fieldMap.hasField(fieldKey) && (htmlField == null || htmlField.getHTML() == null);
-		GraphField.failOnDeletionOfRequiredField(htmlGraphField, isHtmlFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(htmlGraphField, isHtmlFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean isHtmlFieldNull = htmlField == null || htmlField.getHTML() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - The field was explicitly set to null and is currently set within the graph thus we must remove it.
@@ -107,15 +108,15 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		//TODO remove the vertex from the graph if it is no longer be used by other containers 
 		setFieldProperty("html", null);
 		setFieldKey(null);
 	}
 
 	@Override
-	public GraphField cloneTo(GraphFieldContainer container) {
-		HtmlGraphField clone = container.createHTML(getFieldKey());
+	public HibHtmlField cloneTo(HibFieldContainer container) {
+		HibHtmlField clone = container.createHTML(getFieldKey());
 		clone.setHtml(getHTML());
 		return clone;
 	}

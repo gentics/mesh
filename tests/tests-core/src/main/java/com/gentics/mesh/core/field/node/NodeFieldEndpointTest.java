@@ -26,11 +26,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
@@ -79,7 +79,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		List<HibNode> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
+				HibNodeFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 				HibNode oldValue = getNodeValue(container, FIELD_NAME);
 
 				HibNode newValue = targetNodes.get(i % 2);
@@ -127,10 +127,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			// Assert that the old version was not modified
 			HibNode node = folder("2015");
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNode(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNode(FIELD_NAME)).isNotNull();
@@ -284,8 +284,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();
 		}
@@ -304,8 +304,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();
 		}
@@ -347,9 +347,9 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			// Create test field
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createNode(FIELD_NAME, referencedNode);
 			tx.success();
 		}
@@ -371,7 +371,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			RoleDao roleDao = tx.roleDao();
 			// Revoke the permission to the referenced node
 			HibNode referencedNode = folder("news");
@@ -380,7 +380,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			HibNode node = folder("2015");
 
 			// Create test field
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createNode(FIELD_NAME, referencedNode);
 
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
@@ -400,8 +400,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Create test field
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();
 		}
@@ -485,8 +485,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return node value (may be null)
 	 */
-	protected HibNode getNodeValue(NodeGraphFieldContainer container, String fieldName) {
-		NodeGraphField field = container.getNode(fieldName);
+	protected HibNode getNodeValue(HibNodeFieldContainer container, String fieldName) {
+		HibNodeField field = container.getNode(fieldName);
 		return field != null ? field.getNode() : null;
 	}
 

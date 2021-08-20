@@ -12,6 +12,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -57,7 +58,7 @@ public class BinaryFieldResponseHandler {
 	 * @param rc
 	 * @param binaryField
 	 */
-	public void handle(RoutingContext rc, BinaryGraphField binaryField) {
+	public void handle(RoutingContext rc, HibBinaryField binaryField) {
 		rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 		if (checkETag(rc, binaryField)) {
 			return;
@@ -71,7 +72,7 @@ public class BinaryFieldResponseHandler {
 		}
 	}
 
-	private boolean checkETag(RoutingContext rc, BinaryGraphField binaryField) {
+	private boolean checkETag(RoutingContext rc, HibBinaryField binaryField) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String sha512sum = binaryField.getBinary().getSHA512Sum();
 		String etagKey = sha512sum;
@@ -90,7 +91,7 @@ public class BinaryFieldResponseHandler {
 		return false;
 	}
 
-	private void respond(RoutingContext rc, BinaryGraphField binaryField) {
+	private void respond(RoutingContext rc, HibBinaryField binaryField) {
 		BinaryDao binaryDao = Tx.get().binaryDao();
 		HttpServerResponse response = rc.response();
 
@@ -124,7 +125,7 @@ public class BinaryFieldResponseHandler {
 
 	}
 
-	private void resizeAndRespond(RoutingContext rc, BinaryGraphField binaryField, ImageManipulationParameters imageParams) {
+	private void resizeAndRespond(RoutingContext rc, HibBinaryField binaryField, ImageManipulationParameters imageParams) {
 		HttpServerResponse response = rc.response();
 		// We can maybe enhance the parameters using stored parameters.
 		if (!imageParams.hasFocalPoint()) {

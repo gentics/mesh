@@ -15,15 +15,16 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -144,7 +145,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		Set<String> touchedFields, VersionNumber nextDraftVersion)
 		throws Exception {
 		NodeDaoWrapper nodeDao = (NodeDaoWrapper) Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
 		String branchUuid = branch.getUuid();
 		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
@@ -152,7 +153,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		boolean publish = container.isPublished(branchUuid);
 
 		// Clone the field container. This will also update the draft edge
-		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
+		HibNodeFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
 			// Ensure that the publish edge is also updated correctly
@@ -199,13 +200,13 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		// Run the actual migration in a dedicated transaction
 		try {
 			db.tx(tx -> {
-				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+				ContentDao contentDao = tx.contentDao();
 
 				HibNode node = contentDao.getNode(container);
 				String languageTag = container.getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
 				ac.getVersioningParameters().setVersion("draft");
-				NodeGraphFieldContainer oldPublished = contentDao.getGraphFieldContainer(node, languageTag, branchUuid, PUBLISHED);
+				HibNodeFieldContainer oldPublished = contentDao.getGraphFieldContainer(node, languageTag, branchUuid, PUBLISHED);
 
 				VersionNumber nextDraftVersion = null;
 				// 1. Check whether there is any other published container which we need to handle separately
@@ -247,12 +248,12 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		NodeGraphFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
 		Set<String> touchedFields) throws Exception {
 		NodeDaoWrapper nodeDao = (NodeDaoWrapper) Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
 		String branchUuid = branch.getUuid();
 		ac.getVersioningParameters().setVersion("published");
 
-		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
+		HibNodeFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
 		migrated.setVersion(container.getVersion().nextPublished());
 		nodeDao.setPublished(node, ac, migrated, branchUuid);
 
@@ -277,29 +278,29 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 *            touched fields
 	 * @throws Exception
 	 */
-	protected void migrateMicronodeFields(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container,
+	protected void migrateMicronodeFields(NodeMigrationActionContextImpl ac, HibNodeFieldContainer container,
 		HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion, Set<String> touchedFields) throws Exception {
 		// iterate over all fields with micronodes to migrate
-		for (MicronodeGraphField field : container.getMicronodeFields(fromVersion)) {
+		for (HibMicronodeField field : container.getMicronodeFields(fromVersion)) {
 			// clone the field (this will clone the micronode)
 			field = container.createMicronode(field.getFieldKey(), fromVersion);
-			Micronode micronode = field.getMicronode();
+			HibMicronode micronode = field.getMicronode();
 			// transform to rest and migrate
 			MicronodeResponse restModel = micronode.transformToRestSync(ac, 0);
 			migrate(ac, micronode, restModel, fromVersion, toVersion, touchedFields);
 		}
 
 		// iterate over all micronode list fields to migrate
-		for (MicronodeGraphFieldList field : container.getMicronodeListFields(fromVersion)) {
-			MicronodeGraphFieldList oldListField = field;
+		for (HibMicronodeFieldList field : container.getMicronodeListFields(fromVersion)) {
+			HibMicronodeFieldList oldListField = field;
 
 			// clone the field (this will not clone the micronodes)
 			field = container.createMicronodeFieldList(field.getFieldKey());
 
 			// clone every micronode
-			for (MicronodeGraphField oldField : oldListField.getList()) {
-				Micronode oldMicronode = oldField.getMicronode();
-				Micronode newMicronode = field.createMicronode();
+			for (HibMicronodeField oldField : oldListField.getList()) {
+				HibMicronode oldMicronode = oldField.getMicronode();
+				HibMicronode newMicronode = field.createMicronode();
 				newMicronode.setSchemaContainerVersion(oldMicronode.getSchemaContainerVersion());
 				newMicronode.clone(oldMicronode);
 

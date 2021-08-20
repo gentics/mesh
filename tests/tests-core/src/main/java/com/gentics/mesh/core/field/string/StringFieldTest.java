@@ -13,10 +13,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -53,7 +55,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			// Add a new string field to the schema
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
@@ -63,8 +65,8 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 			schema.addField(stringFieldSchema);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			StringGraphField field = container.createString("stringField");
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibStringField field = container.createString("stringField");
 			field.setString("someString");
 			tx.success();
 		}
@@ -132,8 +134,8 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			String testValue = "test123";
-			StringGraphField fieldA = container.createString(STRING_FIELD);
-			StringGraphField fieldB = container.createString(STRING_FIELD + "_2");
+			HibStringField fieldA = container.createString(STRING_FIELD);
+			HibStringField fieldB = container.createString(STRING_FIELD + "_2");
 			fieldA.setString(testValue);
 			fieldB.setString(testValue);
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -145,8 +147,8 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphField fieldA = container.createString(STRING_FIELD);
-			StringGraphField fieldB = container.createString(STRING_FIELD + "_2");
+			HibStringField fieldA = container.createString(STRING_FIELD);
+			HibStringField fieldB = container.createString(STRING_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
 		}
 	}
@@ -159,7 +161,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 			String dummyValue = "test123";
 
 			// rest null - graph null
-			StringGraphField fieldA = container.createString(STRING_FIELD);
+			HibStringField fieldA = container.createString(STRING_FIELD);
 			StringFieldImpl restField = new StringFieldImpl();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
@@ -235,7 +237,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 				field.setString("someValue");
 				updateContainer(ac, container, STRING_FIELD, field);
 			}, (container) -> {
-				StringGraphField field = container.getString(STRING_FIELD);
+				HibStringField field = container.getString(STRING_FIELD);
 				assertNotNull("The graph field {" + STRING_FIELD + "} could not be found.", field);
 				assertEquals("The string of the field was not updated.", "someValue", field.getString());
 			});

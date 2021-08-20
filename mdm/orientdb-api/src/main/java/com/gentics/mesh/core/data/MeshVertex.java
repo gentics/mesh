@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.data;
 
-import java.util.Set;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.tinkerpop.blueprints.Vertex;
@@ -41,36 +37,9 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 	}
 
 	/**
-	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
-	 * 
-	 * @param batch
-	 * @param role
-	 * @param recursive
-	 * @param permissionsToGrant
-	 * @param permissionsToRevoke
-	 */
-	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke);
-
-	/**
-	 * Tests if the {@link InternalPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.
-	 * @return
-	 */
-	default boolean hasPublishPermissions() {
-		return false;
-	}
-
-	/**
 	 * Sets the cached uuid for the vertex.
 	 * @param uuid
 	 */
 	void setCachedUuid(String uuid);
 
-	/**
-	 * Return set of role uuids for the given permission that were granted on the element.
-	 *
-	 * @param permission
-	 * @return
-	 */
-	Set<String> getRoleUuidsForPerm(InternalPermission permission);
 }

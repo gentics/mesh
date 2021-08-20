@@ -11,8 +11,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -62,11 +61,11 @@ public class NavRootHandler {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-			NodeGraphFieldContainer container = graphSegment.getContainer();
+			HibNodeFieldContainer container = graphSegment.getContainer();
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
-			HibNode node = ((ContentDaoWrapper) tx.contentDao()).getNode(container);
+			HibNode node = tx.contentDao().getNode(container);
 			if (!userDao.hasPermission(requestUser, node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}

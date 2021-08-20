@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 import org.mockito.Mockito;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -60,7 +60,7 @@ public interface TestGraphHelper extends TestHelper {
 	 * Returns all graph field containers in the dummy project.
 	 * @return
 	 */
-	default Stream<NodeGraphFieldContainer> getAllContents() {
+	default Stream<HibNodeFieldContainer> getAllContents() {
 		return Tx.get().nodeDao().findAll(project()).stream()
 			.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 			.flatMap(type -> boot().contentDao().getGraphFieldContainers(node, type).stream()));

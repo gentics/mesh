@@ -15,7 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
@@ -60,7 +60,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testGetContentFromSchemaVersion() {
 		Bucket bucket = new Bucket(0, Integer.MAX_VALUE / 2, 0, 1);
-		NodeGraphFieldContainer content = tx(tx -> {
+		HibNodeFieldContainer content = tx(tx -> {
 			return toGraph(content()).getLatestDraftFieldContainer("en");
 		});
 		HibSchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());

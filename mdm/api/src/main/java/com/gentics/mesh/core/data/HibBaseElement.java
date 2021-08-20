@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Common interface for all base elements.
@@ -40,4 +42,23 @@ public interface HibBaseElement extends HibElement {
 		return false;
 	}
 
+	/**
+	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
+	 * 
+	 * @param batch
+	 * @param role
+	 * @param recursive
+	 * @param permissionsToGrant
+	 * @param permissionsToRevoke
+	 */
+	void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke);
+
+	/**
+	 * Return set of role uuids for the given permission that were granted on the element.
+	 *
+	 * @param permission
+	 * @return
+	 */
+	Set<String> getRoleUuidsForPerm(InternalPermission permission);
 }

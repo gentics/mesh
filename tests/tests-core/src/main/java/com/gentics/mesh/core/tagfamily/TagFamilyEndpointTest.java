@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -486,7 +486,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT,
 								ContainerType.PUBLISHED)) {
-							for (NodeGraphFieldContainer fieldContainer : boot().contentDao()
+							for (HibNodeFieldContainer fieldContainer : boot().contentDao()
 									.getGraphFieldContainers(node, branch, containerType)) {
 								HibSchemaVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;

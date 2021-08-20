@@ -1,43 +1,24 @@
-package com.gentics.mesh.core.data.binary;
+package com.gentics.mesh.core.data.node.field;
 
 import java.util.Map;
+import java.util.Objects;
 
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.util.UniquenessUtil;
 
-/**
- * MDM interface for the binary field information.
- */
-public interface HibBinaryField {
+public interface HibBinaryField extends HibField, HibBasicField<BinaryField> {
 
 	/**
-	 * Return the referenced binary entity.
-	 * 
-	 * @return
-	 */
-	HibBinary getBinary();
-
-	/**
-	 * Return the binary metadata.
-	 * 
-	 * @return
-	 */
-	BinaryMetadata getMetadata();
-
-	/**
-	 * Return the filename of the binary in this field.
+	 * Return the binary filename.
 	 * 
 	 * @return
 	 */
 	String getFileName();
-
-	/**
-	 * Return the mimetype of the binary.
-	 * 
-	 * @return
-	 */
-	String getMimeType();
 
 	/**
 	 * Copy the values of this field to the specified target field.
@@ -66,7 +47,20 @@ public interface HibBinaryField {
 	 * <ul>
 	 * 
 	 */
-	void postfixFileName();
+	default void postfixFileName() {
+		String oldName = getFileName();
+		if (oldName != null && !oldName.isEmpty()) {
+			setFileName(UniquenessUtil.suggestNewName(oldName));
+		}
+
+	}
+
+	/**
+	 * Return the binary mime type of the node.
+	 * 
+	 * @return
+	 */
+	String getMimeType();
 
 	/**
 	 * Set the binary mime type of the node.
@@ -127,6 +121,13 @@ public interface HibBinaryField {
 	void setUuid(String uuid);
 
 	/**
+	 * Return the referenced binary.
+	 * 
+	 * @return
+	 */
+	HibBinary getBinary();
+
+	/**
 	 * Set the metadata property.
 	 * 
 	 * @param key
@@ -146,7 +147,15 @@ public interface HibBinaryField {
 	 * 
 	 * @param loc
 	 */
-	void setLocation(Location loc);
+	default void setLocation(Location loc) {
+		Objects.requireNonNull(loc, "A valid location object needs to be supplied. Got null.");
+		setLocationLatitude(loc.getLat());
+		setLocationLongitude(loc.getLon());
+		Integer alt = loc.getAlt();
+		if (alt != null) {
+			setLocationAltitude(alt);
+		}
+	}
 
 	/**
 	 * Return the location latitude.
@@ -193,7 +202,14 @@ public interface HibBinaryField {
 	/**
 	 * Clear the metadata properties.
 	 */
-	void clearMetadata();
+	void clearMetadata();	
+
+	/**
+	 * Return the {@link BinaryMetadata} REST model of the field.
+	 * 
+	 * @return
+	 */
+	BinaryMetadata getMetadata();
 
 	/**
 	 * Set the plain text content.
@@ -206,4 +222,5 @@ public interface HibBinaryField {
 	 * @return
 	 */
 	String getPlainText();
+
 }

@@ -4,8 +4,8 @@ import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -41,7 +41,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public boolean hasReadPerm(NodeContent content) {
-		NodeGraphFieldContainer container = content.getContainer();
+		HibNodeFieldContainer container = content.getContainer();
 		if (container != null) {
 			return hasReadPerm(container);
 		} else {
@@ -50,9 +50,9 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	}
 
 	@Override
-	public boolean hasReadPerm(NodeGraphFieldContainer container) {
+	public boolean hasReadPerm(HibNodeFieldContainer container) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+		ContentDao contentDao = tx.contentDao();
 		HibNode node = contentDao.getNode(container);
 		Object nodeId = node.getId();
 		UserDao userDao = tx.userDao();
@@ -69,8 +69,8 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	}
 
 	@Override
-	public NodeGraphFieldContainer requiresReadPermSoft(NodeGraphFieldContainer container, DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+	public HibNodeFieldContainer requiresReadPermSoft(HibNodeFieldContainer container, DataFetchingEnvironment env) {
+		ContentDao contentDao = Tx.get().contentDao();
 		if (container == null) {
 			return null;
 		}

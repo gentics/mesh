@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -91,7 +90,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 				.flatMap(project -> ofNullable(nodeDao.findByUuid(project, model.getUuid()))
 					.flatMap(node -> branchDao.findAll(project).stream().map(HibBaseElement::getUuid)
 						.flatMap(branchUuid -> Util.latestVersionTypes()
-							.flatMap(type -> ((ContentDaoWrapper) tx.contentDao()).getGraphFieldContainers(node, branchUuid, type).stream()
+							.flatMap(type -> tx.contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
 								.map(container -> meshHelper.updateDocumentRequest(
 									ContentDao.composeIndexName(
 										model.getProject().getUuid(),

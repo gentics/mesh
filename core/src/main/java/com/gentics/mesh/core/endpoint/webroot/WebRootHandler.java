@@ -17,14 +17,14 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
@@ -123,20 +123,20 @@ public class WebRootHandler {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-			NodeGraphFieldContainer container = graphSegment.getContainer();
+			HibNodeFieldContainer container = graphSegment.getContainer();
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
 
 			String version = ac.getVersioningParameters().getVersion();
-			HibNode node = ((ContentDaoWrapper) tx.contentDao()).getNode(container);
+			HibNode node = tx.contentDao().getNode(container);
 			addCacheControl(rc, node, version);
 			userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
 			rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
 			// TODO decide whether we want to add also lang, version
 
-			GraphField field = graphSegment.getPathField();
+			HibField field = graphSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
 				BinaryGraphField binaryField = (BinaryGraphField) field;
 				String sha512sum = binaryField.getBinary().getSHA512Sum();
@@ -234,7 +234,7 @@ public class WebRootHandler {
 		String uuid = null;
 		try (WriteLock lock = writeLock.lock(ac)) {
 			uuid = db.tx(tx -> {
-				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+				ContentDao contentDao = tx.contentDao();
 
 				// Load all nodes for the given path
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -254,7 +254,7 @@ public class WebRootHandler {
 				// Update Node
 				if (nodePath.isFullyResolved()) {
 					PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-					NodeGraphFieldContainer container = graphSegment.getContainer();
+					HibNodeFieldContainer container = graphSegment.getContainer();
 					NodeUpdateRequest request = ac.fromJson(NodeUpdateRequest.class);
 					// We can deduce a missing the language via the path
 					if (request.getLanguage() == null) {

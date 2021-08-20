@@ -12,12 +12,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
@@ -49,10 +50,10 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, "stringList", "string");
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			StringGraphFieldList stringList = container.createStringList("stringList");
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibStringFieldList stringList = container.createStringList("stringList");
 			stringList.createString("dummyString1");
 			stringList.createString("dummyString2");
 			tx.success();
@@ -69,7 +70,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphFieldList list = container.createStringList("dummyList");
+			HibStringFieldList list = container.createStringList("dummyList");
 
 			list.createString("1");
 			assertEquals("dummyList", list.getFieldKey());
@@ -83,7 +84,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertEquals(3, list.getList().size());
 			assertEquals("Some string 3", list.getList().get(2).getString());
 
-			StringGraphFieldList loadedList = container.getStringList("dummyList");
+			HibStringFieldList loadedList = container.getStringList("dummyList");
 			assertNotNull(loadedList);
 			assertEquals(3, loadedList.getSize());
 			list.removeAll();
@@ -97,7 +98,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testClone() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphFieldList testField = container.createStringList("testField");
+			HibStringFieldList testField = container.createStringList("testField");
 			testField.createString("one");
 			testField.createString("two");
 			testField.createString("three");
@@ -114,8 +115,8 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testEquals() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphFieldList fieldA = container.createStringList("fieldA");
-			StringGraphFieldList fieldB = container.createStringList("fieldB");
+			HibStringFieldList fieldA = container.createStringList("fieldA");
+			HibStringFieldList fieldB = container.createStringList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.addItem(fieldA.createString("testString"));
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
@@ -132,7 +133,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphFieldList fieldA = container.createStringList("fieldA");
+			HibStringFieldList fieldA = container.createStringList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
 		}
@@ -146,7 +147,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			String dummyValue = "test123";
 
 			// rest null - graph null
-			StringGraphFieldList fieldA = container.createStringList(STRING_LIST);
+			HibStringFieldList fieldA = container.createStringList(STRING_LIST);
 
 			StringFieldListImpl restField = new StringFieldListImpl();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
@@ -216,7 +217,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				field.getItems().add("someValue2");
 				updateContainer(ac, container, STRING_LIST, field);
 			}, (container) -> {
-				StringGraphFieldList field = container.getStringList(STRING_LIST);
+				HibStringFieldList field = container.getStringList(STRING_LIST);
 				assertNotNull("The graph field {" + STRING_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
 				assertEquals("The list item of the field was not updated.", "someValue", field.getList().get(0).getString());

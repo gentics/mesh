@@ -29,7 +29,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest implements NodeListFieldTestHelper {
 	private final DataProvider FILL = (container, name) -> {
-		NodeGraphFieldList field = container.createNodeList(name);
+		NodeGraphFieldList field = (NodeGraphFieldList) container.createNodeList(name);
 		field.createNode("0", folder("2015"));
 		field.createNode("1", folder("news"));
 	};

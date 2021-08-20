@@ -13,12 +13,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -94,7 +95,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 			// 1. Create the node field schema and add it to the schema of the node
@@ -103,7 +104,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// 2. Add the node reference to the node fields
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createNode(NODE_FIELD, newsNode);
 			tx.success();
 		}
@@ -216,7 +217,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 				field.setUuid(content().getUuid());
 				updateContainer(ac, container, NODE_FIELD, field);
 			}, (container) -> {
-				NodeGraphField field = container.getNode(NODE_FIELD);
+				HibNodeField field = container.getNode(NODE_FIELD);
 				assertNotNull("The graph field {" + NODE_FIELD + "} could not be found.", field);
 				assertEquals("The node reference of the field was not updated.", content().getUuid(), field.getNode().getUuid());
 			});

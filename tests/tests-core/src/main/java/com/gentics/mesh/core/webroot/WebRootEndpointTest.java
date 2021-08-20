@@ -25,9 +25,9 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -68,11 +68,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftGraphFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -133,8 +133,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		HibNode content = content("news_2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
+			ContentDao contentDao = tx.contentDao();
+			contentDao.getLatestDraftGraphFieldContainer(content, english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 			tx.success();
 		}
@@ -169,7 +169,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
 			RoleDao roleDao = tx.roleDao();
 			HibNode parentNode = folder("2015");
@@ -186,14 +186,14 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			roleDao.grantPermissions(role(), node, InternalPermission.values());
-			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, german(), project().getLatestBranch(), user());
+			HibNodeFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, german(), project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
 			englishContainer.createString("displayName").setString("german displayName");
 			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015
-			contentDao.getLatestDraftFieldContainer(parentNode, english()).createNode("nodeRef", node);
+			contentDao.getLatestDraftGraphFieldContainer(parentNode, english()).createNode("nodeRef", node);
 			tx.success();
 		}
 

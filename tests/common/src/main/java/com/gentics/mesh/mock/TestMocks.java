@@ -28,33 +28,34 @@ import java.util.List;
 
 import org.mockito.Mockito;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -130,12 +131,12 @@ public final class TestMocks {
 		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field
-		NumberGraphField longitudeField = mock(NumberGraphField.class);
+		HibNumberField longitudeField = mock(HibNumberField.class);
 		when(longitudeField.getNumber()).thenReturn(16.373063840833);
 		when(micronode.getNumber("longitude")).thenReturn(longitudeField);
 
 		// latitude field
-		NumberGraphField latitudeField = mock(NumberGraphField.class);
+		HibNumberField latitudeField = mock(HibNumberField.class);
 		when(latitudeField.getNumber()).thenReturn(16.373063840833);
 		when(micronode.getNumber("latitude")).thenReturn(latitudeField);
 		when(micronode.getElementVersion()).thenReturn(UUID_3);
@@ -303,7 +304,7 @@ public final class TestMocks {
 		return microschema;
 	}
 
-	public static HibNode mockNode(NodeDaoWrapper nodeDao, ContentDaoWrapper contentDao, TagDaoWrapper tagDao, HibNode parent, HibProject project, HibUser user, String languageTag, HibTag tagA, HibTag tagB) {
+	public static HibNode mockNode(NodeDaoWrapper nodeDao, ContentDao contentDao, TagDao tagDao, HibNode parent, HibProject project, HibUser user, String languageTag, HibTag tagA, HibTag tagB) {
 		Node node = mock(Node.class);
 
 		when(node.getProject()).thenReturn(project);
@@ -321,98 +322,98 @@ public final class TestMocks {
 		when(node.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(node.getRolesWithPerm(InternalPermission.READ_PUBLISHED_PERM)).thenReturn(createEmptyTraversal());
 
-		NodeGraphFieldContainer container = mockContainer(languageTag, user);
+		HibNodeFieldContainer container = mockContainer(languageTag, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 		when(contentDao.getNode(container)).thenReturn(node);
 		when(container.getNode()).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);
 
-		when(contentDao.getLatestDraftFieldContainer(node, languageTag)).thenReturn(container);
+		when(contentDao.getLatestDraftGraphFieldContainer(node, languageTag)).thenReturn(container);
 
 		when(node.getElementVersion()).thenReturn(UUID_4);
 		return node;
 	}
 
-	public static NodeGraphFieldContainer mockContainer(String languageTag, HibUser user) {
-		NodeGraphFieldContainer container = mock(NodeGraphFieldContainer.class);
+	public static HibNodeFieldContainer mockContainer(String languageTag, HibUser user) {
+		HibNodeFieldContainer container = mock(HibNodeFieldContainer.class);
 		when(container.getLanguageTag()).thenReturn(languageTag);
 
 		when(container.getEditor()).thenReturn(user);
 
 		// String field
-		StringGraphField stringField = mock(StringGraphField.class);
+		HibStringField stringField = mock(HibStringField.class);
 		when(stringField.getString()).thenReturn("The name value");
 		when(container.getString("string")).thenReturn(stringField);
 
 		// Number field
-		NumberGraphField numberField = mock(NumberGraphField.class);
+		HibNumberField numberField = mock(HibNumberField.class);
 		when(numberField.getNumber()).thenReturn(0.146f);
 		when(container.getNumber("number")).thenReturn(numberField);
 
 		// Date field
-		DateGraphField dateField = mock(DateGraphField.class);
+		HibDateField dateField = mock(HibDateField.class);
 		when(dateField.getDate()).thenReturn(TIMESTAMP_NEW / 1000);
 		when(container.getDate("date")).thenReturn(dateField);
 
 		// Boolean field
-		BooleanGraphField booleanField = mock(BooleanGraphField.class);
+		HibBooleanField booleanField = mock(HibBooleanField.class);
 		when(booleanField.getBoolean()).thenReturn(true);
 		when(container.getBoolean("boolean")).thenReturn(booleanField);
 
 		// Node field
-		NodeGraphField nodeField = mock(NodeGraphField.class);
+		HibNodeField nodeField = mock(HibNodeField.class);
 		HibNode nodeRef = mockNodeBasic("folder", user);
 		when(nodeField.getNode()).thenReturn(nodeRef);
 		when(container.getNode("node")).thenReturn(nodeField);
 
 		// Html field
-		HtmlGraphField htmlField = mock(HtmlGraphField.class);
+		HibHtmlField htmlField = mock(HibHtmlField.class);
 		when(htmlField.getHTML()).thenReturn("some<b>html");
 		when(container.getHtml("html")).thenReturn(htmlField);
 
 		// micronode field
-		MicronodeGraphField micronodeField = mock(MicronodeGraphField.class);
-		Micronode micronode = mockMicronode("geolocation", user);
+		HibMicronodeField micronodeField = mock(HibMicronodeField.class);
+		HibMicronode micronode = mockMicronode("geolocation", user);
 		when(micronodeField.getMicronode()).thenReturn(micronode);
 		when(container.getMicronode("micronode")).thenReturn(micronodeField);
 
 		// Node List Field
-		NodeGraphFieldList nodeListField = mock(NodeGraphFieldList.class);
-		Mockito.<List<? extends NodeGraphField>> when(nodeListField.getList()).thenReturn(Arrays.asList(nodeField, nodeField, nodeField));
+		HibNodeFieldList nodeListField = mock(HibNodeFieldList.class);
+		Mockito.<List<? extends HibNodeField>> when(nodeListField.getList()).thenReturn(Arrays.asList(nodeField, nodeField, nodeField));
 		when(container.getNodeList("nodeList")).thenReturn(nodeListField);
 
 		// String List Field
-		StringGraphFieldList stringListField = mock(StringGraphFieldList.class);
-		Mockito.<List<? extends StringGraphField>> when(stringListField.getList()).thenReturn(Arrays.asList(stringField, stringField, stringField));
+		HibStringFieldList stringListField = mock(HibStringFieldList.class);
+		Mockito.<List<? extends HibStringField>> when(stringListField.getList()).thenReturn(Arrays.asList(stringField, stringField, stringField));
 		when(container.getStringList("stringList")).thenReturn(stringListField);
 
 		// Boolean List Field
-		BooleanGraphFieldList booleanListField = mock(BooleanGraphFieldList.class);
-		Mockito.<List<? extends BooleanGraphField>> when(booleanListField.getList())
+		HibBooleanFieldList booleanListField = mock(HibBooleanFieldList.class);
+		Mockito.<List<? extends HibBooleanField>> when(booleanListField.getList())
 				.thenReturn(Arrays.asList(booleanField, booleanField, booleanField));
 		when(container.getBooleanList("booleanList")).thenReturn(booleanListField);
 
 		// Date List Field
-		DateGraphFieldList dateListField = mock(DateGraphFieldList.class);
-		Mockito.<List<? extends DateGraphField>> when(dateListField.getList()).thenReturn(Arrays.asList(dateField, dateField, dateField));
+		HibDateFieldList dateListField = mock(HibDateFieldList.class);
+		Mockito.<List<? extends HibDateField>> when(dateListField.getList()).thenReturn(Arrays.asList(dateField, dateField, dateField));
 		when(container.getDateList("dateList")).thenReturn(dateListField);
 
 		// Number List Field
-		NumberGraphFieldList numberListField = mock(NumberGraphFieldList.class);
-		Mockito.<List<? extends NumberGraphField>> when(numberListField.getList()).thenReturn(Arrays.asList(numberField, numberField, numberField));
+		HibNumberFieldList numberListField = mock(HibNumberFieldList.class);
+		Mockito.<List<? extends HibNumberField>> when(numberListField.getList()).thenReturn(Arrays.asList(numberField, numberField, numberField));
 		when(container.getNumberList("numberList")).thenReturn(numberListField);
 
 		// Html List Field
-		HtmlGraphFieldList htmlListField = mock(HtmlGraphFieldList.class);
-		Mockito.<List<? extends HtmlGraphField>> when(htmlListField.getList()).thenReturn(Arrays.asList(htmlField, htmlField, htmlField));
+		HibHtmlFieldList htmlListField = mock(HibHtmlFieldList.class);
+		Mockito.<List<? extends HibHtmlField>> when(htmlListField.getList()).thenReturn(Arrays.asList(htmlField, htmlField, htmlField));
 		when(container.getHTMLList("htmlList")).thenReturn(htmlListField);
 
 		// TODO currently, this mock is only used for the search document example, where we want to omit
 		// fields of type "list of micronodes". We should better add an argument to the method to specify,
 		// which types of fields should be added
 		// // Micronode List Field
-		// MicronodeGraphFieldList micronodeListField = mock(MicronodeGraphFieldListImpl.class);
-		// Mockito.<List<? extends MicronodeGraphField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField,
+		// HibMicronodeFieldList micronodeListField = mock(HibMicronodeFieldListImpl.class);
+		// Mockito.<List<? extends HibMicronodeField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField,
 		// micronodeField));
 		// when(container.getMicronodeList("micronodeList")).thenReturn(micronodeListField);
 

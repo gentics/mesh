@@ -25,7 +25,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -116,7 +115,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 				utils.bulkableAction(bac -> {
-					((ContentDaoWrapper) tx.contentDao()).deleteLanguageContainer(node, ac, tx.getBranch(ac), languageTag, bac, true);
+					tx.contentDao().deleteLanguageContainer(node, ac, tx.getBranch(ac), languageTag, bac, true);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}

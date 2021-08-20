@@ -40,7 +40,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
@@ -250,13 +249,13 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid()), TagFamily.composeDocumentId(parentTagFamilyUuid));
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			assertThat(tag2).matches(tag);
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
 			String branchUuid = project().getLatestBranch().getUuid();
 			for (HibNode node : nodes) {
-				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+				String schemaContainerVersionUuid = contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid,
 						schemaContainerVersionUuid, type), ContentDao.composeDocumentId(node.getUuid(), "en"));
@@ -376,11 +375,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(tagUuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (HibNode node : nodes) {
-				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+				String schemaContainerVersionUuid = contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid,
 					schemaContainerVersionUuid, ContainerType.DRAFT), ContentDao.composeDocumentId(node.getUuid(), "en"));
 			}

@@ -14,10 +14,10 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -64,7 +64,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis() + (i * 10000)));
-			NodeGraphFieldContainer container;
+			HibNodeFieldContainer container;
 			Long oldValue;
 
 			try (Tx tx = tx()) {
@@ -114,8 +114,8 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDate(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
@@ -158,8 +158,8 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return date value (may be null)
 	 */
-	protected Long getDateValue(NodeGraphFieldContainer container, String fieldName) {
-		DateGraphField field = container.getDate(fieldName);
+	protected Long getDateValue(HibNodeFieldContainer container, String fieldName) {
+		HibDateField field = container.getDate(fieldName);
 		return field != null ? field.getDate() : null;
 	}
 
@@ -180,10 +180,10 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		Long nowEpoch;
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
 			tx.success();
 		}

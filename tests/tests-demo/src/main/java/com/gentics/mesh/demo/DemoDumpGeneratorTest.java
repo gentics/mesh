@@ -13,9 +13,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
@@ -66,7 +65,7 @@ public class DemoDumpGeneratorTest {
 			UserDao userDao = tx.userDao();
 			GroupDao groupDao = tx.groupDao();
 			ProjectDao projectDao = tx.projectDao();
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
@@ -89,7 +88,7 @@ public class DemoDumpGeneratorTest {
 
 			// Verify that all documents are stored in the index
 			for (HibNode node : nodeDao.findAll(project)) {
-				NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, "en");
+				HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, "en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
 				String branchUuid = node.getProject().getInitialBranch().getUuid();

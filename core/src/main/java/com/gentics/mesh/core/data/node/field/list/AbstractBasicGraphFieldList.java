@@ -1,15 +1,16 @@
 package com.gentics.mesh.core.data.node.field.list;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.util.CompareUtils;
 
@@ -24,7 +25,7 @@ import com.gentics.mesh.util.CompareUtils;
  * @param <U>
  *            Value type that is stored in the list
  */
-public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> {
+public abstract class AbstractBasicGraphFieldList<T extends HibListableField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> {
 
 	/**
 	 * Create a new field wrapper which is used to handle the field value.
@@ -81,8 +82,8 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
-		container.unlinkOut(this, HAS_LIST);
+	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+		toGraph(container).unlinkOut(this, HAS_LIST);
 
 		if (!in(HAS_LIST).hasNext()) {
 			delete(bac);
@@ -90,8 +91,8 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 	}
 
 	@Override
-	public GraphField cloneTo(GraphFieldContainer container) {
-		container.linkOut(this, HAS_LIST);
+	public GraphField cloneTo(HibFieldContainer container) {
+		toGraph(container).linkOut(this, HAS_LIST);
 		return container.getList(getClass(), getFieldKey());
 	}
 

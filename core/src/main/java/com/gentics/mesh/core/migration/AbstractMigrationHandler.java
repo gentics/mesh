@@ -12,9 +12,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.inject.Provider;
 
 import com.gentics.mesh.context.NodeMigrationActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
@@ -100,7 +100,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            set of touched fields
 	 * @throws Exception
 	 */
-	protected void migrate(NodeMigrationActionContext ac, GraphFieldContainer newContainer, FieldContainer newContent,
+	protected void migrate(NodeMigrationActionContext ac, HibFieldContainer newContainer, FieldContainer newContent,
 		HibFieldSchemaVersionElement fromVersion,
 		HibFieldSchemaVersionElement newVersion, Set<String> touchedFields) throws Exception {
 
@@ -175,8 +175,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 * @param oldPublished
 	 *            Optional published container
 	 */
-	protected void postMigrationPurge(NodeGraphFieldContainer container, NodeGraphFieldContainer oldPublished) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+	protected void postMigrationPurge(HibNodeFieldContainer container, HibNodeFieldContainer oldPublished) {
+		ContentDao contentDao = Tx.get().contentDao();
 
 		// The purge operation was suppressed before. We need to invoke it now
 		// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.

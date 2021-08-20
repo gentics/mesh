@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
@@ -58,7 +58,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			binary = binaries.create(hash, 1L).runInExistingTx(Tx.get());
 			store = true;
 		}
-		BinaryGraphField field = container.createBinary(name, binary);
+		HibBinaryField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
 

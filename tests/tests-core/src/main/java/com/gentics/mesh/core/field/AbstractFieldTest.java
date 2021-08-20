@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -41,7 +41,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 	abstract protected FS createFieldSchema(boolean isRequired);
 
-	protected Tuple<HibNode, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
+	protected Tuple<HibNode, HibNodeFieldContainer> createNode(boolean isRequiredField, String segmentField) {
 		NodeDao nodeDao = Tx.get().nodeDao();
 
 		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
@@ -59,7 +59,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		nodeDao.setParentNode(node, initialBranchUuid(), project().getBaseNode());
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		initialBranch().assignSchemaVersion(user(), version, batch);
-		NodeGraphFieldContainer nodeContainer = boot().contentDao().createGraphFieldContainer(node, english(), initialBranch(), user());
+		HibNodeFieldContainer nodeContainer = boot().contentDao().createGraphFieldContainer(node, english(), initialBranch(), user());
 
 		return Tuple.tuple(node, nodeContainer);
 	}
@@ -90,8 +90,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void invokeRemoveFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider dummyFieldCreator,
-			Consumer<NodeGraphFieldContainer> updater) {
-		NodeGraphFieldContainer container = createNode(false, null).v2();
+			Consumer<HibNodeFieldContainer> updater) {
+		HibNodeFieldContainer container = createNode(false, null).v2();
 		dummyFieldCreator.set(container, fieldName);
 		updater.accept(container);
 		assertNull("The field should have been deleted by setting it to null", fetcher.fetch(container, fieldName));
@@ -99,7 +99,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 	protected void invokeUpdateFromRestTestcase(String fieldName, FieldFetcher fetcher, DataProvider createEmpty) {
 		InternalActionContext ac = mockActionContext();
-		NodeGraphFieldContainer container = createNode(false, null).v2();
+		HibNodeFieldContainer container = createNode(false, null).v2();
 		updateContainer(ac, container, fieldName, null);
 		assertNull("No field should have been created", fetcher.fetch(container, fieldName));
 	}
@@ -114,8 +114,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Action which updates the given node using a null value
 	 */
 	protected void invokeRemoveRequiredFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
-			Consumer<NodeGraphFieldContainer> updater) {
-		NodeGraphFieldContainer container = createNode(true, null).v2();
+			Consumer<HibNodeFieldContainer> updater) {
+		HibNodeFieldContainer container = createNode(true, null).v2();
 		createDummyData.set(container, fieldName);
 		try {
 			updater.accept(container);
@@ -127,8 +127,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void invokeRemoveSegmentFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
-			Consumer<NodeGraphFieldContainer> updater) {
-		NodeGraphFieldContainer container = createNode(false, fieldName).v2();
+			Consumer<HibNodeFieldContainer> updater) {
+		HibNodeFieldContainer container = createNode(false, fieldName).v2();
 		createDummyData.set(container, fieldName);
 		updater.accept(container);
 	}
@@ -146,7 +146,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 * @param expectError
 	 */
 	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher, boolean expectError) {
-		NodeGraphFieldContainer container = createNode(true, null).v2();
+		HibNodeFieldContainer container = createNode(true, null).v2();
 		try {
 			InternalActionContext ac = mockActionContext();
 			updateContainer(ac, container, fieldName, null);
@@ -175,8 +175,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Action which will assert the update
 	 */
 	protected void invokeUpdateFromRestValidSimpleValueTestcase(String fieldName, DataProvider createDummyData,
-			Consumer<NodeGraphFieldContainer> updater, Consumer<NodeGraphFieldContainer> asserter) {
-		NodeGraphFieldContainer container = createNode(false, null).v2();
+			Consumer<HibNodeFieldContainer> updater, Consumer<HibNodeFieldContainer> asserter) {
+		HibNodeFieldContainer container = createNode(false, null).v2();
 		createDummyData.set(container, fieldName);
 		updater.accept(container);
 		asserter.accept(container);
@@ -194,7 +194,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Field to be added to the update model
 	 * @return
 	 */
-	protected void updateContainer(InternalActionContext ac, NodeGraphFieldContainer container, String fieldKey, Field field) {
+	protected void updateContainer(InternalActionContext ac, HibNodeFieldContainer container, String fieldKey, Field field) {
 		FieldMap fieldMap = new FieldMapImpl();
 		fieldMap.put(fieldKey, field);
 		container.updateFieldsFromRest(ac, fieldMap);

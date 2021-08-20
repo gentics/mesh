@@ -31,12 +31,12 @@ import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
@@ -599,8 +599,8 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public boolean hasReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.get().contentDao();
+	public boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
+		ContentDao contentDao = boot.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		if (hasPermission(user, node, READ_PERM)) {
 			return true;
@@ -690,8 +690,8 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.get().contentDao();
+	public void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
+		ContentDao contentDao = boot.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
 			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),

@@ -9,7 +9,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.LanguageDao;
@@ -72,7 +72,7 @@ public interface BootstrapInitializer {
 	NodeDao nodeDao();
 
 	@Getter
-	ContentDaoWrapper contentDao();
+	ContentDao contentDao();
 
 	@Getter
 	BinaryDao binaryDao();

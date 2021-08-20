@@ -32,9 +32,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
@@ -121,7 +122,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public Object parentNodeFetcher(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+		ContentDao contentDao = tx.contentDao();
 
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -139,14 +140,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env, content);
 		ContainerType type = getNodeVersion(env);
 
-		NodeGraphFieldContainer container = contentDao.findVersion(parentNode, gc, languageTags, type);
+		HibNodeFieldContainer container = contentDao.findVersion(parentNode, gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
 
 		return new NodeContent(parentNode, container, languageTags, type);
 	}
 
 	public Object nodeLanguageFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		NodeContent content = env.getSource();
 		if (content == null) {
 			return null;
@@ -156,13 +157,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		HibNode node = content.getNode();
 		ContainerType type = getNodeVersion(env);
-		NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+		HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
 		return new NodeContent(node, container, languageTags, type);
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		NodeDao nodeDao = Tx.get().nodeDao();
 		GraphQLContext gc = env.getContext();
 		NodeContent content = env.getSource();
@@ -173,7 +174,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		ContainerType type = getNodeVersion(env);
 		return nodeDao.getBreadcrumbNodes(content.getNode(), gc).stream().map(node -> {
 			List<String> languageTags = getLanguageArgument(env, content);
-			NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+			HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 			return new NodeContent(node, container, languageTags, type);
 		})
 			.filter(item -> item.getContainer() != null)
@@ -187,12 +188,12 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+		ContentDao contentDao = tx.contentDao();
 		GraphQLContext gc = env.getContext();
 		HibBranch branch = tx.getBranch(gc);
 
 		ContainerType type = getNodeVersion(env);
-		Stream<? extends NodeGraphFieldContainer> stream = StreamSupport
+		Stream<? extends HibNodeFieldContainer> stream = StreamSupport
 			.stream(contentDao.getGraphFieldContainers(content.getNode(), branch, type).spliterator(), false);
 		return stream
 			.filter(gc::hasReadPerm)
@@ -315,10 +316,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						}
 						// Otherwise return the last segment.
 						PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
-						NodeGraphFieldContainer containerFromPath = ((PathSegmentImpl)lastSegment).getContainer();
+						HibNodeFieldContainer containerFromPath = ((PathSegmentImpl)lastSegment).getContainer();
 						HibNode nodeFromPath = null;
 						if (containerFromPath != null) {
-							nodeFromPath = ((ContentDaoWrapper) boot.contentDao()).getNode(containerFromPath);
+							nodeFromPath = boot.contentDao().getNode(containerFromPath);
 							gc.requiresPerm(nodeFromPath, READ_PERM, READ_PUBLISHED_PERM);
 							containerFromPath = gc.requiresReadPermSoft(containerFromPath, env);
 						} else {
@@ -335,7 +336,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// .children
 			newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
-				ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+				ContentDao contentDao = Tx.get().contentDao();
 				NodeDao nodeDao = Tx.get().nodeDao();
 				GraphQLContext gc = env.getContext();
 				NodeContent content = env.getSource();
@@ -433,20 +434,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (content == null) {
 					return null;
 				}
-				NodeGraphFieldContainer container = content.getContainer();
+				HibNodeFieldContainer container = content.getContainer();
 				if (container == null) {
 					return null;
 				}
 				ContainerType containerType = getNodeVersion(env);
 				String branchUuid = Tx.get().getBranch(gc).getUuid();
 				String languageTag = container.getLanguageTag();
-				return boot.nodeDao().getPath(((ContentDaoWrapper) boot.contentDao()).getNode(container), gc, branchUuid, containerType, languageTag);
+				return boot.nodeDao().getPath(boot.contentDao().getNode(container), gc, branchUuid, containerType, languageTag);
 			}).build(),
 
 			// .edited
 			newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				NodeGraphFieldContainer container = content.getContainer();
+				HibNodeFieldContainer container = content.getContainer();
 				if (container == null) {
 					return null;
 				}
@@ -464,7 +465,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (content == null) {
 						return null;
 					}
-					NodeGraphFieldContainer container = content.getContainer();
+					HibNodeFieldContainer container = content.getContainer();
 					if (container == null) {
 						return null;
 					}
@@ -480,7 +481,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (content == null) {
 						return null;
 					}
-					NodeGraphFieldContainer container = content.getContainer();
+					HibNodeFieldContainer container = content.getContainer();
 					if (container == null) {
 						return null;
 					}
@@ -493,7 +494,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					Tx tx = Tx.get();
 					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
-					NodeGraphFieldContainer container = content.getContainer();
+					HibNodeFieldContainer container = content.getContainer();
 					if (container == null) {
 						return null;
 					}
@@ -503,7 +504,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .version
 			newFieldDefinition().name("version").description("Version of the content.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				NodeGraphFieldContainer container = content.getContainer();
+				HibNodeFieldContainer container = content.getContainer();
 				if (container == null) {
 					return null;
 				}
@@ -515,7 +516,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.argument(createSingleLanguageTagArg(true))
 				.type(GraphQLList.list(GraphQLTypeReference.typeRef(NODE_CONTENT_VERSION_TYPE_NAME))).dataFetcher(env -> {
 					Tx tx = Tx.get();
-					ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+					ContentDao contentDao = tx.contentDao();
 					GraphQLContext gc = env.getContext();
 					String languageTag = getSingleLanguageArgument(env);
 					NodeContent content = env.getSource();
@@ -528,13 +529,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return contentDao.getGraphFieldContainers(node, tx.getBranch(gc), DRAFT).stream().filter(c -> {
 						String lang = c.getLanguageTag();
 						return lang.equals(languageTag);
-					}).findFirst().map(NodeGraphFieldContainer::versions).orElse(null);
+					}).findFirst().map(HibNodeFieldContainer::versions).orElse(null);
 				}).build(),
 
 			// .language
 			newFieldDefinition().name("language").description("The language of this content.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				NodeGraphFieldContainer container = content.getContainer();
+				HibNodeFieldContainer container = content.getContainer();
 				if (container == null) {
 					return null;
 				}
@@ -544,11 +545,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .displayName
 			newFieldDefinition().name("displayName").description("The value of the display field.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				NodeGraphFieldContainer container = content.getContainer();
+				HibNodeFieldContainer container = content.getContainer();
 				if (container == null) {
 					return null;
 				}
-				return ((ContentDaoWrapper) boot.contentDao()).getDisplayFieldValue(container);
+				return boot.contentDao().getDisplayFieldValue(container);
 			}).build());
 
 		Supplier<List<GraphQLFieldDefinition>> withNodeFieldsSupplier = () -> {

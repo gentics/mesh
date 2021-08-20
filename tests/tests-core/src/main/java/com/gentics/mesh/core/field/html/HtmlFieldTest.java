@@ -13,11 +13,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
@@ -80,7 +81,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 
 			// Add html field schema to the schema
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -91,8 +92,8 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 			schema.addField(htmlFieldSchema);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			HtmlGraphField field = container.createHTML(HTML_FIELD);
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibHtmlField field = container.createHTML(HTML_FIELD);
 			field.setHtml("Some<b>htmlABCDE");
 			tx.success();
 		}
@@ -227,7 +228,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 				field.setHTML("someValue");
 				updateContainer(ac, container, HTML_FIELD, field);
 			}, (container) -> {
-				HtmlGraphField field = container.getHtml(HTML_FIELD);
+				HibHtmlField field = container.getHtml(HTML_FIELD);
 				assertNotNull("The graph field {" + HTML_FIELD + "} could not be found.", field);
 				assertEquals("The html of the field was not updated.", "someValue", field.getHTML());
 			});

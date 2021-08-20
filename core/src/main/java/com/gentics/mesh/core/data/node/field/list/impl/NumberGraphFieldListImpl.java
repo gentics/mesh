@@ -10,14 +10,16 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.util.CompareUtils;
@@ -25,12 +27,12 @@ import com.gentics.mesh.util.CompareUtils;
 /**
  * @see NumberGraphFieldList
  */
-public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl, Number>
+public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<HibNumberField, NumberFieldListImpl, Number>
 	implements NumberGraphFieldList {
 
 	public static FieldTransformer<NumberFieldListImpl> NUMBER_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 		parentNode) -> {
-		NumberGraphFieldList numberFieldList = container.getNumberList(fieldKey);
+		HibNumberFieldList numberFieldList = container.getNumberList(fieldKey);
 		if (numberFieldList == null) {
 			return null;
 		} else {
@@ -41,14 +43,14 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	public static FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NumberFieldListImpl numberList = fieldMap.getNumberFieldList(fieldKey);
 
-		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
+		HibNumberFieldList graphNumberFieldList = container.getNumberList(fieldKey);
 		boolean isNumberListFieldSetToNull = fieldMap.hasField(fieldKey) && numberList == null;
-		GraphField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = numberList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(graphNumberFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(graphNumberFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -93,14 +95,14 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	}
 
 	@Override
-	public NumberGraphField createNumber(Number number) {
-		NumberGraphField field = createField();
+	public HibNumberField createNumber(Number number) {
+		HibNumberField field = createField();
 		field.setNumber(number);
 		return field;
 	}
 
 	@Override
-	public NumberGraphField getNumber(int index) {
+	public HibNumberField getNumber(int index) {
 		return getField(index);
 	}
 
@@ -110,7 +112,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	}
 
 	@Override
-	public Class<? extends NumberGraphField> getListType() {
+	public Class<? extends HibNumberField> getListType() {
 		return NumberGraphFieldImpl.class;
 	}
 
@@ -122,7 +124,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	@Override
 	public NumberFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		NumberFieldListImpl restModel = new NumberFieldListImpl();
-		for (NumberGraphField item : getList()) {
+		for (HibNumberField item : getList()) {
 			restModel.add(item.getNumber());
 		}
 		return restModel;
@@ -130,7 +132,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 
 	@Override
 	public List<Number> getValues() {
-		return getList().stream().map(NumberGraphField::getNumber).collect(Collectors.toList());
+		return getList().stream().map(HibNumberField::getNumber).collect(Collectors.toList());
 	}
 
 	@Override
@@ -138,7 +140,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 		if (obj instanceof NumberFieldListImpl) {
 			NumberFieldListImpl restField = (NumberFieldListImpl) obj;
 			List<Number> restList = restField.getItems();
-			List<? extends NumberGraphField> graphList = getList();
+			List<? extends HibNumberField> graphList = getList();
 			List<Number> graphStringList = graphList.stream().map(e -> e.getNumber()).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList);
 		}

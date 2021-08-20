@@ -12,13 +12,14 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
@@ -58,14 +59,14 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			ListFieldSchema htmlListFieldSchema = new ListFieldSchemaImpl();
 			htmlListFieldSchema.setName(HTML_LIST);
 			htmlListFieldSchema.setListType("html");
 			schema.addField(htmlListFieldSchema);
 
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			HtmlGraphFieldList htmlList = container.createHTMLList(HTML_LIST);
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibHtmlFieldList htmlList = container.createHTMLList(HTML_LIST);
 			htmlList.createHTML("some<b>html</b>");
 			htmlList.createHTML("some<b>more html</b>");
 			tx.success();
@@ -83,9 +84,9 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphFieldList list = container.createHTMLList("dummyList");
+			HibHtmlFieldList list = container.createHTMLList("dummyList");
 			assertNotNull(list);
-			HtmlGraphField htmlField = list.createHTML("HTML 1");
+			HibHtmlField htmlField = list.createHTML("HTML 1");
 			assertNotNull(htmlField);
 			assertEquals(1, list.getSize());
 			assertEquals(1, list.getList().size());
@@ -100,7 +101,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testClone() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphFieldList testField = container.createHTMLList("testField");
+			HibHtmlFieldList testField = container.createHTMLList("testField");
 			testField.createHTML("<b>One</b>");
 			testField.createHTML("<i>Two</i>");
 			testField.createHTML("<u>Three</u>");
@@ -117,8 +118,8 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testEquals() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphFieldList fieldA = container.createHTMLList("fieldA");
-			HtmlGraphFieldList fieldB = container.createHTMLList("fieldB");
+			HibHtmlFieldList fieldA = container.createHTMLList("fieldA");
+			HibHtmlFieldList fieldB = container.createHTMLList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.addItem(fieldA.createHTML("testHtml"));
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
@@ -135,7 +136,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphFieldList fieldA = container.createHTMLList("fieldA");
+			HibHtmlFieldList fieldA = container.createHTMLList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
 		}
@@ -149,7 +150,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			String dummyValue = "test123";
 
 			// rest null - graph null
-			HtmlGraphFieldList fieldA = container.createHTMLList(HTML_LIST);
+			HibHtmlFieldList fieldA = container.createHTMLList(HTML_LIST);
 
 			HtmlFieldListImpl restField = new HtmlFieldListImpl();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
@@ -220,7 +221,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				field.getItems().add("someValue2");
 				updateContainer(ac, container, HTML_LIST, field);
 			}, (container) -> {
-				HtmlGraphFieldList field = container.getHTMLList(HTML_LIST);
+				HibHtmlFieldList field = container.getHTMLList(HTML_LIST);
 				assertNotNull("The graph field {" + HTML_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
 				assertEquals("The list item of the field was not updated.", "someValue", field.getList().get(0).getHTML());

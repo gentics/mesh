@@ -1,12 +1,16 @@
 package com.gentics.mesh.core.data.util;
 
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -21,8 +25,15 @@ import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -54,6 +65,46 @@ import com.syncleus.ferma.ElementFrame;
 public final class HibClassConverter {
 
 	private HibClassConverter() {
+	}
+
+	/**
+	 * Convert the hib node field container to a graph counterpart.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	public static BinaryGraphField toGraph(HibBinaryField element) {
+		return checkAndCast(element, BinaryGraphField.class);
+	}
+
+	/**
+	 * Convert the hib node field container to a graph counterpart.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	public static MicronodeGraphField toGraph(HibMicronodeField element) {
+		return checkAndCast(element, MicronodeGraphField.class);
+	}
+
+	/**
+	 * Convert the hib node field container to a graph counterpart.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	public static NodeGraphFieldContainer toGraph(HibNodeFieldContainer element) {
+		return checkAndCast(element, NodeGraphFieldContainer.class);
+	}
+
+	/**
+	 * Convert the hib node field container to a graph counterpart.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	public static GraphFieldContainer toGraph(HibFieldContainer element) {
+		return checkAndCast(element, GraphFieldContainer.class);
 	}
 
 	/**
@@ -251,6 +302,15 @@ public final class HibClassConverter {
 	public static Binary toGraph(HibBinary binary) {
 		return checkAndCast(binary, Binary.class);
 	}
+	/**
+	 * Convert the node to a graph element.
+	 * 
+	 * @param node
+	 * @return
+	 */
+	public static Node toGraph(HibMicronode node) {
+		return checkAndCast(node, Micronode.class);
+	}
 
 	/**
 	 * Convert the node to a graph element.
@@ -325,4 +385,26 @@ public final class HibClassConverter {
 		}
 	}
 
+	/**
+	 * Apply the cast to the graph element and return it.
+	 * 
+	 * @param <T>
+	 *            Type of the graph element
+	 * @param element
+	 *            MDM element to be casted
+	 * @param clazz
+	 *            Element class to validate the cast operation
+	 * @return Casted element object
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T checkAndCast(HibField element, Class<? extends GraphField> clazz) {
+		if (element == null) {
+			return null;
+		}
+		if (clazz.isInstance(element)) {
+			return (T) clazz.cast(element);
+		} else {
+			throw new RuntimeException("The received element was not an OrientDB element. Got: " + element.getClass().getName());
+		}
+	}
 }

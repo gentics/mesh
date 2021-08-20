@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -14,16 +15,19 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -41,12 +45,12 @@ import io.reactivex.Single;
 /**
  * @see MicronodeGraphFieldList
  */
-public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList, Micronode>
+public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<HibMicronodeField, MicronodeFieldList, HibMicronode>
 	implements MicronodeGraphFieldList {
 
 	public static FieldTransformer<MicronodeFieldList> MICRONODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 		parentNode) -> {
-		MicronodeGraphFieldList graphMicroschemaField = container.getMicronodeList(fieldKey);
+		HibMicronodeFieldList graphMicroschemaField = container.getMicronodeList(fieldKey);
 		if (graphMicroschemaField == null) {
 			return null;
 		} else {
@@ -55,15 +59,15 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	};
 
 	public static FieldUpdater MICRONODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldKey);
+		HibMicronodeFieldList micronodeGraphFieldList = container.getMicronodeList(fieldKey);
 		MicronodeFieldList micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
 		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
-		GraphField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = micronodeList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -111,7 +115,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 		MicronodeFieldList restModel = new MicronodeFieldListImpl();
 
-		for (MicronodeGraphField item : getList()) {
+		for (HibMicronodeField item : getList()) {
 			restModel.getItems().add(item.getMicronode().transformToRestSync(ac, level));
 		}
 		return restModel;
@@ -128,7 +132,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	@Override
 	public Single<Boolean> update(InternalActionContext ac, MicronodeFieldList list) {
 		// Transform the list of micronodes into a hashmap. This way we can lookup micronode fields faster
-		Map<String, Micronode> existing = getList().stream().collect(Collectors.toMap(field -> {
+		Map<String, HibMicronode> existing = getList().stream().collect(Collectors.toMap(field -> {
 			return field.getMicronode().getUuid();
 		}, field -> {
 			return field.getMicronode();
@@ -160,7 +164,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			}, (node, microschemaContainerVersion) -> {
 				// Load the micronode for the current field
-				Micronode micronode = existing.get(node.getUuid());
+				HibMicronode micronode = existing.get(node.getUuid());
 				// Create a new micronode if none could be found
 				if (micronode == null) {
 					micronode = getGraph().addFramedVertex(MicronodeImpl.class);
@@ -192,13 +196,13 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				// Clear the list and add new items
 				removeAll();
 				int counter = 1;
-				for (Micronode micronode : micronodeList) {
+				for (HibMicronode micronode : micronodeList) {
 					existing.remove(micronode.getUuid());
-					addItem(String.valueOf(counter++), micronode);
+					addItem(String.valueOf(counter++), toGraph(micronode));
 				}
 				// Delete remaining items in order to prevent dangling micronodes
 				existing.values().stream().forEach(micronode -> {
-					micronode.delete();
+					toGraph(micronode).delete();
 				});
 				subscriber.onNext(true);
 				subscriber.onComplete();
@@ -210,15 +214,15 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		getList().stream().map(MicronodeGraphField::getMicronode).forEach(micronode -> {
-			micronode.delete(bac);
+		getList().stream().map(HibMicronodeField::getMicronode).forEach(micronode -> {
+			toGraph(micronode).delete(bac);
 		});
 		getElement().remove();
 	}
 
 	@Override
-	public List<Micronode> getValues() {
-		return getList().stream().map(MicronodeGraphField::getMicronode).collect(Collectors.toList());
+	public List<HibMicronode> getValues() {
+		return getList().stream().map(HibMicronodeField::getMicronode).collect(Collectors.toList());
 	}
 
 	@Override
@@ -231,8 +235,8 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			MicronodeFieldListImpl restField = (MicronodeFieldListImpl) obj;
 			List<MicronodeField> restList = restField.getItems();
 
-			List<? extends MicronodeGraphField> graphList = getList();
-			List<Micronode> graphMicronodeList = graphList.stream().map(e -> e.getMicronode()).collect(Collectors.toList());
+			List<? extends HibMicronodeField> graphList = getList();
+			List<HibMicronode> graphMicronodeList = graphList.stream().map(e -> e.getMicronode()).collect(Collectors.toList());
 			return CompareUtils.equals(graphMicronodeList, restList);
 		}
 		return super.equals(obj);

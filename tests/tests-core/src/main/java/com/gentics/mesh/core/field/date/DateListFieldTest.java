@@ -13,13 +13,14 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
@@ -51,11 +52,11 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, "dateList", "date");
 
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			DateGraphFieldList dateList = container.createDateList("dateList");
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibDateFieldList dateList = container.createDateList("dateList");
 			dateList.createDate(1L);
 			dateList.createDate(2L);
 			tx.success();
@@ -72,9 +73,9 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			DateGraphFieldList list = container.createDateList("dummyList");
+			HibDateFieldList list = container.createDateList("dummyList");
 			assertNotNull(list);
-			DateGraphField dateField = list.createDate(1L);
+			HibDateField dateField = list.createDate(1L);
 			assertNotNull(dateField);
 			assertEquals(1, list.getSize());
 			assertEquals(1, list.getList().size());
@@ -89,7 +90,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testClone() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			DateGraphFieldList testField = container.createDateList("testField");
+			HibDateFieldList testField = container.createDateList("testField");
 			testField.createDate(47L);
 			testField.createDate(11L);
 
@@ -105,8 +106,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testEquals() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			DateGraphFieldList fieldA = container.createDateList("fieldA");
-			DateGraphFieldList fieldB = container.createDateList("fieldB");
+			HibDateFieldList fieldA = container.createDateList("fieldA");
+			HibDateFieldList fieldB = container.createDateList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.addItem(fieldA.createDate(42L));
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
@@ -123,7 +124,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			DateGraphFieldList fieldA = container.createDateList("fieldA");
+			HibDateFieldList fieldA = container.createDateList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
 		}
@@ -137,7 +138,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			Long dummyValue = 4200L;
 
 			// rest null - graph null
-			DateGraphFieldList fieldA = container.createDateList(DATE_LIST);
+			HibDateFieldList fieldA = container.createDateList(DATE_LIST);
 
 			DateFieldListImpl restField = new DateFieldListImpl();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
@@ -208,7 +209,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				field.getItems().add(toISO8601(43000L));
 				updateContainer(ac, container, DATE_LIST, field);
 			}, (container) -> {
-				DateGraphFieldList field = container.getDateList(DATE_LIST);
+				HibDateFieldList field = container.getDateList(DATE_LIST);
 				assertNotNull("The graph field {" + DATE_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
 				assertEquals("The list item of the field was not updated.", 42000L, field.getList().get(0).getDate().longValue());

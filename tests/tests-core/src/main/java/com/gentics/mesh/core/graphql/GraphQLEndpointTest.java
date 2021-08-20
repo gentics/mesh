@@ -30,19 +30,19 @@ import org.junit.runners.Parameterized.Parameters;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -329,7 +329,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 			// Setup some test data
-			NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
+			HibNodeFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 
 			// node
 			container.createNode("nodeRef", node2);
@@ -366,62 +366,62 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
 
 			// stringList
-			StringGraphFieldList stringList = container.createStringList("stringList");
+			HibStringFieldList stringList = container.createStringList("stringList");
 			stringList.createString("A");
 			stringList.createString("B");
 			stringList.createString("C");
 			stringList.createString("D Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
 			// htmlList
-			HtmlGraphFieldList htmlList = container.createHTMLList("htmlList");
+			HibHtmlFieldList htmlList = container.createHTMLList("htmlList");
 			htmlList.createHTML("A");
 			htmlList.createHTML("B");
 			htmlList.createHTML("C");
 			htmlList.createHTML("D Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
 			// dateList
-			DateGraphFieldList dateList = container.createDateList("dateList");
+			HibDateFieldList dateList = container.createDateList("dateList");
 			dateList.createDate(dateToMilis("2012-07-11 10:55:21"));
 			dateList.createDate(dateToMilis("2014-07-11 10:55:30"));
 			dateList.createDate(dateToMilis("2000-07-11 10:55:00"));
 
 			// numberList
-			NumberGraphFieldList numberList = container.createNumberList("numberList");
+			HibNumberFieldList numberList = container.createNumberList("numberList");
 			numberList.createNumber(42L);
 			numberList.createNumber(1337);
 			numberList.createNumber(0.314f);
 
 			// booleanList
-			BooleanGraphFieldList booleanList = container.createBooleanList("booleanList");
+			HibBooleanFieldList booleanList = container.createBooleanList("booleanList");
 			booleanList.createBoolean(true);
 			booleanList.createBoolean(null);
 			booleanList.createBoolean(false);
 
 			// nodeList
-			NodeGraphFieldList nodeList = container.createNodeList("nodeList");
+			HibNodeFieldList nodeList = container.createNodeList("nodeList");
 			nodeList.createNode("0", node2);
 			nodeList.createNode("1", node3);
 
 			if (withMicroschema) {
 				// micronodeList
-				MicronodeGraphFieldList micronodeList = container.createMicronodeFieldList("micronodeList");
-				Micronode firstMicronode = micronodeList.createMicronode();
+				HibMicronodeFieldList micronodeList = container.createMicronodeFieldList("micronodeList");
+				HibMicronode firstMicronode = micronodeList.createMicronode();
 				firstMicronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
 				firstMicronode.createString("firstName").setString("Joe");
 				firstMicronode.createString("lastName").setString("Doe");
 				firstMicronode.createString("address").setString("Somewhere");
 				firstMicronode.createString("postcode").setString("1010");
 
-				Micronode secondMicronode = micronodeList.createMicronode();
+				HibMicronode secondMicronode = micronodeList.createMicronode();
 				secondMicronode.setSchemaContainerVersion(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 				secondMicronode.createString("text").setString("Joe");
 				secondMicronode.createNode("nodeRef", content());
-				NodeGraphFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
+				HibNodeFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
 				micrnodeNodeList.createNode("0", node2);
 				micrnodeNodeList.createNode("1", node3);
 
 				// micronode
-				MicronodeGraphField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());
+				HibMicronodeField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());
 				micronodeField.getMicronode().createString("firstName").setString("Joe");
 				micronodeField.getMicronode().createString("lastName").setString("Doe");
 				micronodeField.getMicronode().createString("address").setString("Somewhere");

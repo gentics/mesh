@@ -25,11 +25,11 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -121,7 +121,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<HibNode>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
-		NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			List<HibNode> oldValue;
 			List<HibNode> newValue;
@@ -138,8 +138,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid").containsExactlyElementsOf(list.getItems());
 
 			try (Tx tx = tx()) {
-				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-				NodeGraphFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
+				ContentDao contentDao = tx.contentDao();
+				HibNodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME));
 				container = newContainerVersion;
@@ -185,9 +185,9 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNodeList(FIELD_NAME)).isNotNull();
@@ -292,9 +292,9 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", folder("news"));
 			tx.success();
 		}
@@ -313,13 +313,13 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		HibNode referencedNode = folder("news");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
 
 			// Create node list
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", referencedNode);
 			tx.success();
 		}
@@ -350,9 +350,9 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Create node list
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", newsNode);
 			tx.success();
 		}

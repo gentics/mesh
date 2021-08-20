@@ -16,9 +16,9 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BranchMigrationContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -113,7 +113,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 			db.tx((tx) -> {
 				NodeDao nodeDao = tx.nodeDao();
 				TagDao tagDao = tx.tagDao();
-				ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+				ContentDao contentDao = tx.contentDao();
 
 				// Check whether the node already has an initial container and thus was already migrated
 				if (contentDao.getGraphFieldContainers(node, newBranch, INITIAL).hasNext()) {
@@ -125,8 +125,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					nodeDao.setParentNode(node, newBranch.getUuid(), parent);
 				}
 
-				Result<? extends NodeGraphFieldContainer> drafts = contentDao.getGraphFieldContainers(node, oldBranch, DRAFT);
-				Result<? extends NodeGraphFieldContainer> published = contentDao.getGraphFieldContainers(node, oldBranch, PUBLISHED);
+				Result<HibNodeFieldContainer> drafts = contentDao.getGraphFieldContainers(node, oldBranch, DRAFT);
+				Result<HibNodeFieldContainer> published = contentDao.getGraphFieldContainers(node, oldBranch, PUBLISHED);
 
 				// 1. Migrate draft containers first
 				drafts.forEach(container -> {
@@ -136,7 +136,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 						setInitial(node, container, newBranch);
 					}
 
-					GraphFieldContainerEdgeImpl draftEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl draftEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguageTag());
 					draftEdge.setType(DRAFT);
 					draftEdge.setBranchUuid(newBranch.getUuid());
@@ -156,7 +156,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					// The initial edge should always point to the oldest container of either draft or published.
 					setInitial(node, container, newBranch);
 
-					GraphFieldContainerEdgeImpl publishEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl publishEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
 					publishEdge.setLanguageTag(container.getLanguageTag());
 					publishEdge.setType(PUBLISHED);
 					publishEdge.setBranchUuid(newBranch.getUuid());
@@ -182,8 +182,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	/**
 	 * Create a new initial edge between node and container for the given branch.
 	 */
-	private void setInitial(HibNode node, NodeGraphFieldContainer container, HibBranch branch) {
-		GraphFieldContainerEdgeImpl initialEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, container,
+	private void setInitial(HibNode node, HibNodeFieldContainer container, HibBranch branch) {
+		GraphFieldContainerEdgeImpl initialEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container),
 			GraphFieldContainerEdgeImpl.class);
 		initialEdge.setLanguageTag(container.getLanguageTag());
 		initialEdge.setBranchUuid(branch.getUuid());

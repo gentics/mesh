@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -555,7 +555,7 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+		ContentDao contentDao = tx.contentDao();
 		NodeDao nodeDao = tx.nodeDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = tx.getProject(gc);

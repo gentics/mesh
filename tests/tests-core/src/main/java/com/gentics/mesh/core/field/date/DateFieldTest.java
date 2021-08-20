@@ -15,11 +15,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -107,7 +109,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		HibNode node = folder("2015");
 		long date;
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 
 			// Add html field schema to the schema
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -115,8 +117,8 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 			schema.addField(dateFieldSchema);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			DateGraphField field = container.createDate(DATE_FIELD);
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibDateField field = container.createDate(DATE_FIELD);
 			date = fromISO8601(toISO8601(System.currentTimeMillis()));
 			field.setDate(date);
 			tx.success();
@@ -141,8 +143,8 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long date = System.currentTimeMillis();
-			DateGraphField fieldA = container.createDate(DATE_FIELD);
-			DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
+			HibDateField fieldA = container.createDate(DATE_FIELD);
+			HibDateField fieldB = container.createDate(DATE_FIELD + "_2");
 			fieldA.setDate(date);
 			fieldB.setDate(date);
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -154,8 +156,8 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			DateGraphField fieldA = container.createDate(DATE_FIELD);
-			DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
+			HibDateField fieldA = container.createDate(DATE_FIELD);
+			HibDateField fieldB = container.createDate(DATE_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
 		}
 	}
@@ -168,7 +170,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 			Long date = System.currentTimeMillis();
 
 			// rest null - graph null
-			DateGraphField fieldA = container.createDate(DATE_FIELD);
+			HibDateField fieldA = container.createDate(DATE_FIELD);
 			DateFieldImpl restField = new DateFieldImpl();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
@@ -235,7 +237,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 				field.setDate(DateUtils.toISO8601(0L, 0));
 				updateContainer(ac, container, DATE_FIELD, field);
 			}, (container) -> {
-				DateGraphField field = container.getDate(DATE_FIELD);
+				HibDateField field = container.getDate(DATE_FIELD);
 				assertNotNull("The graph field {" + DATE_FIELD + "} could not be found.", field);
 				assertEquals("The date of the field was not updated.", 0L, field.getDate().longValue());
 			});

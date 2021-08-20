@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -73,7 +73,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.argument(createLanguageTagArg(true))
 				.argument(createNodeVersionArg())
 				.dataFetcher((env) -> {
-					ContentDaoWrapper contentDao = (ContentDaoWrapper) Tx.get().contentDao();
+					ContentDao contentDao = Tx.get().contentDao();
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
 					TagDao tagDao = Tx.get().tagDao();

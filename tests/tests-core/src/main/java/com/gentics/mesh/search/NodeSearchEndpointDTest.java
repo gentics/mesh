@@ -19,12 +19,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -170,9 +170,9 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
 				HibNode node = nodeDao.create(parentNode, user, schemaVersion, project);
-				NodeGraphFieldContainer fieldContainer = boot().contentDao().createGraphFieldContainer(node, english, node.getProject().getLatestBranch(), user);
+				HibNodeFieldContainer fieldContainer = boot().contentDao().createGraphFieldContainer(node, english, node.getProject().getLatestBranch(), user);
 				fieldContainer.createString("name").setString("Name_" + i);
-				MicronodeGraphField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
+				HibMicronodeField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 				vcardField.getMicronode().createString("firstName").setString("Mickey");
 				vcardField.getMicronode().createString("lastName").setString("Mouse");
 				roleDao.grantPermissions(role(), node, InternalPermission.READ_PERM);

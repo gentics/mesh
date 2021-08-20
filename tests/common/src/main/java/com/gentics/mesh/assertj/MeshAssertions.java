@@ -48,10 +48,10 @@ import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.assertj.impl.WebRootResponseAssert;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -185,7 +185,7 @@ public class MeshAssertions extends Assertions {
 		return new SchemaChangeModelAssert(actual);
 	}
 
-	public static MicronodeAssert assertThat(Micronode actual) {
+	public static MicronodeAssert assertThat(HibMicronode actual) {
 		return new MicronodeAssert(actual);
 	}
 
@@ -197,7 +197,7 @@ public class MeshAssertions extends Assertions {
 		return new BranchResponseAssert(actual);
 	}
 
-	public static NodeGraphFieldContainerAssert assertThat(NodeGraphFieldContainer actual) {
+	public static NodeGraphFieldContainerAssert assertThat(HibNodeFieldContainer actual) {
 		return new NodeGraphFieldContainerAssert(actual);
 	}
 

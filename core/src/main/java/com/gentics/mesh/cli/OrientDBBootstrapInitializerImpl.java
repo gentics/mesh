@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.JobDao;
@@ -467,8 +467,8 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	}
 
 	@Override
-	public ContentDaoWrapper contentDao() {
-		return (ContentDaoWrapper) daoCollection.contentDao();
+	public ContentDao contentDao() {
+		return daoCollection.contentDao();
 	}
 
 	@Override

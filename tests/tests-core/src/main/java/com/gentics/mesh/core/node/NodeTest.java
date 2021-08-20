@@ -24,10 +24,9 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
@@ -73,7 +72,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGetPath() throws Exception {
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 
 			HibNode newsNode = content("news overview");
 			InternalActionContext ac = mockActionContext();
@@ -140,13 +139,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMeshNodeFields() throws IOException {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
 			HibNode newsNode = content("news overview");
 			String german = german();
 			InternalActionContext ac = mockActionContext("lang=de,en&version=draft");
 			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
-			NodeGraphFieldContainer germanFields = contentDao.getLatestDraftFieldContainer(newsNode, german);
+			HibNodeFieldContainer germanFields = contentDao.getLatestDraftGraphFieldContainer(newsNode, german);
 			String expectedDisplayName = germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField())
 				.getString();
 			assertEquals("The display name value did not match up", expectedDisplayName, nodeDao.getDisplayName(newsNode, ac));
@@ -258,7 +257,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibNode node = folder("2015");
 			assertEquals("folder", node.getSchemaContainer().getLatestVersion().getSchema().getName());
 			assertTrue(node.getSchemaContainer().getLatestVersion().getSchema().getContainer());
-			NodeGraphFieldContainer englishVersion = boot().contentDao().getGraphFieldContainer(node, "en");
+			HibNodeFieldContainer englishVersion = boot().contentDao().getGraphFieldContainer(node, "en");
 			assertNotNull(englishVersion);
 		}
 	}
@@ -267,7 +266,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
 			HibUser user = user();
 			HibNode parentNode = folder("2015");
@@ -282,7 +281,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String english = english();
 			String german = german();
 
-			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, english,
+			HibNodeFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, english,
 				node.getProject().getLatestBranch(), user);
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
@@ -290,16 +289,16 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(user.getUuid(), englishContainer.getEditor().getUuid());
 			assertNotNull(englishContainer.getLastEditedTimestamp());
 
-			List<? extends GraphFieldContainer> allProperties = TestUtils.toList(contentDao.getDraftGraphFieldContainers(node));
+			List<HibNodeFieldContainer> allProperties = TestUtils.toList(contentDao.getDraftGraphFieldContainers(node));
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
-			NodeGraphFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(node, german, node.getProject().getLatestBranch(),
+			HibNodeFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(node, german, node.getProject().getLatestBranch(),
 				user);
 			germanContainer.createString("content").setString("german content");
 			assertEquals(2, TestUtils.size(contentDao.getDraftGraphFieldContainers(node)));
 
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english);
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english);
 			assertNotNull(container);
 			String text = container.getString("content").getString();
 			assertNotNull(text);

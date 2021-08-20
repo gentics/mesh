@@ -14,12 +14,11 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
@@ -76,9 +75,9 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				.transactional(tx -> entities.project.getElement(model).stream().flatMap(project -> {
 					BranchDao branchDao = tx.branchDao();
 					NodeDao nodeDao = tx.nodeDao();
-					List<Branch> branches = (List<Branch>) branchDao.findAll(project).list();
+					List<? extends HibBranch> branches = branchDao.findAll(project).list();
 					return nodeDao.findAll(project).stream().flatMap(node -> Stream.of(DRAFT, PUBLISHED)
-							.flatMap(type -> branches.stream().flatMap(branch -> ((ContentDaoWrapper) tx.contentDao())
+							.flatMap(type -> branches.stream().flatMap(branch -> tx.contentDao()
 									.getGraphFieldContainers(node, branch, type).stream()
 									.map(container -> helper.createDocumentRequest(
 											ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
