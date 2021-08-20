@@ -144,7 +144,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibNode parentNode = folder("2015");
 			HibNode node = nodeDao.create(parentNode, user(), getSchemaContainer().getLatestVersion(), project);
 			String german = "de";
-			HibNodeFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(node, german, branch, user());
+			HibNodeFieldContainer germanContainer = boot().contentDao().createFieldContainer(node, german, branch, user());
 
 			germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 			germanContainer.createString("name").setString("german node name");

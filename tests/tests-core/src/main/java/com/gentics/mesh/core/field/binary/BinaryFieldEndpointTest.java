@@ -98,7 +98,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		// 1. Upload a binary field
 		String uuid = tx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			"filename.txt", "application/binary"));
@@ -124,7 +124,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			// 1. Upload a binary field
 			String uuid = tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+			VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 				"application/binary"));
@@ -152,7 +152,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// 1. Upload a binary field
 		String uuid = tx(() -> folder("2015").getUuid());
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), filename, "application/binary"));
@@ -222,7 +222,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			// 1. Upload a binary field
 			String uuid = tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+			VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 				"application/binary"));
@@ -243,7 +243,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		String uuid = tx(() -> folder("2015").getUuid());
 		// 1. Upload a binary field
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 			"application/binary"));
@@ -371,7 +371,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	public NodeResponse createNodeWithField() {
 		String uuid = tx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 			"application/binary"));

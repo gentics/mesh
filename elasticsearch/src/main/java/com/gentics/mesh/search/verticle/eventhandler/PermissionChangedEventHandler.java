@@ -90,7 +90,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 				.flatMap(project -> ofNullable(nodeDao.findByUuid(project, model.getUuid()))
 					.flatMap(node -> branchDao.findAll(project).stream().map(HibBaseElement::getUuid)
 						.flatMap(branchUuid -> Util.latestVersionTypes()
-							.flatMap(type -> tx.contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
+							.flatMap(type -> tx.contentDao().getFieldContainers(node, branchUuid, type).stream()
 								.map(container -> meshHelper.updateDocumentRequest(
 									ContentDao.composeIndexName(
 										model.getProject().getUuid(),

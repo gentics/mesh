@@ -270,7 +270,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			HibNode node = folder("2015");
-			boot().contentDao().createGraphFieldContainer(node, german(), initialBranch(), user());
+			boot().contentDao().createFieldContainer(node, german(), initialBranch(), user());
 		});
 		syncIndex();
 		assertMetrics("node", 1, 2, 0);

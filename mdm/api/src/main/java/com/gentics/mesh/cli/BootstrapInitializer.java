@@ -32,7 +32,6 @@ import io.vertx.core.Vertx;
  * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
  * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
  */
-// TODO move this to the top level MDM API once the field container API is split
 public interface BootstrapInitializer {
 
 	@Getter

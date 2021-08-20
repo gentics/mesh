@@ -526,7 +526,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	private void store(Set<Single<String>> obs, HibNode node, String branchUuid, ContainerType type, GenericEntryContext context) {
 		ContentDao contentDao = Tx.get().contentDao();
 		if (context.getLanguageTag() != null) {
-			HibNodeFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
+			HibNodeFieldContainer container = contentDao.getFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
@@ -534,7 +534,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		} else {
-			for (HibNodeFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
+			for (HibNodeFieldContainer container : contentDao.getFieldContainers(node, branchUuid, type)) {
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		}
@@ -601,7 +601,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		ContentDao contentDao = Tx.get().contentDao();
 
 		if (context.getLanguageTag() != null) {
-			HibNodeFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
+			HibNodeFieldContainer container = contentDao.getFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
@@ -610,7 +610,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			}
 		} else {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (HibNodeFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
+			for (HibNodeFieldContainer container : contentDao.getFieldContainers(node, branchUuid, type)) {
 				obs.add(storeContainerForBulk(container, branchUuid, type).toObservable());
 			}
 			return Observable.merge(obs);
@@ -745,7 +745,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			for (HibBranch branch : branchDao.findAll(project)) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
-					for (HibNodeFieldContainer container : contentDao.getGraphFieldContainers(node, branch, type)) {
+					for (HibNodeFieldContainer container : contentDao.getFieldContainers(node, branch, type)) {
 						String indexName = contentDao.getIndexName(container, project.getUuid(), branch.getUuid(), type);
 						String documentId = contentDao.getDocumentId(container);
 						entries.add(new UpdateBulkEntry(indexName, documentId, json, complianceMode));

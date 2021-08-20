@@ -116,7 +116,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				ContentDao contentDao = tx.contentDao();
 
 				// Check whether the node already has an initial container and thus was already migrated
-				if (contentDao.getGraphFieldContainers(node, newBranch, INITIAL).hasNext()) {
+				if (contentDao.getFieldContainers(node, newBranch, INITIAL).hasNext()) {
 					return;
 				}
 
@@ -125,8 +125,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					nodeDao.setParentNode(node, newBranch.getUuid(), parent);
 				}
 
-				Result<HibNodeFieldContainer> drafts = contentDao.getGraphFieldContainers(node, oldBranch, DRAFT);
-				Result<HibNodeFieldContainer> published = contentDao.getGraphFieldContainers(node, oldBranch, PUBLISHED);
+				Result<HibNodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
+				Result<HibNodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);
 
 				// 1. Migrate draft containers first
 				drafts.forEach(container -> {

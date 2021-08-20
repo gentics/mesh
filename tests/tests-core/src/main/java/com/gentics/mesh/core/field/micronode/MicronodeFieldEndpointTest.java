@@ -108,7 +108,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			HibMicronode oldValue = null;
 			HibNodeFieldContainer container = null;
 			try (Tx tx = tx()) {
-				container = boot().contentDao().getGraphFieldContainer(node, "en");
+				container = boot().contentDao().getFieldContainer(node, "en");
 				oldValue = getMicronodeValue(container, FIELD_NAME);
 				field = new MicronodeResponse();
 				field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));

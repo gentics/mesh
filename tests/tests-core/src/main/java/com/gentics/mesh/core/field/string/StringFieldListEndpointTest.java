@@ -166,7 +166,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
 			Arrays.asList("X", "Y"), Arrays.asList("C"));
 
-		HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			StringFieldListImpl list = new StringFieldListImpl();
 			List<String> oldValue;

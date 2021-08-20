@@ -123,7 +123,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		disableAutoPurge();
 		HibNode node = folder("2015");
 
-		HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 
 			final HibNodeFieldContainer currentContainer = container;

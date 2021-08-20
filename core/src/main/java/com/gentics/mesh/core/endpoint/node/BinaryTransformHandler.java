@@ -224,7 +224,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			HibBranch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
-			HibNodeFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+			HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 				latestDraftVersion, true);
 
 			// TODO Add conflict checking

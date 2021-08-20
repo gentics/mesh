@@ -153,7 +153,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		boolean publish = container.isPublished(branchUuid);
 
 		// Clone the field container. This will also update the draft edge
-		HibNodeFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
+		HibNodeFieldContainer migrated = contentDao.createFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
 			// Ensure that the publish edge is also updated correctly
@@ -206,7 +206,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 				String languageTag = container.getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
 				ac.getVersioningParameters().setVersion("draft");
-				HibNodeFieldContainer oldPublished = contentDao.getGraphFieldContainer(node, languageTag, branchUuid, PUBLISHED);
+				HibNodeFieldContainer oldPublished = contentDao.getFieldContainer(node, languageTag, branchUuid, PUBLISHED);
 
 				VersionNumber nextDraftVersion = null;
 				// 1. Check whether there is any other published container which we need to handle separately
@@ -253,7 +253,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		String branchUuid = branch.getUuid();
 		ac.getVersioningParameters().setVersion("published");
 
-		HibNodeFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
+		HibNodeFieldContainer migrated = contentDao.createFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
 		migrated.setVersion(container.getVersion().nextPublished());
 		nodeDao.setPublished(node, ac, migrated, branchUuid);
 

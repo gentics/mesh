@@ -229,12 +229,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 			HibNode node = folder("2015");
 			HibNode folder = folder("news");
-			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(folder, "de"), initialBranchUuid(), null);
-			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(folder, "de"), initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getFieldContainer(folder, "de"), initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getFieldContainer(folder, "de"), initialBranchUuid(), null);
 
 			HibNode node2 = content();
-			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(node2, "en"), initialBranchUuid(), null);
-			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(node2, "de"), initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getFieldContainer(node2, "en"), initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getFieldContainer(node2, "de"), initialBranchUuid(), null);
 			HibNode node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
@@ -329,7 +329,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 			// Setup some test data
-			HibNodeFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
+			HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
 
 			// node
 			container.createNode("nodeRef", node2);

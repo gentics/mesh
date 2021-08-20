@@ -124,7 +124,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1), Collections.emptyList(),
 			Arrays.asList(47.11, 8.15), Arrays.asList(3));
 
-		HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			final HibNodeFieldContainer currentContainer = container;
 			List<Number> oldValue = tx(() -> getListValues(currentContainer, NumberGraphFieldListImpl.class, FIELD_NAME));

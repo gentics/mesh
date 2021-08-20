@@ -77,7 +77,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
 				HibNode node = folder("2015");
-				HibNodeFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
+				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
 				String oldValue = getStringValue(container, FIELD_NAME);
 
 				String newValue = "content " + i;

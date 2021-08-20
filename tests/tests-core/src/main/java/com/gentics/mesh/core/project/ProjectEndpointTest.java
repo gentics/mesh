@@ -561,7 +561,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// since the project name is part of the search document.
 			int expectedCount = 1;
 			for (HibNode node : tx.nodeDao().findAll(project())) {
-				expectedCount += tx.contentDao().getGraphFieldContainerCount(node);
+				expectedCount += tx.contentDao().getFieldContainerCount(node);
 			}
 			expectedCount += tx.tagDao().count();
 			expectedCount += tx.tagFamilyDao().computeCount(project);

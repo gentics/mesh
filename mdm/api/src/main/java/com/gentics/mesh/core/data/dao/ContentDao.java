@@ -255,7 +255,7 @@ public interface ContentDao {
 	 * @param languageTag
 	 * @return
 	 */
-	HibNodeFieldContainer getGraphFieldContainer(HibNode node, String languageTag);
+	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag);
 
 	/**
 	 * Return the field container for the given language, type and branch Uuid.
@@ -265,10 +265,10 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	HibNodeFieldContainer getGraphFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type);
+	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type);
 
 	/**
-	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will be
+	 * Create a new field container for the given language and assign the schema version of the branch to the container. The field container will be
 	 * the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
 	 * container will be a clone of the last draft and will have the next version number.
 	 *
@@ -279,10 +279,10 @@ public interface ContentDao {
 	 *            user
 	 * @return
 	 */
-	HibNodeFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user);
+	HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user);
 
 	/**
-	 * Like {@link #createGraphFieldContainer(HibNode, String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not
+	 * Like {@link #createFieldContainer(HibNode, String, HibBranch, HibUser)}, but let the new field container be a clone of the given original (if not
 	 * null).
 	 *
 	 * @param languageTag
@@ -295,7 +295,7 @@ public interface ContentDao {
 	 *            Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
-	HibNodeFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor,
+	HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor,
 		HibNodeFieldContainer original,
 		boolean handleDraftEdge);
 
@@ -304,27 +304,27 @@ public interface ContentDao {
 	 *
 	 * @return
 	 */
-	Result<HibNodeFieldContainer> getDraftGraphFieldContainers(HibNode node);
+	Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node);
 
 	/**
-	 * Return a traversal of graph field containers of given type for the node in the given branch.
+	 * Return a traversal of field containers of given type for the node in the given branch.
 	 *
 	 * @param branch
 	 * @param type
 	 * @return
 	 */
-	default Result<HibNodeFieldContainer> getGraphFieldContainers(HibNode node, HibBranch branch, ContainerType type) {
-		return getGraphFieldContainers(node, branch.getUuid(), type);
+	default Result<HibNodeFieldContainer> getFieldContainers(HibNode node, HibBranch branch, ContainerType type) {
+		return getFieldContainers(node, branch.getUuid(), type);
 	}
 
 	/**
-	 * Return traversal of graph field containers of given type for the node in the given branch.
+	 * Return traversal of field containers of given type for the node in the given branch.
 	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
 	 */
-	Result<HibNodeFieldContainer> getGraphFieldContainers(HibNode node, String branchUuid, ContainerType type);
+	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -332,14 +332,14 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	Result<HibNodeFieldContainer> getGraphFieldContainers(HibNode node, ContainerType type);
+	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
 	 *
 	 * @return
 	 */
-	long getGraphFieldContainerCount(HibNode node);
+	long getFieldContainerCount(HibNode node);
 
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there

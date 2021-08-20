@@ -194,7 +194,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		ContainerType type = getNodeVersion(env);
 		Stream<? extends HibNodeFieldContainer> stream = StreamSupport
-			.stream(contentDao.getGraphFieldContainers(content.getNode(), branch, type).spliterator(), false);
+			.stream(contentDao.getFieldContainers(content.getNode(), branch, type).spliterator(), false);
 		return stream
 			.filter(gc::hasReadPerm)
 			.map(container -> {
@@ -526,7 +526,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					}
 					// TODO this is hardcoding the draft versions. We maybe want both or check which type of nodecontent is currently loaded.
 					// This would not have been a problem if contents would be reflected as a type in graphql
-					return contentDao.getGraphFieldContainers(node, tx.getBranch(gc), DRAFT).stream().filter(c -> {
+					return contentDao.getFieldContainers(node, tx.getBranch(gc), DRAFT).stream().filter(c -> {
 						String lang = c.getLanguageTag();
 						return lang.equals(languageTag);
 					}).findFirst().map(HibNodeFieldContainer::versions).orElse(null);

@@ -53,43 +53,43 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public HibNodeFieldContainer getGraphFieldContainer(HibNode node, String languageTag) {
+	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag) {
 		return toGraph(node).getFieldContainer(languageTag);
 	}
 
 	@Override
-	public HibNodeFieldContainer getGraphFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type) {
+	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type) {
 		return toGraph(node).getFieldContainer(languageTag, branchUuid, type);
 	}
 
 	@Override
-	public HibNodeFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user) {
+	public HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user) {
 		return toGraph(node).createFieldContainer(languageTag, branch, user);
 	}
 
 	@Override
-	public HibNodeFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor,
+	public HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor,
 			HibNodeFieldContainer original, boolean handleDraftEdge) {
 		return toGraph(node).createFieldContainer(languageTag, branch, editor, original, handleDraftEdge);
 	}
 
 	@Override
-	public Result<HibNodeFieldContainer> getDraftGraphFieldContainers(HibNode node) {
+	public Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node) {
 		return toGraph(node).getDraftFieldContainers();
 	}
 
 	@Override
-	public Result<HibNodeFieldContainer> getGraphFieldContainers(HibNode node, String branchUuid, ContainerType type) {
+	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
 		return toGraph(node).getFieldContainers(branchUuid, type);
 	}
 
 	@Override
-	public Result<HibNodeFieldContainer> getGraphFieldContainers(HibNode node, ContainerType type) {
+	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
 		return toGraph(node).getFieldContainers(type);
 	}
 
 	@Override
-	public long getGraphFieldContainerCount(HibNode node) {
+	public long getFieldContainerCount(HibNode node) {
 		return toGraph(node).getFieldContainerCount();
 	}
 

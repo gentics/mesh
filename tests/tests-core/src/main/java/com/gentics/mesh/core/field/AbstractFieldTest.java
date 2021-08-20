@@ -59,7 +59,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		nodeDao.setParentNode(node, initialBranchUuid(), project().getBaseNode());
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		initialBranch().assignSchemaVersion(user(), version, batch);
-		HibNodeFieldContainer nodeContainer = boot().contentDao().createGraphFieldContainer(node, english(), initialBranch(), user());
+		HibNodeFieldContainer nodeContainer = boot().contentDao().createFieldContainer(node, english(), initialBranch(), user());
 
 		return Tuple.tuple(node, nodeContainer);
 	}

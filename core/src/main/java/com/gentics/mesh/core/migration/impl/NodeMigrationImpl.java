@@ -171,7 +171,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			ac.getVersioningParameters().setVersion("draft");
 
 			VersionNumber nextDraftVersion = null;
-			HibNodeFieldContainer oldPublished = contentDao.getGraphFieldContainer(node, languageTag, branch.getUuid(), PUBLISHED);
+			HibNodeFieldContainer oldPublished = contentDao.getFieldContainer(node, languageTag, branch.getUuid(), PUBLISHED);
 
 			// 1. Check whether there is any other published container which we need to handle separately
 			if (oldPublished != null && !oldPublished.equals(container)) {
@@ -237,7 +237,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		NodeResponse restModel = nodeDao.transformToRestSync(node, ac, 0, languageTag);
 
 		// Actual migration - Create the new version
-		HibNodeFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(),
+		HibNodeFieldContainer migrated = contentDao.createFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(),
 			container, true);
 
 		// Ensure that the migrated version is also published since the old version was
@@ -293,7 +293,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 		NodeResponse restModel = nodeDao.transformToRestSync(node, ac, 0, languageTag);
 
-		HibNodeFieldContainer migrated = contentDao.createGraphFieldContainer(node, content.getLanguageTag(), branch, content.getEditor(),
+		HibNodeFieldContainer migrated = contentDao.createFieldContainer(node, content.getLanguageTag(), branch, content.getEditor(),
 			content, true);
 
 		migrated.setVersion(content.getVersion().nextPublished());

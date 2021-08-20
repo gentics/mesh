@@ -327,7 +327,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				}
 
 				// Create a new node version field container to store the upload
-				HibNodeFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 					latestDraftVersion,
 					true);
 

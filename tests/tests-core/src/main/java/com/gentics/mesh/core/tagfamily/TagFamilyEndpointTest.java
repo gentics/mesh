@@ -350,10 +350,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagDao tagDao = tx.tagDao();
 			tags.forEach(t -> {
 				tagDao.getNodes(t, initialBranch()).forEach(n -> {
-					boot().contentDao().getGraphFieldContainers(n, initialBranch(), ContainerType.DRAFT).forEach(c -> {
+					boot().contentDao().getFieldContainers(n, initialBranch(), ContainerType.DRAFT).forEach(c -> {
 						taggedDraftContentUuids.add(c.getUuid());
 					});
-					boot().contentDao().getGraphFieldContainers(n, initialBranch(), ContainerType.PUBLISHED).forEach(c -> {
+					boot().contentDao().getFieldContainers(n, initialBranch(), ContainerType.PUBLISHED).forEach(c -> {
 						taggedPublishedContentUuids.add(c.getUuid());
 					});
 				});
@@ -487,7 +487,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT,
 								ContainerType.PUBLISHED)) {
 							for (HibNodeFieldContainer fieldContainer : boot().contentDao()
-									.getGraphFieldContainers(node, branch, containerType)) {
+									.getFieldContainers(node, branch, containerType)) {
 								HibSchemaVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(

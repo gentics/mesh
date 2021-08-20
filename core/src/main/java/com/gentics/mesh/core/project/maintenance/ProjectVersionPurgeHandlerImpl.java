@@ -59,7 +59,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 	}
 
 	private void purgeNode(Tx tx, HibNode node, ZonedDateTime maxAge) {
-		Iterable<HibNodeFieldContainer> initials = tx.contentDao().getGraphFieldContainers(node, ContainerType.INITIAL);
+		Iterable<HibNodeFieldContainer> initials = tx.contentDao().getFieldContainers(node, ContainerType.INITIAL);
 		for (HibNodeFieldContainer initial : initials) {
 			Long counter = 0L;
 			purgeVersion(tx, counter, bulkProvider.get(), toGraph(initial), toGraph(initial), false, maxAge);

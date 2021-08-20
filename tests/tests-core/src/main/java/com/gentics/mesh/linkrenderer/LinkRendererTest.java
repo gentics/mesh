@@ -282,12 +282,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
 			HibNode content = nodeDao.create(parentNode, user(), schemaVersion, project());
-			HibNodeFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(content, german, content.getProject().getLatestBranch(), user());
+			HibNodeFieldContainer germanContainer = boot().contentDao().createFieldContainer(content, german, content.getProject().getLatestBranch(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
 			HibNode content2 = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-			HibNodeFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
+			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 

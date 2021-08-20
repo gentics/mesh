@@ -134,7 +134,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		for (int i = 0; i < 20; i++) {
 			String newFileName = "somefile" + i + ".dat";
 			String oldFilename = null;
-			HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+			HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
 			try (Tx tx = tx()) {
 				HibBinaryField oldValue = container.getBinary("binary");
 				if (oldValue != null) {
@@ -201,7 +201,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		String uuid = tx(() -> folder("news").getUuid());
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("news"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("news"), "en").getVersion());
 
 		Map<String, Buffer> data = new HashMap<>();
 		for (String field : fields) {
@@ -623,11 +623,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// The test nodes
 		HibNode nodeA = folder("news");
 		String uuidA = tx(() -> nodeA.getUuid());
-		String versionA = tx(() -> boot().contentDao().getGraphFieldContainer(nodeA, "en").getVersion()).toString();
+		String versionA = tx(() -> boot().contentDao().getFieldContainer(nodeA, "en").getVersion()).toString();
 
 		HibNode nodeB = folder("products");
 		String uuidB = tx(() -> nodeB.getUuid());
-		String versionB = tx(() -> boot().contentDao().getGraphFieldContainer(nodeA, "en").getVersion()).toString();
+		String versionB = tx(() -> boot().contentDao().getFieldContainer(nodeA, "en").getVersion()).toString();
 
 		// Setup the schemas
 		try (Tx tx = tx()) {

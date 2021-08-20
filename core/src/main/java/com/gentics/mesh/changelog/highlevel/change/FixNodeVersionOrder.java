@@ -85,7 +85,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				if (count != 0 && count % 1000 == 0) {
 					log.info("Checked {} nodes. Found and fixed {} broken nodes", count, fixedNodes.get());
 				}
-				boot.get().contentDao().getGraphFieldContainers(node, ContainerType.INITIAL).stream()
+				boot.get().contentDao().getFieldContainers(node, ContainerType.INITIAL).stream()
 					.forEach(content -> {
 						boolean mutated = fixNodeVersionOrder(context, toGraph(node), content);
 						if (mutated) {
@@ -112,10 +112,10 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		String languageTag = initialContent.getLanguageTag();
 
 		EdgeFrame originalDraftEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.DRAFT);
-		Optional<Object> originalDraftId = Optional.ofNullable(contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.DRAFT))
+		Optional<Object> originalDraftId = Optional.ofNullable(contentDao.getFieldContainer(node, languageTag, branchUuid, ContainerType.DRAFT))
 			.map(HibElement::getId);
 		EdgeFrame originalPublishedEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.PUBLISHED);
-		Optional<Object> originalPublishedId = Optional.ofNullable(contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.PUBLISHED))
+		Optional<Object> originalPublishedId = Optional.ofNullable(contentDao.getFieldContainer(node, languageTag, branchUuid, ContainerType.PUBLISHED))
 			.map(HibElement::getId);
 
 		if (log.isDebugEnabled()) {

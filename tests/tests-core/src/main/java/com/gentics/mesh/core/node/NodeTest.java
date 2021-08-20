@@ -257,7 +257,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibNode node = folder("2015");
 			assertEquals("folder", node.getSchemaContainer().getLatestVersion().getSchema().getName());
 			assertTrue(node.getSchemaContainer().getLatestVersion().getSchema().getContainer());
-			HibNodeFieldContainer englishVersion = boot().contentDao().getGraphFieldContainer(node, "en");
+			HibNodeFieldContainer englishVersion = boot().contentDao().getFieldContainer(node, "en");
 			assertNotNull(englishVersion);
 		}
 	}
@@ -281,7 +281,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String english = english();
 			String german = german();
 
-			HibNodeFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, english,
+			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english,
 				node.getProject().getLatestBranch(), user);
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
@@ -289,14 +289,14 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(user.getUuid(), englishContainer.getEditor().getUuid());
 			assertNotNull(englishContainer.getLastEditedTimestamp());
 
-			List<HibNodeFieldContainer> allProperties = TestUtils.toList(contentDao.getDraftGraphFieldContainers(node));
+			List<HibNodeFieldContainer> allProperties = TestUtils.toList(contentDao.getDraftFieldContainers(node));
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
-			HibNodeFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(node, german, node.getProject().getLatestBranch(),
+			HibNodeFieldContainer germanContainer = boot().contentDao().createFieldContainer(node, german, node.getProject().getLatestBranch(),
 				user);
 			germanContainer.createString("content").setString("german content");
-			assertEquals(2, TestUtils.size(contentDao.getDraftGraphFieldContainers(node)));
+			assertEquals(2, TestUtils.size(contentDao.getDraftFieldContainers(node)));
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english);
 			assertNotNull(container);
@@ -387,13 +387,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 1. create folder with subfolder and subsubfolder
 			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
-			boot().contentDao().createGraphFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
+			boot().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
 			String folderUuid = folder.getUuid();
 			HibNode subFolder = nodeDao.create(folder, user(), folderSchema, project);
-			boot().contentDao().createGraphFieldContainer(subFolder, english(), initialBranch, user()).createString("name").setString("SubFolder");
+			boot().contentDao().createFieldContainer(subFolder, english(), initialBranch, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
 			HibNode subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
-			boot().contentDao().createGraphFieldContainer(subSubFolder, english(), initialBranch, user()).createString("name")
+			boot().contentDao().createFieldContainer(subSubFolder, english(), initialBranch, user()).createString("name")
 				.setString("SubSubFolder");
 			String subSubFolderUuid = subSubFolder.getUuid();
 
@@ -424,12 +424,12 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 1. create folder with subfolder and subsubfolder
 			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
-			boot().contentDao().createGraphFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
+			boot().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
 			HibNode subFolder = nodeDao.create(folder, user(), folderSchema, project);
-			boot().contentDao().createGraphFieldContainer(subFolder, english(), initialBranch, user()).createString("name").setString("SubFolder");
+			boot().contentDao().createFieldContainer(subFolder, english(), initialBranch, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
 			HibNode subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
-			boot().contentDao().createGraphFieldContainer(subSubFolder, english(), initialBranch, user()).createString("name")
+			boot().contentDao().createFieldContainer(subSubFolder, english(), initialBranch, user()).createString("name")
 				.setString("SubSubFolder");
 			String subSubFolderUuid = subSubFolder.getUuid();
 
@@ -499,7 +499,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				BulkActionContext bac2 = createBulkContext();
 				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
 					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
-				boot().contentDao().createGraphFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
+				boot().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
 				nodeDao.publish(folder, mockActionContext(), bac2);
 				assertEquals(1, bac2.batch().size());
 				return folder.getUuid();
@@ -556,7 +556,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				RoleDao roleDao = tx.roleDao();
 				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
 					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
-				boot().contentDao().createGraphFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
+				boot().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
 				nodeDao.publish(folder, mockActionContext(), bac);
 				return folder.getUuid();
 			});

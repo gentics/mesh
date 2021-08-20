@@ -212,7 +212,7 @@ public class MeshEntities {
 			.flatMap(project -> findElementByUuid(boot.nodeDao(), project, eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
-				contentDao.getGraphFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
+				contentDao.getFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
 			));
 	}
 
@@ -327,7 +327,7 @@ public class MeshEntities {
 		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
 		return findElementByUuidStream(boot.nodeDao(), project, nodeUuid)
 		.flatMap(node -> Util.latestVersionTypes()
-		.flatMap(type -> boot.contentDao().getGraphFieldContainers(node, branch, type).stream()
+		.flatMap(type -> boot.contentDao().getFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
 			ContentDao.composeIndexName(
 				project.getUuid(),

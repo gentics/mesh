@@ -209,7 +209,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
-				for (HibFieldContainer currentFieldContainer : contentDao.getGraphFieldContainers(node, branch, containerType)) {
+				for (HibFieldContainer currentFieldContainer : contentDao.getFieldContainers(node, branch, containerType)) {
 					String currLanguage = currentFieldContainer.getLanguageTag();
 					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage);
 					languagePaths.put(currLanguage, languagePath);

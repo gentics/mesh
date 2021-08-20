@@ -147,10 +147,10 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// Inject the reference node field
-			SchemaVersionModel schema = boot().contentDao().getGraphFieldContainer(node, "en").getSchemaContainerVersion().getSchema();
+			SchemaVersionModel schema = boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
-			boot().contentDao().getGraphFieldContainer(node, "en").getSchemaContainerVersion().setSchema(schema);
-			boot().contentDao().getGraphFieldContainer(node, "en").createNode("reference", folder("2015"));
+			boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().setSchema(schema);
+			boot().contentDao().getFieldContainer(node, "en").createNode("reference", folder("2015"));
 			tx.success();
 		}
 

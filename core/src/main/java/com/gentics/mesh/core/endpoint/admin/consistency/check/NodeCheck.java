@@ -74,7 +74,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 			result.addInconsistency("The node has no creation date", uuid, MEDIUM);
 		}
 
-		Iterable<HibNodeFieldContainer> initialIterator = contentDao.getGraphFieldContainers(node, ContainerType.INITIAL);
+		Iterable<HibNodeFieldContainer> initialIterator = contentDao.getFieldContainers(node, ContainerType.INITIAL);
 		if (!initialIterator.iterator().hasNext()) {
 			result.addInconsistency("The node has no initial field containers", uuid, HIGH);
 		}

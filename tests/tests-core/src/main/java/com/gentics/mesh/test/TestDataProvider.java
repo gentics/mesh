@@ -561,7 +561,7 @@ public class TestDataProvider {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project, branch, uuid);
 		}
 		if (germanName != null) {
-			HibNodeFieldContainer germanContainer = contentDao.createGraphFieldContainer(folderNode, german,
+			HibNodeFieldContainer germanContainer = contentDao.createFieldContainer(folderNode, german,
 				branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
@@ -571,7 +571,7 @@ public class TestDataProvider {
 			contentDao.publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			HibNodeFieldContainer englishContainer = contentDao.createGraphFieldContainer(folderNode, english,
+			HibNodeFieldContainer englishContainer = contentDao.createFieldContainer(folderNode, english,
 				branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
@@ -625,7 +625,7 @@ public class TestDataProvider {
 				project, branch, uuid);
 		}
 		if (englishContent != null) {
-			HibNodeFieldContainer englishContainer = contentDao.createGraphFieldContainer(node, english,
+			HibNodeFieldContainer englishContainer = contentDao.createFieldContainer(node, english,
 				branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
@@ -638,7 +638,7 @@ public class TestDataProvider {
 		}
 
 		if (germanContent != null) {
-			HibNodeFieldContainer germanContainer = contentDao.createGraphFieldContainer(node, german, branch,
+			HibNodeFieldContainer germanContainer = contentDao.createFieldContainer(node, german, branch,
 				userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");

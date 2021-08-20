@@ -293,17 +293,17 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			microschemaDao.applyChanges(vcard, ac, model, batch);
 			HibMicroschemaVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
-			HibNodeFieldContainer containerWithBoth = boot().contentDao().getGraphFieldContainer(folder("2015"), "en");
+			HibNodeFieldContainer containerWithBoth = boot().contentDao().getFieldContainer(folder("2015"), "en");
 			containerWithBoth.createMicronode("single", vcard);
 			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
-			HibNodeFieldContainer containerWithField = boot().contentDao().getGraphFieldContainer(folder("news"), "en");
+			HibNodeFieldContainer containerWithField = boot().contentDao().getFieldContainer(folder("news"), "en");
 			containerWithField.createMicronode("single", vcard);
 
-			HibNodeFieldContainer containerWithList = boot().contentDao().getGraphFieldContainer(folder("products"), "en");
+			HibNodeFieldContainer containerWithList = boot().contentDao().getFieldContainer(folder("products"), "en");
 			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
-			HibNodeFieldContainer containerWithOtherVersion = boot().contentDao().getGraphFieldContainer(folder("deals"), "en");
+			HibNodeFieldContainer containerWithOtherVersion = boot().contentDao().getFieldContainer(folder("deals"), "en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
 
 			List<? extends HibNodeFieldContainer> containers = microschemaDao.findDraftFieldContainers(vcard, project().getLatestBranch().getUuid()).list();

@@ -170,7 +170,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
 				HibNode node = nodeDao.create(parentNode, user, schemaVersion, project);
-				HibNodeFieldContainer fieldContainer = boot().contentDao().createGraphFieldContainer(node, english, node.getProject().getLatestBranch(), user);
+				HibNodeFieldContainer fieldContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(), user);
 				fieldContainer.createString("name").setString("Name_" + i);
 				HibMicronodeField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 				vcardField.getMicronode().createString("firstName").setString("Mickey");

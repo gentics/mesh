@@ -92,7 +92,7 @@ public class WebRootServiceImpl implements WebRootService {
 		// Handle path to project root (baseNode)
 		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
 			// TODO Why this container? Any other container would also be fine?
-			Iterator<HibNodeFieldContainer> it = contentDao.getDraftGraphFieldContainers(baseNode).iterator();
+			Iterator<HibNodeFieldContainer> it = contentDao.getDraftFieldContainers(baseNode).iterator();
 			HibNodeFieldContainer container = it.next();
 			nodePath.addSegment(new PathSegmentImpl(container, null, null, "/"));
 			stack.push("/");

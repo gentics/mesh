@@ -409,9 +409,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			ContentDao contentDao = tx.contentDao();
 			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
+				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
-				assertThat(contentDao.getGraphFieldContainer(newNode, "en", newBranchUuid, type)).as(type + " Field Container for new branch")
+				assertThat(contentDao.getFieldContainer(newNode, "en", newBranchUuid, type)).as(type + " Field Container for new branch")
 					.isNull();
 			}
 		}
@@ -439,9 +439,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			ContentDao contentDao = tx.contentDao();
 			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
+				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
-				assertThat(contentDao.getGraphFieldContainer(newNode, "en", newBranch.getUuid(), type)).as(type + " Field Container for new branch")
+				assertThat(contentDao.getFieldContainer(newNode, "en", newBranch.getUuid(), type)).as(type + " Field Container for new branch")
 					.isNull();
 			}
 		}
@@ -470,10 +470,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid(), type))
+				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid(), type))
 					.as(type + " Field container for initial branch")
 					.isNull();
-				assertThat(contentDao.getGraphFieldContainer(newNode, "en", newBranch.getUuid(), type)).as(type + " Field Container for new branch")
+				assertThat(contentDao.getFieldContainer(newNode, "en", newBranch.getUuid(), type)).as(type + " Field Container for new branch")
 					.isNotNull()
 					.hasVersion("0.1");
 			}
@@ -646,7 +646,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
 				HibNode node = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-				boot().contentDao().createGraphFieldContainer(node, english(), initialBranch(), user());
+				boot().contentDao().createFieldContainer(node, english(), initialBranch(), user());
 				assertNotNull(node);
 				roleDao.grantPermissions(role(), node, READ_PERM);
 			}
@@ -1564,7 +1564,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibLanguage languageNl = tx.languageDao().findByLanguageTag("nl");
 			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			node = nodeDao.create(parentNode, user(), version, project());
-			HibNodeFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, languageNl.getLanguageTag(),
+			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
@@ -1934,7 +1934,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibNode node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
-		assertTrue("The node is expected to be published", tx(() -> boot().contentDao().getGraphFieldContainer(node, "en").isPublished()));
+		assertTrue("The node is expected to be published", tx(() -> boot().contentDao().getFieldContainer(node, "en").isPublished()));
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)

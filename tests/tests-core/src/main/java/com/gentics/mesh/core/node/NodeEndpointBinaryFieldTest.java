@@ -278,7 +278,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		HibNode node = prepareSchema();
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(node, "en").getVersion());
 		String uuid = tx(() -> node.getUuid());
 
 		// 1. Upload some binary data

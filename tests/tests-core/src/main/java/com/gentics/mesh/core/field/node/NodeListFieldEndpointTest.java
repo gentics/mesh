@@ -121,7 +121,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<HibNode>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
-		HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			List<HibNode> oldValue;
 			List<HibNode> newValue;

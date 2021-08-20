@@ -66,7 +66,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			HibNodeFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+			HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
 			Number oldValue;
 			Number newValue;
 			try (Tx tx = tx()) {

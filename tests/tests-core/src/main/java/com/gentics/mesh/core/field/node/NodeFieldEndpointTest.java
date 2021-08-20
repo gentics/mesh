@@ -79,7 +79,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		List<HibNode> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
-				HibNodeFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
+				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
 				HibNode oldValue = getNodeValue(container, FIELD_NAME);
 
 				HibNode newValue = targetNodes.get(i % 2);
