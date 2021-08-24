@@ -3,7 +3,7 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;

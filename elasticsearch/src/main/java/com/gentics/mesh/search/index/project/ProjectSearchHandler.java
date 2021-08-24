@@ -5,9 +5,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 

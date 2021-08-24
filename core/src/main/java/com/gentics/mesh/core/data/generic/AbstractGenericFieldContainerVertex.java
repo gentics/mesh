@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.tinkerpop.blueprints.Edge;
@@ -36,9 +36,9 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	}
 
 	protected Edge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
-		Database db = mesh().database();
+		GraphDatabase db = mesh().database();
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.createComposedIndexKey(id(),
+		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.index().createComposedIndexKey(id(),
 			branchUuid, type.getCode(), languageTag)).iterator();
 		if (iterator.hasNext()) {
 			return iterator.next();

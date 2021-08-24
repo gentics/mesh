@@ -78,7 +78,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 
 	@Override
 	public long globalCount() {
-		return db().count(SchemaContainerImpl.class);
+		return toGraph(db()).count(SchemaContainerImpl.class);
 	}
 
 	@Override

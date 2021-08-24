@@ -19,10 +19,11 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.impl.PathImpl;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
@@ -122,8 +123,8 @@ public class WebRootServiceImpl implements WebRootService {
 
 	@Override
 	public NodeGraphFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type) {
-		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(database, path, branchUuid, type);
-		GraphFieldContainerEdge edge = database.findEdge(WEBROOT_URLFIELD_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class);
+		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(HibClassConverter.toGraph(database), path, branchUuid, type);
+		GraphFieldContainerEdge edge = HibClassConverter.toGraph(database).findEdge(WEBROOT_URLFIELD_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class);
 		if (edge != null) {
 			return edge.getNodeContainer();
 		} else {

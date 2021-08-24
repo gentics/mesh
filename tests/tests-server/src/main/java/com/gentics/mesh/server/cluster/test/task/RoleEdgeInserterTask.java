@@ -5,6 +5,7 @@ import java.util.concurrent.locks.Lock;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.hazelcast.core.HazelcastInstance;
@@ -42,7 +43,7 @@ public class RoleEdgeInserterTask extends AbstractLoadTask {
 			Lock lock = null;
 			if (lockTx) {
 				if (lockTx) {
-					HazelcastInstance hz = test.getDb().clusterManager().getHazelcast();
+					HazelcastInstance hz = ((OrientDBClusterManager) test.getDb().clusterManager()).getHazelcast();
 					lock = hz.getLock(WriteLock.GLOBAL_LOCK_KEY);
 					lock.lock();
 				}

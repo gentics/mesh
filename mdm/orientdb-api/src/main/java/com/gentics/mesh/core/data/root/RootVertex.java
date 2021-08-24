@@ -25,11 +25,13 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -176,12 +178,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return Found element or null if the element could not be located
 	 */
 	default T findByUuid(String uuid) {
+		GraphDatabase db = HibClassConverter.toGraph(db());
 		// Try to load the element using the index. This way no record load will happen.
-		T t = db().index().findByUuid(getPersistanceClass(), uuid);
+		T t = db.index().findByUuid(getPersistanceClass(), uuid);
 		if (t != null) {
 			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			// Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db().createComposedIndexKey(t
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t
 				.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				return t;
@@ -321,9 +324,10 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param item
 	 */
 	default void addItem(T item) {
+		GraphDatabase db = HibClassConverter.toGraph(db());
 		FramedGraph graph = getGraph();
 		// Check whether the item was already added by checking the index
-		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db().createComposedIndexKey(item.id(),
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.id(),
 			id()));
 		if (!edges.iterator().hasNext()) {
 			linkOut(item, getRootLabel());

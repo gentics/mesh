@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_TIMEOUT_COUNT;
 import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_WAITING_TIME;
@@ -22,6 +23,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
@@ -39,7 +42,7 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.dagger.TransactionComponent;
 import com.gentics.mesh.graphdb.index.OrientDBIndexHandler;
@@ -115,7 +118,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OrientDBTypeHandler typeHandler;
 
-	private OrientDBClusterManager clusterManager;
+	private OrientDBClusterManagerImpl clusterManager;
 
 	private final TxCleanupTask txCleanUpTask;
 
@@ -135,7 +138,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public OrientDBDatabase(OrientDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
 		OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
-		OrientDBClusterManager clusterManager,
+		OrientDBClusterManagerImpl clusterManager,
 		TxCleanupTask txCleanupTask,
 		Lazy<PermissionRoots> permissionRoots, Mesh mesh, WriteLock writeLock,
 		TransactionComponent.Factory txFactory) {
@@ -363,7 +366,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public long count(Class<? extends MeshVertex> clazz) {
+	public long count(Class<? extends HibBaseElement> clazz) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		OrientVertexType type = orientBaseGraph.getVertexType(clazz.getSimpleName());
 		if (type == null) {
@@ -387,12 +390,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void reload(MeshElement element) {
-		reload(element.getElement());
-	}
-
-	@Override
-	public void reload(Element element) {
+	public void reload(HibElement element) {
 		if (element instanceof OrientElement) {
 			if (metrics.isEnabled()) {
 				metrics.counter(SimpleMetric.GRAPH_ELEMENT_RELOAD).increment();
@@ -521,27 +519,28 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public String backupGraph(String backupDirectory) throws IOException {
+	public String backupDatabase(String backupDirectory) throws IOException {
 		return txProvider.backup(backupDirectory);
 	}
 
 	@Override
-	public void restoreGraph(String backupFile) throws IOException {
+	public void restoreDatabase(String backupFile) throws IOException {
 		txProvider.restore(backupFile);
 	}
 
 	@Override
-	public void exportGraph(String outputDirectory) throws IOException {
+	public void exportDatabase(String outputDirectory) throws IOException {
 		txProvider.exportGraph(outputDirectory);
 	}
 
 	@Override
-	public void importGraph(String importFile) throws IOException {
+	public void importDatabase(String importFile) throws IOException {
 		txProvider.importGraph(importFile);
 	}
 
 	@Override
-	public String getElementVersion(Element element) {
+	public String getElementVersion(HibElement hibElement) {
+		Element element = (Element) hibElement;
 		if (element instanceof WrappedVertex) {
 			element = ((WrappedVertex) element).getBaseElement();
 		}
@@ -577,7 +576,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	/**
 	 * Return the orientdb cluster manager.
 	 */
-	public OrientDBClusterManager clusterManager() {
+	public OrientDBClusterManagerImpl clusterManager() {
 		return clusterManager;
 	}
 
@@ -698,7 +697,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public boolean isEmptyDatabase() {
-		return tx(tx -> !tx.getGraph().v().hasNext());
+		return tx(tx -> !toGraph(tx).getGraph().v().hasNext());
 	}
 
 	@Override

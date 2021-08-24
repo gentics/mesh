@@ -20,6 +20,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
+import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
@@ -49,34 +50,34 @@ public class DatabaseTest extends AbstractMeshTest {
 	@Test
 	public void testIndex() {
 		try (Tx tx = tx()) {
-			db().index().createIndex(vertexIndex(LanguageImpl.class)
+			HibClassConverter.toGraph(db()).index().createIndex(vertexIndex(LanguageImpl.class)
 				.withField("languageTag", FieldType.STRING)
 				.unique());
-			db().index().createIndex(edgeIndex(ASSIGNED_TO_ROLE)
+			HibClassConverter.toGraph(db()).index().createIndex(edgeIndex(ASSIGNED_TO_ROLE)
 				.withOut());
 		}
 	}
 
 	@Test
 	public void testExport() throws IOException {
-		db().exportGraph(outputDirectory.getAbsolutePath());
+		db().exportDatabase(outputDirectory.getAbsolutePath());
 	}
 
 	@Test
 	public void testImport() throws IOException {
-		db().exportGraph(outputDirectory.getAbsolutePath());
+		db().exportDatabase(outputDirectory.getAbsolutePath());
 		File[] fileArray = outputDirectory.listFiles();
 		if (fileArray != null) {
 			List<File> files = Arrays.asList(fileArray);
 			File importFile = files.iterator().next();
-			db().importGraph(importFile.getAbsolutePath());
+			db().importDatabase(importFile.getAbsolutePath());
 		}
 	}
 
 	@Test
 	@Ignore
 	public void testBackup() throws IOException {
-		db().backupGraph(outputDirectory.getAbsolutePath());
+		db().backupDatabase(outputDirectory.getAbsolutePath());
 	}
 
 	@Test
@@ -90,7 +91,7 @@ public class DatabaseTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			assertEquals(name, user().getUsername());
 		}
-		db().backupGraph(outputDirectory.getAbsolutePath());
+		db().backupDatabase(outputDirectory.getAbsolutePath());
 		try (Tx tx = tx()) {
 			user().setUsername("changed");
 			tx.success();
@@ -98,7 +99,7 @@ public class DatabaseTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			assertEquals("changed", user().getUsername());
 		}
-		db().restoreGraph(outputDirectory.listFiles()[0].getAbsolutePath());
+		db().restoreDatabase(outputDirectory.listFiles()[0].getAbsolutePath());
 		try (Tx tx = tx()) {
 			assertEquals("username", user().getUsername());
 		}

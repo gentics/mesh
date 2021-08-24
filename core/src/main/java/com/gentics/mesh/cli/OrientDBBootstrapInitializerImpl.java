@@ -9,58 +9,38 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.ReindexAction;
-import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
-import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.etc.LanguageEntry;
-import com.gentics.mesh.etc.LanguageSet;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.hazelcast.core.HazelcastInstance;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -78,9 +58,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 	@Inject
 	public ServerSchemaStorageImpl schemaStorage;
-
-	@Inject
-	public DaoCollection daoCollection;
 
 	@Inject
 	public OrientDBDatabase db;
@@ -162,11 +139,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	@Override
 	public void initMandatoryData(MeshOptions config) throws Exception {
 		db.tx(tx -> {
-			UserDao userDao = tx.userDao();
-			GroupDao groupDao = tx.groupDao();
-			RoleDao roleDao = tx.roleDao();
-			SchemaDao schemaDao = tx.schemaDao();
-
 			if (db.requiresTypeInit()) {
 				MeshRoot meshRoot = meshRoot();
 
@@ -193,47 +165,9 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	}
 
 	@Override
-	public void initOptionalData(boolean isEmptyInstallation) {
-
-		// Only setup optional data for empty installations
-		if (isEmptyInstallation) {
-			db.tx(tx -> {
-				UserDao userDao = tx.userDao();
-				GroupDao groupDao = tx.groupDao();
-				RoleDao roleDao = tx.roleDao();
-
-				if (db.requiresTypeInit()) {
-					meshRoot = meshRoot();
-				}
-
-				// Verify that an anonymous user exists
-				HibUser anonymousUser = userDao.findByUsername("anonymous");
-				if (anonymousUser == null) {
-					anonymousUser = userDao.create("anonymous", anonymousUser);
-					anonymousUser.setCreator(anonymousUser);
-					anonymousUser.setCreationTimestamp();
-					anonymousUser.setEditor(anonymousUser);
-					anonymousUser.setLastEditedTimestamp();
-					anonymousUser.setPasswordHash(null);
-					log.debug("Created anonymous user {" + anonymousUser.getUuid() + "}");
-				}
-
-				HibGroup anonymousGroup = groupDao.findByName("anonymous");
-				if (anonymousGroup == null) {
-					anonymousGroup = groupDao.create("anonymous", anonymousUser);
-					groupDao.addUser(anonymousGroup, anonymousUser);
-					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
-				}
-
-				anonymousRole = roleDao.findByName("anonymous");
-				if (anonymousRole == null) {
-					anonymousRole = roleDao.create("anonymous", anonymousUser);
-					groupDao.addRole(anonymousGroup, anonymousRole);
-					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
-				}
-
-				tx.success();
-			});
+	public void initOptionalData(Tx tx, boolean isEmptyInstallation) {
+		if (db.requiresTypeInit()) {
+			meshRoot = meshRoot();
 		}
 	}
 
@@ -242,9 +176,10 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		db.tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			HibRole adminRole = roleDao.findByName("admin");
-			for (Vertex vertex : tx.getGraph().getVertices()) {
+			FramedTransactionalGraph graph = HibClassConverter.toGraph(tx).getGraph();
+			for (Vertex vertex : graph.getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				MeshVertex meshVertex = graph.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 				roleDao.grantPermissions(adminRole, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
 				if (log.isTraceEnabled()) {
 					log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + adminRole.getUuid() + "}");
@@ -351,43 +286,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	}
 
 	/**
-	 * Create languages in the set, which do not exist yet
-	 *
-	 * @param root
-	 *            language root
-	 * @param languageSet
-	 *            language set
-	 */
-	protected void initLanguages(LanguageRoot root, LanguageSet languageSet) {
-		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
-			String languageTag = entry.getKey();
-			String languageName = entry.getValue().getName();
-			String languageNativeName = entry.getValue().getNativeName();
-			HibLanguage language = languageDao().findByLanguageTag(languageTag);
-			if (language == null) {
-				language = root.create(languageName, languageTag);
-				language.setNativeName(languageNativeName);
-				if (log.isDebugEnabled()) {
-					log.debug("Added language {" + languageTag + " / " + languageName + "}");
-				}
-			} else {
-				if (!StringUtils.equals(language.getName(), languageName)) {
-					language.setName(languageName);
-					if (log.isDebugEnabled()) {
-						log.debug("Changed name of language {" + languageTag + " } to {" + languageName + "}");
-					}
-				}
-				if (!StringUtils.equals(language.getNativeName(), languageNativeName)) {
-					language.setNativeName(languageNativeName);
-					if (log.isDebugEnabled()) {
-						log.debug("Changed nativeName of language {" + languageTag + " } to {" + languageNativeName + "}");
-					}
-				}
-			}
-		}
-	}
-
-	/**
 	 * Return the mesh root node. This method will also create the node if it could not be found within the graph.
 	 *
 	 * @return
@@ -412,76 +310,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	}
 
 	@Override
-	public SchemaDao schemaDao() {
-		return daoCollection.schemaDao();
-	}
-
-	@Override
-	public MicroschemaDao microschemaDao() {
-		return daoCollection.microschemaDao();
-	}
-
-	@Override
-	public RoleDao roleDao() {
-		return daoCollection.roleDao();
-	}
-
-	@Override
-	public TagDao tagDao() {
-		return daoCollection.tagDao();
-	}
-
-	@Override
-	public TagFamilyDao tagFamilyDao() {
-		return daoCollection.tagFamilyDao();
-	}
-
-	@Override
-	public LanguageDao languageDao() {
-		return daoCollection.languageDao();
-	}
-
-	@Override
-	public UserDao userDao() {
-		return daoCollection.userDao();
-	}
-
-	@Override
-	public GroupDao groupDao() {
-		return daoCollection.groupDao();
-	}
-
-	@Override
-	public JobDao jobDao() {
-		return daoCollection.jobDao();
-	}
-
-	@Override
-	public ProjectDao projectDao() {
-		return daoCollection.projectDao();
-	}
-
-	@Override
-	public NodeDao nodeDao() {
-		return daoCollection.nodeDao();
-	}
-
-	@Override
-	public ContentDao contentDao() {
-		return daoCollection.contentDao();
-	}
-
-	@Override
-	public BinaryDao binaryDao() {
-		return daoCollection.binaryDao();
-	}
-
-	@Override
-	public BranchDao branchDao() {
-		return daoCollection.branchDao();
-	}
-
-	@Override
 	public void syncIndex() {
 		SYNC_INDEX_ACTION.invoke();
 	}
@@ -491,7 +319,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	public void invokeChangelog(PostProcessFlags flags) {
 
 		log.info("Invoking database changelog check...");
-		ChangelogSystem cls = new ChangelogSystemImpl(db(), options);
+		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
 		if (!cls.applyChanges(flags)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
@@ -531,10 +359,5 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 				db.clusterManager().startAndSync();
 			}
         }
-	}
-
-	@Override
-	protected void initLanguageSet(LanguageSet languageSet) {
-		initLanguages(meshRoot.getLanguageRoot(), languageSet);
 	}
 }

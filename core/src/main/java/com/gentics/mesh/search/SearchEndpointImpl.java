@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -82,7 +82,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	Database db;
+	GraphDatabase db;
 
 	@Inject
 	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {

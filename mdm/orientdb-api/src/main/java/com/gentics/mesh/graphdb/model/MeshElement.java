@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.Element;
 
@@ -73,7 +73,7 @@ public interface MeshElement extends ElementFrame, HibElement {
 	 *
 	 * @return
 	 */
-	Database db();
+	GraphDatabase db();
 
 	/**
 	 * Return the used Vert.x instance.

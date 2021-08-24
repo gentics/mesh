@@ -3,6 +3,8 @@ package com.gentics.mesh.dagger.module;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.inject.Singleton;
+
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
@@ -43,6 +45,7 @@ import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
@@ -63,10 +66,13 @@ import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.dagger.OrientDBCoreModule;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.BucketManagerImpl;
+import com.hazelcast.core.HazelcastInstance;
 import com.syncleus.ferma.ext.orientdb3.PermissionRootsImpl;
 
 import dagger.Binds;
@@ -78,12 +84,18 @@ import dagger.Provides;
  */
 @Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
+	
+	@Binds
+	abstract OrientDBClusterManager orientDBClusterManager(OrientDBClusterManagerImpl e);
 
 	@Binds
 	abstract UserProperties userProperties(GraphUserPropertiesImpl e);
 
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);
+	
+	@Binds
+	abstract GraphDatabase bindGraphDatabase(OrientDBDatabase e);
 	
 	@Binds
 	abstract BootstrapInitializer bindBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
@@ -152,6 +164,9 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
 
+	@Binds
+	abstract OrientDBBootstrapInitializer orientDBBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
+
 	@Provides
 	public static OrientDBMeshOptions orientDBMeshOptions(MeshOptions meshOptions) {
 		if (meshOptions instanceof OrientDBMeshOptions) {
@@ -161,9 +176,16 @@ public abstract class OrientDBModule {
 		}
 	}
 	
+	/**
+	 * Return the hazelcast instance which is fetched from OrientDB cluster manager.
+	 * 
+	 * @param db
+	 * @return
+	 */
 	@Provides
-	public static OrientDBBootstrapInitializer orientDBBootstrapInitializer(OrientDBBootstrapInitializerImpl e) {
-		return e;
+	@Singleton
+	public static HazelcastInstance hazelcast(OrientDBClusterManager clusterManager) {
+		return clusterManager.getHazelcast();
 	}
 
 	/**

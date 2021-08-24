@@ -1,13 +1,14 @@
 package com.gentics.mesh.core.data.generic;
 
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.db.AbstractEdgeFrame;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
-import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
@@ -78,7 +79,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	@Override
 	public String getElementVersion() {
 		Edge edge = getElement();
-		return db().getElementVersion(edge);
+		return db().getElementVersion((HibElement) edge);
 	}
 
 	/**
@@ -87,12 +88,12 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	 * 
 	 * @return
 	 */
-	public MeshComponent mesh() {
+	public OrientDBMeshComponent mesh() {
 		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 
 	@Override
-	public Database db() {
+	public GraphDatabase db() {
 		return mesh().database();
 	}
 

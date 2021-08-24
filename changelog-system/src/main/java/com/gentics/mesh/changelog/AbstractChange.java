@@ -5,7 +5,7 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -24,7 +24,7 @@ public abstract class AbstractChange implements Change {
 
 	private TransactionalGraph graph;
 
-	private Database db;
+	private GraphDatabase db;
 
 	private long duration;
 
@@ -200,12 +200,12 @@ public abstract class AbstractChange implements Change {
 	}
 
 	@Override
-	public Database getDb() {
+	public GraphDatabase getDb() {
 		return db;
 	}
 
 	@Override
-	public void setDb(Database db) {
+	public void setDb(GraphDatabase db) {
 		this.db = db;
 	}
 

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.Vertx;

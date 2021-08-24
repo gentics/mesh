@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.hazelcast.core.HazelcastInstance;
 
@@ -28,12 +29,12 @@ public class BackupTask extends AbstractLoadTask {
 	public void runTask(long txDelay, boolean lockTx, boolean lockForDBSync) {
 		Lock lock = null;
 		if (lockTx) {
-			HazelcastInstance hz = test.getDb().clusterManager().getHazelcast();
+			HazelcastInstance hz = ((OrientDBClusterManager) test.getDb().clusterManager()).getHazelcast();
 			lock = hz.getLock(WriteLock.GLOBAL_LOCK_KEY);
 			lock.lock();
 		}
 		try {
-			test.getDb().backupGraph("target/backups");
+			test.getDb().backupDatabase("target/backups");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

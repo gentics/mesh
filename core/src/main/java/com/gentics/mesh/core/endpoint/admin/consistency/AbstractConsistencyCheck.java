@@ -4,9 +4,10 @@ import java.util.Iterator;
 import java.util.function.BiConsumer;
 
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -36,7 +37,7 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 	protected <T extends MeshVertex> ConsistencyCheckResult processForType(Database db, Class<T> clazz, BiConsumer<T, ConsistencyCheckResult> action,
 		boolean attemptRepair, Tx tx) {
 		log.info("Processing elements of type {" + clazz.getSimpleName() + "}");
-		Iterator<? extends T> it = db.getVerticesForType(clazz);
+		Iterator<? extends T> it = HibClassConverter.toGraph(db).getVerticesForType(clazz);
 		ConsistencyCheckResult result = new ConsistencyCheckResult();
 		long count = 0;
 		while (it.hasNext()) {

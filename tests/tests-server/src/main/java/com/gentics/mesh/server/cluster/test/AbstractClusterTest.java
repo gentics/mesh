@@ -6,10 +6,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.server.cluster.ClusterServer;
 import com.gentics.mesh.server.cluster.test.task.LoadTask;
 

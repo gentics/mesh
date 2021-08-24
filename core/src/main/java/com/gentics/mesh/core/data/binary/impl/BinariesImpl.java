@@ -1,5 +1,4 @@
 package com.gentics.mesh.core.data.binary.impl;
-
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.stream.Stream;
@@ -11,8 +10,8 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.Transactional;
+import com.gentics.mesh.core.db.Transactional;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 
 /**
  * This class manages the {@link HibBinary} instances that have been persisted.
@@ -20,10 +19,10 @@ import com.gentics.mesh.graphdb.spi.Transactional;
 @Singleton
 public class BinariesImpl implements Binaries {
 
-	private final Database database;
+	private final GraphDatabase database;
 
 	@Inject
-	public BinariesImpl(Database database) {
+	public BinariesImpl(GraphDatabase database) {
 		this.database = database;
 	}
 

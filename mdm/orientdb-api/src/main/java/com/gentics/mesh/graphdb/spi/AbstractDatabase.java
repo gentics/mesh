@@ -5,6 +5,8 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.util.ETag;
 
@@ -16,7 +18,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Abstract class for graph database implementations.
  */
-public abstract class AbstractDatabase implements Database {
+public abstract class AbstractDatabase implements GraphDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
@@ -36,8 +38,9 @@ public abstract class AbstractDatabase implements Database {
 			log.debug("Clearing graph");
 		}
 		tx(tx -> {
-			tx.getGraph().e().removeAll();
-			tx.getGraph().v().removeAll();
+			GraphDBTx gtx = HibClassConverter.toGraph(tx);
+			gtx.getGraph().e().removeAll();
+			gtx.getGraph().v().removeAll();
 			tx.success();
 		});
 		if (log.isDebugEnabled()) {

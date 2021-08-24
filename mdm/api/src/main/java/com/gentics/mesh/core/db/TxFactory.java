@@ -35,8 +35,8 @@ public interface TxFactory {
      * 
      * @return Created transaction
      */
-	GraphDBTx tx();
-    
+	Tx tx();
+	
     /**
      * Execute the txHandler within the scope of a transaction and call 
      * the result handler once the transaction handler code has finished.
@@ -84,5 +84,4 @@ public interface TxFactory {
             return null;
         });
     }
-
 }

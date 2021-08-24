@@ -37,7 +37,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private final Lazy<Vertx> vertx;
 
-	private OrientDBClusterManager manager;
+	private OrientDBClusterManagerImpl manager;
 
 	private final Lazy<BootstrapInitializer> boot;
 
@@ -47,7 +47,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private ClusterOptions clusterOptions;
 
-	public TopologyEventBridge(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager,
+	public TopologyEventBridge(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManagerImpl manager,
 		HazelcastInstance hz) {
 		this.clusterOptions = options.getClusterOptions();
 		this.vertx = vertx;

@@ -1,9 +1,8 @@
-package com.gentics.mesh.graphdb.cluster;
+package com.gentics.mesh.core.db.cluster;
 
 import java.io.IOException;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.hazelcast.core.HazelcastInstance;
 
 import io.reactivex.Completable;
 
@@ -30,13 +29,6 @@ public interface ClusterManager {
 	 * Stop the server and release all used resources.
 	 */
 	void stop();
-
-	/**
-	 * Return the hazelcast instance which was created by the manager.
-	 * 
-	 * @return
-	 */
-	HazelcastInstance getHazelcast();
 
 	/**
 	 * Return the database cluster status.

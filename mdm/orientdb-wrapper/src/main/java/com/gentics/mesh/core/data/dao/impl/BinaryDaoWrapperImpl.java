@@ -15,9 +15,9 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.Supplier;
+import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.graphdb.spi.Supplier;
-import com.gentics.mesh.graphdb.spi.Transactional;
 
 import dagger.Lazy;
 import io.reactivex.Flowable;

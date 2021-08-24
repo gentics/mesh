@@ -3,10 +3,10 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandlerImpl;
 
 import io.vertx.core.Vertx;

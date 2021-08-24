@@ -5,10 +5,10 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
 import com.hazelcast.core.HazelcastInstance;
@@ -121,18 +121,6 @@ public class MeshModule {
 		handler.setMergeFormAttributes(false);
 		handler.setDeleteUploadedFilesOnEnd(true);
 		return handler;
-	}
-
-	/**
-	 * Return the hazelcast instance which is fetched from OrientDB cluster manager.
-	 * 
-	 * @param db
-	 * @return
-	 */
-	@Provides
-	@Singleton
-	public static HazelcastInstance hazelcast(Database db) {
-		return (HazelcastInstance) db.clusterManager().getHazelcast();
 	}
 
 }

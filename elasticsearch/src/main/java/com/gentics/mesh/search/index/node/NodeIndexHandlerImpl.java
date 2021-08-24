@@ -50,13 +50,14 @@ import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -812,12 +813,12 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	@Override
 	public Function<String, HibNode> elementLoader() {
-		return (uuid) -> db.index().findByUuid(Node.class, uuid);
+		return (uuid) -> HibClassConverter.toGraph(db).index().findByUuid(Node.class, uuid);
 	}
 
 	@Override
 	public Stream<? extends HibNode> loadAllElements() {
-		return db.type().findAll(Node.class);
+		return HibClassConverter.toGraph(db).type().findAll(Node.class);
 	}
 
 }
