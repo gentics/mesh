@@ -10,6 +10,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.syncleus.ferma.EdgeFrame;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -113,4 +114,12 @@ public interface GraphDatabase extends Database {
 	 * @return
 	 */
 	IndexHandler index();
+
+	/**
+	 * Return the element version.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	String getElementVersion(Element element);
 }

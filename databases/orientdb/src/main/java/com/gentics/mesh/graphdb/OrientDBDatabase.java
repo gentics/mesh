@@ -539,8 +539,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public String getElementVersion(HibElement hibElement) {
-		Element element = (Element) hibElement;
+	public String getElementVersion(Element element) {
 		if (element instanceof WrappedVertex) {
 			element = ((WrappedVertex) element).getBaseElement();
 		}
