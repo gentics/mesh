@@ -37,13 +37,13 @@ public class SearchProviderModule {
 			}
 		}
 		switch (type) {
-		case NULL:
-			return new DevNullSearchProvider(options);
-		case TRACKING:
-			return new TrackingSearchProvider(options);
-		case ELASTICSEARCH:
-		default:
-			return elasticsearchProvider.get();
+			case NULL:
+				return new DevNullSearchProvider(options);
+			case TRACKING:
+				return new TrackingSearchProvider(options);
+			case ELASTICSEARCH:
+			default:
+				return elasticsearchProvider.get();
 		}
 	}
 
@@ -88,5 +88,4 @@ public class SearchProviderModule {
 
 		return builder.build();
 	}
-
 }

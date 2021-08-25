@@ -1,14 +1,11 @@
 package com.gentics.mesh.assertj.impl;
 
-import com.gentics.mesh.util.DateUtils;
-import com.gentics.mesh.util.UUIDUtil;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.assertj.core.api.AbstractAssert;
-import org.jetbrains.annotations.NotNull;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,12 +18,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import javax.validation.constraints.NotNull;
+
+import com.gentics.mesh.util.DateUtils;
+import com.gentics.mesh.util.UUIDUtil;
+
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.assertj.core.api.AbstractAssert;
 
 public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObject> {
 	/**

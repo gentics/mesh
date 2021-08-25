@@ -4,8 +4,6 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
@@ -68,12 +66,13 @@ import com.gentics.mesh.storage.S3BinaryStorage;
 import dagger.BindsInstance;
 import dagger.Component;
 import io.vertx.core.Vertx;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
+@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, SearchWaitUtilProvider.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();
