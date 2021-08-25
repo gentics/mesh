@@ -18,7 +18,6 @@ import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -142,7 +141,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	@Override
 	public String getElementVersion() {
 		Vertex vertex = getElement();
-		return mesh().database().getElementVersion((HibElement) vertex);
+		return mesh().database().getElementVersion(vertex);
 	}
 
 	@Override

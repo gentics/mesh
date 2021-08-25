@@ -220,14 +220,6 @@ public interface Database extends TxFactory {
 	String getDatabaseRevision();
 
 	/**
-	 * Return the element version.
-	 * 
-	 * @param element
-	 * @return
-	 */
-	String getElementVersion(HibElement element);
-
-	/**
 	 * Return the vertex count for the given class.
 	 * 
 	 * @param clazz
