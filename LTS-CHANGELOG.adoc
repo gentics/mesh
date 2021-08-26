@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.5.15]]
+== 1.5.15 (26.08.2021)
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.0`, containing the stability improvements, as well as the new feature of the node status (draft/updated/published/archived etc) filtering.
+
 [[v1.5.14]]
 == 1.5.14 (10.08.2021)
 
