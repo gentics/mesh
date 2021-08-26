@@ -89,14 +89,12 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibMicroschema element) {
-		Microschema graphSchema = toGraph(element);
-		return graphSchema.getAPIPath(ac);
+		return element.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibMicroschema element) {
-		Microschema graphSchema = toGraph(element);
-		return graphSchema.getETag(ac);
+		return element.getETag(ac);
 	}
 
 }

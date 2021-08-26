@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.branch;
 
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -12,6 +14,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.HibUserTracking;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
@@ -22,6 +25,7 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -443,4 +447,18 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibUserTracki
 	 */
 	BranchReference transformToReference();
 
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();
+	}
+
+	@Override
+	default String getSubETag(InternalActionContext ac) {
+		return String.valueOf(getLastEditedTimestamp());
+	}
+
+	@Override
+	default BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		return Tx.get().branchDao().transformToRestSync(this, ac, level, languageTags);
+	}
 }

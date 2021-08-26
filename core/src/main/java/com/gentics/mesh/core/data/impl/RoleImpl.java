@@ -18,7 +18,6 @@ import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.field.FieldType;
 
 /**
@@ -75,16 +74,6 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse> implements Ro
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		RoleDao roleDao = mesh().boot().roleDao();
 		return roleDao.update(this, ac, batch);
-	}
-
-	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return String.valueOf(getLastEditedTimestamp());
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandlerImpl.baseRoute(ac) + "/roles/" + getUuid();
 	}
 
 	@Override

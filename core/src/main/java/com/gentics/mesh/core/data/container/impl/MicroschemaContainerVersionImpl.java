@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FRO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSCHEMA_VERSION_KEY_PROPERTY;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.util.StreamUtil.uniqueBy;
 
@@ -13,7 +12,6 @@ import java.util.stream.Stream;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -37,8 +35,6 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ElementFrame;
 
 /**
@@ -108,23 +104,6 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public MicroschemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		// Load the microschema and add/overwrite some properties
-		MicroschemaResponse microschema = JsonUtil.readValue(getJson(), MicroschemaResponse.class);
-		// TODO apply fields filtering here
-
-		// Role permissions
-		Microschema container = toGraph(getSchemaContainer());
-		microschema.setRolePerms(container.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
-		container.fillCommonRestFields(ac, fields, microschema);
-
-		return microschema;
-	}
-
-	@Override
 	public MicroschemaReferenceImpl transformToReference() {
 		MicroschemaReferenceImpl reference = new MicroschemaReferenceImpl();
 		reference.setName(getName());
@@ -132,17 +111,6 @@ public class MicroschemaContainerVersionImpl extends
 		reference.setVersion(getVersion());
 		reference.setVersionUuid(getUuid());
 		return reference;
-	}
-
-	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return "";
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

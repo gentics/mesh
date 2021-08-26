@@ -455,17 +455,6 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
-			Predicate<HibSchema> extraFilter) {
-		return boot.get().meshRoot().getSchemaContainerRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
-	}
-
-	@Override
-	public boolean update(HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().meshRoot().getSchemaContainerRoot().update(null, ac, batch);
-	}
-
-	@Override
 	public String getAPIPath(HibSchema element, InternalActionContext ac) {
 		return toGraph(element).getAPIPath(ac);
 	}

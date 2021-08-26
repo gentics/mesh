@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.job;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
+
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
@@ -106,4 +109,9 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	 * Remove the job.
 	 */
 	void remove();
+
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return CURRENT_API_BASE_PATH + "/admin/jobs/" + getUuid();
+	}
 }

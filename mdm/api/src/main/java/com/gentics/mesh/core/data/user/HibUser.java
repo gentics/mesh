@@ -5,12 +5,14 @@ import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
 import com.gentics.mesh.ElementType;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.handler.VersionUtils;
 
 import io.vertx.ext.auth.User;
 
@@ -294,4 +296,8 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, 
 	 */
 	MeshAuthUser toAuthUser();
 
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/users/" + getUuid();
+	}
 }

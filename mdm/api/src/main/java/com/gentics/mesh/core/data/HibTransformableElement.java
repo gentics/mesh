@@ -8,7 +8,7 @@ import io.reactivex.Single;
 /**
  * An interface for elements that can be transformed to a rest model.
  */
-public interface HibTransformableElement<T extends RestModel> {
+public interface HibTransformableElement<T extends RestModel> extends HibBaseElement {
 
 	/**
 	 * Return the API path to the element.
@@ -28,7 +28,10 @@ public interface HibTransformableElement<T extends RestModel> {
 	 *            Level of transformation
 	 * @param languageTags
 	 *            optional list of language tags to be used for language fallback
+	 *
+	 * @deprecated Use DAO method to transform elements instead
 	 */
+	@Deprecated
 	default Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		return Single.just(transformToRestSync(ac, level, languageTags));
 	}

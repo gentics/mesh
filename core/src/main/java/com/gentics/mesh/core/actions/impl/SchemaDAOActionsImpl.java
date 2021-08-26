@@ -106,14 +106,12 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibSchema schema) {
-		Schema graphSchema = toGraph(schema);
-		return graphSchema.getAPIPath(ac);
+		return schema.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibSchema schema) {
-		Schema graphSchema = toGraph(schema);
-		return graphSchema.getETag(ac);
+		return schema.getETag(ac);
 	}
 
 }

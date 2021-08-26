@@ -293,15 +293,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	boolean update(HibNode node, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
-	 * Return API path for the node.
-	 * 
-	 * @param node
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibNode node, InternalActionContext ac);
-
-	/**
 	 * Update the tags of the node and return a page of updated tags.
 	 * 
 	 * @param node

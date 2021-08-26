@@ -297,16 +297,6 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		return ETag.hash(getUuid());
 	}
 
-	/**
-	 * Micronodes don't provide a dedicated API path since those can't be directly accessed via REST URI.
-	 * 
-	 * @param ac
-	 */
-	public String getAPIPath(InternalActionContext ac) {
-		// Micronodes have no public location
-		return null;
-	}
-
 	@Override
 	public Stream<? extends NodeGraphFieldContainer> getContents() {
 		return getContainers().stream();

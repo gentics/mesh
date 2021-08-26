@@ -22,7 +22,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.List;
 
@@ -81,7 +80,6 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.VersionUtil;
@@ -510,16 +508,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 			unlinkOut(toGraph(version), edgeLabel);
 			version = version.getPreviousVersion();
 		}
-	}
-
-	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return String.valueOf(getLastEditedTimestamp());
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandlerImpl.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();
 	}
 
 	@Override

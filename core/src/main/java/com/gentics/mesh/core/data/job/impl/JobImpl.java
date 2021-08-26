@@ -58,11 +58,6 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse> implem
 	}
 
 	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return null;
-	}
-
-	@Override
 	public JobResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		JobResponse response = new JobResponse();
 		response.setUuid(getUuid());

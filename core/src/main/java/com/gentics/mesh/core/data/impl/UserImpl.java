@@ -41,7 +41,6 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
@@ -325,11 +324,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	public String getSubETag(InternalActionContext ac) {
 		UserDao userRoot = mesh().boot().userDao();
 		return userRoot.getSubETag(this, ac);
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandlerImpl.baseRoute(ac) + "/users/" + getUuid();
 	}
 
 	@Override

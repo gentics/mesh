@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 
 import com.gentics.mesh.ElementType;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibNamedElement;
@@ -13,6 +14,7 @@ import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.handler.VersionUtils;
 
 /**
  * Domain model for role.
@@ -53,4 +55,14 @@ public interface HibRole extends HibNamedElement<RoleResponse>, HibUserTracking,
 	 * @return Result
 	 */
 	Result<? extends HibGroup> getGroups();
+
+	@Override
+	default String getSubETag(InternalActionContext ac) {
+		return String.valueOf(getLastEditedTimestamp());
+	}
+
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/roles/" + getUuid();
+	}
 }

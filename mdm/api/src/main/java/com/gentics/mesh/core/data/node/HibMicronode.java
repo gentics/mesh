@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node;
 
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -56,4 +57,15 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 	 * @return
 	 */
 	List<FieldContainerChange> compareTo(HibMicronode micronodeB);
+
+	/**
+	 * Micronodes don't provide a dedicated API path since those can't be directly accessed via REST URI.
+	 * 
+	 * @param ac
+	 */
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		// Micronodes have no public location
+		return null;
+	}
 }

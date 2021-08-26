@@ -2,15 +2,19 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
  * Create mocked user for node migrations.
@@ -316,6 +320,31 @@ public class NodeMigrationUser implements HibUser {
 
 	@Override
 	public void setUuid(String uuid) {		
+	}
+
+	@Override
+	public String getAPIPath(InternalActionContext ac) {
+		return null;
+	}
+
+	@Override
+	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		return null;
+	}
+
+	@Override
+	public String getETag(InternalActionContext ac) {
+		return null;
+	}
+
+	@Override
+	public String getSubETag(InternalActionContext ac) {
+		return null;
+	}
+
+	@Override
+	public void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model) {
+		
 	}
 
 }
