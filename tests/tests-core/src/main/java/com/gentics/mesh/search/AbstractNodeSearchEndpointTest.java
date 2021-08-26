@@ -86,7 +86,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		contentDao.getLatestDraftGraphFieldContainer(node, english()).createNumber("speed").setNumber(number);
+		contentDao.getLatestDraftFieldContainer(node, english()).createNumber("speed").setNumber(number);
 	}
 
 	/**
@@ -102,7 +102,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(vcardFieldSchema);
 
-		HibMicronodeField vcardField = contentDao.getLatestDraftGraphFieldContainer(node, english()).createMicronode("vcard",
+		HibMicronodeField vcardField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronode("vcard",
 			microschemaContainers().get("vcard").getLatestVersion());
 		vcardField.getMicronode().createString("firstName").setString("Mickey");
 		vcardField.getMicronode().createString("lastName").setString("Mouse");
@@ -123,7 +123,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(vcardListFieldSchema);
 
-		HibMicronodeFieldList vcardListField = contentDao.getLatestDraftGraphFieldContainer(node, english()).createMicronodeFieldList("vcardlist");
+		HibMicronodeFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			HibMicronode micronode = vcardListField.createMicronode();
 			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
@@ -132,7 +132,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		}
 
 		// create an empty vcard list field
-		contentDao.getLatestDraftGraphFieldContainer(node, german()).createMicronodeFieldList("vcardlist");
+		contentDao.getLatestDraftFieldContainer(node, german()).createMicronodeFieldList("vcardlist");
 	}
 
 	/**
@@ -151,11 +151,11 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		schema.addField(nodeListFieldSchema);
 
 		// create a non-empty list for the english version
-		HibNodeFieldList nodeListField = contentDao.getLatestDraftGraphFieldContainer(node, english()).createNodeList("nodelist");
+		HibNodeFieldList nodeListField = contentDao.getLatestDraftFieldContainer(node, english()).createNodeList("nodelist");
 		nodeListField.addItem(nodeListField.createNode("testNode", node));
 
 		// create an empty list for the german version
-		contentDao.getLatestDraftGraphFieldContainer(node, german()).createNodeList("nodelist");
+		contentDao.getLatestDraftFieldContainer(node, german()).createNodeList("nodelist");
 	}
 
 	/**

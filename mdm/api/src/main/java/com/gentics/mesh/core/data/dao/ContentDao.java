@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -35,7 +34,7 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
 /**
- * DAO for {@link HibContent}.
+ * DAO for contained data.
  */
 public interface ContentDao {
 	/**
@@ -236,7 +235,7 @@ public interface ContentDao {
 	 * @param languageTag
 	 * @return
 	 */
-	HibNodeFieldContainer getLatestDraftGraphFieldContainer(HibNode node, String languageTag);
+	HibNodeFieldContainer getLatestDraftFieldContainer(HibNode node, String languageTag);
 
 	/**
 	 * Return the field container for the given language, type and branch.
@@ -247,7 +246,7 @@ public interface ContentDao {
 	 *            type
 	 * @return
 	 */
-	HibNodeFieldContainer getGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type);
+	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.

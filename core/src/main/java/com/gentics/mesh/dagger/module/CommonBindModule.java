@@ -76,7 +76,7 @@ import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
-import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
+import com.gentics.mesh.distributed.coordinator.proxy.ClusterEnabledRequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.handler.RangeRequestHandler;
@@ -175,13 +175,7 @@ public abstract class CommonBindModule {
 	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
 
 	@Binds
-	abstract Binaries bindBinaries(BinariesImpl e);
-
-	@Binds
 	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);
-
-	@Binds
-	abstract RequestDelegator bindRequestDelegator(RequestDelegatorImpl e);
 
 	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);

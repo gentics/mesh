@@ -166,7 +166,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBooleanList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBooleanList(FIELD_NAME)).isNotNull();

@@ -187,7 +187,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNodeList(FIELD_NAME)).isNotNull();
@@ -293,7 +293,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", folder("news"));
 			tx.success();
@@ -318,7 +318,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
 
 			// Create node list
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", referencedNode);
 			tx.success();
@@ -351,7 +351,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		// Create node list
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", newsNode);
 			tx.success();

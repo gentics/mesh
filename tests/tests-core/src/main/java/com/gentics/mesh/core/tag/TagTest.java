@@ -156,7 +156,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibTag reloadedTag = tx.tagDao().findByUuid(tag.getUuid());
 			assertEquals("The tag should have exactly one node.", 1, tagDao.getNodes(reloadedTag, branch).count());
 			HibNode contentFromTag = tagDao.getNodes(reloadedTag, branch).iterator().next();
-			HibNodeFieldContainer fieldContainer = contentDao.getLatestDraftGraphFieldContainer(contentFromTag, german);
+			HibNodeFieldContainer fieldContainer = contentDao.getLatestDraftFieldContainer(contentFromTag, german);
 
 			assertNotNull(contentFromTag);
 			assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());

@@ -31,9 +31,9 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * @see RequestDelegator
  */
-public class RequestDelegatorImpl implements RequestDelegator {
+public class ClusterEnabledRequestDelegatorImpl implements RequestDelegator {
 
-	private static final Logger log = LoggerFactory.getLogger(RequestDelegatorImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ClusterEnabledRequestDelegatorImpl.class);
 
 	public static final String MESH_DIRECT_HEADER = "X-Mesh-Direct";
 
@@ -45,7 +45,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 	private static final Set<Pattern> whiteListPathPatternSet = createWhitelistPatternSet();
 
 	@Inject
-	public RequestDelegatorImpl(Coordinator coordinator, Vertx vertx, MeshOptions options) {
+	public ClusterEnabledRequestDelegatorImpl(Coordinator coordinator, Vertx vertx, MeshOptions options) {
 		this.coordinator = coordinator;
 		this.httpClient = vertx.createHttpClient();
 		this.options = options;

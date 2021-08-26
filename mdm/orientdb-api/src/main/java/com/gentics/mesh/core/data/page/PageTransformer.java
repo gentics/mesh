@@ -20,10 +20,10 @@ import com.gentics.mesh.util.ETag;
  */
 @Singleton
 public class PageTransformer {
-	private final Map<ElementType, DaoTransformable<HibCoreElement, RestModel>> daos;
+	private final Map<ElementType, DaoTransformable<HibCoreElement<? extends RestModel>, RestModel>> daos;
 
 	@Inject
-	public PageTransformer(Map<ElementType, DaoTransformable<HibCoreElement, RestModel>> daos) {
+	public PageTransformer(Map<ElementType, DaoTransformable<HibCoreElement<? extends RestModel>, RestModel>> daos) {
 		this.daos = daos;
 	}
 
@@ -35,9 +35,9 @@ public class PageTransformer {
 	 * @param level Level of depth to be used for nested element transformation
 	 * @return
 	 */
-	public ListResponse<RestModel> transformToRestSync(Page<? extends HibCoreElement> page, InternalActionContext ac, int level) {
+	public ListResponse<RestModel> transformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac, int level) {
 		List<RestModel> responses = new ArrayList<>();
-		for (HibCoreElement element : page) {
+		for (HibCoreElement<? extends RestModel> element : page) {
 			RestModel restModel = daos.get(element.getTypeInfo().getType())
 				.transformToRestSync(element, ac, level);
 			responses.add(restModel);
@@ -59,12 +59,12 @@ public class PageTransformer {
 	 * @param ac
 	 * @return
 	 */
-	public String getETag(Page<? extends HibCoreElement> page, InternalActionContext ac) {
+	public String getETag(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(page.getTotalElements());
 		builder.append(page.getNumber());
 		builder.append(page.getPerPage());
-		for (HibCoreElement element : page) {
+		for (HibCoreElement<? extends RestModel> element : page) {
 			builder.append("-");
 			String eTag = daos.get(element.getTypeInfo().getType())
 				.getETag(element, ac);

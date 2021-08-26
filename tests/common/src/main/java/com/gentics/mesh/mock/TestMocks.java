@@ -328,7 +328,7 @@ public final class TestMocks {
 		when(container.getNode()).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);
 
-		when(contentDao.getLatestDraftGraphFieldContainer(node, languageTag)).thenReturn(container);
+		when(contentDao.getLatestDraftFieldContainer(node, languageTag)).thenReturn(container);
 
 		when(node.getElementVersion()).thenReturn(UUID_4);
 		return node;

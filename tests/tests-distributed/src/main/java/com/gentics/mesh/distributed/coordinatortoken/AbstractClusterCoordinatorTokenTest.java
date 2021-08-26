@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -23,8 +24,8 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 public abstract class AbstractClusterCoordinatorTokenTest {
 	private String userName;
 	private JWTAuth provider;
-	private MeshRestClient serverBClient;
-	private MeshRestClient serverBAdminClient;
+	private AbstractMeshRestHttpClient serverBClient;
+	private AbstractMeshRestHttpClient serverBAdminClient;
 
 	protected abstract MeshRestClient getServerBClient();
 
@@ -37,8 +38,8 @@ public abstract class AbstractClusterCoordinatorTokenTest {
 				.setPublicKey("test-key")
 				.setSymmetric(true)));
 
-		serverBClient = getServerBClient();
-		serverBAdminClient = MeshRestClient.create(serverBClient.getConfig());
+		serverBClient = (AbstractMeshRestHttpClient) getServerBClient();
+		serverBAdminClient = (AbstractMeshRestHttpClient) MeshRestClient.create(serverBClient.getConfig());
 	 	userName = "testuser" + randomUUID();
 
 	 	assertClusterCoordinatorSetup();

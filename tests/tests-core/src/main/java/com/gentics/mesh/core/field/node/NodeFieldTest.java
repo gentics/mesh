@@ -104,7 +104,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// 2. Add the node reference to the node fields
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(NODE_FIELD, newsNode);
 			tx.success();
 		}

@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
+import com.gentics.mesh.distributed.coordinator.proxy.ClusterEnabledRequestDelegatorImpl;
 
 public class RequestDelegatorRegexTest {
 
@@ -32,11 +32,11 @@ public class RequestDelegatorRegexTest {
 	}
 
 	private void assertWhiteListed(String path) {
-		assertEquals("The path {" + path + "} is not whitelisted.", true, RequestDelegatorImpl.isWhitelisted(path));
+		assertEquals("The path {" + path + "} is not whitelisted.", true, ClusterEnabledRequestDelegatorImpl.isWhitelisted(path));
 	}
 
 	private void assertReadOnly(String path) {
-		assertEquals("The path {" + path + "} is not read only.", true, RequestDelegatorImpl.isReadOnly(path));
+		assertEquals("The path {" + path + "} is not read only.", true, ClusterEnabledRequestDelegatorImpl.isReadOnly(path));
 	}
 
 }

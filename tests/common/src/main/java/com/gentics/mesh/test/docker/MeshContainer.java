@@ -31,12 +31,13 @@ import org.testcontainers.utility.TestEnvironment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.util.UnixUtils;
 import com.gentics.mesh.util.UUIDUtil;
@@ -70,13 +71,14 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
-	private MeshRestClient client;
+	private AbstractMeshRestHttpClient client;
 
 	/**
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false);
+		// TODO uncast later
+		client = (AbstractMeshRestHttpClient) MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false);
 		login();
 	};
 
@@ -414,7 +416,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		return this;
 	}
 
-	public MeshRestClient client() {
+	public AbstractMeshRestHttpClient client() {
 		return client;
 	}
 

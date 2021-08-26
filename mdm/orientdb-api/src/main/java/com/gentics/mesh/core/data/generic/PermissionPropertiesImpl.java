@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -27,16 +27,16 @@ import dagger.Lazy;
 @Singleton
 public class PermissionPropertiesImpl implements PermissionProperties {
 
-	private final Lazy<RoleDaoWrapper> roleDaoLazy;
+	private final Lazy<RoleDao> roleDaoLazy;
 
 	@Inject
-	public PermissionPropertiesImpl(Lazy<RoleDaoWrapper> roleDaoLazy) {
+	public PermissionPropertiesImpl(Lazy<RoleDao> roleDaoLazy) {
 		this.roleDaoLazy = roleDaoLazy;
 	}
 
 	@Override
 	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm) {
-		RoleDaoWrapper roleDao = roleDaoLazy.get();
+		RoleDao roleDao = roleDaoLazy.get();
 		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, perm);
 		Stream<String> stream = roleUuids == null
 			? Stream.empty()
@@ -49,7 +49,7 @@ public class PermissionPropertiesImpl implements PermissionProperties {
 	@Override
 	public PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
-			RoleDaoWrapper roleDao = roleDaoLazy.get();
+			RoleDao roleDao = roleDaoLazy.get();
 			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				PermissionInfo permissionInfo = new PermissionInfo();

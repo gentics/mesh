@@ -664,9 +664,9 @@ public class TestDataProvider {
 	public String getPathForNews2015Tag(String languageTag) {
 		ContentDao contentDao = boot.contentDao();
 
-		String name = contentDao.getLatestDraftGraphFieldContainer(folders.get("news"), languageTag).getString("name")
+		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name")
 			.getString();
-		String name2 = contentDao.getLatestDraftGraphFieldContainer(folders.get("2015"), languageTag).getString("name")
+		String name2 = contentDao.getLatestDraftFieldContainer(folders.get("2015"), languageTag).getString("name")
 			.getString();
 		return name + "/" + name2;
 	}

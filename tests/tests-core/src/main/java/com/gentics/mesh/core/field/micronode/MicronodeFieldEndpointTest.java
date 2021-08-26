@@ -172,7 +172,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// Assert that the old version was not modified
 			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronode(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getMicronode(FIELD_NAME)).as("The old version micronode field could not be found.").isNotNull();
@@ -387,7 +387,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibMicronodeField micronodeField = container.createMicronode(FIELD_NAME, microschema);
 			micronodeField.getMicronode().createString("firstName").setString("Max");
 			tx.success();

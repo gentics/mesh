@@ -124,7 +124,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 			ContentDao contentDao = tx.contentDao();
 			// Assert that the old version was not modified
 			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumber(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumber(FIELD_NAME)).isNotNull();
@@ -166,7 +166,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNumberField numberField = container.createNumber(FIELD_NAME);
 			numberField.setNumber(100.9f);
 			tx.success();

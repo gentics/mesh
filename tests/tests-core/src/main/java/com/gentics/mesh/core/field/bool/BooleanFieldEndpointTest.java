@@ -51,7 +51,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createBoolean(FIELD_NAME).setBoolean(true);
 			tx.success();
 		}
@@ -123,7 +123,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBoolean(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBoolean(FIELD_NAME)).isNotNull();

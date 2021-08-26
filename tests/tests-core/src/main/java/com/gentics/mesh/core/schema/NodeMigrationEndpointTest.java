@@ -484,7 +484,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Add some really long string value to the content
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.getString("title").setString(TestUtils.getRandomHash(40_000));
 			container.getString("teaser").setString(TestUtils.getRandomHash(40_000));
 			tx.success();
@@ -1096,7 +1096,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// Create the new container version with the specified content which will be migrated
 			HibBranch branch = firstNode.getProject().getLatestBranch();
-			HibNodeFieldContainer oldContainer = contentDao.getGraphFieldContainer(firstNode, en, branch, DRAFT);
+			HibNodeFieldContainer oldContainer = contentDao.getFieldContainer(firstNode, en, branch, DRAFT);
 			HibNodeFieldContainer newContainer = contentDao.createFieldContainer(firstNode, en, branch, user(),
 				oldContainer,
 				true);
@@ -1107,7 +1107,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			secondNode = folder("news");
 			HibBranch branch2 = secondNode.getProject().getLatestBranch();
-			HibNodeFieldContainer oldContainer2 = contentDao.getGraphFieldContainer(secondNode, en, branch2, DRAFT);
+			HibNodeFieldContainer oldContainer2 = contentDao.getFieldContainer(secondNode, en, branch2, DRAFT);
 			secondMicronodeListField = contentDao.createFieldContainer(secondNode, en, branch2, user(),
 				oldContainer2,
 				true)
@@ -1233,7 +1233,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// 1.0
-			HibNodeFieldContainer org = contentDao.getGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(),
+			HibNodeFieldContainer org = contentDao.getFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(),
 				ContainerType.DRAFT);
 			HibNodeFieldContainer newContainer = contentDao.createFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(),
 				user(),

@@ -217,7 +217,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			contentDao.getLatestDraftGraphFieldContainer(content, english()).getHtml("content").setHtml("42.1");
+			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content").setHtml("42.1");
 
 			// 1. Create update request by removing the content field from schema and adding a new content with different type
 			request = JsonUtil.readValue(schemaContainer.getLatestVersion().getJson(), SchemaUpdateRequest.class);

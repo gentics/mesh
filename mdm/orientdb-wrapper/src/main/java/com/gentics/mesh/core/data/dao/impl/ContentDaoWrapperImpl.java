@@ -44,12 +44,12 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public HibNodeFieldContainer getLatestDraftGraphFieldContainer(HibNode node, String languageTag) {
+	public HibNodeFieldContainer getLatestDraftFieldContainer(HibNode node, String languageTag) {
 		return toGraph(node).getLatestDraftFieldContainer(languageTag);
 	}
 
 	@Override
-	public HibNodeFieldContainer getGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
+	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
 		return toGraph(node).getFieldContainer(languageTag, branch, type);
 	}
 

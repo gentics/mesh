@@ -73,7 +73,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			contentDao.getLatestDraftGraphFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -135,7 +135,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			contentDao.getLatestDraftGraphFieldContainer(content, english()).getHtml("content")
+			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 			tx.success();
 		}
@@ -194,7 +194,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015
-			contentDao.getLatestDraftGraphFieldContainer(parentNode, english()).createNode("nodeRef", node);
+			contentDao.getLatestDraftFieldContainer(parentNode, english()).createNode("nodeRef", node);
 			tx.success();
 		}
 

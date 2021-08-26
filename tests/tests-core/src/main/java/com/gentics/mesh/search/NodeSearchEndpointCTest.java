@@ -56,7 +56,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			addNumberSpeedFieldToOneNode(numberValue);
-			contentDao.getLatestDraftGraphFieldContainer(content(), english()).createNumber("speed").setNumber(92.1535f);
+			contentDao.getLatestDraftFieldContainer(content(), english()).createNumber("speed").setNumber(92.1535f);
 		});
 		recreateIndices();
 

@@ -156,7 +156,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -205,7 +205,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
 		// Add german language

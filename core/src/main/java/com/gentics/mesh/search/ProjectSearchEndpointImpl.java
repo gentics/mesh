@@ -13,15 +13,14 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
@@ -33,7 +32,7 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
  */
 public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implements SearchEndpoint {
 
-	public final GraphDatabase db;
+	public final Database db;
 
 	public final NodeSearchHandler nodeSearchHandler;
 
@@ -50,7 +49,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	}
 
 	@Inject
-	public ProjectSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot, GraphDatabase db, TagFamilySearchHandler tagFamilySearchHandler,
+	public ProjectSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
 		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler) {
 		super("search", chain, boot);
 		this.db = db;
@@ -76,7 +75,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 */
 	private void addSearchEndpoints() {
 		registerSearchHandler("nodes", (uuid) -> {
-			return db.index().findByUuid(NodeImpl.class, uuid);
+			return Tx.get().nodeDao().findByUuidGlobal(uuid);
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
 		registerSearchHandler("tags", uuid -> {

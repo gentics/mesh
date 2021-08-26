@@ -74,7 +74,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			nodeUpdateRequest.setVersion(contentDao.getLatestDraftGraphFieldContainer(node, english()).getVersion().toString());
+			nodeUpdateRequest.setVersion(contentDao.getLatestDraftFieldContainer(node, english()).getVersion().toString());
 			tx.success();
 		}
 		String uuid = tx(() -> folder("2015").getUuid());
@@ -90,7 +90,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		nodeUpdateRequest.setVersion(tx(tx -> {
-			return tx.contentDao().getLatestDraftGraphFieldContainer(node, english()).getVersion().toString();
+			return tx.contentDao().getLatestDraftFieldContainer(node, english()).getVersion().toString();
 		}));
 
 		call(() -> client().updateNode(PROJECT_NAME, tx(() -> node.getUuid()), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")),

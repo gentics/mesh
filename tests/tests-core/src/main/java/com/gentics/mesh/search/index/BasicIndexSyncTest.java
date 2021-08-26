@@ -280,7 +280,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert update
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer draft = contentDao.getGraphFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
+			HibNodeFieldContainer draft = contentDao.getFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
 			draft.getString("slug").setString("updated");
 		});
 		syncIndex();
@@ -289,7 +289,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer draft = contentDao.getGraphFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
+			HibNodeFieldContainer draft = contentDao.getFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
 			contentDao.delete(draft, new DummyBulkActionContext()); // TODO may fail
 		});
 		syncIndex();

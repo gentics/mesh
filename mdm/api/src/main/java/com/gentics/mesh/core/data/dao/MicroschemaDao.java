@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -235,4 +236,14 @@ public interface MicroschemaDao extends DaoGlobal<HibMicroschema>, DaoTransforma
 	 * @param batch
 	 */
 	void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch);
+
+	/**
+	 * Return all draft contents which reference the microschema version.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version,
+		String branchUuid);
 }

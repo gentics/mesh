@@ -255,7 +255,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			String projectUuid = project().getUuid();
 			String branchUuid = project().getLatestBranch().getUuid();
 			for (HibNode node : nodes) {
-				String schemaContainerVersionUuid = contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid,
 						schemaContainerVersionUuid, type), ContentDao.composeDocumentId(node.getUuid(), "en"));
@@ -379,7 +379,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(tagUuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (HibNode node : nodes) {
-				String schemaContainerVersionUuid = contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid,
 					schemaContainerVersionUuid, ContainerType.DRAFT), ContentDao.composeDocumentId(node.getUuid(), "en"));
 			}
