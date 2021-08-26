@@ -209,7 +209,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
 		((NodeIndexHandlerImpl) nodeIndexHandler)
-			.storeContainer(contentDao.getLatestDraftGraphFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
+			.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
 			.ignoreElement()
 			.blockingAwait();
 		writeStoreEvent("node.search");
