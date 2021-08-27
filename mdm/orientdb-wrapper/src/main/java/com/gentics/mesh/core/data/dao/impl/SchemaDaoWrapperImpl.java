@@ -453,9 +453,4 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	public Result<? extends HibSchema> findAll() {
 		return boot.get().meshRoot().getSchemaContainerRoot().findAll();
 	}
-
-	@Override
-	public String getAPIPath(HibSchema element, InternalActionContext ac) {
-		return toGraph(element).getAPIPath(ac);
-	}
 }

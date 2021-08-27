@@ -711,8 +711,4 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		return toGraph(fromUser).getGroups(authUser, pagingInfo);
 	}
 
-	@Override
-	public String getAPIPath(HibUser element, InternalActionContext ac) {
-		return toGraph(element).getAPIPath(ac);
-	}
 }

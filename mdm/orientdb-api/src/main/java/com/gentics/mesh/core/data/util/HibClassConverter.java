@@ -216,7 +216,7 @@ public final class HibClassConverter {
 	 * @param element
 	 * @return
 	 */
-	public static <SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion> GraphFieldSchemaContainer<R, ?, SC, SCV> toGraphContainer(
+	public static <SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion> GraphFieldSchemaContainer<R, RM, ?, SC, SCV> toGraphContainer(
 		HibFieldSchemaElement<R, RM, SC, SCV> element) {
 		return checkAndCast(element, GraphFieldSchemaContainer.class);
 	}

@@ -9,9 +9,9 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 /**
  * Assert for a schema container
  */
-public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert, GraphFieldSchemaContainer<?, ?, ?, ?>> {
+public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert, GraphFieldSchemaContainer<?, ?, ?, ?, ?>> {
 
-	public SchemaContainerAssert(GraphFieldSchemaContainer<?, ?, ?, ?> actual) {
+	public SchemaContainerAssert(GraphFieldSchemaContainer<?, ?, ?, ?, ?> actual) {
 		super(actual, SchemaContainerAssert.class);
 	}
 
@@ -21,7 +21,7 @@ public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert,
 	 * @param container
 	 * @return
 	 */
-	public SchemaContainerAssert equals(GraphFieldSchemaContainer<?, ?, ?, ?> container) {
+	public SchemaContainerAssert equals(GraphFieldSchemaContainer<?, ?, ?, ?, ?> container) {
 		assertThat(actual.getName()).as(descriptionText() + " Name").isEqualTo(container.getName());
 		return this;
 	}

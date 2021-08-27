@@ -310,4 +310,9 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param requestedVersion
 	 */
 	void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion);
+
+	@Override
+	default String getAPIPath(HibUser element, InternalActionContext ac) {
+		return element.getAPIPath(ac);
+	}
 }

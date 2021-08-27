@@ -48,8 +48,8 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public SchemaChange<T> setPreviousChange(SchemaChange<?> change) {
-		setUniqueLinkInTo(change, HAS_CHANGE);
+	public SchemaChange<T> setPreviousChange(HibSchemaChange<?> change) {
+		setUniqueLinkInTo(toGraph(change), HAS_CHANGE);
 		return this;
 	}
 

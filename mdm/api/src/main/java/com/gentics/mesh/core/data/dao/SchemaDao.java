@@ -341,4 +341,9 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
+
+	@Override
+	default String getAPIPath(HibSchema element, InternalActionContext ac) {
+		return element.getAPIPath(ac);
+	}
 }

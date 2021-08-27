@@ -9,6 +9,7 @@ import java.util.Objects;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
@@ -16,7 +17,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
  * A microschema container is a graph element which stores the JSON microschema data.
  */
 public interface Microschema extends
-		GraphFieldSchemaContainer<MicroschemaResponse, MicroschemaReference, HibMicroschema, HibMicroschemaVersion>, HibMicroschema, GraphDBBucketableElement {
+		GraphFieldSchemaContainer<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion>, HibMicroschema, GraphDBBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.MICROSCHEMA, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, MICROSCHEMA_DELETED);
 
