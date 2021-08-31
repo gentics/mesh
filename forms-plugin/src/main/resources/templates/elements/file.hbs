@@ -1,4 +1,4 @@
 <div>
-	<input type="file" id="{{ name }}" name="{{ name }}">
+	<input type="file" id="{{ name }}" name="{{ name }}"{{#if mandatory}} required="required"{{/if}}>
 	<label for="{{ name }}">{{{ label }}}</label>
 </div>
