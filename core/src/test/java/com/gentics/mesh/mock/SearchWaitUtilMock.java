@@ -20,7 +20,12 @@ public class SearchWaitUtilMock implements SearchWaitUtil {
 
 	@Override
 	public Completable awaitSync(ParameterProviderContext ppc) {
-		return shouldWait ? Completable.timer(this.timeout, TimeUnit.MILLISECONDS) : Completable.complete();
+		return shouldWait ? this.waitForIdle() : Completable.complete();
+	}
+
+	@Override
+	public Completable waitForIdle() {
+		return Completable.timer(this.timeout, TimeUnit.MILLISECONDS);
 	}
 
 	public boolean isShouldWait() {

@@ -8,4 +8,6 @@ public interface SearchWaitUtil {
 	boolean delayRequested(ParameterProviderContext ppc);
 
 	Completable awaitSync(ParameterProviderContext ppc);
+
+	Completable waitForIdle();
 }

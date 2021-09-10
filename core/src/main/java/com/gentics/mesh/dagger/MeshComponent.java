@@ -37,6 +37,7 @@ import com.gentics.mesh.dagger.module.PluginModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -62,6 +63,7 @@ import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 import dagger.BindsInstance;
 import dagger.Component;
@@ -182,6 +184,8 @@ public interface MeshComponent {
 	RoleCrudHandler roleCrudHandler();
 
 	BucketManager bucketManager();
+
+	MeshEventSender eventSender();
 
 	@Component.Builder
 	interface Builder {

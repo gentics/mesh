@@ -33,6 +33,10 @@ public class SearchWaitUtilImpl implements SearchWaitUtil {
 			return Completable.complete();
 		}
 
+		return waitForIdle();
+	}
+
+	public Completable waitForIdle() {
 		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
 			if (isIdle) {
 				return Completable.complete();

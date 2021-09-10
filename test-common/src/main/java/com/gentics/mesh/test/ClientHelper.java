@@ -14,7 +14,9 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 
 import java.util.Locale;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.http.HttpConstants.IF_NONE_MATCH;
@@ -40,6 +42,23 @@ public final class ClientHelper {
 	public static <T> T call(ClientHandler<T> handler) {
 		try {
 			return handler.handle().blockingGet();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Call the given handler, latch for the future and assert success. Then return the result.
+	 *
+	 * @param supplier
+	 *            Supplier of the Single
+	 * @param <T>
+	 *            type of the returned object
+	 * @return result of the future
+	 */
+	public static <T> T call(Callable<Single<T>> supplier) {
+		try {
+			return supplier.call().blockingGet();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
