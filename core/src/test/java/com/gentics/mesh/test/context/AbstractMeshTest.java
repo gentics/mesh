@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
@@ -56,7 +57,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	private OkHttpClient httpClient;
 
-	private EventAsserter eventAsserter = new EventAsserter(testContext);
+	private EventAsserter eventAsserter;
 
 	@Rule
 	@ClassRule
@@ -65,6 +66,11 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@Override
 	public MeshTestContext getTestContext() {
 		return testContext;
+	}
+
+	@Before
+	public void setupEventAsserter() {
+		eventAsserter = new EventAsserter(getTestContext());
 	}
 
 	@After
