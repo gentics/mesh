@@ -82,20 +82,17 @@ public class GraphQLWaitSearchDurationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGraphQLEndpointWaiting() {
-		try {
-			GraphQLResponse res = call(() -> client().graphql(
-				PROJECT_NAME,
-				new GraphQLRequest()
-					.setQuery(getGraphQLQuery(this.searchWithQuery ? QUERY_WITH_ES_NAME : QUERY_WITHOUT_ES_NAME))
-					.setVariables(this.buildVariables()),
-				new SearchParametersImpl().setWait(this.waitForSearch)
-			));
-			assertTrue(res.getErrors().isEmpty());
-		} catch (Exception e) {
-			assertNull(e);
-		}
+		GraphQLResponse res = call(() -> client().graphql(
+			PROJECT_NAME,
+			new GraphQLRequest()
+				.setQuery(getGraphQLQuery(this.searchWithQuery ? QUERY_WITH_ES_NAME : QUERY_WITHOUT_ES_NAME))
+				.setVariables(this.buildVariables()),
+			new SearchParametersImpl().setWait(this.waitForSearch)
+		));
 
-		if (this.waitForSearch) {
+		assertTrue(res.getErrors() == null || res.getErrors().isEmpty());
+
+		if (this.searchWithQuery && this.waitForSearch) {
 			verify(waitUtil).awaitSync(any());
 		} else {
 			verify(waitUtil, never()).awaitSync(any());
