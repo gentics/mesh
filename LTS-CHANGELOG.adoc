@@ -17,6 +17,12 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.19]]
+== 1.6.19 (TBD)
+
+icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
+was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
+
 [[v1.6.18]]
 == 1.6.18 (26.08.2021)
 
@@ -164,6 +170,12 @@ icon:plus[] Monitoring: The liveness probe will now check for plugin status. Fai
 icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+[[v1.5.16]]
+== 1.5.16 (TBD)
+
+icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
+was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
 
 [[v1.5.15]]
 == 1.5.15 (26.08.2021)
