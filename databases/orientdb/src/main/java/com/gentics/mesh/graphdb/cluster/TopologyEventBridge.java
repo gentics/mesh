@@ -5,16 +5,20 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINING;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
+import com.orientechnologies.orient.server.distributed.ODistributedServerManager;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
 import dagger.Lazy;
@@ -41,6 +45,10 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private final Lazy<BootstrapInitializer> boot;
 
+	/**
+	 * Map containing the database stati (per cluster node).
+	 * This is a local map, since the data is fetched from OrientDB's distributed manager
+	 */
 	private Map<String, DB_STATUS> databaseStatusMap;
 
 	private CountDownLatch nodeJoinLatch = new CountDownLatch(1);
@@ -53,7 +61,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		this.vertx = vertx;
 		this.boot = boot;
 		this.manager = manager;
-		this.databaseStatusMap = hz.getMap(DB_STATUS_MAP_KEY);
+		this.databaseStatusMap = new HashMap<>();
 	}
 
 	EventBus getEventBus() {
@@ -65,11 +73,15 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		// Set the db into sync since we want to prevent
 		// the lock from being released in between db status changes
 		// and server online status.
+		// this entry will keep the topology locked until the node is known
+		// to the distributed manager (and the db status is ONLINE)
 		databaseStatusMap.put(nodeName, DB_STATUS.SYNCHRONIZING);
 
-		if (log.isDebugEnabled()) {
-			log.debug("Node {" + nodeName + "} is joining the cluster.");
+		if (log.isInfoEnabled()) {
+			log.info("Node {" + nodeName + "} is joining the cluster.");
 		}
+		isClusterTopologyLocked();
+
 		if (isVertxReady()) {
 			getEventBus().publish(CLUSTER_NODE_JOINING.address, nodeName);
 		}
@@ -78,9 +90,11 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	@Override
 	public void onNodeJoined(String nodeName) {
-		if (log.isDebugEnabled()) {
-			log.debug("Node {" + nodeName + "} joined the cluster.");
+		if (log.isInfoEnabled()) {
+			log.info("Node {" + nodeName + "} joined the cluster.");
 		}
+		isClusterTopologyLocked();
+
 		if (isVertxReady()) {
 			getEventBus().publish(CLUSTER_NODE_JOINED.address, nodeName);
 		}
@@ -90,9 +104,10 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	public void onNodeLeft(String nodeName) {
 		databaseStatusMap.remove(nodeName);
 
-		if (log.isDebugEnabled()) {
-			log.debug("Node {" + nodeName + "} left the cluster");
+		if (log.isInfoEnabled()) {
+			log.info("Node {" + nodeName + "} left the cluster");
 		}
+		isClusterTopologyLocked();
 		if (isVertxReady()) {
 			getEventBus().publish(CLUSTER_NODE_LEFT.address, nodeName);
 		}
@@ -107,12 +122,15 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 				try {
 					Thread.sleep(postOnlineDelay);
 				} catch (InterruptedException e) {
-					log.warn("Topology lock dalay was interrupted", e);
+					log.warn("Topology lock delay was interrupted", e);
 				}
 			}
 		}
 		databaseStatusMap.put(nodeName, iNewStatus);
-		log.info("Node {" + nodeName + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
+		if (log.isInfoEnabled()) {
+			log.info("Node {" + nodeName + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
+		}
+		isClusterTopologyLocked();
 		if (isVertxReady()) {
 			JsonObject statusInfo = new JsonObject();
 			statusInfo.put("node", nodeName);
@@ -147,26 +165,47 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	/**
 	 * Check whether a topology change in the database / cluster setup is requiring a lock.
 	 * 
-	 * @return
+	 * Calling this method will synchronize the stati from the distributed manager.
+	 * 
+	 * @return true iff the database on at least one node is in status BACKUP or SYNCHRONIZING
 	 */
 	public boolean isClusterTopologyLocked() {
+		// update the locally stored status from the distributed manager.
+		ODistributedServerManager distributedManager = manager.getServer().getDistributedManager();
+		for (String nodeName : distributedManager.getActiveServers()) {
+			databaseStatusMap.put(nodeName, distributedManager.getDatabaseStatus(nodeName, "storage"));
+		}
 		for (Entry<String, DB_STATUS> entry : databaseStatusMap.entrySet()) {
 			DB_STATUS status = entry.getValue();
-			if (log.isDebugEnabled()) {
-				log.debug("Database: " + entry.getKey() + " = " + entry.getValue().name());
-			}
 			switch (status) {
 			case BACKUP:
 			case SYNCHRONIZING:
-				if (log.isDebugEnabled()) {
-					log.debug("Locking since " + entry.getKey() + " is in status " + entry.getValue());
+				if (log.isInfoEnabled()) {
+					log.info("Current database stati: {}", getDatabaseStati());
+					log.info("Locking since " + entry.getKey() + " is in status " + entry.getValue());
 				}
 				return true;
 			default:
 				continue;
 			}
 		}
+		if (log.isDebugEnabled()) {
+			log.debug("Current database stati: {}", getDatabaseStati());
+		}
 		return false;
 	}
 
+	/**
+	 * Get a string representation of the current database stati
+	 * @param fromOrientDB true to acquire the stati from OrientDB, false to get the stati from the map {@link #databaseStatusMap}
+	 * @return string representation of database stati
+	 */
+	protected String getDatabaseStati() {
+		Map<String, DB_STATUS> statusMap = new TreeMap<>();
+
+		// capture the current status entries in a treemap (so that it is safe to iterate over the map, and the keys=nodes will be sorted in natural order)
+		statusMap.putAll(databaseStatusMap);
+		return statusMap.entrySet().stream().map(entry -> String.format("%s: %s", entry.getKey(), entry.getValue()))
+				.collect(Collectors.joining(", "));
+	}
 }

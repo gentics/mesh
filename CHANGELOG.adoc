@@ -23,6 +23,12 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.17]]
+== 1.7.17 (TBD)
+
+icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
+was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
+
 [[v1.7.16]]
 == 1.7.16 (26.08.2021)
 
