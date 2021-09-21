@@ -35,6 +35,7 @@ import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.MicrometerModule;
 import com.gentics.mesh.dagger.module.PluginModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
+import com.gentics.mesh.dagger.module.SearchWaitUtilProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.MeshEventSender;

@@ -1,4 +1,4 @@
-package com.gentics.mesh.dagger;
+package com.gentics.mesh.dagger.module;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.MeshEventSender;
