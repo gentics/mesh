@@ -10,7 +10,7 @@ import dagger.Provides;
 import javax.inject.Singleton;
 
 @Module
-public class SearchWaitUtilProvider {
+public class SearchWaitUtilProviderModule {
 	@Provides
 	@Singleton
 	public static SearchWaitUtil provideHandler(MeshEventSender sender, MeshOptions options) {

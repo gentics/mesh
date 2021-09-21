@@ -63,7 +63,6 @@ import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.storage.S3BinaryStorage;
-import com.gentics.mesh.util.SearchWaitUtil;
 
 import dagger.BindsInstance;
 import dagger.Component;
@@ -74,7 +73,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, SearchWaitUtilProvider.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
+@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, SearchWaitUtilProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();
