@@ -17,6 +17,17 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.19]]
+== 1.6.19 (TBD)
+
+icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
+was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
+
+[[v1.6.18]]
+== 1.6.18 (26.08.2021)
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.0`, containing the stability improvements, as well as the new feature of the node status (draft/updated/published/archived etc) filtering.
+
 [[v1.6.17]]
 == 1.6.17 (18.08.2021)
 
@@ -87,7 +98,6 @@ icon:check[] OrientDB: A bug in the startup order has been fixed which prevented
 icon:check[] Core: Binary upload processing failed for binaries with brackets in the metadata key. This has been fixed now.
 
 icon:plus[] GraphQL: Queries, that take longer than the configured threshold will be logged now. See link:{{< relref "graphql.asciidoc" >}#_slow_query_log[GraphQL Slow Query Log] for details.
-
 
 [[v1.6.7]]
 == 1.6.7 (20.11.2020)
@@ -160,6 +170,22 @@ icon:plus[] Monitoring: The liveness probe will now check for plugin status. Fai
 icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+[[v1.5.16]]
+== 1.5.16 (TBD)
+
+icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
+was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
+
+[[v1.5.15]]
+== 1.5.15 (26.08.2021)
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.0`, containing the stability improvements, as well as the new feature of the node status (draft/updated/published/archived etc) filtering.
+
+[[v1.5.14]]
+== 1.5.14 (10.08.2021)
+
+icon:check[] Core: A bug preventing the string schema field restrictions from being cleared, has been fixed.
 
 [[v1.5.13]]
 == 1.5.13 (21.06.2021)
