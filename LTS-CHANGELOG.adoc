@@ -23,6 +23,9 @@ All fixes and changes in LTS releases will be released the next minor release. C
 icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
 was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
 
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
+
 [[v1.6.18]]
 == 1.6.18 (26.08.2021)
 
@@ -176,6 +179,9 @@ icon:check[] Logging: Failing readiness checks are now logged using the `WARN` l
 
 icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
 was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
+
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
 
 [[v1.5.15]]
 == 1.5.15 (26.08.2021)
