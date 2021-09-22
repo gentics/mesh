@@ -25,14 +25,14 @@ of the plugins (permanently) fails to initialize, mesh is considered no longer l
 
 icon:check[] Server: The readiness probe will now also check the status of the local OrientDB storage. A mesh instance will only be considered "ready" if the local OrientDB storage is "ONLINE".
 
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
+
 [[v1.6.19]]
 == 1.6.19 (22.09.2021)
 
 icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
 was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
-
-icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
-Previously it would wait for elasticsearch even if it wasn't needed.
 
 [[v1.6.18]]
 == 1.6.18 (26.08.2021)
@@ -182,14 +182,17 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.17]]
+== 1.5.17 (TBD)
+
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
+
 [[v1.5.16]]
 == 1.5.16 (22.09.2021)
 
 icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
 was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
-
-icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
-Previously it would wait for elasticsearch even if it wasn't needed.
 
 [[v1.5.15]]
 == 1.5.15 (26.08.2021)
