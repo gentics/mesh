@@ -25,6 +25,9 @@ of the plugins (permanently) fails to initialize, mesh is considered no longer l
 
 icon:check[] Server: The readiness probe will now also check the status of the local OrientDB storage. A mesh instance will only be considered "ready" if the local OrientDB storage is "ONLINE".
 
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
+
 [[v1.6.19]]
 == 1.6.19 (22.09.2021)
 
@@ -188,6 +191,12 @@ icon:plus[] Monitoring: The liveness probe will now check for plugin status. Fai
 icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+[[v1.5.17]]
+== 1.5.17 (TBD)
+
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
 
 [[v1.5.16]]
 == 1.5.16 (22.09.2021)

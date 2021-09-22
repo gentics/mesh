@@ -1,0 +1,12 @@
+query($query: String) {
+    nodes(query: $query) {
+        elements {
+            uuid
+            ... on folder {
+                fields {
+                    slug
+                }
+            }
+        }
+    }
+}

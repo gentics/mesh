@@ -700,11 +700,7 @@ public class MeshTestContext extends TestWatcher {
 		log.info("Initializing dagger context");
 		try {
 			mesh = Mesh.create(options);
-			meshDagger = getMeshDaggerBuilder()
-				.configuration(options)
-				.searchProviderType(settings.elasticsearch().toSearchProviderType())
-				.mesh(mesh)
-				.build();
+			meshDagger = this.createMeshComponent(mesh, options, settings);
 			dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
 			if (meshDagger.searchProvider() instanceof TrackingSearchProviderImpl) {
 				trackingSearchProvider = meshDagger.trackingSearchProvider();
@@ -723,7 +719,7 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	@NotNull
-	private MeshComponent.Builder getMeshDaggerBuilder() {
+	protected MeshComponent.Builder getMeshDaggerBuilder() {
 //		String builderFactoryName = System.getenv("MESH_BUILDER_FACTORY");
 		String builderFactoryName = System.getProperty("mesh.mdm.provider.factory");
 		if (StringUtils.isEmpty(builderFactoryName) || builderFactoryName.equals("TODO")) {
@@ -736,6 +732,14 @@ public class MeshTestContext extends TestWatcher {
 				throw new RuntimeException(e);
 			}
 		}
+	}
+
+	public MeshComponent createMeshComponent(Mesh mesh, MeshOptions options, MeshTestSetting settings) {
+		return meshDagger = getMeshDaggerBuilder()
+			.configuration(options)
+			.searchProviderType(settings.elasticsearch().toSearchProviderType())
+			.mesh(mesh)
+			.build();
 	}
 
 	public MonitoringRestClient getMonitoringClient() {

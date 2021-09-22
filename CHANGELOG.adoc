@@ -23,6 +23,17 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.18]]
+== 1.7.18 (TBD)
+
+icon:check[] Server: Mesh will now create a file `mesh.live` and touch it every 10 seconds as long as the instance is considered live. If an OutOfMemory is caught or one
+of the plugins (permanently) fails to initialize, mesh is considered no longer live and the file will not be touched any more.
+
+icon:check[] Server: The readiness probe will now also check the status of the local OrientDB storage. A mesh instance will only be considered "ready" if the local OrientDB storage is "ONLINE".
+
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
+
 [[v1.7.17]]
 == 1.7.17 (22.09.2021)
 
