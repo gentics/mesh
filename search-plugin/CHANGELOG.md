@@ -10,6 +10,13 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.6.13]]
+== 1.6.13 (2020-09-22)
+
+icon:plus[] Configuration: Add `waitForIdle` setting which determines whether the `waitForIdle` parameter should be
+added for search requests. When the setting is `null` the parameter will not be added, otherwise it is added with
+the configured value.
+
 [[v1.5.8]]
 == 1.5.8 (2020-09-23)
 
