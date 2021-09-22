@@ -530,6 +530,26 @@ public class OrientDBClusterManager implements ClusterManager {
 		});
 	}
 
+	@Override
+	public boolean isLocalNodeOnline() {
+		if (isClusteringEnabled) {
+			if (server != null && server.getDistributedManager() != null) {
+				ODistributedServerManager distributedManager = server.getDistributedManager();
+				String localNodeName = distributedManager.getLocalNodeName();
+				boolean online = distributedManager.isNodeOnline(localNodeName, GraphStorage.DB_NAME);
+				if (log.isDebugEnabled()) {
+					log.debug("State of DB {} in local node {} is {}", GraphStorage.DB_NAME, localNodeName, online);
+				}
+				return online;
+			} else {
+				log.error("Could not check DB state of local node {}");
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
+
 	private boolean writeQuorumReached() {
 		try {
 			// The server and manager may not yet be initialized. We need to wait until those are ready
