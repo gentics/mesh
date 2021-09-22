@@ -4,8 +4,6 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
@@ -36,8 +34,10 @@ import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.MicrometerModule;
 import com.gentics.mesh.dagger.module.PluginModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
+import com.gentics.mesh.dagger.module.SearchWaitUtilProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -65,12 +65,13 @@ import com.gentics.mesh.storage.LocalBinaryStorage;
 import dagger.BindsInstance;
 import dagger.Component;
 import io.vertx.core.Vertx;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
+@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, SearchWaitUtilProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();
@@ -174,6 +175,8 @@ public interface MeshComponent {
 	WebrootPathCache pathCache();
 
 	RoleCrudHandler roleCrudHandler();
+
+	MeshEventSender eventSender();
 
 	@Component.Builder
 	interface Builder {

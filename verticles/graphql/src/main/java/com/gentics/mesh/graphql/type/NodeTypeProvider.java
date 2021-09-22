@@ -59,6 +59,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 import graphql.GraphQLException;
 import graphql.schema.DataFetchingEnvironment;
@@ -98,6 +99,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public FieldDefinitionProvider fields;
+
+	@Inject
+	public SearchWaitUtil waitUtil;
 
 	@Inject
 	public NodeTypeProvider(MeshOptions options) {
@@ -589,6 +593,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Page<? extends NodeContent> handleContentSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
+			// Wait for the search to be resolved before attempting to load from it
+			if (this.waitUtil.delayRequested(gc)) {
+				this.waitUtil.awaitSync(gc).blockingAwait();
+			}
+
 			return nodeSearchHandler.handleContainerSearch(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
 			throw new RuntimeException(e);
@@ -606,6 +615,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Page<? extends Node> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
+			// Wait for the search to be resolved before attempting to load from it
+			if (this.waitUtil.delayRequested(gc)) {
+				this.waitUtil.awaitSync(gc).blockingAwait();
+			}
+
 			return nodeSearchHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

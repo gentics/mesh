@@ -672,11 +672,7 @@ public class MeshTestContext extends TestWatcher {
 		log.info("Initializing dagger context");
 		try {
 			mesh = Mesh.create(options);
-			meshDagger = DaggerMeshComponent.builder()
-				.configuration(options)
-				.searchProviderType(settings.elasticsearch().toSearchProviderType())
-				.mesh(mesh)
-				.build();
+			meshDagger = this.createMeshComponent(mesh, options, settings);
 			dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
 			if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
 				trackingSearchProvider = meshDagger.trackingSearchProvider();
@@ -692,6 +688,14 @@ public class MeshTestContext extends TestWatcher {
 			e.printStackTrace();
 			throw e;
 		}
+	}
+
+	public MeshComponent createMeshComponent(Mesh mesh, MeshOptions options, MeshTestSetting settings) {
+		return DaggerMeshComponent.builder()
+			.configuration(options)
+			.searchProviderType(settings.elasticsearch().toSearchProviderType())
+			.mesh(mesh)
+			.build();
 	}
 
 	public MonitoringRestClient getMonitoringClient() {

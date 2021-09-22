@@ -22,7 +22,6 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
-import com.gentics.mesh.util.SearchWaitUtil;
 
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
@@ -54,9 +53,6 @@ public class GraphQLHandler {
 	@Inject
 	public Vertx vertx;
 
-	@Inject
-	public SearchWaitUtil waitUtil;
-
 	private Timer graphQlTimer;
 
 	private GraphQLOptions graphQLOptions;
@@ -76,7 +72,7 @@ public class GraphQLHandler {
 	 *            GraphQL query
 	 */
 	public void handleQuery(GraphQLContext gc, String body) {
-		waitUtil.awaitSync(gc).andThen(vertx.rxExecuteBlocking(promise -> {
+		vertx.rxExecuteBlocking(promise -> {
 			Timer.Sample sample = Timer.start();
 			AtomicReference<String> loggableQuery = new AtomicReference<>();
 			AtomicReference<Map<String, Object>> loggableVariables = new AtomicReference<>();
@@ -131,7 +127,7 @@ public class GraphQLHandler {
 					}
 				}
 			}
-		}))
+		})
 		.doOnError(gc::fail)
 		.subscribe();
 	}
