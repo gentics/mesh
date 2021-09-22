@@ -41,6 +41,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
@@ -183,6 +184,8 @@ public interface MeshComponent {
 	RoleCrudHandler roleCrudHandler();
 
 	BucketManager bucketManager();
+
+	LivenessManager livenessManager();
 
 	@Component.Builder
 	interface Builder {

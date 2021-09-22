@@ -25,6 +25,7 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     mkdir -p /mesh/elasticsearch/data && \
     chown 1000:0 /mesh -R && \
     chmod 770 /mesh -R
+ADD --chown=1000:0 ./live.sh /mesh/live.sh
 ADD --chown=1000:0 ./target/mesh-server*jar /mesh/mesh.jar
 
 USER mesh
@@ -37,4 +38,5 @@ VOLUME /plugins
 VOLUME /keystore
 VOLUME /config
 
-CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
+CMD [ "java", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
+HEALTHCHECK --interval=10s --retries=1 CMD ["live.sh"]

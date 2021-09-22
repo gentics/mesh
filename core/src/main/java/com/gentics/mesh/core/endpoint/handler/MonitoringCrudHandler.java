@@ -9,6 +9,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
+import com.gentics.mesh.graphdb.cluster.ClusterManager;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import io.vertx.core.logging.Logger;
@@ -23,10 +25,16 @@ public class MonitoringCrudHandler {
 
 	private final MeshPluginManager pluginManager;
 
+	private final ClusterManager clusterManager;
+
+	private final LivenessManager liveness;
+
 	@Inject
-	public MonitoringCrudHandler(BootstrapInitializer boot, MeshPluginManager pluginManager) {
+	public MonitoringCrudHandler(BootstrapInitializer boot, MeshPluginManager pluginManager, ClusterManager clusterManager, LivenessManager liveness) {
 		this.boot = boot;
 		this.pluginManager = pluginManager;
+		this.clusterManager = clusterManager;
+		this.liveness = liveness;
 	}
 
 	public void handleLive(RoutingContext rc) {
@@ -37,6 +45,12 @@ public class MonitoringCrudHandler {
 				throw error(SERVICE_UNAVAILABLE, "error_internal");
 			}
 		}
+
+		if (!liveness.isLive()) {
+			log.warn("Liveness was set to false due to {}", liveness.getError());
+			throw error(SERVICE_UNAVAILABLE, "error_internal");
+		}
+
 		rc.response().setStatusCode(200).end();
 	}
 
@@ -53,6 +67,16 @@ public class MonitoringCrudHandler {
 				log.warn("Plugin {" + id + "} is in status failed.");
 				throw error(SERVICE_UNAVAILABLE, "error_internal");
 			}
+		}
+
+		if (!liveness.isLive()) {
+			log.warn("Liveness was set to false due to {}", liveness.getError());
+			throw error(SERVICE_UNAVAILABLE, "error_internal");
+		}
+
+		if (clusterManager != null && !clusterManager.isLocalNodeOnline()) {
+			log.warn("Local node is not online - Failing readiness probe");
+			throw error(SERVICE_UNAVAILABLE, "error_internal");
 		}
 
 		MeshStatus status = boot.mesh().getStatus();
