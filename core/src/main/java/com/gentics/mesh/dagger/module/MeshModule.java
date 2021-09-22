@@ -100,5 +100,4 @@ public class MeshModule {
 	public static HazelcastInstance hazelcast(Database db) {
 		return (HazelcastInstance) db.clusterManager().getHazelcast();
 	}
-
 }

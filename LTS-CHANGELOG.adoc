@@ -17,8 +17,16 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.20]]
+== 1.6.20 (TBD)
+
+icon:check[] Server: Mesh will now create a file `mesh.live` and touch it every 10 seconds as long as the instance is considered live. If an OutOfMemory is caught or one
+of the plugins (permanently) fails to initialize, mesh is considered no longer live and the file will not be touched any more.
+
+icon:check[] Server: The readiness probe will now also check the status of the local OrientDB storage. A mesh instance will only be considered "ready" if the local OrientDB storage is "ONLINE".
+
 [[v1.6.19]]
-== 1.6.19 (TBD)
+== 1.6.19 (22.09.2021)
 
 icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
 was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
@@ -175,7 +183,7 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
 [[v1.5.16]]
-== 1.5.16 (TBD)
+== 1.5.16 (22.09.2021)
 
 icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
 was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.

@@ -16,6 +16,7 @@ import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -77,7 +78,7 @@ public class RouterStorage {
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandler versionHandler,
 		RouterStorageRegistry routerStorageRegistry,
-		RequestDelegator delegator, TopologyChangeReadonlyHandler topologyChangeReadonlyHandler) {
+		RequestDelegator delegator, TopologyChangeReadonlyHandler topologyChangeReadonlyHandler, LivenessManager liveness) {
 		this.vertx = vertx;
 		this.options = options;
 		this.boot = boot;
@@ -91,7 +92,7 @@ public class RouterStorage {
 		this.topologyChangeReadonlyHandler = topologyChangeReadonlyHandler;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
-		rootRouter = new RootRouter(vertx, this, options);
+		rootRouter = new RootRouter(vertx, this, options, liveness);
 
 		// TODO move this to the place where the routerstorage is created
 		routerStorageRegistry.getInstances().add(this);

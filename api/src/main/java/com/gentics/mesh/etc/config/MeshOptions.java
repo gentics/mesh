@@ -32,6 +32,7 @@ public class MeshOptions implements Option {
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
+	public static final String MESH_LIVE_PATH_ENV = "MESH_LIVE_PATH";
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
@@ -150,6 +151,10 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	@EnvironmentVariable(name = MESH_LOCK_PATH_ENV, description = "Path to the mesh lock file.")
 	private String lockPath = "mesh.lock";
+
+	@JsonIgnore
+	@EnvironmentVariable(name = MESH_LIVE_PATH_ENV, description = "Path to the mesh live file.")
+	private String livePath = "mesh.live";
 
 	@JsonIgnore
 	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_ENV, description = "Password which will be used during initial admin user creation.")
@@ -407,6 +412,17 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	public MeshOptions setLockPath(String lockPath) {
 		this.lockPath = lockPath;
+		return this;
+	}
+
+	@JsonIgnore
+	public String getLivePath() {
+		return livePath;
+	}
+
+	@JsonIgnore
+	public MeshOptions setLivePath(String livePath) {
+		this.livePath = livePath;
 		return this;
 	}
 

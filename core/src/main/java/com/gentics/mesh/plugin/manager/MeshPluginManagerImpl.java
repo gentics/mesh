@@ -61,6 +61,7 @@ import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
@@ -104,13 +105,16 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	private final ClusterManager clusterManager;
 
+	private final LivenessManager liveness;
+
 	@Inject
-	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry, Database database, Lazy<Vertx> vertx) {
+	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, DelegatingPluginRegistry pluginRegistry, Database database, Lazy<Vertx> vertx, LivenessManager liveness) {
 		this.pluginFactory = pluginFactory;
 		this.options = options;
 		this.pluginRegistry = pluginRegistry;
 		this.vertx = vertx;
 		this.clusterManager = database.clusterManager();
+		this.liveness = liveness;
 		delayedInitialize();
 	}
 
@@ -536,6 +540,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	public void setStatus(String id, PluginStatus status) {
 		pluginStatusMap.put(id, status);
 		log.debug("Plugin {} changed to status {}", id , status);
+
+		// if initialization of a plugin failed, the "liveness" is false
+		if (status == PluginStatus.FAILED) {
+			// set liveness to false
+			log.error("Liveness of Mesh instance is set to false, because plugin {} failed to initialize", id);
+			liveness.setLive(false, String.format("Plugin %s failed to initialize", id));
+		}
 	}
 
 	@Override

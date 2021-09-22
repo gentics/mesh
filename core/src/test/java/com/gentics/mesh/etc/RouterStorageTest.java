@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistry;
 
@@ -30,7 +31,7 @@ public class RouterStorageTest {
 		RouterStorageRegistry routerStorageRegistry = mock(RouterStorageRegistry.class);
 		RouterStorage storage = new RouterStorage(Vertx.vertx(), new MeshOptions(), chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
-		}, null, routerStorageRegistry, null, null);
+		}, null, routerStorageRegistry, null, null, null);
 
 		RoutingContext rc = mock(RoutingContextImplBase.class);
 		Route currentRoute = mock(RouteImpl.class);
