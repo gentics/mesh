@@ -95,6 +95,8 @@ import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.MetricsServiceImpl;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
+import com.gentics.mesh.monitor.liveness.LivenessManagerImpl;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
@@ -338,4 +340,7 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract TopologyChangeReadonlyHandler bindTopologyChangeReadonlyHandler(TopologyChangeReadonlyHandlerImpl e);
+
+	@Binds
+	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);
 }

@@ -63,4 +63,10 @@ public interface ClusterManager {
 	 * @return
 	 */
 	boolean isClusterTopologyLocked();
+
+	/**
+	 * Checks whether the local node is online and fully usable.
+	 * @return online status
+	 */
+	boolean isLocalNodeOnline();
 }

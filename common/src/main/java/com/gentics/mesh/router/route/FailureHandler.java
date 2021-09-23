@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
@@ -32,13 +33,24 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	private static final Logger log = LoggerFactory.getLogger(FailureHandler.class);
 
+	private LivenessManager livenessBean;
+
 	/**
 	 * Create a new failure handler.
 	 * 
-	 * @return
+	 * @param livenessBean liveness bean
+	 * @return created failure handler
 	 */
-	public static Handler<RoutingContext> create() {
-		return new FailureHandler();
+	public static Handler<RoutingContext> create(LivenessManager livenessBean) {
+		return new FailureHandler(livenessBean);
+	}
+
+	/**
+	 * Create an instance with the given liveness bean
+	 * @param livenessBean liveness bean
+	 */
+	public FailureHandler(LivenessManager livenessBean) {
+		this.livenessBean = livenessBean;
 	}
 
 	/**
@@ -166,6 +178,12 @@ public class FailureHandler implements Handler<RoutingContext> {
 				translateMessage(error, rc);
 				rc.response().end(JsonUtil.toJson(error));
 			} else {
+				if (failure instanceof OutOfMemoryError) {
+					// set liveness to false
+					log.error("Liveness of Mesh instance is set to false, due to OutOfMemoryError", failure);
+					livenessBean.setLive(false, failure.getLocalizedMessage());
+				}
+
 				// We don't want to output too much information when an unexpected error occurs.
 				// That's why we don't reuse the error message here.
 				String msg = I18NUtil.get(ac, "error_internal");

@@ -435,8 +435,6 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("micronodeListFieldAllow");
-			assertThat(updatedSchema.getField("micronodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas")
-				.containsExactly("content");
 			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("micronodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas");
 			if (allow) {
 				assertion.containsExactly("content");

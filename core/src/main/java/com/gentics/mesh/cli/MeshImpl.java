@@ -426,6 +426,10 @@ public class MeshImpl implements Mesh {
 			log.error("Error while clearing refs", t);
 		}
 
+		// liveness manager
+		log.info("Stopping liveness manager");
+		meshInternal.livenessManager().shutdown();
+
 		deleteLock();
 		meshInternal = null;
 		log.info("Shutdown completed...");

@@ -1,0 +1,12 @@
+query($uuid: String) {
+    nodes(filter: {uuid: {equals: $uuid}}) {
+        elements {
+            uuid
+            ... on folder {
+                fields {
+                    slug
+                }
+            }
+        }
+    }
+}
