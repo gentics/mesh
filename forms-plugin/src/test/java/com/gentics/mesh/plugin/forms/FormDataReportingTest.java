@@ -11,6 +11,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,13 +73,35 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testExport() throws IOException {
-		String uuid = createForm("threefields.json");
+		doExportTest(false);
+	}
+
+	/**
+	 * Test exporting data where the fields are in reversed order
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportReversed() throws IOException {
+		doExportTest(true);
+	}
+
+	/**
+	 * Execute the export test
+	 * @param reversed true to execute for form with fields in reversed order
+	 * @throws IOException
+	 */
+	protected void doExportTest(boolean reversed) throws IOException {
+		String uuid = createForm(reversed ? "threefields_reversed.json" : "threefields.json");
 
 		// we collect the expected records (including the header) here as Set, because the actual order in
 		// the CSV is indeterministic, so we will just check that all the records are there
 		Set<String> records = new HashSet<>();
 		// add "record" for the header
-		records.add(StringUtils.join(Arrays.asList("input1|||First Field", "input2|||Second Field", "input3|||Third Field"), ","));
+		List<String> headers = Arrays.asList("input1|||First Field", "input2|||Second Field", "input3|||Third Field");
+		if (reversed) {
+			Collections.reverse(headers);
+		}
+		records.add(StringUtils.join(headers, ","));
 
 		for (String value : Arrays.asList("one", "two", "three")) {
 			String value1 = value + " in field 1";
@@ -94,7 +117,11 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			client().newCall(postRequest).execute();
 
 			// add the line to the set of expected records
-			records.add(StringUtils.join(Arrays.asList(value1, value2, value3), ","));
+			List<String> values = Arrays.asList(value1, value2, value3);
+			if (reversed) {
+				Collections.reverse(values);
+			}
+			records.add(StringUtils.join(values, ","));
 		}
 
 		if (!online) {

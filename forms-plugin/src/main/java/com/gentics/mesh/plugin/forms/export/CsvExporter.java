@@ -2,7 +2,6 @@ package com.gentics.mesh.plugin.forms.export;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -49,9 +48,6 @@ public class CsvExporter extends Exporter {
 	/** The CSV format options without the header fields. */
 	private CSVFormat baseFormat;
 
-	/** The list of fields making up the columns in the resulting CSV file. */
-	private List<String> fieldNames = null;
-
 	/**
 	 * Default constructor.
 	 *
@@ -97,8 +93,6 @@ public class CsvExporter extends Exporter {
 
 		JsonArray dataFields = formData.getJsonArray("data");
 
-		initFieldNames(dataFields);
-
 		StringBuilderWriter writer = new StringBuilderWriter();
 		CSVFormat format = baseFormat.withHeader(getHeaders(formData));
 		List<List<String>> records = dataFields.stream()
@@ -133,10 +127,6 @@ public class CsvExporter extends Exporter {
 	 * @return The labels of the exported fields as a String array
 	 */
 	private String[] getHeaders(JsonObject data) {
-		if (fieldNames == null) {
-			initFieldNames(data.getJsonArray("data"));
-		}
-
 		JsonArray dataFields = data.getJsonArray("data");
 
 		if (dataFields == null || dataFields.isEmpty()) {
@@ -159,22 +149,6 @@ public class CsvExporter extends Exporter {
 		}
 
 		return headers.toArray(new String[headers.size()]);
-	}
-
-	/**
-	 * Gathers the names of the exported fields in a sorted list.
-	 *
-	 * @param data
-	 *            The exported data
-	 */
-	private void initFieldNames(JsonArray data) {
-		if (data == null || data.isEmpty()) {
-			return;
-		}
-
-		fieldNames = new ArrayList<>(data.getJsonObject(0).getJsonObject("fields").fieldNames());
-		fieldNames.remove("errors");
-		Collections.sort(fieldNames);
 	}
 
 	/**

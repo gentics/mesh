@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms.export;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,9 @@ public abstract class Exporter {
 
 	/** The schema name of the form to be exported. */
 	protected final String schemaName;
+
+	/** The list of fields making up the columns in the export. */
+	protected List<String> fieldNames = null;
 
 	/**
 	 * Map of field names -> labels
@@ -177,6 +181,9 @@ public abstract class Exporter {
 
 		renderCtx.put("schemaName", schemaName);
 		renderCtx.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
+
+		fieldNames = new ArrayList<>(form.getReportableElementNamesForGraphQL());
+		fieldNames.remove("errors");
 
 		String query;
 
