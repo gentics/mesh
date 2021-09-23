@@ -5,6 +5,13 @@
 * Create the folders `plugins/forms`, `plugins/forms/templates`
 * Create a file `plugins/forms/config.yml`. See the configuration section for more details
 * Create handlebars templates in your `plugins/forms/templates` folder
+* To enable mail sending:
+  * Configure `mail` settings in `config.yml`
+  * Add `fromAddress` in `config.yml`
+  * Create templates for usermails and adminmails
+  * Configure paths to templates as `adminMailTemplate` and `userMailTemplate` in `config.yml` (without the .hbs extension)
+  * Configure `adminMailSubject` and `userMailSubject` in `config.yml`
+
 
 # API
 
@@ -18,9 +25,9 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 | `elements` | map of strings | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class | |
 | `mail` | object | Mail settings | |
 | `fromAddress` | string | Address to use as `from` when sending mails | |
-| `adminMailTemplate` | string | Path to the default template for admin mails, relative to `templatesPath` | |
+| `adminMailTemplate` | string | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`. | |
 | `adminMailSubject` | string | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form | |
-| `userMailTemplate` | string | Path to the default template for user mails, relative to `templatesPath` | |
+| `userMailTemplate` | string | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`. | |
 | `userMailSubject` | string | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form | |
 | `defaultExportFormat` | string | Default export format. Currently, only `CSV` is supported | CSV |
 | `reCaptcha` | object | Recaptcha settings | |

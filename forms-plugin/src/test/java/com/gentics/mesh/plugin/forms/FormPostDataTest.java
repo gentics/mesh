@@ -3,6 +3,8 @@ package com.gentics.mesh.plugin.forms;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.ArgumentCaptor;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -35,10 +38,17 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.service.MailService;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.spi.logging.LogDelegate;
 import okhttp3.Cookie;
 import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
@@ -294,6 +304,41 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(IOUtils.toString(fileContents, "utf-8"))
 			.as("Attached file")
 			.isEqualTo(fromFile(formDefinition));
+	}
+
+	/**
+	 * Test that trying to send an admin mail without admin mail template configured will log an error message.
+	 * @throws IOException
+	 */
+	@Test
+	public void testPostAdminMailNoTemplate() throws IOException {
+		Logger vertxLogger = LoggerFactory.getLogger(MailService.class);
+		LogDelegate delegate = vertxLogger.getDelegate();
+		ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)delegate.unwrap();
+
+		@SuppressWarnings("unchecked")
+		Appender<ILoggingEvent> appender = mock(Appender.class);
+		try {
+			logger.addAppender(appender);
+			// create the form
+			String uuid = createForm("adminmail_notemplate.json", true, true);
+
+			// post data
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("input1", "someValue")
+					.build();
+			Pair<Response, Optional<Cookie>> pair = postToForm(uuid, requestBody);
+			assertOk(pair.getLeft());
+
+			ArgumentCaptor<ILoggingEvent> argument = ArgumentCaptor.forClass(ILoggingEvent.class);
+			verify(appender).doAppend(argument.capture());
+			assertThat(argument.getValue()).as("Logging Event").hasFieldOrPropertyWithValue("level", Level.ERROR)
+					.hasFieldOrPropertyWithValue("formattedMessage",
+							"Could not send admin mail for form Form without admin mail template, because no template configuration was found (template must be either configured in config.yml as \"adminMailTemplate\" or set in the form as \"mailtemp\").");
+		} finally {
+			logger.detachAppender(appender);
+		}
 	}
 
 	private Pair<String, String> doPostFile(String formFile) throws IOException {
