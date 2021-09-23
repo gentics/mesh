@@ -284,12 +284,12 @@ public class Form {
 	 *
 	 * @return A set of names of form elements containing submitted data.
 	 */
-	public Set<String> getReportableElementNamesForGraphQL() {
+	public List<String> getReportableElementNamesForGraphQL() {
 		return flattened()
 			.filter(FormElement::isReportable)
 			.map(FormElement::getGraphQLName)
 			.filter(Objects::nonNull)
-			.collect(Collectors.toSet());
+			.collect(Collectors.toList());
 	}
 
 	/**

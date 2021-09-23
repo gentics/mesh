@@ -13,6 +13,8 @@
 [[v1.6.13]]
 == 1.6.13 (TBD)
 
+icon:check[] Form data exported as CSV or returned via REST will now contain the fields in the order, they are included in the form.
+
 icon:check[] The logging for mail sending errors (e.g. sending is not possible, because there is no template configured) has been improved.
 
 [[v1.6.11]]
