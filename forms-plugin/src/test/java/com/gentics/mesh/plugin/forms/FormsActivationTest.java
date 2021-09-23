@@ -3,21 +3,54 @@ package com.gentics.mesh.plugin.forms;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
 
+import io.reactivex.Observable;
+
 /**
  * Test cases for activation of forms plugin
  */
+@RunWith(Parameterized.class)
 public class FormsActivationTest extends AbstractFormsPluginIntegrationTest {
+	@Parameters(name = "{index}: pathPrefix {0}")
+	public static Collection<Object[]> data() {
+		Collection<Object[]> data = new ArrayList<>();
+		for (String pathPrefix : Arrays.asList("", "/path/prefix")) {
+			data.add(new Object[] { pathPrefix });
+		}
+		return data;
+	}
+
+	@Parameter(0)
+	public String pathPrefix;
+
+	@Before
+	public void setup() {
+		super.setup();
+		server.client().findBranches(PROJECT_NAME).toSingle()
+				.flatMapObservable(branchesListResponse -> Observable.fromIterable(branchesListResponse.getData()))
+				.filter(branch -> branch.getLatest() != null && branch.getLatest()).firstOrError()
+				.flatMap(branch -> server.client().updateBranch(PROJECT_NAME, branch.getUuid(),
+						new BranchUpdateRequest().setPathPrefix(pathPrefix)).toSingle()).blockingGet();
+	}
+
 	@Test
 	public void testActivate() {
 		// assert that plugin is not activated

@@ -234,10 +234,24 @@ public class StatusService {
 	 * @return single node response
 	 */
 	public Single<NodeResponse> getRootNode(String projectName, MeshRestClient client) {
-		return client
-				.webroot(projectName, "/Forms Plugin",
-						new GenericParametersImpl().setETag(false).setFields("fields", "uuid"))
-				.toSingle().map(MeshWebrootResponse::getNodeResponse);
+		return getPathPrefixOfDefaultBranch(projectName).flatMap(pathPrefix -> {
+			return client
+					.webroot(projectName, pathPrefix + "/Forms Plugin",
+							new GenericParametersImpl().setETag(false).setFields("fields", "uuid"))
+					.toSingle().map(MeshWebrootResponse::getNodeResponse);
+		});
+	}
+
+	/**
+	 * Get the path prefix of the project's default branch. If no prefix is set, it defaults to empty string
+	 * @param projectName project name
+	 * @return single path prefix
+	 */
+	protected Single<String> getPathPrefixOfDefaultBranch(String projectName) {
+		return adminClient.findBranches(projectName).toSingle()
+				.flatMapObservable(branchesListResponse -> Observable.fromIterable(branchesListResponse.getData()))
+				.filter(branch -> branch.getLatest() != null && branch.getLatest())
+				.map(branch -> branch.getPathPrefix()).first("");
 	}
 
 	/**

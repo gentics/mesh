@@ -168,7 +168,6 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	@Before
 	public void setup() {
 		List<String> schemasToDelete = Arrays.asList(SchemaService.PLUGIN_SCHEMA_NAME);
-		List<String> persistentSchemas = Arrays.asList(SchemaService.PLUGIN_SCHEMA_NAME, SchemaService.SCHEMA_NAME);
 
 		// delete all form nodes and form template nodes
 		NodeListResponse response = call(() -> server.client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
@@ -181,7 +180,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		// remove additional schemas
 		SchemaListResponse schemas = call(() -> server.client().findSchemas(new PagingParametersImpl().setPerPage(Long.MAX_VALUE)));
 		for (SchemaResponse schema : schemas.getData()) {
-			if (schema.getName().startsWith(SchemaService.SCHEMA_NAME) && !persistentSchemas.contains(schema.getName())) {
+			if (schema.getName().startsWith(SchemaService.SCHEMA_NAME)) {
 				call(() -> server.client().deleteSchema(schema.getUuid()));
 			}
 		}
