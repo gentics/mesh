@@ -17,6 +17,8 @@ icon:check[] Form data exported as CSV or returned via REST will now contain the
 
 icon:check[] The logging for mail sending errors (e.g. sending is not possible, because there is no template configured) has been improved.
 
+icon:check[] Some errors that occurred on projects having a non-empty path prefix have been fixed.
+
 [[v1.6.11]]
 == 1.6.11 (2021-08-02)
 
