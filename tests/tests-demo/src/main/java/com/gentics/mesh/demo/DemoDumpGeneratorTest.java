@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -94,8 +95,8 @@ public class DemoDumpGeneratorTest {
 				String branchUuid = node.getProject().getInitialBranch().getUuid();
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
 				ContainerType type = PUBLISHED;
-				String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
-				String documentId = ContentDaoWrapper.composeDocumentId(node.getUuid(), languageTag);
+				String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
+				String documentId = ContentDao.composeDocumentId(node.getUuid(), languageTag);
 				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
 						+ "} could not be found within index {" + indexName + "} - {" + documentId + "}";

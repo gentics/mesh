@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -92,12 +92,12 @@ public class PermissionChangedEventHandler implements EventHandler {
 						.flatMap(branchUuid -> Util.latestVersionTypes()
 							.flatMap(type -> tx.contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
 								.map(container -> meshHelper.updateDocumentRequest(
-									ContentDaoWrapper.composeIndexName(
+									ContentDao.composeIndexName(
 										model.getProject().getUuid(),
 										branchUuid,
 										container.getSchemaContainerVersion().getUuid(),
 										type),
-									ContentDaoWrapper.composeDocumentId(model.getUuid(), container.getLanguageTag()),
+									ContentDao.composeDocumentId(model.getUuid(), container.getLanguageTag()),
 									tf.toPermissionPartial(node, type), complianceMode))))))
 				.collect(toFlowable());
 		});

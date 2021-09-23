@@ -50,20 +50,12 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	}
 
 	/**
-	 * Copy the values of this field to the specified target field.
-	 * 
-	 * @param target
-	 * @return Fluent API
-	 */
-	BinaryGraphField copyTo(BinaryGraphField target);
-
-	/**
 	 * Set the binary filename.
 	 * 
 	 * @param fileName
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setFileName(String fileName) {
+	default HibBinaryField setFileName(String fileName) {
 		property(BINARY_FILENAME_PROPERTY_KEY, fileName);
 		return this;
 	}
@@ -102,7 +94,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param mimeType
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setMimeType(String mimeType) {
+	default HibBinaryField setMimeType(String mimeType) {
 		property(BINARY_CONTENT_TYPE_PROPERTY_KEY, mimeType);
 		return this;
 	}
@@ -120,7 +112,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param dominantColor
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setImageDominantColor(String dominantColor) {
+	default HibBinaryField setImageDominantColor(String dominantColor) {
 		property(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
 		return this;
 	}

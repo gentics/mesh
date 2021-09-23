@@ -10,8 +10,8 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinaryField;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.spi.Supplier;
@@ -42,9 +42,9 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public Result<BinaryGraphField> findFields() {
+	public Result<HibBinaryField> findFields() {
 		// TODO inE should not return wildcard generics
-		return (Result<BinaryGraphField>) (Result<?>) inE(HAS_FIELD, BinaryGraphFieldImpl.class);
+		return (Result<HibBinaryField>) (Result<?>) inE(HAS_FIELD, BinaryGraphFieldImpl.class);
 	}
 
 	@Override

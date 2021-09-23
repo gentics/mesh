@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -302,13 +303,13 @@ public class MeshEntities {
 		.flatMap(node -> latestVersionTypes()
 		.flatMap(type -> boot.contentDao().getGraphFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
-			ContentDaoWrapper.composeIndexName(
+			ContentDao.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				container.getSchemaContainerVersion().getUuid(),
 				type
 			),
-			ContentDaoWrapper.composeDocumentId(nodeUuid, container.getLanguageTag()),
+			ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
 			transformer.toDocument(container, branch.getUuid(), type), complianceMode
 		))));
 	}

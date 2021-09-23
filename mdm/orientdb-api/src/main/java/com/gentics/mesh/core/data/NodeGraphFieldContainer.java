@@ -13,7 +13,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -44,7 +44,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
+		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
 	}
 
 	/**
@@ -53,7 +53,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	default String getDocumentId() {
-		return ContentDaoWrapper.composeDocumentId(getNode().getUuid(), getLanguageTag());
+		return ContentDao.composeDocumentId(getNode().getUuid(), getLanguageTag());
 	}
 
 	/**

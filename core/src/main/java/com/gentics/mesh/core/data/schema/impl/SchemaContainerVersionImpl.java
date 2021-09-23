@@ -32,7 +32,7 @@ import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -101,7 +101,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Result<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
+	public Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type) {
 		UserDaoWrapper userDao = Tx.get().userDao();
 		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()

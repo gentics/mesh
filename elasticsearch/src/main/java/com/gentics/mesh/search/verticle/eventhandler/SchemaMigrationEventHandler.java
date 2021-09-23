@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -78,7 +78,7 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	}
 
 	private Flowable<DropIndexRequest> migrationEnd(String projectUuid, String branchUuid, String schemaVersionUuid) {
-		return Flowable.just(new DropIndexRequest(ContentDaoWrapper.composeIndexPattern(
+		return Flowable.just(new DropIndexRequest(ContentDao.composeIndexPattern(
 			projectUuid,
 			branchUuid,
 			schemaVersionUuid)));

@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
@@ -80,9 +80,9 @@ public class ProjectUpdateEventHandler implements EventHandler {
 							.flatMap(type -> branches.stream().flatMap(branch -> tx.contentDao()
 									.getGraphFieldContainers(node, branch, type).stream()
 									.map(container -> helper.createDocumentRequest(
-											ContentDaoWrapper.composeIndexName(project.getUuid(), branch.getUuid(),
+											ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
 													container.getSchemaContainerVersion().getUuid(), type),
-											ContentDaoWrapper.composeDocumentId(node.getUuid(),
+											ContentDao.composeDocumentId(node.getUuid(),
 													container.getLanguageTag()),
 											((NodeContainerTransformer) entities.nodeContent.getTransformer())
 													.toDocument(container, branch.getUuid(), type),
