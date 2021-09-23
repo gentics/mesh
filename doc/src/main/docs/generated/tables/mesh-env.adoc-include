@@ -167,6 +167,9 @@
 | *MESH_CLUSTER_ENABLED*
 | Override cluster enabled flag.
 
+| *MESH_LIVE_PATH*
+| Path to the mesh live file.
+
 | *MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME*
 | Override the idle debounce time.
 
