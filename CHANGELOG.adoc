@@ -24,7 +24,7 @@ include::content/docs/variables.adoc-include[]
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v1.7.18]]
-== 1.7.18 (TBD)
+== 1.7.18 (23.09.2021)
 
 icon:check[] Server: Mesh will now create a file `mesh.live` and touch it every 10 seconds as long as the instance is considered live. If an OutOfMemory is caught or one
 of the plugins (permanently) fails to initialize, mesh is considered no longer live and the file will not be touched any more.
