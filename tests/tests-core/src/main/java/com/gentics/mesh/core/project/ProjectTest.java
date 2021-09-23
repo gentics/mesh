@@ -21,8 +21,6 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -53,9 +51,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			HibProject project = createProject("test", "folder");
-			HibProject project2 = projectRoot.findByName(project.getName());
+			HibProject project2 = tx.projectDao().findByName(project.getName());
 			assertNotNull(project2);
 			assertEquals("test", project2.getName());
 			assertEquals(project.getUuid(), project2.getUuid());
@@ -77,10 +74,9 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			long nProjectsBefore = projectRoot.findAll().count();
+			long nProjectsBefore = tx.projectDao().findAll().count();
 			assertNotNull(createProject("test1234556", "folder"));
-			long nProjectsAfter = projectRoot.findAll().count();
+			long nProjectsAfter = tx.projectDao().findAll().count();
 			assertEquals(nProjectsBefore + 1, nProjectsAfter);
 		}
 	}
@@ -98,7 +94,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			long size = Iterators.size(meshRoot().getProjectRoot().findAll().iterator());
+			long size = Iterators.size(tx.projectDao().findAll().iterator());
 			assertEquals(1, size);
 		}
 	}
@@ -107,8 +103,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			assertNull(meshRoot().getProjectRoot().findByName("bogus"));
-			assertNotNull(meshRoot().getProjectRoot().findByName("dummy"));
+			assertNull(tx.projectDao().findByName("bogus"));
+			assertNotNull(tx.projectDao().findByName("dummy"));
 		}
 	}
 
@@ -116,9 +112,9 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			Project project = meshRoot().getProjectRoot().findByUuid(projectUuid());
+			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			assertNotNull(project);
-			project = meshRoot().getProjectRoot().findByUuid("bogus");
+			project = tx.projectDao().findByUuid("bogus");
 			assertNull(project);
 		}
 	}
@@ -145,11 +141,11 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			BulkActionContext bac = createBulkContext();
-			HibProject foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			HibProject foundProject = tx.projectDao().findByUuid(uuid);
 			assertNotNull(foundProject);
 			tx.projectDao().delete(project, bac);
 			// TODO check for attached nodes
-			foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			foundProject = tx.projectDao().findByUuid(uuid);
 			assertNull(foundProject);
 		}
 	}
@@ -160,14 +156,13 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
-			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
-			roleDao.grantPermissions(role(), meshRoot().getProjectRoot(), CREATE_PERM);
+			roleDao.grantPermissions(role(), tx.data().permissionRoots().project(), CREATE_PERM);
 			// 2. Create the project
 			HibProject project = createProject("TestProject", "folder");
 			assertFalse("The user should not have create permissions on the project.", userDao.hasPermission(user(), project, CREATE_PERM));
-			userDao.inheritRolePermissions(user(), root.getProjectRoot(), project);
+			userDao.inheritRolePermissions(user(), tx.data().permissionRoots().project(), project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
 			ac.data().clear();
 			assertTrue("The users role should have inherited the initial permission on the project root.",

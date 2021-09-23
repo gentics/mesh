@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Set;
-import java.util.function.Predicate;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -66,46 +64,6 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	boolean canReadNode(HibUser user, InternalActionContext ac, HibNode node);
 
 	/**
-	 * Load the user with the given uuid.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @param errorIfNotFound
-	 * @return
-	 */
-	HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
-
-	/**
-	 * Load the page with the users.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
-	 * Load the page with the users.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @param extraFilter
-	 * @return
-	 */
-	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter);
-
-	/**
-	 * Load the user with the given uuid.
-	 * 
-	 * @param ac
-	 * @param userUuid
-	 * @param perm
-	 * @return
-	 */
-	HibUser loadObjectByUuid(InternalActionContext ac, String userUuid, InternalPermission perm);
-
-	/**
 	 * Return the permission info object for the given vertex.
 	 *
 	 * @param user
@@ -121,17 +79,6 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @return
 	 */
 	Set<InternalPermission> getPermissions(HibUser user, HibBaseElement element);
-
-	/**
-	 * Update the vertex using the action context information.
-	 *
-	 * @param user
-	 * @param ac
-	 * @param batch
-	 *            Batch to which entries will be added in order to update the search index.
-	 * @return true if the element was updated. Otherwise false
-	 */
-	boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Same as {@link HibUser#update(InternalActionContext, EventQueueBatch)}, but does not actually perform any changes.
@@ -206,28 +153,12 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	HibUser setPassword(HibUser user, String password);
 
 	/**
-	 * Find the user by username.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	HibUser findByName(String name);
-
-	/**
 	 * Find the user with the given username.
 	 * 
 	 * @param username
 	 * @return
 	 */
 	HibUser findByUsername(String username);
-
-	/**
-	 * Delete the user.
-	 * 
-	 * @param user
-	 * @param bac
-	 */
-	void delete(HibUser user, BulkActionContext bac);
 
 	/**
 	 * Find the mesh auth user with the given username.

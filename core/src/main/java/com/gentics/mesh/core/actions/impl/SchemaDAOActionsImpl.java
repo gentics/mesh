@@ -36,7 +36,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	public HibSchema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
 		if (perm == null) {
-			return schemaDao.findByUuidGlobal(uuid);
+			return schemaDao.findByUuid(uuid);
 		} else {
 			return schemaDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}

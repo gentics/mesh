@@ -45,7 +45,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public Result<? extends HibJob> findAllGlobal() {
+	public Result<? extends HibJob> findAll() {
 		return boot.get().meshRoot().getJobRoot().findAll();
 	}
 
@@ -154,12 +154,12 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		return boot.get().meshRoot().getJobRoot().computeCount();
 	}
 
 	@Override
-	public HibJob findByUuidGlobal(String uuid) {
+	public HibJob findByUuid(String uuid) {
 		return boot.get().meshRoot().getJobRoot().findByUuid(uuid);
 	}
 
@@ -183,4 +183,8 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 		boot.get().meshRoot().getJobRoot().purgeFailed();
 	}
 
+	@Override
+	public HibJob loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
+		return boot.get().meshRoot().getJobRoot().loadObjectByUuid(ac, uuid, perm);
+	}
 }

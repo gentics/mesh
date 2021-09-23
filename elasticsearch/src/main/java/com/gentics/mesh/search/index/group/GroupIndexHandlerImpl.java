@@ -58,7 +58,7 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.groupDao().globalCount();
+			return tx.groupDao().count();
 		});
 	}
 
@@ -96,12 +96,12 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 
 	@Override
 	public Function<String, HibGroup> elementLoader() {
-		return (uuid) -> boot.meshRoot().getGroupRoot().findByUuid(uuid);
+		return (uuid) -> boot.groupDao().findByUuid(uuid);
 	}
 
 	@Override
 	public Stream<? extends HibGroup> loadAllElements() {
-		return Tx.get().groupDao().findAllGlobal().stream();
+		return Tx.get().groupDao().findAll().stream();
 	}
 
 	@Override

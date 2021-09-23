@@ -160,10 +160,10 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
-		String microschemaRootUuid = tx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
+		String microschemaRootUuid = tx(() -> Tx.get().data().permissionRoots().microschema().getUuid());
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			roleDao.revokePermissions(role(), meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().microschema(), CREATE_PERM);
 			tx.success();
 		}
 		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid, CREATE_PERM.getRestPerm().getName());
@@ -318,7 +318,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 			call(() -> client().updateMicroschema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			Microschema reloaded = boot().meshRoot().getMicroschemaContainerRoot().findByUuid(microschema.getUuid());
+			HibMicroschema reloaded = boot().microschemaDao().findByUuid(microschema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -338,7 +338,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		// schema_delete_still_in_use
 
 		try (Tx tx = tx()) {
-			Microschema reloaded = boot().meshRoot().getMicroschemaContainerRoot().findByUuid(uuid);
+			HibMicroschema reloaded = boot().microschemaDao().findByUuid(uuid);
 			assertNull("The microschema should have been deleted.", reloaded);
 		}
 	}
@@ -448,7 +448,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			microschemaContainerUuid);
 
 		try (Tx tx = tx()) {
-			Microschema reloaded = boot().meshRoot().getMicroschemaContainerRoot().findByUuid(microschemaContainerUuid);
+			HibMicroschema reloaded = boot().microschemaDao().findByUuid(microschemaContainerUuid);
 			assertNotNull("The microschema should not have been deleted.", reloaded);
 		}
 
@@ -486,7 +486,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid(),
 				DELETE_PERM.getRestPerm().getName());
 
-			assertElement(boot().meshRoot().getMicroschemaContainerRoot(), microschema.getUuid(), true);
+			assertElement(boot().microschemaDao(), microschema.getUuid(), true);
 		}
 	}
 

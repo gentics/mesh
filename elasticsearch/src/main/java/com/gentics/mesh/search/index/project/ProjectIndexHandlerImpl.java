@@ -59,7 +59,7 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.projectDao().globalCount();
+			return tx.projectDao().count();
 		});
 	}
 
@@ -103,12 +103,12 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 
 	@Override
 	public Function<String, HibProject> elementLoader() {
-		return (uuid) -> boot.meshRoot().getProjectRoot().findByUuid(uuid);
+		return (uuid) -> boot.projectDao().findByUuid(uuid);
 	}
 
 	@Override
 	public Stream<? extends HibProject> loadAllElements() {
-		return Tx.get().projectDao().findAllGlobal().stream();
+		return Tx.get().projectDao().findAll().stream();
 	}
 
 	@Override

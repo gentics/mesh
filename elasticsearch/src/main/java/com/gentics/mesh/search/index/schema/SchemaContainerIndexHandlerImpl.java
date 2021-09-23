@@ -69,7 +69,7 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.schemaDao().globalCount();
+			return tx.schemaDao().count();
 		});
 	}
 
@@ -107,11 +107,11 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 
 	@Override
 	public Function<String, HibSchema> elementLoader() {
-		return (uuid) -> boot.meshRoot().getSchemaContainerRoot().findByUuid(uuid);
+		return (uuid) -> boot.schemaDao().findByUuid(uuid);
 	}
 
 	@Override
 	public Stream<? extends HibSchema> loadAllElements() {
-		return Tx.get().schemaDao().findAllGlobal().stream();
+		return Tx.get().schemaDao().findAll().stream();
 	}
 }

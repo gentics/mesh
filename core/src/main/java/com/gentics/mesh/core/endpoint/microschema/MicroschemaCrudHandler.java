@@ -76,7 +76,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 					return false;
 				}
 				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
-				HibMicroschema microschema = microschemaDao.findByUuidGlobal(uuid);
+				HibMicroschema microschema = microschemaDao.findByUuid(uuid);
 				return microschema == null;
 			});
 

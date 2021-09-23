@@ -93,13 +93,13 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public HibSchema findByUuidGlobal(String uuid) {
+	public HibSchema findByUuid(String uuid) {
 		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
 		return schemaRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		return boot.get().meshRoot().getSchemaContainerRoot().globalCount();
 	}
 
@@ -163,7 +163,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 			if (project != null) {
 				schemaContainer = findByUuid(project, schemaUuid);
 			} else {
-				schemaContainer = findByUuidGlobal(schemaUuid);
+				schemaContainer = findByUuid(schemaUuid);
 			}
 		}
 
@@ -450,7 +450,23 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Result<? extends HibSchema> findAllGlobal() {
+	public Result<? extends HibSchema> findAll() {
 		return boot.get().meshRoot().getSchemaContainerRoot().findAll();
+	}
+
+	@Override
+	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+			Predicate<HibSchema> extraFilter) {
+		return boot.get().meshRoot().getSchemaContainerRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
+	}
+
+	@Override
+	public boolean update(HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().meshRoot().getSchemaContainerRoot().update(null, ac, batch);
+	}
+
+	@Override
+	public String getAPIPath(HibSchema element, InternalActionContext ac) {
+		return toGraph(element).getAPIPath(ac);
 	}
 }

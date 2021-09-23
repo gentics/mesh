@@ -56,7 +56,6 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -487,7 +486,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			invisibleUser.setFirstname("should_not_be_listed");
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			userDao.addGroup(invisibleUser, group());
-			foundUsers = userDao.globalCount();
+			foundUsers = userDao.count();
 			tx.success();
 		}
 
@@ -997,7 +996,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (Tx tx = tx()) {
-			HibUser reloadedUser = tx.userDao().findByUuidGlobal(uuid);
+			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 
@@ -1043,7 +1042,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(userUuid(), request), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			HibUser reloadedUser = tx.userDao().findByUuidGlobal(userUuid());
+			HibUser reloadedUser = tx.userDao().findByUuid(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
 	}
@@ -1069,7 +1068,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(userUuid(), updatedUser), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			HibUser reloadedUser = tx.userDao().findByUuidGlobal(userUuid());
+			HibUser reloadedUser = tx.userDao().findByUuid(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user().getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user().getLastname(), reloadedUser.getLastname());
@@ -1223,7 +1222,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx2 = tx()) {
 			assertThat(restUser).matches(request);
 
-			HibUser user = tx2.userDao().findByUuidGlobal(restUser.getUuid());
+			HibUser user = tx2.userDao().findByUuid(restUser.getUuid());
 			assertThat(restUser).matches(user);
 		}
 	}
@@ -1240,11 +1239,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			roleDao.revokePermissions(role(), meshRoot().getUserRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().user(), CREATE_PERM);
 			tx.success();
 		}
 
-		String userRootUuid = tx(() -> meshRoot().getUserRoot().getUuid());
+		String userRootUuid = tx(() -> Tx.get().data().permissionRoots().user().getUuid());
 		call(() -> client().createUser(request), FORBIDDEN, "error_missing_perm", userRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
@@ -1379,7 +1378,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			waitForSearchIdleEvent();
 
 			try (Tx tx2 = tx()) {
-				HibUser loadedUser = tx2.userDao().findByUuidGlobal(uuid);
+				HibUser loadedUser = tx2.userDao().findByUuid(uuid);
 				assertNull("The user should have been deleted.", loadedUser);
 			}
 
@@ -1420,10 +1419,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		try (Tx tx = tx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
 			call(() -> client().deleteUser(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
-			userRoot = meshRoot().getUserRoot();
-			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid));
+			assertNotNull("The user should not have been deleted", boot().userDao().findByUuid(uuid));
 		}
 	}
 
@@ -1451,7 +1448,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			uuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
 			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, extraUser));
-			HibUser user = userDao.findByUuidGlobal(uuid);
+			HibUser user = userDao.findByUuid(uuid);
 			assertEquals(1, userDao.getGroups(user).count());
 			assertTrue("The user should be enabled", user.isEnabled());
 			tx.success();
@@ -1460,8 +1457,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().deleteUser(uuid));
 
 		try (Tx tx = tx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			assertNull("The user was not deleted.", userRoot.findByUuid(uuid));
+			assertNull("The user was not deleted.", boot().userDao().findByUuid(uuid));
 		}
 		// // Check whether the user was correctly disabled
 		// try (NoTrx tx = tx()) {
@@ -1493,7 +1489,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		MeshResponse<UserResponse> response = client().createUser(request).getResponse().blockingGet();
 		try (Tx tx = tx()) {
-			User user = meshRoot().getUserRoot().findByUsername(name);
+			HibUser user = boot().userDao().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
@@ -1514,7 +1510,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setHeader(HOST.toString(), "jotschi.de:" + port());
 		MeshResponse<UserResponse> response = request.getResponse().blockingGet();
 		try (Tx tx = tx()) {
-			User user = meshRoot().getUserRoot().findByUsername(name);
+			HibUser user = boot().userDao().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);

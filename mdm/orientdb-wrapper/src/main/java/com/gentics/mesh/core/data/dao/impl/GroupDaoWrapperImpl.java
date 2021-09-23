@@ -333,19 +333,19 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public HibGroup findByUuidGlobal(String uuid) {
+	public HibGroup findByUuid(String uuid) {
 		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public Result<? extends HibGroup> findAllGlobal() {
+	public Result<? extends HibGroup> findAll() {
 		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findAll();
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.globalCount();
 	}

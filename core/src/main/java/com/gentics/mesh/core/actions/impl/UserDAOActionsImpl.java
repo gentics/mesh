@@ -35,7 +35,7 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	public HibUser loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		UserDaoWrapper userDao = ctx.tx().userDao();
 		if (perm == null) {
-			return userDao.findByUuidGlobal(uuid);
+			return userDao.findByUuid(uuid);
 		} else {
 			return userDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}

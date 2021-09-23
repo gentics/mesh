@@ -243,13 +243,13 @@ public class TestDataProvider {
 	 * @param tx
 	 */
 	private void addBootstrappedData(Tx tx) {
-		for (HibGroup group : tx.groupDao().findAllGlobal()) {
+		for (HibGroup group : tx.groupDao().findAll()) {
 			groups.put(group.getName(), group);
 		}
-		for (HibUser user : tx.userDao().findAllGlobal()) {
+		for (HibUser user : tx.userDao().findAll()) {
 			users.put(user.getUsername(), user);
 		}
-		for (HibRole role : tx.roleDao().findAllGlobal()) {
+		for (HibRole role : tx.roleDao().findAll()) {
 			roles.put(role.getName(), role);
 		}
 	}

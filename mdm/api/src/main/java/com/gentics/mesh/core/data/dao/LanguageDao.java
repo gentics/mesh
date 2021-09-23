@@ -23,12 +23,4 @@ public interface LanguageDao extends DaoGlobal<HibLanguage> {
 	 * @return
 	 */
 	HibLanguage create(String languageName, String languageTag);
-
-	/**
-	 * Find the language by name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	HibLanguage findByName(String name);
 }

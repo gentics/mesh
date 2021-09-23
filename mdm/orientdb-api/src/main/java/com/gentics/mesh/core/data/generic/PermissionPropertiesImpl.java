@@ -42,7 +42,7 @@ public class PermissionPropertiesImpl implements PermissionProperties {
 			? Stream.empty()
 			: roleUuids.stream();
 		return new TraversalResult<>(stream
-			.map(roleDao::findByUuidGlobal)
+			.map(roleDao::findByUuid)
 			.filter(Objects::nonNull));
 	}
 

@@ -8,11 +8,11 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.UserImpl;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -68,11 +68,11 @@ public class BucketManagerTest extends AbstractMeshTest {
 		int syncBatchSize = 100;
 		options().getSearchOptions().setSyncBatchSize(syncBatchSize);
 		try (Tx tx = tx()) {
-			MeshRoot root = meshRoot();
+			UserDao userDao = boot().userDao();
 
 			// Delete all users to get empty set of vertices to work with
-			for (User user : root.getUserRoot().findAll().list()) {
-				user.delete();
+			for (HibUser user : userDao.findAll().list()) {
+				userDao.delete(user, new DummyBulkActionContext());
 			}
 			long userCount = db().count(UserImpl.class);
 			assertEquals(0, userCount);

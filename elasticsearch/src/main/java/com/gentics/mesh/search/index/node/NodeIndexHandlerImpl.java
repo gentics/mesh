@@ -24,11 +24,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -151,8 +149,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
-				for (Branch branch : project.getBranchRoot().findAll()) {
+			for (HibProject project : boot.projectDao().findAll()) {
+				for (HibBranch branch : boot.branchDao().findAll(project)) {
 					indexInfo.putAll(getIndices(project, branch).runInExistingTx(tx));
 				}
 			}
@@ -244,7 +242,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			ProjectDaoWrapper projectDao = tx.projectDao();
 			BranchDaoWrapper branchDao = tx.branchDao();
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
-			for (HibProject currentProject : projectDao.findAllGlobal()) {
+			for (HibProject currentProject : projectDao.findAll()) {
 				for (HibBranch branch : branchDao.findAll(currentProject)) {
 					for (HibSchemaVersion version : schemaDao.findActiveSchemaVersions(branch)) {
 						if (log.isDebugEnabled()) {
@@ -282,7 +280,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			ProjectDaoWrapper projectDao = tx.projectDao();
 			BranchDaoWrapper branchDao = tx.branchDao();
 			
-			return projectDao.findAllGlobal().stream()
+			return projectDao.findAll().stream()
 				.flatMap(project -> branchDao.findAll(project).stream()
 					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
 						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)

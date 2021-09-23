@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.List;
 import java.util.Stack;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -31,48 +30,6 @@ import com.gentics.mesh.path.Path;
  * Dao for {@link HibNode}
  */
 public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
-
-	/**
-	 * Load the node by uuid.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @return
-	 */
-	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
-
-	/**
-	 * Load the node by uuid.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @param errorIfNotFound
-	 * @return
-	 */
-	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
-
-	/**
-	 * Finds a node in a project by its uuid.
-	 * 
-	 * @param project
-	 * @param uuid
-	 * @return The found node. Null if the node could not be found in the project.
-	 */
-	HibNode findByUuid(HibProject project, String uuid);
-
-	/**
-	 * Return the node by name.
-	 * 
-	 * @param project
-	 * @param name
-	 * @return
-	 */
-	// TODO remove this method. It has no meaning for nodes.
-	HibNode findByName(HibProject project, String name);
 
 	/**
 	 * Create a child node in the latest branch of the project.
@@ -351,46 +308,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Create a new node.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param batch
-	 * @param uuid
-	 * @return
-	 */
-	HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid);
-
-	/**
-	 * Load all nodes for the project.
-	 * 
-	 * @param project
-	 * @return
-	 */
-	Result<? extends HibNode> findAll(HibProject project);
-
-	/**
-	 * Load a page of nodes.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
-	 * Load a page of nodes.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param pagingInfo
-	 * @param filter
-	 * @return
-	 */
-	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibNode> filter);
 
 	/**
 	 * Load a stream of nodes with the given perms in the project.

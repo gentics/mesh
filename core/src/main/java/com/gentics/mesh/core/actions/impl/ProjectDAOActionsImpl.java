@@ -32,7 +32,7 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	public HibProject loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		ProjectDaoWrapper projectDao = ctx.tx().projectDao();
 		if (perm == null) {
-			return projectDao.findByUuidGlobal(uuid);
+			return projectDao.findByUuid(uuid);
 		} else {
 			return projectDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}

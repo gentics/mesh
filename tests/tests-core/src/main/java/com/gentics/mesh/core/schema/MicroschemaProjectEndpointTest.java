@@ -19,7 +19,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
@@ -82,13 +81,12 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-
+			
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName("extraProject");
 			ProjectResponse created = call(() -> client().createProject(request));
-			extraProject = projectRoot.findByUuid(created.getUuid());
+			extraProject = tx.projectDao().findByUuid(created.getUuid());
 
 			// Add only read perms
 			roleDao.grantPermissions(role(), microschema, READ_PERM);
@@ -113,13 +111,12 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			HibMicroschema microschema = microschemaContainer("vcard");
 			microschemaUuid = microschema.getUuid();
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			ProjectResponse response = call(() -> client().createProject(request));
 			projectUuid = response.getUuid();
-			extraProject = projectRoot.findByUuid(projectUuid);
+			extraProject = tx.projectDao().findByUuid(projectUuid);
 			// Revoke Update perm on project
 			roleDao.revokePermissions(role(), extraProject, UPDATE_PERM);
 			tx.success();

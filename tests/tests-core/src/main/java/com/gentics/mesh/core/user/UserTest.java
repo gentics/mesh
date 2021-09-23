@@ -25,7 +25,6 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -34,7 +33,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -120,9 +118,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao= tx.userDao();
-			int nUserBefore = Iterables.size(userDao.findAllGlobal());
+			int nUserBefore = Iterables.size(userDao.findAll());
 			assertNotNull(userDao.create("dummy12345", user()));
-			int nUserAfter = Iterables.size(userDao.findAllGlobal());
+			int nUserAfter = Iterables.size(userDao.findAll());
 			assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 		}
 	}
@@ -250,7 +248,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.userDao();
 			String uuid = user().getUuid();
-			HibUser foundUser = userDao.findByUuidGlobal(uuid);
+			HibUser foundUser = userDao.findByUuid(uuid);
 			assertNotNull(foundUser);
 			assertEquals(uuid, foundUser.getUuid());
 		}
@@ -287,7 +285,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid = user.getUuid();
 			BulkActionContext bac = createBulkContext();
 			userDao.delete(user, bac);
-			HibUser foundUser = userDao.findByUuidGlobal(uuid);
+			HibUser foundUser = userDao.findByUuid(uuid);
 			assertNull(foundUser);
 		}
 	}
@@ -297,12 +295,11 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.userDao();
-			UserRoot userRoot = boot().meshRoot().getUserRoot();
-
+			
 			HibUser user = user();
 			HibUser newUser = userDao.create("Anton", user());
 			assertFalse(userDao.hasPermission(user, newUser, InternalPermission.CREATE_PERM));
-			userDao.inheritRolePermissions(user, userRoot, newUser);
+			userDao.inheritRolePermissions(user, tx.data().permissionRoots().user(), newUser);
 			assertTrue(userDao.hasPermission(user, newUser, InternalPermission.CREATE_PERM));
 		}
 	}
@@ -458,7 +455,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			user.setPasswordHash(PASSWDHASH);
 			assertTrue(user.isEnabled());
 
-			HibUser reloadedUser = userDao.findByUuidGlobal(user.getUuid());
+			HibUser reloadedUser = userDao.findByUuid(user.getUuid());
 			assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 			assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 			assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
@@ -479,7 +476,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertTrue(user.isEnabled());
 			BulkActionContext bac = createBulkContext();
 			userDao.delete(user, bac);
-			User foundUser = meshRoot().getUserRoot().findByUuid(uuid);
+			HibUser foundUser = userDao.findByUuid(uuid);
 			assertNull(foundUser);
 		}
 	}

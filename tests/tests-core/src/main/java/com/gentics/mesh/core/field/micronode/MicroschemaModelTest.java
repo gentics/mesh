@@ -123,10 +123,10 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			MicroschemaDao root = boot().microschemaDao();
 			for (HibMicroschema container : microschemaContainers().values()) {
 				String uuid = container.getUuid();
-				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuidGlobal(uuid));
+				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid));
 			}
 
-			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuidGlobal(invalidUUID));
+			assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID));
 		}
 	}
 
@@ -262,7 +262,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			HibMicroschema container = createMicroschema(schema);
 
 			assertFalse(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, container));
-			userDao.inheritRolePermissions(getRequestUser(), meshRoot().getMicroschemaContainerRoot(), container);
+			userDao.inheritRolePermissions(getRequestUser(), tx.data().permissionRoots().microschema(), container);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
 				roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, container));
 		}

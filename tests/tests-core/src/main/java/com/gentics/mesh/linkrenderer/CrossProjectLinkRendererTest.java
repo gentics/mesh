@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -73,7 +73,7 @@ public class CrossProjectLinkRendererTest extends AbstractMeshTest {
 			String linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, nodeResponse.getUuid(), LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", linkToNode);
 
-			Node node = meshRoot().getProjectRoot().findByName(OTHER_PROJECT_NAME).findNode(nodeResponse.getUuid());
+			HibNode node = tx.nodeDao().findByUuid(tx.projectDao().findByName(OTHER_PROJECT_NAME), nodeResponse.getUuid());
 			linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, node, LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", linkToNode);
 		}

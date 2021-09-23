@@ -46,7 +46,7 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 	public void apply() {
 		log.info("Applying change: " + getName());
 		GroupDao groupDao = boot.get().groupDao();
-		for (HibRole role : boot.get().roleDao().findAllGlobal()) {
+		for (HibRole role : boot.get().roleDao().findAll()) {
 			if (!"admin".equals(role.getName())) {
 				continue;
 			}

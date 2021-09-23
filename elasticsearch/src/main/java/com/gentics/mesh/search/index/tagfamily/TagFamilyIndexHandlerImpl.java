@@ -14,11 +14,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -68,7 +66,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.tagFamilyDao().globalCount();
+			return tx.tagFamilyDao().count();
 		});
 	}
 
@@ -107,9 +105,8 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
-			ProjectRoot root = boot.meshRoot().getProjectRoot();
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
-			for (Project project : root.findAll()) {
+			for (HibProject project : boot.projectDao().findAll()) {
 				String indexName = TagFamily.composeIndexName(project.getUuid());
 				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tagFamily");
 				indexInfo.put(indexName, info);
@@ -121,7 +118,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
 		return Flowable.defer(() -> db.tx(() -> {
-			return boot.meshRoot().getProjectRoot().findAll().stream()
+			return boot.projectDao().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
 					String indexName = TagFamily.composeIndexName(uuid);
@@ -135,7 +132,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 		return db.tx(tx -> {
 			ProjectDaoWrapper projectDao = tx.projectDao();
 			Set<String> activeIndices = new HashSet<>();
-			for (HibProject project : projectDao.findAllGlobal()) {
+			for (HibProject project : projectDao.findAll()) {
 				activeIndices.add(TagFamily.composeIndexName(project.getUuid()));
 			}
 
@@ -160,12 +157,12 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 
 	@Override
 	public Function<String, HibTagFamily> elementLoader() {
-		return uuid -> boot.meshRoot().getTagFamilyRoot().findByUuid(uuid);
+		return uuid -> boot.tagFamilyDao().findByUuid(uuid);
 	}
 
 	@Override
 	public Stream<? extends HibTagFamily> loadAllElements() {
-		return Tx.get().tagFamilyDao().findAllGlobal().stream();
+		return Tx.get().tagFamilyDao().findAll().stream();
 	}
 
 }

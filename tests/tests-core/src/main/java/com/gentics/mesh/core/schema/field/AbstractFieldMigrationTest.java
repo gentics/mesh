@@ -136,7 +136,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
-		boot().meshRoot().getSchemaContainerRoot().addItem(container);
+		boot().schemaDao().addSchema(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
 			removedFieldName));
 		container.setLatestVersion(versionA);
@@ -313,7 +313,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
-		boot().meshRoot().getSchemaContainerRoot().addItem(container);
+		boot().schemaDao().addSchema(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(oldFieldName));
 		container.setLatestVersion(versionA);
 
@@ -719,7 +719,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
-		boot().meshRoot().getSchemaContainerRoot().addItem(container);
+		boot().schemaDao().addSchema(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", oldField);
 		container.setLatestVersion(versionA);
 

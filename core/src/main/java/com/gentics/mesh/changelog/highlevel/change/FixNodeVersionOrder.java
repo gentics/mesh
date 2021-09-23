@@ -200,7 +200,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private Stream<? extends HibProject> singleBranchProjects() {
-		return Tx.get().projectDao().findAllGlobal().stream()
+		return Tx.get().projectDao().findAll().stream()
 			.filter(this::hasSingleBranch);
 	}
 

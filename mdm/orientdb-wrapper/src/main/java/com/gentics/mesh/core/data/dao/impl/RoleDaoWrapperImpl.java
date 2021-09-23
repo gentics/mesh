@@ -169,7 +169,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public HibRole findByUuidGlobal(String uuid) {
+	public HibRole findByUuid(String uuid) {
 		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findByUuid(uuid);
 	}
@@ -277,7 +277,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.globalCount();
 	}
@@ -308,7 +308,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public Result<? extends HibRole> findAllGlobal() {
+	public Result<? extends HibRole> findAll() {
 		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findAll();
 	}

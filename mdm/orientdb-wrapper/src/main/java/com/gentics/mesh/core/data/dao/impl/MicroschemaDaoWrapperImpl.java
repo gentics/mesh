@@ -135,7 +135,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 			if (project != null) {
 				container = findByUuid(project, microschemaUuid);
 			} else {
-				container = findByUuidGlobal(microschemaUuid);
+				container = findByUuid(microschemaUuid);
 			}
 		}
 		// Return the specified version or fallback to latest version.
@@ -289,13 +289,13 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public HibMicroschema findByUuidGlobal(String uuid) {
+	public HibMicroschema findByUuid(String uuid) {
 		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 		return microschemaRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		return boot.get().meshRoot().getMicroschemaContainerRoot().globalCount();
 	}
 
@@ -332,8 +332,18 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public Result<? extends HibMicroschema> findAllGlobal() {
+	public Result<? extends HibMicroschema> findAll() {
 		return boot.get().meshRoot().getMicroschemaContainerRoot().findAll();
+	}
+
+	@Override
+	public boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().meshRoot().getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public String getAPIPath(HibMicroschema element, InternalActionContext ac) {
+		return toGraph(element).getAPIPath(ac);
 	}
 
 }

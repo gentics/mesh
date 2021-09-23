@@ -32,7 +32,7 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	public HibGroup loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		GroupDaoWrapper groupDao = ctx.tx().groupDao();
 		if (perm == null) {
-			return groupDao.findByUuidGlobal(uuid);
+			return groupDao.findByUuid(uuid);
 		} else {
 			return groupDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}

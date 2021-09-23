@@ -24,7 +24,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
@@ -319,7 +318,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				HibBranch branch = tx.getBranch(ac);
 
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				HibTag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+				HibTag tag = boot.tagDao().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 				if (tagDao.hasTag(node, tag, branch)) {
 					utils.eventAction(batch -> {

@@ -72,7 +72,7 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.microschemaDao().globalCount();
+			return tx.microschemaDao().count();
 		});
 	}
 
@@ -103,12 +103,12 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Function<String, HibMicroschema> elementLoader() {
-		return (uuid) -> boot.meshRoot().getMicroschemaContainerRoot().findByUuid(uuid);
+		return (uuid) -> boot.microschemaDao().findByUuid(uuid);
 	}
 
 	@Override
 	public Stream<? extends HibMicroschema> loadAllElements() {
-		return Tx.get().microschemaDao().findAllGlobal().stream();
+		return Tx.get().microschemaDao().findAll().stream();
 	}
 
 	@Override

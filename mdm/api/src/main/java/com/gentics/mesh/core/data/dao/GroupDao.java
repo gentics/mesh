@@ -1,12 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
-import java.util.function.Predicate;
-
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
@@ -21,43 +17,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  * DAO for {@link HibGroup}.
  */
 public interface GroupDao extends DaoGlobal<HibGroup>, DaoTransformable<HibGroup, GroupResponse> {
-
-	/**
-	 * Load the group by uuid.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @return
-	 */
-	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
-
-	/**
-	 * Load a page of groups.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
-	 * Load a page of groups.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @param extraFilter
-	 * @return
-	 */
-	Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibGroup> extraFilter);
-
-	/**
-	 * Load the group by name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	HibGroup findByName(String name);
 
 	/**
 	 * Create a new group and assign it to the group root.
@@ -211,35 +170,6 @@ public interface GroupDao extends DaoGlobal<HibGroup>, DaoTransformable<HibGroup
 	Page<? extends HibUser> getVisibleUsers(HibGroup group, HibUser requestUser, PagingParameters pagingInfo);
 
 	/**
-	 * Delete the group.
-	 * 
-	 * @param group
-	 * @param bac
-	 */
-	void delete(HibGroup group, BulkActionContext bac);
-
-	/**
-	 * Update the group.
-	 * 
-	 * @param group
-	 * @param ac
-	 * @param batch
-	 * @return
-	 */
-	boolean update(HibGroup group, InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Load the group via uuid.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @param errorIfNotFound
-	 * @return
-	 */
-	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
-
-	/**
 	 * Create the group.
 	 * 
 	 * @param ac
@@ -248,13 +178,4 @@ public interface GroupDao extends DaoGlobal<HibGroup>, DaoTransformable<HibGroup
 	 * @return
 	 */
 	HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid);
-
-	/**
-	 * Return the API path.
-	 * 
-	 * @param group
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibGroup group, InternalActionContext ac);
 }

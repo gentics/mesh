@@ -75,7 +75,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 			TagFamily tagFamily = HibClassConverter.toGraph(hibTagFamily);
 			return tagDao.findAll(tagFamily, ctx.ac(), pagingInfo);
 		} else {
-			return tagDao.findAllGlobal(ctx.ac(), pagingInfo);
+			return tagDao.findAll(ctx.ac(), pagingInfo);
 		}
 	}
 
@@ -87,7 +87,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 			TagFamily tagFamily = HibClassConverter.toGraph(hibTagFamily);
 			return ctx.tx().tagDao().findAll(tagFamily, ctx.ac(), pagingInfo, extraFilter);
 		} else {
-			return tagDao.findAllGlobal(ctx.ac(), pagingInfo);
+			return tagDao.findAll(ctx.ac(), pagingInfo);
 		}
 	}
 

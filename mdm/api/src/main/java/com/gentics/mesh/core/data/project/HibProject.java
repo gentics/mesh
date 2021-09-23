@@ -99,4 +99,11 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibUserTrac
 	 * @return
 	 */
 	HibBaseElement getTagFamilyPermissionRoot();
+
+	/**
+	 * Return the node hib base element which tracks node permissions.
+	 * 
+	 * @return
+	 */
+	HibBaseElement getNodePermissionRoot();
 }

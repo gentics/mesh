@@ -629,7 +629,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private void handleLocalData(PostProcessFlags flags, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Load the verticles
 		List<String> initialProjects = db.tx(tx -> {
-			return tx.projectDao().findAllGlobal().stream()
+			return tx.projectDao().findAll().stream()
 				.map(HibProject::getName)
 				.collect(Collectors.toList());
 		});
@@ -1240,7 +1240,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
-			for (HibLanguage l : languageDao().findAllGlobal()) {
+			for (HibLanguage l : languageDao().findAll()) {
 				String tag = l.getLanguageTag();
 				allLanguageTags.add(tag);
 			}

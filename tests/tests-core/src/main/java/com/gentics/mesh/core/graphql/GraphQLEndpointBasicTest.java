@@ -3,6 +3,7 @@ package com.gentics.mesh.core.graphql;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -10,7 +11,8 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -30,8 +32,8 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	@Test
 	public void testIntrospection() throws IOException {
 		try (Tx tx = tx()) {
-			for (Microschema microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
-				microschema.remove();
+			for (HibMicroschema microschema : tx.microschemaDao().findAll()) {
+				tx.microschemaDao().delete(microschema, new DummyBulkActionContext());
 			}
 			tx.success();
 		}

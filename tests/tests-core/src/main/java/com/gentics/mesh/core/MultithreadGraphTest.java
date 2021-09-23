@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -33,10 +32,10 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 			try (Tx tx = tx()) {
 				// fg.getEdges();
 				runAndWait(() -> {
-					User user = boot().meshRoot().getUserRoot().findByUsername("test");
+					HibUser user = boot().userDao().findByUsername("test");
 					assertNotNull(user);
 				});
-				User user = boot().meshRoot().getUserRoot().findByUsername("test");
+				HibUser user = boot().userDao().findByUsername("test");
 				assertNotNull(user);
 				System.out.println("Read user");
 
@@ -44,7 +43,7 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			User user = boot().meshRoot().getUserRoot().findByUsername("test");
+			HibUser user = boot().userDao().findByUsername("test");
 			assertNotNull(user);
 		}
 	}

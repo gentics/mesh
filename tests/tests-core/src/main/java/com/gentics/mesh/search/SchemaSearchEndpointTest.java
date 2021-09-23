@@ -121,7 +121,7 @@ public class SchemaSearchEndpointTest extends AbstractMultiESTest implements Bas
 		final String newName = "newschema";
 		SchemaResponse schema = createSchema(newName);
 		try (Tx tx = tx()) {
-			assertNotNull(boot().schemaDao().findByUuidGlobal(schema.getUuid()));
+			assertNotNull(boot().schemaDao().findByUuid(schema.getUuid()));
 		}
 		waitForSearchIdleEvent();
 

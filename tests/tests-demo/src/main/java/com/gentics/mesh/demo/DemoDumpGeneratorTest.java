@@ -80,7 +80,7 @@ public class DemoDumpGeneratorTest {
 
 			assertTrue("The webclient role has not read permission on the user.", roleDao.hasPermission(role, InternalPermission.READ_PERM, user));
 			assertTrue("The webclient user has no permission on itself.", userDao.hasPermission(user, user, InternalPermission.READ_PERM));
-			assertTrue("The webclient user has no read permission on the user root node..", userDao.hasPermission(user, boot.meshRoot().getUserRoot(), InternalPermission.READ_PERM));
+			assertTrue("The webclient user has no read permission on the user root node..", userDao.hasPermission(user, tx.data().permissionRoots().user(), InternalPermission.READ_PERM));
 
 			assertTrue("We expected to find at least 5 nodes.", nodeDao.computeCount(project) > 5);
 

@@ -123,7 +123,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
-			HibSchema schemaContainer = schemaDao.findByUuidGlobal(restSchema.getUuid());
+			HibSchema schemaContainer = schemaDao.findByUuid(restSchema.getUuid());
 			assertNotNull(schemaContainer);
 			assertEquals("Name does not match with the requested name", createRequest.getName(), schemaContainer.getName());
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
@@ -160,10 +160,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
-		String schemaRootUuid = db().tx(() -> meshRoot().getSchemaContainerRoot().getUuid());
+		String schemaRootUuid = db().tx(() -> Tx.get().data().permissionRoots().schema().getUuid());
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			roleDao.revokePermissions(role(), meshRoot().getSchemaContainerRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().schema(), CREATE_PERM);
 			tx.success();
 		}
 		call(() -> client().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid, CREATE_PERM.getRestPerm().getName());
@@ -197,7 +197,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
-			assertElement(boot().meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
+			assertElement(boot().schemaDao(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
 			trackingSearchProvider().reset();
 
@@ -583,7 +583,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			call(() -> client().updateSchema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			HibSchema reloaded = schemaDao.findByUuidGlobal(schema.getUuid());
+			HibSchema reloaded = schemaDao.findByUuid(schema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -613,7 +613,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
-			HibSchema reloaded = schemaDao.findByUuidGlobal(uuid);
+			HibSchema reloaded = schemaDao.findByUuid(uuid);
 			NodeDao nodeDao = tx.nodeDao();
 
 			assertNotNull("The schema should not have been deleted.", reloaded);
@@ -644,7 +644,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			assertFalse("The referenced job should have been deleted", tx.getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
-			HibSchema reloaded = schemaDao.findByUuidGlobal(uuid);
+			HibSchema reloaded = schemaDao.findByUuid(uuid);
 			assertFalse("The version of the schema container should have been deleted as well.", tx.getGraph().getVertices("uuid", versionUuid)
 				.iterator().hasNext());
 			assertNull("The schema should have been deleted.", reloaded);
@@ -664,7 +664,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(),
 				DELETE_PERM.getRestPerm().getName());
-			assertElement(boot().meshRoot().getSchemaContainerRoot(), schema.getUuid(), true);
+			assertElement(boot().schemaDao(), schema.getUuid(), true);
 		}
 	}
 

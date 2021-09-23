@@ -32,7 +32,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 	public HibJob loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		JobDaoWrapper jobDao = ctx.tx().jobDao();
 		if (perm == null) {
-			return jobDao.findByUuidGlobal(uuid);
+			return jobDao.findByUuid(uuid);
 		} else {
 			return jobDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}

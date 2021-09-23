@@ -171,13 +171,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertThat(restProject).matches(request);
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.userDao();
-			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
-			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid());
+			assertNotNull("The project should have been created.", tx.projectDao().findByName(name));
+			HibProject project = tx.projectDao().findByUuid(restProject.getUuid());
 			assertNotNull(project);
 			assertTrue(userDao.hasPermission(user(), project, CREATE_PERM));
 			assertTrue(userDao.hasPermission(user(), project.getBaseNode(), CREATE_PERM));
-			assertTrue(userDao.hasPermission(user(), project.getTagFamilyRoot(), CREATE_PERM));
-			assertTrue(userDao.hasPermission(user(), project.getNodeRoot(), CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), project.getTagFamilyPermissionRoot(), CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), project.getNodePermissionRoot(), CREATE_PERM));
 
 			assertEquals("folder", project.getBaseNode().getSchemaContainer().getLatestVersion().getName());
 		}
@@ -193,18 +193,18 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			roleDao.revokePermissions(role(), meshRoot().getProjectRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().project(), CREATE_PERM);
 			tx.success();
 		}
 
-		String projectRootUuid = db().tx(() -> meshRoot().getProjectRoot().getUuid());
+		String projectRootUuid = db().tx(() -> Tx.get().data().permissionRoots().project().getUuid());
 		call(() -> client().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
 	@Override
 	public void testCreateWithUuid() throws Exception {
-		try (Tx noTx = tx()) {
+		try (Tx tx = tx()) {
 			String uuid = UUIDUtil.randomUUID();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -216,7 +216,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			assertThat(restProject).hasUuid(uuid);
 
-			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			HibProject reloadedProject = tx.projectDao().findByUuid(uuid);
 			assertEquals("New Name", reloadedProject.getName());
 		}
 	}
@@ -312,7 +312,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(restProject).matches(request);
 			assertThat(restProject.getPermissions()).hasPerm(Permission.basicPermissions());
 
-			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
+			assertNotNull("The project should have been created.", tx.projectDao().findByName(name));
 
 			// Read the project
 			call(() -> client().findProjectByUuid(restProject.getUuid()));
@@ -562,13 +562,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			for (HibNode node : tx.nodeDao().findAll(project())) {
 				expectedCount += tx.contentDao().getGraphFieldContainerCount(node);
 			}
-			expectedCount += meshRoot().getTagRoot().computeCount();
+			expectedCount += tx.tagDao().count();
 			expectedCount += tx.tagFamilyDao().computeCount(project);
 
 			assertThat(trackingSearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
 			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);
 
-			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			HibProject reloadedProject = tx.projectDao().findByUuid(uuid);
 			assertEquals(newName, reloadedProject.getName());
 		}
 
@@ -601,7 +601,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			HibProject reloadedProject = tx.projectDao().findByUuid(uuid);
 			assertEquals("The name should not have been changed", PROJECT_NAME, reloadedProject.getName());
 		}
 	}
@@ -686,7 +686,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, deleted, droppedIndices.size(), 0);
 
 		try (Tx tx = tx()) {
-			assertElement(meshRoot().getProjectRoot(), uuid, false);
+			assertElement(tx.projectDao(), uuid, false);
 		}
 		// TODO check for removed routers?
 
@@ -707,7 +707,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
-			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
+			HibProject project = tx.projectDao().findByUuid(uuid);
 			assertNotNull("The project should not have been deleted", project);
 		}
 
@@ -750,7 +750,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 100;
-		long nProjectsBefore = meshRoot().getProjectRoot().computeCount();
+		long nProjectsBefore = boot().projectDao().count();
 
 		validateCreation(nJobs, i -> {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -762,7 +762,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		try (Tx tx = tx()) {
 			long n = StreamSupport.stream(tx.getGraph().getVertices(ElementFrame.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
 				.spliterator(), true).count();
-			long nProjectsAfter = meshRoot().getProjectRoot().computeCount();
+			long nProjectsAfter = tx.projectDao().count();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);
 		}

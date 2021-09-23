@@ -374,4 +374,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	public void generateBucketId() {
 		BucketableElementHelper.generateBucketId(this);
 	}
+
+	@Override
+	public HibBaseElement getNodePermissionRoot() {
+		return getNodeRoot();
+	}
 }

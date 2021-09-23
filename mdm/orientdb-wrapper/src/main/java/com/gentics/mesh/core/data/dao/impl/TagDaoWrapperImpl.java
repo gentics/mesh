@@ -93,7 +93,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public Result<? extends Tag> findAllGlobal() {
+	public Result<? extends Tag> findAll() {
 		TagRoot tagRoot = boot.get().meshRoot().getTagRoot();
 		return tagRoot.findAll();
 	}
@@ -189,7 +189,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public Tag findByUuidGlobal(String uuid) {
+	public Tag findByUuid(String uuid) {
 		TagRoot globalTagRoot = boot.get().meshRoot().getTagRoot();
 		return globalTagRoot.findByUuid(uuid);
 	}
@@ -317,7 +317,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		return boot.get().meshRoot().getTagRoot().globalCount();
 	}
 
@@ -433,7 +433,24 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public Page<? extends HibTag> findAllGlobal(InternalActionContext ac, PagingParameters pagingParameters) {
-		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingParameters);
+	public HibTag loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
+		return boot.get().meshRoot().getTagRoot().loadObjectByUuid(ac, uuid, perm);
+	}
+
+	@Override
+	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+			Predicate<HibTag> extraFilter) {
+		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
+	}
+
+	@Override
+	public HibTag loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
+			boolean errorIfNotFound) {
+		return boot.get().meshRoot().getTagRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 }

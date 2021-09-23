@@ -123,7 +123,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public HibProject findByUuidGlobal(String uuid) {
+	public HibProject findByUuid(String uuid) {
 		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 		return root.findByUuid(uuid);
 	}
@@ -317,7 +317,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		ProjectRoot projectRoot = boot.get().meshRoot().getProjectRoot();
 		return projectRoot.globalCount();
 	}
@@ -346,7 +346,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public Result<? extends HibProject> findAllGlobal() {
+	public Result<? extends HibProject> findAll() {
 		return boot.get().meshRoot().getProjectRoot().findAll();
 	}
 

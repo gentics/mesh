@@ -24,19 +24,28 @@ import com.gentics.mesh.parameter.PagingParameters;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * A DAO for the entities, that has an one-to-many connection to other entities,
+ * i.e. root-leaves dependencies. This DAO allows operation on leaf entities, when a root entity is given. 
+ * 
+ * @author plyhun
+ *
+ * @param <R> root entity type
+ * @param <L> leaf entity type
+ */
 public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> {
 
 	public static final Logger log = LoggerFactory.getLogger(RootDao.class);
 
 	/**
-	 * Return a traversal of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
+	 * Return a of all elements. Only use this method if you know that the root->leaf relation only yields a specific kind of item.
 	 * 
 	 * @return
 	 */
 	Result<? extends L> findAll(R root);
 
 	/**
-	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item. This also checks
+	 * Return an iterator of all elements. Only use this method if you know that the root->leaf relation only yields a specific kind of item. This also checks
 	 * permissions.
 	 *
 	 * @param ac
@@ -47,7 +56,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission);
 
 	/**
-	 * Return an traversal result of all elements and use the stored type information to load the items. The {@link #findAll()} will use explicit typing and
+	 * Return an result of all elements and use the stored type information to load the items. The {@link #findAll()} will use explicit typing and
 	 * thus will be faster. Only use that method if you know that your relation only yields a specific kind of item.
 	 * 
 	 * @return
@@ -198,10 +207,10 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	}
 
 	/**
-	 * Resolve the given stack to the vertex.
+	 * Resolve the given stack to the element.
 	 * 
 	 * @param stack
-	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
+	 *            Stack which contains the remaining path elements which should be resolved starting with the current element
 	 * @return
 	 */
 	default HibBaseElement resolveToElement(R root, Stack<String> stack) {
@@ -226,7 +235,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	}
 
 	/**
-	 * Create a new object which is connected or directly related to this aggregation vertex.
+	 * Create a new leaf object which is connected or directly related to this root element.
 	 * 
 	 * @param ac
 	 *            Context which is used to load information needed for the object creation
@@ -237,7 +246,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	}
 
 	/**
-	 * Create a new object which is connected or directly related to this aggregation vertex.
+	 * Create a new leaf object which is connected or directly related to this root element.
 	 * 
 	 * @param ac
 	 *            Context which is used to load information needed for the object creation
@@ -248,28 +257,28 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	L create(R root, InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
-	 * Add the given item to the this root vertex.
+	 * Add the given item to the this root element (make a leaf).
 	 * 
 	 * @param item
 	 */
 	void addItem(R root, L item);
 
 	/**
-	 * Remove the given item from this root vertex.
+	 * Remove the given leaf item from this root element.
 	 * 
 	 * @param item
 	 */
 	void removeItem(R root, L item);
 
 	/**
-	 * Return the label for the item edges.
+	 * Return the label for the root element.
 	 * 
 	 * @return
 	 */
 	String getRootLabel(R root);
 
 	/**
-	 * Return the ferma graph persistance class for the items of the root vertex. (eg. NodeImpl, TagImpl...)
+	 * Return the persistence class for the items of the root element. (eg. NodeImpl, TagImpl...)
 	 * 
 	 * @return
 	 */
@@ -285,7 +294,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	}
 
 	/**
-	 * Return the global count for all elements of the type that are managed by the root vertex. The count will include all vertices in the graph of the
+	 * Return the global count for all elements of the type that are managed by the root element. The count will include all vertices in the of the
 	 * specific type.
 	 * 
 	 * @return
@@ -303,13 +312,13 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	PermissionInfo getRolePermissions(R root, HibBaseElement element, InternalActionContext ac, String roleUuid);
 
 	/**
-	 * Return a traversal result for all roles which grant the permission to the element.
+	 * Return a result for all roles which grant the permission to the element.
 	 *
-	 * @param vertex
+	 * @param element
 	 * @param perm
 	 * @return
 	 */
-	Result<? extends HibRole> getRolesWithPerm(R root, HibBaseElement vertex, InternalPermission perm);
+	Result<? extends HibRole> getRolesWithPerm(R root, HibBaseElement element, InternalPermission perm);
 
 	/**
 	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
@@ -321,7 +330,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	void delete(R root, L element, BulkActionContext bac);
 
 	/**
-	 * Update the vertex using the action context information.
+	 * Update the element using the action context information.
 	 *
 	 * @param ac
 	 * @param batch

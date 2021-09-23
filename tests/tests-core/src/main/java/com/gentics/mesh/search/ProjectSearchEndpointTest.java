@@ -55,7 +55,7 @@ public class ProjectSearchEndpointTest extends AbstractMultiESTest implements Ba
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
 		try (Tx tx = tx()) {
-			assertNotNull(boot().projectDao().findByUuidGlobal(project.getUuid()));
+			assertNotNull(boot().projectDao().findByUuid(project.getUuid()));
 		}
 		waitForSearchIdleEvent();
 		ProjectListResponse response = call(() -> client().searchProjects(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(

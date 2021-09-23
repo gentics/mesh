@@ -5,6 +5,8 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -72,6 +74,16 @@ public final class HibClassConverter {
 	 */
 	public static Tag toGraph(HibTag tag) {
 		return checkAndCast(tag, Tag.class);
+	}
+
+	/**
+	 * Convert the tag to a graph element.
+	 * 
+	 * @param tag
+	 * @return
+	 */
+	public static Language toGraph(HibLanguage tag) {
+		return checkAndCast(tag, Language.class);
 	}
 
 	/**

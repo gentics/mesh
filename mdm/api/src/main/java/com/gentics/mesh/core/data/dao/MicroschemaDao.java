@@ -27,16 +27,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 public interface MicroschemaDao extends DaoGlobal<HibMicroschema>, DaoTransformable<HibMicroschema, MicroschemaResponse> {
 
 	/**
-	 * Load the microschema by uuid.
-	 * 
-	 * @param ac
-	 * @param schemaUuid
-	 * @param perm
-	 * @return
-	 */
-	HibMicroschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm);
-
-	/**
 	 * Create a new microschema container.
 	 * 
 	 * @param microschema
@@ -73,46 +63,6 @@ public interface MicroschemaDao extends DaoGlobal<HibMicroschema>, DaoTransforma
 	HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
-	 * Load a page of microschemas.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibMicroschema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
-	 * Load a page of microschemas.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @param extraFilter
-	 * @return
-	 */
-	Page<? extends HibMicroschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
-		Predicate<HibMicroschema> extraFilter);
-
-	/**
-	 * Load the microschema by uuid.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @param errorIfNotFound
-	 * @return
-	 */
-	HibMicroschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
-		boolean errorIfNotFound);
-
-	/**
-	 * Find the microschema by name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	HibMicroschema findByName(String name);
-
-	/**
 	 * Load the microschema version via the given reference.
 	 * 
 	 * @param reference
@@ -145,14 +95,6 @@ public interface MicroschemaDao extends DaoGlobal<HibMicroschema>, DaoTransforma
 	 * @return
 	 */
 	HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch);
-
-	/**
-	 * Delete the microschema.
-	 * 
-	 * @param microschema
-	 * @param bac
-	 */
-	void delete(HibMicroschema microschema, BulkActionContext bac);
 
 	/**
 	 * Check whether the microschema is linked to the project.

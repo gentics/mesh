@@ -46,7 +46,7 @@ public class SchemaEndpointNoEsTest extends AbstractMeshTest {
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
-			HibSchema schemaContainer = schemaDao.findByUuidGlobal(restSchema.getUuid());
+			HibSchema schemaContainer = schemaDao.findByUuid(restSchema.getUuid());
 			assertNotNull(schemaContainer);
 			assertEquals("Name does not match with the requested name", createRequest.getName(), schemaContainer.getName());
 		}

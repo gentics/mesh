@@ -53,7 +53,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 	}
 
 	private Flowable<DebugInfoEntry> branches(InternalActionContext ac) {
-		return db.singleTx(tx -> tx.projectDao().findAllGlobal().stream()
+		return db.singleTx(tx -> tx.projectDao().findAll().stream()
 			.map(project -> DebugInfoBufferEntry.fromString(
 				String.format("entities/branches/%s.json", project.getName()),
 				rootToString(ac, tx.branchDao().findAll(project).stream(), tx.branchDao())
@@ -67,7 +67,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 		> Flowable<DebugInfoEntry> rootElements(
 				InternalActionContext ac, Supplier<D> root, String filename
 		) {
-		return db.singleTx(() -> rootToString(ac, root.get().findAllGlobal().stream(), root.get()))
+		return db.singleTx(() -> rootToString(ac, root.get().findAll().stream(), root.get()))
 			.map(elementList -> DebugInfoBufferEntry.fromString(filename, elementList))
 			.toFlowable();
 	}

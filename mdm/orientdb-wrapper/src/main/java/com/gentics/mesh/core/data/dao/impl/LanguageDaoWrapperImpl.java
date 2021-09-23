@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -68,7 +70,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 	/**
 	 * @see LanguageRoot
 	 */
-	public Result<? extends Language> findAllGlobal() {
+	public Result<? extends Language> findAll() {
 		return boot.get().meshRoot().getLanguageRoot().findAll();
 	}
 
@@ -82,21 +84,21 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 	/**
 	 * @see LanguageRoot
 	 */
-	public Page<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibLanguage> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().meshRoot().getLanguageRoot().findAll(ac, pagingInfo);
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
-	public Page<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Language> extraFilter) {
-		return boot.get().meshRoot().getLanguageRoot().findAll(ac, pagingInfo, extraFilter);
+	public Page<? extends HibLanguage> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibLanguage> extraFilter) {
+		return boot.get().meshRoot().getLanguageRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
 	}
 
 	/**
 	 * @see LanguageRoot
 	 */
-	public Page<? extends Language> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibLanguage> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().meshRoot().getLanguageRoot().findAllNoPerm(ac, pagingInfo);
 	}
 
@@ -112,13 +114,6 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 	 */
 	public Language findByName(InternalActionContext ac, String name, InternalPermission perm) {
 		return boot.get().meshRoot().getLanguageRoot().findByName(ac, name, perm);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language findByUuid(String uuid) {
-		return boot.get().meshRoot().getLanguageRoot().findByUuid(uuid);
 	}
 
 	/**
@@ -164,13 +159,28 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 	}
 
 	@Override
-	public HibLanguage findByUuidGlobal(String uuid) {
+	public HibLanguage findByUuid(String uuid) {
 		return boot.get().meshRoot().getLanguageRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		return boot.get().meshRoot().getLanguageRoot().globalCount();
+	}
+
+	@Override
+	public void delete(HibLanguage element, BulkActionContext bac) {
+		boot.get().meshRoot().getLanguageRoot().delete(bac);
+	}
+
+	@Override
+	public boolean update(HibLanguage element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().meshRoot().getLanguageRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public String getAPIPath(HibLanguage element, InternalActionContext ac) {
+		return toGraph(element).getAPIPath(ac);
 	}
 
 }

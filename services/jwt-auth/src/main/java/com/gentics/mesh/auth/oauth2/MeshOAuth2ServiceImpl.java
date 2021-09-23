@@ -395,7 +395,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							String roleName = mappedRole.getName();
 							HibRole role = null;
 							if (roleUuid != null) {
-								role = roleDao.findByUuidGlobal(roleUuid);
+								role = roleDao.findByUuid(roleUuid);
 							} else if (roleName != null) {
 								role = roleDao.findByName(roleName);
 							}
@@ -426,7 +426,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							HibGroup group = null;
 
 							if (groupUuid != null) {
-								group = groupDao.findByUuidGlobal(groupUuid);
+								group = groupDao.findByUuid(groupUuid);
 							} else if (groupName != null) {
 								group = groupDao.findByName(groupName);
 							}
@@ -467,7 +467,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								if (roleName != null) {
 									role = roleDao.findByName(roleName);
 								} else if (roleUuid != null) {
-									role = roleDao.findByUuidGlobal(roleUuid);
+									role = roleDao.findByUuid(roleUuid);
 								}
 
 								// Add the role if it is missing
@@ -517,7 +517,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								if (groupName != null) {
 									group = groupDao.findByName(groupName);
 								} else if (groupUuid != null) {
-									group = groupDao.findByUuidGlobal(groupUuid);
+									group = groupDao.findByUuid(groupUuid);
 								}
 
 								// Add the role if it is missing

@@ -193,7 +193,6 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	private boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
 		User graphUser = toGraph(user);
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), user.getUsername())) {
@@ -462,7 +461,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public Result<? extends User> findAllGlobal() {
+	public Result<? extends User> findAll() {
 		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findAll();
 	}
@@ -492,7 +491,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public HibUser findByUuidGlobal(String uuid) {
+	public HibUser findByUuid(String uuid) {
 		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findByUuid(uuid);
 	}
@@ -676,7 +675,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	/**
 	 * Return the global amount of users stored in mesh.
 	 */
-	public long globalCount() {
+	public long count() {
 		return boot.get().meshRoot().getUserRoot().globalCount();
 	}
 
@@ -718,5 +717,10 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	@Override
 	public Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		return toGraph(fromUser).getGroups(authUser, pagingInfo);
+	}
+
+	@Override
+	public String getAPIPath(HibUser element, InternalActionContext ac) {
+		return toGraph(element).getAPIPath(ac);
 	}
 }

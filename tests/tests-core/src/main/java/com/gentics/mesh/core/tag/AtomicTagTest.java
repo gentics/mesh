@@ -41,7 +41,7 @@ public class AtomicTagTest extends AbstractMeshTest {
 			tag.setName("renamed tag");
 			assertEquals("renamed tag", tag.getName());
 
-			HibTag reloadedTag = boot().tagDao().findByUuidGlobal(uuid);
+			HibTag reloadedTag = boot().tagDao().findByUuid(uuid);
 			assertNotNull(reloadedTag);
 			assertEquals("renamed tag", reloadedTag.getName());
 		}

@@ -90,7 +90,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				HibSchema schemaContainer = tx.schemaDao().findByUuidGlobal(uuid);
+				HibSchema schemaContainer = tx.schemaDao().findByUuid(uuid);
 				return schemaContainer == null;
 			});
 

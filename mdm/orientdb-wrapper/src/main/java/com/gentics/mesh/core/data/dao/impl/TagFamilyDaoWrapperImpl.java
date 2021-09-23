@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.vertx.core.logging.LoggerFactory.getLogger;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -44,7 +45,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.google.common.base.Predicate;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -62,12 +62,12 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public Result<? extends TagFamily> findAllGlobal() {
+	public Result<? extends TagFamily> findAll() {
 		return boot.get().meshRoot().getTagFamilyRoot().findAll();
 	}
 
 	@Override
-	public long globalCount() {
+	public long count() {
 		return boot.get().meshRoot().getTagFamilyRoot().globalCount();
 	}
 
@@ -86,14 +86,9 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public HibTagFamily findByUuidGlobal(String uuid) {
+	public HibTagFamily findByUuid(String uuid) {
 		TagFamilyRoot globalTagFamilyRoot = boot.get().meshRoot().getTagFamilyRoot();
 		return globalTagFamilyRoot.findByUuid(uuid);
-	}
-
-	@Override
-	public HibTagFamily findByUuid(String uuid) {
-		return findByUuidGlobal(uuid);
 	}
 
 	@Override
@@ -252,15 +247,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public Page<? extends HibTagFamily> findAll(HibProject project, InternalActionContext ac,
-			PagingParameters pagingInfo, Predicate<HibTagFamily> filter) {
-		Project graphProject = toGraph(project);
-		return graphProject.getTagFamilyRoot().findAll(ac, pagingInfo, tagFamily -> {
-			return filter.test(tagFamily);
-		});
-	}
-
-	@Override
 	public HibTagFamily findByName(String name) {
 		return boot.get().meshRoot().getTagFamilyRoot().findByName(name);
 	}
@@ -349,6 +335,28 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	@Override
 	public boolean update(HibProject root, HibTagFamily element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getTagFamilyRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
+		return boot.get().meshRoot().getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm);
+	}
+
+	@Override
+	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+		return boot.get().meshRoot().getTagFamilyRoot().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+			Predicate<HibTagFamily> extraFilter) {
+		return boot.get().meshRoot().getTagFamilyRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
+	}
+
+	@Override
+	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
+			boolean errorIfNotFound) {
+		return boot.get().meshRoot().getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 }

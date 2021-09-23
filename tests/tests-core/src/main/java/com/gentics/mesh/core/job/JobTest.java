@@ -56,7 +56,7 @@ public class JobTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			JobDao root = boot().jobDao();
-			List<? extends HibJob> list = TestUtils.toList(root.findAllGlobal());
+			List<? extends HibJob> list = TestUtils.toList(root.findAll());
 			assertThat(list).hasSize(1);
 			HibJob job = list.get(0);
 			assertEquals("some error", job.getErrorMessage());
@@ -97,7 +97,7 @@ public class JobTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			JobDao root = boot().jobDao();
-			List<? extends HibJob> list = TestUtils.toList(root.findAllGlobal());
+			List<? extends HibJob> list = TestUtils.toList(root.findAll());
 			assertThat(list).hasSize(1);
 			HibJob job = list.get(0);
 
@@ -117,7 +117,7 @@ public class JobTest extends AbstractMeshTest {
 			root.addItem(tx.addVertex(MicronodeMigrationJobImpl.class));
 			root.addItem(tx.addVertex(BranchMigrationJobImpl.class));
 
-			List<String> list = TestUtils.toList(dao.findAllGlobal()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
+			List<String> list = TestUtils.toList(dao.findAll()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
 			assertThat(list).containsExactly(NodeMigrationJobImpl.class.getName(), MicronodeMigrationJobImpl.class.getName(),
 					BranchMigrationJobImpl.class.getName());
 		}

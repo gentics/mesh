@@ -59,7 +59,7 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.roleDao().globalCount();
+			return tx.roleDao().count();
 		});
 	}
 
@@ -107,12 +107,12 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 
 	@Override
 	public Function<String, HibRole> elementLoader() {
-		return (uuid) -> boot.meshRoot().getRoleRoot().findByUuid(uuid);
+		return (uuid) -> boot.roleDao().findByUuid(uuid);
 	}
 
 	@Override
 	public Stream<? extends HibRole> loadAllElements() {
-		return Tx.get().roleDao().findAllGlobal().stream();
+		return Tx.get().roleDao().findAll().stream();
 	}
 
 }
