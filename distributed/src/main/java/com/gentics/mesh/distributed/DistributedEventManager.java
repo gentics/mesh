@@ -15,6 +15,7 @@ import javax.naming.InvalidNameException;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.graphdb.cluster.TopologyEventBridge;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
@@ -127,7 +128,7 @@ public class DistributedEventManager {
 			for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 				Map<String, Router> registeredProjectRouters = rs.root().apiRouter().projectsRouter().getProjectRouters();
 				// Load all projects and check whether they are already registered
-				for (Project project : cboot.meshRoot().getProjectRoot().findAll()) {
+				for (HibProject project : cboot.projectDao().findAll()) {
 					if (registeredProjectRouters.containsKey(project.getName())) {
 						continue;
 					} else {

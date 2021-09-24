@@ -1,10 +1,9 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Set;
-import java.util.function.Predicate;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -22,7 +21,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for user operations.
  */
-public interface UserDao extends DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
+public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, UserResponse> {
 
 	/**
 	 * Return the sub etag for the given user.
@@ -32,13 +31,6 @@ public interface UserDao extends DaoWrapper<HibUser>, DaoTransformable<HibUser, 
 	 * @return
 	 */
 	String getSubETag(HibUser user, InternalActionContext ac);
-
-	/**
-	 * Load all users.
-	 * 
-	 * @return
-	 */
-	Result<? extends HibUser> findAll();
 
 	/**
 	 * Check the permission on the given element.
@@ -72,46 +64,6 @@ public interface UserDao extends DaoWrapper<HibUser>, DaoTransformable<HibUser, 
 	boolean canReadNode(HibUser user, InternalActionContext ac, HibNode node);
 
 	/**
-	 * Load the user with the given uuid.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @param errorIfNotFound
-	 * @return
-	 */
-	HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
-
-	/**
-	 * Load the page with the users.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
-	 * Load the page with the users.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @param extraFilter
-	 * @return
-	 */
-	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter);
-
-	/**
-	 * Load the user with the given uuid.
-	 * 
-	 * @param ac
-	 * @param userUuid
-	 * @param perm
-	 * @return
-	 */
-	HibUser loadObjectByUuid(InternalActionContext ac, String userUuid, InternalPermission perm);
-
-	/**
 	 * Return the permission info object for the given vertex.
 	 *
 	 * @param user
@@ -127,17 +79,6 @@ public interface UserDao extends DaoWrapper<HibUser>, DaoTransformable<HibUser, 
 	 * @return
 	 */
 	Set<InternalPermission> getPermissions(HibUser user, HibBaseElement element);
-
-	/**
-	 * Update the vertex using the action context information.
-	 *
-	 * @param user
-	 * @param ac
-	 * @param batch
-	 *            Batch to which entries will be added in order to update the search index.
-	 * @return true if the element was updated. Otherwise false
-	 */
-	boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Same as {@link HibUser#update(InternalActionContext, EventQueueBatch)}, but does not actually perform any changes.
@@ -212,36 +153,12 @@ public interface UserDao extends DaoWrapper<HibUser>, DaoTransformable<HibUser, 
 	HibUser setPassword(HibUser user, String password);
 
 	/**
-	 * Find the user by uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	HibUser findByUuid(String uuid);
-
-	/**
-	 * Find the user by username.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	HibUser findByName(String name);
-
-	/**
 	 * Find the user with the given username.
 	 * 
 	 * @param username
 	 * @return
 	 */
 	HibUser findByUsername(String username);
-
-	/**
-	 * Delete the user.
-	 * 
-	 * @param user
-	 * @param bac
-	 */
-	void delete(HibUser user, BulkActionContext bac);
 
 	/**
 	 * Find the mesh auth user with the given username.
@@ -333,4 +250,43 @@ public interface UserDao extends DaoWrapper<HibUser>, DaoTransformable<HibUser, 
 	 * @return
 	 */
 	Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
+
+	/**
+	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
+	 * to assign CRUD permissions on newly created elements. Example for adding CRUD permissions on a newly created project: The method will first determine the
+	 * list of roles that would initially enable you to create a new project. It will do so by examining the projectRoot node. After this step the CRUD
+	 * permissions will be added to the newly created project and the found roles. In this case the call would look like this:
+	 * addCRUDPermissionOnRole(projectRoot, Permission.CREATE_PERM, newlyCreatedProject); This method will ensure that all users/roles that would be able to
+	 * create an element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles. Additionally the
+	 * permissions of the source node are inherited by the target node. All permissions between the source node and roles are copied to the target node.
+	 *
+	 * @param user
+	 * @param sourceNode
+	 *            Node that will be checked against to find all roles that would grant the given permission.
+	 * @param permission
+	 *            Permission that is used in conjunction with the node to determine the list of affected roles.
+	 * @param targetNode
+	 *            Node to which the CRUD permissions will be assigned.
+	 * @return Fluent API
+	 */
+	HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode);
+
+	/**
+	 * This method adds additional permissions to the target node. The roles are selected like in method
+	 * {@link #addCRUDPermissionOnRole(HibUser, HasPermissions, InternalPermission, MeshVertex)} .
+	 *
+	 * @param user
+	 * @param sourceNode
+	 *            Node that will be checked
+	 * @param permission
+	 *            checked permission
+	 * @param targetNode
+	 *            target node
+	 * @param toGrant
+	 *            permissions to grant
+	 * @return Fluent API
+	 */
+	HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode,
+		InternalPermission... toGrant);
+
 }

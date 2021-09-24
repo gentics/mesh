@@ -4,15 +4,16 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -21,8 +22,10 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -36,10 +39,10 @@ import dagger.Lazy;
 @Singleton
 public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements BranchDaoWrapper {
 
-	private Database db;
+	private Lazy<Database> db;
 
 	@Inject
-	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
+	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Database> db) {
 		super(boot, permissions);
 		// TODO Fix assignment - Inject DB
 		this.db = db;
@@ -155,14 +158,83 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 		return graphProject.getBranchRoot().getLatestBranch();
 	}
 
+// TODO remove if unneeded
+//	@Override
+//	public long globalCount() {
+//		return db.get().count(Branch.class);
+//	}
+
 	@Override
-	public HibBranch findByUuidGlobal(String uuid) {
-		throw new NotImplementedException("Not supported");
+	public Stream<? extends HibBranch> findAllStream(HibProject root, InternalActionContext ac,
+			InternalPermission permission) {
+		return toGraph(root).getBranchRoot().findAllStream(ac, permission);
 	}
 
 	@Override
-	public long globalCount() {
-		return db.count(Branch.class);
+	public Result<? extends HibBranch> findAllDynamic(HibProject root) {
+		return toGraph(root).getBranchRoot().findAllDynamic();
 	}
 
+	@Override
+	public Page<? extends HibBranch> findAllNoPerm(HibProject root, InternalActionContext ac,
+			PagingParameters pagingInfo) {
+		return toGraph(root).getBranchRoot().findAllNoPerm(ac, pagingInfo);
+	}
+
+	@Override
+	public HibBranch findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
+		return toGraph(root).getBranchRoot().findByName(ac, name, perm);
+	}
+
+	@Override
+	public HibBranch checkPerms(HibProject root, HibBranch element, String uuid, InternalActionContext ac,
+			InternalPermission perm, boolean errorIfNotFound) {
+		return toGraph(root).getBranchRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
+	}
+
+	@Override
+	public void addItem(HibProject root, HibBranch item) {
+		toGraph(root).getBranchRoot().addItem(toGraph(item));
+	}
+
+	@Override
+	public void removeItem(HibProject root, HibBranch item) {
+		toGraph(root).getBranchRoot().removeItem(toGraph(item));
+	}
+
+	@Override
+	public String getRootLabel(HibProject root) {
+		return toGraph(root).getBranchRoot().getRootLabel();
+	}
+
+	@Override
+	public Class<? extends HibBranch> getPersistenceClass(HibProject root) {
+		return toGraph(root).getBranchRoot().getPersistanceClass();
+	}
+
+	@Override
+	public long globalCount(HibProject root) {
+		return toGraph(root).getBranchRoot().globalCount();
+	}
+
+	@Override
+	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
+			String roleUuid) {
+		return toGraph(root).getBranchRoot().getRolePermissions(element, ac, roleUuid);
+	}
+
+	@Override
+	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement vertex, InternalPermission perm) {
+		return toGraph(root).getBranchRoot().getRolesWithPerm(vertex, perm);
+	}
+
+	@Override
+	public void delete(HibProject root, HibBranch element, BulkActionContext bac) {
+		toGraph(root).getBranchRoot().delete(toGraph(element), bac);
+	}
+
+	@Override
+	public boolean update(HibProject root, HibBranch element, InternalActionContext ac, EventQueueBatch batch) {
+		return toGraph(root).getBranchRoot().update(toGraph(element), ac, batch);
+	}
 }

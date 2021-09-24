@@ -35,7 +35,7 @@ public final class MeshAssert {
 	}
 
 	public static void assertElement(DaoGlobal<?> dao, String uuid, boolean exists) throws Exception {
-		Object element = dao.findByUuidGlobal(uuid);
+		Object element = dao.findByUuid(uuid);
 		if (exists) {
 			assertNotNull("The element should exist.", element);
 		} else {

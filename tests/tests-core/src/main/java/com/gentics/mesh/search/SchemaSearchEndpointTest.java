@@ -5,8 +5,8 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getUuidQuery;
-import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
@@ -121,7 +121,7 @@ public class SchemaSearchEndpointTest extends AbstractMultiESTest implements Bas
 		final String newName = "newschema";
 		SchemaResponse schema = createSchema(newName);
 		try (Tx tx = tx()) {
-			assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
+			assertNotNull(boot().schemaDao().findByUuid(schema.getUuid()));
 		}
 		waitForSearchIdleEvent();
 

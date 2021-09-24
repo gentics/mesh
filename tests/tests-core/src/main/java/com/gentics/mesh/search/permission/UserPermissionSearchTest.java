@@ -30,7 +30,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
-			HibUser user = meshRoot().getUserRoot().findByUuid(response.getUuid());
+			HibUser user = boot().userDao().findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			for (HibRole role : userDao.getRoles(user())) {
 				roleDao.revokePermissions(role, user, InternalPermission.READ_PERM);

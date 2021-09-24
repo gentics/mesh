@@ -37,9 +37,9 @@ import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
@@ -101,10 +101,10 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		UserRoot userRoot = boot.get().userRoot();
-		GroupDaoWrapper groupDao = boot.get().groupDao();
-		ProjectDaoWrapper projectDao = boot.get().projectDao();
-		NodeDaoWrapper nodeDao = boot.get().nodeDao();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
+		GroupDao groupDao = boot.get().groupDao();
+		ProjectDao projectDao = boot.get().projectDao();
+		NodeDao nodeDao = boot.get().nodeDao();
 		HibUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -193,7 +193,6 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	private boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
 		User graphUser = toGraph(user);
-		UserRoot userRoot = boot.get().userRoot();
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), user.getUsername())) {
@@ -463,66 +462,61 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public Result<? extends User> findAll() {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findAll();
 	}
 
 	@Override
 	public Page<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findAllWrapped(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
 	public User findByName(String name) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findByName(name);
 	}
 
 	@Override
 	public HibUser findByUsername(String username) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findByUsername(username);
 	}
 
 	@Override
 	public HibUser findByUuid(String uuid) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public HibUser findByUuidGlobal(String uuid) {
-		return findByUuid(uuid);
-	}
-
-	@Override
 	public HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
 	public HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findMeshAuthUserByUsername(username);
 	}
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		return userRoot.findMeshAuthUserByUuid(userUuid);
 	}
 
@@ -545,7 +539,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public User create(String username, HibUser creator, String uuid) {
-		UserRoot userRoot = boot.get().userRoot();
+		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
 		User user = userRoot.create();
 		if (uuid != null) {
 			user.setUuid(uuid);
@@ -565,17 +559,12 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public HibUser inheritRolePermissions(HibUser user, MeshVertex sourceNode, MeshVertex targetNode) {
+	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target) {
 		for (InternalPermission perm : InternalPermission.values()) {
 			String key = perm.propertyKey();
-			targetNode.property(key, sourceNode.property(key));
+			((MeshVertex) target).property(key, ((MeshVertex) source).property(key));
 		}
 		return user;
-	}
-
-	@Override
-	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target) {
-		return inheritRolePermissions(user, (MeshVertex) source, (MeshVertex) target);
 	}
 
 	@Override
@@ -619,7 +608,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public boolean hasReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDaoWrapper contentDao = boot.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		if (hasPermission(user, node, READ_PERM)) {
 			return true;
@@ -656,14 +645,14 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, MeshVertex targetNode) {
+	public HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode) {
 		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM,
 			READ_PUBLISHED_PERM);
 		return user;
 	}
 
 	@Override
-	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, MeshVertex targetNode,
+	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode,
 		InternalPermission... toGrant) {
 		// TODO inject dao via DI
 		RoleDaoWrapper roleDao = Tx.get().roleDao();
@@ -686,8 +675,8 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	/**
 	 * Return the global amount of users stored in mesh.
 	 */
-	public long globalCount() {
-		return boot.get().userRoot().globalCount();
+	public long count() {
+		return boot.get().meshRoot().getUserRoot().globalCount();
 	}
 
 	@Override
@@ -710,7 +699,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDaoWrapper contentDao = boot.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
 			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
@@ -728,5 +717,10 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	@Override
 	public Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		return toGraph(fromUser).getGroups(authUser, pagingInfo);
+	}
+
+	@Override
+	public String getAPIPath(HibUser element, InternalActionContext ac) {
+		return toGraph(element).getAPIPath(ac);
 	}
 }

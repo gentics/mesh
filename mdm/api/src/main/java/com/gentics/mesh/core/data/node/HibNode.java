@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -15,7 +16,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 /**
  * Domain model for nodes.
  */
-public interface HibNode extends HibCoreElement, HibCreatorTracking, HibBucketableElement {
+public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTracking, HibBucketableElement {
 
 	/**
 	 * Return the element version string.

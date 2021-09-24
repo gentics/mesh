@@ -9,7 +9,7 @@ import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
 public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>>
-	extends HibCoreElement, Comparable<SCV> {
+	extends HibCoreElement<R>, Comparable<SCV> {
 
 	/**
 	 * Return the schema name.

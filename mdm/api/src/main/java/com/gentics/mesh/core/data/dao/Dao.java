@@ -6,14 +6,14 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 /**
  * DAO for roles
  * 
- * TODO MDM Move methods to generic Dao interface 
  * @param <T>
  */
-public interface DaoWrapper<T> extends DaoGlobal<T> {
+public interface Dao<T> {
 
 	/**
 	 * Return the permission info for the given element and role.
@@ -23,7 +23,7 @@ public interface DaoWrapper<T> extends DaoGlobal<T> {
 	 * @param roleUuid
 	 * @return
 	 */
-	PermissionInfo getRolePermissions(HibCoreElement element, InternalActionContext ac, String roleUuid);
+	PermissionInfo getRolePermissions(HibCoreElement<? extends RestModel> element, InternalActionContext ac, String roleUuid);
 
 	/**
 	 * Return the roles which grant the given permission on the element.

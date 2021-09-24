@@ -386,7 +386,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 0, 1, 0, 0);
 
-			HibTag reloadedTag = boot().tagRoot().findByUuid(tagUuid);
+			HibTag reloadedTag = boot().tagDao().findByUuid(tagUuid);
 			assertNull("The tag should have been deleted", reloadedTag);
 
 			HibProject project = tx.projectDao().findByName(PROJECT_NAME);
@@ -413,7 +413,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		}
 
 		try (Tx tx = tx()) {
-			HibTag tag = tx.tagDao().findByUuidGlobal(uuid);
+			HibTag tag = tx.tagDao().findByUuid(uuid);
 			assertNotNull("The tag should not have been deleted", tag);
 		}
 	}
@@ -459,7 +459,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamilyUuid));
 		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		try (Tx tx = tx()) {
-			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
+			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", tx.tagDao().findByUuid(response.getUuid()));
 		}
 
 		String uuid = response.getUuid();

@@ -122,7 +122,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		addTag(tag);
 
 		// Add to global list of tags
-		TagRoot globalTagRoot = mesh().boot().tagRoot();
+		TagRoot globalTagRoot = mesh().boot().meshRoot().getTagRoot();
 		if (this != globalTagRoot) {
 			globalTagRoot.addTag(tag);
 		}

@@ -20,7 +20,7 @@ public class MeshLocalClientTest extends AbstractMeshTest {
 	public void testClientParameterHandling() {
 		String newsNodeUuid = db().tx(() -> folder("news").getUuid());
 		MeshAuthUser user = db().tx(() -> {
-			return mesh().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername(user().getUsername());
+			return mesh().boot().userDao().findMeshAuthUserByUsername(user().getUsername());
 		});
 		meshDagger().meshLocalClientImpl().setUser(user);
 		NodeResponse response = call(

@@ -18,7 +18,6 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -38,6 +37,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -84,7 +84,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
-			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
+			assertNotNull(boot().groupDao().findByUuid(restGroup.getUuid()));
 		}
 	}
 
@@ -143,7 +143,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testBatchCreation() {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			GroupRoot root = meshRoot().getGroupRoot();
+			HibBaseElement root = tx.data().permissionRoots().group();
 			roleDao.grantPermissions(role(), root, CREATE_PERM);
 			tx.success();
 		}
@@ -167,7 +167,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			roleDao.grantPermissions(role(), meshRoot().getGroupRoot(), CREATE_PERM);
+			roleDao.grantPermissions(role(), tx.data().permissionRoots().group(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -175,7 +175,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
+			assertNotNull(boot().groupDao().findByUuid(restGroup.getUuid()));
 			call(() -> client().createGroup(request), CONFLICT, "group_conflicting_name", name);
 		}
 	}
@@ -223,12 +223,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		tx(tx -> {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
-			GroupRoot root = meshRoot().getGroupRoot();
+			HibBaseElement root = tx.data().permissionRoots().group();
 
 			roleDao.revokePermissions(role(), root, CREATE_PERM);
 			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user(), root, CREATE_PERM));
 		});
-		String rootUuid = db().tx(() -> meshRoot().getGroupRoot().getUuid());
+		String rootUuid = db().tx(() -> Tx.get().data().permissionRoots().group().getUuid());
 		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid, CREATE_PERM.getRestPerm().getName());
 
 	}
@@ -502,7 +502,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(boot().groupRoot(), groupUuid(), false);
+			assertNotNull(boot().groupDao().findByUuid(uuid));
 		}
 	}
 
@@ -534,7 +534,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			call(() -> client().deleteGroup(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), DELETE_PERM.getRestPerm().getName());
-			assertElement(boot().groupRoot(), groupUuid(), true);
+			assertNotNull(boot().groupDao().findByUuid(groupUuid()));
 		}
 	}
 

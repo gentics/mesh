@@ -11,6 +11,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -68,22 +69,26 @@ public class TagDAOActionsImpl implements TagDAOActions {
 
 	@Override
 	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		// TagDaoWrapper tagDao = tx.tagDao();
 		HibTagFamily hibTagFamily = ctx.parent();
+		TagDao tagDao = boot.get().tagDao();
 		if (hibTagFamily != null) {
 			TagFamily tagFamily = HibClassConverter.toGraph(hibTagFamily);
-			return tagFamily.findAll(ctx.ac(), pagingInfo);
+			return tagDao.findAll(tagFamily, ctx.ac(), pagingInfo);
 		} else {
-			return boot.get().tagRoot().findAll(ctx.ac(), pagingInfo);
+			return tagDao.findAll(ctx.ac(), pagingInfo);
 		}
 	}
 
 	@Override
 	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibTag> extraFilter) {
-		// TODO use parent
-		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ctx.ac());
-		HibTagFamily tagFamily = getTagFamily(ctx.tx(), ctx.ac(), tagFamilyUuid);
-		return ctx.tx().tagDao().findAll(tagFamily, ctx.ac(), pagingInfo, extraFilter);
+		HibTagFamily hibTagFamily = ctx.parent();
+		TagDao tagDao = boot.get().tagDao();
+		if (hibTagFamily != null) {
+			TagFamily tagFamily = HibClassConverter.toGraph(hibTagFamily);
+			return ctx.tx().tagDao().findAll(tagFamily, ctx.ac(), pagingInfo, extraFilter);
+		} else {
+			return tagDao.findAll(ctx.ac(), pagingInfo);
+		}
 	}
 
 	@Override

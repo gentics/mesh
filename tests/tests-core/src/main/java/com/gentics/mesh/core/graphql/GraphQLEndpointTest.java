@@ -29,6 +29,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
@@ -215,8 +216,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			call(() -> client.assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
 		} else {
 			try (Tx tx = tx()) {
-				for (HibMicroschema microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
-					toGraph(microschema).remove();
+				for (HibMicroschema microschema : tx.microschemaDao().findAll()) {
+					tx.microschemaDao().delete(microschema, new DummyBulkActionContext());
 				}
 				tx.success();
 			}

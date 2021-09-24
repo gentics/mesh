@@ -18,16 +18,15 @@ import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -139,10 +138,10 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
-			long nSchemasBefore = schemaDao.globalCount();
+			long nSchemasBefore = schemaDao.count();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			assertNotNull(schemaDao.create(schema, user()));
-			long nSchemasAfter = schemaDao.globalCount();
+			long nSchemasAfter = schemaDao.count();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
 		}
 	}
@@ -150,8 +149,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testDefaultSchema() {
 		try (Tx tx = tx()) {
-			SchemaRoot root = meshRoot().getSchemaContainerRoot();
-			assertEquals(schemaContainers().size(), root.computeCount());
+			assertEquals(schemaContainers().size(), tx.schemaDao().count());
 		}
 	}
 
@@ -170,7 +168,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends Schema> page = meshRoot().getSchemaContainerRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
+			Page<? extends HibSchema> page = tx.schemaDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 		}
 	}
@@ -189,7 +187,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
 			String uuid = getSchemaContainer().getUuid();
-			assertNotNull("The schema could not be found", meshRoot().getSchemaContainerRoot().findByUuid(uuid));
+			assertNotNull("The schema could not be found", tx.schemaDao().findByUuid(uuid));
 		}
 	}
 
@@ -197,7 +195,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			NodeDao nodeDao = tx.nodeDao();
@@ -205,7 +203,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 				nodeDao.delete(node, context, false, true);
 			}
 			schemaDao.delete(getSchemaContainer(), context);
-			assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid));
+			assertNull("The schema should have been deleted", tx.schemaDao().findByUuid(uuid));
 		}
 	}
 
@@ -234,7 +232,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
 			schemaDao.delete(newContainer, createBulkContext());
-			assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid));
+			assertNull("The container should have been deleted", tx.schemaDao().findByUuid(uuid));
 		}
 	}
 
@@ -249,7 +247,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			HibSchema newContainer = schemaDao.create(schema, user());
 			assertFalse(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, newContainer));
-			userDao.inheritRolePermissions(getRequestUser(), meshRoot().getSchemaContainerRoot(), newContainer);
+			userDao.inheritRolePermissions(getRequestUser(), tx.data().permissionRoots().schema(), newContainer);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
 				roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, newContainer));
 		}

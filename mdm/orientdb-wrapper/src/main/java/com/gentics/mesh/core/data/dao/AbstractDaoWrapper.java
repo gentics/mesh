@@ -18,7 +18,7 @@ import dagger.Lazy;
  * 
  * @param <T>
  */
-public abstract class AbstractDaoWrapper<T extends HibBaseElement> implements DaoWrapper<T> {
+public abstract class AbstractDaoWrapper<T extends HibBaseElement> implements Dao<T> {
 
 	protected final Lazy<BootstrapInitializer> boot;
 

@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
@@ -551,7 +552,8 @@ public class TestDataProvider {
 	}
 
 	public HibNode addFolder(HibNode rootNode, String englishName, String germanName, String uuid) {
-		NodeDaoWrapper nodeDao = boot.nodeDao();
+		NodeDao nodeDao = boot.nodeDao();
+		ContentDaoWrapper contentDao = boot.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
@@ -562,24 +564,24 @@ public class TestDataProvider {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project, branch, uuid);
 		}
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(folderNode, german,
+			NodeGraphFieldContainer germanContainer = contentDao.createGraphFieldContainer(folderNode, german,
 				branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
 			contentCount++;
-			boot.contentDao().publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
+			contentDao.publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(folderNode, english,
+			NodeGraphFieldContainer englishContainer = contentDao.createGraphFieldContainer(folderNode, english,
 				branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
 			contentCount++;
-			boot.contentDao().publish(folderNode, ac, getEnglish(), branch, getUserInfo().getUser());
+			contentDao.publish(folderNode, ac, getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
@@ -613,7 +615,8 @@ public class TestDataProvider {
 
 	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent,
 		String uuid) {
-		NodeDaoWrapper nodeDao = boot.nodeDao();
+		NodeDao nodeDao = boot.nodeDao();
+		ContentDaoWrapper contentDao = boot.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		HibNode node;
@@ -625,7 +628,7 @@ public class TestDataProvider {
 				project, branch, uuid);
 		}
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(node, english,
+			NodeGraphFieldContainer englishContainer = contentDao.createGraphFieldContainer(node, english,
 				branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
@@ -634,11 +637,11 @@ public class TestDataProvider {
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
 			contentCount++;
-			boot.contentDao().publish(node, ac, getEnglish(), branch, getUserInfo().getUser());
+			contentDao.publish(node, ac, getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(node, german, branch,
+			NodeGraphFieldContainer germanContainer = contentDao.createGraphFieldContainer(node, german, branch,
 				userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
@@ -647,7 +650,7 @@ public class TestDataProvider {
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
 			contentCount++;
-			boot.contentDao().publish(node, ac, getGerman(), branch, getUserInfo().getUser());
+			contentDao.publish(node, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {

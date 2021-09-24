@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
@@ -107,8 +106,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			HibProject extraProject = projectRoot.findByUuid(created.getUuid());
+			HibProject extraProject = tx.projectDao().findByUuid(created.getUuid());
 			assertNotNull("The schema should be added to the extra project", schemaDao.findByUuid(extraProject, schemaUuid));
 		}
 	}

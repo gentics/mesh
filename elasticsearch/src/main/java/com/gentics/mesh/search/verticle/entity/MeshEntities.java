@@ -1,7 +1,5 @@
 package com.gentics.mesh.search.verticle.entity;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 import java.util.Map;
@@ -17,7 +15,7 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -27,6 +25,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.DaoGlobal;
+import com.gentics.mesh.core.data.dao.RootDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -195,22 +195,22 @@ public class MeshEntities {
 
 	private Optional<HibTagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), eventModel.getUuid()));
+		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(boot.tagFamilyDao(), project, eventModel.getUuid()));
 	}
 
 	private Optional<HibTag> toTag(MeshElementEventModel eventModel) {
 		TagElementEventModel event = Util.requireType(TagElementEventModel.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), event.getTagFamily().getUuid()))
-			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
+		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(boot.tagFamilyDao(), project, event.getTagFamily().getUuid()))
+			.flatMap(family -> findElementByUuid(boot.tagDao(), family, eventModel.getUuid()));
 	}
 
 	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
+		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(boot.nodeDao(), project, eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
 				contentDao.getGraphFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
@@ -222,14 +222,41 @@ public class MeshEntities {
 	 * If the element could not be found, a warning will be logged and an empty optional is returned.
 	 * @param rootVertex
 	 * @param uuid
-	 * @param <T>
+	 * @param <L>
 	 * @return
 	 */
-	public static <T extends MeshCoreVertex<? extends RestModel>> Optional<T> findElementByUuid(RootVertex<T> rootVertex, String uuid) {
+	public static <R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> Optional<L> findElementByUuid(RootDao<R, L> dao, R rootVertex, String uuid) {
 		return warningOptional(
 			String.format("Could not find element with uuid {%s} in class {%s}", uuid, rootVertex.getClass().getSimpleName()),
-			rootVertex.findByUuid(uuid)
+			dao.findByUuid(rootVertex, uuid)
 		);
+	}
+	
+	/**
+	 * Finds an element in the given root vertex.
+	 * If the element could not be found, a warning will be logged and an empty optional is returned.
+	 * @param dao
+	 * @param uuid
+	 * @param <L>
+	 * @return
+	 */
+	public static <L extends HibCoreElement<? extends RestModel>> Optional<L> findElementByUuid(DaoGlobal<L> dao, String uuid) {
+		return warningOptional(
+			String.format("Could not find element with uuid {%s} in class {%s}", uuid, dao.getClass().getSimpleName()),
+			dao.findByUuid(uuid)
+		);
+	}
+
+	/**
+	 * Same as {@link #findElementByUuid(RootVertex, String)}, but as a stream.
+	 *
+	 * @param dao
+	 * @param uuid
+	 * @param <L>
+	 * @return
+	 */
+	public static <L extends HibCoreElement<? extends RestModel>> Stream<L> findElementByUuidStream(DaoGlobal<L> dao, String uuid) {
+		return findElementByUuid(dao, uuid).stream();
 	}
 
 	/**
@@ -237,14 +264,14 @@ public class MeshEntities {
 	 *
 	 * @param rootVertex
 	 * @param uuid
-	 * @param <T>
+	 * @param <L>
 	 * @return
 	 */
-	public static <T extends MeshCoreVertex<? extends RestModel>> Stream<T> findElementByUuidStream(RootVertex<T> rootVertex, String uuid) {
-		return findElementByUuid(rootVertex, uuid).stream();
+	public static <R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> Stream<L> findElementByUuidStream(RootDao<R, L> dao, R rootVertex, String uuid) {
+		return findElementByUuid(dao, rootVertex, uuid).stream();
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
+	private <T extends HibCoreElement<? extends RestModel>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
 		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
 
@@ -299,9 +326,9 @@ public class MeshEntities {
 	 */
 	public Stream<CreateDocumentRequest> generateNodeRequests(String nodeUuid, HibProject project, HibBranch branch) {
 		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
-		return findElementByUuidStream(toGraph(project).getNodeRoot(), nodeUuid)
-		.flatMap(node -> latestVersionTypes()
-		.flatMap(type -> boot.contentDao().getGraphFieldContainers(node, branch, type).stream()
+		return findElementByUuidStream(boot.nodeDao(), project, nodeUuid)
+		.flatMap(node -> Util.latestVersionTypes()
+		.flatMap(type -> ((ContentDaoWrapper) boot.contentDao()).getGraphFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
 			ContentDao.composeIndexName(
 				project.getUuid(),

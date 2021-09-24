@@ -21,7 +21,6 @@ import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -89,7 +88,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
 		Role graphRole = toGraph(role);
-		for (Group group : graphRole.getGroups()) {
+		for (HibGroup group : graphRole.getGroups()) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
@@ -171,25 +170,20 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public HibRole findByUuid(String uuid) {
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public HibRole findByUuidGlobal(String uuid) {
-		return findByUuid(uuid);
-	}
-
-	@Override
 	public HibRole findByName(String name) {
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findByName(name);
 	}
 
 	@Override
 	public Page<? extends HibGroup> getGroups(HibRole role, HibUser user, PagingParameters pagingInfo) {
 		Role graphRole = toGraph(role);
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.getGroups(graphRole, user, pagingInfo);
 	}
 
@@ -201,7 +195,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public HibRole create(String name, HibUser creator, String uuid) {
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 
 		Role role = roleRoot.create();
 		if (uuid != null) {
@@ -218,7 +212,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
 		UserDaoWrapper userDao = Tx.get().userDao();
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 
 		HibUser requestUser = ac.getUser();
 		if (StringUtils.isEmpty(roleName)) {
@@ -243,34 +237,28 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public Result<? extends HibRole> findAll() {
-		RoleRoot roleRoot = boot.get().roleRoot();
-		return roleRoot.findAll();
-	}
-
-	@Override
 	public void addRole(HibRole role) {
 		Role graphRole = toGraph(role);
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		roleRoot.addRole(graphRole);
 	}
 
 	@Override
 	public void removeRole(HibRole role) {
 		Role graphRole = toGraph(role);
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		roleRoot.removeRole(graphRole);
 	}
 
 	@Override
 	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter) {
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findAll(ac, pagingInfo, role -> {
 			return extraFilter.test(role);
 		});
@@ -278,19 +266,19 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
 	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		RoleRoot roleRoot = boot.get().roleRoot();
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
-	public long globalCount() {
-		RoleRoot roleRoot = boot.get().roleRoot();
+	public long count() {
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.globalCount();
 	}
 
@@ -317,5 +305,11 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	@Override
 	public Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission) {
 		return ((MeshVertex) element).getRoleUuidsForPerm(permission);
+	}
+
+	@Override
+	public Result<? extends HibRole> findAll() {
+		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
+		return roleRoot.findAll();
 	}
 }

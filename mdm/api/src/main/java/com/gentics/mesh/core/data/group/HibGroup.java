@@ -11,11 +11,12 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.group.GroupReference;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 
 /**
  * Domain model for group.
  */
-public interface HibGroup extends HibCoreElement, HibUserTracking, HibNamedElement, HibBucketableElement {
+public interface HibGroup extends HibNamedElement<GroupResponse>, HibUserTracking, HibBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 

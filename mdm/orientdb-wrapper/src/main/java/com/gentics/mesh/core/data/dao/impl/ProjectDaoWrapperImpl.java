@@ -22,11 +22,11 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -84,7 +84,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		routerStorageRegistry.assertProjectName(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
-			Project projectWithSameName = boot.get().projectRoot().findByName(newName);
+			Project projectWithSameName = boot.get().meshRoot().getProjectRoot().findByName(newName);
 			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(project.getUuid())) {
 				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
 			}
@@ -101,52 +101,42 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public Result<? extends HibProject> findAll() {
-		return boot.get().projectRoot().findAll();
-	}
-
-	@Override
 	public Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().projectRoot().findAll(ac, pagingInfo);
+		return boot.get().meshRoot().getProjectRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibProject> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibProject> extraFilter) {
-		return boot.get().projectRoot().findAllWrapped(ac, pagingInfo, extraFilter);
+		return boot.get().meshRoot().getProjectRoot().findAllWrapped(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
 	public HibProject findByName(String name) {
-		ProjectRoot root = boot.get().projectRoot();
+		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 		return root.findByName(name);
 	}
 
 	@Override
 	public HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
-		ProjectRoot root = boot.get().projectRoot();
+		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 		return root.findByName(ac, projectName, perm);
 	}
 
 	@Override
 	public HibProject findByUuid(String uuid) {
-		ProjectRoot root = boot.get().projectRoot();
+		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 		return root.findByUuid(uuid);
 	}
 
 	@Override
-	public HibProject findByUuidGlobal(String uuid) {
-		return findByUuid(uuid);
-	}
-
-	@Override
 	public HibProject loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		ProjectRoot root = boot.get().projectRoot();
+		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 		return root.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
 	public Project loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		ProjectRoot root = boot.get().projectRoot();
+		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 		return root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
@@ -154,7 +144,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	public HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
 		SchemaVersion graphSchemaVersion = toGraph(schemaVersion);
-		ProjectRoot root = boot.get().projectRoot();
+		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 
 		Project project = root.create();
 		if (uuid != null) {
@@ -198,9 +188,9 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 
 	@Override
 	public HibProject create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		ProjectRoot projectRoot = boot.get().projectRoot();
-		UserDaoWrapper userDao = boot.get().userDao();
-		SchemaDaoWrapper schemaDao = boot.get().schemaDao();
+		ProjectRoot projectRoot = boot.get().meshRoot().getProjectRoot();
+		UserDao userDao = boot.get().userDao();
+		SchemaDao schemaDao = boot.get().schemaDao();
 
 		// TODO also create a default object schema for the project. Move this
 		// into service class
@@ -263,7 +253,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
-		NodeDaoWrapper nodeDao = boot.get().nodeDao();
+		NodeDao nodeDao = boot.get().nodeDao();
 
 		Project graphProject = toGraph(project);
 
@@ -327,8 +317,8 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public long globalCount() {
-		ProjectRoot projectRoot = boot.get().projectRoot();
+	public long count() {
+		ProjectRoot projectRoot = boot.get().meshRoot().getProjectRoot();
 		return projectRoot.globalCount();
 	}
 
@@ -348,6 +338,16 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	public MeshEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment) {
 		Project graphProject = toGraph(project);
 		return graphProject.onSchemaAssignEvent(schema, assignment);
+	}
+
+	@Override
+	public String getSubETag(HibProject project, InternalActionContext ac) {
+		return boot.get().meshRoot().getProjectRoot().getSubETag(toGraph(project), ac);
+	}
+
+	@Override
+	public Result<? extends HibProject> findAll() {
+		return boot.get().meshRoot().getProjectRoot().findAll();
 	}
 
 }

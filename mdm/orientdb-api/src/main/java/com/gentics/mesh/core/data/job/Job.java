@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.util.DateUtils;
@@ -153,46 +152,6 @@ public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex,
 	void setError(Throwable e);
 
 	/**
-	 * Return the human readable error message.
-	 * 
-	 * @return
-	 */
-	String getErrorMessage();
-
-	/**
-	 * Set the human readable error message.
-	 * 
-	 * @param message
-	 */
-	void setErrorMessage(String message);
-
-	/**
-	 * Return the error detail information.
-	 * 
-	 * @return
-	 */
-	String getErrorDetail();
-
-	/**
-	 * Set the error detail information.
-	 * 
-	 * @param info
-	 */
-	void setErrorDetail(String info);
-
-	/**
-	 * Removes the error information from the job and thus it can be processed again.
-	 */
-	void resetJob();
-
-	/**
-	 * Check whether the job has failed.
-	 * 
-	 * @return
-	 */
-	boolean hasFailed();
-
-	/**
 	 * Return the start date of the job.
 	 * 
 	 * @return
@@ -273,20 +232,6 @@ public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex,
 	 * @param count
 	 */
 	void setCompletionCount(long count);
-
-	/**
-	 * Get migration status.
-	 * 
-	 * @return
-	 */
-	JobStatus getStatus();
-
-	/**
-	 * Set migration status.
-	 * 
-	 * @param status
-	 */
-	void setStatus(JobStatus status);
 
 	/**
 	 * Return the name of the node on which the job is being executed.

@@ -61,7 +61,7 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.userDao().globalCount();
+			return tx.userDao().count();
 		});
 	}
 
@@ -102,7 +102,7 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Function<String, HibUser> elementLoader() {
-		return uuid -> boot.meshRoot().getUserRoot().findByUuid(uuid);
+		return uuid -> boot.userDao().findByUuid(uuid);
 	}
 
 	@Override

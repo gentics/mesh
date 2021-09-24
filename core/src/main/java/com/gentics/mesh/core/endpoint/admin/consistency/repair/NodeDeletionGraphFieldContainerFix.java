@@ -11,10 +11,10 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.graph.GraphAttribute;
@@ -42,7 +42,7 @@ public class NodeDeletionGraphFieldContainerFix {
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		BootstrapInitializer boot = mesh.boot();
 		// Pick the first project we find to fetch the initial branchUuid
-		Project project = boot.meshRoot().getProjectRoot().findAll().iterator().next();
+		HibProject project = boot.projectDao().findAll().iterator().next();
 		String branchUuid = project.getInitialBranch().getUuid();
 
 		HibSchemaVersion version = container.getSchemaContainerVersion();

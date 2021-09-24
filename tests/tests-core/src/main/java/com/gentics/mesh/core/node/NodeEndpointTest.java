@@ -49,7 +49,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -1562,7 +1562,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleDaoWrapper roleDao = tx.roleDao();
 			// Create node with nl language
 			HibNode parentNode = folder("products");
-			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
+			HibLanguage languageNl = tx.languageDao().findByLanguageTag("nl");
 			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			node = nodeDao.create(parentNode, user(), version, project());
 			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, languageNl.getLanguageTag(),

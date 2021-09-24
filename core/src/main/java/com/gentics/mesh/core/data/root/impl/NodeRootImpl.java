@@ -34,8 +34,9 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -119,7 +120,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Tx tx = Tx.get();
 		HibUser user = ac.getUser();
 		String branchUuid = tx.getBranch(ac).getUuid();
-		UserDaoWrapper userDao = mesh().boot().userDao();
+		UserDao userDao = mesh().boot().userDao();
 
 		return findAll(tx.getProject(ac).getUuid())
 			.filter(item -> {
@@ -157,7 +158,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		HibBranch branch = Tx.get().getBranch(ac);
 		String branchUuid = branch.getUuid();
-		UserDaoWrapper userDao = mesh().boot().userDao();
+		UserDao userDao = mesh().boot().userDao();
 
 		return findAll(Tx.get().getProject(ac).getUuid()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
@@ -266,8 +267,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		HibProject project = tx.getProject(ac);
 		HibUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
-		UserDaoWrapper userRoot = boot.userDao();
-		NodeDaoWrapper nodeDao = boot.nodeDao();
+		UserDao userRoot = boot.userDao();
+		NodeDao nodeDao = boot.nodeDao();
 
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {

@@ -21,31 +21,31 @@ public class PermissionRootsImpl implements PermissionRoots {
 
 	@Override
 	public HibBaseElement project() {
-		return boot.projectRoot();
+		return boot.meshRoot().getProjectRoot();
 	}
 
 	@Override
 	public HibBaseElement user() {
-		return boot.userRoot();
+		return boot.meshRoot().getUserRoot();
 	}
 
 	@Override
 	public HibBaseElement group() {
-		return boot.groupRoot();
+		return boot.meshRoot().getGroupRoot();
 	}
 
 	@Override
 	public HibBaseElement role() {
-		return boot.roleRoot();
+		return boot.meshRoot().getRoleRoot();
 	}
 
 	@Override
 	public HibBaseElement microschema() {
-		return boot.microschemaContainerRoot();
+		return boot.meshRoot().getMicroschemaContainerRoot();
 	}
 
 	@Override
 	public HibBaseElement schema() {
-		return boot.schemaContainerRoot();
+		return boot.meshRoot().getSchemaContainerRoot();
 	}
 }

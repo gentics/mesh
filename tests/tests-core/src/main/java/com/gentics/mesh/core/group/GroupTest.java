@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -87,7 +86,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			long size = tx.groupDao().globalCount();
+			long size = tx.groupDao().count();
 			assertEquals(groups().size(), size);
 		}
 	}
@@ -97,10 +96,10 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.groupDao();
-			long nGroupsBefore = groupDao.globalCount();
+			long nGroupsBefore = groupDao.count();
 			assertNotNull(groupDao.create("test group2", user()));
 
-			long nGroupsAfter = groupDao.globalCount();
+			long nGroupsAfter = groupDao.count();
 			assertEquals(nGroupsBefore + 1, nGroupsAfter);
 		}
 	}
@@ -146,7 +145,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			assertNotNull(group);
 			String uuid = group.getUuid();
 			groupDao.delete(group, createBulkContext());
-			group = meshRoot().getGroupRoot().findByUuid(uuid);
+			group = groupDao.findByUuid(uuid);
 			assertNull(group);
 		}
 	}
@@ -155,14 +154,13 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			MeshRoot root = meshRoot();
 			UserDaoWrapper userDao = tx.userDao();
 			GroupDaoWrapper groupDao = tx.groupDao();
 			HibUser user = user();
 			InternalActionContext ac = mockActionContext();
 			HibGroup group = groupDao.create("newGroup", user);
 			assertFalse(userDao.hasPermission(user, group, InternalPermission.CREATE_PERM));
-			userDao.inheritRolePermissions(user, root.getGroupRoot(), group);
+			userDao.inheritRolePermissions(user, tx.data().permissionRoots().group(), group);
 			ac.data().clear();
 			assertTrue(userDao.hasPermission(user, group, InternalPermission.CREATE_PERM));
 		}

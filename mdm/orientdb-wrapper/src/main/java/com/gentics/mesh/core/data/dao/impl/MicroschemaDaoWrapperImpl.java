@@ -66,7 +66,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	@Override
 	public HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		UserDaoWrapper userRoot = Tx.get().userDao();
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 
 		HibUser requestUser = ac.getUser();
 		MicroschemaVersionModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
@@ -87,7 +87,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		microschema.validate();
 
 		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 
 		String name = microschema.getName();
 		Microschema conflictingMicroSchema = findByName(name);
@@ -169,25 +169,13 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 
 	@Override
 	public Microschema findByName(String name) {
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 		return microschemaRoot.findByName(name);
-	}
-
-	@Override
-	public HibMicroschema findByUuid(String uuid) {
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
-		return microschemaRoot.findByUuid(uuid);
 	}
 
 	@Override
 	public HibMicroschema findByUuid(HibProject project, String uuid) {
 		return toGraph(project).getMicroschemaContainerRoot().findByUuid(uuid);
-	}
-
-	@Override
-	public Result<? extends Microschema> findAll() {
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
-		return microschemaRoot.findAll();
 	}
 
 	@Override
@@ -199,21 +187,21 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 
 	@Override
 	public Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 		return microschemaRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibMicroschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<HibMicroschema> extraFilter) {
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 		return microschemaRoot.findAll(ac, pagingInfo, microschema -> extraFilter.test(microschema));
 	}
 
 	@Override
 	public HibMicroschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm) {
 		// TODO check for project in context?
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 		return microschemaRoot.loadObjectByUuid(ac, schemaUuid, perm);
 	}
 
@@ -221,7 +209,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	public HibMicroschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
 		boolean errorIfNotFound) {
 		// TODO check for project in context?
-		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 		return microschemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
@@ -301,18 +289,19 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public HibMicroschema findByUuidGlobal(String uuid) {
-		return boot.get().microschemaContainerRoot().findByUuid(uuid);
+	public HibMicroschema findByUuid(String uuid) {
+		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
+		return microschemaRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public long globalCount() {
-		return boot.get().microschemaContainerRoot().globalCount();
+	public long count() {
+		return boot.get().meshRoot().getMicroschemaContainerRoot().globalCount();
 	}
 
 	@Override
 	public void addMicroschema(HibMicroschema schema, HibUser user, EventQueueBatch batch) {
-		boot.get().microschemaContainerRoot().addMicroschema(user, schema, batch);
+		boot.get().meshRoot().getMicroschemaContainerRoot().addMicroschema(user, schema, batch);
 	}
 
 	@Override
@@ -340,6 +329,21 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	@Override
 	public void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch) {
 		toGraph(project).getMicroschemaContainerRoot().removeMicroschema(microschema, batch);
+	}
+
+	@Override
+	public Result<? extends HibMicroschema> findAll() {
+		return boot.get().meshRoot().getMicroschemaContainerRoot().findAll();
+	}
+
+	@Override
+	public boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().meshRoot().getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public String getAPIPath(HibMicroschema element, InternalActionContext ac) {
+		return toGraph(element).getAPIPath(ac);
 	}
 
 }

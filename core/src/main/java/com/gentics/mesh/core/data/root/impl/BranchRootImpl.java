@@ -26,6 +26,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
@@ -89,7 +90,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
-		UserDaoWrapper userRoot = mesh().boot().userDao();
+		UserDao userRoot = mesh().boot().userDao();
 
 		if (uuid != null) {
 			branch.setUuid(uuid);
@@ -191,7 +192,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			branch.setSsl(request.getSsl());
 		}
 		HibUser creator = branch.getCreator();
-		mesh().boot().jobRoot().enqueueBranchMigration(creator, branch);
+		mesh().boot().jobDao().enqueueBranchMigration(creator, branch);
 		assignSchemas(creator, baseBranch, branch, true, batch);
 
 		batch.add(branch.onCreated());

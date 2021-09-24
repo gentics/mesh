@@ -88,36 +88,24 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public HibSchema findByName(String name) {
-		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
 		return schemaRoot.findByName(name);
 	}
 
 	@Override
 	public HibSchema findByUuid(String uuid) {
-		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
 		return schemaRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public HibSchema findByUuidGlobal(String uuid) {
-		return findByUuid(uuid);
-	}
-
-	@Override
-	public Result<HibSchema> findAll() {
-		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
-		// TODO findAll should not return wildcard generics
-		return (Result<HibSchema>) (Result<?>) schemaRoot.findAll();
-	}
-
-	@Override
-	public long globalCount() {
-		return boot.get().schemaContainerRoot().globalCount();
+	public long count() {
+		return boot.get().meshRoot().getSchemaContainerRoot().globalCount();
 	}
 
 	@Override
 	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
 		return schemaRoot.findAll(ac, pagingInfo);
 	}
 
@@ -139,7 +127,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	public HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibUser requestUser = ac.getUser();
 		UserDaoWrapper userDao = Tx.get().userDao();
-		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
 
 		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
@@ -221,7 +209,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
-		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
@@ -283,14 +271,14 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	@Override
 	public HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		// TODO check for project in context?
-		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
 		return schemaRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
 	public HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		// TODO check for project in context?
-		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
 		return schemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
@@ -301,19 +289,19 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public Result<? extends SchemaRoot> getRoots(HibSchema schema) {
-		return boot.get().schemaContainerRoot().getRoots(toGraph(schema));
+		return boot.get().meshRoot().getSchemaContainerRoot().getRoots(toGraph(schema));
 	}
 
 	@Override
 	public Iterable<HibSchemaVersion> findAllVersions(HibSchema schema) {
 		Schema graphSchema = toGraph(schema);
-		return (Iterable<HibSchemaVersion>) (Iterable<?>) boot.get().schemaContainerRoot().findAllVersions(graphSchema);
+		return (Iterable<HibSchemaVersion>) (Iterable<?>) boot.get().meshRoot().getSchemaContainerRoot().findAllVersions(graphSchema);
 	}
 
 	@Override
 	public Result<? extends Node> getNodes(HibSchema schema) {
 		Schema graphSchema = toGraph(schema);
-		return boot.get().schemaContainerRoot().getNodes(graphSchema);
+		return boot.get().meshRoot().getSchemaContainerRoot().getNodes(graphSchema);
 	}
 
 	@Override
@@ -435,7 +423,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public void addSchema(HibSchema schema) {
-		boot.get().schemaContainerRoot().addItem(toGraph(schema));
+		boot.get().meshRoot().getSchemaContainerRoot().addItem(toGraph(schema));
 	}
 
 	@Override
@@ -461,4 +449,24 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 		return toGraph(project).getSchemaContainerRoot().contains(schema);
 	}
 
+	@Override
+	public Result<? extends HibSchema> findAll() {
+		return boot.get().meshRoot().getSchemaContainerRoot().findAll();
+	}
+
+	@Override
+	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+			Predicate<HibSchema> extraFilter) {
+		return boot.get().meshRoot().getSchemaContainerRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
+	}
+
+	@Override
+	public boolean update(HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().meshRoot().getSchemaContainerRoot().update(null, ac, batch);
+	}
+
+	@Override
+	public String getAPIPath(HibSchema element, InternalActionContext ac) {
+		return toGraph(element).getAPIPath(ac);
+	}
 }

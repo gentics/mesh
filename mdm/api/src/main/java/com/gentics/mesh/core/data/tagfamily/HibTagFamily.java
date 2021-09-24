@@ -5,11 +5,12 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
 /**
  * Domain model for tag families.
  */
-public interface HibTagFamily extends HibCoreElement, HibUserTracking, HibBucketableElement {
+public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibUserTracking, HibBucketableElement {
 
 	/**
 	 * Return the name.

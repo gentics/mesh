@@ -12,6 +12,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -19,6 +20,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -33,6 +35,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -40,6 +43,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -89,14 +93,14 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public Result<? extends Tag> findAllGlobal() {
-		TagRoot tagRoot = boot.get().tagRoot();
+	public Result<? extends Tag> findAll() {
+		TagRoot tagRoot = boot.get().meshRoot().getTagRoot();
 		return tagRoot.findAll();
 	}
 
 	@Override
 	public HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
-		TagRoot tagRoot = boot.get().tagRoot();
+		TagRoot tagRoot = boot.get().meshRoot().getTagRoot();
 		HibTag tag = branch.findTagByUuid(tagUuid);
 		return tagRoot.checkPerms(toGraph(tag), tagUuid, ac, perm, true);
 	}
@@ -105,7 +109,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	public Tag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission perm) {
 		// TODO this is an old bug in mesh. The global tag root is used to load tags. Instead the project specific tags should be checked.
 		// This code is used for branch tagging. The case makes incorrect usage of the root.
-		TagRoot tagRoot = boot.get().tagRoot();
+		TagRoot tagRoot = boot.get().meshRoot().getTagRoot();
 		return tagRoot.loadObjectByUuid(ac, tagUuid, perm);
 	}
 
@@ -147,7 +151,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public HibTag findByName(String name) {
-		return boot.get().tagRoot().findByName(name);
+		return boot.get().meshRoot().getTagRoot().findByName(name);
 	}
 
 	@Override
@@ -159,7 +163,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	public HibTag findByUuid(HibProject project, String uuid) {
 		Project graphProject = HibClassConverter.toGraph(project);
 		// TODO this is actually wrong. We should actually search within the tag familes of the project instead.
-		Tag tag = boot.get().tagRoot().findByUuid(uuid);
+		Tag tag = boot.get().meshRoot().getTagRoot().findByUuid(uuid);
 		return tag;
 	}
 
@@ -185,8 +189,8 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public Tag findByUuidGlobal(String uuid) {
-		TagRoot globalTagRoot = boot.get().tagRoot();
+	public Tag findByUuid(String uuid) {
+		TagRoot globalTagRoot = boot.get().meshRoot().getTagRoot();
 		return globalTagRoot.findByUuid(uuid);
 	}
 
@@ -247,17 +251,17 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	@Override
 	public Page<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
 		ContainerType type, PagingParameters pagingInfo) {
-		return boot.get().tagRoot().findTaggedNodes(toGraph(tag), requestUser, toGraph(branch), languageTags, type, pagingInfo);
+		return boot.get().meshRoot().getTagRoot().findTaggedNodes(toGraph(tag), requestUser, toGraph(branch), languageTags, type, pagingInfo);
 	}
 
 	@Override
 	public Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac) {
-		return boot.get().tagRoot().findTaggedNodes(tag, ac);
+		return boot.get().meshRoot().getTagRoot().findTaggedNodes(tag, ac);
 	}
 
 	@Override
 	public Result<? extends HibNode> getNodes(HibTag tag, HibBranch branch) {
-		return boot.get().tagRoot().getNodes(toGraph(tag), branch);
+		return boot.get().meshRoot().getTagRoot().getNodes(toGraph(tag), branch);
 	}
 
 	@Override
@@ -309,12 +313,12 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid) {
-		return boot.get().tagRoot().create(tagFamily, name, project, creator, uuid);
+		return boot.get().meshRoot().getTagRoot().create(tagFamily, name, project, creator, uuid);
 	}
 
 	@Override
-	public long globalCount() {
-		return boot.get().tagRoot().globalCount();
+	public long count() {
+		return boot.get().meshRoot().getTagRoot().globalCount();
 	}
 
 	@Override
@@ -351,5 +355,102 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	@Override
 	public boolean hasTag(HibNode node, HibTag tag, HibBranch branch) {
 		return toGraph(node).hasTag(tag, branch);
+	}
+
+	@Override
+	public Stream<? extends HibTag> findAllStream(HibTagFamily root, InternalActionContext ac,
+			InternalPermission permission) {
+		return toGraph(root).findAllStream(ac, permission);
+	}
+
+	@Override
+	public Result<? extends HibTag> findAllDynamic(HibTagFamily root) {
+		return toGraph(root).findAllDynamic();
+	}
+
+	@Override
+	public Page<? extends HibTag> findAllNoPerm(HibTagFamily root, InternalActionContext ac,
+			PagingParameters pagingInfo) {
+		return toGraph(root).findAllNoPerm(ac, pagingInfo);
+	}
+
+	@Override
+	public HibTag findByName(HibTagFamily root, InternalActionContext ac, String name, InternalPermission perm) {
+		return toGraph(root).findByName(ac, name, perm);
+	}
+
+	@Override
+	public HibTag checkPerms(HibTagFamily root, HibTag element, String uuid, InternalActionContext ac,
+			InternalPermission perm, boolean errorIfNotFound) {
+		return toGraph(root).checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
+	}
+
+	@Override
+	public void addItem(HibTagFamily root, HibTag item) {
+		toGraph(root).addItem(toGraph(item));
+	}
+
+	@Override
+	public void removeItem(HibTagFamily root, HibTag item) {
+		toGraph(root).removeItem(toGraph(item));
+	}
+
+	@Override
+	public String getRootLabel(HibTagFamily root) {
+		return toGraph(root).getRootLabel();
+	}
+
+	@Override
+	public Class<? extends HibTag> getPersistenceClass(HibTagFamily root) {
+		return toGraph(root).getPersistanceClass();
+	}
+
+	@Override
+	public long globalCount(HibTagFamily root) {
+		return toGraph(root).globalCount();
+	}
+
+	@Override
+	public PermissionInfo getRolePermissions(HibTagFamily root, HibBaseElement element, InternalActionContext ac,
+			String roleUuid) {
+		return toGraph(root).getRolePermissions(element, ac, roleUuid);
+	}
+
+	@Override
+	public Result<? extends HibRole> getRolesWithPerm(HibTagFamily root, HibBaseElement vertex,
+			InternalPermission perm) {
+		return toGraph(root).getRolesWithPerm(vertex, perm);
+	}
+
+	@Override
+	public void delete(HibTagFamily root, HibTag element, BulkActionContext bac) {
+		toGraph(root).delete(toGraph(element), bac);
+	}
+
+	@Override
+	public boolean update(HibTagFamily root, HibTag element, InternalActionContext ac, EventQueueBatch batch) {
+		return toGraph(root).update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public HibTag loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
+		return boot.get().meshRoot().getTagRoot().loadObjectByUuid(ac, uuid, perm);
+	}
+
+	@Override
+	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+			Predicate<HibTag> extraFilter) {
+		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
+	}
+
+	@Override
+	public HibTag loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
+			boolean errorIfNotFound) {
+		return boot.get().meshRoot().getTagRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 }

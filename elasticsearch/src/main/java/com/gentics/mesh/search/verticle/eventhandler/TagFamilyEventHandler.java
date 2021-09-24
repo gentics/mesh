@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -100,9 +101,9 @@ public class TagFamilyEventHandler implements EventHandler {
 	 * @return
 	 */
 	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, HibTagFamily tagFamily) {
-		TagDaoWrapper tagDao = helper.getBoot().tagDao();
-		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
-			.flatMap(project -> project.getBranchRoot().findAll().stream()
+		TagDao tagDao = helper.getBoot().tagDao();
+		return findElementByUuidStream(helper.getBoot().projectDao(), model.getProject().getUuid())
+			.flatMap(project -> helper.getBoot().branchDao().findAll(project).stream()
 				.flatMap(branch -> {
 					return tagDao.findAll(tagFamily).stream()
 						.flatMap(tag -> tagDao.getNodes(tag, branch).stream())

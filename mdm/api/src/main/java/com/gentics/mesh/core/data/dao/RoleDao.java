@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Set;
-import java.util.function.Predicate;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -19,7 +17,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibRole}.
  */
-public interface RoleDao extends DaoWrapper<HibRole>, DaoTransformable<HibRole, RoleResponse> {
+public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, RoleResponse> {
 
 	/**
 	 * Create a new role with the given name.
@@ -128,98 +126,6 @@ public interface RoleDao extends DaoWrapper<HibRole>, DaoTransformable<HibRole, 
 	 * @return
 	 */
 	boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement element);
-
-	/**
-	 * Find the role by uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	HibRole findByUuid(String uuid);
-
-	/**
-	 * Find the role by name.
-	 * 
-	 * @param roleName
-	 * @return
-	 */
-	HibRole findByName(String roleName);
-
-	/**
-	 * Delete the role.
-	 * 
-	 * @param role
-	 * @param bac
-	 */
-	void delete(HibRole role, BulkActionContext bac);
-
-	/**
-	 * Load the role by uuid.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @return
-	 */
-	HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
-
-	/**
-	 * Load the role by uuid.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @param errorIfNotFound
-	 * @return
-	 */
-	HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
-
-	/**
-	 * Update the role
-	 * 
-	 * @param role
-	 *            Role to update
-	 * @param ac
-	 *            Context which holds the payload
-	 * @param batch
-	 * @return true, when the role has been updated. Otherwise false.
-	 */
-	boolean update(HibRole role, InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Return all roles.
-	 * 
-	 * @return
-	 */
-	Result<? extends HibRole> findAll();
-
-	/**
-	 * Load a page of roles.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
-	 * Load a page of roles.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @param extraFilter
-	 * @return
-	 */
-	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter);
-
-	/**
-	 * Return the api path for the role.
-	 * 
-	 * @param role
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(HibRole role, InternalActionContext ac);
 
 	/**
 	 * Apply the permissions for the given element.

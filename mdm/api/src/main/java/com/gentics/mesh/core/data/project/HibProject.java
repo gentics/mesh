@@ -7,11 +7,12 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 
 /**
  * Domain model for project.
  */
-public interface HibProject extends HibCoreElement, HibUserTracking, HibBucketableElement {
+public interface HibProject extends HibCoreElement<ProjectResponse>, HibUserTracking, HibBucketableElement {
 
 	/**
 	 * Set the uuid.
@@ -98,4 +99,11 @@ public interface HibProject extends HibCoreElement, HibUserTracking, HibBucketab
 	 * @return
 	 */
 	HibBaseElement getTagFamilyPermissionRoot();
+
+	/**
+	 * Return the node hib base element which tracks node permissions.
+	 * 
+	 * @return
+	 */
+	HibBaseElement getNodePermissionRoot();
 }

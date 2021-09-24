@@ -277,7 +277,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	}
 
 	private NodeGraphFieldContainer loadTargetedContent(HibNode node, String languageTag, String fieldName) {
-		ContentDaoWrapper contentDao = boot.get().contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.get().contentDao();
 		NodeGraphFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
 		if (latestDraftVersion == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);

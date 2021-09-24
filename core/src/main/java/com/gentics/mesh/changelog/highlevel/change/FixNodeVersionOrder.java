@@ -84,7 +84,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				if (count != 0 && count % 1000 == 0) {
 					log.info("Checked {} nodes. Found and fixed {} broken nodes", count, fixedNodes.get());
 				}
-				boot.get().contentDao().getGraphFieldContainers(node, ContainerType.INITIAL).stream()
+				((ContentDaoWrapper) boot.get().contentDao()).getGraphFieldContainers(node, ContainerType.INITIAL).stream()
 					.forEach(content -> {
 						boolean mutated = fixNodeVersionOrder(context, toGraph(node), content);
 						if (mutated) {
@@ -99,7 +99,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, NodeGraphFieldContainer initialContent) {
-		ContentDaoWrapper contentDao = boot.get().contentDao();
+		ContentDaoWrapper contentDao = ((ContentDaoWrapper) boot.get().contentDao());
 		Set<VersionNumber> seenVersions = new HashSet<>();
 		TreeSet<NodeGraphFieldContainer> versions = new TreeSet<>(Comparator.comparing(NodeGraphFieldContainer::getVersion));
 		NodeGraphFieldContainer highestVersion = null;

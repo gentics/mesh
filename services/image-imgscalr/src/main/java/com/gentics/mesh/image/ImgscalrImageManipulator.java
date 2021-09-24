@@ -303,7 +303,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		parameters.validate();
 		parameters.validateLimits(options);
 
-		BinaryDaoWrapper binaryDao = boot.binaryDao();
+		BinaryDaoWrapper binaryDao = (BinaryDaoWrapper) boot.binaryDao();
 		Supplier<InputStream> stream = binaryDao.openBlockingStream(binary);
 
 		return getCacheFilePath(binary.getSHA512Sum(), parameters)

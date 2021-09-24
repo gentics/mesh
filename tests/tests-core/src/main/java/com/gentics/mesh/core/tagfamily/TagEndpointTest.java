@@ -17,11 +17,10 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -63,8 +62,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			root.findAll(mockActionContext(), new PagingParametersImpl(1, 10L));
+			tx.tagFamilyDao().findAll(mockActionContext(), new PagingParametersImpl(1, 10L));
 		}
 	}
 
@@ -72,8 +70,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			List<? extends TagFamily> families = root.findAll().list();
+			List<? extends HibTagFamily> families = tx.tagFamilyDao().findAll().list();
 			assertNotNull(families);
 			assertEquals(2, families.size());
 
@@ -85,7 +82,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 
 			assertNotNull(projectTagFamilyRoot.create("bogus", user()));
 			assertEquals(3, projectTagFamilyRoot.computeCount());
-			assertEquals(3, root.computeCount());
+			assertEquals(3, tx.tagFamilyDao().count());
 		}
 	}
 
@@ -235,7 +232,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			BulkActionContext bac = createBulkContext();
 			tagFamilyDao.delete(tagFamily, bac);
 			// TODO check for attached nodes
-			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
+			HibProject project = tx.projectDao().findByUuid(uuid);
 			assertNull(project);
 		}
 
