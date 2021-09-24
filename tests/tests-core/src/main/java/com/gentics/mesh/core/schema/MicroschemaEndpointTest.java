@@ -31,7 +31,6 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -465,7 +464,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		call(() -> client().deleteMicroschema(microschemaContainerUuid));
 
 		try (Tx tx = tx()) {
-			Microschema searched = boot().meshRoot().getMicroschemaContainerRoot().findByUuid(microschemaContainerUuid);
+			HibMicroschema searched = tx.microschemaDao().findByUuid(microschemaContainerUuid);
 			assertNull("The microschema should have been deleted.", searched);
 		}
 	}

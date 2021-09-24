@@ -16,7 +16,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -57,7 +57,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
 
 	@Inject
-	public TagFamilyDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
+	public TagFamilyDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 

@@ -297,7 +297,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			roleDao.grantPermissions(role(), project().getBaseNode(), CREATE_PERM);
 			roleDao.grantPermissions(role(), project().getBaseNode(), CREATE_PERM);
 			roleDao.grantPermissions(role(), project().getBaseNode(), CREATE_PERM);
-			roleDao.revokePermissions(role(), meshRoot(), CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().mesh(), CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PERM);
 			tx.success();
 		}
 

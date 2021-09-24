@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.HibBinaryField;
@@ -32,7 +32,7 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	private final Binaries binaries;
 
 	@Inject
-	public BinaryDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Binaries binaries) {
+	public BinaryDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Binaries binaries) {
 		super(boot, permissions);
 		this.binaries = binaries;
 	}

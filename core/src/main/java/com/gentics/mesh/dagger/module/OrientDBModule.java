@@ -7,6 +7,9 @@ import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializerImpl;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -81,6 +84,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);
+	
+	@Binds
+	abstract BootstrapInitializer bindBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
 
 	@Binds
 	abstract ChangelogSystem bindChangelogSystem(ChangelogSystemImpl e);
@@ -153,6 +159,11 @@ public abstract class OrientDBModule {
 		} else {
 			throw new IllegalArgumentException("Unsupported MeshOptions class:" + meshOptions.getClass().getCanonicalName());
 		}
+	}
+	
+	@Provides
+	public static OrientDBBootstrapInitializer orientDBBootstrapInitializer(OrientDBBootstrapInitializerImpl e) {
+		return e;
 	}
 
 	/**

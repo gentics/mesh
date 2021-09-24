@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
-import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -153,7 +153,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	 * 
 	 * @return
 	 */
-	public MeshComponent mesh() {
+	public OrientDBMeshComponent mesh() {
 		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 

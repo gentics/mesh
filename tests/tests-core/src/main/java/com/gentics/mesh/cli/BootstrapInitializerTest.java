@@ -27,7 +27,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 	@Test
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
 		try (Tx tx = tx()) {
-			boot().initLanguages(meshRoot().getLanguageRoot());
+			boot().initLanguages();
 			HibLanguage language = tx.languageDao().findByLanguageTag("de");
 			assertNotNull(language);
 			assertEquals("German", language.getName());
@@ -40,7 +40,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 		FileUtils.copyURLToFile(getClass().getResource("/json/custom-languages.json"), new File("target/custom-languages.json"));
 
 		try (Tx tx = tx()) {
-			boot().initLanguages(meshRoot().getLanguageRoot());
+			boot().initLanguages();
 
 			HibLanguage language = tx.languageDao().findByLanguageTag("de");
 			assertThat(language).as("Default language").isNotNull().hasTag("de").hasName("German").hasNativeName("Deutsch");
@@ -67,9 +67,10 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 	@Test
 	public void testIndexLookup() {
 		try (Tx tx = tx()) {
-			boot().meshRoot();
+			boot().initDatabaseTypes();;
 			boot().clearReferences();
-			assertNotNull(boot().meshRoot());
+			// TODO sanity check the MeshRoot -> RootResolver replacement
+			assertNotNull(boot().rootResolver());
 		}
 	}
 

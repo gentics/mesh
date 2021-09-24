@@ -45,7 +45,6 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -103,8 +102,6 @@ public class TestDataProvider {
 
 	private UserInfo userInfo;
 
-	private MeshRoot root;
-
 	private TestSize size;
 
 	private Map<String, HibSchema> schemaContainers = new HashMap<>();
@@ -147,6 +144,7 @@ public class TestDataProvider {
 				meshOptions.setInitialAdminPassword(null);
 			}
 			boot.initMandatoryData(meshOptions);
+			boot.initBasicData(meshOptions);
 			if (setAdminPassword) {
 				setAdminPassword();
 			}
@@ -162,7 +160,7 @@ public class TestDataProvider {
 			groups.clear();
 
 			if (db.requiresTypeInit()) {
-				root = boot.meshRoot();
+				boot.initDatabaseTypes();
 			}
 
 			addBootstrappedData(tx);
@@ -424,7 +422,7 @@ public class TestDataProvider {
 		}
 		// Publish the project basenode
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		boot.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
+		((ContentDaoWrapper) boot.contentDao()).publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
 			getUserInfo().getUser());
 		contentCount++;
 
@@ -553,7 +551,7 @@ public class TestDataProvider {
 
 	public HibNode addFolder(HibNode rootNode, String englishName, String germanName, String uuid) {
 		NodeDao nodeDao = boot.nodeDao();
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
@@ -616,7 +614,7 @@ public class TestDataProvider {
 	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent,
 		String uuid) {
 		NodeDao nodeDao = boot.nodeDao();
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		HibNode node;
@@ -665,7 +663,7 @@ public class TestDataProvider {
 	 * Returns the path to the tag for the given language.
 	 */
 	public String getPathForNews2015Tag(String languageTag) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
 
 		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name")
 			.getString();
@@ -747,8 +745,8 @@ public class TestDataProvider {
 		return microschemaContainers;
 	}
 
-	public MeshRoot getMeshRoot() {
-		return root;
+	public BootstrapInitializer getMeshBoot() {
+		return boot;
 	}
 
 	public int getNodeCount() {

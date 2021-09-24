@@ -27,7 +27,7 @@ public class MeshRootTest extends AbstractMeshTest {
 	public void testResolvePath() throws InterruptedException {
 		try (Tx tx = tx()) {
 			// Valid paths
-			expectSuccess("projects", meshRoot().getProjectRoot());
+			expectSuccess("projects", tx.data().permissionRoots().project());
 			expectSuccess("projects/" + project().getUuid(), project());
 			expectSuccess("projects/" + project().getUuid() + "/schemas", toGraph(project()).getSchemaContainerRoot());
 			expectSuccess("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid(), schemaContainer("folder"));
@@ -39,16 +39,16 @@ public class MeshRootTest extends AbstractMeshTest {
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/" + tag("red").getUuid(),
 				tag("red"));
 
-			expectSuccess("users", meshRoot().getUserRoot());
+			expectSuccess("users", tx.data().permissionRoots().user());
 			expectSuccess("users/" + user().getUuid(), user());
 
-			expectSuccess("roles", meshRoot().getRoleRoot());
+			expectSuccess("roles", tx.data().permissionRoots().role());
 			expectSuccess("roles/" + role().getUuid(), role());
 
-			expectSuccess("groups", meshRoot().getGroupRoot());
+			expectSuccess("groups", tx.data().permissionRoots().group());
 			expectSuccess("groups/" + group().getUuid(), group());
 
-			expectSuccess("schemas", meshRoot().getSchemaContainerRoot());
+			expectSuccess("schemas", tx.data().permissionRoots().schema());
 			expectSuccess("schemas/" + schemaContainer("folder").getUuid(), schemaContainer("folder"));
 			// assertNotNull(resolve("microschemas"));
 			// assertNotNull(resolve("microschemas/" + mircoschemas("gallery").getUuid()));
@@ -148,7 +148,7 @@ public class MeshRootTest extends AbstractMeshTest {
 
 	private void setDatabaseRev(String rev) {
 		try (Tx tx = tx()) {
-			meshRoot().setDatabaseRevision(rev);
+			tx.data().meshVersion().setDatabaseRevision(rev);
 			tx.success();
 		}
 	}
@@ -158,7 +158,7 @@ public class MeshRootTest extends AbstractMeshTest {
 		assertEquals(buildVersion, Mesh.getPlainVersion());
 
 		try (Tx tx = tx()) {
-			meshRoot().setMeshVersion(graphVersion);
+			tx.data().meshVersion().setMeshVersion(graphVersion);
 			tx.success();
 		}
 	}
@@ -195,7 +195,7 @@ public class MeshRootTest extends AbstractMeshTest {
 	}
 
 	private HibBaseElement resolve(String pathToElement) throws InterruptedException {
-		return mesh().boot().meshRoot().resolvePathToElement(pathToElement);
+		return boot().rootResolver().resolvePathToElement(pathToElement);
 	}
 
 }

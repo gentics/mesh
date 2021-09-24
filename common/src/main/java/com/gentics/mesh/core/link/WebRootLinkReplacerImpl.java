@@ -19,7 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -131,7 +130,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		Node node = boot.meshRoot().findNodeByUuid(uuid);
+		HibNode node = boot.nodeDao().findByUuidGlobal(uuid);
 
 		// check for null
 		if (node == null) {

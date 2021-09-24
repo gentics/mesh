@@ -339,6 +339,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	public HibBaseElement getTagFamilyPermissionRoot() {
 		return getTagFamilyRoot();
 	}
+	
+	@Override
+	public HibBaseElement getNodePermissionRoot() {
+		return getNodeRoot();
+	}
 
 	private Optional<HibBranch> findBranchOpt(String branchNameOrUuid) {
 		return Optional.ofNullable(mesh().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
@@ -373,10 +378,5 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	public void generateBucketId() {
 		BucketableElementHelper.generateBucketId(this);
-	}
-
-	@Override
-	public HibBaseElement getNodePermissionRoot() {
-		return getNodeRoot();
 	}
 }

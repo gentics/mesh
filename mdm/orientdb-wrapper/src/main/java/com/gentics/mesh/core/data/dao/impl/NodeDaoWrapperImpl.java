@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -51,7 +51,7 @@ import dagger.Lazy;
 public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements NodeDaoWrapper {
 
 	@Inject
-	public NodeDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
+	public NodeDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
@@ -339,5 +339,15 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	@Override
 	public boolean update(HibProject root, HibNode element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getNodeRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public HibNode findByUuidGlobal(String uuid) {
+		return boot.get().meshRoot().findNodeByUuid(uuid);
+	}
+
+	@Override
+	public long globalCount() {
+		return boot.get().meshRoot().nodeCount();
 	}
 }

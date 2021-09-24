@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -111,10 +110,6 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default HibRole anonymousRole() {
 		return data().getAnonymousRole();
-	}
-
-	default MeshRoot meshRoot() {
-		return data().getMeshRoot();
 	}
 
 	default HibGroup group() {

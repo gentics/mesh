@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -77,7 +77,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	private final SchemaComparator comparator;
 
 	@Inject
-	public SchemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Vertx> vertx,
+	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Vertx> vertx,
 		Lazy<NodeIndexHandler> nodeIndexHandler, Provider<EventQueueBatch> batchProvider, SchemaComparator comparator) {
 		super(boot, permissions);
 		this.vertx = vertx;

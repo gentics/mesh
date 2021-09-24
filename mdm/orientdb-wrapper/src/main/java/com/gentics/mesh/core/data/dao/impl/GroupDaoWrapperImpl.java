@@ -25,7 +25,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -67,7 +67,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	private Lazy<PermissionCache> permissionCache;
 
 	@Inject
-	public GroupDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache) {
+	public GroupDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache) {
 		super(boot, permissions);
 		this.permissionCache = permissionCache;
 	}

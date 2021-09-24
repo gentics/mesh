@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.root.RootDao;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -336,4 +337,23 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	HibNode create(HibProject project, HibUser user, HibSchemaVersion version);
+	
+	/**
+	 * Find the node by UUID globally.<br>
+	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
+	 * Use {@link NodeDao#findByUuid(HibProject, String)} with the valid project binding instead.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	HibNode findByUuidGlobal(String uuid);
+
+	/**
+	 * Count all the nodes globally.<br>
+	 * <b>Attention: this method serves administration purposes!</b>
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	long globalCount();
 }

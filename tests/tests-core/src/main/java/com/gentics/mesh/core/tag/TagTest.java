@@ -16,6 +16,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -375,7 +376,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			TagRoot root = meshRoot().getTagRoot();
+			// TODO move into OrientDB tests when available.
+			TagRoot root = ((OrientDBBootstrapInitializer) boot()).meshRoot().getTagRoot();
 			assertEquals(tags().size(), root.computeCount());
 			HibTag tag = tag("red");
 			root.removeTag(tag);

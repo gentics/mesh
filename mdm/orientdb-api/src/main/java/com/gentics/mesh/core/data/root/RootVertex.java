@@ -378,10 +378,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param roleUuid
 	 * @return
 	 */
-	default PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
-		// TODO implement
-		throw new RuntimeException("Not implemented");
-	}
+	PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid);
 
 	/**
 	 * Return a traversal result for all roles which grant the permission to the element.
@@ -390,10 +387,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param perm
 	 * @return
 	 */
-	default Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
-		// TODO implement
-		throw new RuntimeException("Not implemented");
-	}
+	Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm);
 
 	/**
 	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
@@ -403,8 +397,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 *            Deletion context which keeps track of the deletion process
 	 */
 	default void delete(T element, BulkActionContext bac) {
-		// TODO implement this in all derived classes
-		throw new RuntimeException("Not implemented");
+		element.delete(bac);
 	}
 
 	/**
@@ -416,8 +409,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return true if the element was updated. Otherwise false
 	 */
 	default boolean update(T element, InternalActionContext ac, EventQueueBatch batch) {
-		// TODO implement this in all derived classes
-		throw new RuntimeException("Not implemented");
+		return element.update(ac, batch);
 	}
 
 }

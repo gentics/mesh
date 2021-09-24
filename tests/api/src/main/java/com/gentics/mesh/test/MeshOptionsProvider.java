@@ -50,7 +50,7 @@ public interface MeshOptionsProvider {
 				if (classes.size() > 0) {
 					classToInstantiate = classes.iterator().next();
 				} else {
-					throw new IllegalStateException("No implementations of " + classOfT.getCanonicalName() + " found in either com.gentics.mesh package or system properties");
+					throw new IllegalStateException("No implementations of " + classOfT.getCanonicalName() + " found in either com.gentics.mesh package or system properties. Have you started the test outside of the *tests-runned / *tests-context project?");
 				}
 			} else {
 				classToInstantiate = (Class<? extends T>) MeshOptionsProvider.class.getClassLoader().loadClass(className);

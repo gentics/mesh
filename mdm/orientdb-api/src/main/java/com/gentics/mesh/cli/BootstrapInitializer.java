@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
-import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -23,17 +22,17 @@ import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.RootResolver;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.Vertx;
 
 /**
- * The bootstrap initialiser takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
+ * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
  * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
  */
+// TODO move this to the top level MDM API once the field container API is split
 public interface BootstrapInitializer {
 
 	@Getter
@@ -78,20 +77,9 @@ public interface BootstrapInitializer {
 	@Getter
 	BinaryDao binaryDao();
 
-	/**
-	 * Return the changelog root element.
-	 * 
-	 * @return
-	 */
-	ChangelogRoot changelogRoot();
-
-	/**
-	 * Return the mesh root element. All other mesh graph elements are connected to this element. It represents the main root of the whole mesh graph.
-	 * 
-	 * @return
-	 */
-	MeshRoot meshRoot();
-
+	@Getter
+	RootResolver rootResolver();
+	
 	/**
 	 * Return the anonymous role (if-present).
 	 * 
@@ -110,12 +98,19 @@ public interface BootstrapInitializer {
 	void markChangelogApplied();
 
 	/**
-	 * Setup various mandatory data. This includes mandatory root nodes and the admin user, group.
+	 * Setup data, that is required for Mesh to start, e.g. mandatory DB structure.
 	 * 
 	 * @param config
 	 * @throws Exception
 	 */
 	void initMandatoryData(MeshOptions config) throws Exception;
+
+	/**
+	 * Setup data, that is required for Mesh to operate on a basic level, e.g. admin user, group.
+	 * 
+	 * @param meshOptions
+	 */
+	void initBasicData(MeshOptions meshOptions);
 
 	/**
 	 * Clear all caches.
@@ -154,15 +149,18 @@ public interface BootstrapInitializer {
 	void init(Mesh mesh, boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
 
 	/**
-	 * Initialize the languages by loading the JSON file and creating the language graph elements.
+	 * Init the database layout.
+	 */
+	void initDatabaseTypes();
+
+	/**
+	 * Initialize the languages by loading the JSON file and creating the language elements.
 	 * 
-	 * @param root
-	 *            Aggregation node to which the languages will be assigned
 	 * @throws JsonParseException
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	void initLanguages(LanguageRoot root) throws JsonParseException, JsonMappingException, IOException;
+	void initLanguages() throws JsonParseException, JsonMappingException, IOException;
 
 	/**
 	 * Initialize optional languages, if an additional language file was configured
@@ -173,7 +171,7 @@ public interface BootstrapInitializer {
 	void initOptionalLanguages(MeshOptions configuration);
 
 	/**
-	 * Grant CRUD to all objects within the graph to the Admin Role.
+	 * Grant CRUD to all objects to the Admin Role.
 	 */
 	void initPermissions();
 

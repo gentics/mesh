@@ -37,7 +37,9 @@ public final class KeyStoreHelper {
 		if (keystoreFile.exists()) {
 			throw new FileExistsException(keystoreFile);
 		} else {
-			keystoreFile.getParentFile().mkdirs();
+			if (keystoreFile.getParentFile() != null) {
+				keystoreFile.getParentFile().mkdirs();
+			}
 			keystoreFile.createNewFile();
 		}
 
