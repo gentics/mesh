@@ -7,6 +7,12 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 
+/**
+ * A Graph DB-specific extension to {@link BaseTransaction}.
+ * 
+ * @author plyhun
+ *
+ */
 public interface GraphDBBaseTransaction extends BaseTransaction {
 
 	/**

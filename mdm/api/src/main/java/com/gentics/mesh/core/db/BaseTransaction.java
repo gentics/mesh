@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.db;
 
+/**
+ * Basic definition for database transactions.
+ * 
+ * @author plyhun
+ *
+ */
 public interface BaseTransaction extends AutoCloseable {
 
 	/**

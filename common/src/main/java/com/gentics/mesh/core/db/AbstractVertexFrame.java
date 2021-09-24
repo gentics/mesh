@@ -165,7 +165,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	@Override
 	public <T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		BaseTransaction tx = Tx.get();
+		GraphDBTx tx = GraphDBTx.getGraphTx();
 		if (tx == null) {
 			throw new RuntimeException("No active transaction found.");
 		}
