@@ -13,14 +13,6 @@ import io.reactivex.Single;
  *            Rest model type
  */
 public interface DaoTransformable<T, R extends RestModel> {
-	/**
-	 * Return the API path of the element.
-	 * 
-	 * @param element
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(T element, InternalActionContext ac);
 
 	/**
 	 * Transform the element into the matching rest model response asynchronously.

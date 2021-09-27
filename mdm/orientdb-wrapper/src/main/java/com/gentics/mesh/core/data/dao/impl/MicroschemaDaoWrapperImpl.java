@@ -341,4 +341,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		return toGraph(element).getAPIPath(ac);
 	}
 
+	@Override
+	public boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().meshRoot().getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
+	}
 }

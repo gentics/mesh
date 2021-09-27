@@ -32,6 +32,14 @@ import com.gentics.mesh.path.Path;
  * Dao for {@link HibNode}
  */
 public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
+	/**
+	 * Return the API path for the node.
+	 * 
+	 * @param element
+	 * @param ac
+	 * @return
+	 */
+	String getAPIPath(HibNode element, InternalActionContext ac);
 
 	/**
 	 * Create a child node in the latest branch of the project.
