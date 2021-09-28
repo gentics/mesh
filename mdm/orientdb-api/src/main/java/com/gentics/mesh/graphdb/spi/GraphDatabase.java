@@ -114,12 +114,4 @@ public interface GraphDatabase extends Database {
 	 * @return
 	 */
 	IndexHandler index();
-
-	/**
-	 * Return the element version.
-	 * 
-	 * @param element
-	 * @return
-	 */
-	String getElementVersion(Element element);
 }

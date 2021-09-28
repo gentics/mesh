@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.db.AbstractEdgeFrame;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -78,7 +79,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	@Override
 	public String getElementVersion() {
 		Edge edge = getElement();
-		return db().getElementVersion(edge);
+		return db().getElementVersion((HibElement) edge);
 	}
 
 	/**
