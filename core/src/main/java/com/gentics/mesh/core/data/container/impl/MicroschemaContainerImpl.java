@@ -58,11 +58,6 @@ public class MicroschemaContainerImpl extends
 	}
 
 	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return CURRENT_API_BASE_PATH + "/microschemas/" + getUuid();
-	}
-
-	@Override
 	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}

@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.handler.VersionUtils;
 
 /**
  * Domain model for schema.
@@ -27,6 +28,6 @@ public interface HibSchema extends HibFieldSchemaElement<SchemaResponse, SchemaV
 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
-		return CURRENT_API_BASE_PATH + "/schemas/" + getUuid();
+		return VersionUtils.baseRoute(ac) + "/schemas/" + getUuid();
 	}
 }

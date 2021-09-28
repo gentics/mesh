@@ -8,6 +8,7 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.handler.VersionUtils;
 
 /**
  * Domain model for microschema.
@@ -67,4 +68,8 @@ public interface HibMicroschema
 	 */
 	Result<? extends HibRole> getRolesWithPerm(InternalPermission perm);
 
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/microschemas/" + getUuid();
+	}
 }

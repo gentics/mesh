@@ -166,11 +166,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return CURRENT_API_BASE_PATH + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getUuid();
-	}
-
-	@Override
 	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}

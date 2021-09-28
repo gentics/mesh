@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.job;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -10,6 +8,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
+import com.gentics.mesh.handler.VersionUtils;
 
 /**
  * Domain model for job.
@@ -112,6 +111,6 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
-		return CURRENT_API_BASE_PATH + "/admin/jobs/" + getUuid();
+		return VersionUtils.baseRoute(ac) + "/admin/jobs/" + getUuid();
 	}
 }
