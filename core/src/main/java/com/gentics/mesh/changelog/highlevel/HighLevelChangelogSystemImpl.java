@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

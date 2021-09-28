@@ -80,7 +80,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -124,7 +124,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		Database db = mesh().database();
+		GraphDatabase db = mesh().database();
 		BranchUpdateRequest requestModel = ac.fromJson(BranchUpdateRequest.class);
 		boolean modified = false;
 

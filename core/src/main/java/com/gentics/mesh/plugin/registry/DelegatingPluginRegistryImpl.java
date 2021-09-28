@@ -14,11 +14,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.plugin.PluginEventModel;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;

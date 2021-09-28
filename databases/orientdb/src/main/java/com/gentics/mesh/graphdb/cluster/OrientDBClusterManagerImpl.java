@@ -62,9 +62,9 @@ import io.vertx.reactivex.core.TimeoutStream;
  * startup to handle cluster specific events.
  */
 @Singleton
-public class OrientDBClusterManager implements ClusterManager {
+public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
-	private static final Logger log = LoggerFactory.getLogger(OrientDBClusterManager.class);
+	private static final Logger log = LoggerFactory.getLogger(OrientDBClusterManagerImpl.class);
 
 	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "orientdb-plugins";
 
@@ -101,7 +101,7 @@ public class OrientDBClusterManager implements ClusterManager {
 	private final boolean isClusteringEnabled;
 
 	@Inject
-	public OrientDBClusterManager(Mesh mesh, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBMeshOptions options, Lazy<OrientDBDatabase> db) {
+	public OrientDBClusterManagerImpl(Mesh mesh, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBMeshOptions options, Lazy<OrientDBDatabase> db) {
 		this.mesh = mesh;
 		this.vertx = vertx;
 		this.boot = boot;

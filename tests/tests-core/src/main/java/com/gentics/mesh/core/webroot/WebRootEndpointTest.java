@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -116,7 +117,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// Modify the cache entry by adding another bogus segment. The validation should pick up the inconsistency and invalidate the whole path entry
 		tx(tx -> {
-			NodeGraphFieldContainerImpl bogusContainer = tx.addVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl bogusContainer = HibClassConverter.toGraph(tx).addVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphField bogusField = new StringGraphFieldImpl("name", bogusContainer);
 			Path entry = mesh().pathCache().getPath(project(), initialBranch(), ContainerType.DRAFT, path);
 			entry.addSegment(new PathSegmentImpl(bogusContainer, bogusField, "en", "bogus"));

@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import dagger.Lazy;

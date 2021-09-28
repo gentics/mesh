@@ -55,7 +55,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -72,7 +72,7 @@ public final class DatabaseHelper {
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
+	public static void init(GraphDatabase database) {
 		log.info("Creating database indices. This may take a few seconds...");
 		TypeHandler type = database.type();
 		IndexHandler index = database.index();

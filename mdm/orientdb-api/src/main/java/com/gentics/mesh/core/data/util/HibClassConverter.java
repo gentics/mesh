@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.util;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -54,9 +53,13 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.ElementFrame;
 
 /**
@@ -65,6 +68,26 @@ import com.syncleus.ferma.ElementFrame;
 public final class HibClassConverter {
 
 	private HibClassConverter() {
+	}
+
+	/**
+	 * Convert the database to a graph counterpart.
+	 * 
+	 * @param tx
+	 * @return
+	 */
+	public static GraphDatabase toGraph(Database tx) {
+		return checkAndCast(tx, GraphDatabase.class);
+	}
+
+	/**
+	 * Convert the transaction to a graph counterpart.
+	 * 
+	 * @param tx
+	 * @return
+	 */
+	public static GraphDBTx toGraph(Tx tx) {
+		return checkAndCast(tx, GraphDBTx.class);
 	}
 
 	/**
@@ -113,7 +136,7 @@ public final class HibClassConverter {
 	 * @param element
 	 * @return
 	 */
-	public static MeshElement toGraph(HibBaseElement element) {
+	public static MeshElement toGraph(HibElement element) {
 		return checkAndCast(element, MeshElement.class);
 	}
 
@@ -405,6 +428,29 @@ public final class HibClassConverter {
 			return (T) clazz.cast(element);
 		} else {
 			throw new RuntimeException("The received field was not an OrientDB field. Got: " + element.getClass().getName());
+		}
+	}
+
+	/**
+	 * Apply the cast to the graph element and return it.
+	 * 
+	 * @param <T>
+	 *            Type of the graph element
+	 * @param element
+	 *            MDM element to be casted
+	 * @param clazz
+	 *            Element class to validate the cast operation
+	 * @return Casted element object
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T, C> T checkAndCast(C element, Class<? extends C> clazz) {
+		if (element == null) {
+			return null;
+		}
+		if (clazz.isInstance(element)) {
+			return (T) clazz.cast(element);
+		} else {
+			throw new RuntimeException("The received element does not match the requested class hierarchy. Got '" + element.getClass().getName() + "' vs requested '" + clazz.getName() + "'");
 		}
 	}
 }

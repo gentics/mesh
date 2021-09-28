@@ -8,11 +8,11 @@ import org.mockito.Mockito;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb3.PermissionRootsImpl;
@@ -38,7 +38,7 @@ public class AbstractOrientDBTest {
 		when(lazyPermRoots.get()).thenReturn(permRoots);
 
 		Database db = new OrientDBDatabase(options, null, lazyBoot, lazyDaos, metrics, null, null,
-			new OrientDBClusterManager(null, null, null, options, null),
+			new OrientDBClusterManagerImpl(null, null, null, options, null),
 			null, lazyPermRoots, null, null, null);
 		return db;
 	}

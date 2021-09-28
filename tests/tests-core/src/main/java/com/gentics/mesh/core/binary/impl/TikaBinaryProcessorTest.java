@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
 
 import dagger.Lazy;

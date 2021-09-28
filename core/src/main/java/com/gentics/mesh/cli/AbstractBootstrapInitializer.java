@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -30,9 +31,20 @@ import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibMeshVersion;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.LanguageDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -40,6 +52,8 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -51,13 +65,13 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.distributed.DistributedEventManager;
 import com.gentics.mesh.distributed.coordinator.MasterElector;
+import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.IndexHandlerRegistryImpl;
@@ -138,6 +152,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	@Inject
 	public ChangelogSystem changelogSystem;
 
+	@Inject
+	public DaoCollection daoCollection;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
@@ -789,6 +805,103 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		return vertx != null;
 	}
 
+	@Override
+	public void initOptionalData(boolean isEmptyInstallation) {
+
+		// Only setup optional data for empty installations
+		if (isEmptyInstallation) {
+			db().tx(tx -> {
+				UserDao userDao = tx.userDao();
+				GroupDao groupDao = tx.groupDao();
+				RoleDao roleDao = tx.roleDao();
+
+				initOptionalData(tx, isEmptyInstallation);
+
+				// Verify that an anonymous user exists
+				HibUser anonymousUser = userDao.findByUsername("anonymous");
+				if (anonymousUser == null) {
+					anonymousUser = userDao.create("anonymous", anonymousUser);
+					anonymousUser.setCreator(anonymousUser);
+					anonymousUser.setCreationTimestamp();
+					anonymousUser.setEditor(anonymousUser);
+					anonymousUser.setLastEditedTimestamp();
+					anonymousUser.setPasswordHash(null);
+					log.debug("Created anonymous user {" + anonymousUser.getUuid() + "}");
+				}
+
+				HibGroup anonymousGroup = groupDao.findByName("anonymous");
+				if (anonymousGroup == null) {
+					anonymousGroup = groupDao.create("anonymous", anonymousUser);
+					groupDao.addUser(anonymousGroup, anonymousUser);
+					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
+				}
+
+				anonymousRole = roleDao.findByName("anonymous");
+				if (anonymousRole == null) {
+					anonymousRole = roleDao.create("anonymous", anonymousUser);
+					groupDao.addRole(anonymousGroup, anonymousRole);
+					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
+				}
+
+				tx.success();
+			});
+		}
+	}
+
+	/**
+	 * Create languages in the set, which do not exist yet
+	 *
+	 * @param root
+	 *            language root
+	 * @param languageSet
+	 *            language set
+	 */
+	protected void initLanguageSet(LanguageDao root, LanguageSet languageSet) {
+		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
+			String languageTag = entry.getKey();
+			String languageName = entry.getValue().getName();
+			String languageNativeName = entry.getValue().getNativeName();
+			HibLanguage language = languageDao().findByLanguageTag(languageTag);
+			if (language == null) {
+				language = root.create(languageName, languageTag);
+				language.setNativeName(languageNativeName);
+				if (log.isDebugEnabled()) {
+					log.debug("Added language {" + languageTag + " / " + languageName + "}");
+				}
+			} else {
+				if (!StringUtils.equals(language.getName(), languageName)) {
+					language.setName(languageName);
+					if (log.isDebugEnabled()) {
+						log.debug("Changed name of language {" + languageTag + " } to {" + languageName + "}");
+					}
+				}
+				if (!StringUtils.equals(language.getNativeName(), languageNativeName)) {
+					language.setNativeName(languageNativeName);
+					if (log.isDebugEnabled()) {
+						log.debug("Changed nativeName of language {" + languageTag + " } to {" + languageNativeName + "}");
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Init languages from the data set.
+	 * 
+	 * @param languageSet
+	 */
+	protected void initLanguageSet(LanguageSet languageSet) {
+		initLanguageSet(languageDao(), languageSet);
+	}
+
+	/**
+	 * Init implementation specific optional data within the given transaction.
+	 * 
+	 * @param tx
+	 * @param isEmptyInstallation
+	 */
+	protected abstract void initOptionalData(Tx tx, boolean isEmptyInstallation);
+
 	/**
 	 * Create a clustered vert.x instance and block until the instance has been created.
 	 *
@@ -805,13 +918,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * @return
 	 */
 	protected abstract Database db();
-
-	/**
-	 * Init languages from the data set.
-	 * 
-	 * @param languageSet
-	 */
-	protected abstract void initLanguageSet(LanguageSet languageSet);
 
 	/**
 	 * Init non-cluster Mesh instance.
@@ -832,4 +938,74 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * @throws Exception
 	 */
 	protected abstract void initCluster(MeshOptions options, PostProcessFlags flags, boolean isInitMode) throws Exception;
+
+	@Override
+	public SchemaDao schemaDao() {
+		return daoCollection.schemaDao();
+	}
+
+	@Override
+	public MicroschemaDao microschemaDao() {
+		return daoCollection.microschemaDao();
+	}
+
+	@Override
+	public RoleDao roleDao() {
+		return daoCollection.roleDao();
+	}
+
+	@Override
+	public TagDao tagDao() {
+		return daoCollection.tagDao();
+	}
+
+	@Override
+	public TagFamilyDao tagFamilyDao() {
+		return daoCollection.tagFamilyDao();
+	}
+
+	@Override
+	public LanguageDao languageDao() {
+		return daoCollection.languageDao();
+	}
+
+	@Override
+	public UserDao userDao() {
+		return daoCollection.userDao();
+	}
+
+	@Override
+	public GroupDao groupDao() {
+		return daoCollection.groupDao();
+	}
+
+	@Override
+	public JobDao jobDao() {
+		return daoCollection.jobDao();
+	}
+
+	@Override
+	public ProjectDao projectDao() {
+		return daoCollection.projectDao();
+	}
+
+	@Override
+	public NodeDao nodeDao() {
+		return daoCollection.nodeDao();
+	}
+
+	@Override
+	public ContentDao contentDao() {
+		return daoCollection.contentDao();
+	}
+
+	@Override
+	public BinaryDao binaryDao() {
+		return daoCollection.binaryDao();
+	}
+
+	@Override
+	public BranchDao branchDao() {
+		return daoCollection.branchDao();
+	}
 }

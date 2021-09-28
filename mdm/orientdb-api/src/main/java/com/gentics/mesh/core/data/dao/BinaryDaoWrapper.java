@@ -4,8 +4,8 @@ import java.io.InputStream;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.graphdb.spi.Supplier;
-import com.gentics.mesh.graphdb.spi.Transactional;
+import com.gentics.mesh.core.db.Supplier;
+import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.parameter.UserParameters;
 
 import io.vertx.core.AsyncResult;

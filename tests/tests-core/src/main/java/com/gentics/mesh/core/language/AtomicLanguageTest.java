@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -27,9 +28,9 @@ public class AtomicLanguageTest extends AbstractMeshTest {
 			try (Tx tx2 = tx()) {
 				assertNotNull(languageRoot);
 				Language lang = languageRoot.create("Deutsch1", "de1");
-				db().type().setVertexType(lang.getElement(), LanguageImpl.class);
+				HibClassConverter.toGraph(db()).type().setVertexType(lang.getElement(), LanguageImpl.class);
 				lang = languageRoot.create("English1", "en1");
-				db().type().setVertexType(lang.getElement(), LanguageImpl.class);
+				HibClassConverter.toGraph(db()).type().setVertexType(lang.getElement(), LanguageImpl.class);
 				tx2.success();
 			}
 

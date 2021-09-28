@@ -26,8 +26,8 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.dagger.OrientDBMeshComponent;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.EdgeFrame;
@@ -105,7 +105,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 *            Type of the container
 	 * @return The composed key
 	 */
-	public static Object composeWebrootIndexKey(Database db, String segmentInfo, String branchUuid, ContainerType type) {
+	public static Object composeWebrootIndexKey(GraphDatabase db, String segmentInfo, String branchUuid, ContainerType type) {
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
 	}
 
@@ -132,7 +132,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @param type
 	 * @return
 	 */
-	public static Object composeWebrootUrlFieldIndexKey(Database db, String path, String branchUuid, ContainerType type) {
+	public static Object composeWebrootUrlFieldIndexKey(GraphDatabase db, String path, String branchUuid, ContainerType type) {
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), path);
 	}
 
@@ -232,7 +232,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static boolean matchesBranchAndType(Object nodeId, String branchUuid, ContainerType type) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
+		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()));
 		return edges.iterator().hasNext();
@@ -249,7 +249,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, String code, String lang) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
+		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, code, lang));
 		Iterator<? extends GraphFieldContainerEdge> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);
@@ -271,7 +271,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static Result<GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
+		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()));
 		Iterator<GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);

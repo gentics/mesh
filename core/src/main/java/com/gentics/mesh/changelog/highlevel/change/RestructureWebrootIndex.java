@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 import io.vertx.core.logging.Logger;
@@ -33,10 +33,10 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 
 	private static final Logger log = LoggerFactory.getLogger(RestructureWebrootIndex.class);
 
-	private final Database db;
+	private final GraphDatabase db;
 
 	@Inject
-	public RestructureWebrootIndex(Database db) {
+	public RestructureWebrootIndex(GraphDatabase db) {
 		this.db = db;
 	}
 

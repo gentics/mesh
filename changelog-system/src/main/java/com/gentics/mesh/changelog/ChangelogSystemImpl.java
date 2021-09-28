@@ -9,7 +9,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -30,12 +30,12 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 
 	public static final String MESH_DB_REV = "meshDatabaseRevision";
 
-	private Database db;
+	private GraphDatabase db;
 
 	private MeshOptions options;
 
 	@Inject
-	public ChangelogSystemImpl(Database db, MeshOptions options) {
+	public ChangelogSystemImpl(GraphDatabase db, MeshOptions options) {
 		this.db = db;
 		this.options = options;
 	}

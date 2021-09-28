@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;

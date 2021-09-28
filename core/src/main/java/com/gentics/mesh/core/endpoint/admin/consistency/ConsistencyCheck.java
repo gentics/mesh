@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin.consistency;
 
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * A consistency check must identify and log database inconsistencies.

@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.Vertx;

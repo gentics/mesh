@@ -4,8 +4,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.MathUtil;
 
 import io.reactivex.Flowable;

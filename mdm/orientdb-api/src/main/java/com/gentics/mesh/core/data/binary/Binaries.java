@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.binary;
 
 import java.util.stream.Stream;
 
-import com.gentics.mesh.graphdb.spi.Transactional;
+import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**

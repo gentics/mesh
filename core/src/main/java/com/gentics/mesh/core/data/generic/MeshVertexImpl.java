@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +30,7 @@ import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
@@ -176,7 +176,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public Database db() {
+	public GraphDatabase db() {
 		return mesh().database();
 	}
 

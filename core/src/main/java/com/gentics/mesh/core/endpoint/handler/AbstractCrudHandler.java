@@ -11,10 +11,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
