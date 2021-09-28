@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
 /**
@@ -34,4 +35,10 @@ public interface HibLanguage extends HibNamedElement<LanguageResponse> {
 	 * @param languageTag
 	 */
 	void setLanguageTag(String languageTag);
+
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		// Languages don't have a public location
+		return null;
+	}
 }

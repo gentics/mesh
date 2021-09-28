@@ -1,14 +1,11 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Map;
-import java.util.function.Predicate;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -246,4 +243,9 @@ public interface MicroschemaDao extends DaoGlobal<HibMicroschema>, DaoTransforma
 	 */
 	Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version,
 		String branchUuid);
+
+	@Override
+	default String getAPIPath(HibMicroschema element, InternalActionContext ac) {
+		return element.getAPIPath(ac);
+	}
 }

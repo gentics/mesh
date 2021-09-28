@@ -1,12 +1,10 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.Set;
 
@@ -127,12 +125,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return HibClassConverter.toGraph(mesh().boot().tagDao().create(this, ac, batch, uuid));
-	}
-
-	@Override
-	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
-		return tagFamilyDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override

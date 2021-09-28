@@ -59,12 +59,6 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse> implements Ro
 	}
 
 	@Override
-	public RoleResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		RoleDao roleDao = mesh().boot().roleDao();
-		return roleDao.transformToRestSync(this, ac, level, languageTags);
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		RoleDao roleDao = mesh().boot().roleDao();
 		roleDao.delete(this, bac);

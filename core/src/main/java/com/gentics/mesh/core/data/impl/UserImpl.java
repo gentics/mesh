@@ -281,13 +281,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 		return new UserReference().setFirstName(getFirstname()).setLastName(getLastname()).setUuid(getUuid());
 	}
 
-	@Deprecated
-	@Override
-	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		UserDao userDao = mesh().boot().userDao();
-		return userDao.transformToRestSync(this, ac, level, languageTags);
-	}
-
 	@Override
 	public User addGroup(Group group) {
 		// Redirect to group implementation

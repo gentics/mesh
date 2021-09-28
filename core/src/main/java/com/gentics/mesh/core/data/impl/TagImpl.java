@@ -11,7 +11,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -63,16 +62,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	@Override
 	public TagReference transformToReference() {
 		return new TagReference().setName(getName()).setUuid(getUuid()).setTagFamily(getTagFamily().getName());
-	}
-
-	/**
-	 * Use {@link TagDaoWrapper#transformToRestSync(Tag, InternalActionContext, int, String...)} instead.
-	 */
-	@Override
-	@Deprecated
-	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagDao tagDao = Tx.get().tagDao();
-		return tagDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override

@@ -91,11 +91,4 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse> imple
 	public String getSubETag(InternalActionContext ac) {
 		return "";
 	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		// Languages don't have a public location
-		return null;
-	}
-
 }

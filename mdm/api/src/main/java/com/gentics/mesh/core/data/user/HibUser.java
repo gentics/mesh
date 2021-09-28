@@ -9,7 +9,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.VersionUtils;
@@ -299,5 +301,12 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/users/" + getUuid();
+	}
+
+	@Deprecated
+	@Override
+	default UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		UserDao userDao = Tx.get().userDao();
+		return userDao.transformToRestSync(this, ac, level, languageTags);
 	}
 }

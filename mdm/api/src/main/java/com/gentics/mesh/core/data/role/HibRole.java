@@ -9,8 +9,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.user.HibUserTracking;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
@@ -64,5 +66,12 @@ public interface HibRole extends HibNamedElement<RoleResponse>, HibUserTracking,
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/roles/" + getUuid();
+	}
+
+	@Override
+	@Deprecated
+	default RoleResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		RoleDao roleDao = Tx.get().roleDao();
+		return roleDao.transformToRestSync(this, ac, level, languageTags);
 	}
 }
