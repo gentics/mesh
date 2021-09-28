@@ -1299,7 +1299,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		container.setLatestVersion(versionA);
 		versionA.setSchemaContainer(container);
 		EventQueueBatch batch = createBatch();
-		boot().schemaDao().addSchema(container, project(), user(), batch);
+		boot().schemaDao().addSchema(container);
 
 		SchemaVersionModel schemaA = new SchemaModelImpl();
 		schemaA.setName("migratedSchema");

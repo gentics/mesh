@@ -12,12 +12,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 import com.gentics.mesh.test.util.EventUtils;
 
@@ -28,6 +30,7 @@ import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 
+@Category(ClusterTests.class)
 public class ClusterCoordinatorTokenTest {
 	private static String clusterPostFix = randomUUID();
 	private static String coordinatorRegex = "nodeA";

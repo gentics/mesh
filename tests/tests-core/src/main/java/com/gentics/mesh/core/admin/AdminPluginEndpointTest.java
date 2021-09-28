@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNull;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
@@ -28,10 +29,13 @@ import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.plugin.ManifestInjectorPlugin;
 import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.category.ClusterTests;
+import com.gentics.mesh.test.category.PluginTests;
 
 /**
  * These tests require the test plugins to be build. You can build these plugins using the /core/build-test-plugins.sh script.
  */
+@Category(PluginTests.class)
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class AdminPluginEndpointTest extends AbstractPluginTest {
 

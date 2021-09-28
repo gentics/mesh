@@ -331,10 +331,10 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			classPathArg = classPathArg.substring(1);
 
 			// Add maven libs
-			File libFolder = new File("../server/target/mavendependencies-sharedlibs");
+			File libFolder = new File("../../server/target/mavendependencies-sharedlibs");
 			assertTrue("The library folder {" + libFolder + "} could not be found", libFolder.exists());
 			for (File lib : libFolder.listFiles()) {
-				String dockerPath = lib.getPath().replaceAll("\\.\\.\\/", "bin/");
+				String dockerPath = lib.getPath().replaceAll("\\.\\.\\/\\.\\.\\/", "bin/");
 				classPathArg += ":" + dockerPath;
 			}
 			dockerImage.withFileFromPath("bin/server/target/mavendependencies-sharedlibs", libFolder.toPath());

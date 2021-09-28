@@ -7,11 +7,14 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
+@Category(ClusterTests.class)
 public class ClusterCoordinatorPlaneTest extends AbstractClusterTest {
 
 	private static String coordinatorRegex = "nodeA";

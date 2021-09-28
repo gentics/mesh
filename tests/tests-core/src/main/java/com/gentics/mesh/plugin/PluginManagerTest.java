@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.category.PluginTests;
 import com.twelvemonkeys.io.FileUtil;
 
 import io.vertx.core.http.HttpHeaders;
@@ -37,6 +39,7 @@ import okhttp3.Request;
 /**
  * In order to run the plugin tests you need to build the test plugins using the build-test-plugins.sh script. 
  */
+@Category(PluginTests.class)
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class PluginManagerTest extends AbstractPluginTest {
 

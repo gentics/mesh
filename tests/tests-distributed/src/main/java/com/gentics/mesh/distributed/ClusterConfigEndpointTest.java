@@ -8,14 +8,17 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
+@Category(ClusterTests.class)
 public class ClusterConfigEndpointTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

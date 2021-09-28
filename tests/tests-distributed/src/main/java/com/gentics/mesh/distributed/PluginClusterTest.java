@@ -15,12 +15,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.test.category.ClusterTests;
+import com.gentics.mesh.test.category.PluginTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
 import io.vertx.core.logging.Logger;
@@ -29,6 +32,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * These tests require the test plugins to be build. You can build these plugins using the /core/build-test-plugins.sh script.
  */
+@Category({ClusterTests.class, PluginTests.class})
 public class PluginClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
@@ -45,7 +49,7 @@ public class PluginClusterTest extends AbstractClusterTest {
 		.withInitCluster()
 		.waitForStartup()
 		.withWriteQuorum(2)
-		.withPlugin(new File("../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), "basic.jar")
+		.withPlugin(new File("../../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), "basic.jar")
 		.withClearFolders();
 
 	@BeforeClass
@@ -88,7 +92,7 @@ public class PluginClusterTest extends AbstractClusterTest {
 
 	private MeshContainer addSlave(String nodeName) throws InterruptedException {
 		MeshContainer server = prepareSlave(clusterPostFix, nodeName, randomToken(), true, 2)
-			.withPlugin(new File("../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), "basic.jar");
+			.withPlugin(new File("../../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), "basic.jar");
 		server.start();
 		server.awaitStartup(STARTUP_TIMEOUT);
 		login(server);

@@ -11,12 +11,15 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 import com.google.common.collect.Lists;
 
 @Ignore
+@Category(ClusterTests.class)
 public class SplitBrainTest {
 
 	private static final int STARTUP_TIMEOUT = 500;
