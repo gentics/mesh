@@ -44,14 +44,14 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 			action.accept(element, result);
 			if (count != 0 && count % BATCH_SIZE == 0) {
 				if (attemptRepair) {
-					tx.getGraph().commit();
+					tx.commit();
 				}
 				log.info("Processed {" + count + "} " + clazz.getSimpleName() + " elements.");
 			}
 			count++;
 		}
 		if (attemptRepair) {
-			tx.getGraph().commit();
+			tx.commit();
 		}
 		log.info("Processed a total of {" + count + "} " + clazz.getSimpleName() + " elements.");
 		return result;

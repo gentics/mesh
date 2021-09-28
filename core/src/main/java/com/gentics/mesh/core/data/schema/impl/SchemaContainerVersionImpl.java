@@ -25,8 +25,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -102,8 +102,8 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type) {
-		UserDaoWrapper userDao = Tx.get().userDao();
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		UserDao userDao = Tx.get().userDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()
 			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type)
 				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));

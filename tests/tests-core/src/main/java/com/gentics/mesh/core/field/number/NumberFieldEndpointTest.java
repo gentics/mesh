@@ -12,10 +12,10 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -66,7 +66,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
+			HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
 			Number oldValue;
 			Number newValue;
 			try (Tx tx = tx()) {
@@ -121,10 +121,10 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			// Assert that the old version was not modified
 			HibNode node = folder("2015");
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumber(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumber(FIELD_NAME)).isNotNull();
@@ -165,9 +165,9 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			NumberGraphField numberField = container.createNumber(FIELD_NAME);
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNumberField numberField = container.createNumber(FIELD_NAME);
 			numberField.setNumber(100.9f);
 			tx.success();
 		}
@@ -189,8 +189,8 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	 *            field name
 	 * @return number value (may be null)
 	 */
-	protected Number getNumberValue(NodeGraphFieldContainer container, String fieldName) {
-		NumberGraphField field = container.getNumber(fieldName);
+	protected Number getNumberValue(HibNodeFieldContainer container, String fieldName) {
+		HibNumberField field = container.getNumber(fieldName);
 		return field != null ? field.getNumber() : null;
 	}
 

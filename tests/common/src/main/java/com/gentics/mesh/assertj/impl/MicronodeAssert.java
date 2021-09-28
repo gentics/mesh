@@ -1,16 +1,15 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 
-public class MicronodeAssert extends AbstractObjectAssert<MicronodeAssert, Micronode> {
-	public MicronodeAssert(Micronode actual) {
+public class MicronodeAssert extends AbstractObjectAssert<MicronodeAssert, HibMicronode> {
+	public MicronodeAssert(HibMicronode actual) {
 		super(actual, MicronodeAssert.class);
 	}
 

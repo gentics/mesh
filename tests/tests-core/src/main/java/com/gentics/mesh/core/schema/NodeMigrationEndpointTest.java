@@ -28,21 +28,23 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -51,6 +53,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -155,7 +158,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibSchemaVersion versionB;
 		String versionBUuid;
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			versionB = schemaDao.findByName("dummy").getLatestVersion();
 			versionBUuid = versionB.getUuid();
 			assertNotEquals(versionUuid, versionBUuid);
@@ -219,7 +222,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibSchemaVersion versionC;
 		String versionCUuid;
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
 
 			versionC = tx(() -> schemaDao.findByName("dummy").getLatestVersion());
 			versionCUuid = versionC.getUuid();
@@ -247,7 +250,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(COMPLETED, edge3.getMigrationStatus());
 			assertFalse("The previous assignment should be inactive.", assignment1.isActive());
@@ -290,7 +293,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), schemaResponse.toReference()));
 
 		try (Tx tx = tx()) {
-			JobDaoWrapper jobDao = tx.jobDao();
+			JobDao jobDao = tx.jobDao();
 			// No job should be scheduled since this is the first time we assign the container to the project/branch
 			assertEquals(0, TestUtils.toList(jobDao.findAll()).size());
 		}
@@ -415,7 +418,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		container = tx(() -> createDummySchemaWithChanges(oldFieldName, newFieldName, false));
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -429,12 +432,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			String english = english();
 			HibNode parentNode = folder("2015");
 			firstNode = nodeDao.create(parentNode, user, versionA, project());
-			NodeGraphFieldContainer firstEnglishContainer = boot().contentDao().createGraphFieldContainer(firstNode, english,
+			HibNodeFieldContainer firstEnglishContainer = boot().contentDao().createFieldContainer(firstNode, english,
 				firstNode.getProject().getLatestBranch(), user);
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
 			secondNode = nodeDao.create(parentNode, user, versionA, project());
-			NodeGraphFieldContainer secondEnglishContainer = boot().contentDao().createGraphFieldContainer(secondNode, english,
+			HibNodeFieldContainer secondEnglishContainer = boot().contentDao().createFieldContainer(secondNode, english,
 				secondNode.getProject().getLatestBranch(), user);
 			secondEnglishContainer.createString(oldFieldName).setString("second content");
 
@@ -447,13 +450,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			// assert that migration worked
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getString(newFieldName).getString()).as("Migrated field value")
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en").getString(newFieldName).getString()).as("Migrated field value")
 				.isEqualTo(
 					"first content");
 			assertThat(secondNode).as("Migrated Node").isOf(container).hasTranslation("en");
-			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
-			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getString(newFieldName).getString()).as("Migrated field value")
+			assertThat(boot().contentDao().getFieldContainer(secondNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
+			assertThat(boot().contentDao().getFieldContainer(secondNode, "en").getString(newFieldName).getString()).as("Migrated field value")
 				.isEqualTo(
 					"second content");
 
@@ -480,8 +483,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String nodeUuid = contentUuid();
 		// Add some really long string value to the content
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.getString("title").setString(TestUtils.getRandomHash(40_000));
 			container.getString("teaser").setString(TestUtils.getRandomHash(40_000));
 			tx.success();
@@ -548,7 +551,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode firstNode;
 		String jobAUuid;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			container = createDummySchemaWithChanges(oldFieldName, newFieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -562,7 +565,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			String english = english();
 			HibNode parentNode = folder("2015");
 			firstNode = nodeDao.create(parentNode, user, versionA, project());
-			NodeGraphFieldContainer firstEnglishContainer = boot().contentDao().createGraphFieldContainer(firstNode, english,
+			HibNodeFieldContainer firstEnglishContainer = boot().contentDao().createFieldContainer(firstNode, english,
 				firstNode.getProject().getLatestBranch(), user);
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
@@ -578,8 +581,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// assert that migration worked, but was only performed once
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getString(newFieldName).getString()).as("Migrated field value")
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en").getString(newFieldName).getString()).as("Migrated field value")
 				.isEqualTo(
 					"first content");
 		}
@@ -599,7 +602,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode node;
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			container = createDummySchemaWithChanges(oldFieldName, fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -609,7 +612,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// create a node and publish
 			node = nodeDao.create(folder("2015"), user(), versionA, project());
-			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, english(), project().getLatestBranch(),
+			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english(), project().getLatestBranch(),
 				user());
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
@@ -623,9 +626,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		doSchemaMigration(versionA, versionB);
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			assertThat(boot().contentDao().getGraphFieldContainer(node, "en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
-			assertThat(contentDao.getGraphFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED))
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
+			assertThat(boot().contentDao().getFieldContainer(node, "en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
+			assertThat(contentDao.getFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED))
 				.as("Migrated published")
 				.isOf(versionB).hasVersion("2.0");
 		}
@@ -728,7 +731,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	public void testMigrationFailureInSetup() throws Exception {
 
 		String jobUuid = tx(tx -> {
-			JobDaoWrapper jobDao = tx.jobDao();
+			JobDao jobDao = tx.jobDao();
 			return jobDao.enqueueMicroschemaMigration(user(), initialBranch(), microschemaContainer("vcard").getLatestVersion(),
 				microschemaContainer("vcard").getLatestVersion()).getUuid();
 		});
@@ -751,7 +754,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Run 10 migrations which should all fail
 		for (int i = 0; i < 10; i++) {
 			tx(tx -> {
-				JobDaoWrapper jobDao = tx.jobDao();
+				JobDao jobDao = tx.jobDao();
 				HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 				return jobDao.enqueueSchemaMigration(user(), initialBranch(), version, version);
 			});
@@ -832,20 +835,20 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	private void printVersionInfo(String uuid) {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			System.out.println();
 			HibNode node = boot().nodeDao().findByUuid(project(), uuid);
 			for (GraphFieldContainerEdgeImpl e : toGraph(node).outE("HAS_FIELD_CONTAINER").frameExplicit(GraphFieldContainerEdgeImpl.class)) {
 				NodeGraphFieldContainer container = e.getNodeContainer();
 				System.out.println("Type: " + e.getType() + " " + container.getUuid() + " version: " + container.getVersion());
 
-				NodeGraphFieldContainer prev = container.getPreviousVersion();
+				HibNodeFieldContainer prev = container.getPreviousVersion();
 				while (prev != null) {
 					System.out.println("Prev: " + prev.getUuid() + " version:" + prev.getVersion());
 					prev = prev.getPreviousVersion();
 				}
 
-				for (NodeGraphFieldContainer next : contentDao.getNextVersions(container)) {
+				for (HibNodeFieldContainer next : contentDao.getNextVersions(container)) {
 					System.out.println("Next: " + next.getUuid() + " version:" + next.getVersion());
 				}
 				System.out.println("--");
@@ -926,18 +929,18 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibMicroschema container;
 		HibMicroschemaVersion versionA;
 		HibMicroschemaVersion versionB;
-		MicronodeGraphField firstMicronodeField;
-		MicronodeGraphField secondMicronodeField;
+		HibMicronodeField firstMicronodeField;
+		HibMicronodeField secondMicronodeField;
 		HibNode firstNode;
 		HibNode secondNode;
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			HibUser user = user();
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
@@ -967,7 +970,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
-			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChangeImpl updateFieldChange = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(oldFieldName);
 			updateFieldChange.setRestProperty(SchemaChangeModel.NAME_KEY, newFieldName);
 			updateFieldChange.setPreviousContainerVersion(versionA);
@@ -982,14 +985,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			firstMicronodeField = boot().contentDao().createGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), user())
+			firstMicronodeField = boot().contentDao().createFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), user())
 				.createMicronode(
 					micronodeFieldName, versionA);
 			firstMicronodeField.getMicronode().createString(oldFieldName).setString("first content");
 
 			secondNode = folder("news");
 			secondMicronodeField = boot().contentDao()
-				.createGraphFieldContainer(secondNode, english, secondNode.getProject().getLatestBranch(), user()).createMicronode(
+				.createFieldContainer(secondNode, english, secondNode.getProject().getLatestBranch(), user()).createMicronode(
 					micronodeFieldName, versionA);
 			secondMicronodeField.getMicronode().createString(oldFieldName).setString("second content");
 			tx.success();
@@ -1004,22 +1007,22 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(firstMicronodeField.getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo("first content");
 
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("1.2");
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronode(micronodeFieldName).getMicronode())
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("1.2");
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en").getMicronode(micronodeFieldName).getMicronode())
 				.as("Migrated Micronode").isOf(
 					versionB);
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronode(micronodeFieldName).getMicronode()
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en").getMicronode(micronodeFieldName).getMicronode()
 				.getString(newFieldName).getString()).as(
 					"Migrated field value").isEqualTo("first content");
 
 			assertThat(secondMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(secondMicronodeField.getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo("second content");
 
-			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en")).as("Migrated field container").hasVersion("1.2");
-			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronode(micronodeFieldName).getMicronode())
+			assertThat(boot().contentDao().getFieldContainer(secondNode, "en")).as("Migrated field container").hasVersion("1.2");
+			assertThat(boot().contentDao().getFieldContainer(secondNode, "en").getMicronode(micronodeFieldName).getMicronode())
 				.as("Migrated Micronode").isOf(
 					versionB);
-			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronode(micronodeFieldName).getMicronode()
+			assertThat(boot().contentDao().getFieldContainer(secondNode, "en").getMicronode(micronodeFieldName).getMicronode()
 				.getString(newFieldName).getString())
 					.as(
 						"Migrated field value")
@@ -1039,15 +1042,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibMicroschema container;
 		HibMicroschemaVersion versionA;
 		HibMicroschemaVersion versionB;
-		MicronodeGraphFieldList firstMicronodeListField;
-		MicronodeGraphFieldList secondMicronodeListField;
+		HibMicronodeFieldList firstMicronodeListField;
+		HibMicronodeFieldList secondMicronodeListField;
 		HibNode firstNode;
 		HibNode secondNode;
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
@@ -1076,7 +1079,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
-			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChangeImpl updateFieldChange = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(oldFieldName);
 			updateFieldChange.setRestProperty(SchemaChangeModel.NAME_KEY, newFieldName);
 			updateFieldChange.setPreviousContainerVersion(versionA);
@@ -1093,19 +1096,19 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// Create the new container version with the specified content which will be migrated
 			HibBranch branch = firstNode.getProject().getLatestBranch();
-			NodeGraphFieldContainer oldContainer = contentDao.getGraphFieldContainer(firstNode, en, branch, DRAFT);
-			NodeGraphFieldContainer newContainer = contentDao.createGraphFieldContainer(firstNode, en, branch, user(),
+			HibNodeFieldContainer oldContainer = contentDao.getGraphFieldContainer(firstNode, en, branch, DRAFT);
+			HibNodeFieldContainer newContainer = contentDao.createFieldContainer(firstNode, en, branch, user(),
 				oldContainer,
 				true);
 			firstMicronodeListField = newContainer.createMicronodeFieldList(micronodeFieldName);
-			Micronode micronode = firstMicronodeListField.createMicronode();
+			HibMicronode micronode = firstMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
 			micronode.createString(oldFieldName).setString("first content");
 
 			secondNode = folder("news");
 			HibBranch branch2 = secondNode.getProject().getLatestBranch();
-			NodeGraphFieldContainer oldContainer2 = contentDao.getGraphFieldContainer(secondNode, en, branch2, DRAFT);
-			secondMicronodeListField = contentDao.createGraphFieldContainer(secondNode, en, branch2, user(),
+			HibNodeFieldContainer oldContainer2 = contentDao.getGraphFieldContainer(secondNode, en, branch2, DRAFT);
+			secondMicronodeListField = contentDao.createFieldContainer(secondNode, en, branch2, user(),
 				oldContainer2,
 				true)
 				.createMicronodeFieldList(micronodeFieldName);
@@ -1131,11 +1134,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo(
 				"first content");
 
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("2.1");
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("2.1");
 			assertThat(
-				boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
+				boot().contentDao().getFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 					"Migrated Micronode").isOf(versionB);
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0)
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0)
 				.getMicronode().getString(
 					newFieldName)
 				.getString()).as("Migrated field value").isEqualTo("first content");
@@ -1147,18 +1150,18 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondMicronodeListField.getList().get(1).getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo(
 				"third content");
 
-			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en")).as("Migrated field container").hasVersion("2.1");
+			assertThat(boot().contentDao().getFieldContainer(secondNode, "en")).as("Migrated field container").hasVersion("2.1");
 			assertThat(
-				boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
+				boot().contentDao().getFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 					"Migrated Micronode").isOf(versionB);
-			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(0)
+			assertThat(boot().contentDao().getFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(0)
 				.getMicronode().getString(
 					newFieldName)
 				.getString()).as("Migrated field value").isEqualTo("second content");
 			assertThat(
-				boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
+				boot().contentDao().getFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
 					"Migrated Micronode").isOf(versionB);
-			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(1)
+			assertThat(boot().contentDao().getFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(1)
 				.getMicronode().getString(
 					newFieldName)
 				.getString()).as("Migrated field value").isEqualTo("third content");
@@ -1179,13 +1182,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibMicroschema container;
 		HibMicroschemaVersion versionA;
 		HibMicroschemaVersion versionB;
-		MicronodeGraphFieldList firstMicronodeListField;
+		HibMicronodeFieldList firstMicronodeListField;
 		HibNode firstNode;
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
@@ -1214,7 +1217,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
-			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChangeImpl updateFieldChange = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(oldFieldName);
 			updateFieldChange.setRestProperty(SchemaChangeModel.NAME_KEY, newFieldName);
 			updateFieldChange.setPreviousContainerVersion(versionA);
@@ -1230,16 +1233,16 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// 1.0
-			NodeGraphFieldContainer org = contentDao.getGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(),
+			HibNodeFieldContainer org = contentDao.getGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(),
 				ContainerType.DRAFT);
-			NodeGraphFieldContainer newContainer = contentDao.createGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(),
+			HibNodeFieldContainer newContainer = contentDao.createFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(),
 				user(),
 				org,
 				true);
 
 			firstMicronodeListField = newContainer
 				.createMicronodeFieldList(micronodeFieldName);
-			Micronode micronode = firstMicronodeListField.createMicronode();
+			HibMicronode micronode = firstMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
 			micronode.createString(oldFieldName).setString("first content");
 
@@ -1265,19 +1268,19 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstMicronodeListField.getList().get(1).getMicronode().getString("firstName").getString()).as("Old field value").isEqualTo(
 				"Max");
 
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("2.1");
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("2.1");
 			assertThat(
-				boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
+				boot().contentDao().getFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 					"Migrated Micronode").isOf(versionB);
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0)
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0)
 				.getMicronode().getString(
 					newFieldName)
 				.getString()).as("Migrated field value").isEqualTo("first content");
 
 			assertThat(
-				boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
+				boot().contentDao().getFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
 					"Not migrated Micronode").isOf(microschemaContainer("vcard").getLatestVersion());
-			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(1)
+			assertThat(boot().contentDao().getFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(1)
 				.getMicronode().getString(
 					"firstName")
 				.getString()).as("Not migrated field value").isEqualTo("Max");
@@ -1291,8 +1294,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	private HibSchema createDummySchemaWithChanges(String oldFieldName, String newFieldName, boolean setAddRaw) {
 
 		// create version 1 of the schema
-		HibSchemaVersion versionA = createSchemaVersion(Tx.get());
-		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		HibSchemaVersion versionA = createSchemaVersion(GraphDBTx.getGraphTx());
+		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		container.generateBucketId();
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
@@ -1315,7 +1318,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		versionA.setSchema(schemaA);
 		
 		// create version 2 of the schema (with the field renamed)
-		HibSchemaVersion versionB = createSchemaVersion(Tx.get());
+		HibSchemaVersion versionB = createSchemaVersion(GraphDBTx.getGraphTx());
 		SchemaVersionModel schemaB = new SchemaModelImpl();
 		schemaB.setName("migratedSchema");
 		schemaB.setVersion("2.0");
@@ -1334,7 +1337,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		versionB.setSchemaContainer(container);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.get().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = GraphDBTx.getGraphTx().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(oldFieldName);
 		updateFieldChange.setRestProperty(SchemaChangeModel.NAME_KEY, newFieldName);
 		updateFieldChange.setPreviousContainerVersion(versionA);
@@ -1359,7 +1362,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 */
 	private void doSchemaMigration(HibSchemaVersion versionA, HibSchemaVersion versionB) throws Throwable {
 		String jobUuid = tx(tx -> {
-			JobDaoWrapper jobDao = tx.jobDao();
+			JobDao jobDao = tx.jobDao();
 			return jobDao.enqueueSchemaMigration(user(), project().getLatestBranch(), versionA, versionB).getUuid();
 		});
 		triggerAndWaitForJob(jobUuid);

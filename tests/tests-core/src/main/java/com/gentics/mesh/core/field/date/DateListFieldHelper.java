@@ -6,6 +6,7 @@ import static com.gentics.mesh.util.DateUtils.toISO8601;
 import java.util.Date;
 
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 
@@ -19,7 +20,7 @@ public interface DateListFieldHelper {
 	public static final long OTHERDATEVALUE = fromISO8601(toISO8601(4711000));
 
 	public static final DataProvider FILL = (container, name) -> {
-		DateGraphFieldList field = container.createDateList(name);
+		HibDateFieldList field = container.createDateList(name);
 		field.createDate(DATEVALUE);
 		field.createDate(OTHERDATEVALUE);
 	};

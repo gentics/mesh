@@ -15,7 +15,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -78,7 +78,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		// 4. Assert migrated node
 		try (Tx tx = tx()) {
 			assertNotNull("The change should have been added to the schema.", beforeVersion.getNextChange());
-			NodeGraphFieldContainer fieldContainer = boot().contentDao().getGraphFieldContainer(node, "en");
+			HibNodeFieldContainer fieldContainer = boot().contentDao().getFieldContainer(node, "en");
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
 		}
 	}
@@ -178,7 +178,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		NodeResponse response = createNode("micronodeField", micronode);
 		HibNode node = boot().nodeDao().findByUuid(project(), response.getUuid());
 		assertNotNull("The node should have been created.", node);
-		assertNotNull("The node should have a micronode graph field", boot().contentDao().getGraphFieldContainer(node, "en").getMicronode("micronodeField"));
+		assertNotNull("The node should have a micronode graph field", boot().contentDao().getFieldContainer(node, "en").getMicronode("micronodeField"));
 
 		return node;
 

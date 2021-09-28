@@ -17,7 +17,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -71,7 +71,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				UserDaoWrapper userDao = tx.userDao();
+				UserDao userDao = tx.userDao();
 
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions

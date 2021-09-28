@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -130,7 +130,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				builder.deprecate("Usage of fields in micronodes has changed in /api/v2. See https://github.com/gentics/mesh/issues/317");
 			HibProject project = tx.getProject(context);
 
-			MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+			MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 			List<GraphQLObjectType> schemaTypes = new ArrayList<>();
 			for (HibMicroschema container : microschemaDao.findAll(project)) {
 				HibMicroschemaVersion version = container.getLatestVersion();

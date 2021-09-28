@@ -18,6 +18,6 @@ package com.gentics.mesh.core.db;
 @FunctionalInterface
 public interface TxAction2 {
 
-    void handle(Tx tx) throws Exception;
+    void handle(GraphDBTx tx) throws Exception;
 
 }

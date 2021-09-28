@@ -21,8 +21,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -65,7 +65,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 
 	@Override
 	public HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		UserDaoWrapper userRoot = Tx.get().userDao();
+		UserDao userRoot = Tx.get().userDao();
 		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 
 		HibUser requestUser = ac.getUser();
@@ -86,7 +86,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		EventQueueBatch batch) {
 		microschema.validate();
 
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
 		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 
 		String name = microschema.getName();

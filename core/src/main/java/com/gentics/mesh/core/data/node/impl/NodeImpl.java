@@ -60,19 +60,18 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.BranchParentEntry;
-import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -82,21 +81,23 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -217,15 +218,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// Find the first matching container and fallback to other listed languages
-		NodeGraphFieldContainer container = null;
+		HibNodeFieldContainer container = null;
 		for (String tag : languageTag) {
-			if ((container = getGraphFieldContainer(tag, branchUuid, type)) != null) {
+			if ((container = getFieldContainer(tag, branchUuid, type)) != null) {
 				break;
 			}
 		}
 
 		if (container == null && anyLanguage) {
-			Result<? extends GraphFieldContainerEdgeImpl> traversal = getGraphFieldContainerEdges(branchUuid, type);
+			Result<? extends GraphFieldContainerEdgeImpl> traversal = getFieldContainerEdges(branchUuid, type);
 
 			if (traversal.hasNext()) {
 				container = traversal.next().getNodeContainer();
@@ -254,7 +255,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// Find the first matching container and fallback to other listed languages
-		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, branchUuid, type);
+		HibNodeFieldContainer container = getFieldContainer(languageTag, branchUuid, type);
 		if (container != null) {
 			container.postfixSegmentFieldValue();
 		}
@@ -262,7 +263,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		NodeDao nodeDao = GraphDBTx.getGraphTx().nodeDao();
 
 		// We want to avoid rending the path again for nodes which we have already handled.
 		// Thus utilise the action context data map to retrieve already handled paths.
@@ -302,7 +303,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			StringBuilder builder = new StringBuilder();
 
 			// Append the prefix first
-			BranchDaoWrapper branchDao = Tx.get().branchDao();
+			BranchDao branchDao = GraphDBTx.getGraphTx().branchDao();
 			HibBranch branch = branchDao.findByUuid(getProject(), branchUuid);
 			if (branch != null) {
 				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
@@ -338,8 +339,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private String getUrlFieldPath(String branchUuid, ContainerType type, String... languages) {
 		return Stream.of(languages)
-			.flatMap(language -> Stream.ofNullable(getGraphFieldContainer(language, branchUuid, type)))
-			.flatMap(NodeGraphFieldContainer::getUrlFieldValues)
+			.flatMap(language -> Stream.ofNullable(getFieldContainer(language, branchUuid, type)))
+			.flatMap(HibNodeFieldContainer::getUrlFieldValues)
 			.findFirst()
 			.orElse(null);
 	}
@@ -371,7 +372,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// A draft node can't have any published child nodes.
 		if (!isPublished) {
 
-			for (Node node : getChildren(branchUuid)) {
+			for (HibNode node : getChildren(branchUuid)) {
 				NodeImpl impl = (NodeImpl) node;
 				if (impl.hasPublishedContent(branchUuid)) {
 					log.error("Found published field container for node {" + node.getUuid() + "} in branch {" + branchUuid + "}. Node is child of {"
@@ -397,14 +398,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Result<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
+	public Result<HibNodeFieldContainer> getFieldContainers(String branchUuid, ContainerType type) {
 		Result<GraphFieldContainerEdgeImpl> it = GraphFieldContainerEdgeImpl.findEdges(this.getId(), branchUuid, type);
 		Iterator<NodeGraphFieldContainer> it2 = it.stream().map(e -> e.getNodeContainer()).iterator();
 		return new TraversalResult<>(it2);
 	}
 
 	@Override
-	public Result<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type) {
+	public Result<HibNodeFieldContainer> getFieldContainers(ContainerType type) {
 		return new TraversalResult<>(
 			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
 				.frameExplicit(NodeGraphFieldContainerImpl.class));
@@ -412,38 +413,38 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public long getGraphFieldContainerCount() {
+	public long getFieldContainerCount() {
 		return outE(HAS_FIELD_CONTAINER).or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, DRAFT.getCode()), e -> e.traversal()
 			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, PUBLISHED.getCode())).inV().count();
 	}
 
 	@Override
-	public NodeGraphFieldContainer getLatestDraftFieldContainer(String languageTag) {
+	public HibNodeFieldContainer getLatestDraftFieldContainer(String languageTag) {
 		return getGraphFieldContainer(languageTag, getProject().getLatestBranch(), DRAFT, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag, HibBranch branch, ContainerType type) {
+	public HibNodeFieldContainer getFieldContainer(String languageTag, HibBranch branch, ContainerType type) {
 		return getGraphFieldContainer(languageTag, branch, type, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag) {
+	public HibNodeFieldContainer getFieldContainer(String languageTag) {
 		return getGraphFieldContainer(languageTag, getProject().getLatestBranch().getUuid(), DRAFT, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type) {
+	public HibNodeFieldContainer getFieldContainer(String languageTag, String branchUuid, ContainerType type) {
 		return getGraphFieldContainer(languageTag, branchUuid, type, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser editor) {
-		return createGraphFieldContainer(languageTag, branch, editor, null, true);
+	public HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser editor) {
+		return createFieldContainer(languageTag, branch, editor, null, true);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original,
+	public HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
 		boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
@@ -528,7 +529,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param type
 	 * @return
 	 */
-	protected Result<? extends GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
+	protected Result<? extends GraphFieldContainerEdgeImpl> getFieldContainerEdges(String branchUuid, ContainerType type) {
 		return GraphFieldContainerEdgeImpl.findEdges(getId(), branchUuid, type);
 	}
 
@@ -564,7 +565,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Result<Node> getChildren() {
+	public Result<HibNode> getChildren() {
 		return new TraversalResult<>(graph.frameExplicit(db().getVertices(
 			NodeImpl.class,
 			new String[] { PARENTS_KEY_PROPERTY },
@@ -572,7 +573,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Result<Node> getChildren(String branchUuid) {
+	public Result<HibNode> getChildren(String branchUuid) {
 		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid), NodeImpl.class));
 	}
 
@@ -586,8 +587,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
 		HibUser user = ac.getUser();
-		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.userDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		UserDao userDao = tx.userDao();
 		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid()))
 			.filter(node -> {
 				Object id = node.getId();
@@ -611,7 +612,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void setParentNode(String branchUuid, Node parent) {
+	public void setParentNode(String branchUuid, HibNode parent) {
 		String parentUuid = parent.getUuid();
 		removeParent(branchUuid);
 		addToStringSetProperty(PARENTS_KEY_PROPERTY, parentUuid);
@@ -629,7 +630,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
+	public HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
 		return create(creator, schemaVersion, project, project.getLatestBranch());
 	}
 
@@ -637,7 +638,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
+	public HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
 		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 				branch.getName(), getUuid()));
@@ -667,7 +668,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 		// Increment level for each node transformation to avoid stackoverflow situations
@@ -772,7 +773,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String[] langs = nodeParameters.getLanguages();
 		if (langs != null) {
 			for (String languageTag : langs) {
-				Iterator<?> it = Tx.get().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
+				Iterator<?> it = GraphDBTx.getGraphTx().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
 				if (!it.hasNext()) {
 					throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 				}
@@ -787,12 +788,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// First check whether the NGFC for the requested language,branch and version could be found.
-		NodeGraphFieldContainer fieldContainer = findVersion(requestedLanguageTags, branch.getUuid(), versioiningParameters.getVersion());
+		HibNodeFieldContainer fieldContainer = findVersion(requestedLanguageTags, branch.getUuid(), versioiningParameters.getVersion());
 		if (fieldContainer == null) {
 			// If a published version was requested, we check whether any
 			// published language variant exists for the node, if not, response
 			// with NOT_FOUND
-			if (forVersion(versioiningParameters.getVersion()) == PUBLISHED && !getGraphFieldContainers(branch, PUBLISHED).iterator().hasNext()) {
+			if (forVersion(versioiningParameters.getVersion()) == PUBLISHED && !getFieldContainers(branch, PUBLISHED).iterator().hasNext()) {
 				log.error("Could not find field container for languages {" + requestedLanguageTags + "} and branch {" + branch.getUuid()
 					+ "} and version params version {" + versioiningParameters.getVersion() + "}, branch {" + branch.getUuid() + "}");
 				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_version", getUuid(), branch.getUuid());
@@ -869,7 +870,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					// boolean expandField =
 					// fieldsToExpand.contains(fieldEntry.getName()) ||
 					// ac.getExpandAllFlag();
-					Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
+					Field restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
 					if (fieldEntry.isRequired() && restField == null) {
 						// TODO i18n
 						// throw error(BAD_REQUEST, "The field {" +
@@ -905,9 +906,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setChildrenInfo(InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
-		for (Node child : getChildren(branch.getUuid())) {
+		for (HibNode child : getChildren(branch.getUuid())) {
 			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
 				String schemaName = child.getSchemaContainer().getName();
 				NodeChildrenInfo info = childrenInfo.get(schemaName);
@@ -956,7 +957,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 
-			String branchUuid = Tx.get().getBranch(ac, getProject()).getUuid();
+			String branchUuid = GraphDBTx.getGraphTx().getBranch(ac, getProject()).getUuid();
 			ContainerType type = forVersion(versioiningParameters.getVersion());
 
 			LinkType linkType = ac.getNodeParameters().getResolveLinks();
@@ -973,12 +974,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
-		String branchUuid = Tx.get().getBranch(ac, getProject()).getUuid();
+		String branchUuid = GraphDBTx.getGraphTx().getBranch(ac, getProject()).getUuid();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Map<String, String> languagePaths = new HashMap<>();
 		WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-		for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
+		for (HibNodeFieldContainer currentFieldContainer : getFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
 			String currLanguage = currentFieldContainer.getLanguageTag();
 			String languagePath = linkReplacer.resolve(ac, branchUuid, type, this, linkType, true, currLanguage);
 			languagePaths.put(currLanguage, languagePath);
@@ -1005,8 +1006,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	private Stream<HibNode> getBreadcrumbNodeStream(InternalActionContext ac) {
-		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		NodeDao nodeDao = tx.nodeDao();
 
 		String branchUuid = tx.getBranch(ac, getProject()).getUuid();
 		HibNode current = this;
@@ -1026,7 +1027,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		// TODO assure that the schema version is correct
 		if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 			throw error(BAD_REQUEST, "navigation_error_no_container");
@@ -1048,7 +1049,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public NodeVersionsResponse transformToVersionList(InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
-		getGraphFieldContainers(Tx.get().getBranch(ac), DRAFT).forEach(c -> {
+		getFieldContainers(GraphDBTx.getGraphTx().getBranch(ac), DRAFT).forEach(c -> {
 			versions.put(c.getLanguageTag(), c.versions().stream()
 				.map(v -> v.transformToVersionInfo(ac))
 				.collect(Collectors.toList()));
@@ -1078,14 +1079,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		List<Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+		List<HibNode> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
 			return builder.toString();
 		}
-		for (Node child : nodes) {
+		for (HibNode child : nodes) {
 			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 				builder.append(buildNavigationEtagKey(ac, (NodeImpl) child, maxDepth, level + 1, branchUuid, type));
 			} else if (parameters.isIncludeAll()) {
@@ -1118,7 +1119,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private NavigationResponse buildNavigationResponse(InternalActionContext ac, NodeImpl node, int maxDepth, int level,
 		NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+		List<HibNode> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
 		List<NavigationResponse> responses = new ArrayList<>();
 
 		NodeResponse response = node.transformToRestSync(ac, 0);
@@ -1133,7 +1134,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		NavigationParameters parameters = new NavigationParametersImpl(ac);
 		// Add children
-		for (Node child : nodes) {
+		for (HibNode child : nodes) {
 			// TODO assure that the schema version is correct?
 			// TODO also allow navigations over containers
 			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
@@ -1159,7 +1160,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeReference transformToReference(InternalActionContext ac) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 
 		NodeReference nodeReference = new NodeReference();
@@ -1193,7 +1194,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		// Create the rest field and populate the fields
 		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
 		String branchUuid = tx.getBranch(ac, getProject()).getUuid();
@@ -1215,10 +1216,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Map<String, PublishStatusModel> getLanguageInfo(InternalActionContext ac) {
 		Map<String, PublishStatusModel> languages = new HashMap<>();
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 
-		getGraphFieldContainers(branch, PUBLISHED).stream().forEach(c -> {
+		getFieldContainers(branch, PUBLISHED).stream().forEach(c -> {
 
 			String date = DateUtils.toISO8601(c.getLastEditedTimestamp(), 0);
 
@@ -1233,7 +1234,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			languages.put(c.getLanguageTag(), status);
 		});
 
-		getGraphFieldContainers(branch, DRAFT).stream().filter(c -> !languages.containsKey(c.getLanguageTag())).forEach(c -> {
+		getFieldContainers(branch, DRAFT).stream().filter(c -> !languages.containsKey(c.getLanguageTag())).forEach(c -> {
 			PublishStatusModel status = new PublishStatusModel().setPublished(false).setVersion(c.getVersion().toString());
 			languages.put(c.getLanguageTag(), status);
 		});
@@ -1242,16 +1243,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, BulkActionContext bac) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 		String branchUuid = branch.getUuid();
 
-		List<? extends NodeGraphFieldContainer> unpublishedContainers = getGraphFieldContainers(branch, ContainerType.DRAFT).stream().filter(c -> !c
+		List<HibNodeFieldContainer> unpublishedContainers = getFieldContainers(branch, ContainerType.DRAFT).stream().filter(c -> !c
 			.isPublished(branchUuid)).collect(Collectors.toList());
 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> {
-			NodeGraphFieldContainer newVersion = publish(ac, c.getLanguageTag(), branch, ac.getUser());
+			HibNodeFieldContainer newVersion = publish(ac, c.getLanguageTag(), branch, ac.getUser());
 			bac.add(newVersion.onPublish(branchUuid));
 		});
 		assertPublishConsistency(ac, branch);
@@ -1262,7 +1263,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// level the consistency is correct.
 		PublishParameters parameters = ac.getPublishParameters();
 		if (parameters.isRecursive()) {
-			for (Node node : getChildren(branchUuid)) {
+			for (HibNode node : getChildren(branchUuid)) {
 				node.publish(ac, bac);
 			}
 		}
@@ -1272,7 +1273,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
 		// Handle recursion first to start at the leaves
 		if (parameters.isRecursive()) {
-			for (Node node : getChildren(branch.getUuid())) {
+			for (HibNode node : getChildren(branch.getUuid())) {
 				NodeImpl impl = (NodeImpl) node;
 				impl.takeOffline(ac, bac, branch, parameters);
 			}
@@ -1280,7 +1281,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		String branchUuid = branch.getUuid();
 
-		Result<? extends GraphFieldContainerEdgeImpl> publishEdges = getGraphFieldContainerEdges(branchUuid, PUBLISHED);
+		Result<? extends GraphFieldContainerEdgeImpl> publishEdges = getFieldContainerEdges(branchUuid, PUBLISHED);
 
 		// Remove the published edge for each found container
 		publishEdges.forEach(edge -> {
@@ -1299,7 +1300,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 		PublishParameters parameters = ac.getPublishParameters();
 		takeOffline(ac, bac, branch, parameters);
@@ -1307,10 +1308,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 
-		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
+		HibNodeFieldContainer container = getFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
 		if (container != null) {
 			String date = container.getLastEditedDate();
 			PublishStatusModel status = new PublishStatusModel();
@@ -1323,7 +1324,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			status.setPublishDate(date);
 			return status;
 		} else {
-			container = getGraphFieldContainer(languageTag, branch.getUuid(), DRAFT);
+			container = getFieldContainer(languageTag, branch.getUuid(), DRAFT);
 			if (container == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
@@ -1333,12 +1334,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, BulkActionContext bac, String languageTag) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		HibBranch branch = tx.getBranch(ac, getProject());
 		String branchUuid = branch.getUuid();
 
 		// get the draft version of the given language
-		NodeGraphFieldContainer draftVersion = getGraphFieldContainer(languageTag, branchUuid, DRAFT);
+		HibNodeFieldContainer draftVersion = getFieldContainer(languageTag, branchUuid, DRAFT);
 
 		// if not existent -> NOT_FOUND
 		if (draftVersion == null) {
@@ -1351,7 +1352,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// TODO check whether all required fields are filled, if not -> unable to publish
-		NodeGraphFieldContainer publishedContainer = publish(ac, draftVersion.getLanguageTag(), branch, ac.getUser());
+		HibNodeFieldContainer publishedContainer = publish(ac, draftVersion.getLanguageTag(), branch, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
 		bac.add(publishedContainer.onPublish(branchUuid));
 	}
@@ -1361,7 +1362,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String branchUuid = branch.getUuid();
 
 		// Locate the published container
-		NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, branchUuid, PUBLISHED);
+		HibNodeFieldContainer published = getFieldContainer(languageTag, branchUuid, PUBLISHED);
 		if (published == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
@@ -1375,7 +1376,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void setPublished(InternalActionContext ac, NodeGraphFieldContainer container, String branchUuid) {
+	public void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid) {
 		String languageTag = container.getLanguageTag();
 		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
 
@@ -1394,14 +1395,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		if (ac.isPurgeAllowed()) {
 			// Check whether a previous draft can be purged.
-			NodeGraphFieldContainer prev = container.getPreviousVersion();
+			HibNodeFieldContainer prev = container.getPreviousVersion();
 			if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
 				prev.purge();
 			}
 		}
 
 		// create new published edge
-		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
 		edge.setLanguageTag(languageTag);
 		edge.setBranchUuid(branchUuid);
 		edge.setType(PUBLISHED);
@@ -1409,11 +1410,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
+	public HibNodeFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version
-		NodeGraphFieldContainer newVersion = createGraphFieldContainer(languageTag, branch, user);
+		HibNodeFieldContainer newVersion = createFieldContainer(languageTag, branch, user);
 		newVersion.setVersion(newVersion.getVersion().nextPublished());
 
 		setPublished(ac, newVersion, branchUuid);
@@ -1421,8 +1422,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer findVersion(List<String> languageTags, String branchUuid, String version) {
-		NodeGraphFieldContainer fieldContainer = null;
+	public HibNodeFieldContainer findVersion(List<String> languageTags, String branchUuid, String version) {
+		HibNodeFieldContainer fieldContainer = null;
 
 		// TODO refactor the type handling and don't return INITIAL.
 		ContainerType type = forVersion(version);
@@ -1430,7 +1431,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		for (String languageTag : languageTags) {
 
 			// Don't start the version lookup using the initial version. Instead start at the end of the chain and use the DRAFT version instead.
-			fieldContainer = getGraphFieldContainer(languageTag, branchUuid, type == INITIAL ? DRAFT : type);
+			fieldContainer = getFieldContainer(languageTag, branchUuid, type == INITIAL ? DRAFT : type);
 
 			// Traverse the chain downwards and stop once we found our target version or we reached the end.
 			if (fieldContainer != null && type == INITIAL) {
@@ -1451,7 +1452,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public List<String> getAvailableLanguageNames() {
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge
-		for (GraphFieldContainer container : getDraftGraphFieldContainers()) {
+		for (HibNodeFieldContainer container : getDraftFieldContainers()) {
 			languageTags.add(container.getLanguageTag());
 		}
 		return languageTags;
@@ -1471,14 +1472,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		if (recursive) {
 			// No need to check the branch since this delete must affect all branches
-			for (Node child : getChildren()) {
-				child.delete(bac);
+			for (HibNode child : getChildren()) {
+				toGraph(child).delete(bac);
 				bac.process();
 			}
 		}
 
 		// Delete all initial containers (which will delete all containers)
-		for (NodeGraphFieldContainer container : getGraphFieldContainers(INITIAL)) {
+		for (HibNodeFieldContainer container : getFieldContainers(INITIAL)) {
 			container.delete(bac);
 		}
 		if (log.isDebugEnabled()) {
@@ -1493,7 +1494,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Stream<NodeGraphField> getInboundReferences() {
+	public Stream<HibNodeField> getInboundReferences() {
 		return toStream(inE(HAS_FIELD, HAS_ITEM)
 			.has(NodeGraphFieldImpl.class)
 			.frameExplicit(NodeGraphFieldImpl.class));
@@ -1508,13 +1509,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Set<String> handledNodeUuids = new HashSet<>();
 
 		getInboundReferences()
-			.flatMap(NodeGraphField::getReferencingContents)
+			.flatMap(HibNodeField::getReferencingContents)
 			.forEach(nodeContainer -> {
-				for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class)) {
+				for (GraphFieldContainerEdgeImpl edge : toGraph(nodeContainer).inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class)) {
 					ContainerType type = edge.getType();
 					// Only handle published or draft contents
 					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-						Node node = nodeContainer.getNode();
+						HibNode node = nodeContainer.getNode();
 						String uuid = node.getUuid();
 						String languageTag = nodeContainer.getLanguageTag();
 						String branchUuid = edge.getBranchUuid();
@@ -1541,7 +1542,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// 1. Remove subfolders from branch
 		String branchUuid = branch.getUuid();
 
-		for (Node child : getChildren(branchUuid)) {
+		for (HibNode child : getChildren(branchUuid)) {
 			if (!parameters.isRecursive()) {
 				throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
 			}
@@ -1549,12 +1550,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// 2. Delete all language containers
-		for (NodeGraphFieldContainer container : getGraphFieldContainers(branch, DRAFT)) {
+		for (HibNodeFieldContainer container : getFieldContainers(branch, DRAFT)) {
 			deleteLanguageContainer(ac, branch, container.getLanguageTag(), bac, false);
 		}
 
 		// 3. Now check if the node has no more field containers in any branch. We can delete it in those cases
-		if (getGraphFieldContainerCount() == 0) {
+		if (getFieldContainerCount() == 0) {
 			delete(bac);
 		} else {
 			removeParent(branchUuid);
@@ -1589,20 +1590,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 	}
 
-	private Stream<Node> getChildren(HibUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
+	private Stream<HibNode> getChildren(HibUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		UserDaoWrapper userRoot = Tx.get().userDao();
+		UserDao userRoot = GraphDBTx.getGraphTx().userDao();
 
-		Predicate<Node> languageFilter = languageTags == null || languageTags.isEmpty()
+		Predicate<HibNode> languageFilter = languageTags == null || languageTags.isEmpty()
 			? item -> true
-			: item -> languageTags.stream().anyMatch(languageTag -> item.getGraphFieldContainer(languageTag, branchUuid, type) != null);
+			: item -> languageTags.stream().anyMatch(languageTag -> item.getFieldContainer(languageTag, branchUuid, type) != null);
 
 		return getChildren(branchUuid).stream()
 			.filter(languageFilter.and(item -> userRoot.hasPermission(requestUser, item, perm)));
 	}
 
 	@Override
-	public Page<Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
+	public Page<HibNode> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingInfo) {
 		return new DynamicTransformableStreamPageImpl<>(getChildren(ac.getUser(), branchUuid, languageTags, type), pagingInfo);
 	}
@@ -1614,11 +1615,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		if (recursive) {
 			// We don't need to filter by branch. Branch nodes can't have dedicated perms
-			for (Node child : getChildren()) {
+			for (HibNode child : getChildren()) {
 				child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
@@ -1630,7 +1631,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), Tx.get().getBranch(ac, getProject()).getUuid(),
+		HibNodeFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), GraphDBTx.getGraphTx().getBranch(ac, getProject()).getUuid(),
 			versioningParameters
 				.getVersion());
 		if (container == null) {
@@ -1693,20 +1694,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		nodeParameters.setLanguages(languageTag);
 
-		HibLanguage language = Tx.get().languageDao().findByLanguageTag(languageTag);
+		HibLanguage language = GraphDBTx.getGraphTx().languageDao().findByLanguageTag(languageTag);
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 		}
-		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		NodeDao nodeDao = tx.nodeDao();
 		HibBranch branch = tx.getBranch(ac, getProject());
-		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(languageTag, branch, DRAFT);
+		HibNodeFieldContainer latestDraftVersion = getFieldContainer(languageTag, branch, DRAFT);
 
 		// Check whether this is the first time that an update for the given language and branch occurs. In this case a new container must be created.
 		// This means that no conflict check can be performed. Conflict checks only occur for updates on existing contents.
 		if (latestDraftVersion == null) {
 			// Create a new field container
-			latestDraftVersion = createGraphFieldContainer(languageTag, branch, ac.getUser());
+			latestDraftVersion = createFieldContainer(languageTag, branch, ac.getUser());
 
 			// Check whether the node has a parent node in this branch, if not, the request is supposed to be a create request
 			// and we get the parent node from this create request
@@ -1745,7 +1746,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Load the base version field container in order to create the diff
-			NodeGraphFieldContainer baseVersionContainer = findVersion(requestModel.getLanguage(), branch.getUuid(), version);
+			HibNodeFieldContainer baseVersionContainer = findVersion(requestModel.getLanguage(), branch.getUuid(), version);
 			if (baseVersionContainer == null) {
 				throw error(BAD_REQUEST, "node_error_draft_not_found", version, requestModel.getLanguage());
 			}
@@ -1793,7 +1794,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!requestModel.getFields().isEmpty()) {
 
 				// Create new field container as clone of the existing
-				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language.getLanguageTag(), branch, ac.getUser(),
+				HibNodeFieldContainer newDraftVersion = createFieldContainer(language.getLanguageTag(), branch, ac.getUser(),
 					latestDraftVersion, true);
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
@@ -1813,7 +1814,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		List<HibTag> tags = getTagsToSet(ac, batch);
 		HibBranch branch = tx.getBranch(ac);
 		applyTags(branch, tags, batch);
@@ -1823,7 +1824,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
-		Tx tx = Tx.get();
+		Tx tx = GraphDBTx.getGraphTx();
 		List<HibTag> tags = getTagsToSet(list, ac, batch);
 		HibBranch branch = tx.getBranch(ac);
 		applyTags(branch, tags, batch);
@@ -1850,9 +1851,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void moveTo(InternalActionContext ac, Node targetNode, EventQueueBatch batch) {
-		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+	public void moveTo(InternalActionContext ac, HibNode targetNode, EventQueueBatch batch) {
+		Tx tx = GraphDBTx.getGraphTx();
+		NodeDao nodeDao = tx.nodeDao();
 
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
@@ -1882,12 +1883,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		setParentNode(branchUuid, targetNode);
 
 		// Update published graph field containers
-		getGraphFieldContainers(branchUuid, PUBLISHED).stream().forEach(container -> {
+		getFieldContainers(branchUuid, PUBLISHED).stream().forEach(container -> {
 			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
 		});
 
 		// Update draft graph field containers
-		getGraphFieldContainers(branchUuid, DRAFT).stream().forEach(container -> {
+		getFieldContainers(branchUuid, DRAFT).stream().forEach(container -> {
 			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
 		});
 		batch.add(onNodeMoved(branchUuid, targetNode));
@@ -1899,13 +1900,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		boolean failForLastContainer) {
 
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
-		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, branch, PUBLISHED);
+		HibNodeFieldContainer container = getFieldContainer(languageTag, branch, PUBLISHED);
 		if (container != null) {
 			takeOffline(ac, bac, branch, languageTag);
 		}
 
 		// 2. Load the draft container and remove it from the branch
-		container = getGraphFieldContainer(languageTag, branch, DRAFT);
+		container = getFieldContainer(languageTag, branch, DRAFT);
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", languageTag);
 		}
@@ -1913,27 +1914,27 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
 		// starting with the old draft, delete all GFC that have no next and are not draft (for other branches)
-		NodeGraphFieldContainer dangling = container;
+		HibNodeFieldContainer dangling = container;
 		while (dangling != null && !dangling.isDraft() && !dangling.hasNextVersion()) {
-			NodeGraphFieldContainer toDelete = dangling;
+			HibNodeFieldContainer toDelete = dangling;
 			dangling = toDelete.getPreviousVersion();
 			toDelete.delete(bac);
 		}
 
-		NodeGraphFieldContainer initial = getGraphFieldContainer(languageTag, branch, INITIAL);
+		HibNodeFieldContainer initial = getFieldContainer(languageTag, branch, INITIAL);
 		if (initial != null) {
 			// Remove the initial edge
-			initial.inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())
+			toGraph(initial).inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).removeAll();
 
 			// starting with the old initial, delete all GFC that have no previous and are not initial (for other branches)
 			dangling = initial;
 			while (dangling != null && !dangling.isInitial() && !dangling.hasPreviousVersion()) {
-				NodeGraphFieldContainer toDelete = dangling;
+				HibNodeFieldContainer toDelete = dangling;
 				// since the GFC "toDelete" was only used by this branch, it can not have more than one "next" GFC
 				// (multiple "next" would have to belong to different branches, and for every branch, there would have to be
 				// an INITIAL, which would have to be either this GFC or a previous)
-				dangling = ((ContentDaoWrapper) mesh().boot().contentDao()).getNextVersions(toDelete).iterator().next();
+				dangling = mesh().boot().contentDao().getNextVersions(toDelete).iterator().next();
 				toDelete.delete(bac, false);
 			}
 		}
@@ -1941,8 +1942,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// 3. Check whether this was be the last container of the node for this branch
 		DeleteParameters parameters = ac.getDeleteParameters();
 		if (failForLastContainer) {
-			Result<? extends NodeGraphFieldContainer> draftContainers = getGraphFieldContainers(branch.getUuid(), DRAFT);
-			Result<? extends NodeGraphFieldContainer> publishContainers = getGraphFieldContainers(branch.getUuid(), PUBLISHED);
+			Result<HibNodeFieldContainer> draftContainers = getFieldContainers(branch.getUuid(), DRAFT);
+			Result<HibNodeFieldContainer> publishContainers = getFieldContainers(branch.getUuid(), PUBLISHED);
 			boolean wasLastContainer = !draftContainers.iterator().hasNext() && !publishContainers.iterator().hasNext();
 
 			if (!parameters.isRecursive() && wasLastContainer) {
@@ -1960,11 +1961,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
 
 		// Check the different language versions
-		for (NodeGraphFieldContainer container : getGraphFieldContainers(branchUuid, type)) {
+		for (HibNodeFieldContainer container : getFieldContainers(branchUuid, type)) {
 			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
 			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name
-			StringGraphField field = container.getString(segmentFieldName);
+			HibStringField field = container.getString(segmentFieldName);
 			if (field != null) {
 				String fieldValue = field.getString();
 				if (segment.equals(fieldValue)) {
@@ -1974,7 +1975,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// No luck yet - lets check whether a binary field matches the
 			// segmentField
-			BinaryGraphField binaryField = container.getBinary(segmentFieldName);
+			HibBinaryField binaryField = container.getBinary(segmentFieldName);
 			if (binaryField == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
@@ -2001,7 +2002,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			log.debug("Resolving for path segment {" + segment + "}");
 		}
 
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(this, segment);
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
 		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
@@ -2033,10 +2034,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.userDao();
-		TagDaoWrapper tagDao = tx.tagDao();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		Tx tx = GraphDBTx.getGraphTx();
+		UserDao userDao = tx.userDao();
+		TagDao tagDao = tx.tagDao();
+		NodeDao nodeDao = tx.nodeDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 
@@ -2046,7 +2047,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Node parentNode = getParentNode(branch.getUuid());
-		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(),
+		HibNodeFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(),
 			ac.getVersioningParameters()
 				.getVersion());
 
@@ -2105,7 +2106,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// branch specific children
-		for (Node child : getChildren(branch.getUuid())) {
+		for (HibNode child : getChildren(branch.getUuid())) {
 			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
 				keyBuilder.append("-");
 				keyBuilder.append(child.getSchemaContainer().getName());
@@ -2113,10 +2114,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// Publish state & availableLanguages
-		for (NodeGraphFieldContainer c : getGraphFieldContainers(branch, PUBLISHED)) {
+		for (HibNodeFieldContainer c : getFieldContainers(branch, PUBLISHED)) {
 			keyBuilder.append(c.getLanguageTag() + "published");
 		}
-		for (NodeGraphFieldContainer c : getGraphFieldContainers(branch, DRAFT)) {
+		for (HibNodeFieldContainer c : getFieldContainers(branch, DRAFT)) {
 			keyBuilder.append(c.getLanguageTag() + "draft");
 		}
 
@@ -2152,7 +2153,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			keyBuilder.append(path);
 
 			// languagePaths
-			for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
+			for (HibNodeFieldContainer currentFieldContainer : getFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
 				String currLanguage = currentFieldContainer.getLanguageTag();
 				keyBuilder.append(currLanguage + "=" + linkReplacer.resolve(ac, branch.getUuid(), type, this, ac.getNodeParameters()
 					.getResolveLinks(), currLanguage));
@@ -2188,7 +2189,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param target
 	 * @return
 	 */
-	public NodeMovedEventModel onNodeMoved(String branchUuid, Node target) {
+	public NodeMovedEventModel onNodeMoved(String branchUuid, HibNode target) {
 		NodeMovedEventModel model = new NodeMovedEventModel();
 		model.setEvent(NODE_MOVED);
 		model.setBranchUuid(branchUuid);

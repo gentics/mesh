@@ -16,7 +16,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -83,7 +82,7 @@ public class MeshEntities {
 	public final MeshEntity<HibTagFamily> tagFamily;
 	public final MeshEntity<HibSchema> schema;
 	public final MeshEntity<HibMicroschema> microschema;
-	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
+	public final MeshEntity<HibNodeFieldContainer> nodeContent;
 	private final Map<ElementType, MeshEntity<?>> entities;
 
 	@Inject
@@ -206,14 +205,14 @@ public class MeshEntities {
 			.flatMap(family -> findElementByUuid(boot.tagDao(), family, eventModel.getUuid()));
 	}
 
-	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
-		ContentDaoWrapper contentDao = (ContentDaoWrapper) boot.contentDao();
+	private Optional<HibNodeFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
+		ContentDao contentDao = boot.contentDao();
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
 		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(boot.nodeDao(), project, eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
-				contentDao.getGraphFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
+				contentDao.getFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
 			));
 	}
 
@@ -328,7 +327,7 @@ public class MeshEntities {
 		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
 		return findElementByUuidStream(boot.nodeDao(), project, nodeUuid)
 		.flatMap(node -> Util.latestVersionTypes()
-		.flatMap(type -> ((ContentDaoWrapper) boot.contentDao()).getGraphFieldContainers(node, branch, type).stream()
+		.flatMap(type -> boot.contentDao().getFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
 			ContentDao.composeIndexName(
 				project.getUuid(),

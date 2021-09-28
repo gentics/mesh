@@ -25,24 +25,25 @@ import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.LanguageDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.AbstractTx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
@@ -105,7 +106,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			this.commitTimer = metrics.timer(COMMIT_TIME);
 		}
 		// Check if an active transaction already exists.
-		Tx activeTx = Tx.get();
+		GraphDBTx activeTx = GraphDBTx.getGraphTx();
 		if (activeTx != null) {
 			// TODO Use this spot here to check for nested / wrapped transactions. Nested Tx must not be used when using MDM / Hibernate
 			isWrapped = true;
@@ -217,7 +218,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	// DAOs
 
 	@Override
-	public UserDaoWrapper userDao() {
+	public UserDao userDao() {
 		return daos.userDao();
 	}
 
@@ -267,67 +268,67 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public GroupDaoWrapper groupDao() {
+	public GroupDao groupDao() {
 		return daos.groupDao();
 	}
 
 	@Override
-	public RoleDaoWrapper roleDao() {
+	public RoleDao roleDao() {
 		return daos.roleDao();
 	}
 
 	@Override
-	public ProjectDaoWrapper projectDao() {
+	public ProjectDao projectDao() {
 		return daos.projectDao();
 	}
 
 	@Override
-	public JobDaoWrapper jobDao() {
+	public JobDao jobDao() {
 		return daos.jobDao();
 	}
 
 	@Override
-	public LanguageDaoWrapper languageDao() {
+	public LanguageDao languageDao() {
 		return daos.languageDao();
 	}
 
 	@Override
-	public SchemaDaoWrapper schemaDao() {
+	public SchemaDao schemaDao() {
 		return daos.schemaDao();
 	}
 
 	@Override
-	public TagDaoWrapper tagDao() {
+	public TagDao tagDao() {
 		return daos.tagDao();
 	}
 
 	@Override
-	public TagFamilyDaoWrapper tagFamilyDao() {
+	public TagFamilyDao tagFamilyDao() {
 		return daos.tagFamilyDao();
 	}
 
 	@Override
-	public MicroschemaDaoWrapper microschemaDao() {
+	public MicroschemaDao microschemaDao() {
 		return daos.microschemaDao();
 	}
 
 	@Override
-	public BinaryDaoWrapper binaryDao() {
+	public BinaryDao binaryDao() {
 		return daos.binaryDao();
 	}
 
 	@Override
-	public BranchDaoWrapper branchDao() {
+	public BranchDao branchDao() {
 		return daos.branchDao();
 	}
 
 	@Override
-	public NodeDaoWrapper nodeDao() {
+	public NodeDao nodeDao() {
 		return daos.nodeDao();
 	}
 
 	@Override
-	public ContentDaoWrapper contentDao() {
+	public ContentDao contentDao() {
 		return daos.contentDao();
 	}
 

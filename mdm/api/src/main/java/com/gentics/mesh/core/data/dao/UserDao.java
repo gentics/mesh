@@ -5,6 +5,7 @@ import java.util.Set;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
@@ -289,4 +290,24 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode,
 		InternalPermission... toGrant);
 
+	/**
+	 * Check the read permission on the given container and return false if the needed permission to read the container is not set. This method will not return
+	 * false if the user has READ permission or READ_PUBLISH permission on a published node.
+	 *
+	 * @param user
+	 * @param container
+	 * @param branchUuid
+	 * @param requestedVersion
+	 */
+	boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion);
+
+	/**
+	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
+	 * user has READ permission or READ_PUBLISH permission on a published node.
+	 *
+	 * @param container
+	 * @param branchUuid
+	 * @param requestedVersion
+	 */
+	void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion);
 }

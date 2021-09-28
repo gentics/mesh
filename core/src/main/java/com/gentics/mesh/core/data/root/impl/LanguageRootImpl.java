@@ -11,7 +11,6 @@ import java.util.Stack;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -20,6 +19,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -91,7 +91,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 		if (it.hasNext()) {
 			//TODO check whether the language was assigned to this root node?
 			//return out(HAS_LANGUAGE).has(LanguageImpl.class).has("languageTag", languageTag).nextOrDefaultExplicit(LanguageImpl.class, null);
-			FramedGraph graph = Tx.get().getGraph();
+			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			return graph.frameElementExplicit(it.next(), LanguageImpl.class);
 		} else {
 			return null;

@@ -11,9 +11,9 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.GroupDAOActions;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
@@ -53,7 +53,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Page<? extends HibRole> rolePage = groupDao.getRoles(group, ac.getUser(), pagingInfo);
@@ -74,8 +74,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupDaoWrapper groupDao = tx.groupDao();
-				RoleDaoWrapper roleDao = tx.roleDao();
+				GroupDao groupDao = tx.groupDao();
+				RoleDao roleDao = tx.roleDao();
 
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -113,8 +113,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupDaoWrapper groupDao = tx.groupDao();
-				RoleDaoWrapper roleDao = tx.roleDao();
+				GroupDao groupDao = tx.groupDao();
+				RoleDao roleDao = tx.roleDao();
 
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -147,7 +147,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(groupUuid, "groupUuid");
 
 		utils.syncTx(ac, tx -> {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			HibUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
@@ -171,8 +171,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupDaoWrapper groupDao = tx.groupDao();
-				UserDaoWrapper userDao = tx.userDao();
+				GroupDao groupDao = tx.groupDao();
+				UserDao userDao = tx.userDao();
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
@@ -203,8 +203,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupDaoWrapper groupDao = tx.groupDao();
-				UserDaoWrapper userDao = tx.userDao();
+				GroupDao groupDao = tx.groupDao();
+				UserDao userDao = tx.userDao();
 
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);

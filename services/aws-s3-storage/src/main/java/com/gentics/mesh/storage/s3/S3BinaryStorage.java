@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.binary.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.storage.AbstractBinaryStorage;
 import com.gentics.mesh.util.RxUtil;
 

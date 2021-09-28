@@ -7,9 +7,9 @@ import java.util.stream.Stream;
 
 import org.mockito.Mockito;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
@@ -34,7 +34,7 @@ public interface TestGraphHelper extends TestHelper {
 
 	default HibMicroschema createMicroschema(MicroschemaVersionModel schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 		return microschemaDao.create(schema, user(), batch);
 	}
 
@@ -60,9 +60,9 @@ public interface TestGraphHelper extends TestHelper {
 	 * Returns all graph field containers in the dummy project.
 	 * @return
 	 */
-	default Stream<NodeGraphFieldContainer> getAllContents() {
+	default Stream<HibNodeFieldContainer> getAllContents() {
 		return Tx.get().nodeDao().findAll(project()).stream()
 			.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
-			.flatMap(type -> boot().contentDao().getGraphFieldContainers(node, type).stream()));
+			.flatMap(type -> boot().contentDao().getFieldContainers(node, type).stream()));
 	}
 }

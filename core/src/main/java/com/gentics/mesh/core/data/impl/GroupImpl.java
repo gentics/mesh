@@ -10,13 +10,12 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -61,7 +60,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		GroupDaoWrapper groupRoot = Tx.get().groupDao();
+		GroupDao groupRoot = Tx.get().groupDao();
 		groupRoot.delete(this, bac);
 	}
 
@@ -71,9 +70,9 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		GroupDaoWrapper groupDao = Tx.get().groupDao();
+		GroupDao groupDao = Tx.get().groupDao();
 		if (recursive) {
 			for (HibUser user : groupDao.getUsers(this)) {
 				User graphUser = toGraph(user);

@@ -29,7 +29,6 @@ import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -251,7 +250,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				assertReadOnlyDeactivated()
 					.andThen(requiresWriteCompletable())
 					.andThen(db.singleTxWriteLock(tx -> {
-						UserDaoWrapper userDao = tx.userDao();
+						UserDao userDao = tx.userDao();
 						HibBaseElement userRoot = permissionRoots.user();
 						HibUser admin = userDao.findByUsername("admin");
 						HibUser createdUser = userDao.create(username, admin);

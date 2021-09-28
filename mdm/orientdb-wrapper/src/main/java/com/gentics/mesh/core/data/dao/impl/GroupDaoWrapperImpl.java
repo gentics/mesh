@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
@@ -97,7 +97,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	@Override
 	public HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibUser requestUser = ac.getUser();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = Tx.get().userDao();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 

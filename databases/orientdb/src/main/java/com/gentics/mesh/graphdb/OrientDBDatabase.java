@@ -25,6 +25,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
@@ -316,7 +317,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public <T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		Stream<Vertex> stream = toStream(getVertices(classOfVertex, fieldNames, fieldValues));
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 
 		return new TraversalResult<>(stream.map(v -> {
 			return graph.frameElementExplicit(v, classOfVertex);
@@ -326,7 +327,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public <T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		FramedGraph fermaGraph = Tx.get().getGraph();
+		FramedGraph fermaGraph = GraphDBTx.getGraphTx().getGraph();
 		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();
 		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
@@ -337,7 +338,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @return
 	 */
 	public OrientBaseGraph unwrapCurrentGraph() {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph tx = ((OrientBaseGraph) baseGraph);
 		return tx;
@@ -352,7 +353,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T extends MeshElement> T findVertex(String fieldKey, Object fieldValue, Class<T> clazz) {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> it = orientBaseGraph.getVertices(clazz.getSimpleName(), new String[] { fieldKey }, new Object[] { fieldValue }).iterator();
 		if (it.hasNext()) {
@@ -376,7 +377,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T extends EdgeFrame> T findEdge(String fieldKey, Object fieldValue, Class<T> clazz) {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Edge> it = orientBaseGraph.getEdges(fieldKey, fieldValue).iterator();
 		if (it.hasNext()) {
@@ -405,7 +406,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	@Override
 	@Deprecated
-	public Tx tx() {
+	public GraphDBTx tx() {
 		return txFactory.create(txProvider, resolver).tx();
 	}
 
@@ -452,7 +453,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			Timer.Sample sample = Timer.start();
 			// Check the status to prevent transactions during shutdown
 			checkStatus();
-			try (Tx tx = tx()) {
+			try (GraphDBTx tx = tx()) {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
 				tx.success();

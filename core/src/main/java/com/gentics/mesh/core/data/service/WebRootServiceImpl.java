@@ -11,10 +11,11 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -52,8 +53,8 @@ public class WebRootServiceImpl implements WebRootService {
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
-		ContentDaoWrapper contentDao = tx.contentDao();
+		NodeDao nodeDao = tx.nodeDao();
+		ContentDao contentDao = tx.contentDao();
 		HibProject project = tx.getProject(ac);
 		HibBranch branch = tx.getBranch(ac);
 
@@ -91,8 +92,8 @@ public class WebRootServiceImpl implements WebRootService {
 		// Handle path to project root (baseNode)
 		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
 			// TODO Why this container? Any other container would also be fine?
-			Iterator<NodeGraphFieldContainer> it = contentDao.getDraftGraphFieldContainers(baseNode).iterator();
-			NodeGraphFieldContainer container = it.next();
+			Iterator<HibNodeFieldContainer> it = contentDao.getDraftFieldContainers(baseNode).iterator();
+			HibNodeFieldContainer container = it.next();
 			nodePath.addSegment(new PathSegmentImpl(container, null, null, "/"));
 			stack.push("/");
 			nodePath.setInitialStack(stack);

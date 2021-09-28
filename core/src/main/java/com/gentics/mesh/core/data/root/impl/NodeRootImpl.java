@@ -29,15 +29,13 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -48,10 +46,12 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -154,7 +154,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
 		HibUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.get().getGraph();
+		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 
 		HibBranch branch = Tx.get().getBranch(ac);
 		String branchUuid = branch.getUuid();
@@ -187,8 +187,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.userDao();
-		ContentDaoWrapper contentDao = tx.contentDao();
+		UserDao userDao = tx.userDao();
+		ContentDao contentDao = tx.contentDao();
 
 		Node element = findByUuid(uuid);
 		if (!errorIfNotFound && element == null) {
@@ -203,7 +203,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			HibBranch branch = tx.getBranch(ac, element.getProject());
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
-			NodeGraphFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(),
+			HibNodeFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
@@ -294,7 +294,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}
-		NodeGraphFieldContainer container = toGraph(node).createGraphFieldContainer(language.getLanguageTag(), branch, requestUser);
+		HibNodeFieldContainer container = toGraph(node).createFieldContainer(language.getLanguageTag(), branch, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
 
 		batch.add(node.onCreated());
@@ -320,8 +320,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public Node create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac);
-		UserDaoWrapper userDao = tx.userDao();
-		SchemaDaoWrapper schemaDao = tx.schemaDao();
+		UserDao userDao = tx.userDao();
+		SchemaDao schemaDao = tx.schemaDao();
 
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
@@ -376,7 +376,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
+	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
 		Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Node node : findAll()) {
@@ -386,7 +386,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			}
 		}
 
-		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+		applyVertexPermissions(batch, toGraph(role), permissionsToGrant, permissionsToRevoke);
 	}
 
 }

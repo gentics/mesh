@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node.field;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -26,6 +26,6 @@ public interface FieldUpdater {
 	 *            Schema of the field
 	 * @param schema
 	 */
-	void update(GraphFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema,
+	void update(HibFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema,
 		FieldSchemaContainer schema);
 }

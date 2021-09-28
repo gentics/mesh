@@ -8,10 +8,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -73,9 +72,9 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			nodeUpdateRequest.setVersion(contentDao.getLatestDraftFieldContainer(node, english()).getVersion().toString());
+			nodeUpdateRequest.setVersion(contentDao.getLatestDraftGraphFieldContainer(node, english()).getVersion().toString());
 			tx.success();
 		}
 		String uuid = tx(() -> folder("2015").getUuid());
@@ -91,7 +90,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		nodeUpdateRequest.setVersion(tx(tx -> {
-			return tx.contentDao().getLatestDraftFieldContainer(node, english()).getVersion().toString();
+			return tx.contentDao().getLatestDraftGraphFieldContainer(node, english()).getVersion().toString();
 		}));
 
 		call(() -> client().updateNode(PROJECT_NAME, tx(() -> node.getUuid()), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")),
@@ -109,7 +108,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 *            field name
 	 * @return values or null
 	 */
-	protected <U, T extends ListGraphField<?, ?, U>> List<U> getListValues(NodeGraphFieldContainer container, Class<T> classOfT, String fieldKey) {
+	protected <U, T extends ListGraphField<?, ?, U>> List<U> getListValues(HibNodeFieldContainer container, Class<T> classOfT, String fieldKey) {
 		T field = container.getList(classOfT, fieldKey);
 		return field != null ? field.getValues() : null;
 	}

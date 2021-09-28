@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,8 +23,9 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -109,7 +111,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 
 	@Override
 	public FramedGraph getGraph() {
-		return Tx.get().getGraph();
+		return GraphDBTx.getGraphTx().getGraph();
 	}
 
 	@Override
@@ -118,9 +120,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+		applyVertexPermissions(batch, toGraph(role), permissionsToGrant, permissionsToRevoke);
 	}
 
 	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<InternalPermission> permissionsToGrant,

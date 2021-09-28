@@ -9,7 +9,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -56,7 +56,7 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 		// .groups
 		roleType.field(newPagingFieldWithFetcher("groups", "Groups which reference the role.", env -> {
 
-			RoleDaoWrapper roleDao = Tx.get().roleDao();
+			RoleDao roleDao = Tx.get().roleDao();
 			HibRole role = env.getSource();
 			GraphQLContext gc = env.getContext();
 

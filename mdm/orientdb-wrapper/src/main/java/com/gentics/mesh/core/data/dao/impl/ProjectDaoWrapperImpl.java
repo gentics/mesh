@@ -240,7 +240,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
-		toGraph(project.getBaseNode()).getDraftGraphFieldContainers().forEach(c -> {
+		toGraph(project.getBaseNode()).getDraftFieldContainers().forEach(c -> {
 			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
 

@@ -22,8 +22,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
@@ -98,7 +98,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		// 1. Upload a binary field
 		String uuid = tx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			"filename.txt", "application/binary"));
@@ -124,7 +124,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			// 1. Upload a binary field
 			String uuid = tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+			VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 				"application/binary"));
@@ -152,7 +152,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// 1. Upload a binary field
 		String uuid = tx(() -> folder("2015").getUuid());
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), filename, "application/binary"));
@@ -167,8 +167,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBinary(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBinary(FIELD_NAME)).isNotNull();
@@ -222,7 +222,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			// 1. Upload a binary field
 			String uuid = tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+			VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 				"application/binary"));
@@ -243,7 +243,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		String uuid = tx(() -> folder("2015").getUuid());
 		// 1. Upload a binary field
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 			"application/binary"));
@@ -371,7 +371,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	public NodeResponse createNodeWithField() {
 		String uuid = tx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("2015"), "en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
 			"application/binary"));

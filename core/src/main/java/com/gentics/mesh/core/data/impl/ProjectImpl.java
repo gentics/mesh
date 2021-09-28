@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
@@ -41,6 +40,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -190,7 +190,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
 			HibLanguage language = mesh().boot().languageDao().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
-			baseNode.createGraphFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
+			baseNode.createFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
 			setBaseNode(baseNode);
 		}
 		return baseNode;
@@ -212,7 +212,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		if (recursive) {
 			getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);

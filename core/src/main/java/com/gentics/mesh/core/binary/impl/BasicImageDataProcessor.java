@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.util.NodeUtil;
 
@@ -38,10 +38,10 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<BinaryGraphField>> process(BinaryDataProcessorContext ctx) {
+	public Maybe<Consumer<HibBinaryField>> process(BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
-			Consumer<BinaryGraphField> consumer = field -> {
+			Consumer<HibBinaryField> consumer = field -> {
 				log.info("Setting info to binary field " + field.getUuid() + " - " + info);
 				field.setImageDominantColor(info.getDominantColor());
 				HibBinary binary = field.getBinary();

@@ -15,11 +15,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -172,7 +173,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	public void testTagSync() throws Exception {
 		// Assert insert
 		tx(tx -> {
-			TagDaoWrapper tagDao = tx.tagDao();
+			TagDao tagDao = tx.tagDao();
 			for (int i = 0; i < 400; i++) {
 				tagDao.create(tagFamily("colors"), "tag_" + i, project(), user());
 			}
@@ -269,7 +270,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			HibNode node = folder("2015");
-			boot().contentDao().createGraphFieldContainer(node, german(), initialBranch(), user());
+			boot().contentDao().createFieldContainer(node, german(), initialBranch(), user());
 		});
 		syncIndex();
 		assertMetrics("node", 1, 2, 0);
@@ -278,8 +279,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert update
 		tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeGraphFieldContainer draft = contentDao.getGraphFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer draft = contentDao.getGraphFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
 			draft.getString("slug").setString("updated");
 		});
 		syncIndex();
@@ -287,9 +288,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeGraphFieldContainer draft = contentDao.getGraphFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
-			draft.remove();
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer draft = contentDao.getGraphFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
+			contentDao.delete(draft, new DummyBulkActionContext()); // TODO may fail
 		});
 		syncIndex();
 		assertMetrics("node", 0, 2, 1);
@@ -299,7 +300,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	public void testSchemaSync() throws Exception {
 		// Assert insert
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			for (int i = 0; i < 400; i++) {
 				SchemaVersionModel model = new SchemaModelImpl();
 				model.setName("schema_" + i);
@@ -320,7 +321,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao.findByName("schema_3");
 			schema.getLatestVersion().deleteElement();
 			schema.deleteElement();
@@ -351,7 +352,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
 			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
 			microschema.getLatestVersion().deleteElement();
 			microschema.deleteElement();

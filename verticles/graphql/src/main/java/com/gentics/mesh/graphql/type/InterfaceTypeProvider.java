@@ -167,9 +167,9 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(PERM_INFO_TYPE_NAME))
 			.dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				HibCoreElement element = getMeshCoreElement(env.getSource());
+				HibCoreElement<?> element = getMeshCoreElement(env.getSource());
 
-				UserDaoWrapper userDao = Tx.get().userDao();
+				UserDaoWrapper userDao = (UserDaoWrapper) Tx.get().userDao();
 				return userDao.getPermissionInfo(gc.getUser(), element);
 			})
 		);
@@ -184,9 +184,9 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			)
 			.dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				HibCoreElement element = getMeshCoreElement(env.getSource());
+				HibCoreElement<?> element = getMeshCoreElement(env.getSource());
 
-				UserDaoWrapper userDao = Tx.get().userDao();
+				UserDaoWrapper userDao = (UserDaoWrapper) Tx.get().userDao();
 				return userDao.getRolePermissions(element, gc, env.getArgument("role"));
 			})
 		);
@@ -254,13 +254,13 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		}
 	}
 
-	private HibCoreElement getMeshCoreElement(Object source) {
+	private HibCoreElement<?> getMeshCoreElement(Object source) {
 		if (source instanceof NodeContent) {
 			return ((NodeContent) source).getNode();
 		} else if (source instanceof SchemaVersion) {
 			return ((SchemaVersion) source).getSchemaContainer();
 		} else {
-			return (HibCoreElement) source;
+			return (HibCoreElement<?>) source;
 		}
 	}
 

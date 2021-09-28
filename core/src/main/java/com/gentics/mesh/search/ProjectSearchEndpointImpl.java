@@ -12,7 +12,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Tx;
@@ -85,7 +85,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		}, TagListResponse.class, tagSearchHandler, tagExamples.createTagListResponse(), false);
 
 		registerSearchHandler("tagFamilies", uuid -> {
-			TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
+			TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 			return tagFamilyDao.findByUuid(uuid);
 		}, TagFamilyListResponse.class, tagFamilySearchHandler, tagFamilyExamples.getTagFamilyListResponse(), false);
 	}

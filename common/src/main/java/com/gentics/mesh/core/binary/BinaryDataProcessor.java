@@ -2,7 +2,7 @@ package com.gentics.mesh.core.binary;
 
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 
 import io.reactivex.Maybe;
 
@@ -27,6 +27,6 @@ public interface BinaryDataProcessor {
 	 * @param hash SHA512 sum of the upload
 	 * @return Modifier for the binary graph field.
 	 */
-	Maybe<Consumer<BinaryGraphField>> process(BinaryDataProcessorContext context);
+	Maybe<Consumer<HibBinaryField>> process(BinaryDataProcessorContext context);
 
 }

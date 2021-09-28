@@ -22,16 +22,16 @@ import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -181,7 +181,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				.map(list -> Tuple.tuple(hash, list));
 		}).flatMap(modifierListAndHash -> {
 			String hash = modifierListAndHash.v1();
-			List<Consumer<BinaryGraphField>> modifierList = modifierListAndHash.v2();
+			List<Consumer<HibBinaryField>> modifierList = modifierListAndHash.v2();
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
@@ -249,7 +249,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			});
 	}
 
-	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<BinaryGraphField>> fieldModifier, UploadContext context,
+	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<HibBinaryField>> fieldModifier, UploadContext context,
 		String nodeUuid,
 		String languageTag, String nodeVersion,
 		String fieldName) {
@@ -258,10 +258,10 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		String binaryUuid = context.getBinaryUuid();
 
 		return db.singleTxWriteLock(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
 			utils.eventAction(batch -> {
@@ -277,7 +277,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				}
 
 				// Load the current latest draft
-				NodeGraphFieldContainer latestDraftVersion = contentDao.getGraphFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+				HibNodeFieldContainer latestDraftVersion = contentDao.getGraphFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
 				if (latestDraftVersion == null) {
 					// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
@@ -290,7 +290,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				}
 
 				// Load the base version field container in order to create the diff
-				NodeGraphFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
+				HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
 				if (baseVersionContainer == null) {
 					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
 				}
@@ -327,15 +327,15 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				}
 
 				// Create a new node version field container to store the upload
-				NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 					latestDraftVersion,
 					true);
 
 				// Get the potential existing field
-				BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
+				HibBinaryField oldField = newDraftVersion.getBinary(fieldName);
 
 				// Create the new field
-				BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
+				HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
 
 				// Reuse the existing properties
 				if (oldField != null) {
@@ -352,7 +352,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				field.setMimeType(upload.contentType());
 				field.getBinary().setSize(upload.size());
 
-				for (Consumer<BinaryGraphField> modifier : fieldModifier) {
+				for (Consumer<HibBinaryField> modifier : fieldModifier) {
 					modifier.accept(field);
 				}
 
@@ -382,7 +382,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 	 * @param ctx
 	 * @return Consumers which modify the graph field
 	 */
-	private Observable<Consumer<BinaryGraphField>> postProcessUpload(BinaryDataProcessorContext ctx) {
+	private Observable<Consumer<HibBinaryField>> postProcessUpload(BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		String contentType = upload.contentType();
 		List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(contentType);

@@ -26,23 +26,19 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -52,7 +48,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.config.ClusterOptions;
@@ -166,10 +162,10 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	@Override
 	public void initMandatoryData(MeshOptions config) throws Exception {
 		db.tx(tx -> {
-			UserDaoWrapper userDao = tx.userDao();
-			GroupDaoWrapper groupDao = tx.groupDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			UserDao userDao = tx.userDao();
+			GroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
+			SchemaDao schemaDao = tx.schemaDao();
 
 			if (db.requiresTypeInit()) {
 				MeshRoot meshRoot = meshRoot();
@@ -202,9 +198,9 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		// Only setup optional data for empty installations
 		if (isEmptyInstallation) {
 			db.tx(tx -> {
-				UserDaoWrapper userDao = tx.userDao();
-				GroupDaoWrapper groupDao = tx.groupDao();
-				RoleDaoWrapper roleDao = tx.roleDao();
+				UserDao userDao = tx.userDao();
+				GroupDao groupDao = tx.groupDao();
+				RoleDao roleDao = tx.roleDao();
 
 				if (db.requiresTypeInit()) {
 					meshRoot = meshRoot();
@@ -244,7 +240,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	@Override
 	public void initPermissions() {
 		db.tx(tx -> {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			HibRole adminRole = roleDao.findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
@@ -405,7 +401,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 					isInitialSetup = false;
 					meshRoot = it.next();
 				} else {
-					meshRoot = Tx.get().getGraph().addFramedVertex(MeshRootImpl.class);
+					meshRoot = GraphDBTx.getGraphTx().getGraph().addFramedVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
@@ -471,7 +467,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	}
 
 	@Override
-	public ContentDaoWrapper contentDao() {
+	public ContentDao contentDao() {
 		return daoCollection.contentDao();
 	}
 

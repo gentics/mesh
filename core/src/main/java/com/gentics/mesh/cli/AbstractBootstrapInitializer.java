@@ -34,7 +34,6 @@ import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -591,7 +590,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			db().tx(tx -> {
-				UserDaoWrapper userDao = tx.userDao();
+				UserDao userDao = tx.userDao();
 				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					userDao.setPassword(adminUser, password);

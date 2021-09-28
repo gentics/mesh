@@ -12,10 +12,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -49,9 +49,9 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testReadNodeWithExistingField() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createBoolean(FIELD_NAME).setBoolean(true);
 			tx.success();
 		}
@@ -72,8 +72,8 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			boolean flag = false;
-			NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
-			final NodeGraphFieldContainer currentContainer = container;
+			HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
+			final HibNodeFieldContainer currentContainer = container;
 			Boolean oldValue = tx(() -> getBooleanValue(currentContainer, FIELD_NAME));
 			String expectedVersion = tx(() -> currentContainer.getVersion().nextDraft().toString());
 
@@ -84,7 +84,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			try (Tx tx = tx()) {
 				assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
-				container = boot().contentDao().getGraphFieldContainer(node, "en");
+				container = boot().contentDao().getFieldContainer(node, "en");
 				oldValue = getBooleanValue(container, FIELD_NAME);
 				response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
 				field = response.getFields().getBooleanField(FIELD_NAME);
@@ -121,9 +121,9 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBoolean(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBoolean(FIELD_NAME)).isNotNull();
@@ -152,8 +152,8 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return value
 	 */
-	protected Boolean getBooleanValue(NodeGraphFieldContainer container, String fieldName) {
-		BooleanGraphField field = container.getBoolean(fieldName);
+	protected Boolean getBooleanValue(HibNodeFieldContainer container, String fieldName) {
+		HibBooleanField field = container.getBoolean(fieldName);
 		return field != null ? field.getBoolean() : null;
 	}
 

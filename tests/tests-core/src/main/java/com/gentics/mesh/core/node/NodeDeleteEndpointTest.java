@@ -36,7 +36,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -85,7 +85,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		Set<String> childrenUuids = new HashSet<>();
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			assertThat(nodeDao.getChildren(node, initialBranchUuid())).as("The node must have children").isNotEmpty();
 			for (HibNode child : nodeDao.getChildren(node, initialBranchUuid())) {
 				collectUuids(child, childrenUuids);
@@ -269,8 +269,8 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		// Assert that the node was only deleted in the new branch
 		try (Tx tx = tx()) {
 			assertElement(toGraph(project()).getNodeRoot(), uuid, true);
-			assertThat(boot().contentDao().getGraphFieldContainers(node, initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
+			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(boot().contentDao().getFieldContainers(node, newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
 		}
 
 	}
@@ -282,7 +282,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		String uuid = tx(() -> node.getUuid());
 
 		HibBranch newBranch = tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			// Publish the node
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(node, mockActionContext(), bac);
@@ -308,11 +308,11 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		// Assert deletion - nodes should only be deleted for new branch
 		try (Tx tx = tx()) {
 			assertElement(toGraph(project()).getNodeRoot(), uuid, true);
-			assertThat(boot().contentDao().getGraphFieldContainers(node, initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(boot().contentDao().getGraphFieldContainers(node, initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
+			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
 				.isNotEmpty();
-			assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
-			assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
+			assertThat(boot().contentDao().getFieldContainers(node, newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
+			assertThat(boot().contentDao().getFieldContainers(node, newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
 		}
 	}
 
@@ -623,7 +623,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	 * @param childrenUuids
 	 */
 	private void collectUuids(HibNode child, Set<String> childrenUuids) {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
 		childrenUuids.add(child.getUuid());
 		for (HibNode subchild : nodeDao.getChildren(child, initialBranchUuid())) {
 			collectUuids(subchild, childrenUuids);

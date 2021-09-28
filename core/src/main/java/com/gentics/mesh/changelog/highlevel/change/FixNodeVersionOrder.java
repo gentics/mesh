@@ -20,14 +20,15 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Iterables;
 import com.syncleus.ferma.EdgeFrame;
@@ -84,7 +85,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				if (count != 0 && count % 1000 == 0) {
 					log.info("Checked {} nodes. Found and fixed {} broken nodes", count, fixedNodes.get());
 				}
-				((ContentDaoWrapper) boot.get().contentDao()).getGraphFieldContainers(node, ContainerType.INITIAL).stream()
+				boot.get().contentDao().getFieldContainers(node, ContainerType.INITIAL).stream()
 					.forEach(content -> {
 						boolean mutated = fixNodeVersionOrder(context, toGraph(node), content);
 						if (mutated) {
@@ -98,24 +99,24 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			.forEach(conflict -> log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved."));
 	}
 
-	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, NodeGraphFieldContainer initialContent) {
-		ContentDaoWrapper contentDao = ((ContentDaoWrapper) boot.get().contentDao());
+	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, HibNodeFieldContainer initialContent) {
+		ContentDao contentDao = boot.get().contentDao();
 		Set<VersionNumber> seenVersions = new HashSet<>();
-		TreeSet<NodeGraphFieldContainer> versions = new TreeSet<>(Comparator.comparing(NodeGraphFieldContainer::getVersion));
-		NodeGraphFieldContainer highestVersion = null;
-		NodeGraphFieldContainer currentContainer = initialContent;
-		NodeGraphFieldContainer latestPublished = null;
+		TreeSet<HibNodeFieldContainer> versions = new TreeSet<>(Comparator.comparing(HibNodeFieldContainer::getVersion));
+		HibNodeFieldContainer highestVersion = null;
+		HibNodeFieldContainer currentContainer = initialContent;
+		HibNodeFieldContainer latestPublished = null;
 		boolean mutated = false;
 
 		String branchUuid = initialContent.getBranches(ContainerType.INITIAL).iterator().next();
 		String languageTag = initialContent.getLanguageTag();
 
 		EdgeFrame originalDraftEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.DRAFT);
-		Optional<Object> originalDraftId = Optional.ofNullable(contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.DRAFT))
-			.map(ElementFrame::id);
+		Optional<Object> originalDraftId = Optional.ofNullable(contentDao.getFieldContainer(node, languageTag, branchUuid, ContainerType.DRAFT))
+			.map(HibElement::getId);
 		EdgeFrame originalPublishedEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.PUBLISHED);
-		Optional<Object> originalPublishedId = Optional.ofNullable(contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.PUBLISHED))
-			.map(ElementFrame::id);
+		Optional<Object> originalPublishedId = Optional.ofNullable(contentDao.getFieldContainer(node, languageTag, branchUuid, ContainerType.PUBLISHED))
+			.map(HibElement::getId);
 
 		if (log.isDebugEnabled()) {
 			log.debug("Fixing node {}-{}", node.getUuid(), languageTag);
@@ -123,7 +124,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 
 		while (currentContainer != null) {
 			// Since we only look at single branch projects, there can at most only be one next version.
-			NodeGraphFieldContainer nextContainer = Iterables.getFirst(contentDao.getNextVersions(currentContainer), null);
+			HibNodeFieldContainer nextContainer = Iterables.getFirst(contentDao.getNextVersions(currentContainer), null);
 			VersionNumber currentVersion = currentContainer.getVersion();
 			boolean isDuplicate = !seenVersions.add(currentVersion);
 			if (isDuplicate) {
@@ -135,15 +136,15 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			if (highestVersion != null && currentVersion.compareTo(highestVersion.getVersion()) < 0) {
 				// This means that currentVersion is in the wrong order and needs to be moved.
 
-				NodeGraphFieldContainer lower = versions.lower(currentContainer);
+				HibNodeFieldContainer lower = versions.lower(currentContainer);
 				// There must always be a higher version
-				NodeGraphFieldContainer higher = versions.higher(currentContainer);
-				higher.unlinkIn(null, HAS_VERSION);
-				currentContainer.unlinkIn(null, HAS_VERSION);
-				currentContainer.unlinkOut(null, HAS_VERSION);
+				HibNodeFieldContainer higher = versions.higher(currentContainer);
+				toGraph(higher).unlinkIn(null, HAS_VERSION);
+				toGraph(currentContainer).unlinkIn(null, HAS_VERSION);
+				toGraph(currentContainer).unlinkOut(null, HAS_VERSION);
 				currentContainer.setNextVersion(higher);
 				if (lower != null) {
-					lower.unlinkOut(null, HAS_VERSION);
+					toGraph(lower).unlinkOut(null, HAS_VERSION);
 					lower.setNextVersion(currentContainer);
 				}
 				mutated = true;
@@ -159,15 +160,15 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 
 		// Reset draft and published edge
 
-		if (originalDraftId.isPresent() && !originalDraftId.get().equals(highestVersion.id())) {
+		if (originalDraftId.isPresent() && !originalDraftId.get().equals(highestVersion.getId())) {
 			originalDraftEdge.remove();
-			setNewOutV(context, node, highestVersion, branchUuid, languageTag, ContainerType.DRAFT);
+			setNewOutV(context, node, toGraph(highestVersion), branchUuid, languageTag, ContainerType.DRAFT);
 			mutated = true;
 		}
 
-		if (originalPublishedId.isPresent() && latestPublished != null && !originalPublishedId.get().equals(latestPublished.id())) {
+		if (originalPublishedId.isPresent() && latestPublished != null && !originalPublishedId.get().equals(latestPublished.getId())) {
 			originalPublishedEdge.remove();
-			setNewOutV(context, node, latestPublished, branchUuid, languageTag, ContainerType.PUBLISHED);
+			setNewOutV(context, node, toGraph(latestPublished), branchUuid, languageTag, ContainerType.PUBLISHED);
 			mutated = true;
 		}
 		Tx.get().commit();

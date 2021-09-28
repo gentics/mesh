@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.result.Result;
 

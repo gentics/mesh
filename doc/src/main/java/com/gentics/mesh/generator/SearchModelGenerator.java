@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -196,7 +197,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		return txMock;
 	}
 
-	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDaoWrapper contentDao, TagDaoWrapper tagDao) throws Exception {
+	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDao contentDao, TagDaoWrapper tagDao) throws Exception {
 		String language = "de";
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibProject project = mockProject(user);
@@ -208,7 +209,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
 		((NodeIndexHandlerImpl) nodeIndexHandler)
-			.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
+			.storeContainer(contentDao.getLatestDraftGraphFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
 			.ignoreElement()
 			.blockingAwait();
 		writeStoreEvent("node.search");

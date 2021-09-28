@@ -12,8 +12,8 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
@@ -34,14 +34,14 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String path = "/News/2015/blume.jpg";
 		HibNode node;
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			node = content("news_2015");
 
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
-			contentDao.getLatestDraftFieldContainer(node, german()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftGraphFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftGraphFieldContainer(node, german()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -69,12 +69,12 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftGraphFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -101,10 +101,10 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			HibNode node = content("news_2015");
 			// Inject the reference node field
-			SchemaVersionModel schema = boot().contentDao().getGraphFieldContainer(node, "en").getSchemaContainerVersion().getSchema();
+			SchemaVersionModel schema = boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
-			boot().contentDao().getGraphFieldContainer(node, "en").getSchemaContainerVersion().setSchema(schema);
-			boot().contentDao().getGraphFieldContainer(node, "en").createNode("reference", folder("2015"));
+			boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().setSchema(schema);
+			boot().contentDao().getFieldContainer(node, "en").createNode("reference", folder("2015"));
 			tx.success();
 		}
 
@@ -112,7 +112,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode node = content("news_2015");
 			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, responseTag);

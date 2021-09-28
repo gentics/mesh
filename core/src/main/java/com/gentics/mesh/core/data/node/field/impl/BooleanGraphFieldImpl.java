@@ -1,13 +1,14 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
@@ -21,7 +22,7 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 
 	public static FieldTransformer<BooleanField> BOOLEAN_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 			parentNode) -> {
-		BooleanGraphField graphBooleanField = container.getBoolean(fieldKey);
+		HibBooleanField graphBooleanField = container.getBoolean(fieldKey);
 		if (graphBooleanField == null) {
 			return null;
 		} else {
@@ -30,15 +31,15 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	};
 
 	public static FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		BooleanGraphField booleanGraphField = container.getBoolean(fieldKey);
+		HibBooleanField booleanGraphField = container.getBoolean(fieldKey);
 		BooleanField booleanField = fieldMap.getBooleanField(fieldKey);
 		boolean isBooleanFieldSetToNull = fieldMap.hasField(fieldKey) && (booleanField == null || booleanField.getValue() == null);
-		GraphField.failOnDeletionOfRequiredField(booleanGraphField, isBooleanFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(booleanGraphField, isBooleanFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = booleanField == null || booleanField.getValue() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			GraphField.failOnMissingRequiredField(booleanGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(booleanGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle deletion
@@ -94,14 +95,14 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	}
 
 	@Override
-	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		setFieldProperty("boolean", null);
 		setFieldKey(null);
 	}
 
 	@Override
-	public BooleanGraphField cloneTo(GraphFieldContainer container) {
-		BooleanGraphField clone = container.createBoolean(getFieldKey());
+	public HibBooleanField cloneTo(HibFieldContainer container) {
+		HibBooleanField clone = container.createBoolean(getFieldKey());
 		clone.setBoolean(getBoolean());
 		return clone;
 	}

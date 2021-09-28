@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
@@ -123,12 +123,12 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 
 		for (int i = 0; i < 20; i++) {
 			BooleanFieldListImpl list = new BooleanFieldListImpl();
-			NodeGraphFieldContainer container;
+			HibNodeFieldContainer container;
 			List<Boolean> oldValue;
 			List<Boolean> newValue;
 
 			try (Tx tx = tx()) {
-				container = boot().contentDao().getGraphFieldContainer(node, "en");
+				container = boot().contentDao().getFieldContainer(node, "en");
 				oldValue = getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size());
 
@@ -164,9 +164,9 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBooleanList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBooleanList(FIELD_NAME)).isNotNull();

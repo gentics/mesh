@@ -35,7 +35,7 @@ public interface TxFactory {
      * 
      * @return Created transaction
      */
-    Tx tx();
+	GraphDBTx tx();
     
     /**
      * Execute the txHandler within the scope of a transaction and call 

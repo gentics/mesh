@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -102,7 +102,7 @@ public class SchemaMigrationEventHandler implements EventHandler {
 
 	private Transactional<HibSchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			SchemaReference schema = model.getSchema();
 			HibSchema container = schemaDao.findByUuid(schema.getUuid());
 			return schemaDao.findVersionByUuid(container, schema.getVersionUuid());

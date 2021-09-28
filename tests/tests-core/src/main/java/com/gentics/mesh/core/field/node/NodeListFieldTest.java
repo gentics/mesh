@@ -13,15 +13,17 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -53,11 +55,11 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode newsNode = folder("news");
 			prepareNode(node, NODE_LIST, "node");
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			NodeGraphFieldList nodeList = container.createNodeList(NODE_LIST);
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldList nodeList = container.createNodeList(NODE_LIST);
 			nodeList.createNode("1", newsNode);
 			nodeList.createNode("2", newsNode);
 			tx.success();
@@ -74,9 +76,9 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			// Create node field
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NodeGraphFieldList list = container.createNodeList("dummyList");
+			Node node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldList list = container.createNodeList("dummyList");
 
 			// Add item
 			assertEquals(0, list.getList().size());
@@ -84,12 +86,12 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertEquals(1, list.getList().size());
 
 			// Retrieve item
-			NodeGraphField foundNodeField = list.getList().get(0);
+			HibNodeField foundNodeField = list.getList().get(0);
 			assertNotNull(foundNodeField.getNode());
 			assertEquals(node.getUuid(), foundNodeField.getNode().getUuid());
 
 			// Load list
-			NodeGraphFieldList loadedList = container.getNodeList("dummyList");
+			HibNodeFieldList loadedList = container.getNodeList("dummyList");
 			assertNotNull(loadedList);
 			assertEquals(1, loadedList.getSize());
 			assertEquals(node.getUuid(), loadedList.getList().get(0).getNode().getUuid());
@@ -110,15 +112,15 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+			Node node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NodeGraphFieldList testField = container.createNodeList("testField");
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldList testField = container.createNodeList("testField");
 			testField.createNode("1", node);
 			testField.createNode("2", node);
 			testField.createNode("3", node);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
@@ -129,9 +131,9 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
-			NodeGraphFieldList fieldB = container.createNodeList("fieldB");
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldList fieldA = container.createNodeList("fieldA");
+			HibNodeFieldList fieldB = container.createNodeList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.addItem(fieldA.createNode("testNode", content()));
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
@@ -147,8 +149,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
+			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldList fieldA = container.createNodeList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
 		}
@@ -158,11 +160,11 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			String dummyKey = "test123";
 
 			// rest null - graph null
-			NodeGraphFieldList fieldA = container.createNodeList(NODE_LIST);
+			HibNodeFieldList fieldA = container.createNodeList(NODE_LIST);
 
 			NodeFieldListImpl restField = new NodeFieldListImpl();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
@@ -233,7 +235,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				field.getItems().add(new NodeFieldListItemImpl(folder("2015").getUuid()));
 				updateContainer(ac, container, NODE_LIST, field);
 			}, (container) -> {
-				NodeGraphFieldList field = container.getNodeList(NODE_LIST);
+				HibNodeFieldList field = container.getNodeList(NODE_LIST);
 				assertNotNull("The graph field {" + NODE_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
 				assertEquals("The list item of the field was not updated.", content().getUuid(), field.getList().get(0).getNode().getUuid());

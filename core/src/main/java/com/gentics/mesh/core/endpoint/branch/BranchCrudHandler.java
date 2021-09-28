@@ -25,11 +25,11 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -89,7 +89,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, tx -> {
 			HibProject project = tx.getProject(ac);
-			BranchDaoWrapper branchDao = tx.branchDao();
+			BranchDao branchDao = tx.branchDao();
 			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
 			return getSchemaVersionsInfo(branch);
 		}, model -> ac.send(model, OK));
@@ -107,8 +107,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibProject project = tx.getProject(ac);
-				BranchDaoWrapper branchDao = tx.branchDao();
-				SchemaDaoWrapper schemaDao = tx.schemaDao();
+				BranchDao branchDao = tx.branchDao();
+				SchemaDao schemaDao = tx.schemaDao();
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
@@ -148,7 +148,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, tx -> {
 			HibProject project = tx.getProject(ac);
-			BranchDaoWrapper branchDao = tx.branchDao();
+			BranchDao branchDao = tx.branchDao();
 			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, InternalPermission.READ_PERM);
 			return getMicroschemaVersions(branch);
 		}, model -> ac.send(model, OK));
@@ -167,10 +167,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibProject project = tx.getProject(ac);
-				BranchDaoWrapper branchDao = tx.branchDao();
+				BranchDao branchDao = tx.branchDao();
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
-				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+				MicroschemaDao microschemaDao = tx.microschemaDao();
 
 				HibUser user = ac.getUser();
 				utils.eventAction(batch -> {
@@ -242,9 +242,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				JobDaoWrapper jobDao = tx.jobDao();
-				BranchDaoWrapper branchDao = tx.branchDao();
-				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+				JobDao jobDao = tx.jobDao();
+				BranchDao branchDao = tx.branchDao();
+				MicroschemaDao microschemaDao = tx.microschemaDao();
 
 				HibProject project = tx.getProject(ac);
 				HibBranch branch = branchDao.findByUuid(project, branchUuid);
@@ -288,9 +288,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	public void handleMigrateRemainingNodes(InternalActionContext ac, String branchUuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				JobDaoWrapper jobDao = tx.jobDao();
-				BranchDaoWrapper branchDao = tx.branchDao();
-				SchemaDaoWrapper schemaDao = tx.schemaDao();
+				JobDao jobDao = tx.jobDao();
+				BranchDao branchDao = tx.branchDao();
+				SchemaDao schemaDao = tx.schemaDao();
 
 				HibProject project = tx.getProject(ac);
 				HibBranch branch = branchDao.findByUuid(project, branchUuid);
@@ -343,7 +343,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	// try (WriteLock lock = writeLock.lock(ac)) {
 	// utils.syncTx(ac, tx -> {
 	// HibProject project = ac.getProject();
-	// BranchDaoWrapper branchDao = tx.branchDao();
+	// BranchDao branchDao = tx.branchDao();
 	//
 	// HibBranch branch = branchDao.findByUuid(project, branchUuid);
 	// // Get all active versions and group by Microschema
@@ -388,7 +388,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibProject project = tx.getProject(ac);
-				BranchDaoWrapper branchDao = tx.branchDao();
+				BranchDao branchDao = tx.branchDao();
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
 				utils.eventAction(event -> {
 					branch.setLatest();
@@ -412,7 +412,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 
 		utils.syncTx(ac, tx -> {
 			HibProject project = tx.getProject(ac);
-			BranchDaoWrapper branchDao = tx.branchDao();
+			BranchDao branchDao = tx.branchDao();
 			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
 			Page<? extends HibTag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
 			return pageTransformer.transformToRestSync(tagPage, ac, 0);
@@ -436,8 +436,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibProject project = tx.getProject(ac);
-				BranchDaoWrapper branchDao = tx.branchDao();
-				TagDaoWrapper tagDao = tx.tagDao();
+				BranchDao branchDao = tx.branchDao();
+				TagDao tagDao = tx.tagDao();
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
@@ -476,8 +476,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibProject project = tx.getProject(ac);
-				BranchDaoWrapper branchDao = tx.branchDao();
-				TagDaoWrapper tagDao = tx.tagDao();
+				BranchDao branchDao = tx.branchDao();
+				TagDao tagDao = tx.tagDao();
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
@@ -513,7 +513,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				BranchDaoWrapper branchDao = tx.branchDao();
+				BranchDao branchDao = tx.branchDao();
 				HibProject project = tx.getProject(ac);
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);

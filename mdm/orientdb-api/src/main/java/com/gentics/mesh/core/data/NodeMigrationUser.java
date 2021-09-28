@@ -5,10 +5,12 @@ import java.util.Set;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Create mocked user for node migrations.
@@ -300,6 +302,20 @@ public class NodeMigrationUser implements HibUser {
 
 	@Override
 	public void generateBucketId() {
+	}
+
+	@Override
+	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
+			Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+	}
+
+	@Override
+	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
+		return null;
+	}
+
+	@Override
+	public void setUuid(String uuid) {		
 	}
 
 }

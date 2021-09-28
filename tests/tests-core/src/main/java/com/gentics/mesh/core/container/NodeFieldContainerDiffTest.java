@@ -10,18 +10,17 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.syncleus.ferma.FramedGraph;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest implements FieldDiffTestcases {
@@ -30,7 +29,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Override
 	public void testNoDiffByValue() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -44,7 +43,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Override
 	public void testDiffByValue() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -57,13 +56,13 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	public void testNoDiffStringFieldList() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
-			StringGraphFieldList listA = containerA.createStringList("dummy");
+			HibStringFieldList listA = containerA.createStringList("dummy");
 			listA.addItem(listA.createString("test123"));
 
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
-			StringGraphFieldList listB = containerB.createStringList("dummy");
+			HibStringFieldList listB = containerB.createStringList("dummy");
 			listB.addItem(listB.createString("test123"));
 
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
@@ -74,13 +73,13 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	public void testDiffStringFieldList() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
-			StringGraphFieldList listA = containerA.createStringList("dummy");
+			HibStringFieldList listA = containerA.createStringList("dummy");
 			listA.addItem(listA.createString("test123"));
 
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
-			StringGraphFieldList listB = containerB.createStringList("dummy");
+			HibStringFieldList listB = containerB.createStringList("dummy");
 			listB.addItem(listB.createString("test1234"));
 
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
@@ -94,7 +93,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	public void testDiffMicronodeField() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(
 				FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
 
@@ -109,13 +108,13 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			microschema.getFields().add(FieldUtil.createStringFieldSchema("lastName"));
 			version.setSchema(microschema);
 
-			MicronodeGraphField micronodeA = containerA.createMicronode("micronodeField", version);
+			HibMicronodeField micronodeA = containerA.createMicronode("micronodeField", version);
 			micronodeA.getMicronode().createString("firstName").setString("firstnameValue");
 			micronodeA.getMicronode().createString("lastName").setString("lastnameValue");
 
 			NodeGraphFieldContainer containerB = createContainer(
 				FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
-			MicronodeGraphField micronodeB = containerB.createMicronode("micronodeField", version);
+			HibMicronodeField micronodeB = containerB.createMicronode("micronodeField", version);
 			micronodeB.getMicronode().createString("firstName").setString("firstnameValue");
 			micronodeB.getMicronode().createString("lastName").setString("lastnameValue-CHANGED");
 
@@ -132,7 +131,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Override
 	public void testNoDiffByValuesNull() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -146,7 +145,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Override
 	public void testDiffByValueNonNull() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -160,7 +159,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Override
 	public void testDiffByValueNonNull2() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
@@ -174,7 +173,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Override
 	public void testDiffBySchemaFieldRemoved() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(null);
@@ -187,7 +186,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Override
 	public void testDiffBySchemaFieldAdded() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(null);
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue");
@@ -200,7 +199,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Override
 	public void testDiffBySchemaFieldTypeChanged() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			NodeGraphFieldContainer containerB = createContainer(FieldUtil.createHtmlFieldSchema("dummy"));

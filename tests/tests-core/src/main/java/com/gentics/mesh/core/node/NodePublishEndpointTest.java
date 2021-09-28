@@ -28,9 +28,8 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -62,7 +61,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String parentFolderUuid;
 		String subFolderUuid;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			InternalActionContext ac = mockActionContext("recursive=true");
 			HibNode subFolder = folder("2015");
 			HibNode parentFolder = folder("news");
@@ -156,8 +155,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			ContentDao contentDao = tx.contentDao();
+			return contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -205,8 +204,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			ContentDao contentDao = tx.contentDao();
+			return contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
 		// Add german language
@@ -310,7 +309,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testGetPublishStatusNoPermission() {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			tx.success();
 		}
@@ -386,7 +385,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 			tx.success();
 		}
@@ -541,7 +540,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testPublishLanguageNoPermission() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 			tx.success();
 		}

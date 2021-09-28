@@ -19,7 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.action.JobDAOActions;
 import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
@@ -110,7 +109,7 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			JobDaoWrapper jobDao = tx.jobDao();
+			JobDao jobDao = tx.jobDao();
 			HibJob job = jobDao.loadObjectByUuidNoPerm(uuid, true);
 			String etag = jobDao.getETag(job, ac);
 			ac.setEtag(etag, true);

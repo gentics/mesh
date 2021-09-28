@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
 
@@ -29,7 +30,8 @@ public class BinariesImpl implements Binaries {
 	@Override
 	public Transactional<HibBinary> create(String uuid, String sha512sum, Long size) {
 		return database.transactional(tx -> {
-			HibBinary binary = tx.getGraph().addFramedVertex(BinaryImpl.class);
+			// TODO de-graph this
+			HibBinary binary = ((GraphDBTx) tx).getGraph().addFramedVertex(BinaryImpl.class);
 			binary.setSHA512Sum(sha512sum);
 			binary.setSize(size);
 			binary.setUuid(uuid);

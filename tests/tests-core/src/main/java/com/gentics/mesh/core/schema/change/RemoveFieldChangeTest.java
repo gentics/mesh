@@ -12,6 +12,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -26,7 +27,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 
 			change.setFieldName("someField");
 			assertEquals("someField", change.getFieldName());
@@ -44,7 +45,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 			schema.addField(FieldUtil.createStringFieldSchema("test"));
 
 			// 2. Create remove field change
-			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			change.setFieldName("test");
 
 			version.setNextChange(change);
@@ -63,7 +64,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "someField");
-			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			change.updateFromRest(model);
 			assertEquals("someField", change.getFieldName());
 		}
@@ -73,7 +74,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertEquals(RemoveFieldChange.OPERATION, change.transformToRest().getOperation());
 			change.setFieldName("test2");
 

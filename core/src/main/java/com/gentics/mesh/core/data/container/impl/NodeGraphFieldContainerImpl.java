@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSCHEMA_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
@@ -49,10 +50,12 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -61,14 +64,16 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.DisplayField;
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -171,7 +176,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		FieldSchema fieldSchema = schema.getField(displayFieldName);
 		// Only update the display field value if the field can be located
 		if (fieldSchema != null) {
-			GraphField field = getField(fieldSchema);
+			HibField field = getField(fieldSchema);
 			if (field != null && field instanceof DisplayField) {
 				DisplayField displayField = (DisplayField) field;
 				property(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
@@ -192,7 +197,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		if (deleteNext) {
 			// Recursively delete all versions of the container
-			for (NodeGraphFieldContainer next : getNextVersions()) {
+			for (HibNodeFieldContainer next : getNextVersions()) {
 				next.delete(bac);
 			}
 		}
@@ -258,7 +263,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 		return urlFields.stream().flatMap(urlField -> {
 			FieldSchema fieldSchema = schema.getField(urlField);
-			GraphField field = getField(fieldSchema);
+			HibField field = getField(fieldSchema);
 			if (field instanceof StringGraphFieldImpl) {
 				StringGraphFieldImpl stringField = (StringGraphFieldImpl) field;
 				String value = stringField.getString();
@@ -272,7 +277,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				StringGraphFieldListImpl stringListField = (StringGraphFieldListImpl) field;
 				return stringListField.getList().stream()
 					.flatMap(listField -> Optional.ofNullable(listField)
-						.map(StringGraphField::getString)
+						.map(HibStringField::getString)
 						.filter(StringUtils::isNotBlank)
 						.stream());
 			}
@@ -396,8 +401,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private boolean updateWebrootPathInfo(Node node, GraphFieldContainerEdge edge, String languageTag, String branchUuid, String segmentFieldName,
 		String conflictI18n,
 		ContainerType type) {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
 		// Determine the webroot path of the container parent node
 		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag());
@@ -482,14 +487,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Result<NodeGraphFieldContainer> getNextVersions() {
+	public Result<HibNodeFieldContainer> getNextVersions() {
 		// TODO out function should not return wildcard generics.
-		return (Result<NodeGraphFieldContainer>) (Result<?>) out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
+		return (Result<HibNodeFieldContainer>) (Result<?>) out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public void setNextVersion(NodeGraphFieldContainer container) {
-		linkOut(container, HAS_VERSION);
+	public void setNextVersion(HibNodeFieldContainer container) {
+		linkOut(toGraph(container), HAS_VERSION);
 	}
 
 	@Override
@@ -503,10 +508,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void clone(NodeGraphFieldContainer container) {
-		List<GraphField> otherFields = container.getFields();
+	public void clone(HibNodeFieldContainer container) {
+		List<HibField> otherFields = container.getFields();
 
-		for (GraphField graphField : otherFields) {
+		for (HibField graphField : otherFields) {
 			graphField.cloneTo(this);
 		}
 	}
@@ -553,10 +558,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void validate() {
 		SchemaModel schema = getSchemaContainerVersion().getSchema();
-		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
+		Map<String, HibField> fieldsMap = getFields().stream().collect(Collectors.toMap(HibField::getFieldKey, Function.identity()));
 
 		schema.getFields().stream().forEach(fieldSchema -> {
-			GraphField field = fieldsMap.get(fieldSchema.getName());
+			HibField field = fieldsMap.get(fieldSchema.getName());
 			if (fieldSchema.isRequired() && field == null) {
 				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), schema.getName());
 			}
@@ -577,7 +582,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		for (String fieldName : fieldSchemaMap.keySet()) {
 			FieldSchema fieldSchema = fieldSchemaMap.get(fieldName);
 			// Check content
-			GraphField fieldA = getField(fieldSchema);
+			HibField fieldA = getField(fieldSchema);
 			Field fieldB = fieldMap.getField(fieldName, fieldSchema);
 			// Handle null cases. The field may not have been created yet.
 			if (fieldA != null && fieldB == null && fieldMap.hasField(fieldName)) {
@@ -599,7 +604,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<FieldContainerChange> compareTo(NodeGraphFieldContainer container) {
+	public List<FieldContainerChange> compareTo(HibNodeFieldContainer container) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
 		SchemaModel schemaA = getSchemaContainerVersion().getSchema();
@@ -640,8 +645,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			// Check whether the field type is different in between both schemas
 			if (fieldSchemaA.getType().equals(fieldSchemaB.getType())) {
 				// Check content
-				GraphField fieldA = getField(fieldSchemaA);
-				GraphField fieldB = container.getField(fieldSchemaB);
+				HibField fieldA = getField(fieldSchemaA);
+				HibField fieldB = container.getField(fieldSchemaB);
 				// Handle null cases. The field may not have been created yet.
 				if (fieldA != null && fieldB == null) {
 					// Field only exists in A
@@ -664,18 +669,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<MicronodeGraphField> getMicronodeFields(HibMicroschemaVersion version) {
+	public List<HibMicronodeField> getMicronodeFields(HibMicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		return new TraversalResult<>(outE(HAS_FIELD)
 			.has(MicronodeGraphFieldImpl.class)
 			.frameExplicit(MicronodeGraphFieldImpl.class))
 				.stream()
-				.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
+				.filter(edge -> toGraph(edge.getMicronode()).property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
 				.collect(Collectors.toList());
 	}
 
 	@Override
-	public Result<MicronodeGraphFieldList> getMicronodeListFields(HibMicroschemaVersion version) {
+	public Result<HibMicronodeFieldList> getMicronodeListFields(HibMicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		TraversalResult<? extends MicronodeGraphFieldList> lists = new TraversalResult<>(out(HAS_LIST)
 			.has(MicronodeGraphFieldListImpl.class)
@@ -683,7 +688,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return new TraversalResult<>(lists
 			.stream()
 			.filter(list -> list.getValues().stream()
-				.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))));
+				.anyMatch(micronode -> toGraph(micronode).property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))));
 	}
 
 	@Override
@@ -859,15 +864,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 		// Link the previous to the next to isolate the old container
 		NodeGraphFieldContainer beforePrev = getPreviousVersion();
-		for (NodeGraphFieldContainer afterPrev : getNextVersions()) {
+		for (HibNodeFieldContainer afterPrev : getNextVersions()) {
 			beforePrev.setNextVersion(afterPrev);
 		}
 		delete(bac, false);
 	}
 
 	@Override
-	public Result<NodeGraphFieldContainer> versions() {
-		return new TraversalResult<>(StreamUtil.untilNull(() -> this, NodeGraphFieldContainer::getPreviousVersion));
+	public Result<HibNodeFieldContainer> versions() {
+		return new TraversalResult<>(StreamUtil.untilNull(() -> this, HibNodeFieldContainer::getPreviousVersion));
 	}
 
 	@Override

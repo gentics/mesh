@@ -110,8 +110,6 @@ public class JobTest extends AbstractMeshTest {
 	}
 
 	@Test
-	// May fail without low level DB access. Move into the ODB test set or port onto MDM.
-	@Category({ FailingTests.class })
 	public void testJobRootTypeHandling() {
 		try (Tx tx = tx()) {
 			JobDao dao = boot().jobDao();

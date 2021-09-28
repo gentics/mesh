@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -68,7 +68,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 		published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			nodes = nodeDao.findAll(project).stream().filter(node -> nodeDao.getParentNode(node, project.getLatestBranch().getUuid()) != null)
 				.collect(Collectors.toList());
@@ -87,7 +87,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		}
 		nodes.forEach(node -> {
 			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
-				assertThat(tx(() -> boot().contentDao().getGraphFieldContainers(node, newBranch, type).list()))
+				assertThat(tx(() -> boot().contentDao().getFieldContainers(node, newBranch, type).list()))
 					.as(type + " Field Containers before Migration").isNotNull()
 					.isEmpty();
 			});
@@ -96,23 +96,23 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForJob(requestBranchMigration(newBranch));
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(true);
 
 			nodes.forEach(node -> {
 				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
-					assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, type)).as(type + " Field Containers after Migration")
+					assertThat(boot().contentDao().getFieldContainers(node, newBranch, type)).as(type + " Field Containers after Migration")
 						.isNotNull()
 						.isNotEmpty();
 				});
 
 				if (published.contains(node)) {
-					assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, ContainerType.PUBLISHED))
+					assertThat(boot().contentDao().getFieldContainers(node, newBranch, ContainerType.PUBLISHED))
 						.as("Published field containers after migration")
 						.isNotNull().isNotEmpty();
 				} else {
-					assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, ContainerType.PUBLISHED))
+					assertThat(boot().contentDao().getFieldContainers(node, newBranch, ContainerType.PUBLISHED))
 						.as("Published field containers after migration")
 						.isNotNull().isEmpty();
 				}

@@ -7,9 +7,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -30,9 +30,9 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
 		TagResponse response = createTag(PROJECT_NAME, tagFamilyUuid, tagname);
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.roleDao();
-			TagDaoWrapper tagDao = tx.tagDao();
-			UserDaoWrapper userDao = tx.userDao();
+			RoleDao roleDao = tx.roleDao();
+			TagDao tagDao = tx.tagDao();
+			UserDao userDao = tx.userDao();
 
 			HibTag tag = tagDao.findByUuid(tagFamily("colors"), response.getUuid());
 			System.out.println("Tag Uuid:" + response.getUuid());
@@ -51,9 +51,9 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.userDao();
-			RoleDaoWrapper roleDao = tx.roleDao();
-			TagDaoWrapper tagDao = tx.tagDao();
+			UserDao userDao = tx.userDao();
+			RoleDao roleDao = tx.roleDao();
+			TagDao tagDao = tx.tagDao();
 
 			HibTag tag = tagDao.findByUuid(tagFamily("colors"), response.getUuid());
 			System.out.println("Tag Uuid:" + response.getUuid());

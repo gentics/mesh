@@ -21,17 +21,19 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -103,7 +105,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		// Fields
 		for (FieldSchema fieldEntry : microschemaModel.getFields()) {
-			Field restField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level);
+			Field restField = getRestField(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level);
 			if (restField != null) {
 				restMicronode.getFields().put(fieldEntry.getName(), restField);
 			} else {
@@ -163,8 +165,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public HibNode getNode() {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
-		NodeGraphFieldContainer container = getContainer();
+		ContentDao contentDao = Tx.get().contentDao();
+		HibNodeFieldContainer container = getContainer();
 		while (container.getPreviousVersion() != null) {
 			container = container.getPreviousVersion();
 		}
@@ -181,7 +183,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, java.util.List<String> languageTags,
+	public Field getRestField(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, java.util.List<String> languageTags,
 		int level) {
 
 		// Filter out unsupported field types
@@ -196,19 +198,19 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			case MicronodeGraphFieldList.TYPE:
 				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
-				return super.getRestFieldFromGraph(ac, fieldKey, fieldSchema, languageTags, level);
+				return super.getRestField(ac, fieldKey, fieldSchema, languageTags, level);
 			}
 		default:
-			return super.getRestFieldFromGraph(ac, fieldKey, fieldSchema, languageTags, level);
+			return super.getRestField(ac, fieldKey, fieldSchema, languageTags, level);
 		}
 
 	}
 
 	@Override
-	public void clone(Micronode micronode) {
-		List<GraphField> otherFields = micronode.getFields();
+	public void clone(HibMicronode micronode) {
+		List<HibField> otherFields = micronode.getFields();
 
-		for (GraphField graphField : otherFields) {
+		for (HibField graphField : otherFields) {
 			graphField.cloneTo(this);
 		}
 	}
@@ -239,10 +241,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public void validate() {
 		MicroschemaModel microschemaModel = getSchemaContainerVersion().getSchema();
-		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
+		Map<String, HibField> fieldsMap = getFields().stream().collect(Collectors.toMap(HibField::getFieldKey, Function.identity()));
 
 		microschemaModel.getFields().stream().forEach(fieldSchema -> {
-			GraphField field = fieldsMap.get(fieldSchema.getName());
+			HibField field = fieldsMap.get(fieldSchema.getName());
 			if (fieldSchema.isRequired() && field == null) {
 				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), microschemaModel.getName());
 			}
@@ -256,8 +258,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	public boolean equals(Object obj) {
 		if (obj instanceof Micronode) {
 			Micronode micronode = (Micronode) obj;
-			List<GraphField> fieldsA = getFields();
-			List<GraphField> fieldsB = micronode.getFields();
+			List<HibField> fieldsA = getFields();
+			List<HibField> fieldsB = micronode.getFields();
 			return CompareUtils.equals(fieldsA, fieldsB);
 		}
 		if (obj instanceof MicronodeField) {
@@ -265,7 +267,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			MicroschemaModel schema = getSchemaContainerVersion().getSchema();
 			// Iterate over all field schemas and compare rest and graph with eachother
 			for (FieldSchema fieldSchema : schema.getFields()) {
-				GraphField graphField = getField(fieldSchema);
+				HibField graphField = getField(fieldSchema);
 				Field restField = restMicronode.getFields().getField(fieldSchema.getName(), fieldSchema);
 				if (!CompareUtils.equals(graphField, restField)) {
 					return false;
@@ -277,11 +279,11 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public List<FieldContainerChange> compareTo(Micronode micronode) {
+	public List<FieldContainerChange> compareTo(HibMicronode micronode) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 		for (FieldSchema fieldSchema : getSchemaContainerVersion().getSchema().getFields()) {
-			GraphField fieldA = getField(fieldSchema);
-			GraphField fieldB = micronode.getField(fieldSchema);
+			HibField fieldA = getField(fieldSchema);
+			HibField fieldB = micronode.getField(fieldSchema);
 			if (!CompareUtils.equals(fieldA, fieldB)) {
 				changes.add(new FieldContainerChange(fieldSchema.getName(), FieldChangeTypes.UPDATED));
 			}

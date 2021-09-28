@@ -10,10 +10,10 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -59,7 +59,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
+				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
 				String oldValue = getHtmlValue(container, FIELD_NAME);
 
 				String newValue = "some<b>html <i>" + i + "</i>";
@@ -101,9 +101,9 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHtml(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHtml(FIELD_NAME)).isNotNull();
@@ -148,8 +148,8 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.contentDao();
-			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");
 			tx.success();
 		}
@@ -171,8 +171,8 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return html value (may be null)
 	 */
-	protected String getHtmlValue(NodeGraphFieldContainer container, String fieldName) {
-		HtmlGraphField field = container.getHtml(fieldName);
+	protected String getHtmlValue(HibNodeFieldContainer container, String fieldName) {
+		HibHtmlField field = container.getHtml(fieldName);
 		return field != null ? field.getHTML() : null;
 	}
 

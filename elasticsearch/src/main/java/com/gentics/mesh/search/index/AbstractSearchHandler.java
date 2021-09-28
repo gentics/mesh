@@ -63,7 +63,7 @@ import io.vertx.core.logging.LoggerFactory;
  *
  * @param <T>
  */
-public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends RestModel> implements SearchHandler<T, RM> {
+public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM extends RestModel> implements SearchHandler<T, RM> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchHandler.class);
 

@@ -5,11 +5,12 @@ import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
@@ -85,9 +86,9 @@ public enum GraphFieldTypes {
 	private FieldTransformer transformer;
 	private FieldUpdater updater;
 	private FieldGetter getter;
-	private Class<? extends GraphField> domainClass;
+	private Class<? extends HibField> domainClass;
 
-	private GraphFieldTypes(String combinedType, Class<? extends GraphField> clazz, FieldTransformer transformer, FieldUpdater updater,
+	private GraphFieldTypes(String combinedType, Class<? extends HibField> clazz, FieldTransformer transformer, FieldUpdater updater,
 		FieldGetter getter) {
 		this.combinedType = combinedType;
 		this.domainClass = clazz;
@@ -171,7 +172,7 @@ public enum GraphFieldTypes {
 	 *            Field schema to be used to identify the type of the field
 	 * @param schema
 	 */
-	public void updateField(GraphFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey,
+	public void updateField(HibFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey,
 		FieldSchema fieldSchema, FieldSchemaContainer schema) {
 		updater.update(container, ac, fieldMap, fieldKey, fieldSchema, schema);
 	}
@@ -185,7 +186,7 @@ public enum GraphFieldTypes {
 	 *            Field schema which will be used to identify the field
 	 * @return
 	 */
-	public GraphField getField(GraphFieldContainer container, FieldSchema fieldSchema) {
+	public HibField getField(GraphFieldContainer container, FieldSchema fieldSchema) {
 		return getter.get(container, fieldSchema);
 	}
 
@@ -194,7 +195,7 @@ public enum GraphFieldTypes {
 	 * 
 	 * @return
 	 */
-	public Class<? extends GraphField> getDomainClass() {
+	public Class<? extends HibField> getDomainClass() {
 		return domainClass;
 	}
 }
