@@ -197,6 +197,11 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.18]]
+== 1.5.18 (TBD)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.13`.
+
 [[v1.5.17]]
 == 1.5.17 (23.09.2021)
 
