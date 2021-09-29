@@ -26,14 +26,6 @@ public interface HibBaseElement extends HibElement {
 	Object getId();
 
 	/**
-	 * Set the role uuid for the given permission.
-	 * 
-	 * @param permission
-	 * @param allowedRoles
-	 */
-	void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles);
-
-	/**
 	 * Tests if the {@link GraphPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.
 	 * 
 	 * @return
@@ -53,12 +45,4 @@ public interface HibBaseElement extends HibElement {
 	 */
 	void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke);
-
-	/**
-	 * Return set of role uuids for the given permission that were granted on the element.
-	 *
-	 * @param permission
-	 * @return
-	 */
-	Set<String> getRoleUuidsForPerm(InternalPermission permission);
 }

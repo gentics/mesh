@@ -277,10 +277,6 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
-	}
-
-	@Override
 	public TypeInfo getTypeInfo() {
 		return null;
 	}
@@ -311,11 +307,6 @@ public class NodeMigrationUser implements HibUser {
 	@Override
 	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
 			Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
-	}
-
-	@Override
-	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
-		return null;
 	}
 
 	@Override

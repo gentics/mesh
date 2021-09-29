@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data;
 
+import java.util.Set;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.tinkerpop.blueprints.Vertex;
@@ -42,4 +45,19 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 	 */
 	void setCachedUuid(String uuid);
 
+	/**
+	 * Set the role uuid for the given permission.
+	 * 
+	 * @param permission
+	 * @param allowedRoles
+	 */
+	void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles);
+
+	/**
+	 * Return set of role uuids for the given permission that were granted on the element.
+	 *
+	 * @param permission
+	 * @return
+	 */
+	Set<String> getRoleUuidsForPerm(InternalPermission permission);
 }
