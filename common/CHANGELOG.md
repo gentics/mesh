@@ -10,6 +10,11 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.6.14]]
+== 1.6.14 (2021-09-20)
+
+icon:check[] Common: The `SslContextUtil` class now offers more fine-grained control over SSL context generation by exposing intermediary methods.
+
 [[v1.6.3]]
 == 1.6.3 (2021-04-08)
 

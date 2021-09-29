@@ -70,6 +70,10 @@ public class SslContextUtil {
 	 *     The input certificate must be in PKCS #12 format.
 	 * </p>
 	 *
+	 * <p>
+	 *     <strong>WARNING:</strong> the input stream is consumed by this method.
+	 * </p>
+	 *
 	 * @param cert The certificate to extract the key managers from
 	 * @param keyStorePass The password for the certificate
 	 * @return The keymanagers from the given keystore
@@ -80,13 +84,52 @@ public class SslContextUtil {
 			UnrecoverableKeyException,
 			IOException,
 			CertificateException {
-		KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 
-		keyStore.load(cert, keyStorePass);
+		keyManagerFactory.init(getPkcs12KeyStore(cert, keyStorePass), keyStorePass);
+
+		return keyManagerFactory.getKeyManagers();
+	}
+
+	/**
+	 * Get the keymanagers from the given keystore.
+	 *
+	 * @param keyStore The keystore to create the keymanagers from
+	 * @param keyStorePass The keystore passphrase
+	 * @return The keymanagers created from the given keystore
+	 */
+	public static KeyManager[] getKeyManagersFromKeystore(KeyStore keyStore, char[] keyStorePass) throws
+			NoSuchAlgorithmException,
+			UnrecoverableKeyException,
+			KeyStoreException {
+		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+
 		keyManagerFactory.init(keyStore, keyStorePass);
 
 		return keyManagerFactory.getKeyManagers();
+	}
+
+	/**
+	 * Create a {@link KeyStore} from the given PKCS12 certificate.
+	 *
+	 * <p>
+	 *     <strong>WARNING:</strong> the input stream is consumed by this method.
+	 * </p>
+	 *
+	 * @param cert The certificate to extract the key managers from
+	 * @param keyStorePass The password for the certificate
+	 * @return The KeyStore created from the certificate
+	 */
+	public static KeyStore getPkcs12KeyStore(InputStream cert, char[] keyStorePass) throws
+			CertificateException,
+			IOException,
+			NoSuchAlgorithmException,
+			KeyStoreException {
+		KeyStore keyStore = KeyStore.getInstance("PKCS12");
+
+		keyStore.load(cert, keyStorePass);
+
+		return keyStore;
 	}
 
 	/**
@@ -142,14 +185,29 @@ public class SslContextUtil {
 		TrustManagerFactory trustManagerFactory =
 			TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-		CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-		X509Certificate x509Cert = (X509Certificate) certificateFactory.generateCertificate(caCert);
+		X509Certificate x509Cert = getX509Certificate(caCert);
 
 		keyStore.load(null);
 		keyStore.setCertificateEntry(x509Cert.getSubjectX500Principal().getName(), x509Cert);
 		trustManagerFactory.init(keyStore);
 
 		return trustManagerFactory.getTrustManagers();
+	}
+
+	/**
+	 * Create a X.509 certificate from the given input.
+	 *
+	 * <p>
+	 *     The input certificate must be in PEM format.
+	 * </p>
+	 *
+	 * @param cert The certificate to load
+	 * @return The X.509 certificate instance created from the input
+	 */
+	public static X509Certificate getX509Certificate(InputStream cert) throws CertificateException {
+		CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+
+		return (X509Certificate) certificateFactory.generateCertificate(cert);
 	}
 
 	/**
