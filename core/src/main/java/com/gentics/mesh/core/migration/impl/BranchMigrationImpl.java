@@ -7,8 +7,10 @@ import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -68,9 +70,9 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				}
 			});
 
-			List<? extends HibNode> nodes = db.tx(tx -> {
+			Queue<? extends HibNode> nodes = db.tx(tx -> {
 				HibProject project = oldBranch.getProject();
-				return tx.nodeDao().findAll(project).list();
+				return new ArrayDeque<>(tx.nodeDao().findAll(project).list());
 			});
 
 			List<Exception> errorsDetected = new ArrayList<>();
