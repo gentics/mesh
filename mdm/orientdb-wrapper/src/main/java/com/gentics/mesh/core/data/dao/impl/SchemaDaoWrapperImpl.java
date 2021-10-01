@@ -24,6 +24,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -38,6 +39,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -48,6 +50,7 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -443,5 +446,90 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	@Override
 	public boolean update(HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
 		return boot.get().meshRoot().getSchemaContainerRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public Stream<? extends HibSchema> findAllStream(HibProject root, InternalActionContext ac,
+			InternalPermission permission) {
+		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission);
+	}
+
+	@Override
+	public Result<? extends HibSchema> findAllDynamic(HibProject root) {
+		return toGraph(root).getSchemaContainerRoot().findAllDynamic();
+	}
+
+	@Override
+	public Page<? extends HibSchema> findAll(HibProject root, InternalActionContext ac, PagingParameters pagingInfo) {
+		return toGraph(root).getSchemaContainerRoot().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public Page<? extends HibSchema> findAllNoPerm(HibProject root, InternalActionContext ac,
+			PagingParameters pagingInfo) {
+		return toGraph(root).getSchemaContainerRoot().findAllNoPerm(ac, pagingInfo);
+	}
+
+	@Override
+	public HibSchema findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
+		return toGraph(root).getSchemaContainerRoot().findByName(ac, name, perm);
+	}
+
+	@Override
+	public HibSchema checkPerms(HibProject root, HibSchema element, String uuid, InternalActionContext ac,
+			InternalPermission perm, boolean errorIfNotFound) {
+		return toGraph(root).getSchemaContainerRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
+	}
+
+	@Override
+	public HibSchema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		return toGraph(root).getSchemaContainerRoot().create(ac, batch, uuid);
+	}
+
+	@Override
+	public void addItem(HibProject root, HibSchema item) {
+		toGraph(root).getSchemaContainerRoot().addItem(toGraph(item));
+	}
+
+	@Override
+	public void removeItem(HibProject root, HibSchema item) {
+		toGraph(root).getSchemaContainerRoot().removeItem(toGraph(item));
+	}
+
+	@Override
+	public String getRootLabel(HibProject root) {
+		return toGraph(root).getSchemaContainerRoot().getRootLabel();
+	}
+
+	@Override
+	public Class<? extends HibSchema> getPersistenceClass(HibProject root) {
+		return toGraph(root).getSchemaContainerRoot().getPersistanceClass();
+	}
+
+	@Override
+	public long globalCount(HibProject root) {
+		return toGraph(root).getSchemaContainerRoot().globalCount();
+	}
+
+	@Override
+	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
+			String roleUuid) {
+		return toGraph(root).getSchemaContainerRoot().getRolePermissions(element, ac, roleUuid);
+	}
+
+	@Override
+	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement element,
+			InternalPermission perm) {
+		return toGraph(root).getSchemaContainerRoot().getRolesWithPerm(element, perm);
+	}
+
+	@Override
+	public void delete(HibProject root, HibSchema element, BulkActionContext bac) {
+		toGraph(root).getSchemaContainerRoot().delete(toGraph(element), bac);
+	}
+
+	@Override
+	public boolean update(HibProject root, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
+		return toGraph(root).getSchemaContainerRoot().update(toGraph(element), ac, batch);
 	}
 }

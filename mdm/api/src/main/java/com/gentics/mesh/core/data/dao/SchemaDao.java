@@ -3,18 +3,16 @@ package com.gentics.mesh.core.data.dao;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.root.RootDao;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -34,18 +32,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibSchema}.
  */
-public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
-
-	/**
-	 * Load the schema by uuid.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @return
-	 */
-	HibSchema loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
+public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSchema, SchemaResponse>, RootDao<HibProject, HibSchema> {
 
 	/**
 	 * Load a page of schemas.
@@ -128,32 +115,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @throws MeshSchemaException
 	 */
 	HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) throws MeshSchemaException;
-
-	/**
-	 * Find the schema by name.
-	 * 
-	 * @param project
-	 * @param schemaName
-	 * @return
-	 */
-	HibSchema findByName(HibProject project, String schemaName);
-
-	/**
-	 * Find the schema by uuid.
-	 * 
-	 * @param project
-	 * @param schemaUuid
-	 * @return
-	 */
-	HibSchema findByUuid(HibProject project, String schemaUuid);
-
-	/**
-	 * Delete the schema.
-	 * 
-	 * @param schema
-	 * @param bac
-	 */
-	void delete(HibSchema schema, BulkActionContext bac);
 
 	/**
 	 * Returns an iterable of nodes which are referencing the schema container.
@@ -273,14 +234,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, HibUser user, ContainerType type);
 
 	/**
-	 * Load all schemas for the project.
-	 * 
-	 * @param project
-	 * @return
-	 */
-	Result<? extends HibSchema> findAll(HibProject project);
-
-	/**
 	 * Add the schema to the db.
 	 * 
 	 * @param schema
@@ -294,17 +247,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @return
 	 */
 	Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch);
-
-	/**
-	 * Load a page of schemas.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param pagingInfo
-	 * @param extraFilter
-	 * @return
-	 */
-	Page<? extends HibSchema> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibSchema> extraFilter);
 
 	/**
 	 * Check whether the schema is linked to the project.

@@ -10,12 +10,14 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -36,6 +39,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -163,7 +167,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		return foundVersion;
 	}
 
-	private HibMicroschema findByName(HibProject project, String microschemaName) {
+	@Override
+	public HibMicroschema findByName(HibProject project, String microschemaName) {
 		return toGraph(project).getMicroschemaContainerRoot().findByName(microschemaName);
 	}
 
@@ -339,5 +344,91 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	@Override
 	public boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
 		return boot.get().meshRoot().getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public Stream<? extends HibMicroschema> findAllStream(HibProject root, InternalActionContext ac,
+			InternalPermission permission) {
+		return toGraph(root).getMicroschemaContainerRoot().findAllStream(ac, permission);
+	}
+
+	@Override
+	public Result<? extends HibMicroschema> findAllDynamic(HibProject root) {
+		return toGraph(root).getMicroschemaContainerRoot().findAllDynamic();
+	}
+
+	@Override
+	public Page<? extends HibMicroschema> findAll(HibProject root, InternalActionContext ac,
+			PagingParameters pagingInfo, Predicate<HibMicroschema> extraFilter) {
+		return toGraph(root).getMicroschemaContainerRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
+	}
+
+	@Override
+	public Page<? extends HibMicroschema> findAllNoPerm(HibProject root, InternalActionContext ac,
+			PagingParameters pagingInfo) {
+		return toGraph(root).getMicroschemaContainerRoot().findAllNoPerm(ac, pagingInfo);
+	}
+
+	@Override
+	public HibMicroschema findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
+		return toGraph(root).getMicroschemaContainerRoot().findByName(ac, name, perm);
+	}
+
+	@Override
+	public HibMicroschema checkPerms(HibProject root, HibMicroschema element, String uuid, InternalActionContext ac,
+			InternalPermission perm, boolean errorIfNotFound) {
+		return toGraph(root).getMicroschemaContainerRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
+	}
+
+	@Override
+	public HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		return toGraph(root).getMicroschemaContainerRoot().create(ac, batch, uuid);
+	}
+
+	@Override
+	public void addItem(HibProject root, HibMicroschema item) {
+		toGraph(root).getMicroschemaContainerRoot().addItem(toGraph(item));
+	}
+
+	@Override
+	public void removeItem(HibProject root, HibMicroschema item) {
+		toGraph(root).getMicroschemaContainerRoot().removeItem(toGraph(item));
+	}
+
+	@Override
+	public String getRootLabel(HibProject root) {
+		return toGraph(root).getMicroschemaContainerRoot().getRootLabel();
+	}
+
+	@Override
+	public Class<? extends HibMicroschema> getPersistenceClass(HibProject root) {
+		return toGraph(root).getMicroschemaContainerRoot().getPersistanceClass();
+	}
+
+	@Override
+	public long globalCount(HibProject root) {
+		return toGraph(root).getMicroschemaContainerRoot().globalCount();
+	}
+
+	@Override
+	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
+			String roleUuid) {
+		return toGraph(root).getMicroschemaContainerRoot().getRolePermissions(element, ac, roleUuid);
+	}
+
+	@Override
+	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement element,
+			InternalPermission perm) {
+		return toGraph(root).getMicroschemaContainerRoot().getRolesWithPerm(element, perm);
+	}
+
+	@Override
+	public void delete(HibProject root, HibMicroschema element, BulkActionContext bac) {
+		toGraph(root).getMicroschemaContainerRoot().delete(toGraph(element), bac);
+	}
+
+	@Override
+	public boolean update(HibProject root, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+		return toGraph(root).getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
 	}
 }
