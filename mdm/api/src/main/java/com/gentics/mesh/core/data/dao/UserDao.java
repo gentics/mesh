@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.HasPermissions;
@@ -39,10 +40,12 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -74,16 +77,6 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @return
 	 */
 	boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission);
-
-	/**
-	 * Create the user with the given uuid.
-	 * 
-	 * @param ac
-	 * @param batch
-	 * @param uuid
-	 * @return
-	 */
-	HibUser create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
@@ -123,18 +116,6 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @return
 	 */
 	HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target);
-
-	/**
-	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set. This will also set
-	 * {@link HibUser#setForcedPasswordChange(boolean)} to false.
-	 *
-	 * @param user
-	 * @param password
-	 * @return Fluent API
-	 */
-	// TODO change this to an async call since hashing of the password is
-	// blocking
-	HibUser setPassword(HibUser user, String password);
 
 	/**
 	 * Find the user with the given username.
@@ -627,5 +608,125 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			batch.add(user.onUpdated());
 		}
 		return modified;
+	}
+
+	/**
+	 * Create the user with the given uuid.
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
+	default HibUser create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		HibBaseElement userRoot = Tx.get().data().permissionRoots().user();
+		GroupDao groupDao = Tx.get().groupDao();
+		ProjectDao projectDao = Tx.get().projectDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+		HibUser requestUser = ac.getUser();
+
+		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
+		if (requestModel == null) {
+			throw error(BAD_REQUEST, "error_parse_request_json_error");
+		}
+		if (isEmpty(requestModel.getPassword())) {
+			throw error(BAD_REQUEST, "user_missing_password");
+		}
+		if (isEmpty(requestModel.getUsername())) {
+			throw error(BAD_REQUEST, "user_missing_username");
+		}
+		if (!hasPermission(requestUser, userRoot, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", userRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
+		}
+		String groupUuid = requestModel.getGroupUuid();
+		String userName = requestModel.getUsername();
+		HibUser conflictingUser = findByUsername(userName);
+		if (conflictingUser != null) {
+			throw conflict(conflictingUser.getUuid(), userName, "user_conflicting_username");
+		}
+
+		HibUser user = create(requestModel.getUsername(), requestUser, uuid);
+		user.setFirstname(requestModel.getFirstname());
+		user.setUsername(requestModel.getUsername());
+		user.setLastname(requestModel.getLastname());
+		user.setEmailAddress(requestModel.getEmailAddress());
+		user.setPasswordHash(Tx.get().passwordEncoder().encode(requestModel.getPassword()));
+		Boolean forcedPasswordChange = requestModel.getForcedPasswordChange();
+		if (forcedPasswordChange != null) {
+			user.setForcedPasswordChange(forcedPasswordChange);
+		}
+
+		Boolean adminFlag = requestModel.getAdmin();
+		if (adminFlag != null) {
+			if (requestUser.isAdmin()) {
+				user.setAdmin(adminFlag);
+			} else {
+				throw error(FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
+			}
+		}
+
+		inheritRolePermissions(requestUser, userRoot, user);
+		ExpandableNode reference = requestModel.getNodeReference();
+		batch.add(user.onCreated());
+
+		if (!isEmpty(groupUuid)) {
+			HibGroup parentGroup = groupDao.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
+			groupDao.addUser(parentGroup, user);
+			// batch.add(parentGroup.onUpdated());
+			inheritRolePermissions(requestUser, parentGroup, user);
+		}
+
+		if (reference != null && reference instanceof NodeReference) {
+			NodeReference basicReference = ((NodeReference) reference);
+			String referencedNodeUuid = basicReference.getUuid();
+			String projectName = basicReference.getProjectName();
+
+			if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
+				throw error(BAD_REQUEST, "user_incomplete_node_reference");
+			}
+
+			// TODO decide whether we need to check perms on the project as well
+			HibProject project = projectDao.findByName(projectName);
+			if (project == null) {
+				throw error(BAD_REQUEST, "project_not_found", projectName);
+			}
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
+			user.setReferencedNode(node);
+		} else if (reference != null) {
+			// TODO handle user create using full node rest model.
+			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
+		}
+		return user;
+	}
+
+	@Override
+	default void delete(HibUser user, BulkActionContext bac) {
+		// TODO don't allow this for the admin user
+		// disable();
+		// TODO we should not really delete users. Instead we should remove
+		// those from all groups and deactivate the access.
+		// if (log.isDebugEnabled()) {
+		// log.debug("Deleting user. The user will not be deleted. Instead the
+		// user will be just disabled and removed from all groups.");
+		// }
+		// outE(HAS_USER).removeAll();
+		bac.add(user.onDeleted());
+		user.remove();
+		bac.process();
+		Tx.get().permissionCache().clear();
+	}
+	/**
+	 * Set the plain text password. Internally the password string will be hashed and the password hash will be set. This will also set
+	 * {@link HibUser#setForcedPasswordChange(boolean)} to false.
+	 *
+	 * @param user
+	 * @param password
+	 * @return Fluent API
+	 */
+	// TODO change this to an async call since hashing of the password is
+	// blocking
+	default HibUser setPassword(HibUser user, String password) {
+		user.setPasswordHash(Tx.get().passwordEncoder().encode(password));
+		return user;
 	}
 }
