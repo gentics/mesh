@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.index.node;
+package com.gentics.mesh.core.search.index.node;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.schema.SchemaModel;

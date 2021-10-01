@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.util.Iterator;
+import java.util.stream.Stream;
+
+import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -9,12 +14,20 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 
+/**
+ * Each schema update is stored within a dedicated schema container version in order to be able to keep track of changes in between different schema container
+ * versions.
+ */
 public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion> {
 
-	// TODO MDM rename method
+	/**
+	 * Get container entity bound to this version.
+	 */
 	HibSchema getSchemaContainer();
 
-	// TODO MDM rename method
+	/**
+	 * Bind container entity to this version.
+	 */
 	void setSchemaContainer(HibSchema container);
 
 	/**
@@ -55,4 +68,29 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	 * @return
 	 */
 	Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type);
+
+	/**
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
+	 *
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(String branchUuid);
+
+	/**
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version, are versions of the given branch and are listed within the given bucket.
+	 * @param branchUuid
+	 * @param bucket
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(String branchUuid, Bucket bucket);
+
+	/**
+	 * Returns an iterator for those {@link HibNodeFieldContainer}'s which can be edited by users. Those are draft and publish versions.
+	 *
+	 * @param branchUuid Branch Uuid
+	 * @return
+	 */
+	Iterator<? extends HibNodeFieldContainer> getDraftFieldContainers(String branchUuid);
 }

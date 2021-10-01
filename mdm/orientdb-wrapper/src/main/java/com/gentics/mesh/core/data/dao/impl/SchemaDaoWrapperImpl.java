@@ -13,7 +13,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -25,11 +24,12 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
@@ -48,7 +48,6 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -57,11 +56,11 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -215,7 +214,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
 		if (validate && vertx.get() != null) {
-			validateSchema(nodeIndexHandler.get(), schema);
+			SchemaDao.validateSchema(nodeIndexHandler.get(), schema);
 		}
 
 		String name = schema.getName();
@@ -247,25 +246,6 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 		schemaRoot.addSchemaContainer(creator, container, null);
 		return container;
-	}
-
-	/**
-	 * Validate the given schema model using the elasticsearch index handler (needed for ES setting validation).
-	 * 
-	 * @param indexHandler
-	 * @param schema
-	 */
-	public static void validateSchema(NodeIndexHandler indexHandler, SchemaVersionModel schema) {
-		// TODO Maybe set the timeout to the configured search.timeout? But the default of 60 seconds is really long.
-		Throwable error = indexHandler.validate(schema).blockingGet(10, TimeUnit.SECONDS);
-
-		if (error != null) {
-			if (error instanceof GenericRestException) {
-				throw (GenericRestException) error;
-			} else {
-				throw new RuntimeException(error);
-			}
-		}
 	}
 
 	@Override
@@ -397,7 +377,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Iterator<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
+	public Iterator<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
 		return toGraph(version).getDraftFieldContainers(branchUuid);
 	}
 
@@ -433,13 +413,13 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid) {
+	public Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid) {
 		SchemaVersion graphVersion = toGraph(version);
 		return graphVersion.getFieldContainers(branchUuid);
 	}
 
 	@Override
-	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket) {
+	public Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket) {
 		SchemaVersion graphVersion = toGraph(version);
 		return graphVersion.getFieldContainers(branchUuid, bucket);
 	}

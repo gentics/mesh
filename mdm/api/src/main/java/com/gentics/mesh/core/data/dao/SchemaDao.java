@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -18,12 +19,14 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -345,5 +348,24 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	@Override
 	default String getAPIPath(HibSchema element, InternalActionContext ac) {
 		return element.getAPIPath(ac);
+	}
+
+	/**
+	 * Validate the given schema model using the elasticsearch index handler (needed for ES setting validation).
+	 * 
+	 * @param indexHandler
+	 * @param schema
+	 */
+	public static void validateSchema(NodeIndexHandler indexHandler, SchemaVersionModel schema) {
+		// TODO Maybe set the timeout to the configured search.timeout? But the default of 60 seconds is really long.
+		Throwable error = indexHandler.validate(schema).blockingGet(10, TimeUnit.SECONDS);
+
+		if (error != null) {
+			if (error instanceof GenericRestException) {
+				throw (GenericRestException) error;
+			} else {
+				throw new RuntimeException(error);
+			}
+		}
 	}
 }
