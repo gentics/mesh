@@ -43,4 +43,16 @@ public interface Dao<T> {
 	 */
 	void setRolePermissions(T element, InternalActionContext ac, GenericRestResponse model);
 
+	/**
+	 * Compare both values in order to determine whether the stored value should be updated.
+	 * 
+	 * @param restValue
+	 *            Rest model value
+	 * @param dbValue
+	 *            Stored value
+	 * @return true if restValue is not null and the restValue is not equal to the stored value. Otherwise false.
+	 */
+	default <E> boolean shouldUpdate(E restValue, E dbValue) {
+		return restValue != null && !restValue.equals(dbValue);
+	}
 }

@@ -1,11 +1,8 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
@@ -16,8 +13,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -27,25 +22,18 @@ import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -55,23 +43,13 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -90,14 +68,10 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	private final PasswordEncoder passwordEncoder;
 
-	private final Lazy<PermissionCache> permissionCache;
-
 	@Inject
-	public UserDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, PasswordEncoder passwordEncoder,
-		Lazy<PermissionCache> permissionCache) {
+	public UserDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, PasswordEncoder passwordEncoder) {
 		super(boot, permissions);
 		this.passwordEncoder = passwordEncoder;
-		this.permissionCache = permissionCache;
 	}
 
 	@Override
@@ -182,212 +156,6 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		return user;
 	}
 
-	@Override
-	public boolean updateDry(HibUser user, InternalActionContext ac) {
-		return update(user, ac, new DummyEventQueueBatch(), true);
-	}
-
-	@Override
-	public boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch) {
-		return update(user, ac, batch, false);
-	}
-
-	private boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
-		User graphUser = toGraph(user);
-		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
-		boolean modified = false;
-		if (shouldUpdate(requestModel.getUsername(), user.getUsername())) {
-			HibUser conflictingUser = findByUsername(requestModel.getUsername());
-			if (conflictingUser != null && !conflictingUser.getUuid().equals(user.getUuid())) {
-				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
-			}
-			if (!dry) {
-				user.setUsername(requestModel.getUsername());
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getAdmin(), user.isAdmin())) {
-			if (ac.getUser().isAdmin()) {
-				user.setAdmin(requestModel.getAdmin());
-				// Permissions need to be purged
-				permissionCache.get().clear();
-			} else {
-				throw error(FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getFirstname(), user.getFirstname())) {
-			if (!dry) {
-				user.setFirstname(requestModel.getFirstname());
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getLastname(), user.getLastname())) {
-			if (!dry) {
-				user.setLastname(requestModel.getLastname());
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getEmailAddress(), user.getEmailAddress())) {
-			if (!dry) {
-				user.setEmailAddress(requestModel.getEmailAddress());
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getForcedPasswordChange(), user.isForcedPasswordChange())) {
-			if (!dry) {
-				user.setForcedPasswordChange(requestModel.getForcedPasswordChange());
-			}
-			modified = true;
-		}
-
-		if (!isEmpty(requestModel.getPassword())) {
-			if (!dry) {
-				user.setPasswordHash(passwordEncoder.encode(requestModel.getPassword()));
-			}
-			modified = true;
-		}
-
-		if (requestModel.getNodeReference() != null) {
-			ExpandableNode reference = requestModel.getNodeReference();
-			String referencedNodeUuid = null;
-			String projectName = null;
-			if (reference instanceof NodeResponse) {
-				NodeResponse response = (NodeResponse) reference;
-				ProjectReference project = response.getProject();
-				if (project == null) {
-					throw error(BAD_REQUEST, "user_incomplete_node_reference");
-				}
-				projectName = project.getName();
-				if (isEmpty(projectName)) {
-					throw error(BAD_REQUEST, "user_incomplete_node_reference");
-				}
-				referencedNodeUuid = response.getUuid();
-			}
-			if (reference instanceof NodeReference) {
-				NodeReference basicReference = ((NodeReference) reference);
-				if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
-					throw error(BAD_REQUEST, "user_incomplete_node_reference");
-				}
-				referencedNodeUuid = basicReference.getUuid();
-				projectName = basicReference.getProjectName();
-			}
-			if (referencedNodeUuid != null && projectName != null) {
-				/*
-				 * TODO decide whether we need to check perms on the project as well
-				 */
-				HibProject project = Tx.get().projectDao().findByName(projectName);
-				if (project == null) {
-					throw error(BAD_REQUEST, "project_not_found", projectName);
-				}
-				HibNode node = Tx.get().nodeDao().loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
-				if (!dry) {
-					graphUser.setReferencedNode(node);
-				}
-				modified = true;
-			}
-
-		}
-
-		if (modified && !dry) {
-			user.setEditor(ac.getUser());
-			user.setLastEditedTimestamp();
-			batch.add(user.onUpdated());
-		}
-		return modified;
-	}
-
-	@Override
-	public UserResponse transformToRestSync(HibUser user, InternalActionContext ac, int level, String... languageTags) {
-		User graphUser = toGraph(user);
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-		UserResponse restUser = new UserResponse();
-
-		if (fields.has("username")) {
-			restUser.setUsername(user.getUsername());
-		}
-		if (fields.has("emailAddress")) {
-			restUser.setEmailAddress(user.getEmailAddress());
-		}
-		if (fields.has("firstname")) {
-			restUser.setFirstname(user.getFirstname());
-		}
-		if (fields.has("lastname")) {
-			restUser.setLastname(user.getLastname());
-		}
-		if (fields.has("admin")) {
-			restUser.setAdmin(user.isAdmin());
-		}
-		if (fields.has("enabled")) {
-			restUser.setEnabled(user.isEnabled());
-		}
-		if (fields.has("nodeReference")) {
-			setNodeReference(user, ac, restUser, level);
-		}
-		if (fields.has("groups")) {
-			setGroups(user, ac, restUser);
-		}
-		if (fields.has("rolesHash")) {
-			restUser.setRolesHash(user.getRolesHash());
-		}
-		if (fields.has("forcedPasswordChange")) {
-			restUser.setForcedPasswordChange(user.isForcedPasswordChange());
-		}
-		graphUser.fillCommonRestFields(ac, fields, restUser);
-		setRolePermissions(graphUser, ac, restUser);
-
-		return restUser;
-	}
-
-	/**
-	 * Add the node reference field to the user response (if required to).
-	 *
-	 * @param ac
-	 * @param restUser
-	 * @param level
-	 *            Current depth level of transformation
-	 */
-	private void setNodeReference(HibUser user, InternalActionContext ac, UserResponse restUser, int level) {
-		NodeParameters parameters = ac.getNodeParameters();
-
-		// Check whether a node reference was set.
-		Node node = toGraph(user).getReferencedNode();
-		if (node == null) {
-			return;
-		}
-
-		// Check whether the node reference field of the user should be expanded
-		boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
-		if (expandReference) {
-			restUser.setNodeResponse(node.transformToRestSync(ac, level));
-		} else {
-			NodeReference userNodeReference = node.transformToReference(ac);
-			restUser.setNodeReference(userNodeReference);
-		}
-
-	}
-
-	/**
-	 * Set the groups to which the user belongs in the rest model.
-	 *
-	 * @param ac
-	 * @param restUser
-	 */
-	private void setGroups(HibUser user, InternalActionContext ac, UserResponse restUser) {
-		User graphUser = toGraph(user);
-		// TODO filter by permissions
-		for (HibGroup group : graphUser.getGroups()) {
-			GroupReference reference = group.transformToReference();
-			restUser.getGroups().add(reference);
-		}
-	}
-
 	/**
 	 * Encode the given password and set the generated hash.
 	 *
@@ -404,20 +172,21 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	@Override
 	public boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
 		if (log.isTraceEnabled()) {
-			log.debug("Checking permissions for vertex {" + element.getUuid() + "}");
+			log.debug("Checking permissions for element {" + element.getUuid() + "}");
 		}
 		return hasPermissionForId(user, element.getId(), permission);
 	}
 
 	@Override
 	public boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
-		if (permissionCache.get().hasPermission(user.getId(), permission, elementId)) {
+		PermissionCache permissionCache = Tx.get().permissionCache();
+		if (permissionCache.hasPermission(user.getId(), permission, elementId)) {
 			return true;
 		} else {
 			// Admin users have all permissions
 			if (user.isAdmin()) {
 				for (InternalPermission perm : InternalPermission.values()) {
-					permissionCache.get().store(user.getId(), perm, elementId);
+					permissionCache.store(user.getId(), perm, elementId);
 				}
 				return true;
 			}
@@ -438,7 +207,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 					// reduce the invalidation calls.
 					// This way we do not need to invalidate the cache if a role
 					// is removed from a group or a role is deleted.
-					permissionCache.get().store(user.getId(), permission, elementId);
+					permissionCache.store(user.getId(), permission, elementId);
 					return true;
 				}
 			}
@@ -526,7 +295,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		bac.add(user.onDeleted());
 		user.remove();
 		bac.process();
-		permissionCache.get().clear();
+		Tx.get().permissionCache().clear();
 	}
 
 	@Override
@@ -555,103 +324,6 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		for (InternalPermission perm : InternalPermission.values()) {
 			String key = perm.propertyKey();
 			((MeshVertex) target).property(key, ((MeshVertex) source).property(key));
-		}
-		return user;
-	}
-
-	@Override
-	public boolean canReadNode(HibUser user, InternalActionContext ac, HibNode node) {
-		if (user instanceof NodeMigrationUser) {
-			return true;
-		}
-		String version = ac.getVersioningParameters().getVersion();
-		if (ContainerType.forVersion(version) == ContainerType.PUBLISHED) {
-			return hasPermission(ac.getUser(), node, InternalPermission.READ_PUBLISHED_PERM);
-		} else {
-			return hasPermission(ac.getUser(), node, InternalPermission.READ_PERM);
-		}
-	}
-
-	@Override
-	public String getSubETag(HibUser user, InternalActionContext ac) {
-		User graphUser = toGraph(user);
-		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(user.getLastEditedTimestamp());
-
-		Node referencedNode = graphUser.getReferencedNode();
-		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
-			|| ac.getNodeParameters().getExpandAll();
-		// We only need to compute the full etag if the referenced node is expanded.
-		if (referencedNode != null && expandReference) {
-			keyBuilder.append("-");
-			keyBuilder.append(referencedNode.getETag(ac));
-		} else if (referencedNode != null) {
-			keyBuilder.append("-");
-			keyBuilder.append(referencedNode.getUuid());
-			keyBuilder.append(referencedNode.getProject().getName());
-		}
-		for (HibGroup group : graphUser.getGroups()) {
-			keyBuilder.append(group.getUuid());
-		}
-		keyBuilder.append(String.valueOf(user.isAdmin()));
-
-		return keyBuilder.toString();
-	}
-
-	@Override
-	public boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDao contentDao = boot.get().contentDao();
-		HibNode node = contentDao.getNode(container);
-		if (hasPermission(user, node, READ_PERM)) {
-			return true;
-		}
-		boolean published = container.isPublished(branchUuid);
-		if (published && hasPermission(user, node, READ_PUBLISHED_PERM)) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public PermissionInfo getPermissionInfo(HibUser user, HibBaseElement element) {
-		PermissionInfo info = new PermissionInfo();
-		Set<InternalPermission> permissions = getPermissions(user, element);
-		for (InternalPermission perm : permissions) {
-			info.set(perm.getRestPerm(), true);
-		}
-		info.setOthers(false, element.hasPublishPermissions());
-
-		return info;
-	}
-
-	@Override
-	public Set<InternalPermission> getPermissions(HibUser user, HibBaseElement element) {
-		Predicate<? super InternalPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
-			|| element.hasPublishPermissions();
-
-		return Stream.of(InternalPermission.values())
-			// Don't check for publish perms if it does not make sense for the vertex type
-			.filter(isValidPermission)
-			.filter(perm -> hasPermission(user, element, perm))
-			.collect(Collectors.toSet());
-	}
-
-	@Override
-	public HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode) {
-		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM,
-			READ_PUBLISHED_PERM);
-		return user;
-	}
-
-	@Override
-	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode,
-		InternalPermission... toGrant) {
-		// TODO inject dao via DI
-		RoleDao roleDao = Tx.get().roleDao();
-
-		// 2. Add CRUD permission to identified roles and target node
-		for (HibRole role : sourceNode.getRolesWithPerm(permission)) {
-			roleDao.grantPermissions(role, targetNode, toGrant);
 		}
 		return user;
 	}
@@ -687,18 +359,6 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	public Iterable<? extends HibRole> getRoles(HibUser user) {
 		User graphUser = toGraph(user);
 		return graphUser.getRoles();
-	}
-
-	@Override
-	public void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDao contentDao = boot.get().contentDao();
-		HibNode node = contentDao.getNode(container);
-		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
-			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
-				"published".equals(requestedVersion)
-					? READ_PUBLISHED_PERM.getRestPerm().getName()
-					: READ_PERM.getRestPerm().getName());
-		}
 	}
 
 	@Override

@@ -1,14 +1,16 @@
 package com.gentics.mesh.core.db;
 
+import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.security.SecurityUtils;
 
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
  */
-public interface Tx extends BaseTransaction, DaoCollection {
+public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, SecurityUtils {
 
 	/**
 	 * Thread local that is used to store references to the used graph.

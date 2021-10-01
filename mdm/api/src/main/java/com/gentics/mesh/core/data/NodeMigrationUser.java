@@ -91,12 +91,12 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return null;
 	}
 
 	@Override
-	public User getEditor() {
+	public HibUser getEditor() {
 		return null;
 	}
 
@@ -111,7 +111,7 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public User setForcedPasswordChange(boolean force) {
+	public HibUser setForcedPasswordChange(boolean force) {
 		return null;
 	}
 
@@ -121,7 +121,7 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public User setResetTokenIssueTimestamp(Long timestamp) {
+	public HibUser setResetTokenIssueTimestamp(Long timestamp) {
 		return null;
 	}
 
@@ -131,12 +131,12 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public User setAPITokenId(String code) {
+	public HibUser setAPITokenId(String code) {
 		return null;
 	}
 
 	@Override
-	public User setAPITokenIssueTimestamp() {
+	public HibUser setAPITokenIssueTimestamp() {
 		return null;
 	}
 
