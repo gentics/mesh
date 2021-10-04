@@ -11,10 +11,11 @@ import dagger.Lazy;
 
 /**
  * A generalized OrientDB implementation for {@link OrientDBDaoGlobal}.
+ * Due to the limitation of Java type system, we need to carry around two distinct generics for the same end type of an entity.
  * 
  * @author plyhun
  *
- * @param <R> REST model entity counterpart
+ * @param <R> REST entity model
  * @param <T> MDM API entity counterpart
  * @param <D> OrientDB Vertex entity counterpart
  */
@@ -37,6 +38,11 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 		getRoot().addItem(vertex);
 		return entity;
 	}
-	
+
+	/**
+	 * Get root container for the current entity type.
+	 * 
+	 * @return
+	 */
 	protected abstract RootVertex<D> getRoot();
 }
