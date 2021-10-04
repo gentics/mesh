@@ -22,6 +22,9 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Core: The overall memory consumption during a migration job has been reduced.
 
+icon:check[] Clustering: Due to a bug in the vert.x eventbus system, elasticsearch sync operations were not only performed in the Mesh instance, were the
+causing data change actually happened, but on all Mesh instances, which caused unnecessary high load on the elasticsearch. This has been fixed with a workaround.
+
 [[v1.6.20]]
 == 1.6.20 (23.09.2021)
 
