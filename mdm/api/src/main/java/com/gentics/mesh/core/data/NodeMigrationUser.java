@@ -338,4 +338,14 @@ public class NodeMigrationUser implements HibUser {
 		
 	}
 
+	@Override
+	public String getName() {
+		return getUsername();
+	}
+
+	@Override
+	public void setName(String name) {
+		setUsername(name);
+	}
+
 }

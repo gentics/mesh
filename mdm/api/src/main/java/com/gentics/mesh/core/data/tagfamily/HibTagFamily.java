@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUserTracking;
@@ -16,7 +17,7 @@ import com.gentics.mesh.handler.VersionUtils;
 /**
  * Domain model for tag families.
  */
-public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibUserTracking, HibBucketableElement {
+public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibUserTracking, HibBucketableElement, HibNamedElement {
 
 	/**
 	 * Return the name.

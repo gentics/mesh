@@ -92,6 +92,28 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	}
 
 	/**
+	 * Initialize the newly created user. 
+	 * 
+	 * @param user
+	 * @param username
+	 * @param creator
+	 * @return
+	 */
+	default HibUser init(HibUser user, String username, HibUser creator) {
+		user.setUsername(username);
+		user.enable();
+		user.generateBucketId();
+
+		if (creator != null) {
+			user.setCreator(creator);
+			user.setCreationTimestamp();
+			user.setEditor(creator);
+			user.setLastEditedTimestamp();
+		}
+		return user;
+	}
+	
+	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
 	 * 
 	 * @param username
@@ -102,7 +124,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            Optional uuid
 	 * @return
 	 */
-	HibUser create(String username, HibUser creator, String uuid);
+	default HibUser create(String username, HibUser creator, String uuid) {
+		HibUser user = createPersisted(uuid);
+		init(user, username, creator);
+		return mergeIntoPersisted(user);
+	}
 
 	/**
 	 * Inherit the permissions of the source elment to the target element.
@@ -605,6 +631,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 		if (modified && !dry) {
 			user.setEditor(ac.getUser());
 			user.setLastEditedTimestamp();
+			user = mergeIntoPersisted(user);
 			batch.add(user.onUpdated());
 		}
 		return modified;
@@ -696,7 +723,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			// TODO handle user create using full node rest model.
 			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
-		return user;
+		return mergeIntoPersisted(user);
 	}
 
 	@Override

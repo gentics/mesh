@@ -14,14 +14,16 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -37,7 +39,7 @@ import io.reactivex.Completable;
  * DAO for jobs.
  */
 @Singleton
-public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements JobDaoWrapper {
+public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJob, Job> implements JobDaoWrapper {
 
 	@Inject
 	public JobDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
@@ -186,5 +188,10 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	@Override
 	public HibJob loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		return boot.get().meshRoot().getJobRoot().loadObjectByUuid(ac, uuid, perm);
+	}
+
+	@Override
+	protected RootVertex<Job> getRoot() {
+		return boot.get().meshRoot().getJobRoot();
 	}
 }

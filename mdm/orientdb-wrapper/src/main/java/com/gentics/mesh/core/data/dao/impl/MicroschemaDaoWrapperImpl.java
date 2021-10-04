@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -56,7 +57,7 @@ import dagger.Lazy;
 /**
  * @see MicroschemaDaoWrapper
  */
-public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema> implements MicroschemaDaoWrapper {
+public class MicroschemaDaoWrapperImpl extends AbstractCoreDaoWrapper<MicroschemaResponse, HibMicroschema, Microschema> implements MicroschemaDaoWrapper {
 
 	private final MicroschemaComparator comparator;
 
@@ -430,5 +431,10 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	@Override
 	public boolean update(HibProject root, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	protected RootVertex<Microschema> getRoot() {
+		return boot.get().meshRoot().getMicroschemaContainerRoot();
 	}
 }

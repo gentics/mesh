@@ -13,13 +13,15 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -32,7 +34,7 @@ import dagger.Lazy;
  * TODO MDM The method should be moved to {@link LanguageDao}
  */
 @Singleton
-public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> implements LanguageDaoWrapper {
+public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageResponse, HibLanguage, Language> implements LanguageDaoWrapper {
 
 	@Inject
 	public LanguageDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
@@ -183,4 +185,8 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 		return toGraph(element).getAPIPath(ac);
 	}
 
+	@Override
+	protected RootVertex<Language> getRoot() {
+		return boot.get().meshRoot().getLanguageRoot();
+	}
 }

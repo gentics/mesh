@@ -248,4 +248,9 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
 		return getTagFamilyRoot().getRolesWithPerm(vertex, perm);
 	}
+
+	@Override
+	public Tag createRaw() {
+		throw new IllegalStateException("Use TagRoot to create Tag instance, then addTag.");
+	}
 }

@@ -30,7 +30,7 @@ import com.gentics.mesh.path.Path;
 /**
  * Dao for {@link HibNode}
  */
-public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
+public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode>, RootDaoPersistable<HibProject, HibNode> {
 	/**
 	 * Return the API path for the node.
 	 * 

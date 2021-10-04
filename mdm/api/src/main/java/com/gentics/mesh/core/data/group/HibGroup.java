@@ -8,6 +8,7 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.user.HibUserTracking;
@@ -19,7 +20,7 @@ import com.gentics.mesh.handler.VersionUtils;
 /**
  * Domain model for group.
  */
-public interface HibGroup extends HibNamedElement<GroupResponse>, HibUserTracking, HibBucketableElement {
+public interface HibGroup extends HibCoreElement<GroupResponse>, HibUserTracking, HibBucketableElement, HibNamedElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 

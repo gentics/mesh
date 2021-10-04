@@ -77,5 +77,8 @@ public interface UserRoot extends RootVertex<User>, TransformableElementRoot<Use
 	 * 
 	 * @return
 	 */
-	User create();
+
+	default User create() {
+		return createRaw();
+	}
 }

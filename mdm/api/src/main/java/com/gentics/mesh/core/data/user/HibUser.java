@@ -9,6 +9,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
@@ -22,7 +23,7 @@ import io.vertx.ext.auth.User;
 /**
  * Domain model for user.
  */
-public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, HibBucketableElement {
+public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, HibBucketableElement, HibNamedElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.USER, USER_CREATED, USER_UPDATED, USER_DELETED);
 

@@ -16,13 +16,14 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -37,7 +38,7 @@ import dagger.Lazy;
  * @see BranchDaoWrapper
  */
 @Singleton
-public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements BranchDaoWrapper {
+public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse, HibBranch, Branch, HibProject> implements BranchDaoWrapper {
 
 	private Lazy<Database> db;
 
@@ -236,5 +237,10 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	@Override
 	public boolean update(HibProject root, HibBranch element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getBranchRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	protected RootVertex<Branch> getRoot(HibProject root) {
+		return toGraph(root).getBranchRoot();
 	}
 }

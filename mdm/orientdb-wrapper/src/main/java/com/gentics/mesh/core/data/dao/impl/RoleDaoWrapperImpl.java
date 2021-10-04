@@ -24,7 +24,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
@@ -51,7 +52,7 @@ import dagger.Lazy;
  * DAO for {@link HibRole} operations.
  */
 @Singleton
-public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements RoleDaoWrapper {
+public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, HibRole, Role> implements RoleDaoWrapper {
 
 	private final Lazy<PermissionCache> permissionCache;
 	private final CommonDaoHelper commonDaoHelper;
@@ -313,5 +314,10 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	public Result<? extends HibRole> findAll() {
 		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findAll();
+	}
+
+	@Override
+	protected RootVertex<Role> getRoot() {
+		return boot.get().meshRoot().getRoleRoot();
 	}
 }

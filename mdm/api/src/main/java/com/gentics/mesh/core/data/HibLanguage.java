@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.lang.LanguageResponse;
 /**
  * Domain model for languages.
  */
-public interface HibLanguage extends HibNamedElement<LanguageResponse> {
+public interface HibLanguage extends HibCoreElement<LanguageResponse>, HibNamedElement {
 
 	/**
 	 * Native name of the language.

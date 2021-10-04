@@ -22,7 +22,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -52,7 +53,7 @@ import io.vertx.core.logging.Logger;
 /**
  * @see TagFamilyDaoWrapper
  */
-public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> implements TagFamilyDaoWrapper {
+public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyResponse, HibTagFamily, TagFamily> implements TagFamilyDaoWrapper {
 
 	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
 
@@ -357,6 +358,11 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
 			boolean errorIfNotFound) {
 		return boot.get().meshRoot().getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	}
+
+	@Override
+	protected RootVertex<TagFamily> getRoot() {
+		return boot.get().meshRoot().getTagFamilyRoot();
 	}
 
 }

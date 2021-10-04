@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -40,6 +40,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -71,7 +72,7 @@ import io.vertx.core.Vertx;
 /**
  * @see SchemaDaoWrapper
  */
-public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implements SchemaDaoWrapper {
+public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse, HibSchema, Schema> implements SchemaDaoWrapper {
 
 	private final Lazy<Vertx> vertx;
 	private final Lazy<NodeIndexHandler> nodeIndexHandler;
@@ -531,5 +532,10 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	@Override
 	public boolean update(HibProject root, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getSchemaContainerRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	protected RootVertex<Schema> getRoot() {
+		return boot.get().meshRoot().getSchemaContainerRoot();
 	}
 }

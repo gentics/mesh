@@ -16,7 +16,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibBranch}.
  */
-public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, Dao<HibBranch>, RootDao<HibProject, HibBranch> {
+public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, Dao<HibBranch>, RootDao<HibProject, HibBranch>, RootDaoPersistable<HibProject, HibBranch> {
 	/**
 	 * Return the API path for the branch.
 	 * 

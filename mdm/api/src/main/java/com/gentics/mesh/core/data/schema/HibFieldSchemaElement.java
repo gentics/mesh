@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
  * Common interfaces shared by schema and microschema versions
  */
 public interface HibFieldSchemaElement<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>>
-	extends HibCoreElement<R>, HibUserTracking, HibNamedElement<R> {
+	extends HibCoreElement<R>, HibUserTracking, HibNamedElement {
 
 	String getElementVersion();
 

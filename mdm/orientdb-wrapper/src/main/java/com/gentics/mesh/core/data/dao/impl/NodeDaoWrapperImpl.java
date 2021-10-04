@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -48,7 +49,7 @@ import dagger.Lazy;
  * DAO for {@link HibNode} operation.
  */
 @Singleton
-public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements NodeDaoWrapper {
+public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, HibNode, Node, HibProject> implements NodeDaoWrapper {
 
 	@Inject
 	public NodeDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
@@ -349,5 +350,10 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	@Override
 	public long globalCount() {
 		return boot.get().meshRoot().nodeCount();
+	}
+
+	@Override
+	protected RootVertex<Node> getRoot(HibProject root) {
+		return toGraph(root).getNodeRoot();
 	}
 }

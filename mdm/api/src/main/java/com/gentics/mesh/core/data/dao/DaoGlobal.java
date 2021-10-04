@@ -16,7 +16,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * 
  * @param <T>
  */
-public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
+public interface DaoGlobal<T extends HibBaseElement> extends Dao<T>, DaoPersistable<T> {
 
 	/**
 	 * Load the element by uuid.

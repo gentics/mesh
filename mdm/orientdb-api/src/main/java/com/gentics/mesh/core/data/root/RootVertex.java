@@ -319,6 +319,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	T create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
+	 * Create an uninitialized persisted object.
+	 * 
+	 * @return
+	 */
+	T createRaw();
+
+	/**
 	 * Add the given item to the this root vertex.
 	 * 
 	 * @param item

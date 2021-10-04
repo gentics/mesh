@@ -21,7 +21,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -62,7 +63,7 @@ import io.vertx.core.logging.LoggerFactory;
  * TODO MDM Use {@link ProjectDao} instead of ProjectRoot once ready
  */
 @Singleton
-public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implements ProjectDaoWrapper {
+public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectResponse, HibProject, Project> implements ProjectDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectDaoWrapperImpl.class);
 
@@ -348,6 +349,11 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	@Override
 	public Result<? extends HibProject> findAll() {
 		return boot.get().meshRoot().getProjectRoot().findAll();
+	}
+
+	@Override
+	protected RootVertex<Project> getRoot() {
+		return boot.get().meshRoot().getProjectRoot();
 	}
 
 }

@@ -167,4 +167,14 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		// TODO FIXME make this method abstract
 		throw new RuntimeException("Not implemented");
 	}
+
+	@Override
+	public long globalCount() {
+		return db().count(getPersistanceClass());
+	}
+
+	@Override
+	public T createRaw() {
+		return getGraph().addFramedVertex(getPersistanceClass());
+	}
 }
