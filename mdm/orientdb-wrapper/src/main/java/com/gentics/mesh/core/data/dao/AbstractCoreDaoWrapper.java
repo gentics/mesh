@@ -39,6 +39,12 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 		return entity;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public void deletePersisted(T element) {
+		D vertex = (D) element;
+		vertex.remove();
+	}
 	/**
 	 * Get root container for the current entity type.
 	 * 

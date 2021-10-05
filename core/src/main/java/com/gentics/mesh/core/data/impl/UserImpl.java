@@ -282,7 +282,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	}
 
 	@Override
-	public User addGroup(Group group) {
+	public User addGroup(HibGroup group) {
 		// Redirect to group implementation
 		mesh().boot().groupDao().addUser(group, this);
 		return this;

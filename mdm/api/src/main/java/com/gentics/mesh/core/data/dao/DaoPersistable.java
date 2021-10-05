@@ -26,9 +26,17 @@ public interface DaoPersistable<T extends HibBaseElement> {
 	T createPersisted(String uuid);
 	
 	/**
+	 * Merge the data from given POJO into the persistent entity.
 	 * 
 	 * @param element
 	 * @return
 	 */
 	T mergeIntoPersisted(T element);
+	
+	/**
+	 * Delete the persistent entity.
+	 * 
+	 * @param element
+	 */
+	void deletePersisted(T element);
 }

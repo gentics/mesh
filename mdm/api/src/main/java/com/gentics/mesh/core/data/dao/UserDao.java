@@ -738,7 +738,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 		// }
 		// outE(HAS_USER).removeAll();
 		bac.add(user.onDeleted());
-		user.remove();
+		deletePersisted(user);
 		bac.process();
 		Tx.get().permissionCache().clear();
 	}
