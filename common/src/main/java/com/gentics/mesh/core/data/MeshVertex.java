@@ -48,8 +48,9 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	 * @param recursive
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
+	 * @return true, iff permissions were effectively changed
 	 */
-	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+	boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke);
 
 	/**

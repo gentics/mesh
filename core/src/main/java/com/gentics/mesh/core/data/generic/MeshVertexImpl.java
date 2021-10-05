@@ -108,21 +108,23 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+		return applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
-	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
+	protected boolean applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
-		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
+		boolean permissionChanged = false;
+		permissionChanged = role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()])) || permissionChanged;
+		permissionChanged = role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()])) || permissionChanged;
 
-		if (this instanceof MeshCoreVertex) {
+		if (permissionChanged && this instanceof MeshCoreVertex) {
 			MeshCoreVertex<?, ?> coreVertex = (MeshCoreVertex<?, ?>) this;
 			batch.add(coreVertex.onPermissionChanged(role));
 		}
 		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.
+		return permissionChanged;
 	}
 
 	@Override

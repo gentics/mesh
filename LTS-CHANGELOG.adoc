@@ -17,6 +17,15 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.21]]
+== 1.6.21 (TBD)
+
+icon:check[] Search: When a full synchronization of the search indices was triggered, language specific indices were unnecessarily removed first. This has been changed,
+language specific indices will now be treated like all other indices during a full synchronization.
+
+icon:check[] Core: When performing an update for role permissions, an event was published even if the update actually did not change anything. A check has been added to
+only publish the event if permissions are actually changed.
+
 [[v1.6.20]]
 == 1.6.20 (23.09.2021)
 
