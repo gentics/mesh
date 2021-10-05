@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 /**
- * DAO for roles
+ * General DAO.
  * 
  * @param <T>
  */

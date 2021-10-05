@@ -39,7 +39,12 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 		getRoot(root).addItem(vertex);
 		return entity;
 	}
-	
+
+	@Override
+	public void deletePersisted(R root, L element) {
+		getRoot(root).findByUuid(element.getUuid()).delete();
+	}
+
 	/**
 	 * Get container vertex for the given root entity.  
 	 * 

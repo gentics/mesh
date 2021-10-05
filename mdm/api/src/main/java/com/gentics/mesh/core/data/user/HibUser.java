@@ -11,16 +11,11 @@ import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.handler.VersionUtils;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.ext.auth.User;
@@ -139,6 +134,17 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, 
 	Long getResetTokenIssueTimestamp();
 
 	/**
+	 * Invalidate the reset token.
+	 *
+	 * @return Fluent API
+	 */
+	default HibUser invalidateResetToken() {
+		setResetToken(null);
+		setResetTokenIssueTimestamp(null);
+		return this;
+	}
+
+	/**
 	 * Set the password hash.
 	 * 
 	 * @param hash
@@ -234,6 +240,19 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, 
 	HibUser setAPITokenIssueTimestamp();
 
 	/**
+	 * Return the API token issue date.
+	 *
+	 * @return ISO8601 formatted date or null if the date has not yet been set
+	 */
+	default String getAPITokenIssueDate() {
+		Long timestamp = getAPITokenIssueTimestamp();
+		if (timestamp == null) {
+			return null;
+		}
+		return DateUtils.toISO8601(timestamp, System.currentTimeMillis());
+	}
+
+	/**
 	 * Return the currently stored reset token.
 	 *
 	 * @return Token or null if no token has been set or if the token has been used up
@@ -284,85 +303,6 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, 
 	 * @return
 	 */
 	MeshAuthUser toAuthUser();
-
-	/**
-	 * Return a page of groups which the user was assigned to.
-	 *
-	 * @param user
-	 * @param params
-	 * @return
-	 */
-	Page<? extends HibGroup> getGroups(HibUser user, PagingParameters params);
-
-	/**
-	 * Return a traversal result of groups to which the user was assigned.
-	 *
-	 * @return
-	 */
-	Result<? extends HibGroup> getGroups();
-
-	/**
-	 * Add the user to the given group.
-	 *
-	 * @param group
-	 * @return Fluent API
-	 */
-	HibUser addGroup(HibGroup group);
-
-	/**
-	 * Return an iterable of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
-	 *
-	 * @return
-	 */
-	Iterable<? extends HibRole> getRoles();
-
-	/**
-	 * Return an iterable of roles that belong to the user. Internally this will check the user role shortcut edge.
-	 *
-	 * @return
-	 */
-	Iterable<? extends HibRole> getRolesViaShortcut();
-
-	/**
-	 * Return a page of roles which the user was assigned to.
-	 *
-	 * @param user
-	 * @param params
-	 * @return
-	 */
-	Page<? extends HibRole> getRolesViaShortcut(HibUser user, PagingParameters params);
-
-	/**
-	 * Invalidate the reset token.
-	 *
-	 * @return Fluent API
-	 */
-	default HibUser invalidateResetToken() {
-		setResetToken(null);
-		setResetTokenIssueTimestamp(null);
-		return this;
-	}
-
-	/**
-	 * Set the API token issue timestamp.
-	 *
-	 * @param timestamp
-	 * @return Fluent API
-	 */
-	HibUser setAPITokenIssueTimestamp(Long timestamp);
-
-	/**
-	 * Return the API token issue date.
-	 *
-	 * @return ISO8601 formatted date or null if the date has not yet been set
-	 */
-	default String getAPITokenIssueDate() {
-		Long timestamp = getAPITokenIssueTimestamp();
-		if (timestamp == null) {
-			return null;
-		}
-		return DateUtils.toISO8601(timestamp, System.currentTimeMillis());
-	}
 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {

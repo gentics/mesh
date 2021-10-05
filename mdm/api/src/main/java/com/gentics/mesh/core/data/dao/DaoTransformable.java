@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import io.reactivex.Single;
 
 /**
+ * DAO for POJO-DTO transformation functionality.
  * 
  * @param <T>
  *            Domain class type

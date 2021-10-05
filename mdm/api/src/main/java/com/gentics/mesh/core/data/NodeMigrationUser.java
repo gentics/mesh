@@ -4,9 +4,7 @@ import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -15,9 +13,7 @@ import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
@@ -211,11 +207,6 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public String getAPITokenIssueDate() {
-		return null;
-	}
-
-	@Override
 	public HibUser setReferencedNode(HibNode node) {
 		return this;
 	}
@@ -346,47 +337,4 @@ public class NodeMigrationUser implements HibUser {
 	public void setName(String name) {
 		setUsername(name);
 	}
-
-	@Override
-	public Page<? extends HibGroup> getGroups(HibUser user, PagingParameters params) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Result<? extends HibGroup> getGroups() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public HibUser addGroup(HibGroup group) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Iterable<? extends HibRole> getRoles() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Iterable<? extends HibRole> getRolesViaShortcut() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Page<? extends HibRole> getRolesViaShortcut(HibUser user, PagingParameters params) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public HibUser setAPITokenIssueTimestamp(Long timestamp) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

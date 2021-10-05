@@ -27,8 +27,17 @@ public interface RootDaoPersistable<R extends HibCoreElement<? extends RestModel
 	/**
 	 * Merge the element data into its persistent state.
 	 * 
+	 * @param root
 	 * @param element
 	 * @return
 	 */
 	L mergeIntoPersisted(R root, L element);
+	
+	/**
+	 * Delete the persistent entity.
+	 * 
+	 * @param root
+	 * @param element
+	 */
+	void deletePersisted(R root, L element);
 }
