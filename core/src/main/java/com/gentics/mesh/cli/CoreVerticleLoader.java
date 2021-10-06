@@ -91,9 +91,10 @@ public class CoreVerticleLoader {
 	}
 
 	private Completable deployJobWorkerVerticle() {
+		// the verticle is not deployed as worker verticle (any more). See comments of AbstractJobVerticle for details
 		return rxVertx.rxDeployVerticle(jobWorkerVerticle, new DeploymentOptions()
 			.setInstances(1)
-			.setWorker(true))
+			.setWorker(false))
 			.ignoreElement();
 	}
 

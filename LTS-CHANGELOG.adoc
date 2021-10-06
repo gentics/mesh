@@ -20,6 +20,11 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.21]]
 == 1.6.21 (TBD)
 
+icon:check[] Core: When eventbus messages where published during execution of a job (e.g. a node migration), the events were not published and handled immediately,
+but were queued in memory and eventually published after the job execution. This caused high memory consumption during a node migration and also the elasticsearch
+indexing of migrated nodes to be delayed until after all nodes had been migrated. Execution of the jobs has been changed now, so that events will be published
+immediately to fix those issues.
+
 icon:check[] Core: The overall memory consumption during a migration job has been reduced.
 
 icon:check[] Clustering: Due to a bug in the vert.x eventbus system, elasticsearch sync operations were not only performed in the Mesh instance, were the
