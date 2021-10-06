@@ -6,9 +6,11 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 import static com.gentics.mesh.metric.SimpleMetric.NODE_MIGRATION_PENDING;
 
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -33,7 +35,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.VersionNumber;
-import com.google.common.collect.Lists;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
@@ -94,9 +95,13 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-			List<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
+			Queue<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
 				Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid());
-				return Lists.newArrayList(it);
+				Queue<NodeGraphFieldContainer> queue = new ArrayDeque<>();
+				while (it.hasNext()) {
+					queue.add(it.next());
+				}
+				return queue;
 			});
 
 			if (metrics.isEnabled()) {
