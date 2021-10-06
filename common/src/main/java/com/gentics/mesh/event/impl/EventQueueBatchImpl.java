@@ -11,10 +11,12 @@ import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.EventCauseInfoImpl;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -37,9 +39,12 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 
 	private final Vertx vertx;
 
+	private final MeshOptions options;
+
 	@Inject
-	public EventQueueBatchImpl(Vertx vertx) {
+	public EventQueueBatchImpl(Vertx vertx, MeshOptions options) {
 		this.vertx = vertx;
+		this.options = options;
 	}
 
 	@Override
@@ -86,7 +91,8 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 			if (log.isTraceEnabled()) {
 				log.trace("Dispatching event '{}' with payload:\n{}", event, json);
 			}
-			eventbus.publish(event.getAddress(), new JsonObject(json));
+			eventbus.publish(event.getAddress(), new JsonObject(json),
+					new DeliveryOptions().addHeader(SENDER_HEADER, options.getNodeName()));
 		});
 		getEntries().clear();
 
