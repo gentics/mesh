@@ -54,16 +54,18 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 * 
 	 * @param vertex
 	 * @param permissions
+	 * @return true, iff permissions were effectively changed
 	 */
-	void grantPermissions(MeshVertex vertex, GraphPermission... permissions);
+	boolean grantPermissions(MeshVertex vertex, GraphPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the vertex.
 	 * 
 	 * @param vertex
 	 * @param permissions
+	 * @return true, iff permissions were effectively changed
 	 */
-	void revokePermissions(MeshVertex vertex, GraphPermission... permissions);
+	boolean revokePermissions(MeshVertex vertex, GraphPermission... permissions);
 
 	/**
 	 * Return a set of permissions which the role is granting to the given element.
