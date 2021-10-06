@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -108,8 +109,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("user", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			boot().userDao().deletePersisted(boot().userDao().findByName("user_3"));
+		tx(tx -> {
+			UserDao userDao = tx.userDao();
+			tx.delete(userDao.findByName("user_3"), userDao);
 		});
 		syncIndex();
 		assertMetrics("user", 0, 0, 1);

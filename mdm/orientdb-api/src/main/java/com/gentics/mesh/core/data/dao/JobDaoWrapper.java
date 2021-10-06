@@ -5,6 +5,6 @@ import com.gentics.mesh.core.data.job.HibJob;
 /**
  * DAO to access {@link HibJob}.
  */
-public interface JobDaoWrapper extends JobDao, OrientDBDaoGlobal<HibJob> {
+public interface JobDaoWrapper extends JobDao {
 
 }

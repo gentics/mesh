@@ -125,9 +125,9 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @return
 	 */
 	default HibUser create(String username, HibUser creator, String uuid) {
-		HibUser user = createPersisted(uuid);
+		HibUser user = Tx.get().create(uuid, this);
 		init(user, username, creator);
-		return mergeIntoPersisted(user);
+		return Tx.get().persist(user, this);
 	}
 
 	/**
@@ -631,7 +631,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 		if (modified && !dry) {
 			user.setEditor(ac.getUser());
 			user.setLastEditedTimestamp();
-			user = mergeIntoPersisted(user);
+			user = Tx.get().persist(user, this);
 			batch.add(user.onUpdated());
 		}
 		return modified;
@@ -723,7 +723,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			// TODO handle user create using full node rest model.
 			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
-		return mergeIntoPersisted(user);
+		return Tx.get().persist(user, this);
 	}
 
 	@Override
@@ -738,7 +738,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 		// }
 		// outE(HAS_USER).removeAll();
 		bac.add(user.onDeleted());
-		deletePersisted(user);
+		Tx.get().delete(user, this);
 		bac.process();
 		Tx.get().permissionCache().clear();
 	}

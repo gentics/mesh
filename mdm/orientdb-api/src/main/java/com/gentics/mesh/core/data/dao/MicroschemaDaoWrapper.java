@@ -5,6 +5,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 /**
  * DAO for {@link HibMicroschema} operations.
  */
-public interface MicroschemaDaoWrapper extends MicroschemaDao, OrientDBDaoGlobal<HibMicroschema> {
+public interface MicroschemaDaoWrapper extends MicroschemaDao {
 
 }

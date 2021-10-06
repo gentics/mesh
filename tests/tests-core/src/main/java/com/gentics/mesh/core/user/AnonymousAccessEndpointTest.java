@@ -50,7 +50,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 
 		// Verify that anonymous access does not work if the anonymous user is deleted
 		try (Tx tx = tx()) {
-			tx.userDao().deletePersisted(users().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME));
+			tx.delete(users().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME), tx.userDao());
 			tx.success();
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");

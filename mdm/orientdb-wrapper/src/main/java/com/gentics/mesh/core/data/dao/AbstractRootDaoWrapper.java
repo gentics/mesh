@@ -21,27 +21,24 @@ import dagger.Lazy;
  * @param <R> MDM API root entity type 
  */
 public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends HibCoreElement<RM>, D extends MeshCoreVertex<RM>, R extends HibCoreElement<? extends RestModel>> 
-	extends AbstractDaoWrapper<L> implements OrientDBRootDao<R, L> {
+	extends AbstractDaoWrapper<L> {
 
 	public AbstractRootDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
 	@SuppressWarnings("unchecked")
-	@Override
-	public L createPersisted(R root, String uuid) {
+	public L persist(R root, String uuid) {
 		D vertex = getRoot(root).createRaw();
 		L entity = (L) vertex;
 		if (uuid != null) {
 			entity.setUuid(uuid);
-			entity = mergeIntoPersisted(root, entity);
 		}
 		getRoot(root).addItem(vertex);
 		return entity;
 	}
 
-	@Override
-	public void deletePersisted(R root, L element) {
+	public void unpersist(R root, L element) {
 		getRoot(root).findByUuid(element.getUuid()).delete();
 	}
 

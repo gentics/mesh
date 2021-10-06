@@ -10,7 +10,7 @@ import com.gentics.mesh.security.SecurityUtils;
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
  */
-public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, SecurityUtils {
+public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, SecurityUtils, TxEntityPersistenceManager {
 
 	/**
 	 * Thread local that is used to store references to the used graph.

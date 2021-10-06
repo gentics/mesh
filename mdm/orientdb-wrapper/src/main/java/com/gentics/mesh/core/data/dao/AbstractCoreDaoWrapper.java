@@ -20,30 +20,23 @@ import dagger.Lazy;
  * @param <D> OrientDB Vertex entity counterpart
  */
 public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibCoreElement<R>, D extends MeshCoreVertex<R>> 
-		extends AbstractDaoWrapper<T> implements OrientDBDaoGlobal<T> {
+		extends AbstractDaoWrapper<T> {
 
 	public AbstractCoreDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public T createPersisted(String uuid) {
+	public D persist(String uuid) {
 		D vertex = getRoot().createRaw();
-		T entity = (T) vertex;
 		if (uuid != null) {
-			entity.setUuid(uuid);
-			entity = mergeIntoPersisted(entity);
+			vertex.setUuid(uuid);
 		}
 		getRoot().addItem(vertex);
-		return entity;
+		return vertex;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public void deletePersisted(T element) {
-		D vertex = (D) element;
-		vertex.remove();
+	public void unpersist(D element) {
+		element.remove();
 	}
 	/**
 	 * Get root container for the current entity type.

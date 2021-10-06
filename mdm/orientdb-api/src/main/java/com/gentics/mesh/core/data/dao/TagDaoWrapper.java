@@ -5,6 +5,6 @@ import com.gentics.mesh.core.data.tag.HibTag;
 /**
  * DAO for {@link HibTag} operations.
  */
-public interface TagDaoWrapper extends TagDao, OrientDBDaoGlobal<HibTag> {
+public interface TagDaoWrapper extends TagDao {
 
 }
