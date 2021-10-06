@@ -250,6 +250,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(),
 								branch.getName());
 						}
+
+						// add all language specific indices
+						version.getSchema().findOverriddenSearchLanguages()
+								.forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(type -> {
+									activeIndices.add(ContentDaoWrapper.composeIndexName(currentProject.getUuid(),
+											branch.getUuid(), version.getUuid(), type, language));
+								}));
+
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
 								.add(ContentDaoWrapper.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),

@@ -116,20 +116,23 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public void grantPermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
+	public boolean grantPermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
+		boolean permissionGranted = false;
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles == null) {
 				vertex.setRoleUuidForPerm(permission, Collections.singleton(role.getUuid()));
+				permissionGranted = true;
 			} else {
-				allowedRoles.add(role.getUuid());
+				permissionGranted = allowedRoles.add(role.getUuid()) || permissionGranted;
 				vertex.setRoleUuidForPerm(permission, allowedRoles);
 			}
 		}
+		return permissionGranted;
 	}
 
 	@Override
-	public void revokePermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
+	public boolean revokePermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
 		boolean permissionRevoked = false;
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
@@ -142,6 +145,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 		if (permissionRevoked) {
 			permissionCache.get().clear();
 		}
+		return permissionRevoked;
 	}
 
 	@Override

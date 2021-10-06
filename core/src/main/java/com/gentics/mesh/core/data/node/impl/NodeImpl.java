@@ -53,7 +53,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -83,6 +82,7 @@ import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
@@ -1614,15 +1614,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
+		boolean permissionChanged = false;
 		if (recursive) {
 			// We don't need to filter by branch. Branch nodes can't have dedicated perms
 			for (Node child : getChildren()) {
-				child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+				permissionChanged = child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
-		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		return permissionChanged;
 	}
 
 	@Override

@@ -453,7 +453,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		expect(ROLE_PERMISSIONS_CHANGED).total(1);
+
 		HibNode node;
+
 		try (Tx tx = tx()) {
 			node = folder("2015");
 			RolePermissionRequest request = new RolePermissionRequest();
@@ -472,6 +475,24 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, node));
 			assertTrue(roleDao.hasPermission(role(), InternalPermission.READ_PERM, node));
 		}
+
+		awaitEvents();
+
+		// do an "empty" update (not changing any permissions) and expect no more events
+		eventAsserter().clear();
+		expect(ROLE_PERMISSIONS_CHANGED).none();
+		try (Tx tx = tx()) {
+			RolePermissionRequest request = new RolePermissionRequest();
+			request.setRecursive(false);
+			request.getPermissions().add(READ);
+			request.getPermissions().add(UPDATE);
+			request.getPermissions().add(CREATE);
+			GenericMessageResponse message = call(
+				() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request));
+			assertThat(message).matches("role_updated_permission", role().getName());
+		}
+
+		awaitEvents();
 	}
 
 	@Test

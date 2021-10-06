@@ -65,7 +65,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 * @param vertex
 	 * @param permissions
 	 */
-	void grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
+	boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the vertex.
@@ -74,7 +74,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 * @param vertex
 	 * @param permissions
 	 */
-	void revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
+	boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Return a set of permissions which the role is granting to the given element.
