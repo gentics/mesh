@@ -39,7 +39,7 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 	}
 
 	public void unpersist(R root, L element) {
-		getRoot(root).findByUuid(element.getUuid()).delete();
+		getRoot(root).findByUuid(element.getUuid()).remove();
 	}
 
 	/**

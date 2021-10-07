@@ -137,7 +137,7 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	
 	@Override
 	public <B extends HibCoreElement<? extends RestModel>> void delete(B element, Dao<B> dao) {
-		((MeshCoreVertex<?>) element).delete();
+		((MeshCoreVertex<?>) element).remove();
 	}
 
 	@SuppressWarnings("unchecked")
