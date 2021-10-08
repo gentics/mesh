@@ -397,6 +397,21 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 */
 	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
 
+	/**
+	 * Returns events for assignment on the schema action.
+	 * 
+	 * @return
+	 */
+	Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assignment);
+
+	/**
+	 * Delete schema version, notifying context if necessary.
+	 * 
+	 * @param version
+	 * @param bac
+	 */
+	void deleteVersion(HibSchemaVersion version, BulkActionContext bac);
+
 	@Override
 	default String getAPIPath(HibSchema element, InternalActionContext ac) {
 		return element.getAPIPath(ac);
@@ -421,14 +436,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	}
 
 	/**
-	 * Delete schema version, notifying context if necessary.
-	 * 
-	 * @param version
-	 * @param bac
-	 */
-	void deleteVersion(HibSchemaVersion version, BulkActionContext bac);
-
-	/**
 	 * Validate the given schema model using the elasticsearch index handler (needed for ES setting validation).
 	 * 
 	 * @param indexHandler
@@ -446,11 +453,9 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 			}
 		}
 	}
-
-	/**
-	 * Returns events for assignment on the schema action.
-	 * 
-	 * @return
-	 */
-	Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assignment);
+	@Override
+	default SchemaResponse transformToRestSync(HibSchema element, InternalActionContext ac, int level,
+			String... languageTags) {
+		return element.transformToRestSync(ac, level, languageTags);
+	}
 }

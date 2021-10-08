@@ -325,7 +325,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			SchemaDao schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao.findByName("schema_3");
 			schema.getLatestVersion().deleteElement();
-			schema.deleteElement();
+			tx.delete(schema, schema.getClass());
 		});
 		syncIndex();
 		assertMetrics("schema", 0, 0, 1);

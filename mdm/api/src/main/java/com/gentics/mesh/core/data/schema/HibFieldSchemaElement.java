@@ -1,7 +1,15 @@
 package com.gentics.mesh.core.data.schema;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
@@ -29,9 +37,12 @@ public interface HibFieldSchemaElement<R extends FieldSchemaContainer, RM extend
 	void setLatestVersion(SCV version);
 
 	/**
-	 * Return an iterable with all found schema versions.
+	 * Return a map of all branches which reference the container via an assigned container version. The found container version will be added as key to the
+	 * map.
 	 * 
 	 * @return
 	 */
-	Iterable<? extends SCV> findAll();
+	Map<HibBranch, SCV> findReferencedBranches();
+
+	R transformToRestSync(InternalActionContext ac, int level, String... languageTags);
 }

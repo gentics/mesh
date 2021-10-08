@@ -125,6 +125,7 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 		return boot.get().meshRoot().getSchemaContainerRoot().getRoots(toGraph(schema));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Iterable<HibSchemaVersion> findAllVersions(HibSchema schema) {
 		Schema graphSchema = toGraph(schema);
@@ -207,8 +208,7 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 
 	@Override
 	public Map<HibBranch, HibSchemaVersion> findReferencedBranches(HibSchema schema) {
-		Map<?, ?> map = toGraph(schema).findReferencedBranches();
-		return (Map<HibBranch, HibSchemaVersion>) map;
+		return toGraph(schema).findReferencedBranches();
 	}
 
 	@Override

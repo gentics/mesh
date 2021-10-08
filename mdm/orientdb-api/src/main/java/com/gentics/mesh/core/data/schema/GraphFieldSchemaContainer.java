@@ -57,30 +57,9 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RM ex
 	VV findVersionByRev(String version);
 
 	/**
-	 * Return a map of all branches which reference the container via an assigned container version. The found container version will be added as key to the
-	 * map.
+	 * Return an iterable with all found schema versions.
 	 * 
 	 * @return
 	 */
-	default Map<HibBranch, VV> findReferencedBranches() {
-		Map<HibBranch, VV> references = new HashMap<>();
-		for (VV version : findAll()) {
-			version.getBranches().forEach(branch -> references.put(branch, version));
-		}
-		return references;
-	}
-
-	default R transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		String version = ac.getVersioningParameters().getVersion();
-		// Delegate transform call to latest version
-		if (version == null || version.equals("draft")) {
-			return getLatestVersion().transformToRestSync(ac, level, languageTags);
-		} else {
-			VV foundVersion = findVersionByRev(version);
-			if (foundVersion == null) {
-				throw error(NOT_FOUND, "object_not_found_for_uuid_version", getUuid(), version);
-			}
-			return foundVersion.transformToRestSync(ac, level, languageTags);
-		}
-	}
+	Iterable<? extends VV> findAll();
 }

@@ -18,10 +18,12 @@ import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
@@ -35,25 +37,6 @@ import io.vertx.core.logging.LoggerFactory;
 public interface HibCoreElement<T extends RestModel> extends HibTransformableElement<T> {
 	
 	static final Logger log = LoggerFactory.getLogger(HibCoreElement.class);
-
-	/**
-	 * Method which is being invoked once the element has been created.
-	 */
-	MeshElementEventModel onCreated();
-
-	/**
-	 * Method which is being invoked once the element has been updated.
-	 * 
-	 * @return Created event
-	 */
-	MeshElementEventModel onUpdated();
-
-	/**
-	 * Method which is being invoked once the element has been deleted.
-	 * 
-	 * @return Created event
-	 */
-	MeshElementEventModel onDeleted();
 
 	/**
 	 * Return the type info of the element.
@@ -162,5 +145,45 @@ public interface HibCoreElement<T extends RestModel> extends HibTransformableEle
 		// Add the type specific etag part
 		keyBuilder.append(getSubETag(ac));
 		return ETag.hash(keyBuilder.toString());
+	}
+
+	/**
+	 * Method which is being invoked once the element has been updated.
+	 * 
+	 * @return Created event
+	 */
+	default MeshElementEventModel onUpdated() {
+		return createEvent(getTypeInfo().getOnUpdated());
+	}
+
+	/**
+	 * Method which is being invoked once the element has been created.
+	 */
+	default MeshElementEventModel onCreated() {
+		return createEvent(getTypeInfo().getOnCreated());
+	}
+
+	/**
+	 * Method which is being invoked once the element has been deleted.
+	 * 
+	 * @return Created event
+	 */
+	default MeshElementEventModel onDeleted() {
+		return createEvent(getTypeInfo().getOnDeleted());
+	}
+
+	private MeshElementEventModel createEvent(MeshEvent event) {
+		MeshElementEventModel model = new MeshElementEventModelImpl();
+		model.setEvent(event);
+		fillEventInfo(model);
+		return model;
+	}
+
+	private void fillEventInfo(MeshElementEventModel model) {
+		if (this instanceof HibNamedElement) {
+			model.setName(((HibNamedElement) this).getName());
+		}
+		model.setOrigin(Tx.get().data().options().getNodeName());
+		model.setUuid(getUuid());
 	}
 }
