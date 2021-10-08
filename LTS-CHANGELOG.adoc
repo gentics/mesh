@@ -36,6 +36,10 @@ icon:check[] Core: The overall memory consumption during a migration job has bee
 icon:check[] Clustering: Due to a bug in the vert.x eventbus system, elasticsearch sync operations were not only performed in the Mesh instance, were the
 causing data change actually happened, but on all Mesh instances, which caused unnecessary high load on the elasticsearch. This has been fixed with a workaround.
 
+icon:check[] Core: When deleting old versions of nodes, the related binaries were not deleted from the disk. This has been fixed now. Credits to [kdima001](https://github.com/kdima001).
+
+icon:check[] Core: When an OrientDB transaction repeatedly fails and runs into the retry limit, the original cause will now also be logged.
+
 [[v1.6.20]]
 == 1.6.20 (23.09.2021)
 

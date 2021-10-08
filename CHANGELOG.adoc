@@ -44,6 +44,8 @@ causing data change actually happened, but on all Mesh instances, which caused u
 
 icon:check[] Core: When deleting old versions of nodes, the related binaries were not deleted from the disk. This has been fixed now. Credits to [kdima001](https://github.com/kdima001).
 
+icon:check[] Core: When an OrientDB transaction repeatedly fails and runs into the retry limit, the original cause will now also be logged.
+
 [[v1.7.18]]
 == 1.7.18 (23.09.2021)
 
