@@ -314,7 +314,6 @@ public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectRespons
 		setRolePermissions(graphProject, ac, restProject);
 
 		return restProject;
-
 	}
 
 	@Override

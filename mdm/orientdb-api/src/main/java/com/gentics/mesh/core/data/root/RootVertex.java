@@ -50,6 +50,20 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
 	/**
+	 * Check whether the given element is assigned to this root node.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	default boolean contains(T element) {
+		if (findByUuid(element.getUuid()) == null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	/**
 	 * Return a traversal of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
 	 * 
 	 * @return
@@ -323,7 +337,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * 
 	 * @return
 	 */
-	T createRaw();
+	T create();
 
 	/**
 	 * Add the given item to the this root vertex.

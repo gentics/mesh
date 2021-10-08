@@ -121,7 +121,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 		}
 
 		return restTagFamily;
-
 	}
 
 	@Override

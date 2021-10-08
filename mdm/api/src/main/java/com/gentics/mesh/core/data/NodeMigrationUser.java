@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserReference;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -305,11 +304,6 @@ public class NodeMigrationUser implements HibUser {
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return null;
-	}
-
-	@Override
-	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		return null;
 	}
 

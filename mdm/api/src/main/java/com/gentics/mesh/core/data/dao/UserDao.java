@@ -488,12 +488,12 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 		// Check whether the node reference field of the user should be expanded
 		boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
 		if (expandReference) {
-			restUser.setNodeResponse(node.transformToRestSync(ac, level));
+			restUser.setNodeResponse(Tx.get().nodeDao().transformToRestSync(node, ac, level));
 		} else {
 			NodeReference userNodeReference = node.transformToReference(ac);
 			restUser.setNodeReference(userNodeReference);
 		}
-
+		Tx.get().persist(user, this);
 	}
 
 	/**
@@ -508,6 +508,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
+		Tx.get().persist(user, this);
 	}
 
 	/**
@@ -754,6 +755,6 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	// blocking
 	default HibUser setPassword(HibUser user, String password) {
 		user.setPasswordHash(Tx.get().passwordEncoder().encode(password));
-		return user;
+		return Tx.get().persist(user, this);
 	}
 }

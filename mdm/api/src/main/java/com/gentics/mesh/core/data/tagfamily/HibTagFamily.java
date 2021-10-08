@@ -6,10 +6,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUserTracking;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.handler.VersionUtils;
@@ -78,12 +76,5 @@ public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibUser
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getUuid();
-	}
-
-	@Override
-	@Deprecated
-	default TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
-		return tagFamilyDao.transformToRestSync(this, ac, level, languageTags);
 	}
 }

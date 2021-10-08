@@ -101,11 +101,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public NodeResponse transformToRestSync(HibNode node, InternalActionContext ac, int level, String... languageTags) {
-		return toGraph(node).transformToRestSync(ac, level, languageTags);
-	}
-
-	@Override
 	public HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
 		return toGraph(parentNode).create(creator, schemaVersion, project);
 	}

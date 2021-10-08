@@ -35,14 +35,6 @@ public interface SchemaRoot extends RootVertex<Schema> {
 	void removeSchemaContainer(HibSchema schemaContainer, EventQueueBatch batch);
 
 	/**
-	 * Check whether the given schema is assigned to this root node.
-	 * 
-	 * @param schema
-	 * @return
-	 */
-	boolean contains(HibSchema schema);
-
-	/**
 	 * Returns the project to which the schema container root belongs.
 	 * 
 	 * @return Project or null if this is the global root container
@@ -83,4 +75,11 @@ public interface SchemaRoot extends RootVertex<Schema> {
 	 * @return
 	 */
 	Iterable<? extends SchemaVersion> findAllVersions(Schema schema);
+
+	/**
+	 * Get schema version entity class.
+	 * 
+	 * @return
+	 */
+	Class<? extends SchemaVersion> getSchemaVersionPersistenceClass();
 }

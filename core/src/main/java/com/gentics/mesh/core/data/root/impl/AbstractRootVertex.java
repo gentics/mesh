@@ -174,7 +174,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public T createRaw() {
+	public T create() {
 		return getGraph().addFramedVertex(getPersistanceClass());
 	}
 }

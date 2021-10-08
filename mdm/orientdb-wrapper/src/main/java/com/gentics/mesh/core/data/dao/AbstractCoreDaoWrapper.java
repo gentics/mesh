@@ -1,11 +1,15 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.checkAndCast;
+
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.event.EventQueueBatch;
 
 import dagger.Lazy;
 
@@ -20,14 +24,14 @@ import dagger.Lazy;
  * @param <D> OrientDB Vertex entity counterpart
  */
 public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibCoreElement<R>, D extends MeshCoreVertex<R>> 
-		extends AbstractDaoWrapper<T> {
+		extends AbstractDaoWrapper<T> implements DaoGlobal<T>, DaoTransformable<T, R> {
 
 	public AbstractCoreDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
 	public D persist(String uuid) {
-		D vertex = getRoot().createRaw();
+		D vertex = getRoot().create();
 		if (uuid != null) {
 			vertex.setUuid(uuid);
 		}
@@ -37,6 +41,21 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 
 	public void unpersist(D element) {
 		element.remove();
+	}
+
+	@Override
+	public String getETag(T element, InternalActionContext ac) {
+		return element.getETag(ac);
+	}
+
+	@Override
+	public boolean update(T element, InternalActionContext ac, EventQueueBatch batch) {
+		return getRoot().update(checkAndCast(element, getRoot().getPersistanceClass()), ac, batch);
+	}
+
+	@Override
+	public long count() {
+		return getRoot().globalCount();
 	}
 	/**
 	 * Get root container for the current entity type.

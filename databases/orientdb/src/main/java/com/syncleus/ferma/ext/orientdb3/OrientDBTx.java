@@ -51,6 +51,8 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
@@ -105,8 +107,9 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Inject
 	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot, 
 		DaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
-		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry,
-		Binaries binaries) {
+		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, 
+		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler, 
+		WebRootLinkReplacer webRootLinkReplacer, Binaries binaries) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -123,7 +126,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new TxDataImpl(options, boot, permissionRoots);
+		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler, null);
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
 		this.caches = caches;

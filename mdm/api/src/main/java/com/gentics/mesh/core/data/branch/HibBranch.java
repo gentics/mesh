@@ -15,7 +15,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.HibUserTracking;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
@@ -456,10 +455,5 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibUserTracki
 	@Override
 	default String getSubETag(InternalActionContext ac) {
 		return String.valueOf(getLastEditedTimestamp());
-	}
-
-	@Override
-	default BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return Tx.get().branchDao().transformToRestSync(this, ac, level, languageTags);
 	}
 }

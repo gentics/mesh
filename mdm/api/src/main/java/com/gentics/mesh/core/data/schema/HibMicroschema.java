@@ -17,16 +17,6 @@ public interface HibMicroschema
 	extends HibFieldSchemaElement<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion>, HibBucketableElement {
 
 	/**
-	 * @deprecated Use {@link MicroschemaDaoWrapper} instead
-	 * @param ac
-	 * @param level
-	 * @param languageTags
-	 * @return
-	 */
-	@Deprecated
-	MicroschemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags);
-
-	/**
 	 * Return the latest version.
 	 * 
 	 * @return

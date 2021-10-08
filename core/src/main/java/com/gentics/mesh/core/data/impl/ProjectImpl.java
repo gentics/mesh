@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -168,16 +167,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	public void setBaseNode(HibNode baseNode) {
 		linkOut(toGraph(baseNode), HAS_ROOT_NODE);
-	}
-
-	/**
-	 * @deprecated Use {@link ProjectDaoWrapper}{@link #transformToRestSync(InternalActionContext, int, String...)} instead
-	 */
-	@Override
-	@Deprecated
-	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		ProjectDao projectDao = mesh().boot().projectDao();
-		return projectDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override

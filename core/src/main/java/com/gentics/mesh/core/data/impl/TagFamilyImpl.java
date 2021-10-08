@@ -250,7 +250,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public Tag createRaw() {
+	public Tag create() {
 		throw new IllegalStateException("Use TagRoot to create Tag instance, then addTag.");
 	}
 }

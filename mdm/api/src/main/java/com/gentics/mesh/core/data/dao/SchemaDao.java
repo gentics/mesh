@@ -1,31 +1,48 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -51,7 +68,23 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @param uuid
 	 * @return
 	 */
-	HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	default HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		HibUser requestUser = ac.getUser();
+		UserDao userDao = Tx.get().userDao();
+		HibBaseElement schemaRoot = Tx.get().data().permissionRoots().schema();
+
+		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
+		requestModel.validate();
+
+		if (!userDao.hasPermission(requestUser, schemaRoot, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", schemaRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
+		}
+		HibSchema container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
+		userDao.inheritRolePermissions(requestUser, schemaRoot, container);
+		container = Tx.get().persist(container, this);
+		batch.add(container.onCreated());
+		return container;
+	}
 
 	/**
 	 * Find the referenced schema container version. Throws an error, if the referenced schema container version can not be found
@@ -60,7 +93,9 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 *            reference
 	 * @return Resolved container version
 	 */
-	HibSchemaVersion fromReference(SchemaReference reference);
+	default HibSchemaVersion fromReference(SchemaReference reference) {
+		return fromReference(null, reference);
+	}
 
 	/**
 	 * Load the schema versions via the given reference.
@@ -69,7 +104,47 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @param reference
 	 * @return
 	 */
-	HibSchemaVersion fromReference(HibProject project, SchemaReference reference);
+	default HibSchemaVersion fromReference(HibProject project, SchemaReference reference) {
+		if (reference == null) {
+			throw error(INTERNAL_SERVER_ERROR, "Missing schema reference");
+		}
+		String schemaName = reference.getName();
+		String schemaUuid = reference.getUuid();
+		String schemaVersion = reference.getVersion();
+
+		// Prefer the name over the uuid
+		HibSchema schemaContainer = null;
+		if (!isEmpty(schemaName)) {
+			if (project != null) {
+				schemaContainer = findByName(project, schemaName);
+			} else {
+				schemaContainer = findByName(schemaName);
+			}
+		} else {
+			if (project != null) {
+				schemaContainer = findByUuid(project, schemaUuid);
+			} else {
+				schemaContainer = findByUuid(schemaUuid);
+			}
+		}
+
+		// Check whether a container was actually found
+		if (schemaContainer == null) {
+			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
+				: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+		}
+		if (schemaVersion == null) {
+			return schemaContainer.getLatestVersion();
+		} else {
+			HibSchemaVersion foundVersion = findVersionByRev(schemaContainer, schemaVersion);
+			if (foundVersion == null) {
+				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
+					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+			} else {
+				return foundVersion;
+			}
+		}
+	}
 
 	/**
 	 * Create new schema container.
@@ -83,7 +158,9 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid) throws MeshSchemaException;
+	default HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid) {
+		return create(schema, creator, uuid, false);
+	}	
 
 	/**
 	 * Create new schema container.
@@ -113,7 +190,41 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) throws MeshSchemaException;
+	default HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
+
+		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
+		// https://github.com/gentics/mesh/issues/210
+		if (validate && Tx.get().data().vertx() != null) {
+			SchemaDao.validateSchema(Tx.get().data().nodeIndexHandler(), schema);
+		}
+
+		String name = schema.getName();
+		HibSchema conflictingSchema = findByName(name);
+		if (conflictingSchema != null) {
+			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
+		}
+
+		HibMicroschema conflictingMicroschema = microschemaDao.findByName(name);
+		if (conflictingMicroschema != null) {
+			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
+		}
+
+		HibSchema container = Tx.get().create(uuid, this);
+		HibSchemaVersion version = container.getLatestVersion();
+
+		// set the initial version
+		schema.setVersion("1.0");
+		version.setSchema(schema);
+		version.setName(schema.getName());
+		version.setSchemaContainer(container);
+		container.setCreated(creator);
+		container.setName(schema.getName());
+		container.generateBucketId();
+
+		addSchema(container, null, creator, null);
+		return Tx.get().persist(container, this);
+	}
 
 	/**
 	 * Returns an iterable of nodes which are referencing the schema container.
@@ -291,6 +402,32 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 		return element.getAPIPath(ac);
 	}
 
+	@Override
+	default void delete(HibSchema schema, BulkActionContext bac) {
+		// Check whether the schema is currently being referenced by nodes.
+		Iterator<? extends HibNode> it = getNodes(schema).iterator();
+		if (!it.hasNext()) {
+
+			assignEvents(schema, UNASSIGNED).forEach(bac::add);
+			bac.add(schema.onDeleted());
+
+			for (HibSchemaVersion v : findAllVersions(schema)) {
+				deleteVersion(v, bac);
+			}
+			Tx.get().delete(schema, this);
+		} else {
+			throw error(BAD_REQUEST, "schema_delete_still_in_use", schema.getUuid());
+		}
+	}
+
+	/**
+	 * Delete schema version, notifying context if necessary.
+	 * 
+	 * @param version
+	 * @param bac
+	 */
+	void deleteVersion(HibSchemaVersion version, BulkActionContext bac);
+
 	/**
 	 * Validate the given schema model using the elasticsearch index handler (needed for ES setting validation).
 	 * 
@@ -309,4 +446,11 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 			}
 		}
 	}
+
+	/**
+	 * Returns events for assignment on the schema action.
+	 * 
+	 * @return
+	 */
+	Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assignment);
 }

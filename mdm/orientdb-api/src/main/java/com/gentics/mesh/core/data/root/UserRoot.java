@@ -71,14 +71,4 @@ public interface UserRoot extends RootVertex<User>, TransformableElementRoot<Use
 	 * @return
 	 */
 	MeshAuthUser findMeshAuthUserByUuid(String userUuid);
-
-	/**
-	 * Create a new user.
-	 * 
-	 * @return
-	 */
-
-	default User create() {
-		return createRaw();
-	}
 }

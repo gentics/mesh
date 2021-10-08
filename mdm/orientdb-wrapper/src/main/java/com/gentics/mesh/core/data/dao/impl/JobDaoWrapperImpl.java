@@ -140,11 +140,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 
 	@Override
-	public JobResponse transformToRestSync(HibJob job, InternalActionContext ac, int level, String... languageTags) {
-		return toGraph(job).transformToRestSync(ac, level, languageTags);
-	}
-
-	@Override
 	public void clear() {
 		boot.get().meshRoot().getJobRoot().clear();
 	}

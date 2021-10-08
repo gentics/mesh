@@ -68,29 +68,4 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	 * @return
 	 */
 	Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type);
-
-	/**
-	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
-	 *
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @return
-	 */
-	Stream<? extends HibNodeFieldContainer> getFieldContainers(String branchUuid);
-
-	/**
-	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version, are versions of the given branch and are listed within the given bucket.
-	 * @param branchUuid
-	 * @param bucket
-	 * @return
-	 */
-	Stream<? extends HibNodeFieldContainer> getFieldContainers(String branchUuid, Bucket bucket);
-
-	/**
-	 * Returns an iterator for those {@link HibNodeFieldContainer}'s which can be edited by users. Those are draft and publish versions.
-	 *
-	 * @param branchUuid Branch Uuid
-	 * @return
-	 */
-	Iterator<? extends HibNodeFieldContainer> getDraftFieldContainers(String branchUuid);
 }

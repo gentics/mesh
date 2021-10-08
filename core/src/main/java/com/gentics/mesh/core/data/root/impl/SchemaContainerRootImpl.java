@@ -77,20 +77,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public long globalCount() {
-		return toGraph(db()).count(SchemaContainerImpl.class);
-	}
-
-	@Override
-	public boolean contains(HibSchema schema) {
-		if (findByUuid(schema.getUuid()) == null) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		if (mesh().boot().meshRoot().getSchemaContainerRoot() == this) {
 			throw error(INTERNAL_SERVER_ERROR, "Deletion of the global schema root is not possible");
@@ -108,13 +94,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public Schema create() {
-		return getGraph().addFramedVertex(SchemaContainerImpl.class);
-	}
-
-	@Override
 	public SchemaVersion createVersion() {
-		return getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		return getGraph().addFramedVertex(getSchemaVersionPersistenceClass());
 	}
 
 	/**
@@ -144,5 +125,10 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	@Override
 	public Iterable<? extends SchemaVersion> findAllVersions(Schema schema) {
 		return schema.out(HAS_PARENT_CONTAINER).frameExplicit(SchemaContainerVersionImpl.class);
+	}
+
+	@Override
+	public Class<? extends SchemaVersion> getSchemaVersionPersistenceClass() {
+		return SchemaContainerVersionImpl.class;
 	}
 }

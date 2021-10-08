@@ -190,7 +190,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
-			return node.transformToRestSync(ac, level, languageTags.toArray(new String[languageTags.size()]));
+			return mesh().boot().nodeDao().transformToRestSync(node, ac, level, languageTags.toArray(new String[languageTags.size()]));
 		} else {
 			NodeFieldImpl nodeField = new NodeFieldImpl();
 			nodeField.setUuid(node.getUuid());

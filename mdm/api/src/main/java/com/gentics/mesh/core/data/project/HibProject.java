@@ -8,7 +8,6 @@ import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUserTracking;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.handler.VersionUtils;
@@ -114,10 +113,5 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibUserTrac
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/projects/" + getUuid();
-	}
-
-	@Override
-	default ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return Tx.get().projectDao().transformToRestSync(this, ac, level, languageTags);
 	}
 }

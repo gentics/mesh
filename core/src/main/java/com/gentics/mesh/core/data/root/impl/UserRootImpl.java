@@ -99,11 +99,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public User create() {
-		return createRaw();
-	}
-
-	@Override
 	public void delete(BulkActionContext context) {
 		throw new NotImplementedException("The user root should never be deleted");
 	}

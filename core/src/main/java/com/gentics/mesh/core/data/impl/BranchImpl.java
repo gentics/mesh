@@ -161,11 +161,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return getRoot().transformToRestSync(this, ac, level, languageTags);
-	}
-
-	@Override
 	public String getName() {
 		return property(NAME);
 	}

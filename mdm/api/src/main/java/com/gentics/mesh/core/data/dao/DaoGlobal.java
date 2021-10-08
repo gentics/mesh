@@ -11,12 +11,17 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * Interface for DAO's which provide methods which allow installation wide queries on elements. The provided methods should not be scoped to a project, branch.
  * 
  * @param <T>
  */
 public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
+
+	static final Logger log = LoggerFactory.getLogger(DaoGlobal.class);
 
 	/**
 	 * Load the element by uuid.

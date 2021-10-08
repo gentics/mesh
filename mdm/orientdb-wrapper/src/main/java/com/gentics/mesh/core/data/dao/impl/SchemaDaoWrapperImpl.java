@@ -1,14 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.event.Assignment.UNASSIGNED;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -17,7 +9,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
@@ -29,10 +20,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -42,74 +30,52 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
-import io.vertx.core.Vertx;
 
 /**
  * @see SchemaDaoWrapper
  */
 public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse, HibSchema, Schema> implements SchemaDaoWrapper {
 
-	private final Lazy<Vertx> vertx;
-	private final Lazy<NodeIndexHandler> nodeIndexHandler;
-	private final Provider<EventQueueBatch> batchProvider;
 	private final SchemaComparator comparator;
 
 	@Inject
-	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Vertx> vertx,
-		Lazy<NodeIndexHandler> nodeIndexHandler, Provider<EventQueueBatch> batchProvider, SchemaComparator comparator) {
+	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, SchemaComparator comparator) {
 		super(boot, permissions);
-		this.vertx = vertx;
-		this.nodeIndexHandler = nodeIndexHandler;
-		this.batchProvider = batchProvider;
 		this.comparator = comparator;
 	}
 
 	@Override
 	public HibSchema findByName(String name) {
-		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
-		return schemaRoot.findByName(name);
+		return getRoot().findByName(name);
 	}
 
 	@Override
 	public HibSchema findByUuid(String uuid) {
-		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
-		return schemaRoot.findByUuid(uuid);
-	}
-
-	@Override
-	public long count() {
-		return boot.get().meshRoot().getSchemaContainerRoot().globalCount();
+		return getRoot().findByUuid(uuid);
 	}
 
 	@Override
 	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
-		return schemaRoot.findAll(ac, pagingInfo);
+		return getRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
@@ -127,69 +93,6 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	}
 
 	@Override
-	public HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		HibUser requestUser = ac.getUser();
-		UserDao userDao = Tx.get().userDao();
-		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
-
-		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
-		requestModel.validate();
-
-		if (!userDao.hasPermission(requestUser, schemaRoot, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", schemaRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
-		}
-		HibSchema container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
-		userDao.inheritRolePermissions(requestUser, schemaRoot, container);
-		batch.add(container.onCreated());
-		return container;
-
-	}
-
-	@Override
-	public HibSchemaVersion fromReference(HibProject project, SchemaReference reference) {
-		if (reference == null) {
-			throw error(INTERNAL_SERVER_ERROR, "Missing schema reference");
-		}
-		String schemaName = reference.getName();
-		String schemaUuid = reference.getUuid();
-		String schemaVersion = reference.getVersion();
-
-		// Prefer the name over the uuid
-		HibSchema schemaContainer = null;
-		if (!isEmpty(schemaName)) {
-			if (project != null) {
-				schemaContainer = findByName(project, schemaName);
-			} else {
-				schemaContainer = findByName(schemaName);
-			}
-		} else {
-			if (project != null) {
-				schemaContainer = findByUuid(project, schemaUuid);
-			} else {
-				schemaContainer = findByUuid(schemaUuid);
-			}
-		}
-
-		// Check whether a container was actually found
-		if (schemaContainer == null) {
-			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
-				: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
-		}
-		if (schemaVersion == null) {
-			return schemaContainer.getLatestVersion();
-		} else {
-			HibSchemaVersion foundVersion = toGraph(schemaContainer).findVersionByRev(schemaVersion);
-			if (foundVersion == null) {
-				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
-					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
-			} else {
-				return foundVersion;
-			}
-		}
-
-	}
-
-	@Override
 	public HibSchema findByUuid(HibProject project, String schemaUuid) {
 		return toGraph(project).getSchemaContainerRoot().findByUuid(schemaUuid);
 
@@ -201,69 +104,15 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	}
 
 	@Override
-	public HibSchemaVersion fromReference(SchemaReference reference) {
-		return fromReference(null, reference);
-	}
-
-	@Override
-	public HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid) {
-		return create(schema, creator, uuid, false);
-	}
-
-	@Override
-	public HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
-		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
-		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
-
-		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
-		// https://github.com/gentics/mesh/issues/210
-		if (validate && vertx.get() != null) {
-			SchemaDao.validateSchema(nodeIndexHandler.get(), schema);
-		}
-
-		String name = schema.getName();
-		HibSchema conflictingSchema = findByName(name);
-		if (conflictingSchema != null) {
-			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
-		}
-
-		HibMicroschema conflictingMicroschema = microschemaDao.findByName(name);
-		if (conflictingMicroschema != null) {
-			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
-		}
-
-		HibSchema container = schemaRoot.create();
-		if (uuid != null) {
-			toGraph(container).setUuid(uuid);
-		}
-		HibSchemaVersion version = schemaRoot.createVersion();
-		container.setLatestVersion(version);
-
-		// set the initial version
-		schema.setVersion("1.0");
-		version.setSchema(schema);
-		version.setName(schema.getName());
-		version.setSchemaContainer(container);
-		container.setCreated(creator);
-		container.setName(schema.getName());
-		container.generateBucketId();
-
-		schemaRoot.addSchemaContainer(creator, container, null);
-		return container;
-	}
-
-	@Override
 	public HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		// TODO check for project in context?
-		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
-		return schemaRoot.loadObjectByUuid(ac, uuid, perm);
+		return getRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
 	public HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		// TODO check for project in context?
-		SchemaRoot schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
-		return schemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return getRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -289,42 +138,24 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	}
 
 	@Override
-	public void delete(HibSchema schema, BulkActionContext bac) {
-		Schema graphSchema = toGraph(schema);
-
-		// Check whether the schema is currently being referenced by nodes.
-		Iterator<? extends Node> it = getNodes(schema).iterator();
-		if (!it.hasNext()) {
-
-			unassignEvents(graphSchema).forEach(bac::add);
-			bac.add(schema.onDeleted());
-
-			for (HibSchemaVersion v : findAllVersions(schema)) {
-				((SchemaVersion) v).delete(bac);
-			}
-			graphSchema.remove();
-		} else {
-			throw error(BAD_REQUEST, "schema_delete_still_in_use", schema.getUuid());
-		}
-	}
-
-	/**
-	 * Returns events for unassignment on deletion.
-	 * 
-	 * @return
-	 */
-	private Stream<ProjectSchemaEventModel> unassignEvents(Schema schema) {
+	public Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assigned) {
 		return getRoots(schema).stream()
 			.map(SchemaRoot::getProject)
 			.filter(Objects::nonNull)
-			.map(project -> project.onSchemaAssignEvent(schema, UNASSIGNED));
+			.map(project -> project.onSchemaAssignEvent(schema, assigned));
 	}
 
 	@Override
 	public void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
-		Project graphProject = toGraph(project);
 		Schema graphSchemaContainer = toGraph(schemaContainer);
-		graphProject.getSchemaContainerRoot().addSchemaContainer(user, graphSchemaContainer, batch);
+		SchemaRoot schemaRoot;
+		if (project != null) {
+			Project graphProject = toGraph(project);
+			schemaRoot = graphProject.getSchemaContainerRoot();			
+		} else {
+			schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
+		}
+		schemaRoot.addSchemaContainer(user, graphSchemaContainer, batch);
 	}
 
 	@Override
@@ -391,11 +222,6 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	}
 
 	@Override
-	public String getETag(HibSchema schema, InternalActionContext ac) {
-		return toGraph(schema).getETag(ac);
-	}
-
-	@Override
 	public Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user, ContainerType type) {
 		return toGraph(version).getNodes(branchUuid, user, type);
 	}
@@ -407,7 +233,7 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 
 	@Override
 	public void addSchema(HibSchema schema) {
-		boot.get().meshRoot().getSchemaContainerRoot().addItem(toGraph(schema));
+		getRoot().addItem(toGraph(schema));
 	}
 
 	@Override
@@ -430,7 +256,7 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 
 	@Override
 	public boolean contains(HibProject project, HibSchema schema) {
-		return toGraph(project).getSchemaContainerRoot().contains(schema);
+		return toGraph(project).getSchemaContainerRoot().contains(toGraph(schema));
 	}
 
 	@Override
@@ -442,11 +268,6 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 			Predicate<HibSchema> extraFilter) {
 		return boot.get().meshRoot().getSchemaContainerRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
-	public boolean update(HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().meshRoot().getSchemaContainerRoot().update(toGraph(element), ac, batch);
 	}
 
 	@Override
@@ -537,5 +358,25 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	@Override
 	protected RootVertex<Schema> getRoot() {
 		return boot.get().meshRoot().getSchemaContainerRoot();
+	}
+
+	@Override
+	public Schema persist(String uuid) {
+		Schema vertex = boot.get().meshRoot().getSchemaContainerRoot().create();
+		if (uuid != null) {
+			vertex.setUuid(uuid);
+		}
+		vertex.setLatestVersion(boot.get().meshRoot().getSchemaContainerRoot().createVersion());
+		return vertex;
+	}
+
+	@Override
+	public void unpersist(Schema element) {
+		element.remove();
+	}
+
+	@Override
+	public void deleteVersion(HibSchemaVersion v, BulkActionContext bac) {
+		toGraph(v).delete(bac);		
 	}
 }

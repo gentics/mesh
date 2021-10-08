@@ -84,7 +84,6 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 
 		setRolePermissions(graphRole, ac, restRole);
 		return restRole;
-
 	}
 
 	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
