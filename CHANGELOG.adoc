@@ -57,6 +57,8 @@ icon:check[] Server: The readiness probe will now also check the status of the l
 icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
 Previously it would wait for elasticsearch even if it wasn't needed.
 
+icon:check[] Server: When an OutOfMemory was caught or one of the plugins (permanently) failed to initialize, mesh was still considered to be live. This has been fixed now.
+
 [[v1.7.17]]
 == 1.7.17 (22.09.2021)
 
