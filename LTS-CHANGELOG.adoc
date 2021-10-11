@@ -42,6 +42,10 @@ icon:check[] Core: When an OrientDB transaction repeatedly fails and runs into t
 
 icon:check[] Server: When an OutOfMemory was caught or one of the plugins (permanently) failed to initialize, mesh was still considered to be live. This has been fixed now.
 
+icon:check[] Clustering: When doing an offline update of Mesh in a cluster, the first instance of the cluster could not be started with the new Mesh version, because
+the new version should be written into OrientDB, which failed due to write quorum not reached. The initialization procedure has been changed now, so that executing the
+changelog and storing the Mesh version and DB revision will now only be started after the write quorum has been reached.
+
 [[v1.6.20]]
 == 1.6.20 (23.09.2021)
 
