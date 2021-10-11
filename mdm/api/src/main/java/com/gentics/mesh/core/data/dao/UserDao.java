@@ -493,7 +493,6 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			NodeReference userNodeReference = node.transformToReference(ac);
 			restUser.setNodeReference(userNodeReference);
 		}
-		Tx.get().persist(user, this);
 	}
 
 	/**
@@ -508,7 +507,6 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
-		Tx.get().persist(user, this);
 	}
 
 	/**
