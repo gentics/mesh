@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -127,7 +127,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 		case SCHEMA:
 			return Schema.composeIndexName();
 		case MICROSCHEMA:
-			return Microschema.composeIndexName();
+			return HibMicroschema.composeIndexName();
 		case TAG:
 			if (model instanceof PermissionChangedProjectElementEventModel) {
 				PermissionChangedProjectElementEventModel projectModel = (PermissionChangedProjectElementEventModel) model;

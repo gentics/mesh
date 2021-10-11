@@ -28,12 +28,10 @@ import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.ElementFrame;
 
@@ -55,12 +53,12 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	protected Class<? extends MicroschemaVersion> getContainerVersionClass() {
+	public Class<? extends MicroschemaVersion> getContainerVersionClass() {
 		return MicroschemaContainerVersionImpl.class;
 	}
 
 	@Override
-	protected Class<? extends Microschema> getContainerClass() {
+	public Class<? extends Microschema> getContainerClass() {
 		return MicroschemaContainerImpl.class;
 	}
 
@@ -82,25 +80,6 @@ public class MicroschemaContainerVersionImpl extends
 			MicronodeImpl.class,
 			new String[] { MICROSCHEMA_VERSION_KEY_PROPERTY },
 			new Object[] { getUuid() })).map(v -> graph.frameElementExplicit(v, MicronodeImpl.class));
-	}
-
-	@Override
-	public MicroschemaVersionModel getSchema() {
-		MicroschemaVersionModel microschema = mesh().serverSchemaStorage().getMicroschema(getName(), getVersion());
-		if (microschema == null) {
-			microschema = JsonUtil.readValue(getJson(), MicroschemaModelImpl.class);
-			mesh().serverSchemaStorage().addMicroschema(microschema);
-		}
-		return microschema;
-	}
-
-	@Override
-	public void setSchema(MicroschemaVersionModel microschema) {
-		mesh().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
-		mesh().serverSchemaStorage().addMicroschema(microschema);
-		String json = microschema.toJson();
-		setJson(json);
-		property(VERSION_PROPERTY_KEY, microschema.getVersion());
 	}
 
 	@Override

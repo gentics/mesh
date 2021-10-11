@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -110,7 +110,7 @@ public class MainEventHandler implements EventHandler {
 			clearEventHandler,
 			forEvent(MeshEvent.SEARCH_FLUSH_REQUEST, MainEventHandler::flushRequest),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getSchema, Schema.composeIndexName()),
-			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, Microschema.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, HibMicroschema.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getUser, User.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getRole, Role.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getProject, Project.composeIndexName()),

@@ -1,11 +1,8 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -18,7 +15,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
 /**
  * See {@link Microschema}
@@ -38,18 +34,13 @@ public class MicroschemaContainerImpl extends
 	}
 
 	/**
-	 * Initalize the vertex type and index.
+	 * Initialize the vertex type and index.
 	 * 
 	 * @param type
 	 * @param index
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
-	}
-
-	@Override
-	public MicroschemaReference transformToReference() {
-		return new MicroschemaReferenceImpl().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override
@@ -65,11 +56,6 @@ public class MicroschemaContainerImpl extends
 	@Override
 	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
-	}
-
-	@Override
-	public void deleteElement() {
-		remove();
 	}
 
 	@Override

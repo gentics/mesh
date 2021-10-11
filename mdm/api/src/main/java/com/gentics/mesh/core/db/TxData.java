@@ -2,6 +2,7 @@ package com.gentics.mesh.core.db;
 
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -54,4 +55,11 @@ public interface TxData {
 	 * @return
 	 */
 	WebRootLinkReplacer webRootLinkReplacer();
+
+	/**
+	 * A schema information storage.
+	 * 
+	 * @return
+	 */
+	ServerSchemaStorage serverSchemaStorage();
 }

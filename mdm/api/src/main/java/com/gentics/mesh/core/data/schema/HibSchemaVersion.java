@@ -1,8 +1,14 @@
 package com.gentics.mesh.core.data.schema;
 
+import static com.gentics.mesh.ElementType.SCHEMAVERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
+
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -19,6 +25,13 @@ import com.gentics.mesh.core.result.Result;
  * versions.
  */
 public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion> {
+
+	static final TypeInfo TYPE_INFO = new TypeInfo(SCHEMAVERSION, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Get container entity bound to this version.

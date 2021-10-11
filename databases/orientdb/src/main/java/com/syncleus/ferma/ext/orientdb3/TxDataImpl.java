@@ -4,6 +4,7 @@ import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
@@ -34,15 +35,17 @@ public class TxDataImpl implements TxData {
 	private final PermissionRoots permissionRoots;
 	private final NodeIndexHandler nodeIndexHandler;
 	private final WebRootLinkReplacer webRootLinkReplacer;
+	private final ServerSchemaStorage serverSchemaStorage;
 
 	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot, 
 			PermissionRoots permissionRoots, NodeIndexHandler nodeIndexHandler,
-			WebRootLinkReplacer webRootLinkReplacer) {
+			WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage) {
 		this.options = options;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.webRootLinkReplacer = webRootLinkReplacer;
+		this.serverSchemaStorage = serverSchemaStorage;
 	}
 
 	@Override
@@ -358,6 +361,11 @@ public class TxDataImpl implements TxData {
 	@Override
 	public WebRootLinkReplacer webRootLinkReplacer() {
 		return webRootLinkReplacer;
+	}
+
+	@Override
+	public ServerSchemaStorage serverSchemaStorage() {
+		return serverSchemaStorage;
 	}
 
 }

@@ -1,19 +1,40 @@
 package com.gentics.mesh.core.data.schema;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
 public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>>
 	extends HibCoreElement<R>, Comparable<SCV> {
+
+	/**
+	 * Return the class that is used for container versions.
+	 * 
+	 * @return Class of the container version
+	 */
+	Class<? extends SCV> getContainerVersionClass();
+
+	/**
+	 * Return the class that is used for containers.
+	 * 
+	 * @return Class of the container
+	 */
+	Class<? extends SC> getContainerClass();
 
 	/**
 	 * Return the schema name.
@@ -63,11 +84,6 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 	 * @param schema
 	 */
 	void setSchema(RM schema);
-
-	/**
-	 * Delete the version.
-	 */
-	void deleteElement();
 
 	// Version chain
 
@@ -186,6 +202,16 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 	 */
 	R transformToRestSync(InternalActionContext ac, int level, String... languageTags);
 
+	/**
+	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
+	 *
+	 * @param ac
+	 * @param listOfChanges
+	 * @param batch
+	 * @return The created schema container version
+	 */
+	SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch);
+
 	default int compareTo(SCV version) {
 		return VersionUtil.compareVersions(getVersion(), version.getVersion());
 	}
@@ -199,5 +225,30 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 		return StreamUtil.untilNull(
 			() -> (HibSchemaChange<FieldSchemaContainer>) getNextChange(),
 			change -> (HibSchemaChange<FieldSchemaContainer>) change.getNextChange());
+	}
+
+	default SchemaChangesListModel diff(InternalActionContext ac, FieldSchemaContainerComparator comparator,
+		FieldSchemaContainer fieldContainerModel) {
+		SchemaChangesListModel list = new SchemaChangesListModel();
+		fieldContainerModel.validate();
+		list.getChanges().addAll(comparator.diff(transformToRestSync(ac, 0), fieldContainerModel));
+		return list;
+	}
+
+	/**
+	 * Apply changes which will be extracted from the action context.
+	 *
+	 * @param ac
+	 *            Action context that provides the migration request data
+	 * @param batch
+	 * @return The created schema container version
+	 */
+	default SCV applyChanges(InternalActionContext ac, EventQueueBatch batch) {
+		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
+
+		if (getNextChange() != null) {
+			throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
+		}
+		return applyChanges(ac, listOfChanges, batch);
 	}
 }

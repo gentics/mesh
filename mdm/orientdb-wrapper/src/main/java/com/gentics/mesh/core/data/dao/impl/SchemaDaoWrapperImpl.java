@@ -346,16 +346,6 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	}
 
 	@Override
-	public void delete(HibProject root, HibSchema element, BulkActionContext bac) {
-		toGraph(root).getSchemaContainerRoot().delete(toGraph(element), bac);
-	}
-
-	@Override
-	public boolean update(HibProject root, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).getSchemaContainerRoot().update(toGraph(element), ac, batch);
-	}
-
-	@Override
 	protected RootVertex<Schema> getRoot() {
 		return boot.get().meshRoot().getSchemaContainerRoot();
 	}

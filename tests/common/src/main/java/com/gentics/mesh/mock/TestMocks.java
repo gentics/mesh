@@ -262,7 +262,7 @@ public final class TestMocks {
 		when(schema.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(schema.getEditor()).thenReturn(user);
 		when(schema.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
-		when(schema.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		//when(schema.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(schema.getElementVersion()).thenReturn(UUID_5);
 		return schema;
 	}

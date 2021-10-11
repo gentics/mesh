@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.AbstractTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -109,7 +110,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		DaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
 		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, 
 		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler, 
-		WebRootLinkReplacer webRootLinkReplacer, Binaries binaries) {
+		WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage, Binaries binaries) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -126,7 +127,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler, webRootLinkReplacer);
+		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler, webRootLinkReplacer, serverSchemaStorage);
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
 		this.caches = caches;

@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
@@ -435,6 +437,11 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 		}
 	}
 
+	@Override
+	default void delete(HibProject root, HibSchema element, BulkActionContext bac) {
+		delete(element, bac);
+	}
+
 	/**
 	 * Validate the given schema model using the elasticsearch index handler (needed for ES setting validation).
 	 * 
@@ -453,9 +460,19 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 			}
 		}
 	}
+
 	@Override
 	default SchemaResponse transformToRestSync(HibSchema element, InternalActionContext ac, int level,
 			String... languageTags) {
 		return element.transformToRestSync(ac, level, languageTags);
+	}
+
+	@Override
+	default boolean update(HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
+		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
+	}
+	@Override
+	default boolean update(HibProject project, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
+		return update(element, ac, batch);
 	}
 }

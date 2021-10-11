@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -49,7 +49,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		extraIndices.add(Group.composeIndexName() + "2");
 		extraIndices.add(Role.composeIndexName() + "2");
 		extraIndices.add(TagFamily.composeIndexName(projectUuid()) + "bogus");
-		extraIndices.add(Microschema.composeIndexName() + "bogus");
+		extraIndices.add(HibMicroschema.composeIndexName() + "bogus");
 		extraIndices.add(Schema.composeIndexName() + "bogus");
 		extraIndices.add(Schema.composeIndexName() + "bogus");
 		extraIndices.add(Project.composeIndexName() + "bogus");
@@ -81,7 +81,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		remainingIndices.add("mesh-" + Group.composeIndexName());
 		remainingIndices.add("mesh-" + Role.composeIndexName());
 		remainingIndices.add("mesh-" + Schema.composeIndexName());
-		remainingIndices.add("mesh-" + Microschema.composeIndexName());
+		remainingIndices.add("mesh-" + HibMicroschema.composeIndexName());
 		remainingIndices.add("mesh-" + Project.composeIndexName());
 		remainingIndices.add("mesh-" + TagFamily.composeIndexName(projectUuid()));
 		remainingIndices.add("mesh-" + Tag.composeIndexName(projectUuid()));

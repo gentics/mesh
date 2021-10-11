@@ -79,12 +79,12 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	protected Class<? extends HibSchemaVersion> getContainerVersionClass() {
+	public Class<? extends HibSchemaVersion> getContainerVersionClass() {
 		return SchemaContainerVersionImpl.class;
 	}
 
 	@Override
-	protected Class<? extends HibSchema> getContainerClass() {
+	public Class<? extends HibSchema> getContainerClass() {
 		return SchemaContainerImpl.class;
 	}
 
@@ -259,10 +259,4 @@ public class SchemaContainerVersionImpl extends
 			return schemaAutoPurge;
 		}
 	}
-
-	@Override
-	public void deleteElement() {
-		remove();
-	}
-
 }

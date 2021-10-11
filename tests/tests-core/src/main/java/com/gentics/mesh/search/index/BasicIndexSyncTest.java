@@ -324,7 +324,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao.findByName("schema_3");
-			schema.getLatestVersion().deleteElement();
+			schemaDao.deleteVersion(schema.getLatestVersion(), new DummyBulkActionContext());
 			tx.delete(schema, schema.getClass());
 		});
 		syncIndex();
@@ -355,8 +355,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			MicroschemaDao microschemaDao = tx.microschemaDao();
 			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
-			microschema.getLatestVersion().deleteElement();
-			microschema.deleteElement();
+			microschemaDao.deleteVersion(microschema.getLatestVersion(), new DummyBulkActionContext());
+			tx.delete(microschema, microschema.getClass());
 		});
 		syncIndex();
 		assertMetrics("microschema", 0, 0, 1);
