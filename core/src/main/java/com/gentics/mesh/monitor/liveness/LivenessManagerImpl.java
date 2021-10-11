@@ -56,7 +56,7 @@ public class LivenessManagerImpl implements LivenessManager {
 
 	@Override
 	public boolean isLive() {
-		return true;
+		return live;
 	}
 
 	@Override
