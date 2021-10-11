@@ -40,6 +40,8 @@ icon:check[] Core: When deleting old versions of nodes, the related binaries wer
 
 icon:check[] Core: When an OrientDB transaction repeatedly fails and runs into the retry limit, the original cause will now also be logged.
 
+icon:check[] Server: When an OutOfMemory was caught or one of the plugins (permanently) failed to initialize, mesh was still considered to be live. This has been fixed now.
+
 [[v1.6.20]]
 == 1.6.20 (23.09.2021)
 
