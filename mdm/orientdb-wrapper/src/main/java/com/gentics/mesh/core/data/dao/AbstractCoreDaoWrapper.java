@@ -49,11 +49,6 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 	}
 
 	@Override
-	public boolean update(T element, InternalActionContext ac, EventQueueBatch batch) {
-		return getRoot().update(checkAndCast(element, getRoot().getPersistanceClass()), ac, batch);
-	}
-
-	@Override
 	public long count() {
 		return getRoot().globalCount();
 	}

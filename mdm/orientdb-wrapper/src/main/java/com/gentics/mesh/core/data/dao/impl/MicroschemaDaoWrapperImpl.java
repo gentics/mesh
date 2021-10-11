@@ -320,4 +320,9 @@ public class MicroschemaDaoWrapperImpl extends AbstractCoreDaoWrapper<Microschem
 	public HibMicroschemaVersion findVersionByRev(HibMicroschema hibMicroschema, String version) {
 		return toGraph(hibMicroschema).findVersionByRev(version);
 	}
+
+	@Override
+	public boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().meshRoot().getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
+	}
 }
