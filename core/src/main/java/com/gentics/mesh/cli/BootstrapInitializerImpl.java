@@ -129,6 +129,7 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -148,6 +149,11 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
+
+	/**
+	 * Name of the global lock for executing the changelog in cluster mode
+	 */
+	public static final String GLOBAL_CHANGELOG_LOCK_KEY = "MESH_CHANGELOG_LOCK";
 
 	private static final String ADMIN_USERNAME = "admin";
 
@@ -803,11 +809,43 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 							+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER + " command line argument to migrate the database.");
 		}
 
-		// Now run the high level changelog entries, which are allowed to be executed in cluase mode
-		highlevelChangelogSystem.apply(flags, meshRoot, filter -> filter.isAllowedInCluster(configuration));
+		// wait for writeQuorum, then raise a global lock and execute changelog
+		db.clusterManager().waitUntilWriteQuorumReached()
+				.andThen(doWithLock(executeChangelog(flags, configuration), 60 * 1000)).subscribe();
+	}
 
-		log.info("Changelog completed.");
-		new ChangelogSystemImpl(db, options).setCurrentVersionAndRev();
+	/**
+	 * Return a completable which will try to get a global lock with name {@link #GLOBAL_CHANGELOG_LOCK_KEY} and will then execute the locked action
+	 * @param lockedAction locked action
+	 * @param timeout timeout for waiting for the lock
+	 * @return completable
+	 */
+	protected Completable doWithLock(Completable lockedAction, long timeout) {
+		return mesh.getRxVertx().sharedData().rxGetLockWithTimeout(GLOBAL_CHANGELOG_LOCK_KEY, timeout).toMaybe()
+				.flatMapCompletable(lock -> {
+					log.debug("Acquired lock for executing changelog");
+					return lockedAction.doFinally(() -> {
+						log.debug("Releasing lock for executing changelog");
+						lock.release();
+					});
+				});
+	}
+
+	/**
+	 * Completable which will execute the highlevel changelog and will also store the (new) mesh version and DB revision to the DB
+	 * @param flags
+	 * @param configuration
+	 * @return
+	 */
+	protected Completable executeChangelog(PostProcessFlags flags, MeshOptions configuration) {
+		return Completable.defer(() -> {
+			// Now run the high level changelog entries, which are allowed to be executed in cluase mode
+			highlevelChangelogSystem.apply(flags, meshRoot, filter -> filter.isAllowedInCluster(configuration));
+
+			log.info("Changelog completed.");
+			new ChangelogSystemImpl(db, options).setCurrentVersionAndRev();
+			return Completable.complete();
+		});
 	}
 
 	@Override
