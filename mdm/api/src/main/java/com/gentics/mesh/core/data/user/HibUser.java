@@ -280,13 +280,6 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, 
 	HibUser setReferencedNode(HibNode node);
 
 	/**
-	 * A CRC32 hash of the users {@link #getRoles roles}.
-	 *
-	 * @return A hash of the users roles
-	 */
-	String getRolesHash();
-
-	/**
 	 * Return the current element version.
 	 * 
 	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly

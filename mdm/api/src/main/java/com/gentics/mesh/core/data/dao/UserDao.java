@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -457,7 +458,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			setGroups(user, ac, restUser);
 		}
 		if (fields.has("rolesHash")) {
-			restUser.setRolesHash(user.getRolesHash());
+			restUser.setRolesHash(getRolesHash(user));
 		}
 		if (fields.has("forcedPasswordChange")) {
 			restUser.setForcedPasswordChange(user.isForcedPasswordChange());
@@ -754,5 +755,16 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	default HibUser setPassword(HibUser user, String password) {
 		user.setPasswordHash(Tx.get().passwordEncoder().encode(password));
 		return Tx.get().persist(user, this);
+	}
+
+	/**
+	 * A CRC32 hash of the users {@link #getRoles roles}.
+	 *
+	 * @return A hash of the users roles
+	 */
+	default String getRolesHash(HibUser user) {
+		return StreamSupport.stream(getRoles(user).spliterator(), false)
+				.map(role -> role.getId().toString())
+				.collect(Collectors.joining());
 	}
 }
