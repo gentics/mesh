@@ -11,6 +11,7 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -47,6 +48,8 @@ import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -244,8 +247,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public Result<? extends Role> getRolesViaShortcut() {
-		// TODO Use shortcut index.
-		return out(ASSIGNED_TO_ROLE, RoleImpl.class);
+		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
+		Spliterator<Edge> itemEdges = getGraph().getEdges(indexName.toLowerCase(), id()).spliterator();
+		Stream<RoleImpl> roles = StreamSupport.stream(itemEdges, false)
+			.map(itemEdge -> itemEdge.getVertex(Direction.IN))
+			.map(vertex -> {
+				// Unwrap wrapped vertex
+				if (vertex instanceof WrappedElement) {
+					vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
+				}
+				return graph.frameElementExplicit(vertex, RoleImpl.class);
+			});
+		return new TraversalResult<>(roles);
 	}
 
 	@Override

@@ -48,4 +48,8 @@ public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, Transfo
 	 */
 	void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role);
 
+	@Override
+	default Object getId() {
+		return getElement().getId();
+	}
 }

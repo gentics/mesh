@@ -210,4 +210,12 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	protected RootVertex<User> getRoot() {
 		return boot.get().meshRoot().getUserRoot();
 	}
+
+	// TODO FIXME It looks like the getRoles() call does not take a special 
+	// ADMIN role into account, since ADMIN is a property flag, and not a role.
+	// Thus we cannot use an iterator over getRoles() to form a hash.
+	@Override
+	public String getRolesHash(HibUser user) {
+		return toGraph(user).getRolesHash();
+	}
 }
