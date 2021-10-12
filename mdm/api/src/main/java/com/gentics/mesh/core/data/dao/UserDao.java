@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -214,13 +215,6 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @return
 	 */
 	Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
-
-	/**
-	 * A CRC32 hash of the users {@link #getRoles roles}.
-	 *
-	 * @return A hash of the users roles
-	 */
-	String getRolesHash(HibUser user);
 
 	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
@@ -761,5 +755,19 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	default HibUser setPassword(HibUser user, String password) {
 		user.setPasswordHash(Tx.get().passwordEncoder().encode(password));
 		return Tx.get().persist(user, this);
+	}
+
+	/**
+	 * A CRC32 hash of the users {@link #getRoles roles}.
+	 *
+	 * @return A hash of the users roles
+	 */
+	default String getRolesHash(HibUser user) {
+		return Stream.concat(
+				Stream.of(user.isAdmin() ? "1" : "0"), 
+				StreamSupport.stream(getRoles(user).spliterator(), false)
+					.map(role -> role.getId().toString())
+					.sorted())
+			.collect(Collectors.joining());
 	}
 }
