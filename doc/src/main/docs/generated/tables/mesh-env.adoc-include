@@ -167,6 +167,9 @@
 | *MESH_CLUSTER_ENABLED*
 | Override cluster enabled flag.
 
+| *MESH_LIVE_PATH*
+| Path to the mesh live file.
+
 | *MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME*
 | Override the idle debounce time.
 
@@ -185,11 +188,11 @@
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
 
-| *MESH_PLUGIN_TIMEOUT*
-| Override the configured plugin timeout.
-
 | *MESH_CLUSTER_NETWORK_HOST*
 | Override the cluster network host.
+
+| *MESH_PLUGIN_TIMEOUT*
+| Override the configured plugin timeout.
 
 | *MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD*
 | Override the configured AWS S3 upload time.
@@ -281,11 +284,11 @@
 | *MESH_ELASTICSEARCH_URL*
 | Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
 
-| *MESH_UPDATECHECK*
-| Override the configured updatecheck flag.
-
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.
+
+| *MESH_UPDATECHECK*
+| Override the configured updatecheck flag.
 
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.

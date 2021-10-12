@@ -70,16 +70,18 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		GroupDaoWrapper groupDao = Tx.get().groupDao();
+		boolean permissionChanged = false;
 		if (recursive) {
 			for (HibUser user : groupDao.getUsers(this)) {
 				User graphUser = toGraph(user);
-				graphUser.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
+				permissionChanged = graphUser.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
-		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		return permissionChanged;
 	}
 
 	@Override

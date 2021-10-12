@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.18-SNAPSHOT</version>
+		<version>1.7.20-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -40,11 +40,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-service-jwt-auth</artifactId>
 			<scope>provided</scope>
 		</dependency>
 

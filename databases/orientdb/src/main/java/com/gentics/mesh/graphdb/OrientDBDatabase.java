@@ -450,6 +450,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		T handlerResult = null;
 		boolean handlerFinished = false;
 		int maxRetry = options.getStorageOptions().getTxRetryLimit();
+		Throwable cause = null;
 		for (int retry = 0; retry < maxRetry; retry++) {
 			Timer.Sample sample = Timer.start();
 			// Check the status to prevent transactions during shutdown
@@ -459,11 +460,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerFinished = true;
 				tx.success();
 			} catch (OSchemaException e) {
+				cause = e;
 				log.error("OrientDB schema exception detected.");
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (InterruptedException | ONeedRetryException | FastNoSuchElementException e) {
+				cause = e;
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
@@ -507,7 +510,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				return handlerResult;
 			}
 		}
-		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
+		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded", cause);
 	}
 
 	private void checkStatus() {

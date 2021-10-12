@@ -118,22 +118,24 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+		return applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
-	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<InternalPermission> permissionsToGrant,
+	protected boolean applyVertexPermissions(EventQueueBatch batch, Role role, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		RoleDaoWrapper roleDao = mesh().boot().roleDao();
-		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new InternalPermission[permissionsToGrant.size()]));
-		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()]));
+		boolean permissionChanged = false;
+		permissionChanged = roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new InternalPermission[permissionsToGrant.size()])) || permissionChanged;
+		permissionChanged = roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()])) || permissionChanged;
 
-		if (this instanceof MeshCoreVertex) {
+		if (permissionChanged && this instanceof MeshCoreVertex) {
 			MeshCoreVertex<?> coreVertex = (MeshCoreVertex<?>) this;
 			batch.add(coreVertex.onPermissionChanged(role));
 		}
 		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.
+		return permissionChanged;
 	}
 
 	@Override

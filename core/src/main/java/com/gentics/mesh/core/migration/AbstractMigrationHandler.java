@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -120,15 +121,26 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		newContainer.updateFieldsFromRest(ac, fields);
 	}
 
+	/**
+	 * Migrate all elements in the given queue, by passing it to the migrator. The elements will be removed from the queue, before they are migrated,
+	 * in order to save memory (elements will be "enriched" with additional data during migration).
+	 * @param <T> type of migrated elements
+	 * @param containers queue of elements to be migrated
+	 * @param cause information about the cause
+	 * @param status migration status (will be updated during the migration)
+	 * @param migrator migrator
+	 * @return list of exceptions caught during the migration
+	 */
 	@ParametersAreNonnullByDefault
-	protected <T> List<Exception> migrateLoop(Iterable<T> containers, EventCauseInfo cause, MigrationStatusHandler status,
+	protected <T> List<Exception> migrateLoop(Queue<T> containers, EventCauseInfo cause, MigrationStatusHandler status,
 		TriConsumer<EventQueueBatch, T, List<Exception>> migrator) {
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
 		EventQueueBatch sqb = batchProvider.get();
 		sqb.setCause(cause);
-		for (T container : containers) {
+		while (!containers.isEmpty()) {
+			T container = containers.poll();
 			try {
 				// Each container migration has its own search queue batch which is then combined with other batch entries.
 				// This prevents adding partial entries from failed migrations.

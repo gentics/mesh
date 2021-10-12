@@ -48,18 +48,20 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 	public Completable purgeVersions(HibProject project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
+				BulkActionContext bac = bulkProvider.get();
 				for (HibNode node : tx.nodeDao().findAll(project)) {
-					purgeNode(tx, node, maxAge);
+					purgeNode(tx, node, maxAge, bac);
 				}
+				bac.process(true);
 			});
 		});
 	}
 
-	private void purgeNode(Tx tx, HibNode node, ZonedDateTime maxAge) {
+	private void purgeNode(Tx tx, HibNode node, ZonedDateTime maxAge, BulkActionContext bac) {
 		Iterable<? extends NodeGraphFieldContainer> initials = tx.contentDao().getGraphFieldContainers(node, ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;
-			purgeVersion(tx, counter, bulkProvider.get(), initial, initial, false, maxAge);
+			purgeVersion(tx, counter, bac, initial, initial, false, maxAge);
 		}
 	}
 

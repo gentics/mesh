@@ -23,6 +23,33 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.19]]
+== 1.7.19 (12.10.2021)
+
+icon:check[] Search: When a full synchronization of the search indices was triggered, language specific indices were unnecessarily removed first. This has been changed,
+language specific indices will now be treated like all other indices during a full synchronization.
+
+icon:check[] Core: When performing an update for role permissions, an event was published even if the update actually did not change anything. A check has been added to
+only publish the event if permissions are actually changed.
+
+icon:check[] Core: When eventbus messages where published during execution of a job (e.g. a node migration), the events were not published and handled immediately,
+but were queued in memory and eventually published after the job execution. This caused high memory consumption during a node migration and also the elasticsearch
+indexing of migrated nodes to be delayed until after all nodes had been migrated. Execution of the jobs has been changed now, so that events will be published
+immediately to fix those issues.
+
+icon:check[] Core: The overall memory consumption during a migration job has been reduced.
+
+icon:check[] Clustering: Due to a bug in the vert.x eventbus system, elasticsearch sync operations were not only performed in the Mesh instance, were the
+causing data change actually happened, but on all Mesh instances, which caused unnecessary high load on the elasticsearch. This has been fixed with a workaround.
+
+icon:check[] Core: When deleting old versions of nodes, the related binaries were not deleted from the disk. This has been fixed now. Credits to [kdima001](https://github.com/kdima001).
+
+icon:check[] Core: When an OrientDB transaction repeatedly fails and runs into the retry limit, the original cause will now also be logged.
+
+icon:check[] Server: When an OutOfMemory was caught or one of the plugins (permanently) failed to initialize, mesh was still considered to be live. This has been fixed now.
+
+icon:check[] Clustering: When doing an offline update of Mesh in a cluster, the first instance of the cluster could not be started with the new Mesh version, because the new version should be written into OrientDB, which failed due to write quorum not reached. The initialization procedure has been changed now, so that executing the changelog and storing the Mesh version and DB revision will now only be started after the write quorum has been reached.
+
 [[v1.7.18]]
 == 1.7.18 (23.09.2021)
 

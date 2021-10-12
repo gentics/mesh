@@ -48,8 +48,9 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 	 * @param recursive
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
+	 * @return true, if permissions were effectively changed
 	 */
-	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke);
 
 	/**
