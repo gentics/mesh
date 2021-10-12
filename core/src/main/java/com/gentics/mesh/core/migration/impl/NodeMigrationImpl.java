@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 import static com.gentics.mesh.metric.SimpleMetric.NODE_MIGRATION_PENDING;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,7 +36,6 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.VersionNumber;
-import com.google.common.collect.Lists;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
@@ -94,8 +92,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
 			List<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
 				SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
-				Iterator<? extends HibNodeFieldContainer> it = schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid());
-				return Lists.newArrayList(it);
+				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).list();
 			});
 
 			if (metrics.isEnabled()) {

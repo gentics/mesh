@@ -14,7 +14,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
-import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.gentics.madl.index.IndexHandler;
@@ -89,15 +88,15 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
-		return toStream(mesh().database().getVertices(
+	public Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
+		return new TraversalResult<>(toStream(mesh().database().getVertices(
 			NodeGraphFieldContainerImpl.class,
 			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
 			new Object[] { getUuid() })).filter(
 				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
 					.anyMatch(
 						e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
-				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)).iterator();
+				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)));
 	}
 
 	@Override

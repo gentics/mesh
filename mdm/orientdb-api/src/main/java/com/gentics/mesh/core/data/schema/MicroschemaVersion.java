@@ -17,7 +17,7 @@ public interface MicroschemaVersion extends
 		GraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschemaVersion, HibMicroschema>, HibMicroschemaVersion {
 
 	/**
-	 * Return an iterator over all draft {@link HibNodeFieldContainer}'s that contain at least one micronode field (or list of micronodes field) that uses
+	 * Return a result with all draft {@link HibNodeFieldContainer}'s that contain at least one micronode field (or list of micronodes field) that uses
 	 * this schema version for the given branch.
 	 *
 	 * @param branchUuid

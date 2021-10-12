@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -19,7 +18,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractContainerDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -40,6 +39,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
@@ -53,7 +53,7 @@ import dagger.Lazy;
 /**
  * @see SchemaDaoWrapper
  */
-public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse, HibSchema, Schema> implements SchemaDaoWrapper {
+public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion, SchemaModel, Schema> implements SchemaDaoWrapper {
 
 	private final SchemaComparator comparator;
 
@@ -212,7 +212,7 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	}
 
 	@Override
-	public Iterator<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
+	public Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
 		return toGraph(version).getDraftFieldContainers(branchUuid);
 	}
 
@@ -368,5 +368,10 @@ public class SchemaDaoWrapperImpl extends AbstractCoreDaoWrapper<SchemaResponse,
 	@Override
 	public void deleteVersion(HibSchemaVersion v, BulkActionContext bac) {
 		toGraph(v).delete(bac);		
+	}
+
+	@Override
+	public void unlink(HibSchema schema, HibProject project, EventQueueBatch batch) {
+		toGraph(project).getSchemaContainerRoot().removeSchemaContainer(toGraph(schema), batch);
 	}
 }

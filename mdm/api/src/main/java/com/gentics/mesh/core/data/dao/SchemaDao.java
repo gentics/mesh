@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -21,7 +20,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -36,7 +34,6 @@ import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
@@ -50,7 +47,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for {@link HibSchema}.
  */
-public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSchema, SchemaResponse>, RootDao<HibProject, HibSchema> {
+public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion, SchemaModel>, RootDao<HibProject, HibSchema> {
 
 	/**
 	 * Load a page of schemas.
@@ -236,13 +233,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	Result<? extends HibNode> getNodes(HibSchema schema);
 
 	/**
-	 * Return an iterable with all found schema versions.
-	 *
-	 * @return
-	 */
-	Iterable<HibSchemaVersion> findAllVersions(HibSchema schema);
-
-	/**
 	 * Assign the schema to the project.
 	 * 
 	 * @param schemaContainer
@@ -251,27 +241,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @param batch
 	 */
 	void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch);
-
-	/**
-	 * Apply the given set of changes to the schema version. This will create a new version.
-	 * 
-	 * @param version
-	 * @param ac
-	 * @param model
-	 * @param batch
-	 * @return
-	 */
-	HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, SchemaChangesListModel model, EventQueueBatch batch);
-
-	/**
-	 * Apply changes to the schema version.
-	 * 
-	 * @param version
-	 * @param ac
-	 * @param batch
-	 * @return
-	 */
-	HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Load the schema version via the schema and version.
@@ -283,15 +252,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	HibSchemaVersion findVersionByRev(HibSchema schema, String version);
 
 	/**
-	 * Check whether the schema is linked to the project.
-	 * 
-	 * @param schema
-	 * @param project
-	 * @return
-	 */
-	boolean isLinkedToProject(HibSchema schema, HibProject project);
-
-	/**
 	 * Remove the schema from the project.
 	 * 
 	 * @param schema
@@ -301,16 +261,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch);
 
 	/**
-	 * Diff the schema version with the request model and return a list of changes.
-	 * 
-	 * @param latestVersion
-	 * @param ac
-	 * @param requestModel
-	 * @return
-	 */
-	SchemaChangesListModel diff(HibSchemaVersion latestVersion, InternalActionContext ac, SchemaModel requestModel);
-
-	/**
 	 * Return the schema version.
 	 * 
 	 * @param container
@@ -318,13 +268,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @return
 	 */
 	HibSchemaVersion findVersionByUuid(HibSchema container, String versionUuid);
-
-	/**
-	 * Load the branch schemaversion assignments for the given schema. 
-	 * @param schema
-	 * @return
-	 */
-	Map<HibBranch, HibSchemaVersion> findReferencedBranches(HibSchema schema);
 
 	/**
 	 * Find all projects which reference the schema.
@@ -353,14 +296,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	void addSchema(HibSchema schema);
 
 	/**
-	 * Load all active schema versions for the given branch.
-	 * 
-	 * @param branch
-	 * @return
-	 */
-	Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch);
-
-	/**
 	 * Check whether the schema is linked to the project.
 	 * 
 	 * @param project
@@ -368,15 +303,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @return
 	 */
 	boolean contains(HibProject project, HibSchema schema);
-
-	/**
-	 * Load the contents that use the given schema version for the given branch.
-	 * 
-	 * @param version
-	 * @param branchUuid
-	 * @return
-	 */
-	Iterator<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid);
 
 	/**
 	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.
@@ -405,14 +331,6 @@ public interface SchemaDao extends DaoGlobal<HibSchema>, DaoTransformable<HibSch
 	 * @return
 	 */
 	Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assignment);
-
-	/**
-	 * Delete schema version, notifying context if necessary.
-	 * 
-	 * @param version
-	 * @param bac
-	 */
-	void deleteVersion(HibSchemaVersion version, BulkActionContext bac);
 
 	@Override
 	default String getAPIPath(HibSchema element, InternalActionContext ac) {

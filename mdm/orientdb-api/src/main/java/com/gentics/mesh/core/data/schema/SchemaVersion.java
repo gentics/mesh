@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.schema;
 
-import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
@@ -9,17 +8,18 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.result.Result;
 
 public interface SchemaVersion
 		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchemaVersion, HibSchema>, HibSchemaVersion {
 
 	/**
-	 * Returns an iterator for those {@link HibNodeFieldContainer}'s which can be edited by users. Those are draft and publish versions.
+	 * Returns a result for those {@link HibNodeFieldContainer}'s which can be edited by users. Those are draft and publish versions.
 	 *
 	 * @param branchUuid Branch Uuid
 	 * @return
 	 */
-	Iterator<? extends HibNodeFieldContainer> getDraftFieldContainers(String branchUuid);
+	Result<? extends HibNodeFieldContainer> getDraftFieldContainers(String branchUuid);
 
 	/**
 	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.

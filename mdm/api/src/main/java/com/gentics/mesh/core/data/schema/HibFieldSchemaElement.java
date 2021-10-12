@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
-import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.context.InternalActionContext;

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -15,7 +16,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractContainerDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -43,7 +45,7 @@ import dagger.Lazy;
 /**
  * @see MicroschemaDaoWrapper
  */
-public class MicroschemaDaoWrapperImpl extends AbstractCoreDaoWrapper<MicroschemaResponse, HibMicroschema, Microschema> implements MicroschemaDaoWrapper {
+public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> implements MicroschemaDaoWrapper {
 
 	private final MicroschemaComparator comparator;
 
@@ -189,7 +191,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractCoreDaoWrapper<Microschem
 	}
 
 	@Override
-	public Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch) {
+	public Result<HibMicroschemaVersion> findActiveSchemaVersions(HibBranch branch) {
 		return toGraph(branch).findActiveMicroschemaVersions();
 	}
 
