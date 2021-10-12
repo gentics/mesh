@@ -378,15 +378,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
 		Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
-		if (recursive) {
-			for (Node node : findAll()) {
-				// We don't need to recursively handle the permissions for each node again since
-				// this call will already affect all nodes.
-				node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
-			}
-		}
-
-		applyVertexPermissions(batch, toGraph(role), permissionsToGrant, permissionsToRevoke);
+		// We don't need to recursively handle the permissions for each node again since
+		// this call will already affect all nodes.
+		super.applyPermissions(batch, toGraph(role), false, permissionsToGrant, permissionsToRevoke);
 	}
-
 }

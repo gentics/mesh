@@ -217,6 +217,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
 
 	/**
+	 * Update all shortcut edges.
+	 */
+	void updateShortcutEdges(HibUser user);
+
+	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
 	 * {@link InternalPermission#READ_PERM} or {@link InternalPermission#READ_PUBLISHED_PERM}.
 	 *

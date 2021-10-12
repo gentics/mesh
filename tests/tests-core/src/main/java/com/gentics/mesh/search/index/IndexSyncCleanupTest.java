@@ -21,10 +21,10 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -45,7 +45,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 
 		extraIndices.add("node-blub");
 		extraIndices.add("node-blub2");
-		extraIndices.add(User.composeIndexName() + "2");
+		extraIndices.add(HibUser.composeIndexName() + "2");
 		extraIndices.add(Group.composeIndexName() + "2");
 		extraIndices.add(Role.composeIndexName() + "2");
 		extraIndices.add(TagFamily.composeIndexName(projectUuid()) + "bogus");
@@ -77,7 +77,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 
 		// Check that all bogus indices have been removed and correct indices remain.
 		List<String> remainingIndices = new ArrayList<>();
-		remainingIndices.add("mesh-" + User.composeIndexName());
+		remainingIndices.add("mesh-" + HibUser.composeIndexName());
 		remainingIndices.add("mesh-" + Group.composeIndexName());
 		remainingIndices.add("mesh-" + Role.composeIndexName());
 		remainingIndices.add("mesh-" + Schema.composeIndexName());

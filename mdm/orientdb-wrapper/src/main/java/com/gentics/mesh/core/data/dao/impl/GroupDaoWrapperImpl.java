@@ -138,13 +138,14 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 
 	@Override
 	public void removeUser(HibGroup group, HibUser user) {
+		UserDao userDao = Tx.get().userDao();
 		Group graphGroup = toGraph(group);
 		User graphUser = toGraph(user);
 
 		graphGroup.unlinkIn(graphUser, HAS_USER);
 
 		// The user does no longer belong to the group so lets update the shortcut edges
-		user.updateShortcutEdges();
+		userDao.updateShortcutEdges(user);
 		permissionCache.get().clear();
 	}
 
@@ -177,13 +178,14 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 
 	@Override
 	public void removeRole(HibGroup group, HibRole role) {
+		UserDao userDao = Tx.get().userDao();
 		Role graphRole = toGraph(role);
 		Group graphGroup = toGraph(group);
 		graphGroup.unlinkIn(graphRole, HAS_ROLE);
 
 		// Update the shortcut edges since the role does no longer belong to the group
 		for (HibUser user : getUsers(group)) {
-			user.updateShortcutEdges();
+			userDao.updateShortcutEdges(user);
 		}
 		permissionCache.get().clear();
 	}
@@ -297,6 +299,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 
 	@Override
 	public void delete(HibGroup group, BulkActionContext bac) {
+		UserDao userDao = Tx.get().userDao();
 		Group graphGroup = toGraph(group);
 		// TODO don't allow deletion of the admin group
 		bac.batch().add(group.onDeleted());
@@ -304,7 +307,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
 		graphGroup.getElement().remove();
 		for (HibUser user : affectedUsers) {
-			user.updateShortcutEdges();
+			userDao.updateShortcutEdges(user);
 			bac.add(user.onUpdated());
 			bac.inc();
 		}

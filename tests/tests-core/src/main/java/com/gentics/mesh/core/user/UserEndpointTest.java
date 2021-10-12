@@ -2,7 +2,6 @@ package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.User.composeIndexName;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
@@ -49,7 +48,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -591,7 +589,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), uuid);
+		assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		trackingSearchProvider().clear().blockingAwait();
 
@@ -1361,7 +1359,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			UserResponse restUser = call(() -> client().createUser(newUser));
 			waitForSearchIdleEvent();
 
-			assertThat(trackingSearchProvider()).hasStore(composeIndexName(), restUser.getUuid());
+			assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), restUser.getUuid());
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			trackingSearchProvider().reset();
 
@@ -1385,7 +1383,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Load the user again and check whether it is disabled
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
-			assertThat(trackingSearchProvider()).hasDelete(composeIndexName(), uuid);
+			assertThat(trackingSearchProvider()).hasDelete(HibUser.composeIndexName(), uuid);
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 		}
 

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
@@ -24,6 +26,8 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
@@ -52,6 +56,45 @@ public interface HibCoreElement<T extends RestModel> extends HibTransformableEle
 	 * @return
 	 */
 	String getSubETag(InternalActionContext ac);
+
+	/**
+	 * Method which is being invoked once the permissions on the element have been updated.
+	 * 
+	 * @param role
+	 * @return
+	 */
+	default PermissionChangedEventModelImpl onPermissionChanged(HibRole role) {
+		PermissionChangedEventModelImpl model = new PermissionChangedEventModelImpl();
+		fillPermissionChanged(model, role);
+		return model;
+	}
+
+	/**
+	 * Add the common permission information to the model.
+	 * 
+	 * @param model
+	 * @param role
+	 */
+	default void fillPermissionChanged(PermissionChangedEventModelImpl model, HibRole role) {
+		model.setEvent(ROLE_PERMISSIONS_CHANGED);
+		model.setRole(role.transformToReference());
+		model.setType(getTypeInfo().getType());
+		model.setUuid(getUuid());
+		if (this instanceof HibNamedElement) {
+			String name = ((HibNamedElement) this).getName();
+			model.setName(name);
+		}
+		if (this instanceof HibProjectElement) {
+			HibProject project = ((HibProjectElement) this).getProject();
+			if (project != null) {
+				if (model instanceof PermissionChangedProjectElementEventModel) {
+					((PermissionChangedProjectElementEventModel) model).setProject(project.transformToReference());
+				}
+			} else {
+				log.warn("The project for element {" + getUuid() + "} could not be found.");
+			}
+		}
+	}
 
 	/**
 	 * Add common fields to the given rest model object. The method will add common files like creator, editor, uuid, permissions, edited, created.

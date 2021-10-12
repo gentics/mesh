@@ -2,8 +2,10 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -43,6 +45,16 @@ public interface HibBaseElement extends HibElement {
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
 	 */
-	void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke);
+	default void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
+			Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+		RoleDao roleDao = Tx.get().roleDao();
+		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new InternalPermission[permissionsToGrant.size()]));
+		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()]));
+
+		if (this instanceof HibCoreElement) {
+			HibCoreElement<?> coreVertex = (HibCoreElement<?>) this;
+			batch.add(coreVertex.onPermissionChanged(role));
+		}
+		// TODO Also handle root elements - We need to add a dedicated event in those cases.		
+	}
 }

@@ -38,11 +38,11 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -360,7 +360,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid);
-		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
+		assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), userUuid());
 		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
@@ -497,7 +497,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), uuid);
-		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
+		assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), userUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {

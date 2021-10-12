@@ -60,7 +60,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 				t.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-		applyVertexPermissions(batch, toGraph(role), permissionsToGrant, permissionsToRevoke);
+		RootVertex.super.applyPermissions(batch, toGraph(role), false, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override

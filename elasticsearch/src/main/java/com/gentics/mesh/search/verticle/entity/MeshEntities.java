@@ -293,7 +293,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibUser element) {
-		return helper.createDocumentRequest(User.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibUser.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
 	}
 
 	/**

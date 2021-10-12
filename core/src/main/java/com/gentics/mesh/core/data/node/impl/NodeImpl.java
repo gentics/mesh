@@ -61,7 +61,6 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -1878,7 +1877,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public PermissionChangedProjectElementEventModel onPermissionChanged(Role role) {
+	public PermissionChangedProjectElementEventModel onPermissionChanged(HibRole role) {
 		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
 		fillPermissionChanged(model, role);
 		return model;

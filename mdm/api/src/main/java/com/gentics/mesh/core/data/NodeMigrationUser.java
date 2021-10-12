@@ -41,10 +41,6 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public void updateShortcutEdges() {
-	}
-
-	@Override
 	public HibNode getReferencedNode() {
 		return null;
 	}

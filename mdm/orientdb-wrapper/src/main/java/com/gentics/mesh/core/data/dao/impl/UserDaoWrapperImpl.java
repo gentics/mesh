@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -214,5 +215,17 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	@Override
 	public String getRolesHash(HibUser user) {
 		return toGraph(user).getRolesHash();
+	}
+
+	@Override
+	public void updateShortcutEdges(HibUser user) {
+		GroupDao groupRoot = Tx.get().groupDao();
+		User graph = toGraph(user);
+		graph.outE(ASSIGNED_TO_ROLE).removeAll();
+		for (HibGroup group : graph.getGroups()) {
+			for (HibRole role : groupRoot.getRoles(group)) {
+				graph.setUniqueLinkOutTo(toGraph(role), ASSIGNED_TO_ROLE);
+			}
+		}
 	}
 }

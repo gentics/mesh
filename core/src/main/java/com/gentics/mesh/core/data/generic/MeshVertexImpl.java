@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.HashMap;
@@ -18,12 +17,8 @@ import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
@@ -117,25 +112,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	@Override
 	public void delete(BulkActionContext context) {
 		throw new NotImplementedException("The deletion behaviour for this vertex was not implemented.");
-	}
-
-	@Override
-	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		applyVertexPermissions(batch, toGraph(role), permissionsToGrant, permissionsToRevoke);
-	}
-
-	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		RoleDao roleDao = mesh().boot().roleDao();
-		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new InternalPermission[permissionsToGrant.size()]));
-		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()]));
-
-		if (this instanceof MeshCoreVertex) {
-			MeshCoreVertex<?> coreVertex = (MeshCoreVertex<?>) this;
-			batch.add(coreVertex.onPermissionChanged(role));
-		}
-		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.
 	}
 
 	@Override

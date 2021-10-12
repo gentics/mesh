@@ -23,7 +23,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -33,7 +32,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -265,17 +263,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	public Page<? extends Role> getRolesViaShortcut(HibUser user, PagingParameters params) {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
 		return new DynamicTransformablePageImpl<>(user, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
-	}
-
-	@Override
-	public void updateShortcutEdges() {
-		GroupDao groupRoot = mesh().boot().groupDao();
-		outE(ASSIGNED_TO_ROLE).removeAll();
-		for (HibGroup group : getGroups()) {
-			for (HibRole role : groupRoot.getRoles(group)) {
-				setUniqueLinkOutTo(toGraph(role), ASSIGNED_TO_ROLE);
-			}
-		}
 	}
 
 	@Override

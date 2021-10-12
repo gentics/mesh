@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
+import java.util.Objects;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -29,6 +31,26 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, 
 	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
+	}
+
+	/**
+	 * Compose the index name for the user index.
+	 *
+	 * @return
+	 */
+	static String composeIndexName() {
+		return "user";
+	}
+
+	/**
+	 * Compose the document id for the user documents.
+	 *
+	 * @param elementUuid
+	 * @return
+	 */
+	static String composeDocumentId(String elementUuid) {
+		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
+		return elementUuid;
 	}
 
 	/**
@@ -258,11 +280,6 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibUserTracking, 
 	String getResetToken();
 
 	// Legacy - compat stuff
-
-	/**
-	 * Update all shortcut edges.
-	 */
-	void updateShortcutEdges();
 
 	/**
 	 * Return the referenced node which was assigned to the user.

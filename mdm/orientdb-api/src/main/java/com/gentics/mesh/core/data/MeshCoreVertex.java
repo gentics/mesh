@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -24,29 +22,6 @@ public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, Transfo
 	 * @return true if the element was updated. Otherwise false
 	 */
 	boolean update(InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Return the type info of the element.
-	 * 
-	 * @return
-	 */
-	TypeInfo getTypeInfo();
-
-	/**
-	 * Method which is being invoked once the permissions on the element have been updated.
-	 * 
-	 * @param role
-	 * @return
-	 */
-	PermissionChangedEventModelImpl onPermissionChanged(Role role);
-
-	/**
-	 * Add the common permission information to the model.
-	 * 
-	 * @param model
-	 * @param role
-	 */
-	void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role);
 
 	@Override
 	default Object getId() {

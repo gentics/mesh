@@ -34,7 +34,7 @@ import io.reactivex.Flowable;
 @Singleton
 public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implements UserIndexHandler {
 
-	private final static Set<String> indices = Collections.singleton(User.composeIndexName());
+	private final static Set<String> indices = Collections.singleton(HibUser.composeIndexName());
 
 	@Inject
 	UserTransformer transformer;
@@ -67,12 +67,12 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return User.composeDocumentId(entry.getElementUuid());
+		return HibUser.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return User.composeIndexName();
+		return HibUser.composeIndexName();
 	}
 
 	@Override
@@ -87,12 +87,12 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(User.composeIndexName(), null);
+		return diffAndSync(HibUser.composeIndexName(), null);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, User.composeIndexName());
+		return filterIndicesByType(indices, HibUser.composeIndexName());
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = User.composeIndexName();
+		String indexName = HibUser.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "user");
 		return Collections.singletonMap(indexName, info);
 	}
