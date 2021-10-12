@@ -82,7 +82,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 		}
 		manager.undeploy("failing").blockingAwait(2, TimeUnit.SECONDS);
 		assertEquals(0, manager.getPluginIds().size());
-		call(() -> monClient().ready());
+		call(() -> monClient().live());
 	}
 
 	@Test
