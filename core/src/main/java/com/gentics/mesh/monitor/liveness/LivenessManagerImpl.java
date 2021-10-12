@@ -9,8 +9,11 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
+import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -20,6 +23,8 @@ import io.vertx.core.logging.LoggerFactory;
 @Singleton
 public class LivenessManagerImpl implements LivenessManager {
 	private static final Logger log = LoggerFactory.getLogger(LivenessManagerImpl.class);
+
+	private final Lazy<MeshPluginManager> pluginManager;
 
 	protected boolean live = true;
 
@@ -34,7 +39,8 @@ public class LivenessManagerImpl implements LivenessManager {
 	 * @param options mesh options
 	 */
 	@Inject
-	public LivenessManagerImpl(MeshOptions options) {
+	public LivenessManagerImpl(MeshOptions options, Lazy<MeshPluginManager> pluginManager) {
+		this.pluginManager = pluginManager;
 		liveFile = new File(options.getLivePath());
 		File liveFolder = liveFile.getParentFile();
 		if (liveFolder != null && !liveFolder.exists() && !liveFolder.mkdirs()) {
@@ -47,7 +53,7 @@ public class LivenessManagerImpl implements LivenessManager {
 		}
 		executor = Executors.newSingleThreadScheduledExecutor();
 		executor.scheduleWithFixedDelay(() -> {
-			if (isLive()) {
+			if (isLive() && pluginsLive()) {
 				// touch file
 				liveFile.setLastModified(System.currentTimeMillis());
 			}
@@ -77,5 +83,19 @@ public class LivenessManagerImpl implements LivenessManager {
 			executor = null;
 		}
 		liveFile.delete();
+	}
+
+	/**
+	 * Check whether the plugins are live (no plugin is in status FAILED)
+	 * @return true, iff plugins are live
+	 */
+	protected boolean pluginsLive() {
+		for (String id : pluginManager.get().getPluginIds()) {
+			PluginStatus status = pluginManager.get().getStatus(id);
+			if (status == PluginStatus.FAILED) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
