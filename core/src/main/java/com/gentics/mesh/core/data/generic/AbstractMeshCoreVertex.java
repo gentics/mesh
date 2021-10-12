@@ -123,14 +123,16 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 		return restValue != null && !restValue.equals(graphValue);
 	}
 
-	protected MeshElementEventModel createEvent(MeshEvent event) {
+	@Override
+	public MeshElementEventModel createEvent(MeshEvent event) {
 		MeshElementEventModel model = new MeshElementEventModelImpl();
 		model.setEvent(event);
 		fillEventInfo(model);
 		return model;
 	}
 
-	protected void fillEventInfo(MeshElementEventModel model) {
+	@Override
+	public void fillEventInfo(MeshElementEventModel model) {
 		if (this instanceof NamedElement) {
 			model.setName(((NamedElement) this).getName());
 		}

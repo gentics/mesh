@@ -551,7 +551,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	protected BranchMeshEventModel createEvent(MeshEvent event) {
+	public BranchMeshEventModel createEvent(MeshEvent event) {
 		BranchMeshEventModel model = new BranchMeshEventModel();
 		model.setEvent(event);
 		fillEventInfo(model);

@@ -172,14 +172,14 @@ public interface HibCoreElement<T extends RestModel> extends HibTransformableEle
 		return createEvent(getTypeInfo().getOnDeleted());
 	}
 
-	private MeshElementEventModel createEvent(MeshEvent event) {
+	default MeshElementEventModel createEvent(MeshEvent event) {
 		MeshElementEventModel model = new MeshElementEventModelImpl();
 		model.setEvent(event);
 		fillEventInfo(model);
 		return model;
 	}
 
-	private void fillEventInfo(MeshElementEventModel model) {
+	default void fillEventInfo(MeshElementEventModel model) {
 		if (this instanceof HibNamedElement) {
 			model.setName(((HibNamedElement) this).getName());
 		}

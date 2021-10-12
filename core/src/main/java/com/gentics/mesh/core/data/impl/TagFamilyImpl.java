@@ -188,7 +188,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	protected TagFamilyMeshEventModel createEvent(MeshEvent type) {
+	public TagFamilyMeshEventModel createEvent(MeshEvent type) {
 		TagFamilyMeshEventModel event = new TagFamilyMeshEventModel();
 		event.setEvent(type);
 		fillEventInfo(event);

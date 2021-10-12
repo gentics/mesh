@@ -1793,7 +1793,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	protected MeshProjectElementEventModel createEvent(MeshEvent event) {
+	public MeshProjectElementEventModel createEvent(MeshEvent event) {
 		NodeMeshEventModel model = new NodeMeshEventModel();
 		model.setEvent(event);
 		model.setProject(getProject().transformToReference());
