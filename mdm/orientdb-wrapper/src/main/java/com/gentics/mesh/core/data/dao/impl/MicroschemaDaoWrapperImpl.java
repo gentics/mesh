@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -221,11 +220,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	public Stream<? extends HibMicroschema> findAllStream(HibProject root, InternalActionContext ac,
 			InternalPermission permission) {
 		return toGraph(root).getMicroschemaContainerRoot().findAllStream(ac, permission);
-	}
-
-	@Override
-	public Result<? extends HibMicroschema> findAllDynamic(HibProject root) {
-		return toGraph(root).getMicroschemaContainerRoot().findAllDynamic();
 	}
 
 	@Override

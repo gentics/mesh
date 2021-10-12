@@ -56,14 +56,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission);
 
 	/**
-	 * Return an result of all elements and use the stored type information to load the items. The {@link #findAll()} will use explicit typing and
-	 * thus will be faster. Only use that method if you know that your relation only yields a specific kind of item.
-	 * 
-	 * @return
-	 */
-	Result<? extends L> findAllDynamic(R root);
-
-	/**
 	 * Find the visible elements and return a paged result.
 	 * 
 	 * @param ac

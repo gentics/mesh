@@ -270,11 +270,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Result<? extends HibNode> findAllDynamic(HibProject root) {
-		return toGraph(root).getNodeRoot().findAllDynamic();
-	}
-
-	@Override
 	public Page<? extends HibNode> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getNodeRoot().findAllNoPerm(ac, pagingInfo);

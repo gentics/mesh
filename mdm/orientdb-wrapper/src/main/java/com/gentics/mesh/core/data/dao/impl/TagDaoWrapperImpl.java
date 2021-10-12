@@ -365,11 +365,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public Result<? extends HibTag> findAllDynamic(HibTagFamily root) {
-		return toGraph(root).findAllDynamic();
-	}
-
-	@Override
 	public Page<? extends HibTag> findAllNoPerm(HibTagFamily root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).findAllNoPerm(ac, pagingInfo);

@@ -264,11 +264,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public Result<? extends HibTagFamily> findAllDynamic(HibProject root) {
-		return toGraph(root).getTagFamilyRoot().findAllDynamic();
-	}
-
-	@Override
 	public Page<? extends HibTagFamily> findAll(HibProject root, InternalActionContext ac, PagingParameters pagingInfo,
 			java.util.function.Predicate<HibTagFamily> extraFilter) {
 		return toGraph(root).getTagFamilyRoot().findAll(ac, pagingInfo, t -> extraFilter.test(t));

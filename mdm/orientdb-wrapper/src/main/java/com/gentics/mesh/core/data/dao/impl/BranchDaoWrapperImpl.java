@@ -172,11 +172,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public Result<? extends HibBranch> findAllDynamic(HibProject root) {
-		return toGraph(root).getBranchRoot().findAllDynamic();
-	}
-
-	@Override
 	public Page<? extends HibBranch> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getBranchRoot().findAllNoPerm(ac, pagingInfo);

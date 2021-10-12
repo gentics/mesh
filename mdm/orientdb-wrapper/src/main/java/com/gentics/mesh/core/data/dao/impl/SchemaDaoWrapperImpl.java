@@ -277,11 +277,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	}
 
 	@Override
-	public Result<? extends HibSchema> findAllDynamic(HibProject root) {
-		return toGraph(root).getSchemaContainerRoot().findAllDynamic();
-	}
-
-	@Override
 	public Page<? extends HibSchema> findAll(HibProject root, InternalActionContext ac, PagingParameters pagingInfo) {
 		return toGraph(root).getSchemaContainerRoot().findAll(ac, pagingInfo);
 	}
