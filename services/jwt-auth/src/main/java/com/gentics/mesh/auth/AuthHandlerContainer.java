@@ -5,12 +5,15 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.etc.config.MeshOptions;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
+import io.vertx.ext.jwt.JWTOptions;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 
 /**
@@ -21,18 +24,29 @@ public class AuthHandlerContainer {
 
 	private static final Logger log = LoggerFactory.getLogger(AuthHandlerContainer.class);
 
-	private final Vertx vertx;
 	private JWTAuthHandler authHandler;
 	private int hashCode;
 
 	@Inject
-	public AuthHandlerContainer(Vertx vertx) {
-		this.vertx = vertx;
-	}
+	public Vertx vertx;
 
+	@Inject
+	public MeshOptions options;
+
+	@Inject
+	public AuthHandlerContainer() {}
+
+	/**
+	 * Create a new JWT handler for the given JWKs.
+	 *
+	 * @param jwks
+	 * @return
+	 */
 	public synchronized JWTAuthHandler create(Set<JsonObject> jwks) {
 		if (hashCode != jwks.hashCode()) {
 			JWTAuthOptions jwtOptions = new JWTAuthOptions();
+			// Set JWT options from the config
+			jwtOptions.setJWTOptions(createJWTOptions());
 			// Now add all keys to jwt config
 			for (JsonObject key : jwks) {
 				jwtOptions.addJwk(key);
@@ -45,4 +59,11 @@ public class AuthHandlerContainer {
 		return authHandler;
 	}
 
+	private JWTOptions createJWTOptions() {
+		return new JWTOptions()
+			.setLeeway(this.options.getAuthenticationOptions().getLeeway())
+			.setIssuer(this.options.getAuthenticationOptions().getIssuer())
+			.setAudience(this.options.getAuthenticationOptions().getAudience())
+			.setIgnoreExpiration(this.options.getAuthenticationOptions().isIgnoreExpiration());
+	}
 }
