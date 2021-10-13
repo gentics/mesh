@@ -71,6 +71,7 @@ public class MonitoringRoutes {
 		addMetrics();
 		addLive();
 		addReady();
+		addWritable();
 		addVersion();
 		addStatus();
 		addClusterStatus();
@@ -113,6 +114,12 @@ public class MonitoringRoutes {
 		apiRouter.route("/health/ready")
 			.method(GET)
 			.handler(monitoringCrudHandler::handleReady);
+	}
+
+	private void addWritable() {
+		apiRouter.route("/cluster/writable")
+			.method(GET)
+			.handler(monitoringCrudHandler::handleWritable);
 	}
 
 	private void addMetrics() {
