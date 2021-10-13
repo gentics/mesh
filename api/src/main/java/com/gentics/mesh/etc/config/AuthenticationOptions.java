@@ -25,8 +25,12 @@ import io.vertx.core.json.JsonObject;
 public class AuthenticationOptions implements Option {
 
 	public static final String DEFAULT_ALGORITHM = "HS256";
+	public static final String DEFAULT_ISSUER = "Gentics Mesh";
 
 	public static final int DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; // 1 hour
+	public static final int DEFAULT_LEEWAY = 0;
+
+	public static final boolean DEFAULT_IGNORE_EXPIRATION = false;
 
 	public static final String DEFAULT_KEYSTORE_PATH = CONFIG_FOLDERNAME + "/keystore.jceks";
 
@@ -36,6 +40,10 @@ public class AuthenticationOptions implements Option {
 	public static final String MESH_AUTH_KEYSTORE_PASS_ENV = "MESH_AUTH_KEYSTORE_PASS";
 	public static final String MESH_AUTH_KEYSTORE_PATH_ENV = "MESH_AUTH_KEYSTORE_PATH";
 	public static final String MESH_AUTH_JWT_ALGO_ENV = "MESH_AUTH_JWT_ALGO";
+	public static final String MESH_AUTH_JWT_LEEWAY_ENV = "MESH_AUTH_JWT_LEEWAY";
+	public static final String MESH_AUTH_JWT_AUDIENCE_ENV = "MESH_AUTH_JWT_AUDIENCE";
+	public static final String MESH_AUTH_JWT_ISSUER_ENV = "MESH_AUTH_JWT_ISSUER";
+	public static final String MESH_AUTH_JWT_IGNORE_EXPIRATION_ENV = "MESH_AUTH_JWT_IGNORE_EXPIRATION";
 	public static final String MESH_AUTH_ANONYMOUS_ENABLED_ENV = "MESH_AUTH_ANONYMOUS_ENABLED";
 	public static final String MESH_AUTH_PUBLIC_KEYS_PATH_ENV = "MESH_AUTH_PUBLIC_KEYS_PATH";
 
@@ -58,6 +66,26 @@ public class AuthenticationOptions implements Option {
 	@JsonPropertyDescription("Algorithm which is used to verify and sign JWT.")
 	@EnvironmentVariable(name = MESH_AUTH_JWT_ALGO_ENV, description = "Override the configured algorithm which is used to sign the JWT.")
 	private String algorithm = DEFAULT_ALGORITHM;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Leeway (in seconds) of how long a JWT should still be considered valid.")
+	@EnvironmentVariable(name = MESH_AUTH_JWT_LEEWAY_ENV, description = "Override the configured Leeway (in seconds) of how long a JWT should still be considered valid.")
+	private int leeway = DEFAULT_LEEWAY;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The issuer of the JWT which is also written into the token.")
+	@EnvironmentVariable(name = MESH_AUTH_JWT_ISSUER_ENV, description = "Override the configured issuer of the JWT.")
+	private String issuer = DEFAULT_ISSUER;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The expected audience of the JWT.")
+	@EnvironmentVariable(name = MESH_AUTH_JWT_AUDIENCE_ENV, description = "Override the configured audience of the JWT.")
+	private List<String> audience = new ArrayList<>();
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If expired JWT should still be accepted and processed.")
+	@EnvironmentVariable(name = MESH_AUTH_JWT_IGNORE_EXPIRATION_ENV, description = "Overrides if an expired JWT should still be accepted and processed.")
+	private boolean ignoreExpiration = DEFAULT_IGNORE_EXPIRATION;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether anonymous access should be enabled.")
@@ -129,6 +157,46 @@ public class AuthenticationOptions implements Option {
 
 	public AuthenticationOptions setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
+		return this;
+	}
+
+	public int getLeeway() {
+		return leeway;
+	}
+
+	@Setter
+	public AuthenticationOptions setLeeway(int leeway) {
+		this.leeway = leeway;
+		return this;
+	}
+
+	public String getIssuer() {
+		return issuer;
+	}
+
+	@Setter
+	public AuthenticationOptions setIssuer(String issuer) {
+		this.issuer = issuer;
+		return this;
+	}
+
+	public List<String> getAudience() {
+		return audience;
+	}
+
+	@Setter
+	public AuthenticationOptions setAudience(List<String> audience) {
+		this.audience = audience;
+		return this;
+	}
+
+	public boolean isIgnoreExpiration() {
+		return ignoreExpiration;
+	}
+
+	@Setter
+	public AuthenticationOptions setIgnoreExpiration(boolean ignoreExpiration) {
+		this.ignoreExpiration = ignoreExpiration;
 		return this;
 	}
 
