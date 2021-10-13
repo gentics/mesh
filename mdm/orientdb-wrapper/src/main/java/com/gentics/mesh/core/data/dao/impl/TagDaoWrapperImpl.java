@@ -99,20 +99,13 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 		return tagRoot.findAll();
 	}
 
-	@Override
-	public HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
-		TagRoot tagRoot = boot.get().meshRoot().getTagRoot();
-		HibTag tag = branch.findTagByUuid(tagUuid);
-		return tagRoot.checkPerms(toGraph(tag), tagUuid, ac, perm, true);
-	}
-
-	@Override
-	public Tag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission perm) {
-		// TODO this is an old bug in mesh. The global tag root is used to load tags. Instead the project specific tags should be checked.
-		// This code is used for branch tagging. The case makes incorrect usage of the root.
-		TagRoot tagRoot = boot.get().meshRoot().getTagRoot();
-		return tagRoot.loadObjectByUuid(ac, tagUuid, perm);
-	}
+// TODO check if still required 
+//	@Override
+//	public HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission perm) {
+//		// TODO this is an old bug in mesh. The global tag root is used to load tags. Instead the project specific tags should be checked.
+//		// This code is used for branch tagging. The case makes incorrect usage of the root.
+//		return loadObjectByUuid(ac, tagUuid, perm);
+//	}
 
 	@Override
 	public String getSubETag(HibTag tag, InternalActionContext ac) {
@@ -158,14 +151,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	@Override
 	public HibTag findByName(HibTagFamily tagFamily, String name) {
 		return HibClassConverter.toGraph(tagFamily).findByName(name);
-	}
-
-	@Override
-	public HibTag findByUuid(HibProject project, String uuid) {
-		Project graphProject = HibClassConverter.toGraph(project);
-		// TODO this is actually wrong. We should actually search within the tag familes of the project instead.
-		Tag tag = boot.get().meshRoot().getTagRoot().findByUuid(uuid);
-		return tag;
 	}
 
 	@Override
@@ -371,17 +356,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public HibTag findByName(HibTagFamily root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibTag checkPerms(HibTagFamily root, HibTag element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
-	}
-
-	@Override
 	public void addItem(HibTagFamily root, HibTag item) {
 		toGraph(root).addItem(toGraph(item));
 	}
@@ -429,11 +403,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public HibTag loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return boot.get().meshRoot().getTagRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
 	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo);
 	}
@@ -442,12 +411,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 			Predicate<HibTag> extraFilter) {
 		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
-	}
-
-	@Override
-	public HibTag loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
-			boolean errorIfNotFound) {
-		return boot.get().meshRoot().getTagRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override

@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -118,27 +117,9 @@ public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectRespons
 	}
 
 	@Override
-	public HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
-		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
-		return root.findByName(ac, projectName, perm);
-	}
-
-	@Override
 	public HibProject findByUuid(String uuid) {
 		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 		return root.findByUuid(uuid);
-	}
-
-	@Override
-	public HibProject loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
-		return root.loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
-		return root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -255,6 +236,7 @@ public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectRespons
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
 		NodeDao nodeDao = boot.get().nodeDao();
+		SchemaDao schemaDao = boot.get().schemaDao();
 
 		Project graphProject = toGraph(project);
 
@@ -276,7 +258,7 @@ public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectRespons
 
 		// Unassign the schema from the container
 		for (Schema container : graphProject.getSchemaContainerRoot().findAll()) {
-			graphProject.getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
+			schemaDao.removeSchema(container, graphProject, bac.batch());
 		}
 
 		// Remove the project schema root from the index

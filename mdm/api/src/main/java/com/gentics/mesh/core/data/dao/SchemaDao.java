@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -20,6 +21,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -233,16 +235,6 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	Result<? extends HibNode> getNodes(HibSchema schema);
 
 	/**
-	 * Assign the schema to the project.
-	 * 
-	 * @param schemaContainer
-	 * @param project
-	 * @param user
-	 * @param batch
-	 */
-	void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch);
-
-	/**
 	 * Load the schema version via the schema and version.
 	 * 
 	 * @param schema
@@ -250,15 +242,6 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @return
 	 */
 	HibSchemaVersion findVersionByRev(HibSchema schema, String version);
-
-	/**
-	 * Remove the schema from the project.
-	 * 
-	 * @param schema
-	 * @param project
-	 * @param batch
-	 */
-	void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch);
 
 	/**
 	 * Return the schema version.
@@ -296,15 +279,6 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	void addSchema(HibSchema schema);
 
 	/**
-	 * Check whether the schema is linked to the project.
-	 * 
-	 * @param project
-	 * @param schema
-	 * @return
-	 */
-	boolean contains(HibProject project, HibSchema schema);
-
-	/**
 	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.
 	 * 
 	 * @param version
@@ -332,6 +306,51 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 */
 	Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assignment);
 
+	/**
+	 * Assign the schema to the project.
+	 * 
+	 * @param schemaContainer
+	 * @param project
+	 * @param user
+	 * @param batch
+	 */
+	default void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
+		if (project != null) {
+			ProjectDao projectDao = Tx.get().projectDao();
+			BranchDao branchDao = Tx.get().branchDao();
+
+			batch.add(projectDao.onSchemaAssignEvent(project, schemaContainer, ASSIGNED));
+			addItem(project, schemaContainer);
+
+			// assign the latest schema version to all branches of the project
+			for (HibBranch branch : branchDao.findAll(project)) {
+				branch.assignSchemaVersion(user, schemaContainer.getLatestVersion(), batch);
+			}
+		} else {
+			addSchema(schemaContainer);
+		}
+	}
+
+	/**
+	 * Remove the schema from the project.
+	 * 
+	 * @param schema
+	 * @param project
+	 * @param batch
+	 */
+	default void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch) {
+		ProjectDao projectDao = Tx.get().projectDao();
+		BranchDao branchDao = Tx.get().branchDao();
+
+		batch.add(projectDao.onSchemaAssignEvent(project, schema, UNASSIGNED));
+		removeItem(project, schema);
+
+		// unassign the schema from all branches
+		for (HibBranch branch : branchDao.findAll(project)) {
+			branch.unassignSchema(schema);
+		}
+	}
+
 	@Override
 	default String getAPIPath(HibSchema element, InternalActionContext ac) {
 		return element.getAPIPath(ac);
@@ -357,7 +376,10 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 
 	@Override
 	default void delete(HibProject root, HibSchema element, BulkActionContext bac) {
-		delete(element, bac);
+		removeSchema(element, root, bac.batch());
+		assignEvents(element, UNASSIGNED).forEach(bac::add);
+		// TODO should we delete the schema completely?
+		//delete(element, bac);
 	}
 
 	/**
@@ -380,6 +402,15 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	}
 
 	@Override
+	default HibSchema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		HibSchema schema = create(ac, batch, uuid);
+		addSchema(schema, root, ac.getUser(), batch);
+		Tx.get().persist(root, Tx.get().projectDao());
+		assignEvents(schema, UNASSIGNED).forEach(batch::add);
+		return schema;
+	}
+
+	@Override
 	default SchemaResponse transformToRestSync(HibSchema element, InternalActionContext ac, int level,
 			String... languageTags) {
 		return element.transformToRestSync(ac, level, languageTags);
@@ -389,8 +420,19 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	default boolean update(HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
+
 	@Override
 	default boolean update(HibProject project, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
 		return update(element, ac, batch);
+	}
+
+	@Override
+	default void unlink(HibSchema schema, HibProject project, EventQueueBatch batch) {
+		removeSchema(schema, project, batch);
+	}
+
+	@Override
+	default boolean isLinkedToProject(HibSchema schema, HibProject project) {
+		return contains(project, schema);
 	}
 }

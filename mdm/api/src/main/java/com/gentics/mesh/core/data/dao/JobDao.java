@@ -2,14 +2,12 @@ package com.gentics.mesh.core.data.dao;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -27,25 +25,6 @@ import io.reactivex.Completable;
  * DAO for {@link HibJob}.
  */
 public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobResponse> {
-
-	/**
-	 * Load a page of jobs.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
-	 * Load a page of jobs.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @param extraFilter
-	 * @return
-	 */
-	Page<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibJob> extraFilter);
 	
 	/**
 	 * Find all elements and return a paged result. No permission check will be performed.
@@ -57,34 +36,6 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	 * @return
 	 */
 	Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
-	 * Find the job by name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	HibJob findByName(String name);
-
-	/**
-	 * Load the job by uuid.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @param errorIfNotFound
-	 * @return
-	 */
-	HibJob loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
-
-	/**
-	 * Load the job by uuid.
-	 * 
-	 * @param uuid
-	 * @param errorIfNotFound
-	 * @return
-	 */
-	HibJob loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound);
 
 	/**
 	 * Enqueue the microschema/micronode migration.

@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
 import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -31,7 +34,9 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	 * @param perm
 	 * @return
 	 */
-	T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
+	default T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
+		return loadObjectByUuid(ac, uuid, perm, true);
+	}
 
 	/**
 	 * Load a page of elements.
@@ -87,7 +92,10 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	 * @param errorIfNotFound
 	 * @return
 	 */
-	T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
+	default T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+		T element = findByUuid(uuid);
+		return checkPerms(element, uuid, ac, perm, errorIfNotFound);
+	}
 
 	/**
 	 * Return the API path.
@@ -119,4 +127,40 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	 * @return
 	 */
 	Result<? extends T> findAll();
+
+	/**
+	 * Load the object by uuid. No permission check will be performed.
+	 * 
+	 * @param uuid
+	 *            Uuid of the object that should be loaded
+	 * @param errorIfNotFound
+	 *            True if an error should be thrown, when the element could not be found
+	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
+	 *         be null.
+	 */
+	default T loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
+		T element = findByUuid(uuid);
+		if (element == null) {
+			if (errorIfNotFound) {
+				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+			} else {
+				return null;
+			}
+		}
+		return element;
+	}
+
+	/**
+	 * Check whether the given element is assigned to this root node.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	default boolean contains(T element) {
+		if (findByUuid(element.getUuid()) == null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 }

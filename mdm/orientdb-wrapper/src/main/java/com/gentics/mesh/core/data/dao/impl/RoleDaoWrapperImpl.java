@@ -267,18 +267,6 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
-	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
-		return roleRoot.loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
-		return roleRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
 	public long count() {
 		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.globalCount();

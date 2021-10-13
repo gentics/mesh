@@ -136,16 +136,6 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	}
 
 	@Override
-	public HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return getRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return getRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
 		return boot.get().meshRoot().getUserRoot().findMeshAuthUserByUsername(username);
 	}

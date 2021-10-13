@@ -37,7 +37,6 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -366,18 +365,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 		return groupRoot.findAll(ac, pagingInfo, group -> {
 			return extraFilter.test(group);
 		});
-	}
-
-	@Override
-	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
-		return groupRoot.loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
-		return groupRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override

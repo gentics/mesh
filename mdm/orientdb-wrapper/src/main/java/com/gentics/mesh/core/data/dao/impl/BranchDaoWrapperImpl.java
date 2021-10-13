@@ -105,18 +105,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
 	public String getETag(HibBranch branch, InternalActionContext ac) {
 		Branch graphBranch = toGraph(branch);
 		return graphBranch.getETag(ac);
@@ -175,17 +163,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	public Page<? extends HibBranch> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getBranchRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	@Override
-	public HibBranch findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).getBranchRoot().findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibBranch checkPerms(HibProject root, HibBranch element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).getBranchRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
 	}
 
 	@Override

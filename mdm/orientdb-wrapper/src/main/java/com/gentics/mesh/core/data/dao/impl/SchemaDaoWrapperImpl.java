@@ -104,23 +104,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	}
 
 	@Override
-	public HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		// TODO check for project in context?
-		return getRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		// TODO check for project in context?
-		return getRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
-	public HibSchema loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
-		return toGraph(project).getSchemaContainerRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
 	public Result<? extends SchemaRoot> getRoots(HibSchema schema) {
 		return boot.get().meshRoot().getSchemaContainerRoot().getRoots(toGraph(schema));
 	}
@@ -147,19 +130,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	}
 
 	@Override
-	public void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
-		Schema graphSchemaContainer = toGraph(schemaContainer);
-		SchemaRoot schemaRoot;
-		if (project != null) {
-			Project graphProject = toGraph(project);
-			schemaRoot = graphProject.getSchemaContainerRoot();			
-		} else {
-			schemaRoot = boot.get().meshRoot().getSchemaContainerRoot();
-		}
-		schemaRoot.addSchemaContainer(user, graphSchemaContainer, batch);
-	}
-
-	@Override
 	public HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, SchemaChangesListModel model, EventQueueBatch batch) {
 		SchemaVersion graphSchemaVersion = toGraph(version);
 		return graphSchemaVersion.applyChanges(ac, model, batch);
@@ -176,22 +146,9 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	}
 
 	@Override
-	public boolean isLinkedToProject(HibSchema schema, HibProject project) {
-		Project graphProject = toGraph(project);
-		Schema graphSchema = toGraph(schema);
-		SchemaRoot root = graphProject.getSchemaContainerRoot();
-		return root.contains(graphSchema);
-	}
-
-	@Override
 	public SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level, String... languageTags) {
 		Schema graphSchema = toGraph(schema);
 		return graphSchema.transformToRestSync(ac, level, languageTags);
-	}
-
-	@Override
-	public void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch) {
-		toGraph(project).getSchemaContainerRoot().removeSchemaContainer(toGraph(schema), batch);
 	}
 
 	@Override
@@ -255,11 +212,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	}
 
 	@Override
-	public boolean contains(HibProject project, HibSchema schema) {
-		return toGraph(project).getSchemaContainerRoot().contains(toGraph(schema));
-	}
-
-	@Override
 	public Result<? extends HibSchema> findAll() {
 		return boot.get().meshRoot().getSchemaContainerRoot().findAll();
 	}
@@ -285,22 +237,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	public Page<? extends HibSchema> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getSchemaContainerRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	@Override
-	public HibSchema findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).getSchemaContainerRoot().findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibSchema checkPerms(HibProject root, HibSchema element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).getSchemaContainerRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
-	}
-
-	@Override
-	public HibSchema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return toGraph(root).getSchemaContainerRoot().create(ac, batch, uuid);
 	}
 
 	@Override
@@ -363,10 +299,5 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	@Override
 	public void deleteVersion(HibSchemaVersion v, BulkActionContext bac) {
 		toGraph(v).delete(bac);		
-	}
-
-	@Override
-	public void unlink(HibSchema schema, HibProject project, EventQueueBatch batch) {
-		toGraph(project).getSchemaContainerRoot().removeSchemaContainer(toGraph(schema), batch);
 	}
 }

@@ -24,7 +24,10 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @param perm
 	 * @return
 	 */
-	HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm);
+	default HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
+		HibProject project = findByName(projectName);
+		return checkPerms(project, project.getUuid(), ac, perm, true);
+	}
 
 	/**
 	 * Create the project.

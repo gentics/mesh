@@ -215,11 +215,6 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public HibBranch getBranch(InternalActionContext ac) {
-		return contextDataRegistry.getBranch(ac);
-	}
-
-	@Override
 	public HibBranch getBranch(InternalActionContext ac, HibProject project) {
 		return contextDataRegistry.getBranch(ac, project);
 	}

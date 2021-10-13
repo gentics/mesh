@@ -69,16 +69,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 
 	@Override
-	public HibJob loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return boot.get().meshRoot().getJobRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
-	public HibJob loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return boot.get().meshRoot().getJobRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
-	}
-
-	@Override
 	public HibJob enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		return boot.get().meshRoot().getJobRoot().enqueueSchemaMigration(creator, branch, fromVersion, toVersion);
 	}
@@ -178,11 +168,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	@Override
 	public void purgeFailed() {
 		boot.get().meshRoot().getJobRoot().purgeFailed();
-	}
-
-	@Override
-	public HibJob loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return boot.get().meshRoot().getJobRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override

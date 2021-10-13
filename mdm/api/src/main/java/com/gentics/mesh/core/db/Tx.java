@@ -65,9 +65,32 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 
 	TxData data();
 
-	HibBranch getBranch(InternalActionContext ac);
+	/**
+	 * Return the latest branch of the project.
+	 * 
+	 * @param ac
+	 * @return branch
+	 */
+	default HibBranch getBranch(InternalActionContext ac) {
+		return getBranch(ac, null);
+	}
 
+	/**
+	 * Return the branch that may be specified in this action context as query parameter. This method will fail, if no project is set, or if the specified
+	 * branch does not exist for the project When no branch was specified (but a project was set), this will return the latest branch of the project.
+	 * 
+	 * @param ac
+	 * @param project
+	 *            project for overriding the project set in the action context
+	 * @return branch
+	 */
 	HibBranch getBranch(InternalActionContext ac, HibProject project);
 
+	/**
+	 * Return the project that may be set when this action context is used for a project specific request (e.g.: /api/v2/dummy/nodes..)
+	 * 
+	 * @param ac
+	 * @return Project or null if no project has been specified in the given context.
+	 */
 	HibProject getProject(InternalActionContext ac);
 }

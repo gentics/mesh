@@ -234,12 +234,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public HibTagFamily loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(project).getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
 	public Page<? extends TagFamily> findAll(HibProject project, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		Project graphProject = toGraph(project);
@@ -273,17 +267,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	public Page<? extends HibTagFamily> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getTagFamilyRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	@Override
-	public HibTagFamily findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).getTagFamilyRoot().findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibTagFamily checkPerms(HibProject root, HibTagFamily element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).getTagFamilyRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -333,11 +316,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return boot.get().meshRoot().getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
 	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().meshRoot().getTagFamilyRoot().findAll(ac, pagingInfo);
 	}
@@ -346,12 +324,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 			Predicate<HibTagFamily> extraFilter) {
 		return boot.get().meshRoot().getTagFamilyRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
-	}
-
-	@Override
-	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
-			boolean errorIfNotFound) {
-		return boot.get().meshRoot().getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override

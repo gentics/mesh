@@ -1,12 +1,14 @@
 package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayDeque;
@@ -515,6 +517,48 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 			languages.put(c.getLanguageTag(), status);
 		});
 		return languages;
+	}
+
+	default HibNode loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+		Tx tx = Tx.get();
+		UserDao userDao = tx.userDao();
+		ContentDao contentDao = tx.contentDao();
+
+		HibNode element = findByUuidGlobal(uuid);
+		if (!errorIfNotFound && element == null) {
+			return null;
+		}
+		if (element == null) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+		}
+
+		HibUser requestUser = ac.getUser();
+		if (perm == READ_PUBLISHED_PERM) {
+			HibBranch branch = tx.getBranch(ac, element.getProject());
+
+			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(Tx.get().data().options());
+			HibNodeFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(),
+				ac.getVersioningParameters().getVersion());
+
+			if (fieldContainer == null) {
+				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid,
+					String.join(",", requestedLanguageTags), branch.getUuid());
+			}
+			// Additionally check whether the read published permission could grant read
+			// perm for published nodes
+			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
+			if (isPublished && userDao.hasPermission(requestUser, element, READ_PUBLISHED_PERM)) {
+				return element;
+				// The container could be a draft. Check whether READ perm is granted.
+			} else if (!isPublished && userDao.hasPermission(requestUser, element, READ_PERM)) {
+				return element;
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", uuid, READ_PUBLISHED_PERM.getRestPerm().getName());
+			}
+		} else if (userDao.hasPermission(requestUser, element, perm)) {
+			return element;
+		}
+		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());
 	}
 
 	/**

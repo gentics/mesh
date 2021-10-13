@@ -57,16 +57,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
-		return toGraph(project).getNodeRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(project).getNodeRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
 	public HibNode findByUuid(HibProject project, String uuid) {
 		return toGraph(project).getNodeRoot().findByUuid(uuid);
 	}
@@ -273,17 +263,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	public Page<? extends HibNode> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getNodeRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	@Override
-	public HibNode findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).getNodeRoot().findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibNode checkPerms(HibProject root, HibNode element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).getNodeRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
 	}
 
 	@Override

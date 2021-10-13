@@ -114,34 +114,6 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	/**
 	 * @see LanguageRoot
 	 */
-	public Language findByName(InternalActionContext ac, String name, InternalPermission perm) {
-		return boot.get().meshRoot().getLanguageRoot().findByName(ac, name, perm);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
 	public Language create(InternalActionContext ac, EventQueueBatch batch) {
 		return boot.get().meshRoot().getLanguageRoot().create(ac, batch);
 	}

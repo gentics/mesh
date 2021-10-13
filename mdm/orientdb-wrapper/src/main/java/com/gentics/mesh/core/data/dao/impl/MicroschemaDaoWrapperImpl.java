@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -89,21 +90,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 		Predicate<HibMicroschema> extraFilter) {
 		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 		return microschemaRoot.findAll(ac, pagingInfo, microschema -> extraFilter.test(microschema));
-	}
-
-	@Override
-	public HibMicroschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm) {
-		// TODO check for project in context?
-		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
-		return microschemaRoot.loadObjectByUuid(ac, schemaUuid, perm);
-	}
-
-	@Override
-	public HibMicroschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
-		boolean errorIfNotFound) {
-		// TODO check for project in context?
-		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
-		return microschemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -232,17 +218,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	public Page<? extends HibMicroschema> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getMicroschemaContainerRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	@Override
-	public HibMicroschema findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).getMicroschemaContainerRoot().findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibMicroschema checkPerms(HibProject root, HibMicroschema element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).getMicroschemaContainerRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
 	}
 
 	@Override
