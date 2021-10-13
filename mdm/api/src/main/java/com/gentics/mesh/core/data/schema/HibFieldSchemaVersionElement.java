@@ -8,9 +8,9 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContainerDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -229,14 +229,6 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 			change -> (HibSchemaChange<FieldSchemaContainer>) change.getNextChange());
 	}
 
-	default SchemaChangesListModel diff(InternalActionContext ac, FieldSchemaContainerComparator comparator,
-		FieldSchemaContainer fieldContainerModel) {
-		SchemaChangesListModel list = new SchemaChangesListModel();
-		fieldContainerModel.validate();
-		list.getChanges().addAll(comparator.diff(transformToRestSync(ac, 0), fieldContainerModel));
-		return list;
-	}
-
 	/**
 	 * Apply changes which will be extracted from the action context.
 	 *
@@ -244,7 +236,7 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 	 *            Action context that provides the migration request data
 	 * @param batch
 	 * @return The created schema container version
-	 * @deprecated Since this method changes the neighboring entities, is has to be moved into {@link ContentDao}
+	 * @deprecated Since this method changes the neighboring entities, is has to be moved into {@link ContainerDao}
 	 */
 	default SCV applyChanges(InternalActionContext ac, EventQueueBatch batch) {
 		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);

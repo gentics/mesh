@@ -5,12 +5,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 
-import java.util.Iterator;
-import java.util.stream.Stream;
-
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUser;

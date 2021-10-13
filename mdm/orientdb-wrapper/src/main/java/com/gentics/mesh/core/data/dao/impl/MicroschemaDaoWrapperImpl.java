@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -43,13 +42,9 @@ import dagger.Lazy;
  */
 public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> implements MicroschemaDaoWrapper {
 
-	private final MicroschemaComparator comparator;
-
 	@Inject
-	public MicroschemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
-		MicroschemaComparator comparator) {
+	public MicroschemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
-		this.comparator = comparator;
 	}
 
 	@Override
@@ -108,13 +103,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 		SchemaChangesListModel model, EventQueueBatch batch) {
 		MicroschemaVersion graphMicroschemaVersion = toGraph(version);
 		return graphMicroschemaVersion.applyChanges(ac, model, batch);
-	}
-
-	@Override
-	public SchemaChangesListModel diff(HibMicroschemaVersion version, InternalActionContext ac,
-		MicroschemaModel requestModel) {
-		MicroschemaVersion graphVersion = toGraph(version);
-		return graphVersion.diff(ac, comparator, requestModel);
 	}
 
 	@Override

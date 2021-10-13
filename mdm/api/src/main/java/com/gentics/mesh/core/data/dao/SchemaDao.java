@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -422,5 +423,10 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	@Override
 	default boolean isLinkedToProject(HibSchema schema, HibProject project) {
 		return contains(project, schema);
+	}
+
+	@Override
+	default FieldSchemaContainerComparator<SchemaModel> getFieldSchemaContainerComparator() {
+		return Tx.get().data().schemaComparator();
 	}
 }

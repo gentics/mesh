@@ -10,8 +10,10 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -61,6 +63,13 @@ public interface ContainerDao<
 	SCV findVersionByRev(SC schema, String version);
 
 	/**
+	 * Get the schema comparator for this container type.
+	 * 
+	 * @return
+	 */
+	FieldSchemaContainerComparator<M> getFieldSchemaContainerComparator();
+
+	/**
 	 * Diff the schema version with the request model and return a list of changes.
 	 * 
 	 * @param latestVersion
@@ -68,7 +77,14 @@ public interface ContainerDao<
 	 * @param requestModel
 	 * @return
 	 */
-	SchemaChangesListModel diff(SCV latestVersion, InternalActionContext ac, M requestModel);
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	default SchemaChangesListModel diff(SCV latestVersion, InternalActionContext ac, M requestModel) {
+		SchemaChangesListModel list = new SchemaChangesListModel();
+		requestModel.validate();
+		list.getChanges().addAll(((FieldSchemaContainerComparator) getFieldSchemaContainerComparator())
+				.diff(latestVersion.transformToRestSync(ac, 0), requestModel));
+		return list;
+	};
 
 	/**
 	 * Find all schema versions for the given branch.

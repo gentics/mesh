@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -280,5 +281,10 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	@Override
 	default boolean update(HibProject root, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for microschemas. Please start a microschema migration");
+	}
+
+	@Override
+	default FieldSchemaContainerComparator<MicroschemaModel> getFieldSchemaContainerComparator() {
+		return Tx.get().data().microschemaComparator();
 	}
 }

@@ -31,13 +31,11 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -51,12 +49,9 @@ import dagger.Lazy;
  */
 public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion, SchemaModel, Schema> implements SchemaDaoWrapper {
 
-	private final SchemaComparator comparator;
-
 	@Inject
-	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, SchemaComparator comparator) {
+	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
-		this.comparator = comparator;
 	}
 
 	@Override
@@ -129,12 +124,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	public SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level, String... languageTags) {
 		Schema graphSchema = toGraph(schema);
 		return graphSchema.transformToRestSync(ac, level, languageTags);
-	}
-
-	@Override
-	public SchemaChangesListModel diff(HibSchemaVersion version, InternalActionContext ac, SchemaModel requestModel) {
-		SchemaVersion graphVersion = toGraph(version);
-		return graphVersion.diff(ac, comparator, requestModel);
 	}
 
 	@Override

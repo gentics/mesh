@@ -4,6 +4,8 @@ import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -36,16 +38,21 @@ public class TxDataImpl implements TxData {
 	private final NodeIndexHandler nodeIndexHandler;
 	private final WebRootLinkReplacer webRootLinkReplacer;
 	private final ServerSchemaStorage serverSchemaStorage;
+	private final SchemaComparator schemaComparator;
+	private final MicroschemaComparator microschemaComparator;
 
 	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot, 
 			PermissionRoots permissionRoots, NodeIndexHandler nodeIndexHandler,
-			WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage) {
+			WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage,
+			SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator) {
 		this.options = options;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.webRootLinkReplacer = webRootLinkReplacer;
 		this.serverSchemaStorage = serverSchemaStorage;
+		this.schemaComparator = schemaComparator;
+		this.microschemaComparator = microschemaComparator;
 	}
 
 	@Override
@@ -366,6 +373,16 @@ public class TxDataImpl implements TxData {
 	@Override
 	public ServerSchemaStorage serverSchemaStorage() {
 		return serverSchemaStorage;
+	}
+
+	@Override
+	public SchemaComparator schemaComparator() {
+		return schemaComparator;
+	}
+
+	@Override
+	public MicroschemaComparator microschemaComparator() {
+		return microschemaComparator;
 	}
 
 }
