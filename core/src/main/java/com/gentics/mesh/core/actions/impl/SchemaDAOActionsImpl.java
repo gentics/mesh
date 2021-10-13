@@ -63,7 +63,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	 */
 	public Page<? extends HibSchema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
 		SchemaDao schemaDao = tx.schemaDao();
-		return schemaDao.findAll(ac, project, pagingInfo);
+		return schemaDao.findAll(project, ac, pagingInfo);
 	}
 
 	@Override

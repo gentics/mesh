@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -209,6 +210,7 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 	 * @param listOfChanges
 	 * @param batch
 	 * @return The created schema container version
+	 * @deprecated Since this method changes the neighboring entities, is has to be moved into {@link ContentDao}
 	 */
 	SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch);
 
@@ -242,6 +244,7 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 	 *            Action context that provides the migration request data
 	 * @param batch
 	 * @return The created schema container version
+	 * @deprecated Since this method changes the neighboring entities, is has to be moved into {@link ContentDao}
 	 */
 	default SCV applyChanges(InternalActionContext ac, EventQueueBatch batch) {
 		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);

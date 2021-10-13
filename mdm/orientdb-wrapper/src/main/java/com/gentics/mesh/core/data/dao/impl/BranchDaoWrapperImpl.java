@@ -13,7 +13,6 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
@@ -22,12 +21,10 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -40,13 +37,9 @@ import dagger.Lazy;
 @Singleton
 public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse, HibBranch, Branch, HibProject> implements BranchDaoWrapper {
 
-	private Lazy<Database> db;
-
 	@Inject
 	public BranchDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Database> db) {
 		super(boot, permissions);
-		// TODO Fix assignment - Inject DB
-		this.db = db;
 	}
 
 	/**
@@ -188,17 +181,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getBranchRoot().globalCount();
-	}
-
-	@Override
-	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
-			String roleUuid) {
-		return toGraph(root).getBranchRoot().getRolePermissions(element, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement vertex, InternalPermission perm) {
-		return toGraph(root).getBranchRoot().getRolesWithPerm(vertex, perm);
 	}
 
 	@Override

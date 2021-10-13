@@ -15,10 +15,8 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -288,25 +286,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return
 	 */
 	long globalCount(R root);
-
-	/**
-	 * Get the permissions of a role for this element.
-	 *
-	 * @param element
-	 * @param ac
-	 * @param roleUuid
-	 * @return
-	 */
-	PermissionInfo getRolePermissions(R root, HibBaseElement element, InternalActionContext ac, String roleUuid);
-
-	/**
-	 * Return a result for all roles which grant the permission to the element.
-	 *
-	 * @param element
-	 * @param perm
-	 * @return
-	 */
-	Result<? extends HibRole> getRolesWithPerm(R root, HibBaseElement element, InternalPermission perm);
 
 	/**
 	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.

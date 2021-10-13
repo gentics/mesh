@@ -14,7 +14,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -26,7 +25,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -36,16 +34,14 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -76,11 +72,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	@Override
 	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return getRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
-	public Page<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo) {
-		return toGraph(project).getSchemaContainerRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
@@ -127,17 +118,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 			.map(SchemaRoot::getProject)
 			.filter(Objects::nonNull)
 			.map(project -> project.onSchemaAssignEvent(schema, assigned));
-	}
-
-	@Override
-	public HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, SchemaChangesListModel model, EventQueueBatch batch) {
-		SchemaVersion graphSchemaVersion = toGraph(version);
-		return graphSchemaVersion.applyChanges(ac, model, batch);
-	}
-
-	@Override
-	public HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(version).applyChanges(ac, batch);
 	}
 
 	@Override
@@ -262,18 +242,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getSchemaContainerRoot().globalCount();
-	}
-
-	@Override
-	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
-			String roleUuid) {
-		return toGraph(root).getSchemaContainerRoot().getRolePermissions(element, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement element,
-			InternalPermission perm) {
-		return toGraph(root).getSchemaContainerRoot().getRolesWithPerm(element, perm);
 	}
 
 	@Override

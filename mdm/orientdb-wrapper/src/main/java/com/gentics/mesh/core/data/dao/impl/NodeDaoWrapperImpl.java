@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -25,13 +24,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -288,17 +285,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getNodeRoot().globalCount();
-	}
-
-	@Override
-	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
-			String roleUuid) {
-		return toGraph(root).getNodeRoot().getRolePermissions(element, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement vertex, InternalPermission perm) {
-		return toGraph(root).getNodeRoot().getRolesWithPerm(vertex, perm);
 	}
 
 	@Override

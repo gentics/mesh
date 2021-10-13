@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
@@ -30,14 +29,12 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
@@ -292,17 +289,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getTagFamilyRoot().globalCount();
-	}
-
-	@Override
-	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
-			String roleUuid) {
-		return toGraph(root).getTagFamilyRoot().getRolePermissions(element, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement vertex, InternalPermission perm) {
-		return toGraph(root).getTagFamilyRoot().getRolesWithPerm(vertex, perm);
 	}
 
 	@Override

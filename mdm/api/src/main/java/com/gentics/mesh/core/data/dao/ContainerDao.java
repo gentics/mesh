@@ -88,29 +88,6 @@ public interface ContainerDao<
 	Result<? extends HibNodeFieldContainer> findDraftFieldContainers(SCV version, String branchUuid);
 
 	/**
-	 * Apply changes to the schema version.
-	 * 
-	 * @param version
-	 * @param ac
-	 *            Action context which contains the changes payload
-	 * @param batch
-	 * @return
-	 */
-	SCV applyChanges(SCV version, InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Apply changes to the schema.
-	 * 
-	 * @param version
-	 * @param ac
-	 * @param model
-	 * @param batch
-	 * @return
-	 */
-	SCV applyChanges(SCV version, InternalActionContext ac,
-		SchemaChangesListModel model, EventQueueBatch batch);
-
-	/**
 	 * Find all versions for the given schema.
 	 * 
 	 * @param schema
@@ -143,4 +120,30 @@ public interface ContainerDao<
 	 * @param batch
 	 */
 	void unlink(SC schema, HibProject project, EventQueueBatch batch);
+
+	/**
+	 * Apply changes to the schema.
+	 * 
+	 * @param version
+	 * @param ac
+	 * @param model
+	 * @param batch
+	 * @return
+	 */
+	default SCV applyChanges(SCV version, InternalActionContext ac, SchemaChangesListModel model, EventQueueBatch batch) {
+		return version.applyChanges(ac, model, batch);
+	}
+
+	/**
+	 * Apply changes to the schema version.
+	 * 
+	 * @param version
+	 * @param ac
+	 *            Action context which contains the changes payload
+	 * @param batch
+	 * @return
+	 */
+	default SCV applyChanges(SCV version, InternalActionContext ac, EventQueueBatch batch) {
+		return version.applyChanges(ac, batch);
+	}
 }

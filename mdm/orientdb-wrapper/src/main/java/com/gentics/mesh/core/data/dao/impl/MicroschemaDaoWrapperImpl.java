@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -21,7 +20,6 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -30,8 +28,6 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -128,8 +124,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 
 	@Override
 	public Map<HibBranch, HibMicroschemaVersion> findReferencedBranches(HibMicroschema microschema) {
-		Map<?, ?> map = toGraph(microschema).findReferencedBranches();
-		return (Map<HibBranch, HibMicroschemaVersion>) map;
+		return toGraph(microschema).findReferencedBranches();
 	}
 
 	@Override
@@ -248,18 +243,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getMicroschemaContainerRoot().globalCount();
-	}
-
-	@Override
-	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
-			String roleUuid) {
-		return toGraph(root).getMicroschemaContainerRoot().getRolePermissions(element, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement element,
-			InternalPermission perm) {
-		return toGraph(root).getMicroschemaContainerRoot().getRolesWithPerm(element, perm);
 	}
 
 	@Override

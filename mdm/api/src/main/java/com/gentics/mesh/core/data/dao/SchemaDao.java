@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -44,22 +43,11 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * DAO for {@link HibSchema}.
  */
 public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion, SchemaModel>, RootDao<HibProject, HibSchema> {
-
-	/**
-	 * Load a page of schemas.
-	 * 
-	 * @param ac
-	 * @param project
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo);
 
 	/**
 	 * Create the schema.

@@ -46,9 +46,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.ETag;
 
