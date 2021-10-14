@@ -11,9 +11,9 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -32,8 +32,9 @@ import com.gentics.mesh.event.EventQueueBatch;
 public interface ContainerDao<
 		R extends FieldSchemaContainer, 
 		RM extends FieldSchemaContainerVersion, 
-		SC extends HibFieldSchemaElement<R, RM, SC, SCV>, 
-		SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>,
+		RE extends NameUuidReference<RE>, 
+		SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+		SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>,
 		M extends FieldSchemaContainer
 	> extends DaoGlobal<SC>, DaoTransformable<SC, R> {
 

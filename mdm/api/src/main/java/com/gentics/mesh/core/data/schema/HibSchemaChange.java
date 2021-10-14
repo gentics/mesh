@@ -64,14 +64,14 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	 * @param <R>
 	 * @return
 	 */
-	<R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getNextContainerVersion();
+	<R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getNextContainerVersion();
 
 	/**
 	 * Return the <b>in-bound</b> connected schema container version.
 	 * 
 	 * @return
 	 */
-	<R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getPreviousContainerVersion();
+	<R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getPreviousContainerVersion();
 
 	/**
 	 * Set the <b>in-bound</b> connection from the schema change to the container version.
@@ -79,7 +79,7 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	 * @param containerVersion
 	 * @return Fluent API
 	 */
-	HibSchemaChange<T> setPreviousContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion);
+	HibSchemaChange<T> setPreviousContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion);
 
 	/**
 	 * Set the out-bound connected schema container.
@@ -87,7 +87,7 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	 * @param containerVersion
 	 * @return
 	 */
-	HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion);
+	HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion);
 
 	/**
 	 * Return the schema change operation.

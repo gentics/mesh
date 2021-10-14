@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -31,7 +32,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * Domain model for branch.
  */
-public interface HibBranch extends HibCoreElement<BranchResponse>, HibUserTracking, HibNamedElement {
+public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferenceableElement<BranchReference>, HibUserTracking, HibNamedElement {
 
 	/**
 	 * Return the branch name.

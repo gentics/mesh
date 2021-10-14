@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -40,7 +41,7 @@ import dagger.Lazy;
 /**
  * @see MicroschemaDaoWrapper
  */
-public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> implements MicroschemaDaoWrapper {
+public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> implements MicroschemaDaoWrapper {
 
 	@Inject
 	public MicroschemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {

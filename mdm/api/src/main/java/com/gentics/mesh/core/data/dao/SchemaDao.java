@@ -48,7 +48,7 @@ import com.gentics.mesh.json.JsonUtil;
 /**
  * DAO for {@link HibSchema}.
  */
-public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion, SchemaModel>, RootDao<HibProject, HibSchema> {
+public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, RootDao<HibProject, HibSchema> {
 
 	/**
 	 * Create the schema.

@@ -10,6 +10,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -18,7 +19,7 @@ import com.gentics.mesh.handler.VersionUtils;
 /**
  * Domain model for group.
  */
-public interface HibGroup extends HibCoreElement<GroupResponse>, HibUserTracking, HibBucketableElement, HibNamedElement {
+public interface HibGroup extends HibCoreElement<GroupResponse>, HibReferenceableElement<GroupReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 

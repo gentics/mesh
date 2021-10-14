@@ -133,61 +133,6 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public SchemaVersionModel getSchema() {
-		SchemaVersionModel schema = mesh().serverSchemaStorage().getSchema(getName(), getVersion());
-		if (schema == null) {
-			schema = JsonUtil.readValue(getJson(), SchemaModelImpl.class);
-			mesh().serverSchemaStorage().addSchema(schema);
-		}
-		return schema;
-	}
-
-	@Override
-	public SchemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		// Load the schema and add/overwrite some properties
-		// Use getSchema to utilise the schema storage
-		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
-		HibSchema container = getSchemaContainer();
-		Schema graphSchema = toGraph(container);
-		graphSchema.fillCommonRestFields(ac, fields, restSchema);
-		restSchema.setRolePerms(graphSchema.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
-		return restSchema;
-
-	}
-
-	@Override
-	public void setSchema(SchemaVersionModel schema) {
-		mesh().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
-		mesh().serverSchemaStorage().addSchema(schema);
-		String json = schema.toJson();
-		setJson(json);
-		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());
-	}
-
-	@Override
-	public SchemaReferenceImpl transformToReference() {
-		SchemaReferenceImpl reference = new SchemaReferenceImpl();
-		reference.setName(getName());
-		reference.setUuid(getSchemaContainer().getUuid());
-		reference.setVersion(getVersion());
-		reference.setVersionUuid(getUuid());
-		return reference;
-	}
-
-	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return "";
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return null;
-	}
-
-	@Override
 	public Result<? extends Branch> getBranches() {
 		return in(HAS_SCHEMA_VERSION, BranchImpl.class);
 	}

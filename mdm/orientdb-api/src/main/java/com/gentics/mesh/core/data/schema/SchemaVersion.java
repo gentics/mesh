@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.schema;
 
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -37,9 +36,4 @@ public interface SchemaVersion
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainer> getFieldContainers(String branchUuid, Bucket bucket);
-
-	@Override
-	default TypeInfo getTypeInfo() {
-		return HibSchemaVersion.super.getTypeInfo();
-	}
 }

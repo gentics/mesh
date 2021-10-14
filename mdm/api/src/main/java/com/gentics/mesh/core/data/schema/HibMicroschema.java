@@ -26,7 +26,7 @@ import com.gentics.mesh.handler.VersionUtils;
  * Domain model for microschema.
  */
 public interface HibMicroschema
-	extends HibFieldSchemaElement<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion>, HibBucketableElement {
+	extends HibFieldSchemaElement<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion>, HibBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.MICROSCHEMA, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, MICROSCHEMA_DELETED);
 

@@ -57,23 +57,23 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	abstract public SchemaChangeOperation getOperation();
 
 	@Override
-	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getPreviousContainerVersion() {
+	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
 		return (R) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setPreviousContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion) {
+	public SchemaChange<T> setPreviousContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		setSingleLinkInTo(toGraph(containerVersion), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
 	@Override
-	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getNextContainerVersion() {
+	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getNextContainerVersion() {
 		return (R) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion) {
+	public HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		setSingleLinkOutTo(toGraph(containerVersion), HAS_SCHEMA_CONTAINER);
 		return this;
 	}

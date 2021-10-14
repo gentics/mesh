@@ -35,7 +35,7 @@ import com.gentics.mesh.json.JsonUtil;
  * DAO for microschema operations.
 	
  */
-public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, RootDao<HibProject, HibMicroschema> {
+public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, RootDao<HibProject, HibMicroschema> {
 
 	/**
 	 * Create a new microschema container.

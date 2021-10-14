@@ -5,11 +5,11 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -56,6 +56,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -216,8 +217,13 @@ public final class HibClassConverter {
 	 * @param element
 	 * @return
 	 */
-	public static <SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion> GraphFieldSchemaContainer<R, RM, ?, SC, SCV> toGraphContainer(
-		HibFieldSchemaElement<R, RM, SC, SCV> element) {
+	public static <
+				RE extends NameUuidReference<RE>, 
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				R extends FieldSchemaContainer, 
+				RM extends FieldSchemaContainerVersion
+			> GraphFieldSchemaContainer<R, RM, RE, SC, SCV> toGraphContainer(HibFieldSchemaElement<R, RM, RE, SC, SCV> element) {
 		return checkAndCast(element, GraphFieldSchemaContainer.class);
 	}
 
@@ -231,8 +237,14 @@ public final class HibClassConverter {
 	 * @param element
 	 * @return
 	 */
-	public static <RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, R extends FieldSchemaContainer> GraphFieldSchemaContainerVersion<R, RM, ?, SCV, ?> toGraphVersion(
-		HibFieldSchemaVersionElement<R, RM, SC, SCV> element) {
+	public static <
+				RE extends NameUuidReference<RE>, 
+				RM extends FieldSchemaContainerVersion, 
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				R extends FieldSchemaContainer
+			> GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> toGraphVersion(
+		HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> element) {
 		return checkAndCast(element, GraphFieldSchemaContainerVersion.class);
 	}
 
@@ -381,7 +393,13 @@ public final class HibClassConverter {
 	 * @param version
 	 * @return
 	 */
-	public static GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> toGraph(HibFieldSchemaVersionElement<?, ?, ?, ?> version) {
+	public static <
+				RE extends NameUuidReference<RE>, 
+				RM extends FieldSchemaContainerVersion, 
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				R extends FieldSchemaContainer
+			> GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> toGraph(HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> version) {
 		return checkAndCast(version, GraphFieldSchemaContainerVersion.class);
 	}
 

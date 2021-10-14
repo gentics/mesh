@@ -485,8 +485,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	 * @param container
 	 *            Container to handle
 	 */
-	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>> void unassign(
-		HibFieldSchemaElement<R, RM, SC, SCV> container) {
+	protected <
+				R extends FieldSchemaContainer, 
+				RM extends FieldSchemaContainerVersion, 
+				RE extends NameUuidReference<RE>, 
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>
+	> void unassign(HibFieldSchemaElement<R, RM, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaVersion) {

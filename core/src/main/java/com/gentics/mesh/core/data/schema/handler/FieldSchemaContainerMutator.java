@@ -24,7 +24,7 @@ public class FieldSchemaContainerMutator {
 	 *            Graph element that provides the chain of changes and the field container that should be mutated
 	 * @return
 	 */
-	public <RM extends FieldSchemaContainerVersion> RM apply(HibFieldSchemaVersionElement<?, RM, ?, ?> containerVersion) {
+	public <RM extends FieldSchemaContainerVersion> RM apply(HibFieldSchemaVersionElement<?, RM, ?, ?, ?> containerVersion) {
 		MeshComponent mesh = ((MeshVertex) containerVersion).getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		RM oldSchema = containerVersion.getSchema();
 		mesh.serverSchemaStorage().remove(oldSchema);

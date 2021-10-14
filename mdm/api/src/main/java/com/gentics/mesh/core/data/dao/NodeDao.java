@@ -519,16 +519,18 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 		return languages;
 	}
 
-	default HibNode loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+	@Override
+	default HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		Tx tx = Tx.get();
 		UserDao userDao = tx.userDao();
 		ContentDao contentDao = tx.contentDao();
 
 		HibNode element = findByUuidGlobal(uuid);
-		if (!errorIfNotFound && element == null) {
+		boolean notFound = element == null || !element.getProject().getUuid().equals(project.getUuid());
+		if (!errorIfNotFound && notFound) {
 			return null;
 		}
-		if (element == null) {
+		if (notFound) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 

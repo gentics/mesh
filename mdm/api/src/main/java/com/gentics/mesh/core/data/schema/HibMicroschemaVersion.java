@@ -23,7 +23,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  * Domain model for microschema versions.
  */
 public interface HibMicroschemaVersion
-	extends HibFieldSchemaVersionElement<MicroschemaResponse, MicroschemaVersionModel, HibMicroschema, HibMicroschemaVersion> {
+	extends HibFieldSchemaVersionElement<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion> {
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(MICROSCHEMAVERSION, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, SCHEMA_DELETED);
 

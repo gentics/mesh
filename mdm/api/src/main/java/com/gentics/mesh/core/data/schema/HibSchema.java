@@ -24,7 +24,7 @@ import com.gentics.mesh.handler.VersionUtils;
 /**
  * Domain model for schema.
  */
-public interface HibSchema extends HibFieldSchemaElement<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion>, HibBucketableElement {
+public interface HibSchema extends HibFieldSchemaElement<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion>, HibBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(SCHEMA, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 

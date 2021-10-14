@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
@@ -47,7 +48,7 @@ import dagger.Lazy;
 /**
  * @see SchemaDaoWrapper
  */
-public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResponse, SchemaVersionModel, HibSchema, HibSchemaVersion, SchemaModel, Schema> implements SchemaDaoWrapper {
+public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel, Schema> implements SchemaDaoWrapper {
 
 	@Inject
 	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {

@@ -38,8 +38,13 @@ import com.gentics.mesh.event.EventQueueBatch;
  * @param <SC>
  *            Schema container type
  */
-public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>>
-	extends AbstractMeshCoreVertex<R> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, HibFieldSchemaVersionElement<R, RM, SC, SCV> {
+public abstract class AbstractGraphFieldSchemaContainerVersion<
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>
+	> extends AbstractMeshCoreVertex<R> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> {
 
 	@Override
 	public void setName(String name) {

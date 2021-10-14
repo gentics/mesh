@@ -5,10 +5,6 @@ package com.gentics.mesh.core.data;
  * 
  * @param <TR>
  */
-public interface ReferenceableElement<TR> extends NamedElement {
+public interface ReferenceableElement<TR> extends HibReferenceableElement<TR>, NamedElement {
 
-	/**
-	 * Transform the element to a rest model that represents a references.
-	 */
-	TR transformToReference();
 }

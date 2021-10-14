@@ -21,8 +21,13 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
  *            Schema container type
  * 
  */
-public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>>
-	extends MeshCoreVertex<R>, ReferenceableElement<RE>, Comparable<SCV>, HibFieldSchemaVersionElement<R, RM, SC, SCV> {
+public interface GraphFieldSchemaContainerVersion<
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>
+	> extends MeshCoreVertex<R>, ReferenceableElement<RE>, Comparable<SCV>, HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
 }

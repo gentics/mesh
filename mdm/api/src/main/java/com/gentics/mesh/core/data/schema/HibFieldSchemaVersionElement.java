@@ -7,10 +7,12 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContainerDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -20,8 +22,13 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
-public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>>
-	extends HibCoreElement<R>, Comparable<SCV> {
+public interface HibFieldSchemaVersionElement<
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>>
+	extends HibCoreElement<R>, HibReferenceableElement<RE>, Comparable<SCV> {
 
 	/**
 	 * Return the class that is used for container versions.

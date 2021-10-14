@@ -67,7 +67,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            Set of touched fields (will be modified)
 	 * @throws IOException
 	 */
-	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?> fromVersion, Set<String> touchedFields) throws IOException {
+	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion, Set<String> touchedFields) throws IOException {
 		HibSchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
 			// if either the type changes or the field is removed, the field is
@@ -99,8 +99,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 * @throws Exception
 	 */
 	protected void migrate(NodeMigrationActionContext ac, HibFieldContainer newContainer, FieldContainer newContent,
-		HibFieldSchemaVersionElement<?,?,?,?> fromVersion,
-		HibFieldSchemaVersionElement<?,?,?,?> newVersion, Set<String> touchedFields) throws Exception {
+		HibFieldSchemaVersionElement<?,?,?,?,?> fromVersion,
+		HibFieldSchemaVersionElement<?,?,?,?,?> newVersion, Set<String> touchedFields) throws Exception {
 
 		// Remove all touched fields (if necessary, they will be readded later)
 		newContainer.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(newContainer));

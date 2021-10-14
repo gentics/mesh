@@ -5,16 +5,23 @@ import java.util.Map;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.user.HibUserTracking;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 
 /**
  * Common interfaces shared by schema and microschema versions
  */
-public interface HibFieldSchemaElement<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>>
-	extends HibCoreElement<R>, HibUserTracking, HibNamedElement {
+public interface HibFieldSchemaElement<
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
+	> extends HibCoreElement<R>, HibReferenceableElement<RE>, HibUserTracking, HibNamedElement {
 
 	String getElementVersion();
 

@@ -41,8 +41,13 @@ import com.gentics.mesh.util.ETag;
  * @param <SCV>
  *            Graph vertex version type
  */
-public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>>
-	extends AbstractMeshCoreVertex<R> implements GraphFieldSchemaContainer<R, RM, RE, SC, SCV> {
+public abstract class AbstractGraphFieldSchemaContainer<
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
+	> extends AbstractMeshCoreVertex<R> implements GraphFieldSchemaContainer<R, RM, RE, SC, SCV> {
 
 	/**
 	 * Return the class that is used to construct new containers.
