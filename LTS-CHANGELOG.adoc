@@ -46,6 +46,8 @@ icon:check[] Clustering: When doing an offline update of Mesh in a cluster, the 
 the new version should be written into OrientDB, which failed due to write quorum not reached. The initialization procedure has been changed now, so that executing the
 changelog and storing the Mesh version and DB revision will now only be started after the write quorum has been reached.
 
+icon:check[] Server: added a health/writable monitoring and REST endpoint to check whether mesh is in a writable state (e.g. the topology lock is not hold).
+
 [[v1.6.20]]
 == 1.6.20 (23.09.2021)
 

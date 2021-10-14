@@ -1837,4 +1837,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<EmptyResponse> live() {
 		return null;
 	}
+
+	@Override
+	public MeshRequest<EmptyResponse> writable() {
+		return null;
+	}
 }

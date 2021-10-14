@@ -1,22 +1,26 @@
 package com.gentics.mesh.core.endpoint.handler;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+
+/**
+ * Handler for monitoring related actions.
+ */
 @Singleton
 public class MonitoringCrudHandler {
 	private static final Logger log = LoggerFactory.getLogger(MonitoringCrudHandler.class);
@@ -29,12 +33,15 @@ public class MonitoringCrudHandler {
 
 	private final LivenessManager liveness;
 
+	private final LocalConfigApi localConfigApi;
+
 	@Inject
-	public MonitoringCrudHandler(BootstrapInitializer boot, MeshPluginManager pluginManager, ClusterManager clusterManager, LivenessManager liveness) {
+	public MonitoringCrudHandler(BootstrapInitializer boot, MeshPluginManager pluginManager, ClusterManager clusterManager, LivenessManager liveness, LocalConfigApi localConfigApi) {
 		this.boot = boot;
 		this.pluginManager = pluginManager;
 		this.clusterManager = clusterManager;
 		this.liveness = liveness;
+		this.localConfigApi = localConfigApi;
 	}
 
 	public void handleLive(RoutingContext rc) {
@@ -57,7 +64,7 @@ public class MonitoringCrudHandler {
 	public void handleReady(RoutingContext rc) {
 		for (String id : pluginManager.getPluginIds()) {
 			PluginStatus status = pluginManager.getStatus(id);
-			// TODO We need can't check for plugin registered since plugins will only be 
+			// TODO We need can't check for plugin registered since plugins will only be
 			// registered once the write quorum has been reached.
 			// Thus we can only check for failed. Otherwise we would interrupt the
 			// K8S deployment process and prevent additional nodes from being added
@@ -86,5 +93,33 @@ public class MonitoringCrudHandler {
 			log.warn("Status is {" + status.name() + "} - Failing readiness probe");
 			throw error(SERVICE_UNAVAILABLE, "error_internal");
 		}
+	}
+
+	/**
+	 * Throw an error if:
+	 * - mesh is in read only mode
+	 * - topology lock is held
+	 * - writeQuorum is not reached
+	 *
+	 * @param rc
+	 */
+	public void handleWritable(RoutingContext rc) {
+		localConfigApi.getActiveConfig()
+				.map(LocalConfigModel::isReadOnly)
+				.map(Boolean::booleanValue)
+				.subscribe(isReadOnly -> {
+					if (isReadOnly) {
+						log.warn("Local node cannot write - read only mode set");
+						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal"));
+					} else if (clusterManager.isClusterTopologyLocked()) {
+						log.warn("Local node cannot write - cluster topology locked");
+						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal"));
+					} else if (!clusterManager.isWriteQuorumReached()) {
+						log.warn("Local node cannot write - write quorum not reached");
+						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal"));
+					} else {
+						rc.response().setStatusCode(200).end();
+					}
+				});
 	}
 }

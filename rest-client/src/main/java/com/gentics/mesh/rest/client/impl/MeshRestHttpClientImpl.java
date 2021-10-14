@@ -1539,6 +1539,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<EmptyResponse> writable() {
+		return prepareRequest(GET, "/health/writable", EmptyResponse.class);
+	}
+
+	@Override
 	public MeshRequest<LocalConfigModel> loadLocalConfig() {
 		return prepareRequest(GET, "/admin/config", LocalConfigModel.class);
 	}
