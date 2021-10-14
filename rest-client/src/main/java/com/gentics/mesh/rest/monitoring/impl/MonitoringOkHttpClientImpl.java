@@ -95,6 +95,11 @@ public class MonitoringOkHttpClientImpl implements MonitoringRestClient {
 	}
 
 	@Override
+	public MeshRequest<EmptyResponse> writable() {
+		return prepareRequest(GET, "/health/writable", EmptyResponse.class);
+	}
+
+	@Override
 	public void close() {
 		// We don't close the client because it is either
 		// * The default client. This cannot be closed because other instances might use it.

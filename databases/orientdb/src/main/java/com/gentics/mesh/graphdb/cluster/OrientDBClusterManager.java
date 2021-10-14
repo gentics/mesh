@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -56,9 +55,9 @@ import io.vertx.reactivex.core.TimeoutStream;
 
 /**
  * Manager for OrientDB cluster and server features.
- * 
+ *
  * The manager handles the OrientDB cluster/server configuration, OrientDB studio plugin installation, OrientDB server startup.
- * 
+ *
  * Additionally the manager also provides methods to access the cluster information. The {@link TopologyEventBridge} is installed by the manager during the
  * startup to handle cluster specific events.
  */
@@ -114,7 +113,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	/**
 	 * Create the needed configuration files in the filesystem if they can't be located.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Override
@@ -193,7 +192,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	/**
 	 * Determine the OrientDB Node name.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getNodeName() {
@@ -293,7 +292,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	/**
 	 * Check the orientdb plugin directory and extract the orientdb studio plugin if needed.
-	 * 
+	 *
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
@@ -336,7 +335,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	/**
 	 * Query the OrientDB API and load cluster information which will be added to a {@link ClusterStatusResponse} response.
-	 * 
+	 *
 	 * @return Cluster status REST response
 	 */
 	public ClusterStatusResponse getClusterStatus() {
@@ -387,7 +386,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	/**
 	 * Start the OrientDB studio server by extracting the studio plugin zipfile.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Override
@@ -448,7 +447,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	/**
 	 * Join the cluster and block until the graph database has been received.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 */
 	private void joinCluster() throws InterruptedException {
@@ -479,7 +478,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	/**
 	 * Return the graph database storage options.
-	 * 
+	 *
 	 * @return
 	 */
 	public GraphStorageOptions storageOptions() {
@@ -517,14 +516,14 @@ public class OrientDBClusterManager implements ClusterManager {
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
 		return Completable.defer(() -> {
-			if (writeQuorumReached()) {
+			if (isWriteQuorumReached()) {
 				return Completable.complete();
 			}
 			return Observable.using(
 				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
 				TimeoutStream::toObservable,
 				TimeoutStream::cancel).takeUntil(ignore -> {
-					return writeQuorumReached();
+					return isWriteQuorumReached();
 				})
 				.ignoreElements();
 		});
@@ -550,7 +549,12 @@ public class OrientDBClusterManager implements ClusterManager {
 		}
 	}
 
-	private boolean writeQuorumReached() {
+	@Override
+	public boolean isWriteQuorumReached() {
+		if (!isClusteringEnabled) {
+			return true;
+		}
+
 		try {
 			// The server and manager may not yet be initialized. We need to wait until those are ready
 			if (server != null && server.getDistributedManager() != null) {
