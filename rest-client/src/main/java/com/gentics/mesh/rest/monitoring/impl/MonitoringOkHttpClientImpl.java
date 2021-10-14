@@ -96,7 +96,7 @@ public class MonitoringOkHttpClientImpl implements MonitoringRestClient {
 
 	@Override
 	public MeshRequest<EmptyResponse> writable() {
-		return prepareRequest(GET, "/cluster/writable", EmptyResponse.class);
+		return prepareRequest(GET, "/health/writable", EmptyResponse.class);
 	}
 
 	@Override

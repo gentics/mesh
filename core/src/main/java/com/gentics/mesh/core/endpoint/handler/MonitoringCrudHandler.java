@@ -119,13 +119,13 @@ public class MonitoringCrudHandler {
 				.map(Boolean::booleanValue)
 				.subscribe(isReadOnly -> {
 					if (isReadOnly) {
-						log.info("Local node cannot write - read only mode set");
+						log.warn("Local node cannot write - read only mode set");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal"));
 					} else if (clusterManager.isClusterTopologyLocked()) {
-						log.info("Local node cannot write - cluster topology locked");
+						log.warn("Local node cannot write - cluster topology locked");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal"));
 					} else if (!clusterManager.isWriteQuorumReached()) {
-						log.info("Local node cannot write - write quorum not reached");
+						log.warn("Local node cannot write - write quorum not reached");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal"));
 					} else {
 						rc.response().setStatusCode(200).end();

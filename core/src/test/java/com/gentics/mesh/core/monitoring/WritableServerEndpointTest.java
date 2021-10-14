@@ -6,6 +6,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import org.assertj.core.api.Assertions;
+import org.junit.After;
 import org.junit.Test;
 
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -19,11 +20,14 @@ public class WritableServerEndpointTest extends AbstractMeshTest {
         client().setLogin("admin", "admin");
         client().login().blockingGet();
         // updating cluster config requires admin permission
-        ClusterConfigResponse clusterConfigResponse = call(() -> client().loadClusterConfig());
         ClusterConfigResponse response = call(() -> client().updateClusterConfig(buildClusterConfigRequest(2)));
         Assertions.assertThat(response.getWriteQuorum()).isEqualTo("2");
         call(() -> monClient().writable(), SERVICE_UNAVAILABLE, "error_internal");
-        // clean up
+    }
+
+    @After
+    public void setWriteQuorumToOne() {
+        // needed because other tests which write to the db might fail because of quorum not reached
         call(() -> client().updateClusterConfig(buildClusterConfigRequest(1)));
     }
 

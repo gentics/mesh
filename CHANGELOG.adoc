@@ -26,7 +26,7 @@ include::content/docs/variables.adoc-include[]
 [[v1.7.20]]
 == 1.7.20 (TBD)
 
-icon:check[] Server: added a cluster/writable monitoring endpoint to check whether the cluster is in a writable state (e.g. the topology lock is not hold).
+icon:check[] Server: added a health/writable monitoring and REST endpoint to check whether mesh is in a writable state (e.g. the topology lock is not hold).
 
 [[v1.7.19]]
 == 1.7.19 (12.10.2021)

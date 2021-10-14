@@ -117,7 +117,7 @@ public class MonitoringRoutes {
 	}
 
 	private void addWritable() {
-		apiRouter.route("/cluster/writable")
+		apiRouter.route("/health/writable")
 			.method(GET)
 			.handler(monitoringCrudHandler::handleWritable);
 	}
