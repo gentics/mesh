@@ -248,17 +248,19 @@ public interface SearchClientMethods {
 	/**
 	 * Clear all search indices by removing and re-creating them.
 	 * 
+	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> invokeIndexClear();
+	MeshRequest<GenericMessageResponse> invokeIndexClear(ParameterProvider... parameters);
 
 	/**
 	 * Trigger the index sync action which will synchronize the index for all elements. This is useful when you want to sync the search index after restoring a
 	 * backup.
 	 * 
+	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> invokeIndexSync();
+	MeshRequest<GenericMessageResponse> invokeIndexSync(ParameterProvider... parameters);
 
 	/**
 	 * Return the elasticsearch status. This will also contain information about the progress of running index sync operations.

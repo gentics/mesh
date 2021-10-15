@@ -24,6 +24,10 @@ public class Coordinator {
 		this.mode = options.getClusterOptions().getCoordinatorMode();
 	}
 
+	/**
+	 * Get the current master server, may be null
+	 * @return current master, may be null
+	 */
 	public MasterServer getMasterMember() {
 		return elector.getMasterMember();
 	}
@@ -75,6 +79,11 @@ public class Coordinator {
 	 * @return
 	 */
 	public boolean isMaster() {
-		return getMasterMember().isSelf();
+		MasterServer masterMember = getMasterMember();
+		if (masterMember != null) {
+			return masterMember.isSelf();
+		} else {
+			return false;
+		}
 	}
 }

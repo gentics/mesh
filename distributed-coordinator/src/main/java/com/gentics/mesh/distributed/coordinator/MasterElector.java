@@ -325,9 +325,8 @@ public class MasterElector {
 	}
 
 	/**
-	 * Return the master server information.
-	 * 
-	 * @return
+	 * Get the server, which is currently the master, may be null
+	 * @return current master, may be null
 	 */
 	public MasterServer getMasterMember() {
 		if (masterMember == null) {

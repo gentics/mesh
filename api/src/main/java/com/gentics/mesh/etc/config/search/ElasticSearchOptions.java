@@ -43,6 +43,9 @@ public class ElasticSearchOptions implements Option {
 
 	public static final boolean DEFAULT_HOSTNAME_VERIFICATION = true;
 
+	public static final long DEFAULT_INDEX_CHECK_INTERVAL = 60 * 1000;
+	public static final long DEFAULT_INDEX_MAPPING_CACHE_TIMEOUT = 60 * 60 * 1000;
+
 	public static final String MESH_ELASTICSEARCH_URL_ENV = "MESH_ELASTICSEARCH_URL";
 	public static final String MESH_ELASTICSEARCH_USERNAME_ENV = "MESH_ELASTICSEARCH_USERNAME";
 	public static final String MESH_ELASTICSEARCH_PASSWORD_ENV = "MESH_ELASTICSEARCH_PASSWORD";
@@ -66,6 +69,9 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV = "MESH_ELASTICSEARCH_SYNC_BATCH_SIZE";
 	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
 	public static final String MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV = "MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS";
+
+	public static final String MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL_ENV = "MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL";
+	public static final String MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT_ENV = "MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
@@ -189,6 +195,16 @@ public class ElasticSearchOptions implements Option {
 	@JsonPropertyDescription("Configure the index sync batch size. Default: " + DEFAULT_SYNC_BATCH_SIZE)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV, description = "Override the search sync batch size")
 	private int syncBatchSize = DEFAULT_SYNC_BATCH_SIZE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Set the interval of index checks in ms. Default: " + DEFAULT_INDEX_CHECK_INTERVAL)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL_ENV, description = "Override the interval for index checks")
+	private long indexCheckInterval = DEFAULT_INDEX_CHECK_INTERVAL;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Set the timeout for the cache of index mappings in ms. Default: " + DEFAULT_INDEX_MAPPING_CACHE_TIMEOUT)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT_ENV, description = "Override the timeout for the cache if index mappings")
+	private long indexMappingCacheTimeout = DEFAULT_INDEX_MAPPING_CACHE_TIMEOUT;
 
 	public ElasticSearchOptions() {
 
@@ -479,5 +495,37 @@ public class ElasticSearchOptions implements Option {
 
 	public void setSyncBatchSize(int batchSize) {
 		this.syncBatchSize = batchSize;
+	}
+
+	/**
+	 * Index check interval in ms
+	 * @return interval
+	 */
+	public long getIndexCheckInterval() {
+		return indexCheckInterval;
+	}
+
+	/**
+	 * Set the index check interval in ms
+	 * @param indexCheckInterval interval
+	 */
+	public void setIndexCheckInterval(long indexCheckInterval) {
+		this.indexCheckInterval = indexCheckInterval;
+	}
+
+	/**
+	 * Timeout for the cache of index mappings in ms
+	 * @return timeout
+	 */
+	public long getIndexMappingCacheTimeout() {
+		return indexMappingCacheTimeout;
+	}
+
+	/**
+	 * Set the timeout for the cache of index mappings
+	 * @param indexMappingCacheTimeout timeout
+	 */
+	public void setIndexMappingCacheTimeout(long indexMappingCacheTimeout) {
+		this.indexMappingCacheTimeout = indexMappingCacheTimeout;
 	}
 }

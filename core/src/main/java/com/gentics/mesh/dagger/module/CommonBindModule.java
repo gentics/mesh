@@ -111,6 +111,8 @@ import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistryImpl;
+import com.gentics.mesh.search.SearchMappingsCache;
+import com.gentics.mesh.search.impl.SearchMappingsCacheImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
@@ -343,4 +345,7 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);
+
+	@Binds
+	abstract SearchMappingsCache searchMappingsCache(SearchMappingsCacheImpl e);
 }

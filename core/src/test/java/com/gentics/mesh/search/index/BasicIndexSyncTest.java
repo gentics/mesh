@@ -7,13 +7,20 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
+import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -25,22 +32,29 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.context.helper.ExpectedEvent;
+import com.gentics.mesh.test.context.helper.UnexpectedEvent;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Flowable;
+import io.vertx.core.json.JsonObject;
 /**
  * Test differential sync of elasticsearch.
  */
@@ -360,6 +374,127 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("microschema", 0, 0, 1);
 	}
 
+	/**
+	 * Test that the check for index existence and correctness will not change anything if not necessary
+	 * @throws Exception
+	 */
+	@Test
+	public void testIndexSyncCheckNoChange() throws Exception {
+		int timeoutMs = 10_000;
+		grantAdmin();
+		searchProvider().refreshIndex().blockingAwait();
+
+		// trigger the check by publishing the event, and expect the "check finished" but not the "sync finished" events to be thrown
+		try (ExpectedEvent finished = expectEvent(MeshEvent.INDEX_CHECK_FINISHED, timeoutMs);
+				UnexpectedEvent syncFinished = notExpectEvent(MeshEvent.INDEX_SYNC_FINISHED, timeoutMs)) {
+			vertx().eventBus().publish(MeshEvent.INDEX_CHECK_REQUEST.address, null);
+		}
+	}
+
+	/**
+	 * Test that the check for index mapping will recreate and repopulate a dropped index
+	 * @throws Exception
+	 */
+	@Test
+	public void testAutoIndexRecreation() throws Exception {
+		int timeoutMs = 10_000;
+
+		// name of the index (without installation prefix)
+		String meshIndexName = "project";
+		String esIndexName = options().getSearchOptions().getPrefix() + meshIndexName;
+
+		ElasticsearchClient<JsonObject> client = searchProvider().getClient();
+		grantAdmin();
+		searchProvider().refreshIndex().blockingAwait();
+
+		// read all project uuids
+		Set<String> projectUuids = call(() -> client().findProjects()).getData().stream().map(ProjectResponse::getUuid)
+				.collect(Collectors.toSet());
+		assertThat(projectUuids).isNotEmpty();
+
+		// read the (correct) mapping for comparing later
+		JsonObject mappings = getIndexMappings(esIndexName);
+
+		// drop the index
+		client.deleteIndex(esIndexName).sync();
+
+		try {
+			client.readIndex(esIndexName).sync();
+			fail("Index " + esIndexName + " should have been deleted");
+		} catch (HttpErrorException e) {
+			// everything else than the expected NOT FOUND is re-thrown
+			if (e.statusCode != HttpResponseStatus.NOT_FOUND.code()) {
+				throw e;
+			}
+		}
+
+		// trigger the check by publishing the event, and expect the "check finished" and the "sync finished" events to be thrown
+		try (ExpectedEvent finished = expectEvent(MeshEvent.INDEX_CHECK_FINISHED, timeoutMs);
+				ExpectedEvent syncFinished = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, timeoutMs)) {
+			vertx().eventBus().publish(MeshEvent.INDEX_CHECK_REQUEST.address, null);
+		}
+
+		// read the index and compare the mappings with the original mappings
+		assertThat(getIndexMappings(esIndexName)).isEqualTo(mappings);
+
+		// read the documents from the index
+		Flowable.fromIterable(projectUuids).flatMapSingle(uuid -> {
+			return client.readDocument(esIndexName, uuid).async();
+		}).blockingSubscribe();
+	}
+
+	/**
+	 * Test that the check for index existence and correctness will drop, recreate and repopulate an incorrect index
+	 * @throws Exception
+	 */
+	@Test
+	public void testAutoIndexFix() throws Exception {
+		int timeoutMs = 10_000;
+
+		// name of the index (without installation prefix)
+		String meshIndexName = "user";
+		String esIndexName = options().getSearchOptions().getPrefix() + meshIndexName;
+
+		ElasticsearchClient<JsonObject> client = searchProvider().getClient();
+		grantAdmin();
+		searchProvider().refreshIndex().blockingAwait();
+
+		// read all user uuids
+		Set<String> userUuids = call(() -> client().findUsers()).getData().stream().map(UserResponse::getUuid)
+				.collect(Collectors.toSet());
+		assertThat(userUuids).isNotEmpty();
+
+		// read the (correct) mapping for comparing later
+		JsonObject mappings = getIndexMappings(esIndexName);
+
+		// drop the index for "project"
+		client.deleteIndex(esIndexName).sync();
+		// create with default mappings by storing a dummy document
+		client.storeDocument(esIndexName, "dummy", new JsonObject("{\"name\": \"dummy\"}")).sync();
+		// index mappings should now be different
+		assertThat(getIndexMappings(esIndexName)).isNotEqualTo(mappings);
+
+		// trigger the check by publishing the event, and expect the "check finished" and the "sync finished" events to be thrown
+		try (ExpectedEvent finished = expectEvent(MeshEvent.INDEX_CHECK_FINISHED, timeoutMs);
+				ExpectedEvent syncFinished = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, timeoutMs)) {
+			vertx().eventBus().publish(MeshEvent.INDEX_CHECK_REQUEST.address, null);
+		}
+
+		// read the index and compare the mappings with the original mappings
+		assertThat(getIndexMappings(esIndexName)).isEqualTo(mappings);
+
+		// read the documents from the index
+		Flowable.fromIterable(userUuids).flatMapSingle(uuid -> {
+			return client.readDocument(esIndexName, uuid).async();
+		}).blockingSubscribe();
+
+		// trigger the check by publishing the event, and expect the "check finished" but not the "sync finished" events to be thrown
+		try (ExpectedEvent finished = expectEvent(MeshEvent.INDEX_CHECK_FINISHED, timeoutMs);
+				UnexpectedEvent syncFinished = notExpectEvent(MeshEvent.INDEX_SYNC_FINISHED, timeoutMs)) {
+			vertx().eventBus().publish(MeshEvent.INDEX_CHECK_REQUEST.address, null);
+		}
+	}
+
 	private void assertMetrics(String type, long inserted, long updated, long deleted) {
 		EntityMetrics entityMetrics = call(() -> client().searchStatus()).getMetrics().get(type);
 		assertEquals("We expected " + inserted + " elements to be inserted during the sync", inserted,
@@ -373,10 +508,4 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertEquals("Pending updates should be zero after the sync.", 0, entityMetrics.getUpdate().getPending().longValue());
 		assertEquals("Pending deletes should be zero after the sync.", 0, entityMetrics.getDelete().getPending().longValue());
 	}
-
-	private void syncIndex() {
-		waitForEvent(INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx()));
-		refreshIndices();
 	}
-
-}

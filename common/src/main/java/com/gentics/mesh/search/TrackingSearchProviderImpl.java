@@ -198,7 +198,7 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 	}
 
 	@Override
-	public Completable clear() {
+	public Completable clear(String indexPattern) {
 		updateEvents.clear();
 		deleteEvents.clear();
 		storeEvents.clear();

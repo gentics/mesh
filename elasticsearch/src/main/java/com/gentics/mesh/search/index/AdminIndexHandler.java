@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.IndexMaintenanceParameters;
 import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
@@ -99,7 +100,8 @@ public class AdminIndexHandler {
 		db.asyncTx(() -> Single.just(ac.getUser().isAdmin()))
 			.subscribe(isAdmin -> {
 				if (isAdmin) {
-					SyncEventHandler.invokeSync(vertx);
+					IndexMaintenanceParameters param = ac.getIndexMaintenanceParameters();
+					SyncEventHandler.invokeSync(vertx, param.getIndex());
 					ac.send(message(ac, "search_admin_index_sync_invoked"), OK);
 				} else {
 					ac.fail(error(FORBIDDEN, "error_admin_permission_required"));
@@ -115,7 +117,8 @@ public class AdminIndexHandler {
 	public void handleClear(InternalActionContext ac) {
 		db.asyncTx(() -> Single.just(ac.getUser().isAdmin())).flatMapCompletable(isAdmin -> {
 			if (isAdmin) {
-				return searchProvider.clear()
+				IndexMaintenanceParameters param = ac.getIndexMaintenanceParameters();
+				return searchProvider.clear(param.getIndex())
 					.andThen(Observable.fromIterable(registry.getHandlers())
 						.flatMapCompletable(handler -> handler.init()));
 			} else {
