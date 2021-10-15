@@ -11,7 +11,7 @@ import io.vertx.core.eventbus.MessageConsumer;
 /**
  * AutoClosable implementation, which will register an event handler upon
  * creation and will wait (up to the given timeout) in
- * {@link ExpectedEvent#clone()} for the event to be fired at least once.
+ * {@link ExpectedEvent#close()} for the event to be fired at least once.
  * See {@link EventHelper#expectEvent(com.gentics.mesh.core.rest.MeshEvent, int)} for usage.
  */
 public class ExpectedEvent implements AutoCloseable {
@@ -53,7 +53,8 @@ public class ExpectedEvent implements AutoCloseable {
 			}
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
+		} finally {
+			consumer.unregister();
 		}
-		consumer.unregister();
 	}
 }

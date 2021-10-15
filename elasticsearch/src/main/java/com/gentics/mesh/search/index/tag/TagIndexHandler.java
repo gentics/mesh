@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -116,12 +118,12 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public Flowable<SearchRequest> syncIndices() {
+	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
 		return Flowable.defer(() -> db.tx(() -> {
 			return boot.meshRoot().getProjectRoot().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
-					return diffAndSync(Tag.composeIndexName(uuid), uuid);
+					return diffAndSync(Tag.composeIndexName(uuid), uuid, indexPattern);
 				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}

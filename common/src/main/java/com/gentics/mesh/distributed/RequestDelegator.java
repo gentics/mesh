@@ -23,4 +23,10 @@ public interface RequestDelegator extends Handler<RoutingContext> {
 	 * @param routingContext
 	 */
 	void redirectToMaster(RoutingContext routingContext);
+
+	/**
+	 * Returns true when this instance is the master
+	 * @return true for master
+	 */
+	boolean isMaster();
 }

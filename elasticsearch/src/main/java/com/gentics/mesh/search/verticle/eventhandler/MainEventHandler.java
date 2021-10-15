@@ -63,6 +63,8 @@ public class MainEventHandler implements EventHandler {
 	private final ProjectCreateEventHandler projectCreateEventHandler;
 	private final ProjectDeleteEventHandler projectDeleteEventHandler;
 
+	private final CheckIndicesHandler checkIndicesHandler;
+
 	@Inject
 	public MainEventHandler(SyncEventHandler syncEventHandler,
 							EventHandlerFactory eventHandlerFactory,
@@ -76,7 +78,7 @@ public class MainEventHandler implements EventHandler {
 							SchemaMigrationEventHandler schemaMigrationEventHandler,
 							PermissionChangedEventHandler permissionChangedEventHandler,
 							GroupUserAssignmentHandler userGroupAssignmentHandler,
-							ProjectUpdateEventHandler projectUpdateEventHandler, ProjectCreateEventHandler projectCreateEventHandler) {
+							ProjectUpdateEventHandler projectUpdateEventHandler, ProjectCreateEventHandler projectCreateEventHandler, CheckIndicesHandler checkIndicesHandler) {
 		this.syncEventHandler = syncEventHandler;
 		this.eventHandlerFactory = eventHandlerFactory;
 		this.groupEventHandler = groupEventHandler;
@@ -94,6 +96,7 @@ public class MainEventHandler implements EventHandler {
 		this.userGroupAssignmentHandler = userGroupAssignmentHandler;
 		this.projectUpdateEventHandler = projectUpdateEventHandler;
 		this.projectCreateEventHandler = projectCreateEventHandler;
+		this.checkIndicesHandler = checkIndicesHandler;
 
 		handlers = createHandlers();
 	}
@@ -125,7 +128,8 @@ public class MainEventHandler implements EventHandler {
 			branchEventHandler,
 			schemaMigrationEventHandler,
 			permissionChangedEventHandler,
-			userGroupAssignmentHandler
+			userGroupAssignmentHandler,
+			checkIndicesHandler
 		).collect(toMultiMap(EventHandler::handledEvents));
 	}
 
