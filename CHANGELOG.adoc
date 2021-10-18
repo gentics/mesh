@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Server: added a health/writable monitoring and REST endpoint to check whether mesh is in a writable state (e.g. the topology lock is not hold).
 
+icon:check[] Server: when a schema was updated with a new field with elastic search properties, these were ignored. This has been fixed now.
+
 [[v1.7.19]]
 == 1.7.19 (12.10.2021)
 
