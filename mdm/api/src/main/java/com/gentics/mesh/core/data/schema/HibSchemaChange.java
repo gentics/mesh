@@ -7,13 +7,25 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * A schema change tracks the changes that are listed in between two schema versions.
+ * A schema change tracks the changes that are listed in between two schema versions,
+ * representing a single manipulation of a field container (e.g.: {@link SchemaModel}, {@link MicroschemaModel}).
+ * 
+ * <pre>
+ * {@code
+ *  (s:SchemaVersion)-[:HAS_CHANGE]->(c1:SchemaChange)-[:HAS_CHANGE]->(c2:SchemaChange)-(s2:SchemaVersion)
+ * }
+ * </pre>
+ * 
+ * The schema change stores {@link SchemaChangeModel} data. Since the {@link SchemaChangeModel} class is generic we will also store the model specific
+ * properties in a generic way. The {@link #setRestProperty(String, Object)} method can be used to set such properties.
  * 
  * @param <T>
  */
@@ -102,21 +114,6 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent);
 
 	/**
-	 * Set the change specific properties by examining the rest change model.
-	 *
-	 * @param restChange
-	 */
-	void updateFromRest(SchemaChangeModel restChange);
-
-	/**
-	 * Transform the graph model into the rest representation.
-	 *
-	 * @return
-	 * @throws IOException
-	 */
-	SchemaChangeModel transformToRest() throws IOException;
-
-	/**
 	 * Set a REST specific property.
 	 *
 	 * @param key
@@ -152,4 +149,29 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	 * @param options
 	 */
 	void setIndexOptions(JsonObject options);
+
+	/**
+	 * Transform the entity model into the rest representation.
+	 *
+	 * @return
+	 * @throws IOException
+	 */
+	default SchemaChangeModel transformToRest() throws IOException {
+		SchemaChangeModel model = new SchemaChangeModel();
+		model.getProperties().putAll(getRestProperties());
+		model.setOperation(getOperation());
+		model.setUuid(getUuid());
+		return model;
+	}
+
+	/**
+	 * Set the change specific properties by examining the rest change model.
+	 *
+	 * @param restChange
+	 */
+	default void updateFromRest(SchemaChangeModel restChange) {
+		for (String key : restChange.getProperties().keySet()) {
+			setRestProperty(key, restChange.getProperties().get(key));
+		}
+	}
 }

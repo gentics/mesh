@@ -224,24 +224,6 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	Result<? extends HibNode> getNodes(HibSchema schema);
 
 	/**
-	 * Load the schema version via the schema and version.
-	 * 
-	 * @param schema
-	 * @param version
-	 * @return
-	 */
-	HibSchemaVersion findVersionByRev(HibSchema schema, String version);
-
-	/**
-	 * Return the schema version.
-	 * 
-	 * @param container
-	 * @param versionUuid
-	 * @return
-	 */
-	HibSchemaVersion findVersionByUuid(HibSchema container, String versionUuid);
-
-	/**
 	 * Find all projects which reference the schema.
 	 * 
 	 * @param schema

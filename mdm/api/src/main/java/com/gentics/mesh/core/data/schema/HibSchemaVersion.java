@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -62,13 +63,6 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	Iterable<? extends HibJob> referencedJobsViaTo();
 
 	/**
-	 * Check the autopurge flag of the version.
-	 * 
-	 * @return
-	 */
-	boolean isAutoPurgeEnabled();
-
-	/**
 	 * Returns all nodes that the user has read permissions for.
 	 *
 	 * @param branchUuid Branch uuid
@@ -77,6 +71,28 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	 * @return
 	 */
 	Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type);
+
+	/**
+	 * Check the autopurge flag of the version.
+	 * 
+	 * @return
+	 */
+	default boolean isAutoPurgeEnabled() {
+		Boolean schemaAutoPurge = getSchema().getAutoPurge();
+		if (schemaAutoPurge == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("No schema auto purge flag set. Falling back to mesh global setting");
+			}
+			ContentConfig contentOptions = Tx.get().data().options().getContentOptions();
+			if (contentOptions != null) {
+				return contentOptions.isAutoPurge();
+			} else {
+				return true;
+			}
+		} else {
+			return schemaAutoPurge;
+		}
+	}
 
 	/**
 	 * Transform the version to a reference POJO.

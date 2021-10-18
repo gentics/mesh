@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
  * A {@link GraphFieldSchemaContainerVersion} stores the versioned data for a {@link GraphFieldSchemaContainer} element.
@@ -30,4 +31,12 @@ public interface GraphFieldSchemaContainerVersion<
 	> extends MeshCoreVertex<R>, ReferenceableElement<RE>, Comparable<SCV>, HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
+
+	/**
+	 * Create a new graph change from the given rest change.
+	 * 
+	 * @param restChange
+	 * @return
+	 */
+	SchemaChange<?> createChange(SchemaChangeModel restChange);
 }

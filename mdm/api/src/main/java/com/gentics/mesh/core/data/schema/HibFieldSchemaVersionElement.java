@@ -1,24 +1,16 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContainerDao;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
@@ -210,17 +202,6 @@ public interface HibFieldSchemaVersionElement<
 	 */
 	R transformToRestSync(InternalActionContext ac, int level, String... languageTags);
 
-	/**
-	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
-	 *
-	 * @param ac
-	 * @param listOfChanges
-	 * @param batch
-	 * @return The created schema container version
-	 * @deprecated Since this method changes the neighboring entities, is has to be moved into {@link ContentDao}
-	 */
-	SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch);
-
 	default int compareTo(SCV version) {
 		return VersionUtil.compareVersions(getVersion(), version.getVersion());
 	}
@@ -230,27 +211,10 @@ public interface HibFieldSchemaVersionElement<
 	 *
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	default Stream<HibSchemaChange<FieldSchemaContainer>> getChanges() {
 		return StreamUtil.untilNull(
 			() -> (HibSchemaChange<FieldSchemaContainer>) getNextChange(),
 			change -> (HibSchemaChange<FieldSchemaContainer>) change.getNextChange());
-	}
-
-	/**
-	 * Apply changes which will be extracted from the action context.
-	 *
-	 * @param ac
-	 *            Action context that provides the migration request data
-	 * @param batch
-	 * @return The created schema container version
-	 * @deprecated Since this method changes the neighboring entities, is has to be moved into {@link ContainerDao}
-	 */
-	default SCV applyChanges(InternalActionContext ac, EventQueueBatch batch) {
-		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
-
-		if (getNextChange() != null) {
-			throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
-		}
-		return applyChanges(ac, listOfChanges, batch);
 	}
 }

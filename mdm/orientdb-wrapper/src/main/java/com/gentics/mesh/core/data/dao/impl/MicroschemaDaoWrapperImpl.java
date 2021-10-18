@@ -25,13 +25,11 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -90,20 +88,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 		Microschema graphMicroschema = toGraph(microschema);
 		MicroschemaRoot root = graphProject.getMicroschemaContainerRoot();
 		return root.contains(graphMicroschema);
-	}
-
-	@Override
-	public HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac,
-		EventQueueBatch batch) {
-		MicroschemaVersion graphMicroschemaVersion = toGraph(version);
-		return graphMicroschemaVersion.applyChanges(ac, batch);
-	}
-
-	@Override
-	public HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac,
-		SchemaChangesListModel model, EventQueueBatch batch) {
-		MicroschemaVersion graphMicroschemaVersion = toGraph(version);
-		return graphMicroschemaVersion.applyChanges(ac, model, batch);
 	}
 
 	@Override
@@ -262,6 +246,11 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	@Override
 	public HibMicroschemaVersion findVersionByRev(HibMicroschema hibMicroschema, String version) {
 		return toGraph(hibMicroschema).findVersionByRev(version);
+	}
+
+	@Override
+	public HibMicroschemaVersion findVersionByUuid(HibMicroschema schema, String versionUuid) {
+		return toGraph(schema).findVersionByUuid(versionUuid);
 	}
 
 	@Override

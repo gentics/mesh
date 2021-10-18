@@ -1,14 +1,11 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.graph.GraphAttribute;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.dagger.MeshComponent;
 
 /**
  * The field container mutator utilizes {@link SchemaChange} objects in order to modify/mutate a given field container implementation (e.g. {@link SchemaModel}
@@ -25,9 +22,8 @@ public class FieldSchemaContainerMutator {
 	 * @return
 	 */
 	public <RM extends FieldSchemaContainerVersion> RM apply(HibFieldSchemaVersionElement<?, RM, ?, ?, ?> containerVersion) {
-		MeshComponent mesh = ((MeshVertex) containerVersion).getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		RM oldSchema = containerVersion.getSchema();
-		mesh.serverSchemaStorage().remove(oldSchema);
+		Tx.get().data().serverSchemaStorage().remove(oldSchema);
 		HibSchemaChange<?> change = containerVersion.getNextChange();
 		while (change != null) {
 			oldSchema = change.apply(oldSchema);

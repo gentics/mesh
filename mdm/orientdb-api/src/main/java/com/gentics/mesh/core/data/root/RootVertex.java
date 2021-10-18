@@ -140,8 +140,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
-
-
 	/**
 	 * Find the element with the given uuid.
 	 * 

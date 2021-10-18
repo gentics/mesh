@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 import dagger.Lazy;
 
@@ -34,5 +35,10 @@ public abstract class AbstractContainerDaoWrapper<
 	@Override
 	public void deleteChange(HibSchemaChange<?> change, BulkActionContext bac) {
 		toGraph(change).delete(bac);
+	}
+
+	@Override
+	public HibSchemaChange<?> createChange(SCV version, SchemaChangeModel restChange) {
+		return toGraph(version).createChange(restChange);
 	}
 }

@@ -10,6 +10,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -18,7 +22,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 import io.vertx.core.json.JsonObject;
 
@@ -26,10 +29,6 @@ import io.vertx.core.json.JsonObject;
  * @see SchemaChange
  */
 public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> extends MeshVertexImpl implements SchemaChange<T> {
-
-	private static String MIGRATION_SCRIPT_PROPERTY_KEY = "migrationScript";
-
-	public static final String REST_PROPERTY_PREFIX_KEY = "fieldProperty_";
 
 	@Override
 	public HibSchemaChange<?> getNextChange() {
@@ -52,9 +51,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 		setUniqueLinkInTo(toGraph(change), HAS_CHANGE);
 		return this;
 	}
-
-	@Override
-	abstract public SchemaChangeOperation getOperation();
 
 	@Override
 	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
@@ -96,7 +92,10 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public <R> Map<String, R> getRestProperties() {
-		return getProperties(REST_PROPERTY_PREFIX_KEY);
+		Map<String, R> rawMap = getProperties(REST_PROPERTY_PREFIX_KEY);
+		return rawMap.keySet().stream()
+				.map(key -> key.replace(REST_PROPERTY_PREFIX_KEY, StringUtils.EMPTY))
+				.collect(Collectors.toMap(Function.identity(), rawMap::get));
 	}
 
 	@Override

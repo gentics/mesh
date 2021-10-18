@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraphContainer;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -18,12 +17,10 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -106,14 +103,8 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<
 		setSingleLinkOutTo(toGraph(container), HAS_VERSION);
 	}
 
-	/**
-	 * Create a new graph change from the given rest change.
-	 * 
-	 * @param restChange
-	 * @return
-	 */
-	private SchemaChange<?> createChange(SchemaChangeModel restChange) {
-
+	@Override
+	public SchemaChange<?> createChange(SchemaChangeModel restChange) {
 		SchemaChange<?> schemaChange = null;
 		switch (restChange.getOperation()) {
 		case ADDFIELD:
@@ -157,54 +148,6 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
-
-	@Override
-	public SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch) {
-		if (listOfChanges.getChanges().isEmpty()) {
-			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
-		}
-		SchemaChange<?> current = null;
-		for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
-			SchemaChange<?> graphChange = createChange(restChange);
-			// Set the first change to the schema container and chain all other changes to that change.
-			if (current == null) {
-				current = graphChange;
-				setNextChange(current);
-			} else {
-				current.setNextChange(graphChange);
-				current = graphChange;
-			}
-		}
-
-		RM resultingSchema = new FieldSchemaContainerMutator().apply(this);
-		resultingSchema.validate();
-
-		// Increment version of the schema
-		resultingSchema.setVersion(String.valueOf(Double.valueOf(resultingSchema.getVersion()) + 1));
-
-		// Create and set the next version of the schema
-		SCV nextVersion = getGraph().addFramedVertex(getContainerVersionClass());
-		nextVersion.setSchema(resultingSchema);
-
-		// Check for conflicting container names
-		String newName = resultingSchema.getName();
-		SC foundContainer = toGraphContainer(getSchemaContainer()).getRoot().findByName(resultingSchema.getName());
-		if (foundContainer != null && !foundContainer.getUuid().equals(getSchemaContainer().getUuid())) {
-			throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
-		}
-
-		nextVersion.setSchemaContainer(getSchemaContainer());
-		nextVersion.setName(resultingSchema.getName());
-		getSchemaContainer().setName(resultingSchema.getName());
-		setNextVersion(nextVersion);
-
-		// Update the latest version of the schema container
-		getSchemaContainer().setLatestVersion(nextVersion);
-
-		// Update the search index
-		batch.add(getSchemaContainer().onUpdated());
-		return nextVersion;
-	}	
 
 	@Override
 	public void setSchemaContainer(SC container) {

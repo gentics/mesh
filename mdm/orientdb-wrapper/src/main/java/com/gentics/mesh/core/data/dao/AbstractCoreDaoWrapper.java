@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.dao;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.checkAndCast;
-
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -9,7 +7,6 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.event.EventQueueBatch;
 
 import dagger.Lazy;
 

@@ -43,7 +43,6 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Type converter for the script engine used by the node migration handler.
  */
-@SuppressWarnings("restriction")
 public class TypeConverter {
 
 	private static final Logger log = LoggerFactory.getLogger(TypeConverter.class);
@@ -61,7 +60,7 @@ public class TypeConverter {
 			return null;
 		}
 		if (value instanceof List) {
-			List<?> listValue = (List) value;
+			List<?> listValue = (List<?>) value;
 			if (listValue.isEmpty()) {
 				return null;
 			} else {
@@ -320,17 +319,18 @@ public class TypeConverter {
 			: list;
 	}
 
+	@SuppressWarnings("unchecked")
 	private Stream<Object> toStream(Object value) {
 		if (value instanceof ListField) {
-			value = ((ListField) value).getItems();
+			value = ((ListField<?>) value).getItems();
 		} else if (value instanceof FieldList) {
-			value = ((FieldList) value).getItems();
+			value = ((FieldList<?>) value).getItems();
 		}
 
 		if (value == null) {
 			return Stream.empty();
 		} else if (value instanceof List) {
-			return ((List) value).stream();
+			return ((List<Object>) value).stream();
 		} else {
 			return Stream.of(value);
 		}
