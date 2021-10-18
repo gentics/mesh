@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import io.vertx.core.json.JsonObject;
 import org.assertj.core.api.AbstractObjectArrayAssert;
 import org.junit.Test;
 
@@ -151,7 +152,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyMicronodeField() {
 		try (Tx tx = tx()) {
-			
+
 			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
@@ -342,7 +343,8 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
-			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123");
+			JsonObject elasticSearch = new JsonObject().put("test", "test");
+			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123", elasticSearch);
 
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.updateFromRest(model);
@@ -369,7 +371,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 					change.getRestProperty("someProperty"));
 		}
 	}
-	
+
 	private void testApplyStringFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
 			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);

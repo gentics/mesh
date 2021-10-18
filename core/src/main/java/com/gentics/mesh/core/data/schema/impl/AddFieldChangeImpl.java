@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.core.rest.schema.*;
 import com.gentics.mesh.core.rest.schema.impl.*;
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.madl.index.IndexHandler;
@@ -167,12 +168,8 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			break;
 		default:
 			throw error(BAD_REQUEST, "Unknown type");
-		}field.setName(getFieldName());
-		field.setLabel(getLabel());
-		Boolean required = getRequired();
-		if (required != null) {
-			field.setRequired(required);
 		}
+		setCommonFieldProperties(field);
 		container.addField(field, position);
 		return container;
 	}
@@ -187,4 +184,16 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 		getElement().remove();
 	}
 
+	private void setCommonFieldProperties(FieldSchema field) {
+		field.setName(getFieldName());
+		field.setLabel(getLabel());
+		Boolean required = getRequired();
+		if (required != null) {
+			field.setRequired(required);
+		}
+		JsonObject elasticSearch = getIndexOptions();
+		if (elasticSearch != null) {
+			field.setElasticsearch(elasticSearch);
+		}
+	}
 }

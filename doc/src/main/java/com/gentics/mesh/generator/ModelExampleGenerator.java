@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -47,7 +48,8 @@ public class ModelExampleGenerator extends AbstractGenerator {
 	 * @throws IOException
 	 */
 	private void writeChangeExamples() throws JsonProcessingException, IOException {
-		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("fieldToBeAdded", "list", "Field Label Value");
+		JsonObject elasticSearchSettings = new JsonObject().put("settings", "value");
+		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("fieldToBeAdded", "list", "Field Label Value", elasticSearchSettings);
 		addFieldChange.setProperty(ADD_FIELD_AFTER_KEY, "firstField");
 		addFieldChange.setProperty(LIST_TYPE_KEY, "html");
 		writeJson(addFieldChange, "addfield.json");

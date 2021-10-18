@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Objects;
 
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -367,7 +368,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 1. Setup changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "label1234");
+		JsonObject elasticSearch = new JsonObject().put("test", "test");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "label1234", elasticSearch);
 		listOfChanges.getChanges().add(change);
 
 		// 3. Invoke migration
@@ -391,6 +393,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
 				!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
 			assertEquals("label1234", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField").getLabel());
+			assertEquals(elasticSearch, node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField").getElasticsearch());
 
 		}
 	}
@@ -404,7 +407,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 1. Setup changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "string", "label1234");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "string", "label1234", null);
 		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, new String[] {"5678"});
 		
 		listOfChanges.getChanges().add(change);
@@ -442,7 +445,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 1. Setup changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "string", "label1234");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "string", "label1234", null);
 		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, new String[] {"5678"});
 		
 		listOfChanges.getChanges().add(change);
@@ -518,7 +521,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 1. Setup changes
 			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null);
+			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null, null);
 			listOfChanges.getChanges().add(change);
 
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(containerUuid, listOfChanges));
