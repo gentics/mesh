@@ -3,6 +3,7 @@
     "operation" : "ADDFIELD",
     "properties" : {
       "field" : "listFieldToBeAddedField",
+      "elasticsearch" : "{\"key\":\"value\"}",
       "label" : "Field Label Value",
       "type" : "list",
       "listType" : "html"
