@@ -43,6 +43,8 @@ to restrict the synchronized/cleared indices by a regular expression.
 icon:check[] Search: The index maintenance actions triggered via `/api/v1/search/sync` and `/api/v1/search/clear` will now be redirected to the current master instance,
 if the cluster coordinator is used.
 
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.1`, containing the language-related improvements and minor bugfixes.
+
 [[v1.7.19]]
 == 1.7.19 (12.10.2021)
 
