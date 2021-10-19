@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.JWTUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -46,7 +47,7 @@ public class AuthHandlerContainer {
 		if (hashCode != jwks.hashCode()) {
 			JWTAuthOptions jwtOptions = new JWTAuthOptions();
 			// Set JWT options from the config
-			jwtOptions.setJWTOptions(createJWTOptions());
+			jwtOptions.setJWTOptions(JWTUtil.createJWTOptions(options.getAuthenticationOptions()));
 			// Now add all keys to jwt config
 			for (JsonObject key : jwks) {
 				jwtOptions.addJwk(key);
@@ -57,13 +58,5 @@ public class AuthHandlerContainer {
 			hashCode = jwks.hashCode();
 		}
 		return authHandler;
-	}
-
-	private JWTOptions createJWTOptions() {
-		return new JWTOptions()
-			.setLeeway(this.options.getAuthenticationOptions().getLeeway())
-			.setIssuer(this.options.getAuthenticationOptions().getIssuer())
-			.setAudience(this.options.getAuthenticationOptions().getAudience())
-			.setIgnoreExpiration(this.options.getAuthenticationOptions().isIgnoreExpiration());
 	}
 }
