@@ -48,6 +48,8 @@ import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
 import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
+import com.gentics.mesh.search.SearchMappingsCache;
+import com.gentics.mesh.search.impl.SearchMappingsCacheImpl;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.BucketManagerImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
@@ -146,4 +148,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);
+
+	@Binds
+	abstract SearchMappingsCache searchMappingsCache(SearchMappingsCacheImpl e);
 }

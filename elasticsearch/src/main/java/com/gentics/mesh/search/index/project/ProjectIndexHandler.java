@@ -2,8 +2,10 @@ package com.gentics.mesh.search.index.project;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,8 +77,8 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(Project.composeIndexName(), null);
+	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
+		return diffAndSync(Project.composeIndexName(), null, indexPattern);
 	}
 
 	@Override

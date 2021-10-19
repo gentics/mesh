@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
@@ -194,14 +195,18 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return searchProvider != null;
 	}
 
-	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
-		// Sync each bucket individually
-		Flowable<Bucket> buckets = bucketManager.getBuckets(getElementClass());
-		log.info("Handling index sync on handler {" + getClass().getName() + "}");
-		return buckets.flatMap(bucket -> {
-			log.info("Handling sync of {" + bucket + "}");
-			return diffAndSync(indexName, projectUuid, bucket);
-		}, 1);
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Optional<Pattern> indexPattern) {
+		if (indexPattern.orElse(MATCH_ALL).matcher(indexName).matches()) {
+			// Sync each bucket individually
+			Flowable<Bucket> buckets = bucketManager.getBuckets(getElementClass());
+			log.info("Handling index sync on handler {" + getClass().getName() + "}");
+			return buckets.flatMap(bucket -> {
+				log.info("Handling sync of {" + bucket + "}");
+				return diffAndSync(indexName, projectUuid, bucket);
+			}, 1);
+		} else {
+			return Flowable.empty();
+		}
 	}
 
 	/**
@@ -411,6 +416,19 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public EntityMetrics getMetrics() {
 		return meters.createSnapshot();
+	}
+
+	@Override
+	public Completable check() {
+		// check the indices
+		return Observable.defer(() -> Observable.fromIterable(getIndices().values()))
+				.flatMap(info -> searchProvider.check(info).toObservable()
+					.doOnSubscribe(ignore -> {
+						if (log.isDebugEnabled()) {
+							log.debug("Checking index {" + info + "}");
+						}
+					}), 1)
+				.ignoreElements();
 	}
 
 	/**

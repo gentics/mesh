@@ -150,7 +150,16 @@ public interface SearchProvider {
 	 * 
 	 * @return Completable for the clear action
 	 */
-	Completable clear();
+	default Completable clear() {
+		return clear(null);
+	}
+
+	/**
+	 * Delete all indices which are managed by mesh and match the optionally provided index pattern (clear all, if pattern is null)
+	 * @param indexPattern optional index pattern
+	 * @return Completable for the clear action
+	 */
+	Completable clear(String indexPattern);
 
 	/**
 	 * Delete the given index and don't fail if the index is not existing.
@@ -258,4 +267,13 @@ public interface SearchProvider {
 	 * @return
 	 */
 	boolean isActive();
+
+	/**
+	 * Check existence and correctness the given index
+	 * @param info index info
+	 * @return completable
+	 */
+	default Completable check(IndexInfo info) {
+		return Completable.complete();
+	}
 }

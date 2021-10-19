@@ -628,7 +628,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		if (isSearchEnabled && (flags.isReindex() || flags.isResync())) {
-			SyncEventHandler.invokeSync(vertx);
+			SyncEventHandler.invokeSync(vertx, null);
 		}
 
 		// Handle admin password reset

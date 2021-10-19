@@ -169,6 +169,11 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		}
 	}
 
+	@Override
+	public boolean isMaster() {
+		return coordinator.isMaster();
+	}
+
 	/**
 	 * Log the given messages with loglevel <code>TRACE</code>.
 	 *

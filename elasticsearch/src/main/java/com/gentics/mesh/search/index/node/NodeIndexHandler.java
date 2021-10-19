@@ -14,8 +14,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -236,13 +238,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Flowable<SearchRequest> syncIndices() {
+	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
 		return Flowable.defer(() -> db.tx(() -> {
 			return boot.meshRoot().getProjectRoot().findAll().stream()
 				.flatMap(project -> project.getBranchRoot().findAll().stream()
 					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
 						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
-							.map(type -> diffAndSync(project, branch, version, type)))))
+							.map(type -> diffAndSync(project, branch, version, type, indexPattern)))))
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}
@@ -294,21 +296,28 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
+	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, Optional<Pattern> indexPattern) {
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
 		// Sync each bucket individually
 		Flowable<Bucket> buckets = bucketManager.getBuckets(NodeGraphFieldContainer.class);
 		return buckets.flatMap(bucket -> {
 			log.info("Handling sync of {" + bucket + "}");
-			return diffAndSync(project, branch, version, type, bucket);
+			return diffAndSync(project, branch, version, type, bucket, indexPattern);
 		}, 1);
 	}
 
 	private Publisher<? extends SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type,
-		Bucket bucket) {
+		Bucket bucket, Optional<Pattern> indexPattern) {
 		return Flowable.defer(() -> {
 			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucket);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
+				.filter(indexName -> {
+					boolean match = indexPattern.orElse(MATCH_ALL).matcher(indexName).matches();
+					if (!match && log.isDebugEnabled()) {
+						log.debug("Index {} does not match pattern {} and will be omitted from sync", indexName, indexPattern);
+					}
+					return match;
+				})
 				.flatMap(indexName -> loadVersionsFromIndex(indexName, bucket).flatMapPublisher(sinkVersions -> {
 					log.debug("Handling index sync on handler {" + getClass().getName() + "} for bucket {" + bucket + "}");
 					Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
