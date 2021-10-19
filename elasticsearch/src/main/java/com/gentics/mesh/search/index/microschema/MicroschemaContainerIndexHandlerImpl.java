@@ -2,8 +2,10 @@ package com.gentics.mesh.search.index.microschema;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -87,8 +89,8 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 	}
 
 	@Override
-	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(Microschema.composeIndexName(), null);
+	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
+		return diffAndSync(Microschema.composeIndexName(), null, indexPattern);
 	}
 
 	@Override

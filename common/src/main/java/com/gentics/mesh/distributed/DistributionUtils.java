@@ -18,6 +18,11 @@ public class DistributionUtils {
 	private static final Set<Pattern> readOnlyPathPatternSet = createReadOnlyPatternSet();
 
 	/**
+	 * Set of black-listed path patterns (paths matching any of these patterns is supposed to be "modifying" and should be redirected to the master)
+	 */
+	private static final Set<Pattern> blackListPathPatternSet = createBlackListPatternSet();
+
+	/**
 	 * Check whether the request is a read request.
 	 * 
 	 * @param method
@@ -25,6 +30,10 @@ public class DistributionUtils {
 	 * @return
 	 */
 	public static boolean isReadRequest(HttpMethod method, String path) {
+		if (isBlackListed(path)) {
+			return false;
+		}
+
 		switch (method) {
 		case CONNECT:
 		case OPTIONS:
@@ -60,6 +69,21 @@ public class DistributionUtils {
 	}
 
 	/**
+	 * Check whether the given path matches one of the known black-listed paths.
+	 * @param path path
+	 * @return true if the request to the given path is black-listed (is supposed to be "modifying")
+	 */
+	public static boolean isBlackListed(String path) {
+		for (Pattern pattern : blackListPathPatternSet) {
+			Matcher m = pattern.matcher(path);
+			if (m.matches()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Create the set of read-only patterns
 	 * @return pattern set
 	 */
@@ -74,6 +98,21 @@ public class DistributionUtils {
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/linkResolver/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateSchema/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateMicroschema/?"));
+		return patterns;
+	}
+
+	/**
+	 * Create the set of blacklisted path patterns
+	 * @return pattern set
+	 */
+	private static Set<Pattern> createBlackListPatternSet() {
+		Set<Pattern> patterns = new HashSet<>();
+		// clearing the search indices should only be done on the Master
+		patterns.add(Pattern.compile("/api/v[0-9]+/search/clear"));
+		// index sync should only be done on the Master
+		patterns.add(Pattern.compile("/api/v[0-9]+/search/sync"));
+		// search index operation status should only be fetched from the Master (which is doing the index operations) 
+		patterns.add(Pattern.compile("/api/v[0-9]+/search/status"));
 		return patterns;
 	}
 }

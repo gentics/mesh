@@ -2,8 +2,10 @@ package com.gentics.mesh.search.index.group;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -105,8 +107,8 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	}
 
 	@Override
-	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(Group.composeIndexName(), null);
+	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
+		return diffAndSync(Group.composeIndexName(), null, indexPattern);
 	}
 
 	@Override

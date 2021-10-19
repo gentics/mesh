@@ -2,6 +2,8 @@ package com.gentics.mesh.test.context.helper;
 
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -11,15 +13,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import javax.jws.soap.SOAPBinding.Use;
-
+import com.gentics.elasticsearch.client.ElasticsearchClient;
+import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
-import com.gentics.mesh.plugin.BackupPlugin;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.context.ClientHandler;
@@ -30,6 +31,7 @@ import com.gentics.mesh.test.util.TestUtils;
 import io.reactivex.Completable;
 import io.reactivex.functions.Action;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
 
 public interface EventHelper extends BaseHelper {
 
@@ -136,6 +138,24 @@ public interface EventHelper extends BaseHelper {
 	 */
 	default ExpectedEvent expectEvent(String address, Action code, int timeoutMs) {
 		return new ExpectedEvent(vertx(), address, code, timeoutMs);
+	}
+
+	/**
+	 * Create an {@link AutoCloseable} which will register an event handler for the event (when created) and
+	 * will wait for the event to be fired in {@link AutoCloseable#close()}. If the event is fired, it will throw an Exception.<br>
+	 * This method should be used like this:
+	 * <blockquote><pre>
+	 * try (UnexpectedEvent ue = notExpectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+	 *   // code, which is expected to not fire the event
+	 *   ...
+	 * }
+	 * </pre></blockquote>
+	 * @param event event
+	 * @param timeoutMs timeout in milliseconds. The timeout should not be set too high, because successful test execution will be blocked for the length of the timeout.
+	 * @return AutoClosable instance
+	 */
+	default UnexpectedEvent notExpectEvent(MeshEvent event, int timeoutMs) {
+		return new UnexpectedEvent(vertx(), event.getAddress(), timeoutMs);
 	}
 
 	default void waitForSearchIdleEvent() {
@@ -456,4 +476,36 @@ public interface EventHelper extends BaseHelper {
 		eventAsserter().await();
 	}
 
+	default void assertDocumentExists(String indexName, String documentId) {
+		getProvider().getDocument(indexName, documentId).blockingGet();
+	}
+
+	default void assertDocumentDoesNotExist(String indexName, String documentId) {
+		try {
+			getProvider().getDocument(indexName, documentId).blockingGet();
+			fail("Fetching document " + documentId + " from index " + indexName + " is expected to fail");
+		} catch (Exception e) {
+			HttpErrorException error = (HttpErrorException) e.getCause();
+			assertEquals(404, error.getStatusCode());
+		}
+	}
+
+	default void syncIndex() throws TimeoutException {
+		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, 10_000)) {
+			SyncEventHandler.invokeSync(vertx(), null);
+		}
+		refreshIndices();
+	}
+
+	/**
+	 * Get the index mappings for the index with given name. Method will fail, if index does not exist
+	 * @param indexName elasticsearch index name (including prefix)
+	 * @return index mappings
+	 */
+	default JsonObject getIndexMappings(String indexName) {
+		ElasticsearchClient<JsonObject> client = searchProvider().getClient();
+		return client.readIndex(indexName).async().map(response -> {
+			return response.getJsonObject(indexName).getJsonObject("mappings");
+		}).blockingGet();
+	}
 }

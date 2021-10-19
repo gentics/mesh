@@ -30,6 +30,19 @@ icon:check[] Server: added a health/writable monitoring and REST endpoint to che
 
 icon:check[] Server: when a schema was updated with a new field with elastic search properties, these were ignored. This has been fixed now.
 
+icon:check[] Search: If ElasticSearch indices, which were originally created by Mesh were dropped, they would probably be re-created with the default mapping when Mesh
+stored a document in the index. This could cause the index to be not completely filled and also the mapping to be incorrect, so that search queries would fail to find
+documents. In order to detect and repair such situations, a periodic check has been added to Mesh, which will check existence and correctness of all required ElasticSearch
+indices. Missing indices will be created and incorrect indices will be dropped and re-created. Afterwards a full sync for the affected indices will be triggered. The check
+period can be configured with the new configuration setting `search.indexCheckInterval`, which defaults to 60_000 milliseconds. Setting the interval to 0 will disable the
+periodic check (not recommended).
+
+icon:plus[] Search: The index maintenance endpoints `/api/v1/search/sync` and `/api/v1/search/clear` have been extended with the query parameter `index`, which can be used
+to restrict the synchronized/cleared indices by a regular expression.
+
+icon:check[] Search: The index maintenance actions triggered via `/api/v1/search/sync` and `/api/v1/search/clear` will now be redirected to the current master instance,
+if the cluster coordinator is used.
+
 [[v1.7.19]]
 == 1.7.19 (12.10.2021)
 
