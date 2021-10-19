@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.user;
 
-import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -8,50 +8,47 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import java.util.function.Consumer;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.etc.config.AuthenticationOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
+import com.gentics.mesh.test.context.MeshTestHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = PROJECT, startServer = true)
 public class JWTConfigurationTest extends AbstractMeshTest {
 
 	@Parameterized.Parameter(0)
-	public AuthenticationOptions authOptions;
+	public Consumer<MeshOptions> optionChanger;
 
 	@Parameterized.Parameters(name = "{index}: authOptions={0}")
 	public static Collection<Object[]> paramData() {
-		AuthenticationOptions defaultOptions = new AuthenticationOptions();
-		defaultOptions.overrideWithEnv();
-
 		return Arrays.asList(new Object[][] {
-			{ defaultOptions },
-			{ new AuthenticationOptions()
-				.setIssuer("HELLO WORLD TEST")
-				.setAudience(Arrays.asList("www.example.com", "auth.example.com"))
-			}
+			{ MeshTestHelper.noopConsumer() },
+			{(Consumer<MeshOptions>) meshOptions -> {
+				meshOptions.getAuthenticationOptions()
+					.setIssuer("HELLO WORLD")
+					.setAudience(Arrays.asList("www.example.com", "auth.example.com"));
+			}}
 		});
 	}
 
 	@Override
 	public MeshTestContext getTestContext() {
-		return testContext.setOptionChanger(options -> {
-			options.setAuthenticationOptions(authOptions);
-		});
+		return testContext.setOptionChanger(optionChanger);
 	}
 
 	@Test
@@ -69,12 +66,17 @@ public class JWTConfigurationTest extends AbstractMeshTest {
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
-			String token = client.me().getResponse().blockingGet().getHeader("Set-Cookie").orElse(null);
+			String tokenCookie = client.me().getResponse().blockingGet().getHeader("Set-Cookie").orElse(null);
+			assertNotNull(tokenCookie);
+			String token = tokenCookie.substring(11, tokenCookie.indexOf(';'));
 			assertNotNull(token);
 
 			JsonObject payload = new JsonObject(new String(Base64.getDecoder().decode(token.split("\\.")[1])));
-			assertEquals(payload.getString("iss"), authOptions.getIssuer());
-			assertEquals(payload.getJsonArray("aud"), new JsonArray(authOptions.getAudience()));
+			MeshOptions options = this.options();
+			this.optionChanger.accept(options);
+
+			assertEquals(payload.getString("iss"), options.getAuthenticationOptions().getIssuer());
+			assertEquals(payload.getJsonArray("aud"), new JsonArray(options.getAuthenticationOptions().getAudience()));
 		}
 	}
 }
