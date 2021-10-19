@@ -47,6 +47,11 @@ public interface MonitoringClientMethods {
 	MeshRequest<EmptyResponse> live();
 
 	/**
+	 * Invoke a writable check request
+	 */
+	MeshRequest<EmptyResponse> writable();
+
+	/**
 	 * Load the mesh server API Info
 	 * 
 	 * @return

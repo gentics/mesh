@@ -121,7 +121,7 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable clear() {
+	public Completable clear(String indexPattern) {
 		return Completable.complete();
 	}
 

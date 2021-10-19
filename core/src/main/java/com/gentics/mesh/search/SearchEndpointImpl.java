@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -167,6 +168,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		indexClearEndpoint.path("/clear");
 		indexClearEndpoint.method(POST);
 		indexClearEndpoint.produces(APPLICATION_JSON);
+		indexClearEndpoint.addQueryParameters(IndexMaintenanceParametersImpl.class);
 		indexClearEndpoint.description("Drops all indices and recreates them. The index sync is not invoked automatically.");
 		indexClearEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Recreated all indices.");
 		indexClearEndpoint.handler(rc -> {
@@ -178,6 +180,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		indexSyncEndpoint.path("/sync");
 		indexSyncEndpoint.method(POST);
 		indexSyncEndpoint.produces(APPLICATION_JSON);
+		indexSyncEndpoint.addQueryParameters(IndexMaintenanceParametersImpl.class);
 		indexSyncEndpoint.description(
 			"Invokes the manual synchronisation of the search indices. This operation may take some time to complete and is performed asynchronously. When clustering is enabled it will be executed on any free instance.");
 		indexSyncEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Invoked index synchronisation on all indices.");

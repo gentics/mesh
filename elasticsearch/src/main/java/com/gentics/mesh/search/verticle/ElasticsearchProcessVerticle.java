@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.verticle;
 
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CHECK_REQUEST;
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
 import static com.gentics.mesh.core.rest.MeshEvent.IS_SEARCH_IDLE;
 import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
@@ -21,9 +22,12 @@ import javax.inject.Inject;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.search.SearchIndexSyncEventModel;
+import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.ElasticsearchResponseErrorStreamable;
 import com.gentics.mesh.search.verticle.bulk.BulkOperator;
@@ -69,7 +73,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private final IdleChecker idleChecker;
 	private final SyncEventHandler syncEventHandler;
 	private final ElasticSearchOptions options;
+	private final RequestDelegator delegator;
 	private final String nodeName;
+	private final boolean clusteringEnabled;
 
 	private FlowableProcessor<MessageEvent> requests = PublishProcessor.create();
 
@@ -83,13 +89,16 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		SearchProvider searchProvider,
 		IdleChecker idleChecker,
 		SyncEventHandler syncEventHandler,
-		MeshOptions options) {
+										MeshOptions options,
+										RequestDelegator delegator) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
 		this.idleChecker = idleChecker;
 		this.syncEventHandler = syncEventHandler;
 		this.options = options.getSearchOptions();
+		this.delegator = delegator;
 		this.nodeName = options.getNodeName();
+		this.clusteringEnabled = options.getClusterOptions().isEnabled();
 	}
 
 	@Override
@@ -126,6 +135,19 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 		vertxHandlers.add(replyingEventHandler(IS_SEARCH_IDLE, Single.fromCallable(idleChecker::isIdle)));
 		vertxHandlers.add(replyingEventHandler(SEARCH_REFRESH_REQUEST, refresh().andThen(Single.just(true))));
+
+		if (options.getIndexCheckInterval() > 0) {
+			log.trace("Setup periodic index check every {} ms", options.getIndexCheckInterval());
+			// periodically send the event to check the indices
+			vertx.setPeriodic(options.getIndexCheckInterval(), id -> {
+				// only do this for the current master
+				if (!clusteringEnabled || delegator.isMaster()) {
+					vertx.eventBus().publish(INDEX_CHECK_REQUEST.address, null);
+				}
+			});
+		} else {
+			log.trace("Periodic index check disabled (interval set to {} ms)", options.getIndexCheckInterval());
+		}
 
 		log.trace("Done Initializing Elasticsearch process verticle");
 	}
@@ -247,7 +269,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				log.info("Elasticsearch is available again. Starting sync.");
 				elasticsearchAvailable.onNext(available);
 			});
-		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, null);
+		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, new JsonObject(JsonUtil.toJson(new SearchIndexSyncEventModel())));
 	}
 
 	/**
@@ -324,7 +346,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			boolean indexNotFound = ((ElasticsearchResponseErrorStreamable) error).stream()
 				.anyMatch(err -> "index_not_found_exception".equals(err.getType()));
 			if (indexNotFound && !stopped.get()) {
-				return syncEventHandler.generateSyncRequests()
+				return syncEventHandler.generateSyncRequests(null)
 					.doOnNext(request -> {
 						log.trace("SyncRequest+{}", request);
 						idleChecker.addAndGetRequests(request.requestCount());

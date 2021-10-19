@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.data.search;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -28,6 +30,7 @@ import io.reactivex.Observable;
  * @param <T>
  */
 public interface IndexHandler<T extends HibBaseElement> {
+	public final static Pattern MATCH_ALL = Pattern.compile(".*");
 
 	/**
 	 * Initialise the search index by creating the index first and setting the mapping afterwards.
@@ -85,9 +88,10 @@ public interface IndexHandler<T extends HibBaseElement> {
 	/**
 	 * Diff the elements within all indices that are handled by the index handler and synchronize the data.
 	 * 
+	 * @param indexPattern optional index pattern to restrict synchronized indices
 	 * @return
 	 */
-	Flowable<SearchRequest> syncIndices();
+	Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern);
 
 	/**
 	 * Filter the given list and return only indices which match the type of the handler but are no longer in use or unknown.
@@ -193,4 +197,9 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 */
 	MappingProvider getMappingProvider();
 
+	/**
+	 * Check indices handled by this handler for existence and correctness (mapping)
+	 * @return completable
+	 */
+	Completable check();
 }

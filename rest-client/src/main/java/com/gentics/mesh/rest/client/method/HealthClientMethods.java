@@ -21,4 +21,11 @@ public interface HealthClientMethods {
 	 * @return
 	 */
 	MeshRequest<EmptyResponse> live();
+
+	/**
+	 * Invoke a writable request.
+	 *
+	 * @return
+	 */
+	MeshRequest<EmptyResponse> writable();
 }

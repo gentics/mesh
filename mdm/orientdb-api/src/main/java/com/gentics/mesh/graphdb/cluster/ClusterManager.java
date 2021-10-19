@@ -69,4 +69,11 @@ public interface ClusterManager {
 	 * @return online status
 	 */
 	boolean isLocalNodeOnline();
+
+	/**
+	 * Checks if write quorum is reached
+	 *
+	 * @return
+	 */
+	boolean isWriteQuorumReached();
 }

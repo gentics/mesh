@@ -2,13 +2,13 @@ package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import io.vertx.core.json.JsonObject;
 import org.assertj.core.api.AbstractObjectArrayAssert;
 import org.junit.Test;
 
@@ -448,7 +448,8 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
-			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123");
+			JsonObject elasticSearch = new JsonObject().put("test", "test");
+			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123", elasticSearch);
 
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.updateFromRest(model);
