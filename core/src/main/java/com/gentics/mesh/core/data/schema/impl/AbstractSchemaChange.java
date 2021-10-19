@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -93,9 +92,10 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	@Override
 	public <R> Map<String, R> getRestProperties() {
 		Map<String, R> rawMap = getProperties(REST_PROPERTY_PREFIX_KEY);
-		return rawMap.keySet().stream()
-				.map(key -> key.replace(REST_PROPERTY_PREFIX_KEY, StringUtils.EMPTY))
-				.collect(Collectors.toMap(Function.identity(), rawMap::get));
+		return rawMap.entrySet().stream()
+				.collect(Collectors.toMap(
+						entry -> entry.getKey().replace(REST_PROPERTY_PREFIX_KEY, StringUtils.EMPTY), 
+						entry -> entry.getValue()));
 	}
 
 	@Override
