@@ -662,6 +662,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 				newCfg.getDocument().setProperty("readQuorum", newReadQuorum);
 			}
 
+			// force hazelcast plugin to increase version of the distributed configuration.
+			// This is needed because if there are changes only in document properties (e.g. writeQuorum or readQuorum)
+			// the plugin won't detect them
+			// see https://github.com/orientechnologies/orientdb/blob/3.1.x/distributed/src/main/java/com/orientechnologies/orient/server/distributed/impl/ODistributedAbstractPlugin.java#L441
+			newCfg.override(newCfg.getDocument());
 			plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
 		} else {
 			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");

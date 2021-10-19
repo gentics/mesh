@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -456,7 +455,6 @@ public class OrientDBClusterManager implements ClusterManager {
 		}
 	}
 
-
 	public boolean isServerActive() {
 		return server != null && server.isActive();
 	}
@@ -505,14 +503,14 @@ public class OrientDBClusterManager implements ClusterManager {
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
 		return Completable.defer(() -> {
-			if (writeQuorumReached()) {
+			if (isWriteQuorumReached()) {
 				return Completable.complete();
 			}
 			return Observable.using(
 				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
 				TimeoutStream::toObservable,
 				TimeoutStream::cancel).takeUntil(ignore -> {
-					return writeQuorumReached();
+					return isWriteQuorumReached();
 				})
 				.ignoreElements();
 		});
@@ -538,7 +536,12 @@ public class OrientDBClusterManager implements ClusterManager {
 		}
 	}
 
-	private boolean writeQuorumReached() {
+	@Override
+	public boolean isWriteQuorumReached() {
+		if (!isClusteringEnabled) {
+			return true;
+		}
+
 		try {
 			// The server and manager may not yet be initialized. We need to wait until those are ready
 			if (server != null && server.getDistributedManager() != null) {

@@ -73,6 +73,9 @@ public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAss
 			assertArrayEquals("The value for the given property did not match the expected one." + values, (Object[]) value, (Object[]) actualValue);
 		} else if (value instanceof JsonObject) {
 			Object current = actual.getProperties().get(key);
+			if (current instanceof String) {
+				current = new JsonObject((String) current);;
+			}
 			if (current instanceof LinkedHashMap) {
 				current = new JsonObject((Map) current);
 			}

@@ -470,6 +470,10 @@ public class MeshTestContext extends TestWatcher {
 		if (settings == null) {
 			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
 		}
+
+		// disable periodic index check
+		meshOptions.getSearchOptions().setIndexCheckInterval(0);
+
 		// Clustering options
 		if (settings.clusterMode()) {
 			meshOptions.getClusterOptions().setEnabled(true);

@@ -1047,15 +1047,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeIndexClear() {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<GenericMessageResponse> invokeIndexClear(ParameterProvider... parameters) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		adminIndexHandler.handleClear(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeIndexSync() {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<GenericMessageResponse> invokeIndexSync(ParameterProvider... parameters) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		adminIndexHandler.handleSync(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -1835,6 +1835,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<EmptyResponse> live() {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> writable() {
 		return null;
 	}
 }
