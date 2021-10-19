@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.JWTUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -77,6 +78,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		String keyStorePath = options.getKeystorePath();
 		String type = "jceks";
 		JWTAuthOptions config = new JWTAuthOptions();
+		// Set JWT options from the config
+		config.setJWTOptions(JWTUtil.createJWTOptions(options));
 		config.setKeyStore(new KeyStoreOptions().setPath(keyStorePath).setPassword(keystorePassword).setType(type));
 		jwtProvider = JWTAuth.create(vertx, new JWTAuthOptions(config));
 
