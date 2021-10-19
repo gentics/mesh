@@ -172,7 +172,6 @@ public class AuthenticationOptions implements Option {
 		return leeway;
 	}
 
-	@Setter
 	public AuthenticationOptions setLeeway(int leeway) {
 		this.leeway = leeway;
 		return this;
@@ -182,7 +181,6 @@ public class AuthenticationOptions implements Option {
 		return issuer;
 	}
 
-	@Setter
 	public AuthenticationOptions setIssuer(String issuer) {
 		this.issuer = issuer;
 		return this;
@@ -192,7 +190,6 @@ public class AuthenticationOptions implements Option {
 		return audience;
 	}
 
-	@Setter
 	public AuthenticationOptions setAudience(List<String> audience) {
 		this.audience = audience;
 		return this;
@@ -202,7 +199,6 @@ public class AuthenticationOptions implements Option {
 		return ignoreExpiration;
 	}
 
-	@Setter
 	public AuthenticationOptions setIgnoreExpiration(boolean ignoreExpiration) {
 		this.ignoreExpiration = ignoreExpiration;
 		return this;
