@@ -1531,6 +1531,33 @@ Emitted when the index clear process finishes.
 
 
 
+=== _mesh.search.index.check.request_
+
+Event address which will trigger an index check.
+
+
+
+
+
+
+=== _mesh.search.index.check.start_
+
+Emitted when the index check process starts.
+
+
+
+
+
+
+=== _mesh.search.index.check.finished_
+
+Emitted when the index check process finishes.
+
+
+
+
+
+
 === _mesh.search.process.idle_
 
 Emitted when the search interation process has been working and is now in idle.

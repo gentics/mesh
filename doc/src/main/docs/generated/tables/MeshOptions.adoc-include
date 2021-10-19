@@ -342,6 +342,16 @@
 | int
 | Configure the index sync batch size. Default: 50000
 
+| searchOptions.indexCheckInterval
+| false
+| long
+| Set the interval of index checks in ms. Default: 60000
+
+| searchOptions.indexMappingCacheTimeout
+| false
+| long
+| Set the timeout for the cache of index mappings in ms. Default: 3600000
+
 | uploadOptions.byteLimit
 | false
 | long

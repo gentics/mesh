@@ -155,6 +155,9 @@
 | *MESH_S3_BINARY_METADATA_WHITELIST*
 | Override the metadata whitelist
 
+| *MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL*
+| Override the interval for index checks
+
 | *MESH_NODE_NAME*
 | Override the configured node name.
 
@@ -253,6 +256,9 @@
 
 | *MESH_GRAPHQL_SLOW_THRESHOLD*
 | Override the configured slow graphQl query threshold.
+
+| *MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT*
+| Override the timeout for the cache if index mappings
 
 | *MESH_ELASTICSEARCH_PASSWORD*
 | Override the configured Elasticsearch connection password.
