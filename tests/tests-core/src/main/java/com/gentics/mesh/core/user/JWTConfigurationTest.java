@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -8,6 +9,10 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -15,15 +20,14 @@ import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
+@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true)
 public class JWTConfigurationTest extends AbstractMeshTest {
 
 	@Parameterized.Parameter(0)
