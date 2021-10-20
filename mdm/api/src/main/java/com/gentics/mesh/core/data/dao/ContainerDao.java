@@ -48,6 +48,14 @@ public interface ContainerDao<
 	> extends DaoGlobal<SC>, DaoTransformable<SC, R> {
 
 	/**
+	 * Get the branches to which the container version was assigned.
+	 *
+	 * @param version
+	 * @return Found branches of this version
+	 */
+	Result<? extends HibBranch> getBranches(SCV version);
+
+	/**
 	 * Delete the schema version, notifying context if necessary.
 	 * 
 	 * @param version

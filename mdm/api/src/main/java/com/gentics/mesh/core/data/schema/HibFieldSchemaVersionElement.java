@@ -5,12 +5,10 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
@@ -166,13 +164,6 @@ public interface HibFieldSchemaVersionElement<
 			this::getPreviousVersion,
 			HibFieldSchemaVersionElement::getPreviousVersion);
 	}
-
-	/**
-	 * Get the branches to which the container was assigned.
-	 *
-	 * @return Found branches of this version
-	 */
-	Result<? extends HibBranch> getBranches();
 
 	/**
 	 * Return an iterable of all jobs which reference the version via the _to_ reference.

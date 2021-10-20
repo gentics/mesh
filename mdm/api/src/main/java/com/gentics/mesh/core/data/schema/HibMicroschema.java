@@ -15,6 +15,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -60,10 +61,12 @@ public interface HibMicroschema
 	 * 
 	 * @return
 	 */
+	@Override
 	default Map<HibBranch, HibMicroschemaVersion> findReferencedBranches() {
 		Map<HibBranch, HibMicroschemaVersion> references = new HashMap<>();
-		for (HibMicroschemaVersion version : Tx.get().microschemaDao().findAllVersions(this)) {
-			version.getBranches().forEach(branch -> references.put(branch, version));
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
+		for (HibMicroschemaVersion version : microschemaDao.findAllVersions(this)) {
+			microschemaDao.getBranches(version).forEach(branch -> references.put(branch, version));
 		}
 		return references;
 	}

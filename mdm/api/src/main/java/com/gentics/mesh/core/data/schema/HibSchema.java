@@ -14,6 +14,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -50,8 +51,9 @@ public interface HibSchema extends HibFieldSchemaElement<SchemaResponse, SchemaV
 	@Override
 	default Map<HibBranch, HibSchemaVersion> findReferencedBranches() {
 		Map<HibBranch, HibSchemaVersion> references = new HashMap<>();
-		for (HibSchemaVersion version : Tx.get().schemaDao().findAllVersions(this)) {
-			version.getBranches().forEach(branch -> references.put(branch, version));
+		SchemaDao schemaDao = Tx.get().schemaDao();
+		for (HibSchemaVersion version : schemaDao.findAllVersions(this)) {
+			schemaDao.getBranches(version).forEach(branch -> references.put(branch, version));
 		}
 		return references;
 	}

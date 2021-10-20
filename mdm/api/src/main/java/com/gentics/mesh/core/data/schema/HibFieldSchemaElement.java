@@ -43,6 +43,7 @@ public interface HibFieldSchemaElement<
 	 * Return a map of all branches which reference the container via an assigned container version. The found container version will be added as key to the
 	 * map.
 	 * 
+	 * @deprecated move this to DAO
 	 * @return
 	 */
 	Map<HibBranch, SCV> findReferencedBranches();
