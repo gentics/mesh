@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -131,11 +130,6 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	public HibSchemaVersion findVersionByUuid(HibSchema schema, String versionUuid) {
 		Schema graphSchema = toGraph(schema);
 		return graphSchema.findVersionByUuid(versionUuid);
-	}
-
-	@Override
-	public Map<HibBranch, HibSchemaVersion> findReferencedBranches(HibSchema schema) {
-		return toGraph(schema).findReferencedBranches();
 	}
 
 	@Override

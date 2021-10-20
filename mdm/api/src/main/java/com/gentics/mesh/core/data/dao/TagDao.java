@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
@@ -193,9 +196,16 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	default HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm,
 			boolean errorIfNotFound) {
 		return Tx.get().tagFamilyDao().findAllStream(project, ac, perm)
-				.map(tagFamily -> loadObjectByUuid(tagFamily, ac, uuid, perm, errorIfNotFound))
+				.map(tagFamily -> loadObjectByUuid(tagFamily, ac, uuid, perm, false))
 				.filter(Objects::nonNull)
+				.map(tag -> checkPerms(tag, uuid, ac, perm, errorIfNotFound))
 				.findAny()
-				.orElse(null);
+				.orElseGet(() -> {
+					if (errorIfNotFound) {
+						throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+					} else {
+						return null;
+					}
+				});
 	}
 }

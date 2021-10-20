@@ -128,7 +128,9 @@ public interface ContainerDao<
 	 * @param schema
 	 * @return
 	 */
-	Map<HibBranch, SCV> findReferencedBranches(SC schema);
+	default Map<HibBranch, SCV> findReferencedBranches(SC schema) {
+		return schema.findReferencedBranches();
+	}
 
 	/**
 	 * Check whether the schema is linked to the project.

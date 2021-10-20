@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
@@ -39,6 +40,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.Assignment;
@@ -232,15 +234,23 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	Result<HibProject> findLinkedProjects(HibSchema schema);
 
 	/**
-	 * Load all nodes.
+	 * Load all nodes, accessible the given branch with Read Published permission.
 	 * 
 	 * @param version
-	 * @param uuid
+	 * @param branchUuid
 	 * @param user
 	 * @param type
 	 * @return
 	 */
-	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, HibUser user, ContainerType type);
+	default Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user,
+			ContainerType type) {
+		UserDao userDao = Tx.get().userDao();
+		return new TraversalResult<>(getNodes(version.getSchemaContainer()).stream()
+			.filter(node -> node.getAvailableLanguageNames().stream()
+					.map(lang -> node.getFieldContainer(lang, branchUuid, type))
+					.anyMatch(container -> container != null)
+				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
+	}
 
 	/**
 	 * Add the schema to the db.
