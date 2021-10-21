@@ -35,7 +35,6 @@ import org.testcontainers.utility.TestEnvironment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
@@ -54,17 +53,17 @@ import io.vertx.core.json.JsonObject;
  */
 public class MeshContainer extends GenericContainer<MeshContainer> {
 
-	private static final String PATH_UPLOADS = "/uploads";
+	protected static final String PATH_UPLOADS = "/uploads";
 
-	private static final String PATH_BACKUP = "/backup";
+	protected static final String PATH_BACKUP = "/backup";
 
-	private static final String PATH_GRAPHDB = "/graphdb";
+	protected static final String PATH_GRAPHDB = "/graphdb";
 
-	private static final Charset UTF8 = Charset.forName("UTF-8");
+	protected static final Charset UTF8 = Charset.forName("UTF-8");
 
-	private static final Logger log = LoggerFactory.getLogger(MeshContainer.class);
+	protected static final Logger log = LoggerFactory.getLogger(MeshContainer.class);
 
-	private static ImageFromDockerfile cachedImage = null;
+	protected static ImageFromDockerfile cachedImage = null;
 
 	/**
 	 * Local provider for docker image. The provider will utilize the class and jar files from a local Gentics Mesh checkout. This way a development version of
@@ -77,54 +76,54 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		return cachedImage;
 	};
 
-	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
+	protected Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
-	private AbstractMeshRestHttpClient client;
+	protected AbstractMeshRestHttpClient client;
 
 	/**
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
-	private Runnable startupAction = () -> {
+	protected Runnable startupAction = () -> {
 		// TODO uncast later
 		client = (AbstractMeshRestHttpClient) MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false);
 		login();
 	};
 
-	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
+	protected StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
 
 	/**
 	 * Name of the node. Default: dummy
 	 */
-	private String nodeName = "dummy";
+	protected String nodeName = "dummy";
 
 	/**
 	 * -1 = "majority"
 	 */
-	private int writeQuorum = -1;
+	protected int writeQuorum = -1;
 
-	private boolean initCluster = false;
+	protected boolean initCluster = false;
 
-	private boolean waitForStartup = false;
+	protected boolean waitForStartup = false;
 
-	private boolean clearDataFolders = false;
+	protected boolean clearDataFolders = false;
 
-	private Integer debugPort;
+	protected Integer debugPort;
 
-	private String clusterName;
+	protected String clusterName;
 
-	private String extraOpts;
+	protected String extraOpts;
 
-	private String dataPathPostfix;
+	protected String dataPathPostfix;
 
-	private boolean startEmbeddedES = false;
+	protected boolean startEmbeddedES = false;
 
-	private CoordinatorMode coordinatorMode = null;
+	protected CoordinatorMode coordinatorMode = null;
 
-	private String coordinatorPlaneRegex;
+	protected String coordinatorPlaneRegex;
 
-	private boolean useFilesystem = false;
+	protected boolean useFilesystem = false;
 	
-	private Map<String, ContainerPath> pathOverrides = new HashMap<>(3);
+	protected Map<String, ContainerPath> pathOverrides = new HashMap<>(3);
 	
 	public MeshContainer(Function<MeshOptions, ImageFromDockerfile> imageProvider, MeshOptions options) {
 		init();
@@ -226,12 +225,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
 
-		if (!useFilesystem) {
-			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
-		} else {
-			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "/graphdb");
-		}
-
 		if (coordinatorMode != null) {
 			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, coordinatorMode.name());
 		}
@@ -264,7 +257,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		setStartupAttempts(1);
 	}
 
-	private void changeUserInContainer() {
+	protected void changeUserInContainer() {
 		int uid = 1000;
 		try {
 			uid = UnixUtils.getUid();
@@ -320,7 +313,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	 * @param path
 	 * @throws IOException
 	 */
-	private static void prepareFolder(String path) throws IOException {
+	protected static void prepareFolder(String path) throws IOException {
 		File folder = new File(path);
 		FileUtils.deleteDirectory(folder);
 		folder.mkdirs();
@@ -394,14 +387,14 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 
 	// TODO de-orientDB this?
-	private static String generateMeshYML(MeshOptions options, boolean enableClustering) throws JsonProcessingException {
+	protected static String generateMeshYML(MeshOptions options, boolean enableClustering) throws JsonProcessingException {
 		options.getClusterOptions().setEnabled(enableClustering);
 		options.getClusterOptions().setVertxPort(8600);
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
 	}
 
-	private static JsonObject generateDistributedConfig(int writeQuorum) {
+	protected static JsonObject generateDistributedConfig(int writeQuorum) {
 		JsonObject json;
 		try {
 			json = new JsonObject(IOUtils.toString(MeshContainer.class.getResourceAsStream("/config/default-distributed-db-config.json")));
@@ -417,7 +410,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	}
 
-	private static String generateCommand(String classpath) {
+	protected static String generateCommand(String classpath) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("exec");
 		builder.append(" ");
@@ -732,7 +725,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		return this;
 	}
 
-	private boolean isClustered() {
+	protected boolean isClustered() {
 		return clusterName != null;
 	}
 	

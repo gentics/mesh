@@ -415,6 +415,15 @@ public interface Database extends TxFactory {
 		return maybeTx(handler, false).toSingle();
 	}
 
+	/**
+	 * Check whether the database is considered to be read-only
+	 * @param logError true to log an error, false for logging a warning
+	 * @return true if database is read-only
+	 */
+	default boolean isReadOnly(boolean logError) {
+		return false;
+	}
+
 	default <T> Transactional<T> transactional(Function<? super Tx, ? extends T> txFunction) {
 		return new Transactional<T>() {
 			@Override

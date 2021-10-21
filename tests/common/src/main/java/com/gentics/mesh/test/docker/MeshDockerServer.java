@@ -12,7 +12,6 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -121,7 +120,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 		}
 
 		if (!useFilesystem) {
-			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
+			addEnv("MESH_GRAPH_DB_DIRECTORY", "null");
 		}
 
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");

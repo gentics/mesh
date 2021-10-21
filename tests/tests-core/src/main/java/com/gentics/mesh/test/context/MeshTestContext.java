@@ -486,7 +486,6 @@ public class MeshTestContext extends TestWatcher {
 
 		MeshOptions meshOptions = meshInstanceProvider.getOptions();
 
-
 		// disable periodic index check
 		meshOptions.getSearchOptions().setIndexCheckInterval(0);
 

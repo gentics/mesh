@@ -149,4 +149,5 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 		options.getClusterOptions().setEnabled(true).setClusterName("someName");
 		options.validate();
 	}
+
 }

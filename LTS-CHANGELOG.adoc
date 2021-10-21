@@ -25,6 +25,8 @@ icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 con
 icon:check[] Cluster: When doing a rolling update in a cluster, a OConcurrentModificationException could occur during the startup, which could cause
 subsequent errors. This has been fixed.
 
+icon:plus[] Core: A periodic check for available disk space has been added. If not enough disk space is available, Gentics Mesh will be set to read-only to avoid corruption of the storage due to a full disk.
+
 [[v1.6.22]]
 == 1.6.22 (19.10.2021)
 

@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.PostProcessFlags;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.google.common.base.Objects;
@@ -106,7 +107,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 		String currentVersion = Mesh.getPlainVersion();
 
 		db.tx(tx -> {
-			Vertex root = MeshGraphHelper.getMeshRootVertex(tx.getGraph());
+			Vertex root = MeshGraphHelper.getMeshRootVertex(tx.<GraphDBTx>unwrap().getGraph());
 			String rev = db.getDatabaseRevision();
 			String storedVersion = root.getProperty(MESH_VERSION);
 			String storedRev = root.getProperty(MESH_DB_REV);
