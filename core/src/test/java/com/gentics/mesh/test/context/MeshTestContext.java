@@ -474,6 +474,9 @@ public class MeshTestContext extends TestWatcher {
 		// disable periodic index check
 		meshOptions.getSearchOptions().setIndexCheckInterval(0);
 
+		// disable periodic disk quota check
+		meshOptions.getStorageOptions().getDiskQuotaOptions().setCheckInterval(0);
+
 		// Clustering options
 		if (settings.clusterMode()) {
 			meshOptions.getClusterOptions().setEnabled(true);

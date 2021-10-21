@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.23]]
+== 1.6.23 (TBD)
+
+icon:plus[] Core: A periodic check for available disk space has been added. If not enough disk space is available, Gentics Mesh will be set to read-only to avoid corruption of the storage due to a full disk.
+
 [[v1.6.22]]
 == 1.6.22 (19.10.2021)
 
