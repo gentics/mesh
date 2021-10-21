@@ -2,11 +2,14 @@ package com.gentics.mesh;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.List;
@@ -16,6 +19,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import com.gentics.mesh.etc.config.ContentConfig;
+import com.gentics.mesh.etc.config.DiskQuotaOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
@@ -161,4 +165,43 @@ public class OptionsLoaderTest {
 		options.validate();
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void testInvalidDiskQuotaOptions1() {
+		MeshOptions options = new MeshOptions();
+		options.setNodeName("ABC");
+		options.getAuthenticationOptions().setKeystorePassword("ABC");
+		DiskQuotaOptions diskQuotaOptions = options.getStorageOptions().getDiskQuotaOptions();
+		diskQuotaOptions.setReadOnlyThreshold("Not a number");
+		options.validate();
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testInvalidDiskQuotaOptions2() {
+		MeshOptions options = new MeshOptions();
+		options.setNodeName("ABC");
+		options.getAuthenticationOptions().setKeystorePassword("ABC");
+		DiskQuotaOptions diskQuotaOptions = options.getStorageOptions().getDiskQuotaOptions();
+		diskQuotaOptions.setWarnThreshold("Not a number");
+		options.validate();
+	}
+
+	@Test
+	public void testLegalDiskQuotaOptions() {
+		MeshOptions options = new MeshOptions();
+		options.setNodeName("ABC");
+		options.getAuthenticationOptions().setKeystorePassword("ABC");
+		DiskQuotaOptions diskQuotaOptions = options.getStorageOptions().getDiskQuotaOptions();
+		diskQuotaOptions.setReadOnlyThreshold("10M");
+		diskQuotaOptions.setWarnThreshold("10%");
+
+		// mock storage dir with 200M total space
+		File storageDir = mock(File.class);
+		when(storageDir.getTotalSpace()).thenReturn(200L * 1024 * 1024);
+
+		// absolute read-only threshold must be 10M (configured)
+		assertThat(diskQuotaOptions.getAbsoluteReadOnlyThreshold(storageDir)).as("Absolute read-only threshold").isEqualTo(10 * 1024 * 1024);
+		// absolute warn threshold must be 20M (10% of 200M)
+		assertThat(diskQuotaOptions.getAbsoluteWarnThreshold(storageDir)).as("Absolute warn threshold").isEqualTo(20 * 1024 * 1024);
+		options.validate();
+	}
 }

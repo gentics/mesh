@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -71,6 +72,8 @@ public class OrientDBClusterManager implements ClusterManager {
 	private static final String ORIENTDB_SECURITY_SERVER_CONFIG = "security.json";
 
 	private static final String ORIENTDB_HAZELCAST_CONFIG = "hazelcast.xml";
+
+	private static final String MESH_MEMBER_DISK_QUOTA_EXCEEDED = "mesh.instance.disk-quota-exceeded";
 
 	private OServer server;
 
@@ -552,6 +555,31 @@ public class OrientDBClusterManager implements ClusterManager {
 		} catch (Throwable e) {
 			log.error("Error while checking write quorum", e);
 			return false;
+		}
+	}
+
+	/**
+	 * Check whether any of the cluster members is set to have exceeded the disk quota
+	 * @return Optional name of the (first found) instance having the disk quota exceeded
+	 */
+	public Optional<String> getInstanceDiskQuotaExceeded() {
+		if (!isClusteringEnabled || hazelcastPlugin == null) {
+			return Optional.empty();
+		} else {
+			return hazelcastPlugin.getHazelcastInstance().getCluster().getMembers().stream()
+					.filter(m -> m.getBooleanAttribute(MESH_MEMBER_DISK_QUOTA_EXCEEDED) == Boolean.TRUE)
+					.map(m -> hazelcastPlugin.getNodeName(m)).findFirst();
+		}
+	}
+
+	/**
+	 * Set the disk-quota-exceeded status of the local cluster member (if clustering enabled) 
+	 * @param diskQuotaExceeded disk-quota-exceeded status
+	 */
+	public void setLocalMemberDiskQuotaExceeded(boolean diskQuotaExceeded) {
+		if (hazelcastPlugin != null) {
+			hazelcastPlugin.getHazelcastInstance().getCluster().getLocalMember()
+					.setBooleanAttribute(MESH_MEMBER_DISK_QUOTA_EXCEEDED, diskQuotaExceeded);
 		}
 	}
 }

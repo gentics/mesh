@@ -32,6 +32,7 @@ import org.raml.model.parameter.UriParameter;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -101,13 +102,17 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	 *
 	 * @param router
 	 * @param localConfigApi
+	 * @param db
 	 */
-	public InternalEndpointRouteImpl(Router router, LocalConfigApi localConfigApi) {
+	public InternalEndpointRouteImpl(Router router, LocalConfigApi localConfigApi, Database db) {
 		this.route = router.route();
 		route.handler(rc -> {
 			if (!isMutating()) {
 				rc.next();
 			} else {
+				if (db.isReadOnly(true)) {
+					rc.fail(error(HttpResponseStatus.METHOD_NOT_ALLOWED, "error_readonly_mode"));
+				}
 				localConfigApi.getActiveConfig().subscribe(config -> {
 					if (config.isReadOnly()) {
 						rc.fail(error(HttpResponseStatus.METHOD_NOT_ALLOWED, "error_readonly_mode"));
