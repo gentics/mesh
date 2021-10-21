@@ -40,7 +40,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.error.NameConflictException;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
@@ -317,7 +317,7 @@ public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectRespons
 	}
 
 	@Override
-	public MeshEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment) {
+	public ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment) {
 		Project graphProject = toGraph(project);
 		return graphProject.onSchemaAssignEvent(schema, assignment);
 	}

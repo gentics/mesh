@@ -16,9 +16,9 @@ public interface TxEntityPersistenceManager {
 	
 	/**
 	 * Create a new persisted entity with the given optional uuid. 
-	 * If uuid parameter is null, a new generated UUID will be used.
+	 * If uuid parameter is null, a new generated UUID will be used.<br>
 	 * Prefer {@link TxEntityPersistenceManager#create(String, Dao)} over this method, 
-	 * to keep the creation business logic. This API method serves test purposes.
+	 * to keep the creation business logic. 
 	 * 
 	 * @param <T>
 	 * @param uuid 
@@ -28,9 +28,9 @@ public interface TxEntityPersistenceManager {
 	<T extends HibBaseElement> T create(String uuid, Class<? extends T> classOfT);
 	
 	/**
-	 * Merge the data from given POJO into the persistent entity.
+	 * Merge the data from given POJO into the persistent entity.<br>
 	 * Prefer {@link TxEntityPersistenceManager#persist(HibCoreElement, Dao)} over this method, 
-	 * to keep the persistence business logic. This API method serves test purposes.
+	 * to keep the persistence business logic. 
 	 * 
 	 * @param element
 	 * @param classOfT the persistence class to use
@@ -39,9 +39,9 @@ public interface TxEntityPersistenceManager {
 	<T extends HibBaseElement> T persist(T element, Class<? extends T> classOfT);
 	
 	/**
-	 * Delete the persistent entity.
+	 * Delete the persistent entity.<br>
 	 * Prefer {@link TxEntityPersistenceManager#delete(HibCoreElement, Dao)} over this method, 
-	 * to keep the deletion business logic. This API method serves test purposes.
+	 * to keep the deletion business logic. 
 	 * 
 	 * @param element
 	 * @param classOfT the persistence class to use
