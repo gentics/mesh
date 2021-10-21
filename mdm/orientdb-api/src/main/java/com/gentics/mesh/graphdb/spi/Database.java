@@ -553,4 +553,12 @@ public interface Database extends TxFactory, GlueDatabase {
 	 */
 	long count(Class<? extends MeshVertex> clazz);
 
+	/**
+	 * Check whether the database is considered to be read-only
+	 * @param logError true to log an error, false for logging a warning
+	 * @return true if database is read-only
+	 */
+	default boolean isReadOnly(boolean logError) {
+		return false;
+	}
 }
