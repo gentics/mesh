@@ -13,6 +13,8 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.schema.*;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
@@ -320,6 +322,12 @@ public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectRespons
 	public ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment) {
 		Project graphProject = toGraph(project);
 		return graphProject.onSchemaAssignEvent(schema, assignment);
+	}
+
+	@Override
+	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibProject project, HibMicroschema microschema, Assignment assignment) {
+		Project graphProject = toGraph(project);
+		return graphProject.onMicroschemaAssignEvent(microschema, assignment);
 	}
 
 	@Override

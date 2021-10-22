@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -15,7 +13,6 @@ import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -83,8 +80,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public MicroschemaResponse transformToRestSync(Tx tx, HibMicroschema element, InternalActionContext ac, int level, String... languageTags) {
-		Microschema graphSchema = toGraph(element);
-		return graphSchema.transformToRestSync(ac, level, languageTags);
+		return tx.microschemaDao().transformToRestSync(element, ac, level, languageTags);
 	}
 
 	@Override

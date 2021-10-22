@@ -1,12 +1,22 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
+
+import static com.gentics.mesh.ElementType.LANGUAGE;
 
 /**
  * Domain model for languages.
  */
 public interface HibLanguage extends HibCoreElement<LanguageResponse>, HibNamedElement {
+
+	TypeInfo TYPE_INFO = new TypeInfo(LANGUAGE, null, null, null);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Native name of the language.

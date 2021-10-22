@@ -161,6 +161,11 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	}
 
 	@Override
+	public void addMicroschema(HibMicroschema microschema) {
+		getRoot().addItem(toGraph(microschema));
+	}
+
+	@Override
 	public void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch) {
 		toGraph(project).getMicroschemaContainerRoot().removeMicroschema(microschema, batch);
 	}

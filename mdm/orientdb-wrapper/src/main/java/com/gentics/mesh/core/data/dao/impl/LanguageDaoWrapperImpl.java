@@ -153,23 +153,7 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	}
 
 	@Override
-	public String getAPIPath(HibLanguage element, InternalActionContext ac) {
-		return toGraph(element).getAPIPath(ac);
-	}
-
-	@Override
 	protected RootVertex<Language> getRoot() {
 		return boot.get().meshRoot().getLanguageRoot();
-	}
-
-	@Override
-	public LanguageResponse transformToRestSync(HibLanguage element, InternalActionContext ac, int level,
-			String... languageTags) {
-		LanguageResponse model = new LanguageResponse();
-		model.setUuid(element.getUuid());
-		model.setLanguageTag(element.getLanguageTag());
-		model.setName(element.getName());
-		model.setNativeName(element.getNativeName());
-		return model;
 	}
 }
