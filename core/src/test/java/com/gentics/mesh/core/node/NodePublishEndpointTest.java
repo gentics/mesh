@@ -186,7 +186,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
+				schemaContainerVersionUuid, PUBLISHED, null), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		}
@@ -237,7 +237,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
+				schemaContainerVersionUuid, PUBLISHED, null), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		}

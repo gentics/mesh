@@ -54,10 +54,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param branchUuid
 	 * @param schemaContainerVersionUuid
 	 * @param type
+	 * @param microSchemaVersionHash optional hash over all microschema versions, which are used by the schema version
 	 * @return
 	 */
-	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type) {
-		return composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null);
+	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String microSchemaVersionHash) {
+		return composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null, microSchemaVersionHash);
 	}
 
 	/**
@@ -76,9 +77,10 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param schemaContainerVersionUuid
 	 * @param type
 	 * @param language
+	 * @param microSchemaVersionHash optional hash over all microschema versions, which are used by the schema version
 	 * @return
 	 */
-	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String language) {
+	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String language, String microSchemaVersionHash) {
 		Objects.requireNonNull(projectUuid, "The project uuid was not set");
 		Objects.requireNonNull(branchUuid, "The branch uuid was not set");
 		Objects.requireNonNull(schemaContainerVersionUuid, "The schema container version uuid was not set");
@@ -97,6 +99,10 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		if (language != null) {
 			indexName.append("-");
 			indexName.append(language.toLowerCase());
+		}
+		if (microSchemaVersionHash != null) {
+			indexName.append("-");
+			indexName.append(microSchemaVersionHash.toLowerCase());
 		}
 		return indexName.toString();
 	}
@@ -162,7 +168,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
+		return composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type, getSchemaContainerVersion().getMicroschemaVersionHash(null));
 	}
 
 	/**

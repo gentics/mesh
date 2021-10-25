@@ -79,15 +79,16 @@ public class PermissionChangedEventHandler implements EventHandler {
 		NodeContainerTransformer tf = (NodeContainerTransformer) meshEntities.nodeContent.getTransformer();
 		return meshHelper.getDb().tx(() -> ofNullable(meshHelper.getBoot().projectRoot().findByUuid(model.getProject().getUuid()))
 			.flatMap(project -> ofNullable(project.getNodeRoot().findByUuid(model.getUuid()))
-				.flatMap(node -> project.getBranchRoot().findAll().stream().map(MeshElement::getUuid)
-					.flatMap(branchUuid -> Util.latestVersionTypes()
-						.flatMap(type -> node.getGraphFieldContainers(branchUuid, type).stream()
+				.flatMap(node -> project.getBranchRoot().findAll().stream()
+					.flatMap(branch -> Util.latestVersionTypes()
+						.flatMap(type -> node.getGraphFieldContainers(branch.getUuid(), type).stream()
 							.map(container -> meshHelper.updateDocumentRequest(
 								NodeGraphFieldContainer.composeIndexName(
 									model.getProject().getUuid(),
-									branchUuid,
+									branch.getUuid(),
 									container.getSchemaContainerVersion().getUuid(),
-									type),
+									type,
+									container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)),
 								NodeGraphFieldContainer.composeDocumentId(model.getUuid(), container.getLanguageTag()),
 								tf.toPermissionPartial(node, type), complianceMode))))))
 			.collect(toFlowable()));

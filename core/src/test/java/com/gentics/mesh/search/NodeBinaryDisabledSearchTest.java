@@ -90,7 +90,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 		try (Tx tx = tx()) {
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-				schemaVersionUuid, ContainerType.DRAFT);
+				schemaVersionUuid, ContainerType.DRAFT, nodeA.getSchemaContainer().getLatestVersion().getMicroschemaVersionHash(null));
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse("The information should not have been added to the search document.",
@@ -137,7 +137,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 
 		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
+				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse("The binary content should not be part of the document",

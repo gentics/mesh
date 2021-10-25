@@ -148,7 +148,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				errorsDetected.add(e);
 			}
 
-			if (count % 500 == 0) {
+			if (count % 1 == 0) {
 				// Process the batch and reset it
 				log.info("Syncing batch with size: " + sqb.size());
 				db.tx(() -> {

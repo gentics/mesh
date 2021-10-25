@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -74,4 +75,5 @@ public interface SchemaContainerVersion
 	 */
 	boolean isAutoPurgeEnabled();
 
+	String getMicroschemaVersionHash(Branch branch);
 }

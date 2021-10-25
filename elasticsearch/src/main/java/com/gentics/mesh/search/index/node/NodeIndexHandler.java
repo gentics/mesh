@@ -115,12 +115,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
+		// TODO get microSchemaVersionHash
 		GenericEntryContext context = entry.getContext();
 		String projectUuid = context.getProjectUuid();
 		String branchUuid = context.getBranchUuid();
 		String schemaContainerVersionUuid = context.getSchemaContainerVersionUuid();
 		ContainerType type = context.getContainerType();
-		return NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
+		return NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null);
 	}
 
 	@Override
@@ -167,7 +168,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// Add all language specific indices (might be none)
 			schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 				String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), version, language);
+					.getUuid(), version, language, containerVersion.getMicroschemaVersionHash(branch));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
 				indexInfos.put(indexName, createIndexInfo(branch, schema, language, indexName, schema.getName() + "@" + schema.getVersion()));
@@ -176,7 +177,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// And all default indices
 			Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 				String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), version);
+					.getUuid(), version, containerVersion.getMicroschemaVersionHash(branch));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
 				indexInfos.put(indexName, createIndexInfo(branch, schema, null, indexName, schema.getName() + "@" + schema.getVersion()));
@@ -209,13 +210,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						version.getSchema().findOverriddenSearchLanguages()
 								.forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(type -> {
 									activeIndices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(),
-											branch.getUuid(), version.getUuid(), type, language));
+											branch.getUuid(), version.getUuid(), type, language, version.getMicroschemaVersionHash(branch)));
 								}));
 
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
 								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
-									type));
+									type, version.getMicroschemaVersionHash(branch)));
 						});
 					}
 				}
@@ -274,7 +275,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						type,
 						indexLanguages.contains(languageTag)
 							? languageTag
-							: null);
+							: null, version.getMicroschemaVersionHash(branch));
 				},
 					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())));
 			return map;
@@ -370,12 +371,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					branch.getUuid(),
 					version.getUuid(),
 					type,
-					lang));
+					lang, version.getMicroschemaVersionHash(branch)));
 			Stream<String> defaultIndex = Stream.of(NodeGraphFieldContainer.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				version.getUuid(),
-				type));
+				type, version.getMicroschemaVersionHash(branch)));
 			return Stream.concat(languageIndices, defaultIndex)
 				.collect(Collectors.toList());
 		});
@@ -590,7 +591,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
 		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
 			newContainer.getSchemaContainerVersion().getUuid(),
-			type);
+			type, newContainer.getSchemaContainerVersion().getMicroschemaVersionHash(null));
 		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
@@ -622,7 +623,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type, container.getSchemaContainerVersion().getMicroschemaVersionHash(null));
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
@@ -642,7 +643,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type, container.getSchemaContainerVersion().getMicroschemaVersionHash(null));
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
