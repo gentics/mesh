@@ -15,7 +15,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -54,16 +53,6 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	@Override
 	public Class<Project> getElementClass() {
 		return Project.class;
-	}
-
-	@Override
-	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Project.composeDocumentId(entry.getElementUuid());
-	}
-
-	@Override
-	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Project.composeIndexName();
 	}
 
 	@Override
