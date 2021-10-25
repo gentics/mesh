@@ -14,7 +14,12 @@ import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -23,18 +28,23 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -242,4 +252,32 @@ public class SchemaContainerVersionImpl extends
 		}
 	}
 
+	@Override
+	public String getMicroschemaVersionHash(Branch branch) {
+		Set<String> microschemaNames = getSchema().getFields().stream().filter(field -> FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE).flatMap(field -> {
+			String[] allowed = ((MicronodeFieldSchema) field).getAllowedMicroSchemas();
+			return Stream.of(allowed);
+		}).collect(Collectors.toSet());
+
+		if (microschemaNames.isEmpty()) {
+			return null;
+		} else {
+			Set<String> microschemaUuids = new TreeSet<>();
+			for (BranchMicroschemaEdge edge : branch.findAllLatestMicroschemaVersionEdges()) {
+				MicroschemaContainerVersion version = edge.getMicroschemaContainerVersion();
+				MicroschemaModel microschema = version.getSchema();
+				String microschemaName = microschema.getName();
+
+				if (microschemaNames.contains(microschemaName)) {
+					microschemaUuids.add(version.getUuid());
+				}
+			}
+
+			if (microschemaUuids.isEmpty()) {
+				return null;
+			} else {
+				return DigestUtils.md5Hex(microschemaUuids.stream().collect(Collectors.joining("|")));
+			}
+		}
+	}
 }

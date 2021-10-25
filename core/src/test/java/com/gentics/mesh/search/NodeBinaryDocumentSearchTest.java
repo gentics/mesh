@@ -88,7 +88,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
+				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, nodeB.getSchemaContainer().getLatestVersion().getMicroschemaVersionHash(null));
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
@@ -142,7 +142,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
+				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
