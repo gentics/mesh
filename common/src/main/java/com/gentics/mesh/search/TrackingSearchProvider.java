@@ -10,9 +10,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
-import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
-import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.Bulkable;
@@ -131,29 +128,6 @@ public class TrackingSearchProvider implements SearchProvider {
 			}
 		}
 		bulkRequests.addAll(entries);
-		return Completable.complete();
-	}
-
-	@Override
-	public Completable processBulkOld(List<? extends BulkEntry> entries) {
-		for (BulkEntry entry : entries) {
-			BulkEntry.Action action = entry.getBulkAction();
-			switch (action) {
-			case INDEX:
-				IndexBulkEntry ibe = (IndexBulkEntry) entry;
-				storeEvents.put(entry.getIndexName() + "-" + entry.getDocumentId(), ibe.getPayload());
-				break;
-			case DELETE:
-				deleteEvents.add(entry.getIndexName() + "-" + entry.getDocumentId());
-				break;
-			case UPDATE:
-				UpdateBulkEntry ube = (UpdateBulkEntry) entry;
-				updateEvents.put(entry.getIndexName() + "-" + entry.getDocumentId(), ube.getPayload());
-				break;
-			default:
-				break;
-			}
-		}
 		return Completable.complete();
 	}
 

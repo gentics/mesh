@@ -160,18 +160,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	}
 
 	/**
-	 * Return the index name for the given parameters.
-	 * 
-	 * @param projectUuid
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type, getSchemaContainerVersion().getMicroschemaVersionHash(null));
-	}
-
-	/**
 	 * Construct the document id using the given information.
 	 *
 	 * <p>

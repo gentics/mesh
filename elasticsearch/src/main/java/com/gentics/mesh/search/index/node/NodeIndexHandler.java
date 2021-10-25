@@ -2,12 +2,9 @@ package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.index.node.NodeIndexUtil.getDefaultSetting;
 import static com.gentics.mesh.search.index.node.NodeIndexUtil.getLanguageOverride;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,13 +31,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.MoveDocumentEntry;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
-import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
-import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
-import com.gentics.mesh.core.data.search.context.GenericEntryContext;
-import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
@@ -53,8 +43,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.Bucket;
+import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -63,8 +53,6 @@ import com.google.common.collect.Maps;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -106,22 +94,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Override
 	public String getType() {
 		return "node";
-	}
-
-	@Override
-	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return NodeGraphFieldContainer.composeDocumentId(entry.getElementUuid(), entry.getContext().getLanguageTag());
-	}
-
-	@Override
-	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		// TODO get microSchemaVersionHash
-		GenericEntryContext context = entry.getContext();
-		String projectUuid = context.getProjectUuid();
-		String branchUuid = context.getBranchUuid();
-		String schemaContainerVersionUuid = context.getSchemaContainerVersionUuid();
-		ContainerType type = context.getContainerType();
-		return NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null);
 	}
 
 	@Override
@@ -403,294 +375,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Completable store(Node node, UpdateDocumentEntry entry) {
-		return Completable.defer(() -> {
-			GenericEntryContext context = entry.getContext();
-			Set<Single<String>> obs = new HashSet<>();
-			db.tx(() -> {
-				store(obs, node, context);
-			});
-
-			// Now merge all store actions and refresh the affected indices
-			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct().ignoreElements();
-		});
-	}
-
-	public Observable<IndexBulkEntry> storeForBulk(Node node, UpdateDocumentEntry entry) {
-		GenericEntryContext context = entry.getContext();
-		return db.tx(() -> {
-			return storeForBulk(node, context);
-		});
-	}
-
-	/**
-	 * Step 1 - Check whether we need to handle all branches.
-	 * 
-	 * @param obs
-	 * @param node
-	 * @param context
-	 */
-	private void store(Set<Single<String>> obs, Node node, GenericEntryContext context) {
-		if (context.getBranchUuid() == null) {
-			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
-				store(obs, node, branch.getUuid(), context);
-			}
-		} else {
-			store(obs, node, context.getBranchUuid(), context);
-		}
-	}
-
-	/**
-	 * Step 2 - Check whether we need to handle all container types.
-	 * 
-	 * Add the possible store actions to the set of observables. This method will utilise as much of the provided context data if possible. It will also handle
-	 * fallback options and invoke store for all types if the container type has not been specified.
-	 * 
-	 * @param obs
-	 * @param node
-	 * @param branchUuid
-	 * @param context
-	 */
-	private void store(Set<Single<String>> obs, Node node, String branchUuid, GenericEntryContext context) {
-		if (context.getContainerType() == null) {
-			for (ContainerType type : ContainerType.values()) {
-				// We only want to store DRAFT and PUBLISHED Types
-				if (type == DRAFT || type == PUBLISHED) {
-					store(obs, node, branchUuid, type, context);
-				}
-			}
-		} else {
-			store(obs, node, branchUuid, context.getContainerType(), context);
-		}
-	}
-
-	/**
-	 * Step 3 - Check whether we need to handle all languages.
-	 * 
-	 * Invoke store for the possible set of containers. Utilise the given context settings as much as possible.
-	 * 
-	 * @param obs
-	 * @param node
-	 * @param branchUuid
-	 * @param type
-	 * @param context
-	 */
-	private void store(Set<Single<String>> obs, Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
-		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), branchUuid, type);
-			if (container == null) {
-				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
-					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
-			} else {
-				obs.add(storeContainer(container, branchUuid, type));
-			}
-		} else {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branchUuid, type)) {
-				obs.add(storeContainer(container, branchUuid, type));
-			}
-		}
-
-	}
-
-	/**
-	 * Step 1 - Check whether we need to handle all branches.
-	 * 
-	 * @param node
-	 * @param context
-	 * @return
-	 */
-	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
-		if (context.getBranchUuid() == null) {
-			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
-				obs.add(storeForBulk(node, branch.getUuid(), context));
-			}
-			return Observable.merge(obs);
-		} else {
-			return storeForBulk(node, context.getBranchUuid(), context);
-		}
-	}
-
-	/**
-	 * Step 2 - Check whether we need to handle all container types.
-	 * 
-	 * Add the possible store actions to the set of observables. This method will utilise as much of the provided context data if possible. It will also handle
-	 * fallback options and invoke store for all types if the container type has not been specified.
-	 * 
-	 * @param node
-	 * @param branchUuid
-	 * @param context
-	 * @return
-	 */
-	private Observable<IndexBulkEntry> storeForBulk(Node node, String branchUuid, GenericEntryContext context) {
-		if (context.getContainerType() == null) {
-			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (ContainerType type : ContainerType.values()) {
-				// We only want to store DRAFT and PUBLISHED Types
-				if (type == DRAFT || type == PUBLISHED) {
-					obs.add(storeForBulk(node, branchUuid, type, context));
-				}
-			}
-			return Observable.merge(obs);
-		} else {
-			return storeForBulk(node, branchUuid, context.getContainerType(), context);
-		}
-	}
-
-	/**
-	 * Step 3 - Check whether we need to handle all languages.
-	 * 
-	 * Invoke store for the possible set of containers. Utilise the given context settings as much as possible.
-	 * 
-	 * @param node
-	 * @param branchUuid
-	 * @param type
-	 * @param context
-	 * @return
-	 */
-	private Observable<IndexBulkEntry> storeForBulk(Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
-		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), branchUuid, type);
-			if (container == null) {
-				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
-					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
-			} else {
-				return storeContainerForBulk(container, branchUuid, type).toObservable();
-			}
-		} else {
-			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branchUuid, type)) {
-				obs.add(storeContainerForBulk(container, branchUuid, type).toObservable());
-			}
-			return Observable.merge(obs);
-		}
-		return Observable.empty();
-
-	}
-
-	/**
-	 * Remove the old container from its index and add the new container to the new index.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	public Completable move(MoveDocumentEntry entry) {
-		MoveEntryContext context = entry.getContext();
-		ContainerType type = context.getContainerType();
-		String branchUuid = context.getBranchUuid();
-		return storeContainer(context.getNewContainer(), branchUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
-			branchUuid, type));
-	}
-
-	public Observable<? extends BulkEntry> moveForBulk(MoveDocumentEntry entry) {
-		MoveEntryContext context = entry.getContext();
-		ContainerType type = context.getContainerType();
-		String releaseUuid = context.getBranchUuid();
-
-		NodeGraphFieldContainer newContainer = context.getNewContainer();
-		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
-		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
-			newContainer.getSchemaContainerVersion().getUuid(),
-			type, newContainer.getSchemaContainerVersion().getMicroschemaVersionHash(null));
-		String newLanguageTag = newContainer.getLanguageTag();
-		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
-		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		return Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
-
-	}
-
-	/**
-	 * Deletes the container for the index in which it should reside.
-	 * 
-	 * @param container
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	private Completable deleteContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		String projectUuid = container.getParentNode().getProject().getUuid();
-		return searchProvider.deleteDocument(container.getIndexName(projectUuid, branchUuid, type), container.getDocumentId());
-	}
-
-	/**
-	 * Generate an elasticsearch document object from the given container and stores it in the search index.
-	 * 
-	 * @param container
-	 * @param branchUuid
-	 * @param type
-	 * @return Single with affected index name
-	 */
-	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type, container.getSchemaContainerVersion().getMicroschemaVersionHash(null));
-		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
-		}
-		String languageTag = container.getLanguageTag();
-		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
-		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
-	}
-
-	/**
-	 * Generate an elasticsearch document object from the given container and stores it in the search index.
-	 * 
-	 * @param container
-	 * @param branchUuid
-	 * @param type
-	 * @return Single with the bulk entry
-	 */
-	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type, container.getSchemaContainerVersion().getMicroschemaVersionHash(null));
-		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
-		}
-		String languageTag = container.getLanguageTag();
-		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
-
-		return Single.just(new IndexBulkEntry(indexName, documentId, doc, complianceMode));
-	}
-
-	@Override
 	public GraphPermission getReadPermission(InternalActionContext ac) {
 		switch (ContainerType.forVersion(ac.getVersioningParameters().getVersion())) {
 		case PUBLISHED:
 			return GraphPermission.READ_PUBLISHED_PERM;
 		default:
 			return GraphPermission.READ_PERM;
-		}
-	}
-
-	/**
-	 * We need to handle permission update requests for nodes here since the action must affect multiple documents in multiple indices .
-	 */
-	@Override
-	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
-		String uuid = entry.getElementUuid();
-		Node node = elementLoader().apply(uuid);
-		if (node == null) {
-			// Not found
-			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
-		} else {
-			Project project = node.getProject();
-
-			List<UpdateBulkEntry> entries = new ArrayList<>();
-
-			// Determine which documents need to be updated. The node could have multiple documents in various indices.
-			for (Branch branch : project.getBranchRoot().findAll()) {
-				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
-					JsonObject json = getTransformer().toPermissionPartial(node, type);
-					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branch, type)) {
-						String indexName = container.getIndexName(project.getUuid(), branch.getUuid(), type);
-						String documentId = container.getDocumentId();
-						entries.add(new UpdateBulkEntry(indexName, documentId, json, complianceMode));
-					}
-				}
-			}
-
-			return Observable.fromIterable(entries);
 		}
 	}
 

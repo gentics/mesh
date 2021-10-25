@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -390,23 +389,6 @@ public class ElasticSearchProvider implements SearchProvider {
 					log.trace(bulkData);
 				}
 			}).flatMapCompletable(this::processBulk);
-	}
-
-	@Override
-	public Completable processBulkOld(List<? extends BulkEntry> entries) {
-		if (entries.isEmpty()) {
-			return Completable.complete();
-		}
-
-		String bulkData = entries.stream()
-			.map(e -> e.toBulkString(installationPrefix()))
-			.collect(Collectors.joining("\n")) + "\n";
-		if (log.isTraceEnabled()) {
-			log.trace("Using bulk payload:");
-			log.trace(bulkData);
-		}
-
-		return processBulk(bulkData);
 	}
 
 	@Override

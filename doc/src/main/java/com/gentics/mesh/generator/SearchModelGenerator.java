@@ -11,7 +11,6 @@ import static com.gentics.mesh.mock.TestMocks.mockRole;
 import static com.gentics.mesh.mock.TestMocks.mockSchemaContainer;
 import static com.gentics.mesh.mock.TestMocks.mockTag;
 import static com.gentics.mesh.mock.TestMocks.mockTagFamily;
-import static com.gentics.mesh.mock.TestMocks.mockUpdateDocumentEntry;
 import static com.gentics.mesh.mock.TestMocks.mockUser;
 import static org.mockito.Mockito.when;
 
@@ -35,22 +34,20 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.search.TrackingSearchProvider;
-import com.gentics.mesh.search.index.group.GroupIndexHandler;
-import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
+import com.gentics.mesh.search.index.group.GroupTransformer;
+import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
-import com.gentics.mesh.search.index.project.ProjectIndexHandler;
-import com.gentics.mesh.search.index.role.RoleIndexHandler;
-import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
-import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.gentics.mesh.search.index.project.ProjectTransformer;
+import com.gentics.mesh.search.index.role.RoleTransformer;
+import com.gentics.mesh.search.index.schema.SchemaTransformer;
+import com.gentics.mesh.search.index.tag.TagTransformer;
+import com.gentics.mesh.search.index.tagfamily.TagFamilyTransformer;
+import com.gentics.mesh.search.index.user.UserTransformer;
 
 import io.vertx.core.json.JsonObject;
 
@@ -64,8 +61,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 	public static File OUTPUT_ROOT_FOLDER = new File("src/main/docs/examples");
 
 	private ObjectMapper mapper = new ObjectMapper();
-
-	private TrackingSearchProvider provider;
 
 	private static MeshComponent meshDagger;
 
@@ -118,7 +113,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 			.searchProviderType(TRACKING)
 			.mesh(mesh)
 			.build();
-		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
 			writeNodeDocumentExample();
@@ -149,34 +143,26 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED).toCompletable()
-			.blockingAwait();
-		writeStoreEvent("node.search");
+		write(nodeIndexHandler.getTransformer().toDocument(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED), "node.search");
 	}
 
 	private void writeProjectDocumentExample() throws Exception {
 		User creator = mockUser("admin", "Admin", "", null);
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Project project = mockProject(user);
-		ProjectIndexHandler projectIndexHandler = meshDagger.projectIndexHandler();
-		projectIndexHandler.store(project, mockUpdateDocumentEntry()).blockingAwait();
-		writeStoreEvent("project.search");
+		write(new ProjectTransformer().toDocument(project), "project.search");
 	}
 
 	private void writeGroupDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Group group = mockGroup("adminGroup", user);
-		GroupIndexHandler groupIndexHandler = meshDagger.groupIndexHandler();
-		groupIndexHandler.store(group, mockUpdateDocumentEntry()).blockingAwait();
-		writeStoreEvent("group.search");
+		write(new GroupTransformer().toDocument(group), "group.search");
 	}
 
 	private void writeRoleDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Role role = mockRole("adminRole", user);
-		RoleIndexHandler roleIndexHandler = meshDagger.roleIndexHandler();
-		roleIndexHandler.store(role, mockUpdateDocumentEntry()).blockingAwait();
-		writeStoreEvent("role.search");
+		write(new RoleTransformer().toDocument(role), "role.search");
 	}
 
 	private void writeUserDocumentExample() throws Exception {
@@ -186,9 +172,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Group groupB = mockGroup("superEditors", user);
 		TraversalResult<? extends Group> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
 		Mockito.<TraversalResult<? extends Group>>when(user.getGroups()).thenReturn(result);
-		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
-		userIndexHandler.store(user, mockUpdateDocumentEntry()).blockingAwait();
-		writeStoreEvent("user.search");
+		write(new UserTransformer().toDocument(user), "user.search");
 	}
 
 	private void writeTagFamilyDocumentExample() throws Exception {
@@ -203,29 +187,21 @@ public class SearchModelGenerator extends AbstractGenerator {
 			return new TraversalResult<>(tagList);
 		});
 
-		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
-		UpdateDocumentEntry entry = mockUpdateDocumentEntry();
-
-		tagFamilyIndexHandler.store(tagFamily, entry).blockingAwait();
-		writeStoreEvent("tagFamily.search");
+		write(new TagFamilyTransformer().toDocument(tagFamily), "tagFamily.search");
 	}
 
 	private void writeSchemaDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 
-		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
-		searchIndexHandler.store(schemaContainer, mockUpdateDocumentEntry()).blockingAwait();
-		writeStoreEvent("schema.search");
+		write(new SchemaTransformer().toDocument(schemaContainer), "schema.search");
 	}
 
 	private void writeMicroschemaDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
 
-		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
-		searchIndexHandler.store(microschemaContainer, mockUpdateDocumentEntry()).blockingAwait();
-		writeStoreEvent("microschema.search");
+		write(new MicroschemaTransformer().toDocument(microschemaContainer), "microschema.search");
 	}
 
 	private void writeTagDocumentExample() throws Exception {
@@ -233,19 +209,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Project project = mockProject(user);
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
 		Tag tag = mockTag("red", user, tagFamily, project);
-		TagIndexHandler tagIndexHandler = meshDagger.tagIndexHandler();
-		UpdateDocumentEntry entry = mockUpdateDocumentEntry();
-		tagIndexHandler.store(tag, entry).blockingAwait();
-		writeStoreEvent("tag.search");
-	}
-
-	private void writeStoreEvent(String name) throws Exception {
-		JsonObject json = provider.getStoreEvents().values().iterator().next();
-		if (json == null) {
-			throw new RuntimeException("Could not find event to handle");
-		}
-		write(json, name);
-		provider.reset();
+		write(new TagTransformer().toDocument(tag), "tag.search");
 	}
 
 	private void write(JsonObject jsonObject, String filename) throws Exception {

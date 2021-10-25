@@ -19,8 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -31,9 +29,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 
 /**
  * Handler for the tag specific search index.
@@ -76,28 +72,6 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	public TagMappingProvider getMappingProvider() {
 		return mappingProvider;
-	}
-
-	@Override
-	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Tag.composeDocumentId(entry.getElementUuid());
-	}
-
-	@Override
-	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Tag.composeIndexName(entry.getContext().getProjectUuid());
-	}
-
-	@Override
-	public Completable store(Tag tag, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tag.getProject().getUuid());
-		return super.store(tag, entry);
-	}
-
-	@Override
-	public Observable<IndexBulkEntry> storeForBulk(Tag tag, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tag.getProject().getUuid());
-		return super.storeForBulk(tag, entry);
 	}
 
 	@Override

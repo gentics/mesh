@@ -7,7 +7,6 @@ import static com.gentics.mesh.example.ExampleUuids.LANGUAGE_UUID;
 import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO2_UUID;
-import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
 import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAGFAMILY_FUELS_UUID;
@@ -18,7 +17,6 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_2;
 import static com.gentics.mesh.example.ExampleUuids.UUID_3;
 import static com.gentics.mesh.example.ExampleUuids.UUID_4;
 import static com.gentics.mesh.example.ExampleUuids.UUID_5;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -57,8 +55,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -176,15 +172,6 @@ public final class TestMocks {
 		when(user.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(user.getElementVersion()).thenReturn(UUID_1);
 		return user;
-	}
-
-	public static UpdateDocumentEntry mockUpdateDocumentEntry() {
-		UpdateDocumentEntry entry = mock(UpdateDocumentEntry.class);
-		GenericEntryContextImpl context = new GenericEntryContextImpl();
-		context.setProjectUuid(PROJECT_DEMO_UUID);
-		when(entry.getContext()).thenReturn(context);
-		when(entry.getElementUuid()).thenReturn(UUID_3);
-		return entry;
 	}
 
 	public static TagFamily mockTagFamily(String name, User user, Project project) {
