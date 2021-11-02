@@ -320,10 +320,10 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 		throw new NotImplementedException("Updating is not directly supported for microschemas. Please start a microschema migration");
 	}
 
-    @Override
-    default boolean isLinkedToProject(HibMicroschema microschema, HibProject project) {
-        return contains(project, microschema);
-    }
+	@Override
+	default boolean isLinkedToProject(HibMicroschema microschema, HibProject project) {
+		return contains(project, microschema);
+	}
 
 	@Override
 	default void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch) {
