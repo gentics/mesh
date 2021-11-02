@@ -168,12 +168,6 @@ The Gentics Mesh core team consists of:
  <table align="center" style="width: 100%; max-width: 600px;">
   <tr>
    <td align="center">
-    <a href="https://github.com/Jotschi">
-     <img src="https://avatars.githubusercontent.com/Jotschi?size=150" width="150" /><br />
-     Johannes Schüth<br /><i>lead developer</i>
-    </a>
-   </td>
-   <td align="center">
     <a href="https://github.com/pschulzk">
      <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br />
      Philip Viktor Schulz-Klingauf<br /><i>UI/UX developer</i>

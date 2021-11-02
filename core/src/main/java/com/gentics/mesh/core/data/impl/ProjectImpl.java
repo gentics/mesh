@@ -200,14 +200,16 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
+		boolean permissionChanged = false;
 		if (recursive) {
-			getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-			getBranchRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-			getBaseNode().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+			permissionChanged = getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			permissionChanged = getBranchRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			permissionChanged = getBaseNode().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		}
-		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		return permissionChanged;
 	}
 
 	@Override
@@ -322,7 +324,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	public HibBaseElement getTagFamilyPermissionRoot() {
 		return getTagFamilyRoot();
 	}
-	
+
 	@Override
 	public HibBaseElement getNodePermissionRoot() {
 		return getNodeRoot();

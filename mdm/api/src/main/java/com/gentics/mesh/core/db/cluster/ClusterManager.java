@@ -49,4 +49,23 @@ public interface ClusterManager {
 	 */
 	Completable waitUntilWriteQuorumReached();
 
+	/**
+	 * Checks if the cluster storage is locked cluster-wide.
+	 * 
+	 * @return
+	 */
+	boolean isClusterTopologyLocked();
+
+	/**
+	 * Checks whether the local node is online and fully usable.
+	 * @return online status
+	 */
+	boolean isLocalNodeOnline();
+
+	/**
+	 * Checks if write quorum is reached
+	 *
+	 * @return
+	 */
+	boolean isWriteQuorumReached();
 }

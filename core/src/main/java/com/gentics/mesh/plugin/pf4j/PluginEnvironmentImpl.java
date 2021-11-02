@@ -88,8 +88,7 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 	@Override
 	public MeshRestClient createClient(String token) {
 		int port = options.getHttpServerOptions().getPort();
-		String host = options.getHttpServerOptions().getHost();
-
+		String host = determineHostString(options);
 		MeshRestClient client = MeshRestClient.create(new MeshRestClientConfig.Builder()
 			.setHost(host)
 			.setPort(port)

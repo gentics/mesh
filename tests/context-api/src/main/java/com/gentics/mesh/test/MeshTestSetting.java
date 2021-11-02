@@ -7,8 +7,9 @@ import static com.gentics.mesh.test.TestSize.PROJECT;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import com.gentics.mesh.test.SSLTestMode;
-import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.context.AWSTestMode;
+
+import static com.gentics.mesh.test.context.AWSTestMode.AWS;
 
 /**
  * 
@@ -22,6 +23,13 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	ElasticsearchTestMode elasticsearch() default NONE;
+
+	/**
+	 * Flag which indicates whether the AWS docker container should be started.
+	 *
+	 * @return
+	 */
+	AWSTestMode awsContainer() default AWS;
 
 	/**
 	 * Setting which indicates what size of test data should be created.

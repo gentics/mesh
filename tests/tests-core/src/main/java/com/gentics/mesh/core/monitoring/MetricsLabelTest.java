@@ -10,6 +10,8 @@ import org.junit.After;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.plugin.DummyPlugin;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.ElasticsearchTestMode;
@@ -35,6 +37,14 @@ public class MetricsLabelTest extends AbstractMeshTest {
 	@Test
 	public void testWebroot() {
 		testMetric(pathLabel("webroot"), client().webroot(PROJECT_NAME, "/"));
+	}
+
+	@Test
+	public void testWebrootField() throws IOException {
+		NodeResponse binaryNode = createBinaryContent().blockingGet();
+		binaryNode = uploadImage(binaryNode);
+		binaryNode = client().findNodeByUuid(PROJECT_NAME, binaryNode.getUuid(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)).blockingGet();
+		testMetric(pathLabel("webrootfield"), client().webrootField(PROJECT_NAME, "binary", binaryNode.getPath()));
 	}
 
 	@Test

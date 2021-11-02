@@ -56,8 +56,25 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 	 */
 	public void await(int timeoutValue, TimeUnit unit) throws InterruptedException {
 		if (!latch.await(timeoutValue, unit)) {
-			throw new RuntimeException("Container did not startup in time.");
+			throw new UnresponsiveContainerError();
 		}
 	}
 
+	/**
+	 * The container did not respond in time, so this error is thrown.
+	 * 
+	 * @author plyhun
+	 *
+	 */
+	public static class UnresponsiveContainerError extends RuntimeException {
+
+		private static final long serialVersionUID = -2553839280282994621L;
+
+		public UnresponsiveContainerError() {
+			this("Container did not startup in time.");
+		}
+		public UnresponsiveContainerError(String message) {
+			super(message);
+		}
+	}
 }

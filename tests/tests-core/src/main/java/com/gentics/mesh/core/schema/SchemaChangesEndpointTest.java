@@ -10,6 +10,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -20,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Objects;
 
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -28,6 +30,7 @@ import org.testcontainers.shaded.com.google.common.collect.Iterators;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -37,7 +40,6 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -48,6 +50,7 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -373,7 +376,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 1. Setup changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "label1234");
+		JsonObject elasticSearch = new JsonObject().put("test", "test");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "label1234", elasticSearch);
 		listOfChanges.getChanges().add(change);
 
 		// 3. Invoke migration
@@ -399,7 +403,113 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
 			assertEquals("label1234",
 				boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField").getLabel());
+			assertEquals(elasticSearch,
+					boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField").getElasticsearch());
+		}
+	}
 
+	@Test
+	public void testAddRestrictedField() throws Exception {
+		HibSchema schemaContainer = schemaContainer("content");
+		String schemaUuid = tx(() -> schemaContainer.getUuid());
+		HibSchemaVersion currentVersion = tx(() -> schemaContainer.getLatestVersion());
+		assertNull("The schema should not yet have any changes", tx(() -> currentVersion.getNextChange()));
+
+		// 1. Setup changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "string", "label1234", null);
+		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, new String[] {"5678"});
+
+		listOfChanges.getChanges().add(change);
+
+		// 2. Invoke migration
+		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
+		assertThat(status).matches("schema_changes_applied", "content");
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+
+		waitForJobs(() -> {
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+		}, COMPLETED, 1);
+
+		try (Tx tx = tx()) {
+			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+
+			// Assert that migration worked
+			HibNode node = content();
+			assertNotNull("The schema of the node should contain the new field schema",
+					boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField"));
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+				!Objects.equals(currentVersion.getVersion(), boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
+			assertArrayEquals(new String[] {"5678"}, boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField", StringFieldSchema.class).getAllowedValues());
+		}
+	}
+
+	@Test
+	public void testRemoveFieldRestriction() throws Exception {
+		HibSchema schemaContainer = schemaContainer("content");
+		String schemaUuid = tx(() -> schemaContainer.getUuid());
+		HibSchemaVersion currentVersion = tx(() -> schemaContainer.getLatestVersion());
+		assertNull("The schema should not yet have any changes", tx(() -> currentVersion.getNextChange()));
+
+		// 1. Setup changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "string", "label1234", null);
+		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, new String[] {"5678"});
+
+		listOfChanges.getChanges().add(change);
+
+		// 2. Invoke migration
+		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
+		assertThat(status).matches("schema_changes_applied", "content");
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+
+		waitForJobs(() -> {
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+		}, COMPLETED, 1);
+
+		try (Tx tx = tx()) {
+			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+
+			// Assert that migration worked
+			HibNode node = content();
+			assertNotNull("The schema of the node should contain the new field schema",
+				boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField"));
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+				!Objects.equals(currentVersion.getVersion(), boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
+			assertArrayEquals(new String[] {"5678"}, boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField", StringFieldSchema.class).getAllowedValues());
+		}
+
+		// 3. Unrestrict field
+		SchemaChangesListModel listOfChanges2 = new SchemaChangesListModel();
+		change = SchemaChangeModel.createFieldRestrictionChange("newField", null);
+
+		listOfChanges2.getChanges().add(change);
+
+		// 4. Invoke migration again
+		status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges2));
+		assertThat(status).matches("schema_changes_applied", "content");
+		SchemaResponse updatedSchema2 = call(() -> client().findSchemaByUuid(schemaUuid));
+
+		waitForJobs(() -> {
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema2.getVersion())));
+		}, COMPLETED, 1);
+
+		try (Tx tx = tx()) {
+			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+
+			// Assert that migration worked
+			HibNode node = content();
+			assertNotNull("The schema of the node should contain the new field schema",
+					boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField"));
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+				!Objects.equals(currentVersion.getVersion(), boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
+			assertArrayEquals(new String[] {}, boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField", StringFieldSchema.class).getAllowedValues());
 		}
 	}
 
@@ -421,7 +531,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 1. Setup changes
 			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null);
+			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null, null);
 			listOfChanges.getChanges().add(change);
 
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(containerUuid, listOfChanges));

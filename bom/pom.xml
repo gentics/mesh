@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.7-SNAPSHOT</version>
+		<version>1.7.21-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -24,13 +24,13 @@
 		<spring.security.version>4.2.13.RELEASE</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
-		<orientdb.version>3.1.6</orientdb.version>
+		<orientdb.version>3.1.11</orientdb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
 		<jackson.version>2.9.9</jackson.version>
 		<jackson-databind.version>2.9.10</jackson-databind.version>
 		<netty.version>4.1.42.Final</netty.version>
-		<tika.version>1.22</tika.version>
-		<aws.sdk.version>2.1.0</aws.sdk.version>
+		<tika.version>1.26</tika.version>
+		<aws.sdk.version>2.16.83</aws.sdk.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
@@ -179,6 +179,12 @@
 				<artifactId>jackson-module-jsonSchema</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
+			<!-- Default storage provider -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-service-aws-s3-storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- YAML -->
 			<dependency>
@@ -196,7 +202,7 @@
 			<dependency>
 				<groupId>com.hazelcast</groupId>
 				<artifactId>hazelcast-kubernetes</artifactId>
-				<version>1.2.2</version>
+				<version>1.5.6</version>
 			</dependency>
 
 			<!-- Test dependencies -->

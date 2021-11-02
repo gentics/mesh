@@ -29,6 +29,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Iterables;
 import com.syncleus.ferma.EdgeFrame;
@@ -87,7 +89,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				}
 				boot.get().contentDao().getFieldContainers(node, ContainerType.INITIAL).stream()
 					.forEach(content -> {
-						boolean mutated = fixNodeVersionOrder(context, toGraph(node), content);
+						boolean mutated = fixNodeVersionOrder(context, toGraph(node), toGraph(content));
 						if (mutated) {
 							fixedNodes.incrementAndGet();
 						}
@@ -99,7 +101,12 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			.forEach(conflict -> log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved."));
 	}
 
-	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, HibNodeFieldContainer initialContent) {
+	@Override
+	public boolean isAllowedInCluster(MeshOptions options) {
+		return false;
+	}
+
+	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, NodeGraphFieldContainer initialContent) {
 		ContentDao contentDao = boot.get().contentDao();
 		Set<VersionNumber> seenVersions = new HashSet<>();
 		TreeSet<HibNodeFieldContainer> versions = new TreeSet<>(Comparator.comparing(HibNodeFieldContainer::getVersion));

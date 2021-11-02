@@ -12,6 +12,8 @@ import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.handler.MonitoringCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.VersionHandlerImpl;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
@@ -43,13 +45,16 @@ public class MonitoringRoutes {
 
 	private final MonitoringCrudHandler monitoringCrudHandler;
 
+	private final LivenessManager liveness;
+
 	@Inject
-	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, AdminHandler adminHandler, MeshOptions options, MonitoringCrudHandler monitoringCrudHandler) {
+	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, AdminHandler adminHandler, MeshOptions options, MonitoringCrudHandler monitoringCrudHandler, LivenessManager liveness) {
 		this.router = new RouterImpl(vertx);
 		this.boot = boot;
 		this.apiRouter = new RouterImpl(vertx);
 		this.options = options;
 		this.monitoringCrudHandler = monitoringCrudHandler;
+		this.liveness = liveness;
 		VersionUtils.generateVersionMountpoints()
 			.forEach(mountPoint -> router.mountSubRouter(mountPoint, apiRouter));
 		this.adminHandler = adminHandler;
@@ -62,11 +67,12 @@ public class MonitoringRoutes {
 	public void init() {
 		router.route().handler(LoggerHandler.create());
 		router.route().last().handler(DefaultNotFoundHandler.create());
-		router.route().failureHandler(FailureHandler.create());
+		router.route().failureHandler(FailureHandler.create(liveness));
 
 		addMetrics();
 		addLive();
 		addReady();
+		addWritable();
 		addVersion();
 		addStatus();
 		addClusterStatus();
@@ -109,6 +115,12 @@ public class MonitoringRoutes {
 		apiRouter.route("/health/ready")
 			.method(GET)
 			.handler(monitoringCrudHandler::handleReady);
+	}
+
+	private void addWritable() {
+		apiRouter.route("/health/writable")
+			.method(GET)
+			.handler(monitoringCrudHandler::handleWritable);
 	}
 
 	private void addMetrics() {

@@ -17,6 +17,137 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.22]]
+== 1.6.22 (19.10.2021)
+
+icon:check[] Server: added a health/writable monitoring and REST endpoint to check whether mesh is in a writable state (e.g. the topology lock is not hold).
+
+icon:check[] Server: when a schema was updated with a new field with elastic search properties, these were ignored. This has been fixed now.
+
+icon:check[] Search: If ElasticSearch indices, which were originally created by Mesh were dropped, they would probably be re-created with the default mapping when Mesh
+stored a document in the index. This could cause the index to be not completely filled and also the mapping to be incorrect, so that search queries would fail to find
+documents. In order to detect and repair such situations, a periodic check has been added to Mesh, which will check existence and correctness of all required ElasticSearch
+indices. Missing indices will be created and incorrect indices will be dropped and re-created. Afterwards a full sync for the affected indices will be triggered. The check
+period can be configured with the new configuration setting `search.indexCheckInterval`, which defaults to 60_000 milliseconds. Setting the interval to 0 will disable the
+periodic check (not recommended).
+
+icon:plus[] Search: The index maintenance endpoints `/api/v1/search/sync` and `/api/v1/search/clear` have been extended with the query parameter `index`, which can be used
+to restrict the synchronized/cleared indices by a regular expression.
+
+icon:check[] Search: The index maintenance actions triggered via `/api/v1/search/sync` and `/api/v1/search/clear` will now be redirected to the current master instance,
+if the cluster coordinator is used.
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.1`, containing the language-related improvements and minor bugfixes.
+
+[[v1.6.21]]
+== 1.6.21 (12.10.2021)
+
+icon:check[] Search: When a full synchronization of the search indices was triggered, language specific indices were unnecessarily removed first. This has been changed,
+language specific indices will now be treated like all other indices during a full synchronization.
+
+icon:check[] Core: When performing an update for role permissions, an event was published even if the update actually did not change anything. A check has been added to
+only publish the event if permissions are actually changed.
+
+icon:check[] Core: When eventbus messages where published during execution of a job (e.g. a node migration), the events were not published and handled immediately,
+but were queued in memory and eventually published after the job execution. This caused high memory consumption during a node migration and also the elasticsearch
+indexing of migrated nodes to be delayed until after all nodes had been migrated. Execution of the jobs has been changed now, so that events will be published
+immediately to fix those issues.
+
+icon:check[] Core: The overall memory consumption during a migration job has been reduced.
+
+icon:check[] Clustering: Due to a bug in the vert.x eventbus system, elasticsearch sync operations were not only performed in the Mesh instance, were the
+causing data change actually happened, but on all Mesh instances, which caused unnecessary high load on the elasticsearch. This has been fixed with a workaround.
+
+icon:check[] Core: When deleting old versions of nodes, the related binaries were not deleted from the disk. This has been fixed now. Credits to https://github.com/kdima001.
+
+icon:check[] Core: When an OrientDB transaction repeatedly fails and runs into the retry limit, the original cause will now also be logged.
+
+icon:check[] Server: When an OutOfMemory was caught or one of the plugins (permanently) failed to initialize, mesh was still considered to be live. This has been fixed now.
+
+icon:check[] Clustering: When doing an offline update of Mesh in a cluster, the first instance of the cluster could not be started with the new Mesh version, because the new version should be written into OrientDB, which failed due to write quorum not reached. The initialization procedure has been changed now, so that executing the changelog and storing the Mesh version and DB revision will now only be started after the write quorum has been reached.
+
+[[v1.6.20]]
+== 1.6.20 (23.09.2021)
+
+icon:check[] Server: Mesh will now create a file `mesh.live` and touch it every 10 seconds as long as the instance is considered live. If an OutOfMemory is caught or one
+of the plugins (permanently) fails to initialize, mesh is considered no longer live and the file will not be touched any more.
+
+icon:check[] Server: The readiness probe will now also check the status of the local OrientDB storage. A mesh instance will only be considered "ready" if the local OrientDB storage is "ONLINE".
+
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
+
+[[v1.6.19]]
+== 1.6.19 (22.09.2021)
+
+icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
+was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
+
+[[v1.6.18]]
+== 1.6.18 (26.08.2021)
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.0`, containing the stability improvements, as well as the new feature of the node status (draft/updated/published/archived etc) filtering.
+
+[[v1.6.17]]
+== 1.6.17 (18.08.2021)
+
+icon:check[] Clustering: The high level changelog system has been extended to allow for specific changes to be executed in cluster mode.
+
+[[v1.6.16]]
+== 1.6.16 (10.08.2021)
+
+icon:check[] Core: A bug preventing the string schema field restrictions from being cleared, has been fixed.
+
+[[v1.6.15]]
+== 1.6.15 (21.06.2021)
+
+icon:check[] Core: The included Hazelcast-Kubernetes library has been updated to version `1.5.6`, containing a DNS resolving fix.
+
+[[v1.6.14]]
+== 1.6.14 (17.06.2021)
+
+icon:check[] AWS S3: A bug preventing the new image data from being stored into an existing `s3binary` container, has been fixed.
+icon:check[] AWS S3: An inability of changing permissions for the schema with an S3 field has been fixed.
+
+[[v1.6.13]]
+== 1.6.13 (03.06.2021)
+
+icon:plus[] Core: Added support for storing/referencing the binary data at Amazon Web Services S3 container.
+
+[[v1.6.12]]
+== 1.6.12 (02.06.2021)
+
+icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` environment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
+when the cluster topology changes, which will let reading requests pass and writing requests fail (immediately), instead of blocking all requests, which happens when the `cluster.topologyLockTimeout` is set to a positive value.
+
+icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
+status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
+
+icon:plus[] Clustering: The timeout for waiting to join the cluster (which includes the time for synchronizing the graphdb storage), which was hardcoded to 500_000 milliseconds, can now be configured with the setting `storage.clusterJoinTimeout` or the environment variable `MESH_GRAPH_CLUSTER_JOIN_TIMEOUT`.
+
+[[v1.6.11]]
+== 1.6.11 (12.05.2021)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.11`.
+
+[[v1.6.10]]
+== 1.6.10 (27.04.2021)
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
+
+icon:check[] Upload: More user-friendly message + HTTP 400 error on an attempt to upload an empty file.
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.26` to fix the PDF parser failing on files with some Adobe fonts.
+
+[[v1.6.9]]
+== 1.6.9 (11.03.2021)
+
+icon:plus[] Core: Added support for looking up the node field content by webroot path and a field name.
+
+icon:plus[] Rest: Added new endpoint for webroot path field lookup.
+
 [[v1.6.8]]
 == 1.6.8 (21.12.2020)
 
@@ -34,6 +165,17 @@ icon:plus[] GraphQL: Queries, that take longer than the configured threshold wil
 icon:check[] Jobs: A race condition within the job processing mechanism has been fixed. In some cases newly created jobs would not be automatically invoked. This has been fixed now.
 
 icon:check[] Search: Fixed potential `NullPointerException` that could occur during search index synchronization.
+
+[[v1.6.6.1]]
+== 1.6.6.1 (02.06.2021)
+
+icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` environment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
+when the cluster topology changes, which will let reading requests pass and writing requests fail (immediately), instead of blocking all requests, which happens when the `cluster.topologyLockTimeout` is set to a positive value.
+
+icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
+status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
+
+icon:plus[] Clustering: The timeout for waiting to join the cluster (which includes the time for synchronizing the graphdb storage), which was hardcoded to 500_000 milliseconds, can now be configured with the setting `storage.clusterJoinTimeout` or the environment variable `MESH_GRAPH_CLUSTER_JOIN_TIMEOUT`.
 
 [[v1.6.6]]
 == 1.6.6 (11.11.2020)
@@ -99,6 +241,58 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.17]]
+== 1.5.17 (23.09.2021)
+
+icon:check[] GraphQL: The `wait` parameter will now only wait for elasticsearch to be ready when a `query` option in `nodes` is actively used.
+Previously it would wait for elasticsearch even if it wasn't needed.
+
+[[v1.5.16]]
+== 1.5.16 (22.09.2021)
+
+icon:check[] Clustering: When recovering from a split-brain situation, the topology lock (which was raised, because nodes rejoined the cluster)
+was not always removed. This has been fixed, and some info log about the reason for the topology lock has been added.
+
+[[v1.5.15]]
+== 1.5.15 (26.08.2021)
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.0`, containing the stability improvements, as well as the new feature of the node status (draft/updated/published/archived etc) filtering.
+
+[[v1.5.14]]
+== 1.5.14 (10.08.2021)
+
+icon:check[] Core: A bug preventing the string schema field restrictions from being cleared, has been fixed.
+
+[[v1.5.13]]
+== 1.5.13 (21.06.2021)
+
+icon:check[] Core: The included Hazelcast-Kubernetes library has been updated to version `1.5.6`, containing a DNS resolving fix.
+
+[[v1.5.12]]
+== 1.5.12 (02.06.2021)
+
+icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` environment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
+when the cluster topology changes, which will let reading requests pass and writing requests fail (immediately), instead of blocking all requests, which happens when the `cluster.topologyLockTimeout` is set to a positive value.
+
+icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
+status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
+
+icon:plus[] Clustering: The timeout for waiting to join the cluster (which includes the time for synchronizing the graphdb storage), which was hardcoded to 500_000 milliseconds, can now be configured with the setting `storage.clusterJoinTimeout` or the environment variable `MESH_GRAPH_CLUSTER_JOIN_TIMEOUT`.
+
+[[v1.5.11]]
+== 1.5.11 (12.05.2021)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.11`.
+
+[[v1.5.10]]
+== 1.5.10 (27.04.2021)
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.26` to fix the PDF parser failing on files with some Adobe fonts.
+
 [[v1.5.9]]
 == 1.5.9 (18.12.2020)
 
@@ -153,6 +347,35 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.4.23]]
+== 1.4.23 (21.06.2021)
+
+icon:check[] Core: The included Hazelcast-Kubernetes library has been updated to version `1.5.6`, containing a DNS resolving fix.
+
+[[v1.4.22]]
+== 1.4.22 (02.06.2021)
+
+icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` environment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
+when the cluster topology changes, which will let reading requests pass and writing requests fail (immediately), instead of blocking all requests, which happens when the `cluster.topologyLockTimeout` is set to a positive value.
+
+icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
+status FAILED_RETRY and initialization will be retried as soon as OrientDB becomes available again.
+
+icon:plus[] Clustering: The timeout for waiting to join the cluster (which includes the time for synchronizing the graphdb storage), which was hardcoded to 500_000 milliseconds, can now be configured with the setting `storage.clusterJoinTimeout` or the environment variable `MESH_GRAPH_CLUSTER_JOIN_TIMEOUT`.
+
+[[v1.4.21]]
+== 1.4.21 (12.05.2021)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.11`.
+
+[[v1.4.20]]
+== 1.4.20 (27.04.2021)
+
+icon:check[] Plugins: An issue in the plugin environment has been fixed which prevents plugin REST handler starting over 0.0.0.0 host IP address, when the OS disallows it.
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.10`.
+
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.26` to fix the PDF parser failing on files with some Adobe fonts.
 
 [[v1.4.19]]
 == 1.4.19 (17.12.2020)

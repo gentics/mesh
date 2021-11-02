@@ -2,13 +2,14 @@ package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import io.vertx.core.json.JsonObject;
+import org.assertj.core.api.AbstractObjectArrayAssert;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -284,43 +285,102 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyStringFieldAllow() {
+		testApplyStringFieldAllowance(true);
+	}
+
+	@Test
+	public void testApplyNodeFieldAllow() {
+		testApplyNodeFieldAllowance(true);
+	}
+
+	@Test
+	public void testApplyNodeListFieldAllow() {
+		testApplyNodeListFieldAllowance(true);
+	}
+
+	@Test
+	public void testApplyMicronodeFieldAllow() {
+		testApplyMicronodeFieldAllowance(true);
+	}
+
+	@Test
+	public void testApplyMicronodeListFieldAllow() {
+		testApplyMicronodeListFieldAllowance(true);
+	}
+	
+	@Test
+	public void testApplyStringFieldDisallow() {
+		testApplyStringFieldAllowance(true);
+		testApplyStringFieldAllowance(false);
+	}
+
+	@Test
+	public void testApplyNodeFieldDisallow() {
+		testApplyNodeFieldAllowance(true);
+		testApplyNodeFieldAllowance(false);
+	}
+
+	@Test
+	public void testApplyNodeListFieldDisallow() {
+		testApplyNodeListFieldAllowance(true);
+		testApplyNodeListFieldAllowance(false);
+	}
+
+	@Test
+	public void testApplyMicronodeFieldDisallow() {
+		testApplyMicronodeFieldAllowance(true);
+		testApplyMicronodeFieldAllowance(false);
+	}
+
+	@Test
+	public void testApplyMicronodeListFieldDisallow() {
+		testApplyMicronodeListFieldAllowance(true);
+		testApplyMicronodeListFieldAllowance(false);
+	}
+	
+	private void testApplyStringFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringAllowField");
 			change.setType("string");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "one", "two", "three" });
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"one", "two", "three"} : null);
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("stringAllowField");
-			assertThat(updatedSchema.getField("stringAllowField", StringFieldSchema.class).getAllowedValues()).as("Allowed values").containsExactly(
-				"one",
-				"two", "three");
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("stringAllowField", StringFieldSchema.class).getAllowedValues()).as("Allowed values");
+			if (allow) {
+				assertion.containsExactly("one", "two", "three");
+			} else {
+				assertion.isNullOrEmpty();
+			}
 		}
 	}
 
-	@Test
-	public void testApplyNodeFieldAllow() {
+	private void testApplyNodeFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeAllowField");
 			change.setType("node");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"content"} : null);
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
-			assertThat(updatedSchema).hasField("nodeAllowField");
-			assertThat(updatedSchema.getField("nodeAllowField", NodeFieldSchema.class).getAllowedSchemas()).as("Allowed schemas")
-				.containsExactly("content");
+			assertThat(updatedSchema).hasField("nodeAllowField");			
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("nodeAllowField", NodeFieldSchema.class).getAllowedSchemas()).as("Allowed schemas");
+			if (allow) {
+				assertion.containsExactly("content");
+			} else {
+				assertion.isNullOrEmpty();
+			}
 		}
 	}
 
-	@Test
-	public void testApplyNodeListFieldAllow() {
+	private void testApplyNodeListFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
@@ -328,36 +388,42 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			change.setFieldName("nodeListFieldAllow");
 			change.setType("list");
 			change.setListType("node");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"content"} : null);
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("nodeListFieldAllow");
-			assertThat(updatedSchema.getField("nodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas")
-				.containsExactly("content");
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("nodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas");
+			if (allow) {
+				assertion.containsExactly("content");
+			} else {
+				assertion.isNullOrEmpty();
+			}
 		}
 	}
 
-	@Test
-	public void testApplyMicronodeFieldAllow() {
+	private void testApplyMicronodeFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeAllowField");
 			change.setType("micronode");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"content"} : null);
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("micronodeAllowField");
-			assertThat(updatedSchema.getField("micronodeAllowField", MicronodeFieldSchema.class).getAllowedMicroSchemas()).as("Allowed schemas")
-				.containsExactly("content");
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("micronodeAllowField", MicronodeFieldSchema.class).getAllowedMicroSchemas()).as("Allowed schemas");
+			if (allow) {
+				assertion.containsExactly("content");
+			} else {
+				assertion.isNullOrEmpty();
+			}
 		}
 	}
 
-	@Test
-	public void testApplyMicronodeListFieldAllow() {
+	private void testApplyMicronodeListFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
@@ -365,13 +431,17 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			change.setFieldName("micronodeListFieldAllow");
 			change.setType("list");
 			change.setListType("micronode");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, allow ? new String[] {"content"} : null);
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("micronodeListFieldAllow");
-			assertThat(updatedSchema.getField("micronodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas")
-				.containsExactly("content");
+			AbstractObjectArrayAssert<?, String> assertion = assertThat(updatedSchema.getField("micronodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas");
+			if (allow) {
+				assertion.containsExactly("content");
+			} else {
+				assertion.isNullOrEmpty();
+			}
 		}
 	}
 
@@ -379,7 +449,8 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
-			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123");
+			JsonObject elasticSearch = new JsonObject().put("test", "test");
+			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123", elasticSearch);
 
 			AddFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.updateFromRest(model);

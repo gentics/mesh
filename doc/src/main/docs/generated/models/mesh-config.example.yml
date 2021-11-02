@@ -6,6 +6,23 @@ updateCheck: true
 vertxOptions:
   workerPoolSize: 20
   eventPoolSize: 16
+s3options:
+  enabled: false
+  bucket: null
+  expirationTimeUpload: 60000
+  expirationTimeDownload: 360000
+  linkResolver: null
+  metadataWhitelist: null
+  parserLimit: 40000
+  region: null
+  secretAccessKey: null
+  accessKeyId: null
+  endpoint: null
+  s3cacheOptions:
+    bucket: null
+    expirationTimeDownload: 360000
+    expirationTimeUpload: 60000
+    region: null
 tempDirectory: "/opt/mesh/data/tmp"
 pluginDirectory: "plugins"
 pluginTimeout: 120
@@ -42,6 +59,7 @@ cluster:
   topologyLockTimeout: 0
   topologyLockDelay: 20000
   coordinatorTopology: "UNMANAGED"
+  topologyChangeReadOnly: false
 storage:
   directory: "data/graphdb"
   backupDirectory: "data/backup"
@@ -53,6 +71,7 @@ storage:
   txRetryLimit: 10
   txCommitTimeout: 0
   parameters: {}
+  clusterJoinTimeout: 500000
 search:
   url: "http://localhost:9200"
   username: null
@@ -81,6 +100,8 @@ search:
   mappingMode: "DYNAMIC"
   complianceMode: "ES_6"
   syncBatchSize: 50000
+  indexCheckInterval: 60000
+  indexMappingCacheTimeout: 3600000
 upload:
   byteLimit: 262144000
   directory: "data/binaryFiles"

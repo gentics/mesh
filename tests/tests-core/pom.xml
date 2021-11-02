@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-tests</artifactId>
-		<version>1.7.7-SNAPSHOT</version>
+		<version>1.7.21-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -28,6 +28,11 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>tests-mesh-rest-model</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.dagger</groupId>
+			<artifactId>dagger-compiler</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -56,4 +61,24 @@
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>com.google.dagger</groupId>
+						<artifactId>dagger-compiler</artifactId>
+						<version>${dagger.version}</version>
+						<optional>true</optional>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+	</build>
 </project>

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.endpoint.node;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import javax.inject.Inject;
@@ -10,38 +11,40 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * Handler for binary download requests.
+ * Handler for binary or s3binary download requests.
  */
 @Singleton
 public class BinaryDownloadHandler extends AbstractHandler {
 
 	private final MeshOptions options;
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
+	private final S3BinaryFieldResponseHandler s3binaryFieldResponseHandler;
 	private final Database db;
 
 	@Inject
-	public BinaryDownloadHandler(MeshOptions options, Database db, BinaryFieldResponseHandler binaryFieldResponseHandler) {
+	public BinaryDownloadHandler(MeshOptions options, Database db, BinaryFieldResponseHandler binaryFieldResponseHandler, S3BinaryFieldResponseHandler s3binaryFieldResponseHandler) {
 		this.options = options;
 		this.db = db;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
+		this.s3binaryFieldResponseHandler = s3binaryFieldResponseHandler;
 	}
 
 	/**
-	 * Handle the binary download request.
+	 * Handle the binary or s3binary download request.
 	 * 
 	 * @param rc
 	 *            The routing context for the request.
@@ -65,11 +68,25 @@ public class BinaryDownloadHandler extends AbstractHandler {
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
-			HibBinaryField field = fieldContainer.getBinary(fieldName);
-			if (field == null) {
-				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+			FieldSchema fieldSchema = fieldContainer.getSchemaContainerVersion().getSchema().getField(fieldName);
+			if (fieldSchema == null) {
+				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
-			binaryFieldResponseHandler.handle(rc, field);
+			if ((fieldSchema instanceof HibBinaryField)) {
+				HibBinaryField field = fieldContainer.getBinary(fieldName);
+				if (field == null) {
+					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+				}
+				binaryFieldResponseHandler.handle(rc, field);
+			} else if ((fieldSchema instanceof S3HibBinaryField)) {
+				S3HibBinaryField field = fieldContainer.getS3Binary(fieldName);
+				if (field == null) {
+					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
+				}
+				s3binaryFieldResponseHandler.handle(rc, node, HibClassConverter.toGraph(field));
+			} else {
+				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+			}
 		});
 	}
 }

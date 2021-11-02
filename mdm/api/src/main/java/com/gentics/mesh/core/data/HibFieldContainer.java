@@ -22,6 +22,8 @@ import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -123,7 +125,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibStringField createString(String key);
 
 	/**
-	 * Return the binary graph field for the given key.
+	 * Return the binary  field for the given key.
 	 * 
 	 * @param key
 	 * @return
@@ -138,6 +140,23 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	HibBinaryField createBinary(String fieldKey, HibBinary binary);
+
+	/**
+	 * Return the s3 binary  field for the given key.
+	 *
+	 * @param key
+	 * @return
+	 */
+	S3HibBinaryField getS3Binary(String key);
+
+	/**
+	 * Create an s3 binary field and use the given binary to be referenced by the field.
+	 *
+	 * @param fieldKey
+	 * @param binary
+	 * @return
+	 */
+	S3HibBinaryField createS3Binary(String fieldKey, S3HibBinary binary);
 
 	/**
 	 * Return the node graph field for the given key.

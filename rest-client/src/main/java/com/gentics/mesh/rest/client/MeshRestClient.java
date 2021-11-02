@@ -3,32 +3,7 @@ package com.gentics.mesh.rest.client;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
-import com.gentics.mesh.rest.client.method.AdminClientMethods;
-import com.gentics.mesh.rest.client.method.AdminPluginClientMethods;
-import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
-import com.gentics.mesh.rest.client.method.AuthClientMethods;
-import com.gentics.mesh.rest.client.method.BranchClientMethods;
-import com.gentics.mesh.rest.client.method.EventbusClientMethods;
-import com.gentics.mesh.rest.client.method.GenericHttpMethods;
-import com.gentics.mesh.rest.client.method.GraphQLClientMethods;
-import com.gentics.mesh.rest.client.method.GroupClientMethods;
-import com.gentics.mesh.rest.client.method.HealthClientMethods;
-import com.gentics.mesh.rest.client.method.JobClientMethods;
-import com.gentics.mesh.rest.client.method.LocalConfigMethods;
-import com.gentics.mesh.rest.client.method.MicroschemaClientMethods;
-import com.gentics.mesh.rest.client.method.NavRootClientMethods;
-import com.gentics.mesh.rest.client.method.NavigationClientMethods;
-import com.gentics.mesh.rest.client.method.NodeBinaryFieldClientMethods;
-import com.gentics.mesh.rest.client.method.NodeClientMethods;
-import com.gentics.mesh.rest.client.method.ProjectClientMethods;
-import com.gentics.mesh.rest.client.method.RoleClientMethods;
-import com.gentics.mesh.rest.client.method.SchemaClientMethods;
-import com.gentics.mesh.rest.client.method.SearchClientMethods;
-import com.gentics.mesh.rest.client.method.TagClientMethods;
-import com.gentics.mesh.rest.client.method.TagFamilyClientMethods;
-import com.gentics.mesh.rest.client.method.UserClientMethods;
-import com.gentics.mesh.rest.client.method.UtilityClientMethods;
-import com.gentics.mesh.rest.client.method.WebRootClientMethods;
+import com.gentics.mesh.rest.client.method.*;
 
 import okhttp3.OkHttpClient;
 
@@ -37,9 +12,9 @@ import okhttp3.OkHttpClient;
  */
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
-	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
+	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, NodeS3BinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
 	NavRootClientMethods, EventbusClientMethods, BranchClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods,
-	GenericHttpMethods, HealthClientMethods, LocalConfigMethods {
+	GenericHttpMethods, HealthClientMethods, LocalConfigMethods, WebRootFieldClientMethods {
 
 	/**
 	 * Create a new mesh rest client.

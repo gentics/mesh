@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.test.context.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
@@ -47,7 +48,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 	private EventAsserter eventAsserter;
 
-	private static MeshTestContext testContext = new MeshTestContext();
+	private static final MeshTestContext testContext = new MeshTestContext();
 	public static Runnable cleanupAction;
 	public MeshTestSetting settings;
 
@@ -63,7 +64,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 	public AbstractMultiESTest(ElasticsearchTestMode elasticsearch) throws Exception {
 		// Invoke tear down once when the setting changes
 		if (currentMode != null && currentMode != elasticsearch) {
-			testContext.tearDownOnce(settings);
+			getTestContext().tearDownOnce(settings);
 		}
 		MeshTestSetting clazzAnnotation = getClass().getAnnotation(MeshTestSetting.class);
 		this.settings = new MeshTestSettingProxy(clazzAnnotation, elasticsearch);
@@ -71,13 +72,13 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 		// Invoke setup once the first time and when the setting changes
 		if (currentMode == null || currentMode != elasticsearch) {
-			testContext.setupOnce(settings);
+			getTestContext().setupOnce(settings);
 		}
 		AbstractMultiESTest.currentMode = elasticsearch;
 		// Register the cleanup action with the current settings.
 		cleanupAction = () -> {
 			try {
-				testContext.tearDownOnce(settings);
+				getTestContext().tearDownOnce(settings);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -86,12 +87,12 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 	@Before
 	public void setup() throws Throwable {
-		testContext.setup(settings);
+		getTestContext().setup(settings);
 	}
 
 	@After
 	public void tearDown() throws Throwable {
-		testContext.tearDown(settings);
+		getTestContext().tearDown(settings);
 	}
 
 	/**
@@ -115,6 +116,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		@Override
 		public ElasticsearchTestMode elasticsearch() {
 			return elasticsearch;
+		}
+
+		@Override
+		public AWSTestMode awsContainer() {
+			return delegate.awsContainer();
 		}
 
 		@Override

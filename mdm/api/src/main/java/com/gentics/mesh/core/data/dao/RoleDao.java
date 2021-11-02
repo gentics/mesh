@@ -60,19 +60,21 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * Grant the given permissions on the vertex.
 	 *
 	 * @param role
-	 * @param vertex
+	 * @param element
 	 * @param permissions
+	 * @return
 	 */
-	void grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
+	boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the vertex.
 	 *
 	 * @param role
-	 * @param vertex
+	 * @param element
 	 * @param permissions
+	 * @return
 	 */
-	void revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
+	boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Return a set of permissions which the role is granting to the given element.

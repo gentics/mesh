@@ -2,25 +2,14 @@ package com.gentics.mesh.cli;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
-import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.changelog.HighLevelChange;
+import com.gentics.mesh.core.data.dao.*;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootResolver;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -29,8 +18,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import io.vertx.core.Vertx;
 
 /**
- * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
- * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
+ * The bootstrap initializer takes care of creating all mandatory dao elements for mesh. This includes the creation of ProjectDao, NodeDao,
+ * GroupDao, UserDao and various element such as the Admin User, Admin Group, Admin Role.
  */
 public interface BootstrapInitializer {
 
@@ -77,8 +66,11 @@ public interface BootstrapInitializer {
 	BinaryDao binaryDao();
 
 	@Getter
+	S3BinaryDao s3binaryDao();
+
+	@Getter
 	RootResolver rootResolver();
-	
+
 	/**
 	 * Return the anonymous role (if-present).
 	 * 
@@ -106,7 +98,7 @@ public interface BootstrapInitializer {
 
 	/**
 	 * Setup data, that is required for Mesh to operate on a basic level, e.g. admin user, group.
-	 * 
+	 *
 	 * @param meshOptions
 	 */
 	void initBasicData(MeshOptions meshOptions);
@@ -154,7 +146,7 @@ public interface BootstrapInitializer {
 
 	/**
 	 * Initialize the languages by loading the JSON file and creating the language elements.
-	 * 
+	 *
 	 * @throws JsonParseException
 	 * @throws JsonMappingException
 	 * @throws IOException
@@ -181,6 +173,15 @@ public interface BootstrapInitializer {
 	 *            Flags which will be used to control the post process actions
 	 */
 	void invokeChangelog(PostProcessFlags flags);
+
+	/**
+	 * Invoke the changelog system in a cluster. This will only apply changelog entries, which are allowed to be executed in a cluster.
+	 *
+	 * If any other changelog entries are found, which are not allowed to be executed in a cluster, this method will throw a RuntimeException
+	 * @param flags Flags which will be used to control the post process actions
+	 * @param configuration mesh options
+	 */
+	void invokeChangelogInCluster(PostProcessFlags flags, MeshOptions configuration);
 
 	/**
 	 * Return the list of all language tags.
@@ -247,7 +248,8 @@ public interface BootstrapInitializer {
 	/**
 	 * Check whether the execution of the changelog is required.
 	 * 
+	 * @param filter optional filter for high level changes to check (may be null to check all high level changes)
 	 * @return
 	 */
-	boolean requiresChangelog();
+	boolean requiresChangelog(Predicate<? super HighLevelChange> filter);
 }

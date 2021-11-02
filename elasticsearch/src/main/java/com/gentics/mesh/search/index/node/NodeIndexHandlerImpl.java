@@ -14,8 +14,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -253,6 +255,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(),
 								branch.getName());
 						}
+
+						// add all language specific indices
+						version.getSchema().findOverriddenSearchLanguages()
+								.forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(type -> {
+									activeIndices.add(ContentDao.composeIndexName(currentProject.getUuid(),
+											branch.getUuid(), version.getUuid(), type, language));
+								}));
+
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
 								.add(ContentDao.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
@@ -279,7 +289,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	}
 
 	@Override
-	public Flowable<SearchRequest> syncIndices() {
+	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
 		return Flowable.defer(() -> db.tx(tx -> {
 			ProjectDao projectDao = tx.projectDao();
 			BranchDao branchDao = tx.branchDao();
@@ -288,7 +298,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				.flatMap(project -> branchDao.findAll(project).stream()
 					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
 						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
-							.map(type -> diffAndSync(project, branch, version, type)))))
+							.map(type -> diffAndSync(project, branch, version, type, indexPattern)))))
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}
@@ -342,20 +352,27 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		}
 	}
 
-	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type) {
+	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Optional<Pattern> indexPattern) {
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
 		// Sync each bucket individually
 		Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
 		return buckets.flatMap(bucket -> {
 			log.info("Handling sync of {" + bucket + "}");
-			return diffAndSync(project, branch, version, type, bucket);
+			return diffAndSync(project, branch, version, type, bucket, indexPattern);
 		}, 1);
 	}
 
-	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Bucket bucket) {
+	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Bucket bucket, Optional<Pattern> indexPattern) {
 		return Flowable.defer(() -> {
 			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucket);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
+				.filter(indexName -> {
+					boolean match = indexPattern.orElse(MATCH_ALL).matcher(indexName).matches();
+					if (!match && log.isDebugEnabled()) {
+						log.debug("Index {} does not match pattern {} and will be omitted from sync", indexName, indexPattern);
+					}
+					return match;
+				})
 				.flatMap(indexName -> loadVersionsFromIndex(indexName, bucket).flatMapPublisher(sinkVersions -> {
 					log.debug("Handling index sync on handler {" + getClass().getName() + "} for bucket {" + bucket + "}");
 					Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());

@@ -59,9 +59,12 @@ import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.*;
+import com.gentics.mesh.core.data.dao.impl.*;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.ClusterAdminHandler;
 import com.gentics.mesh.core.endpoint.admin.OrientDBAdminHandler;
@@ -107,7 +110,7 @@ import dagger.Provides;
  */
 @Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
-	
+
 	@Binds
 	abstract OrientDBClusterManager orientDBClusterManager(OrientDBClusterManagerImpl e);
 
@@ -116,10 +119,10 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);
-	
+
 	@Binds
 	abstract GraphDatabase bindGraphDatabase(OrientDBDatabase e);
-	
+
 	@Binds
 	abstract BootstrapInitializer bindBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
 
@@ -134,7 +137,7 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract ClusterAdminHandler bindClusterAdminHandler(OrientDBAdminHandler e);
-	
+
 	@Binds
 	abstract AdminHandler bindAdminHandler(ClusterAdminHandler e);
 
@@ -143,10 +146,6 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract RequestDelegator bindRequestDelegator(ClusterEnabledRequestDelegatorImpl e);
-
-	@Binds
-	abstract Binaries bindBinaries(BinariesImpl e);
-
 	// DAOs
 
 	@Binds
@@ -193,7 +192,7 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract LanguageDaoWrapper bindLanguageDaoWrapper(LanguageDaoWrapperImpl e);
-	
+
 	@Binds
 	abstract UserDao bindUserDao(UserDaoWrapper e);
 
@@ -222,6 +221,9 @@ public abstract class OrientDBModule {
 	abstract TagFamilyDao bindTagFamilyDao(TagFamilyDaoWrapper e);
 
 	@Binds
+	abstract S3BinaryDaoWrapper s3bindBinaryDao(S3BinaryDaoWrapperImpl e);
+
+	@Binds
 	abstract BinaryDao bindBinaryDao(BinaryDaoWrapper e);
 
 	@Binds
@@ -245,6 +247,9 @@ public abstract class OrientDBModule {
 	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
 
 	@Binds
+	abstract ClusterManager bindClusterManager(OrientDBClusterManager e);
+
+	@Binds
 	abstract OrientDBBootstrapInitializer orientDBBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
 
 	@Provides
@@ -255,11 +260,11 @@ public abstract class OrientDBModule {
 			throw new IllegalArgumentException("Unsupported MeshOptions class:" + meshOptions.getClass().getCanonicalName());
 		}
 	}
-	
+
 	/**
 	 * Return the hazelcast instance which is fetched from OrientDB cluster manager.
-	 * 
-	 * @param db
+	 *
+	 * @param clusterManager
 	 * @return
 	 */
 	@Provides

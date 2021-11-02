@@ -13,7 +13,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import com.gentics.mesh.test.helper.ExpectedEvent;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -64,9 +66,10 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testFilesystemDeployment() throws Exception {
 		setPluginBaseDir("abc");
-		String id = pluginManager().deploy(Paths.get(BASIC_PATH)).blockingGet();
-		assertEquals("basic", id);
-		waitForPluginRegistration();
+		try (ExpectedEvent registration = expectEvent(MeshEvent.PLUGIN_REGISTERED, 20_000)) {
+			String id = pluginManager().deploy(Paths.get(BASIC_PATH)).blockingGet();
+			assertEquals("basic", id);
+		}
 
 		for (int i = 0; i < 2; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -81,7 +84,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testStartupDeployment() throws IOException {
+	public void testStartupDeployment() throws IOException, TimeoutException {
 		MeshPluginManager manager = pluginManager();
 		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.jar"));
 		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "duplicate-plugin.jar"));
@@ -102,9 +105,10 @@ public class PluginManagerTest extends AbstractPluginTest {
 		assertEquals(0, manager.getPluginIds().size());
 
 		manager.start();
-		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals(2, manager.getPluginIds().size());
-		waitForPluginRegistration();
+		try (ExpectedEvent registration = expectEvent(MeshEvent.PLUGIN_REGISTERED, 20_000)) {
+			manager.deployExistingPluginFiles().blockingAwait();
+			assertEquals(2, manager.getPluginIds().size());
+		}
 
 		// Assert that plugins were registered and initialized
 		String queryName = "plugin/graphql-plugin-query";
@@ -121,18 +125,20 @@ public class PluginManagerTest extends AbstractPluginTest {
 	 * @throws IOException
 	 */
 	@Test
-	public void testPluginAuth() throws IOException {
+	public void testPluginAuth() throws IOException, TimeoutException {
 		MeshPluginManager manager = pluginManager();
-		manager.deploy(ClientPlugin.class, "client").blockingAwait();
-		waitForPluginRegistration();
+		try (ExpectedEvent registration = expectEvent(MeshEvent.PLUGIN_REGISTERED, 20_000)) {
+			manager.deploy(ClientPlugin.class, "client").blockingAwait();
+		}
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
 	}
 
 	@Test
-	public void testClientFlooding() throws GenericRestException, IOException {
-		pluginManager().deploy(ClientPlugin.class, "client").blockingAwait();
-		waitForPluginRegistration();
+	public void testClientFlooding() throws GenericRestException, IOException, TimeoutException {
+		try (ExpectedEvent registration = expectEvent(MeshEvent.PLUGIN_REGISTERED, 20_000)) {
+			pluginManager().deploy(ClientPlugin.class, "client").blockingAwait();
+		}
 
 		int before = threadCount();
 		for (int i = 0; i < 200; i++) {
@@ -151,9 +157,10 @@ public class PluginManagerTest extends AbstractPluginTest {
 	 * @throws IOException
 	 */
 	@Test
-	public void testClientAPI() throws IOException {
-		pluginManager().deploy(ClientPlugin.class, "client").blockingAwait();
-		waitForPluginRegistration();
+	public void testClientAPI() throws IOException, TimeoutException {
+		try (ExpectedEvent registration = expectEvent(MeshEvent.PLUGIN_REGISTERED, 20_000)) {
+			pluginManager().deploy(ClientPlugin.class, "client").blockingAwait();
+		}
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("testabc");
@@ -191,11 +198,12 @@ public class PluginManagerTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testJavaDeployment() throws IOException {
+	public void testJavaDeployment() throws IOException, TimeoutException {
 		MeshPluginManager manager = pluginManager();
-		manager.deploy(DummyPlugin.class, "dummy").blockingAwait();
-		assertEquals(1, manager.getPluginIds().size());
-		waitForPluginRegistration();
+		try (ExpectedEvent registration = expectEvent(MeshEvent.PLUGIN_REGISTERED, 20_000)) {
+			manager.deploy(DummyPlugin.class, "dummy").blockingAwait();
+			assertEquals(1, manager.getPluginIds().size());
+		}
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("test");
@@ -228,29 +236,33 @@ public class PluginManagerTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testInitializeTimeoutPlugin() {
+	public void testInitializeTimeoutPlugin() throws TimeoutException {
 		options().setPluginTimeout(1);
 		MeshPluginManager manager = pluginManager();
-		manager.deploy(InitializeTimeoutPlugin.class, "timeout").blockingAwait();
-		waitForEvent(MeshEvent.PLUGIN_DEPLOY_FAILED);
+		try (ExpectedEvent failed = expectEvent(MeshEvent.PLUGIN_DEPLOY_FAILED, 10_000)) {
+			manager.deploy(InitializeTimeoutPlugin.class, "timeout").blockingAwait();
+		}
 		assertEquals(1, manager.getPluginIds().size());
 		PluginStatus status = manager.getStatus(manager.getPluginIds().iterator().next());
 		assertEquals(FAILED, status);
 	}
 
 	@Test
-	public void testRedeployAfterInitFailure() {
+	public void testRedeployAfterInitFailure() throws TimeoutException {
 		MeshPluginManager manager = pluginManager();
-		manager.deploy(FailingInitializePlugin.class, "failing").blockingAwait();
-		waitForPluginRegistration();
+		try (ExpectedEvent failed = expectEvent(MeshEvent.PLUGIN_DEPLOY_FAILED, 10_000)) {
+			manager.deploy(FailingInitializePlugin.class, "failing").blockingAwait();
+		}
 		PluginStatus status = manager.getStatus(manager.getPluginIds().iterator().next());
 		assertEquals(FAILED, status);
 		assertEquals(1, manager.getPluginIds().size());
 		assertEquals(1, manager.getPluginsMap().size());
 
-		manager.deploy(SucceedingPlugin.class, "succeeding").blockingAwait();
-		assertEquals(2, manager.getPluginIds().size());
-		assertEquals(2, manager.getPluginsMap().size());
+		try (ExpectedEvent registration = expectEvent(MeshEvent.PLUGIN_REGISTERED, 20_000)) {
+			manager.deploy(SucceedingPlugin.class, "succeeding").blockingAwait();
+			assertEquals(2, manager.getPluginIds().size());
+			assertEquals(2, manager.getPluginsMap().size());
+		}
 	}
 
 }

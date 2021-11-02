@@ -45,16 +45,18 @@ public interface HibBaseElement extends HibElement {
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
 	 */
-	default void applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
+	default boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
 			Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
 		RoleDao roleDao = Tx.get().roleDao();
-		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new InternalPermission[permissionsToGrant.size()]));
-		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()]));
+		boolean permissionChanged = false;
+		permissionChanged = roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new InternalPermission[permissionsToGrant.size()])) || permissionChanged;
+		permissionChanged = roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()])) || permissionChanged;
 
-		if (this instanceof HibCoreElement) {
+		if (permissionChanged && this instanceof HibCoreElement) {
 			HibCoreElement<?> coreVertex = (HibCoreElement<?>) this;
 			batch.add(coreVertex.onPermissionChanged(role));
 		}
-		// TODO Also handle root elements - We need to add a dedicated event in those cases.		
+		// TODO Also handle root elements - We need to add a dedicated event in those cases.
+		return permissionChanged;
 	}
 }

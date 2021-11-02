@@ -34,6 +34,7 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
+	public static final String MESH_LIVE_PATH_ENV = "MESH_LIVE_PATH";
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
@@ -80,6 +81,10 @@ public abstract class MeshOptions implements Option {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("File upload options.")
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("S3 options.")
+	private S3Options s3options = new S3Options();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Authentication options.")
@@ -146,6 +151,10 @@ public abstract class MeshOptions implements Option {
 	private String lockPath = "mesh.lock";
 
 	@JsonIgnore
+	@EnvironmentVariable(name = MESH_LIVE_PATH_ENV, description = "Path to the mesh live file.")
+	private String livePath = "mesh.live";
+
+	@JsonIgnore
 	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_ENV, description = "Password which will be used during initial admin user creation.")
 	private String initialAdminPassword = PasswordUtil.humanPassword();
 
@@ -207,6 +216,20 @@ public abstract class MeshOptions implements Option {
 		return this;
 	}
 
+	@JsonProperty("s3options")
+	public S3Options getS3Options() {
+		if (s3options == null) {
+			s3options = new S3Options();
+		}
+		return s3options;
+	}
+
+	@Setter
+	public MeshOptions setS3Options(S3Options s3options) {
+		this.s3options = s3options;
+		return this;
+	}
+
 	@JsonProperty("httpServer")
 	public HttpServerConfig getHttpServerOptions() {
 		return httpServerOptions;
@@ -228,7 +251,7 @@ public abstract class MeshOptions implements Option {
 		this.monitoringOptions = monitoringOptions;
 		return this;
 	}
-	
+
 
 	/**
 	 * Get the graphql options
@@ -406,6 +429,17 @@ public abstract class MeshOptions implements Option {
 	}
 
 	@JsonIgnore
+	public String getLivePath() {
+		return livePath;
+	}
+
+	@JsonIgnore
+	public MeshOptions setLivePath(String livePath) {
+		this.livePath = livePath;
+		return this;
+	}
+
+	@JsonIgnore
 	public String getAdminPassword() {
 		return adminPassword;
 	}
@@ -495,6 +529,9 @@ public abstract class MeshOptions implements Option {
 		}
 		if (getContentOptions() != null) {
 			getContentOptions().validate(this);
+		}
+		if (getS3Options() != null) {
+			getS3Options().validate(this);
 		}
 		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
 		if (getVersionPurgeMaxBatchSize() <= 0) {

@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphdb.cluster;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
@@ -55,9 +55,9 @@ import io.vertx.reactivex.core.TimeoutStream;
 
 /**
  * Manager for OrientDB cluster and server features.
- * 
+ *
  * The manager handles the OrientDB cluster/server configuration, OrientDB studio plugin installation, OrientDB server startup.
- * 
+ *
  * Additionally the manager also provides methods to access the cluster information. The {@link TopologyEventBridge} is installed by the manager during the
  * startup to handle cluster specific events.
  */
@@ -113,7 +113,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	/**
 	 * Create the needed configuration files in the filesystem if they can't be located.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Override
@@ -192,7 +192,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	/**
 	 * Determine the OrientDB Node name.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getNodeName() {
@@ -292,7 +292,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	/**
 	 * Check the orientdb plugin directory and extract the orientdb studio plugin if needed.
-	 * 
+	 *
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
@@ -335,7 +335,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	/**
 	 * Query the OrientDB API and load cluster information which will be added to a {@link ClusterStatusResponse} response.
-	 * 
+	 *
 	 * @return Cluster status REST response
 	 */
 	public ClusterStatusResponse getClusterStatus() {
@@ -386,7 +386,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	/**
 	 * Start the OrientDB studio server by extracting the studio plugin zipfile.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Override
@@ -447,15 +447,15 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	/**
 	 * Join the cluster and block until the graph database has been received.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 */
 	private void joinCluster() throws InterruptedException {
 		// Wait until another node joined the cluster
-		int timeout = 500;
-		log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
-		if (!topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
-			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} seconds.");
+		int timeout = options.getStorageOptions().getClusterJoinTimeout();
+		log.info("Waiting {" + timeout + "} milliseconds for other nodes in the cluster.");
+		if (!topologyEventBridge.waitForMainGraphDB(timeout, MILLISECONDS)) {
+			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} milliseconds.");
 		}
 	}
 
@@ -478,7 +478,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	/**
 	 * Return the graph database storage options.
-	 * 
+	 *
 	 * @return
 	 */
 	public GraphStorageOptions storageOptions() {
@@ -504,6 +504,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 	 * @see TopologyEventBridge#isClusterTopologyLocked()
 	 * @return
 	 */
+	@Override
 	public boolean isClusterTopologyLocked() {
 		if (topologyEventBridge == null) {
 			return false;
@@ -515,20 +516,45 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
 		return Completable.defer(() -> {
-			if (writeQuorumReached()) {
+			if (isWriteQuorumReached()) {
 				return Completable.complete();
 			}
 			return Observable.using(
 				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
 				TimeoutStream::toObservable,
 				TimeoutStream::cancel).takeUntil(ignore -> {
-					return writeQuorumReached();
+					return isWriteQuorumReached();
 				})
 				.ignoreElements();
 		});
 	}
 
-	private boolean writeQuorumReached() {
+	@Override
+	public boolean isLocalNodeOnline() {
+		if (isClusteringEnabled) {
+			if (server != null && server.getDistributedManager() != null) {
+				ODistributedServerManager distributedManager = server.getDistributedManager();
+				String localNodeName = distributedManager.getLocalNodeName();
+				boolean online = distributedManager.isNodeOnline(localNodeName, GraphStorage.DB_NAME);
+				if (log.isDebugEnabled()) {
+					log.debug("State of DB {} in local node {} is {}", GraphStorage.DB_NAME, localNodeName, online);
+				}
+				return online;
+			} else {
+				log.error("Could not check DB state of local node {}");
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
+
+	@Override
+	public boolean isWriteQuorumReached() {
+		if (!isClusteringEnabled) {
+			return true;
+		}
+
 		try {
 			// The server and manager may not yet be initialized. We need to wait until those are ready
 			if (server != null && server.getDistributedManager() != null) {

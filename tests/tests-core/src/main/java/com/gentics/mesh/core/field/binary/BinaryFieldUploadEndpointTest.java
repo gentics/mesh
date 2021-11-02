@@ -328,7 +328,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		assertEquals(13.920556, metadata2.getLocation().getLon().doubleValue(), 0.01);
 		assertEquals(47.6725, metadata2.getLocation().getLat().doubleValue(), 0.01);
 		assertEquals(1727, metadata2.getLocation().getAlt().intValue());
-		assertEquals("4.2 mm", metadata2.get("Focal_Length"));
+		assertEquals("4.2", metadata2.get("exif_FocalLength"));
 		assertNull("The jpeg should not have any extracted content.", binaryField.getPlainText());
 
 		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();

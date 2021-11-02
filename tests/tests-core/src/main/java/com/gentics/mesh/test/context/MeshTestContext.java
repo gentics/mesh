@@ -51,6 +51,8 @@ import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.S3CacheOptions;
+import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
@@ -67,6 +69,7 @@ import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.docker.AWSContainer;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.MeshAssert;
@@ -126,7 +129,7 @@ public class MeshTestContext extends TestWatcher {
 	private Consumer<MeshOptions> optionChanger = noopConsumer();
 
 	private Mesh mesh;
-	
+
 	private MeshTestContextProvider meshTestContextProvider;
 
 	@Override
@@ -342,7 +345,7 @@ public class MeshTestContext extends TestWatcher {
 				File serverPem = MeshTestHelper.extractResource("/client-ssl/server.pem");
 				File alicePem = MeshTestHelper.extractResource("/client-ssl/alice.pem");
 				File aliceKey = MeshTestHelper.extractResource("/client-ssl/alice.key");
-				
+
 				httpsConfigBuilder.addTrustedCA(serverPem.getAbsolutePath());
 				httpsConfigBuilder.setClientCert(alicePem.getAbsolutePath());
 				httpsConfigBuilder.setClientKey(aliceKey.getAbsolutePath());
@@ -444,9 +447,9 @@ public class MeshTestContext extends TestWatcher {
 			meshDagger.database().clear();
 		} else {
 			meshDagger.database().stop();
-			
+
 			meshTestContextProvider.getInstanceProvider().cleanupPhysicalStorage();
-			
+
 			meshDagger.database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
@@ -481,12 +484,16 @@ public class MeshTestContext extends TestWatcher {
 		if (settings == null) {
 			throw new RuntimeException("Settings could not be found. Did you forget to add the @MeshTestSetting annotation to your test?");
 		}
-		
+
 		meshTestContextProvider = MeshTestContextProvider.getProvider();
-		
+
 		MeshInstanceProvider<? extends MeshOptions> meshInstanceProvider = meshTestContextProvider.getInstanceProvider();
-		
+
 		MeshOptions meshOptions = meshInstanceProvider.getOptions();
+
+
+		// disable periodic index check
+		meshOptions.getSearchOptions().setIndexCheckInterval(0);
 
 		// Clustering options
 		if (settings.clusterMode()) {
@@ -522,7 +529,7 @@ public class MeshTestContext extends TestWatcher {
 		case NORMAL:
 			File certPem = MeshTestHelper.extractResource("/ssl/cert.pem");
 			File keyPem = MeshTestHelper.extractResource("/ssl/key.pem");
-			
+
 			httpOptions.setSsl(true);
 			httpOptions.setSslPort(httpsPort);
 			httpOptions.setCertPath(certPem.getAbsolutePath());
@@ -532,7 +539,7 @@ public class MeshTestContext extends TestWatcher {
 		case CLIENT_CERT_REQUEST:
 			File serverPem = MeshTestHelper.extractResource("/client-ssl/server.pem");
 			File serverKey = MeshTestHelper.extractResource("/server.key");
-			
+
 			httpOptions.setClientAuthMode(ClientAuth.REQUEST);
 			httpOptions.setSsl(true);
 			httpOptions.setSslPort(httpsPort);
@@ -544,7 +551,7 @@ public class MeshTestContext extends TestWatcher {
 		case CLIENT_CERT_REQUIRED:
 			serverPem = MeshTestHelper.extractResource("/client-ssl/server.pem");
 			serverKey = MeshTestHelper.extractResource("/client-ssl/server.key");
-			
+
 			httpOptions.setClientAuthMode(ClientAuth.REQUIRED);
 			httpOptions.setSsl(true);
 			httpOptions.setSslPort(httpsPort);
@@ -560,6 +567,7 @@ public class MeshTestContext extends TestWatcher {
 		meshInstanceProvider.initStorage(settings);
 
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
+		S3Options s3Options = meshOptions.getS3Options();
 		searchOptions.setTimeout(10_000L);
 
 		String version = ElasticsearchContainer.VERSION_ES6;
@@ -616,6 +624,26 @@ public class MeshTestContext extends TestWatcher {
 		default:
 			break;
 		}
+		switch (settings.awsContainer()) {
+			case AWS:
+				break;
+			case MINIO:
+				AWSContainer awsContainer = new AWSContainer(
+						new AWSContainer.CredentialsProvider("accessKey", "secretKey"));
+				awsContainer.start();
+				String ACCESS_KEY = "accessKey";
+				String SECRET_KEY = "secretKey";
+				s3Options.setEnabled(true);
+				s3Options.setAccessKeyId(ACCESS_KEY);
+				s3Options.setBucket("test-bucket");
+				S3CacheOptions s3CacheOptions = new S3CacheOptions();
+				s3CacheOptions.setBucket("test-cache-bucket");
+				s3Options.setS3CacheOptions(s3CacheOptions);
+				s3Options.setSecretAccessKey(SECRET_KEY);
+				s3Options.setRegion("eu-central-1");
+				s3Options.setEndpoint("http://" + awsContainer.getHostAddress());
+				break;
+		}
 
 		if (settings.useKeycloak()) {
 			keycloak = new KeycloakContainer("/keycloak/realm.json").waitingFor(Wait.forHttp("/auth/realms/master-test"));
@@ -646,7 +674,7 @@ public class MeshTestContext extends TestWatcher {
 
 		String plugindirPath = newFolder("plugins");
 		meshOptions.setPluginDirectory(plugindirPath);
-		
+
 		meshTestContextProvider.getInstanceProvider().initFolders(this::newFolder);
 	}
 
@@ -680,11 +708,7 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			@NotNull MeshComponent.Builder builder = getMeshDaggerBuilder();
 			mesh = new MeshImpl(options, builder);
-			meshDagger = builder
-				.configuration(options)
-				.searchProviderType(settings.elasticsearch().toSearchProviderType())
-				.mesh(mesh)
-				.build();
+			meshDagger = this.createMeshComponent(mesh, options, settings);
 			dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
 			if (meshDagger.searchProvider() instanceof TrackingSearchProviderImpl) {
 				trackingSearchProvider = meshDagger.trackingSearchProvider();
@@ -705,6 +729,14 @@ public class MeshTestContext extends TestWatcher {
 	@NotNull
 	private MeshComponent.Builder getMeshDaggerBuilder() {
 		return meshTestContextProvider.getInstanceProvider().getComponentBuilder();
+	}
+
+	public MeshComponent createMeshComponent(Mesh mesh, MeshOptions options, MeshTestSetting settings) {
+		return meshDagger = getMeshDaggerBuilder()
+			.configuration(options)
+			.searchProviderType(settings.elasticsearch().toSearchProviderType())
+			.mesh(mesh)
+			.build();
 	}
 
 	public MonitoringRestClient getMonitoringClient() {
@@ -780,11 +812,11 @@ public class MeshTestContext extends TestWatcher {
 	public Mesh getMesh() {
 		return mesh;
 	}
-	
+
 	public MeshInstanceProvider<? extends MeshOptions> getInstanceProvider() {
 		return meshTestContextProvider.getInstanceProvider();
 	}
-	
+
 	public MeshOptions getOptions() {
 		return meshTestContextProvider.getOptions();
 	}

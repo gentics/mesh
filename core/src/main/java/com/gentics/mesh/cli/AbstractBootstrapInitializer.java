@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.S3BinaryDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
@@ -71,6 +72,7 @@ import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.IndexHandlerRegistryImpl;
@@ -104,7 +106,15 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
-	protected static final String ADMIN_USERNAME = "admin";
+	/**
+	 * Name of the global lock for executing the changelog in cluster mode
+	 */
+	public static final String GLOBAL_CHANGELOG_LOCK_KEY = "MESH_CHANGELOG_LOCK";
+
+	private static final String ADMIN_USERNAME = "admin";
+
+	@Inject
+	public Database db;
 
 	@Inject
 	public SearchProvider searchProvider;
@@ -150,6 +160,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Inject
 	public DaoCollection daoCollection;
+
+	@Inject
+	public LivenessManager liveness;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
@@ -204,18 +217,12 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			}
 		} else {
 			handleMeshVersion();
+			initOptionalLanguages(configuration);
 			if (!isJoiningCluster) {
-				initOptionalLanguages(configuration);
 				// Only execute the changelog if there are any elements in the graph
 				invokeChangelog(flags);
-			}
-
-			if (isJoiningCluster && requiresChangelog()) {
-				// Joining of cluster members is only allowed when the changelog has been applied
-				throw new RuntimeException(
-					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
-						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER
-						+ " command line argument to migrate the database.");
+			} else {
+				invokeChangelogInCluster(flags, configuration);
 			}
 		}
 	}
@@ -371,7 +378,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 		boolean isClustered = options.getClusterOptions().isEnabled();
 		boolean isInitMode = options.isInitClusterMode();
-		
+
 		options = prepareMeshOptions(options);
 
 		addDebugInfoLogAppender(options);
@@ -390,6 +397,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			initVertx(options);
 			searchProvider.init();
 			searchProvider.start();
+			pluginManager.init();
 			initLocalData(flags, options, false);
 		}
 
@@ -595,7 +603,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		}
 
 		if (isSearchEnabled && (flags.isReindex() || flags.isResync())) {
-			SyncEventHandler.invokeSync(vertx);
+			SyncEventHandler.invokeSync(vertx, null);
 		}
 
 		// Handle admin password reset
@@ -739,7 +747,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	@Override
 	public void clearReferences() {
 		anonymousRole = null;
-	}	
+	}
 
 	@Override
 	public void initLanguages() throws JsonParseException, JsonMappingException, IOException {
@@ -883,7 +891,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	/**
 	 * Init languages from the data set.
-	 * 
+	 *
 	 * @param languageSet
 	 */
 	protected void initLanguageSet(LanguageSet languageSet) {
@@ -892,7 +900,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	/**
 	 * Init implementation specific optional data within the given transaction.
-	 * 
+	 *
 	 * @param tx
 	 * @param isEmptyInstallation
 	 */
@@ -907,17 +915,17 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 *            Vert.x options
 	 */
 	protected abstract Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions);
-	
+
 	/**
 	 * Get the database instance
-	 * 
+	 *
 	 * @return
 	 */
 	protected abstract Database db();
 
 	/**
 	 * Init non-cluster Mesh instance.
-	 * 
+	 *
 	 * @param options
 	 * @param flags
 	 * @param isInitMode
@@ -927,7 +935,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	/**
 	 * Init clustered Mesh instance.
-	 * 
+	 *
 	 * @param options
 	 * @param flags
 	 * @param isInitMode
@@ -996,12 +1004,17 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	}
 
 	@Override
+	public BranchDao branchDao() {
+		return daoCollection.branchDao();
+	}
+
+	@Override
 	public BinaryDao binaryDao() {
 		return daoCollection.binaryDao();
 	}
 
 	@Override
-	public BranchDao branchDao() {
-		return daoCollection.branchDao();
+	public S3BinaryDao s3binaryDao() {
+		return daoCollection.s3binaryDao();
 	}
 }

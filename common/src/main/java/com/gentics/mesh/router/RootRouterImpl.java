@@ -4,6 +4,7 @@ import static com.gentics.mesh.handler.VersionHandlerImpl.API_MOUNTPOINT;
 
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 import com.gentics.mesh.router.route.PoweredByHandler;
@@ -29,7 +30,7 @@ public class RootRouterImpl implements RootRouter {
 
 	private Vertx vertx;
 
-	public RootRouterImpl(Vertx vertx, RouterStorage storage, MeshOptions options) {
+	public RootRouterImpl(Vertx vertx, RouterStorage storage, MeshOptions options, LivenessManager livenessBean) {
 		this.storage = storage;
 		this.vertx = vertx;
 		this.router = Router.router(vertx);
@@ -40,7 +41,7 @@ public class RootRouterImpl implements RootRouter {
 		// routes (eg. custom
 		// routes)
 		router.route().last().handler(DefaultNotFoundHandler.create());
-		router.route().failureHandler(FailureHandler.create());
+		router.route().failureHandler(FailureHandler.create(livenessBean));
 		if (options.getHttpServerOptions().isServerTokens()) {
 			router.route().handler(PoweredByHandler.create());
 		}

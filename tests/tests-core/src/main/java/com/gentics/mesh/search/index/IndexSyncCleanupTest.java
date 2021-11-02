@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.parameter.client.IndexMaintenanceParametersImpl;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
@@ -35,7 +38,9 @@ import io.vertx.core.json.JsonObject;
 public class IndexSyncCleanupTest extends AbstractMeshTest {
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
+		getProvider().clear().blockingAwait();
+		syncIndex();
 		grantAdmin();
 	}
 
@@ -92,6 +97,49 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 
 	}
 
+	/**
+	 * Test that synchronizing indices restricted to name only synchronizes the specified index
+	 * @throws Exception
+	 */
+	@Test
+	public void testSyncWithName() throws Exception {
+		runSyncTest(false);
+	}
+
+	/**
+	 * Test that synchronizing indices restricted to name only synchronizes the specified index
+	 * @throws Exception
+	 */
+	@Test
+	public void testSyncWithFullName() throws Exception {
+		runSyncTest(true);
+	}
+
+	/**
+	 * Run the sync test
+	 * @param prefix true to use the prefixed index name, false to use the bare index name
+	 * @throws Exception
+	 */
+	protected void runSyncTest(boolean prefix) throws Exception {
+		int timeout = 10_000;
+		String index = prefix ? "mesh-user" : "user";
+
+		// drop indices for user and project
+		deleteIndex("mesh-user", "mesh-project");
+		// recreate invalid indices for user and project
+		createThirdPartyIndex("mesh-" + HibUser.composeIndexName());
+		createThirdPartyIndex("mesh-" + Project.composeIndexName());
+
+		try (ExpectedEvent syncFinished = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, timeout)) {
+			call(() -> client().invokeIndexSync(new IndexMaintenanceParametersImpl().setIndex(index)));
+		}
+
+		// check that the project is not found in index
+		assertDocumentDoesNotExist(Project.composeIndexName(), Project.composeDocumentId(projectUuid()));
+		// check that the user is found in index
+		assertDocumentExists(HibUser.composeIndexName(), HibUser.composeDocumentId(userUuid()));
+	}
+
 	private void createThirdPartyIndex(String name) throws HttpErrorException {
 		ElasticsearchClient<JsonObject> searchClient = searchProvider().getClient();
 		JsonObject response = searchClient.createIndex(name, new JsonObject()).sync();
@@ -100,6 +148,11 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 
 	private void createIndex(String name) {
 		searchProvider().createIndex(new IndexInfo(name, new JsonObject(), new JsonObject(), "")).blockingAwait();
+	}
+
+	private void deleteIndex(String...indexNames) throws HttpErrorException {
+		ElasticsearchClient<JsonObject> searchClient = searchProvider().getClient();
+		searchClient.deleteIndex(indexNames).sync();
 	}
 
 	public Set<String> indices() throws HttpErrorException {

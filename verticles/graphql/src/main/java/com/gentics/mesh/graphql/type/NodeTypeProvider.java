@@ -68,6 +68,7 @@ import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathImpl;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 import graphql.GraphQLException;
 import graphql.schema.DataFetchingEnvironment;
@@ -107,6 +108,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public FieldDefinitionProvider fields;
+
+	@Inject
+	public SearchWaitUtil waitUtil;
 
 	@Inject
 	public NodeTypeProvider(MeshOptions options) {
@@ -653,6 +657,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Page<? extends NodeContent> handleContentSearch(GraphQLContext gc, String query, PagingParameters pagingInfo, ContainerType type) {
 		try {
+			// Wait for the search to be resolved before attempting to load from it
+			if (this.waitUtil.delayRequested(gc)) {
+				this.waitUtil.awaitSync(gc).blockingAwait();
+			}
+
 			return nodeSearchHandler.handleContainerSearch(gc, query, pagingInfo, type, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
 			throw new RuntimeException(e);
@@ -670,6 +679,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Page<? extends HibNode> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
+			// Wait for the search to be resolved before attempting to load from it
+			if (this.waitUtil.delayRequested(gc)) {
+				this.waitUtil.awaitSync(gc).blockingAwait();
+			}
+
 			return nodeSearchHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -750,6 +764,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				case BINARY:
 					root.field(fields.createBinaryDef(fieldSchema));
 					break;
+				case S3BINARY:
+					root.field(fields.createS3BinaryDef(fieldSchema));
+					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
 					root.field(fields.createListDef(context, listFieldSchema));
@@ -811,6 +828,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				case BINARY:
 					fieldsType.field(fields.createBinaryDef(fieldSchema));
 					break;
+				case S3BINARY:
+					root.field(fields.createS3BinaryDef(fieldSchema));
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
 					fieldsType.field(fields.createListDef(context, listFieldSchema));

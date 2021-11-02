@@ -447,6 +447,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		T handlerResult = null;
 		boolean handlerFinished = false;
 		int maxRetry = options.getStorageOptions().getTxRetryLimit();
+		Throwable cause = null;
 		for (int retry = 0; retry < maxRetry; retry++) {
 			Timer.Sample sample = Timer.start();
 			// Check the status to prevent transactions during shutdown
@@ -456,11 +457,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerFinished = true;
 				tx.success();
 			} catch (OSchemaException e) {
+				cause = e;
 				log.error("OrientDB schema exception detected.");
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (InterruptedException | ONeedRetryException | FastNoSuchElementException e) {
+				cause = e;
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
@@ -504,7 +507,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				return handlerResult;
 			}
 		}
-		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
+		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded", cause);
 	}
 
 	private void checkStatus() {
@@ -671,6 +674,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 				newCfg.getDocument().setProperty("readQuorum", newReadQuorum);
 			}
 
+			// force hazelcast plugin to increase version of the distributed configuration.
+			// This is needed because if there are changes only in document properties (e.g. writeQuorum or readQuorum)
+			// the plugin won't detect them
+			// see https://github.com/orientechnologies/orientdb/blob/3.1.x/distributed/src/main/java/com/orientechnologies/orient/server/distributed/impl/ODistributedAbstractPlugin.java#L441
+			newCfg.override(newCfg.getDocument());
 			plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
 		} else {
 			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");

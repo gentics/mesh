@@ -257,6 +257,23 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("elasticsearch", setting);
 	}
 
+	@Test
+	public void testESFieldDiffOnNewField() {
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		SchemaModel request = getSchema();
+		StringFieldSchemaImpl testField = new StringFieldSchemaImpl();
+		testField.setName("test");
+		JsonObject setting = new JsonObject().put("test", "123");
+		testField.setElasticsearch(setting);
+		request.getFields().add(testField);
+
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(2);
+		SchemaChangeModel change = changes.getChanges().get(0);
+		assertThat(change).is(ADDFIELD).forField("test").hasProperty("elasticsearch", setting);
+	}
+
 	/**
 	 * Diff the schema field with a schema field which sets the elasticsearch setting to null. Internally that should be transformed to set the setting to empty
 	 * json object.
