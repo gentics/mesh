@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -154,23 +153,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	}
 
 	@Override
-	public void addMicroschema(HibProject project, HibUser user, HibMicroschema microschema,
-		EventQueueBatch batch) {
-		Project graphProject = toGraph(project);
-		graphProject.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
-	}
-
-	@Override
-	public void addMicroschema(HibMicroschema microschema) {
-		getRoot().addItem(toGraph(microschema));
-	}
-
-	@Override
-	public void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch) {
-		toGraph(project).getMicroschemaContainerRoot().removeMicroschema(microschema, batch);
-	}
-
-	@Override
 	public Result<? extends HibMicroschema> findAll() {
 		return boot.get().meshRoot().getMicroschemaContainerRoot().findAll();
 	}
@@ -241,11 +223,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	@Override
 	public void unpersist(Microschema element) {
 		element.remove();
-	}
-
-	@Override
-	public void deleteVersion(HibMicroschemaVersion version, BulkActionContext bac) {
-		toGraph(version).delete(bac);
 	}
 
 	@Override

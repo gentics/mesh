@@ -80,9 +80,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @param user
 	 * @param batch
 	 */
-	default void addMicroschema(HibMicroschema microschema, HibUser user, EventQueueBatch batch) {
-		addMicroschema(null, user, microschema, batch);
-	}
+	void addMicroschema(HibMicroschema microschema, HibUser user, EventQueueBatch batch);
 
 	/**
 	 * Check whether the project contains the microschema.
@@ -102,28 +100,17 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @param batch
 	 */
 	default void addMicroschema(HibProject project, HibUser user, HibMicroschema microschemaContainer, EventQueueBatch batch) {
-		if (project != null) {
-			ProjectDao projectDao = Tx.get().projectDao();
-			BranchDao branchDao = Tx.get().branchDao();
+		ProjectDao projectDao = Tx.get().projectDao();
+		BranchDao branchDao = Tx.get().branchDao();
 
-			batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
-			addItem(project, microschemaContainer);
+		batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
+		addItem(project, microschemaContainer);
 
-			// assign the latest microschema version to all branches of the project
-			for (HibBranch branch : branchDao.findAll(project)) {
-				branch.assignMicroschemaVersion(user, microschemaContainer.getLatestVersion(), batch);
-			}
-		} else {
-			addMicroschema(microschemaContainer);
+		// assign the latest microschema version to all branches of the project
+		for (HibBranch branch : branchDao.findAll(project)) {
+			branch.assignMicroschemaVersion(user, microschemaContainer.getLatestVersion(), batch);
 		}
 	}
-
-	/**
-	 * Add the microschema to the db.
-	 *
-	 * @param microschema
-	 */
-	void addMicroschema(HibMicroschema microschema);
 
 	/**
 	 * Remove the given microschema from the project.
