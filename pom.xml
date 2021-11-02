@@ -91,8 +91,8 @@
 		<module>core</module>
 		<module>verticles</module>
 		<module>server</module>
-<!--		<module>demo</module>-->
-<!--		<module>doc</module>-->
+		<module>demo</module>
+		<module>doc</module>
 		<module>tests</module>
 		<module>integration-tests</module>
 		<module>performance-tests</module>
