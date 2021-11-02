@@ -107,26 +107,6 @@ public class MicroschemaContainerVersionImpl extends
 		return in(HAS_FROM_VERSION).frame(Job.class);
 	}
 
-	// TODO: left here for backwards compatibility. Use DAO method where possible.
-	@Override
-	public void delete(BulkActionContext bac) {
-		// Delete change
-		SchemaChange<?> change = getNextChange();
-		if (change != null) {
-			change.delete(bac);
-		}
-		// Delete referenced jobs
-		for (HibJob job : referencedJobsViaFrom()) {
-			job.remove();
-		}
-		for (HibJob job : referencedJobsViaTo()) {
-			job.remove();
-		}
-		// Delete version
-		remove();
-
-	}
-
 	@Override
 	public MeshElementEventModel onCreated() {
 		return getSchemaContainer().onCreated();

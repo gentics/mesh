@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -33,13 +35,13 @@ import com.gentics.mesh.json.JsonUtil;
 
 /**
  * DAO for microschema operations.
-	
+
  */
 public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, RootDao<HibProject, HibMicroschema> {
 
 	/**
 	 * Create a new microschema container.
-	 * 
+	 *
 	 * @param microschema
 	 * @param user
 	 *            User that is used to set creator and editor references.
@@ -52,7 +54,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 
 	/**
 	 * Load the microschema version via the given reference.
-	 * 
+	 *
 	 * @param reference
 	 * @return
 	 */
@@ -62,7 +64,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 
 	/**
 	 * Get the microschema container version from the given reference.
-	 * 
+	 *
 	 * @param reference
 	 *            reference
 	 * @return
@@ -73,16 +75,16 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 
 	/**
 	 * Add the microschema to the database.
-	 * 
-	 * @param schema
+	 *
+	 * @param microschema
 	 * @param user
 	 * @param batch
 	 */
-	void addMicroschema(HibMicroschema schema, HibUser user, EventQueueBatch batch);
+	void addMicroschema(HibMicroschema microschema, HibUser user, EventQueueBatch batch);
 
 	/**
 	 * Check whether the project contains the microschema.
-	 * 
+	 *
 	 * @param project
 	 * @param microschema
 	 * @return
@@ -91,22 +93,44 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 
 	/**
 	 * Add the microschema to the project.
-	 * 
+	 *
 	 * @param project
 	 * @param user
 	 * @param microschemaContainer
 	 * @param batch
 	 */
-	void addMicroschema(HibProject project, HibUser user, HibMicroschema microschemaContainer, EventQueueBatch batch);
+	default void addMicroschema(HibProject project, HibUser user, HibMicroschema microschemaContainer, EventQueueBatch batch) {
+		ProjectDao projectDao = Tx.get().projectDao();
+		BranchDao branchDao = Tx.get().branchDao();
+
+		batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
+		addItem(project, microschemaContainer);
+
+		// assign the latest microschema version to all branches of the project
+		for (HibBranch branch : branchDao.findAll(project)) {
+			branch.assignMicroschemaVersion(user, microschemaContainer.getLatestVersion(), batch);
+		}
+	}
 
 	/**
 	 * Remove the given microschema from the project.
-	 * 
+	 *
 	 * @param project
 	 * @param microschema
 	 * @param batch
 	 */
-	void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch);
+	default void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch) {
+		ProjectDao projectDao = Tx.get().projectDao();
+		BranchDao branchDao = Tx.get().branchDao();
+
+		batch.add(projectDao.onMicroschemaAssignEvent(project, microschema, UNASSIGNED));
+		removeItem(project, microschema);
+
+		// unassign the microschema from all branches
+		for (HibBranch branch : branchDao.findAll(project)) {
+			branch.unassignMicroschema(microschema);
+		}
+	}
 
 	@Override
 	default void deleteVersion(HibMicroschemaVersion version, BulkActionContext bac) {
@@ -131,9 +155,17 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 		return element.getAPIPath(ac);
 	}
 
+	@Override
+	default HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		HibMicroschema microschema = create(ac, batch, uuid);
+		addMicroschema(root, ac.getUser(), microschema, batch);
+		Tx.get().persist(root, Tx.get().projectDao());
+		return microschema;
+	}
+
 	/**
 	 * Create a new microschema.
-	 * 
+	 *
 	 * @param ac
 	 * @param batch
 	 * @param uuid
@@ -159,7 +191,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 
 	/**
 	 * Create a new microschema.
-	 * 
+	 *
 	 * @param microschema
 	 * @param user
 	 *            User that is used to set creator and editor references.
@@ -173,7 +205,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 		microschema.validate();
 
 		SchemaDao schemaDao = Tx.get().schemaDao();
-		
+
 		String name = microschema.getName();
 		HibMicroschema conflictingMicroSchema = findByName(name);
 		if (conflictingMicroSchema != null) {
@@ -204,7 +236,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	/**
 	 * Get the microschema container version from the given reference. Ignore the version number from the reference, but take the version from the branch
 	 * instead.
-	 * 
+	 *
 	 * @param project
 	 * @param reference
 	 *            reference
@@ -279,8 +311,23 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	}
 
 	@Override
+	default boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+		return this.update(null, element, ac, batch);
+	}
+
+	@Override
 	default boolean update(HibProject root, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for microschemas. Please start a microschema migration");
+	}
+
+	@Override
+	default boolean isLinkedToProject(HibMicroschema microschema, HibProject project) {
+		return contains(project, microschema);
+	}
+
+	@Override
+	default void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch) {
+		removeMicroschema(project, microschema, batch);
 	}
 
 	@Override
