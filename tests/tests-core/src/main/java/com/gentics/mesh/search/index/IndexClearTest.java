@@ -11,7 +11,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -31,7 +31,7 @@ public class IndexClearTest extends AbstractMeshTest {
 		assertThat(message).matches("search_admin_index_clear");
 
 		try {
-			getProvider().getDocument(User.composeIndexName(), userUuid()).blockingGet();
+			getProvider().getDocument(HibUser.composeIndexName(), userUuid()).blockingGet();
 			fail("An error should occur");
 		} catch (Exception e) {
 			HttpErrorException error = (HttpErrorException) e.getCause();

@@ -1,23 +1,26 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.io.IOException;
+
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
- * A schema change represents a single manipulation of a field container (e.g.: {@link SchemaModel}, {@link MicroschemaModel}).
- * 
- * <pre>
- * {@code
- *  (s:SchemaVersion)-[:HAS_CHANGE]->(c1:SchemaChange)-[:HAS_CHANGE]->(c2:SchemaChange)-(s2:SchemaVersion)
- * }
- * </pre>
- * 
- * The schema change stores {@link SchemaChangeModel} data. Since the {@link SchemaChangeModel} class is generic we will also store the model specific
- * properties in a generic way. The {@link #setRestProperty(String, Object)} method can be used to set such properties.
+ * A GraphDB counterpart for @link {@link HibSchemaChange}.
  */
 public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex, HibSchemaChange<T> {
 
+	String REST_PROPERTY_PREFIX_KEY = "fieldProperty_";
+
+	default SchemaChangeModel transformToRest() throws IOException {
+		SchemaChangeModel model = HibSchemaChange.super.transformToRest();
+		// Strip away the prefix
+		for (String key : model.getProperties().keySet()) {
+			Object value = model.getProperties().remove(key);
+			key = key.replace(REST_PROPERTY_PREFIX_KEY, "");
+			model.getProperties().put(key, value);
+		}
+		return model;
+	}
 }

@@ -10,26 +10,26 @@ import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -44,16 +44,13 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see UserDaoWrapper
  */
-public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements UserDaoWrapper {
+public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, HibUser, User> implements UserDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(UserDaoWrapperImpl.class);
 
-	private final PasswordEncoder passwordEncoder;
-
 	@Inject
-	public UserDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, PasswordEncoder passwordEncoder) {
+	public UserDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
-		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Override
@@ -110,83 +107,42 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public Result<? extends User> findAll() {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.findAll();
+		return getRoot().findAll();
 	}
 
 	@Override
 	public Page<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.findAll(ac, pagingInfo);
+		return getRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.findAllWrapped(ac, pagingInfo, extraFilter);
+		return boot.get().meshRoot().getUserRoot().findAllWrapped(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
 	public User findByName(String name) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.findByName(name);
+		return getRoot().findByName(name);
 	}
 
 	@Override
 	public HibUser findByUsername(String username) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.findByUsername(username);
+		return boot.get().meshRoot().getUserRoot().findByUsername(username);
 	}
 
 	@Override
 	public HibUser findByUuid(String uuid) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.findByUuid(uuid);
-	}
-
-	@Override
-	public HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return getRoot().findByUuid(uuid);
 	}
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.findMeshAuthUserByUsername(username);
+		return boot.get().meshRoot().getUserRoot().findMeshAuthUserByUsername(username);
 	}
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		return userRoot.findMeshAuthUserByUuid(userUuid);
-	}
-
-	@Override
-	public User create(String username, HibUser creator, String uuid) {
-		UserRoot userRoot = boot.get().meshRoot().getUserRoot();
-		User user = userRoot.create();
-		if (uuid != null) {
-			user.setUuid(uuid);
-		}
-		user.setUsername(username);
-		user.enable();
-		user.generateBucketId();
-
-		if (creator != null) {
-			user.setCreator(creator);
-			user.setCreationTimestamp();
-			user.setEditor(creator);
-			user.setLastEditedTimestamp();
-		}
-		userRoot.addItem(user);
-		return user;
+		return boot.get().meshRoot().getUserRoot().findMeshAuthUserByUuid(userUuid);
 	}
 
 	@Override
@@ -210,7 +166,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	 * Return the global amount of users stored in mesh.
 	 */
 	public long count() {
-		return boot.get().meshRoot().getUserRoot().globalCount();
+		return getRoot().globalCount();
 	}
 
 	@Override
@@ -239,5 +195,27 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	@Override
 	public Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		return toGraph(fromUser).getGroups(authUser, pagingInfo);
+	}
+
+	@Override
+	protected RootVertex<User> getRoot() {
+		return boot.get().meshRoot().getUserRoot();
+	}
+
+	@Override
+	public String getRolesHash(HibUser user) {
+		return toGraph(user).getRolesHash();
+	}
+
+	@Override
+	public void updateShortcutEdges(HibUser user) {
+		GroupDao groupRoot = Tx.get().groupDao();
+		User graph = toGraph(user);
+		graph.outE(ASSIGNED_TO_ROLE).removeAll();
+		for (HibGroup group : graph.getGroups()) {
+			for (HibRole role : groupRoot.getRoles(group)) {
+				graph.setUniqueLinkOutTo(toGraph(role), ASSIGNED_TO_ROLE);
+			}
+		}
 	}
 }

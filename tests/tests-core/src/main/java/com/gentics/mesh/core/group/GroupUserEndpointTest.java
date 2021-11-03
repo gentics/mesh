@@ -24,7 +24,6 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -131,7 +130,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
 			assertThat(restGroup).matches(group());
-			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
+			assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			trackingSearchProvider().reset();
 			assertTrue("User should be member of the group.", groupDao.hasUser(group(), extraUser));
@@ -243,7 +242,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
+			assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), extraUser));
 		}

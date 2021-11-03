@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -39,7 +38,6 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
@@ -48,10 +46,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
-import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.ETag;
 
@@ -76,46 +73,6 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			.withField(MICROSCHEMA_VERSION_KEY_PROPERTY, FieldType.STRING));
 		index.createIndex(VertexIndexDefinition.vertexIndex(MicronodeImpl.class)
 			.withField(MICROSCHEMA_VERSION_KEY_PROPERTY, FieldType.STRING));
-	}
-
-	@Override
-	public MicronodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-
-		NodeParametersImpl parameters = new NodeParametersImpl(ac);
-		MicronodeResponse restMicronode = new MicronodeResponse();
-		HibMicroschemaVersion microschemaContainer = getSchemaContainerVersion();
-		if (microschemaContainer == null) {
-			throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
-		}
-
-		MicroschemaModel microschemaModel = microschemaContainer.getSchema();
-		if (microschemaModel == null) {
-			throw error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found.");
-		}
-
-		restMicronode.setMicroschema(microschemaContainer.transformToReference());
-		restMicronode.setUuid(getUuid());
-
-		List<String> requestedLanguageTags = new ArrayList<>();
-		if (languageTags.length == 0) {
-			requestedLanguageTags.addAll(parameters.getLanguageList(options()));
-		} else {
-			requestedLanguageTags.addAll(Arrays.asList(languageTags));
-		}
-
-		// Fields
-		for (FieldSchema fieldEntry : microschemaModel.getFields()) {
-			Field restField = getRestField(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level);
-			if (restField != null) {
-				restMicronode.getFields().put(fieldEntry.getName(), restField);
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-				}
-			}
-		}
-
-		return restMicronode;
 	}
 
 	@Override

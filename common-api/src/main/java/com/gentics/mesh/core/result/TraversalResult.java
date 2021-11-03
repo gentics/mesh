@@ -1,4 +1,4 @@
-package com.gentics.mesh.madl.traversal;
+package com.gentics.mesh.core.result;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.core.result.Result;
 import com.google.common.collect.Iterators;
 
 /**

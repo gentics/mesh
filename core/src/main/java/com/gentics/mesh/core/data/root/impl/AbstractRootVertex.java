@@ -60,7 +60,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 				t.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-		applyVertexPermissions(batch, toGraph(role), permissionsToGrant, permissionsToRevoke);
+		RootVertex.super.applyPermissions(batch, toGraph(role), false, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override
@@ -166,5 +166,15 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	public String getSubETag(T element, InternalActionContext ac) {
 		// TODO FIXME make this method abstract
 		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
+	public long globalCount() {
+		return db().count(getPersistanceClass());
+	}
+
+	@Override
+	public T create() {
+		return getGraph().addFramedVertex(getPersistanceClass());
 	}
 }

@@ -77,10 +77,10 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -158,11 +158,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 			batch.add(onUpdated());
 		}
 		return modified;
-	}
-
-	@Override
-	public BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return getRoot().transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
@@ -490,8 +485,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	 * @param container
 	 *            Container to handle
 	 */
-	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>> void unassign(
-		HibFieldSchemaElement<R, RM, SC, SCV> container) {
+	protected <
+				R extends FieldSchemaContainer, 
+				RM extends FieldSchemaContainerVersion, 
+				RE extends NameUuidReference<RE>, 
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>
+	> void unassign(HibFieldSchemaElement<R, RM, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaVersion) {
@@ -556,7 +556,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	protected BranchMeshEventModel createEvent(MeshEvent event) {
+	public BranchMeshEventModel createEvent(MeshEvent event) {
 		BranchMeshEventModel model = new BranchMeshEventModel();
 		model.setEvent(event);
 		fillEventInfo(model);

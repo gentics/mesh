@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -92,6 +93,28 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	}
 
 	/**
+	 * Initialize the newly created user. 
+	 * 
+	 * @param user
+	 * @param username
+	 * @param creator
+	 * @return
+	 */
+	default HibUser init(HibUser user, String username, HibUser creator) {
+		user.setUsername(username);
+		user.enable();
+		user.generateBucketId();
+
+		if (creator != null) {
+			user.setCreator(creator);
+			user.setCreationTimestamp();
+			user.setEditor(creator);
+			user.setLastEditedTimestamp();
+		}
+		return user;
+	}
+	
+	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
 	 * 
 	 * @param username
@@ -102,7 +125,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            Optional uuid
 	 * @return
 	 */
-	HibUser create(String username, HibUser creator, String uuid);
+	default HibUser create(String username, HibUser creator, String uuid) {
+		HibUser user = Tx.get().create(uuid, this);
+		init(user, username, creator);
+		return Tx.get().persist(user, this);
+	}
 
 	/**
 	 * Inherit the permissions of the source elment to the target element.
@@ -188,6 +215,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @return
 	 */
 	Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
+
+	/**
+	 * Update all shortcut edges.
+	 */
+	void updateShortcutEdges(HibUser user);
 
 	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
@@ -431,7 +463,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			setGroups(user, ac, restUser);
 		}
 		if (fields.has("rolesHash")) {
-			restUser.setRolesHash(user.getRolesHash());
+			restUser.setRolesHash(getRolesHash(user));
 		}
 		if (fields.has("forcedPasswordChange")) {
 			restUser.setForcedPasswordChange(user.isForcedPasswordChange());
@@ -462,12 +494,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 		// Check whether the node reference field of the user should be expanded
 		boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
 		if (expandReference) {
-			restUser.setNodeResponse(node.transformToRestSync(ac, level));
+			restUser.setNodeResponse(Tx.get().nodeDao().transformToRestSync(node, ac, level));
 		} else {
 			NodeReference userNodeReference = node.transformToReference(ac);
 			restUser.setNodeReference(userNodeReference);
 		}
-
 	}
 
 	/**
@@ -605,6 +636,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 		if (modified && !dry) {
 			user.setEditor(ac.getUser());
 			user.setLastEditedTimestamp();
+			user = Tx.get().persist(user, this);
 			batch.add(user.onUpdated());
 		}
 		return modified;
@@ -696,7 +728,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 			// TODO handle user create using full node rest model.
 			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
-		return user;
+		return Tx.get().persist(user, this);
 	}
 
 	@Override
@@ -711,7 +743,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 		// }
 		// outE(HAS_USER).removeAll();
 		bac.add(user.onDeleted());
-		user.remove();
+		Tx.get().delete(user, this);
 		bac.process();
 		Tx.get().permissionCache().clear();
 	}
@@ -727,6 +759,20 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	// blocking
 	default HibUser setPassword(HibUser user, String password) {
 		user.setPasswordHash(Tx.get().passwordEncoder().encode(password));
-		return user;
+		return Tx.get().persist(user, this);
+	}
+
+	/**
+	 * A CRC32 hash of the users {@link #getRoles roles}.
+	 *
+	 * @return A hash of the users roles
+	 */
+	default String getRolesHash(HibUser user) {
+		return Stream.concat(
+				Stream.of(user.isAdmin() ? "1" : "0"), 
+				StreamSupport.stream(getRoles(user).spliterator(), false)
+					.map(role -> role.getId().toString())
+					.sorted())
+			.collect(Collectors.joining());
 	}
 }

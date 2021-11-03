@@ -2,9 +2,12 @@ package com.gentics.mesh.core.data.schema;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * A {@link GraphFieldSchemaContainerVersion} stores the versioned data for a {@link GraphFieldSchemaContainer} element.
@@ -21,9 +24,28 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
  *            Schema container type
  * 
  */
-public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>>
-	extends MeshCoreVertex<R>, ReferenceableElement<RE>, Comparable<SCV>, HibFieldSchemaVersionElement<R, RM, SC, SCV> {
+public interface GraphFieldSchemaContainerVersion<
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>
+	> extends MeshCoreVertex<R>, ReferenceableElement<RE>, Comparable<SCV>, HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
 
+	/**
+	 * Get the branches to which the container was assigned.
+	 *
+	 * @return Found branches of this version
+	 */
+	Result<? extends HibBranch> getBranches();
+
+	/**
+	 * Create a new graph change from the given rest change.
+	 * 
+	 * @param restChange
+	 * @return
+	 */
+	SchemaChange<?> createChange(SchemaChangeModel restChange);
 }

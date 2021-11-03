@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Stack;
@@ -14,8 +15,8 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -33,7 +34,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @param <R> root entity type
  * @param <L> leaf entity type
  */
-public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> {
+public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends Dao<L> {
 
 	public static final Logger log = LoggerFactory.getLogger(RootDao.class);
 
@@ -54,14 +55,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 *            Needed permission
 	 */
 	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission);
-
-	/**
-	 * Return an result of all elements and use the stored type information to load the items. The {@link #findAll()} will use explicit typing and
-	 * thus will be faster. Only use that method if you know that your relation only yields a specific kind of item.
-	 * 
-	 * @return
-	 */
-	Result<? extends L> findAllDynamic(R root);
 
 	/**
 	 * Find the visible elements and return a paged result.
@@ -118,7 +111,21 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 *            Permission that must be granted in order to load the object
 	 * @return
 	 */
-	L findByName(R root, InternalActionContext ac, String name, InternalPermission perm);
+	default L findByName(R root, InternalActionContext ac, String name, InternalPermission perm) {
+		L element = findByName(root, name);
+		if (element == null) {
+			throw error(NOT_FOUND, "object_not_found_for_name", name);
+		}
+
+		HibUser requestUser = ac.getUser();
+		String elementUuid = element.getUuid();
+		UserDao userDao = Tx.get().userDao();
+		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {
+			return element;
+		} else {
+			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
+		}
+	}
 
 	/**
 	 * Find the element with the given uuid.
@@ -160,29 +167,8 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 */
 	default L loadObjectByUuid(R root, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		L element = findByUuid(root, uuid);
-		return checkPerms(root, element, uuid, ac, perm, errorIfNotFound);
+		return checkPerms(element, uuid, ac, perm, errorIfNotFound);
 	}
-
-	L checkPerms(R root, L element, String uuid, InternalActionContext ac, InternalPermission perm, boolean errorIfNotFound);
-// TODO get this back after Tx is generalized
-//	default L checkPerms(R root, L element, String uuid, InternalActionContext ac, InternalPermission perm, boolean errorIfNotFound) {
-//		if (element == null) {
-//			if (errorIfNotFound) {
-//				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
-//			} else {
-//				return null;
-//			}
-//		}
-//
-//		HibUser requestUser = ac.getUser();
-//		String elementUuid = element.getUuid();
-//		UserDao userDao = Tx.get().userDao();
-//		if (userDao.hasPermission(requestUser, element, perm)) {
-//			return element;
-//		} else {
-//			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
-//		}
-//	}
 
 	/**
 	 * Load the object by uuid. No permission check will be performed.
@@ -302,25 +288,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	long globalCount(R root);
 
 	/**
-	 * Get the permissions of a role for this element.
-	 *
-	 * @param element
-	 * @param ac
-	 * @param roleUuid
-	 * @return
-	 */
-	PermissionInfo getRolePermissions(R root, HibBaseElement element, InternalActionContext ac, String roleUuid);
-
-	/**
-	 * Return a result for all roles which grant the permission to the element.
-	 *
-	 * @param element
-	 * @param perm
-	 * @return
-	 */
-	Result<? extends HibRole> getRolesWithPerm(R root, HibBaseElement element, InternalPermission perm);
-
-	/**
 	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
 	 *
 	 * @param element
@@ -338,4 +305,18 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return true if the element was updated. Otherwise false
 	 */
 	boolean update(R root, L element, InternalActionContext ac, EventQueueBatch batch);
+
+	/**
+	 * Check whether the given element is assigned to this root node.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	default boolean contains(R root, L element) {
+		if (findByUuid(root, element.getUuid()) == null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 }

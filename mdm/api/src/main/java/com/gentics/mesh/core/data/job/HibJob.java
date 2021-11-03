@@ -1,13 +1,9 @@
 package com.gentics.mesh.core.data.job;
 
-import java.util.Map;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -311,62 +307,5 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/admin/jobs/" + getUuid();
-	}
-
-	@Override
-	default JobResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		JobResponse response = new JobResponse();
-		response.setUuid(getUuid());
-
-		HibUser creator = getCreator();
-		if (creator != null) {
-			response.setCreator(creator.transformToReference());
-		} else {
-			//log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
-		}
-
-		String date = getCreationDate();
-		response.setCreated(date);
-		response.setErrorMessage(getErrorMessage());
-		response.setErrorDetail(getErrorDetail());
-		response.setType(getType());
-		response.setStatus(getStatus());
-		response.setStopDate(getStopDate());
-		response.setStartDate(getStartDate());
-		response.setCompletionCount(getCompletionCount());
-		response.setNodeName(getNodeName());
-
-		JobWarningList warnings = getWarnings();
-		if (warnings != null) {
-			response.setWarnings(warnings.getData());
-		}
-
-		Map<String, String> props = response.getProperties();
-		HibBranch branch = getBranch();
-		if (branch != null) {
-			props.put("branchName", branch.getName());
-			props.put("branchUuid", branch.getUuid());
-		} else {
-			log.debug("No referenced branch found.");
-		}
-
-		HibSchemaVersion toSchema = getToSchemaVersion();
-		if (toSchema != null) {
-			HibSchema container = toSchema.getSchemaContainer();
-			props.put("schemaName", container.getName());
-			props.put("schemaUuid", container.getUuid());
-			props.put("fromVersion", getFromSchemaVersion().getVersion());
-			props.put("toVersion", toSchema.getVersion());
-		}
-
-		HibMicroschemaVersion toMicroschema = getToMicroschemaVersion();
-		if (toMicroschema != null) {
-			HibMicroschema container = toMicroschema.getSchemaContainer();
-			props.put("microschemaName", container.getName());
-			props.put("microschemaUuid", container.getUuid());
-			props.put("fromVersion", getFromMicroschemaVersion().getVersion());
-			props.put("toVersion", toMicroschema.getVersion());
-		}
-		return response;
 	}
 }

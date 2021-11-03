@@ -250,7 +250,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 				HibBranch branch = branchDao.findByUuid(project, branchUuid);
 
 				// Get all active versions and group by name
-				Collection<List<HibMicroschemaVersion>> versions = microschemaDao.findActiveMicroschemaVersions(branch).stream()
+				Collection<List<HibMicroschemaVersion>> versions = microschemaDao.findActiveSchemaVersions(branch).stream()
 					.collect(Collectors.groupingBy(HibMicroschemaVersion::getName)).values();
 
 				// Get latest versions of all active microschemas

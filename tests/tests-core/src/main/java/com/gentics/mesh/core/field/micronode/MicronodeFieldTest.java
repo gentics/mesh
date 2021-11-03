@@ -65,8 +65,8 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.test.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;

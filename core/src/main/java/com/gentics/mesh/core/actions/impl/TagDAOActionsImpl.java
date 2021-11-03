@@ -40,14 +40,12 @@ public class TagDAOActionsImpl implements TagDAOActions {
 
 	@Override
 	public HibTag loadByUuid(DAOActionContext ctx, String tagUuid, InternalPermission perm, boolean errorIfNotFound) {
-		HibTagFamily hibTagFamily = ctx.parent();
-		TagFamily tagFamily = HibClassConverter.toGraph(hibTagFamily);
+		TagDao tagDao = ctx.tx().tagDao();
+		HibTagFamily tagFamily = ctx.parent();
 		if (perm == null) {
-			return tagFamily.findByUuid(tagUuid);
-			// TagDao tagDao = tx.tagDao();
-			// return tagDao.findByUuid(tagFamily, tagUuid);
+			return tagDao.findByUuid(tagFamily, tagUuid);
 		} else {
-			return tagFamily.loadObjectByUuid(ctx.ac(), tagUuid, perm, errorIfNotFound);
+			return tagDao.loadObjectByUuid(tagFamily, ctx.ac(), tagUuid, perm, errorIfNotFound);
 		}
 	}
 

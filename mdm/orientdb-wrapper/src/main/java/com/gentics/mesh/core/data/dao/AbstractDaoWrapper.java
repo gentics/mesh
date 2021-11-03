@@ -44,5 +44,4 @@ public abstract class AbstractDaoWrapper<T extends HibBaseElement> implements Da
 	public void setRolePermissions(T element, InternalActionContext ac, GenericRestResponse model) {
 		model.setRolePerms(permissions.get().getRolePermissions(element, ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
-
 }

@@ -14,7 +14,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
@@ -188,7 +187,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	protected TagFamilyMeshEventModel createEvent(MeshEvent type) {
+	public TagFamilyMeshEventModel createEvent(MeshEvent type) {
 		TagFamilyMeshEventModel event = new TagFamilyMeshEventModel();
 		event.setEvent(type);
 		fillEventInfo(event);
@@ -202,7 +201,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public PermissionChangedProjectElementEventModel onPermissionChanged(Role role) {
+	public PermissionChangedProjectElementEventModel onPermissionChanged(HibRole role) {
 		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
 		fillPermissionChanged(model, role);
 		return model;
@@ -247,5 +246,10 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
 		return getTagFamilyRoot().getRolesWithPerm(vertex, perm);
+	}
+
+	@Override
+	public Tag create() {
+		throw new IllegalStateException("Use TagRoot to create Tag instance, then addTag.");
 	}
 }

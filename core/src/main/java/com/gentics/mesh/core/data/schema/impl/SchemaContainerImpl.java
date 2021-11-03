@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 
 /**
@@ -44,11 +43,6 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public SchemaReference transformToReference() {
-		return new SchemaReferenceImpl().setName(getName()).setUuid(getUuid());
-	}
-
-	@Override
 	public RootVertex<? extends Schema> getRoot() {
 		return mesh().boot().meshRoot().getSchemaContainerRoot();
 	}
@@ -66,11 +60,6 @@ public class SchemaContainerImpl extends
 	@Override
 	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
-	}
-
-	@Override
-	public void deleteElement() {
-		remove();
 	}
 
 	@Override

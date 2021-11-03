@@ -13,13 +13,15 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -32,7 +34,7 @@ import dagger.Lazy;
  * TODO MDM The method should be moved to {@link LanguageDao}
  */
 @Singleton
-public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> implements LanguageDaoWrapper {
+public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageResponse, HibLanguage, Language> implements LanguageDaoWrapper {
 
 	@Inject
 	public LanguageDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
@@ -112,34 +114,6 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 	/**
 	 * @see LanguageRoot
 	 */
-	public Language findByName(InternalActionContext ac, String name, InternalPermission perm) {
-		return boot.get().meshRoot().getLanguageRoot().findByName(ac, name, perm);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return boot.get().meshRoot().getLanguageRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
 	public Language create(InternalActionContext ac, EventQueueBatch batch) {
 		return boot.get().meshRoot().getLanguageRoot().create(ac, batch);
 	}
@@ -179,8 +153,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 	}
 
 	@Override
-	public String getAPIPath(HibLanguage element, InternalActionContext ac) {
-		return toGraph(element).getAPIPath(ac);
+	protected RootVertex<Language> getRoot() {
+		return boot.get().meshRoot().getLanguageRoot();
 	}
-
 }

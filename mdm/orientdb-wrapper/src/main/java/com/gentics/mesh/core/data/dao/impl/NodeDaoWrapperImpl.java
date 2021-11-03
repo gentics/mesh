@@ -13,11 +13,10 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -25,12 +24,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -48,21 +46,11 @@ import dagger.Lazy;
  * DAO for {@link HibNode} operation.
  */
 @Singleton
-public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements NodeDaoWrapper {
+public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, HibNode, Node, HibProject> implements NodeDaoWrapper {
 
 	@Inject
 	public NodeDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
-	}
-
-	@Override
-	public HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
-		return toGraph(project).getNodeRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(project).getNodeRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -97,11 +85,6 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	@Override
 	public long computeCount(HibProject project) {
 		return toGraph(project).getNodeRoot().computeCount();
-	}
-
-	@Override
-	public NodeResponse transformToRestSync(HibNode node, InternalActionContext ac, int level, String... languageTags) {
-		return toGraph(node).transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
@@ -274,25 +257,9 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
-	public Result<? extends HibNode> findAllDynamic(HibProject root) {
-		return toGraph(root).getNodeRoot().findAllDynamic();
-	}
-
-	@Override
 	public Page<? extends HibNode> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getNodeRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	@Override
-	public HibNode findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).getNodeRoot().findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibNode checkPerms(HibProject root, HibNode element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).getNodeRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -321,17 +288,6 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
-	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
-			String roleUuid) {
-		return toGraph(root).getNodeRoot().getRolePermissions(element, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement vertex, InternalPermission perm) {
-		return toGraph(root).getNodeRoot().getRolesWithPerm(vertex, perm);
-	}
-
-	@Override
 	public void delete(HibProject root, HibNode element, BulkActionContext bac) {
 		toGraph(root).getNodeRoot().delete(toGraph(element), bac);
 	}
@@ -349,5 +305,10 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	@Override
 	public long globalCount() {
 		return boot.get().meshRoot().nodeCount();
+	}
+
+	@Override
+	protected RootVertex<Node> getRoot(HibProject root) {
+		return toGraph(root).getNodeRoot();
 	}
 }

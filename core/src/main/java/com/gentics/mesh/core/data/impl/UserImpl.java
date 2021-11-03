@@ -11,6 +11,7 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -22,7 +23,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -32,7 +32,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -40,13 +39,15 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -244,25 +245,24 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public Result<? extends Role> getRolesViaShortcut() {
-		// TODO Use shortcut index.
-		return out(ASSIGNED_TO_ROLE, RoleImpl.class);
+		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
+		Spliterator<Edge> itemEdges = getGraph().getEdges(indexName.toLowerCase(), id()).spliterator();
+		Stream<RoleImpl> roles = StreamSupport.stream(itemEdges, false)
+			.map(itemEdge -> itemEdge.getVertex(Direction.IN))
+			.map(vertex -> {
+				// Unwrap wrapped vertex
+				if (vertex instanceof WrappedElement) {
+					vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
+				}
+				return graph.frameElementExplicit(vertex, RoleImpl.class);
+			});
+		return new TraversalResult<>(roles);
 	}
 
 	@Override
 	public Page<? extends Role> getRolesViaShortcut(HibUser user, PagingParameters params) {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
 		return new DynamicTransformablePageImpl<>(user, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
-	}
-
-	@Override
-	public void updateShortcutEdges() {
-		GroupDao groupRoot = mesh().boot().groupDao();
-		outE(ASSIGNED_TO_ROLE).removeAll();
-		for (HibGroup group : getGroups()) {
-			for (HibRole role : groupRoot.getRoles(group)) {
-				setUniqueLinkOutTo(toGraph(role), ASSIGNED_TO_ROLE);
-			}
-		}
 	}
 
 	@Override

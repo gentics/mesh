@@ -46,11 +46,16 @@ import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.AbstractTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
@@ -105,8 +110,10 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Inject
 	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot, 
 		DaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
-		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry,
-		Binaries binaries) {
+		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, 
+		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler, 
+		WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage, 
+		Binaries binaries, SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -123,7 +130,8 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new TxDataImpl(options, boot, permissionRoots);
+		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler, 
+				webRootLinkReplacer, serverSchemaStorage, schemaComparator, microschemaComparator);
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
 		this.caches = caches;
@@ -208,11 +216,6 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public TxData data() {
 		return txData;
-	}
-
-	@Override
-	public HibBranch getBranch(InternalActionContext ac) {
-		return contextDataRegistry.getBranch(ac);
 	}
 
 	@Override

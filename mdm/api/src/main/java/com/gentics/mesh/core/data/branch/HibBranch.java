@@ -4,6 +4,8 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -14,7 +16,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.HibUserTracking;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
@@ -31,7 +32,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * Domain model for branch.
  */
-public interface HibBranch extends HibCoreElement<BranchResponse>, HibUserTracking {
+public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferenceableElement<BranchReference>, HibUserTracking, HibNamedElement {
 
 	/**
 	 * Return the branch name.
@@ -455,10 +456,5 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibUserTracki
 	@Override
 	default String getSubETag(InternalActionContext ac) {
 		return String.valueOf(getLastEditedTimestamp());
-	}
-
-	@Override
-	default BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return Tx.get().branchDao().transformToRestSync(this, ac, level, languageTags);
 	}
 }

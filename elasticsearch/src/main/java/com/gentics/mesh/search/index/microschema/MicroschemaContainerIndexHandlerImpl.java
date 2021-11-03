@@ -56,12 +56,12 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Microschema.composeIndexName();
+		return HibMicroschema.composeIndexName();
 	}
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Microschema.composeDocumentId(entry.getElementUuid());
+		return HibMicroschema.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
@@ -88,17 +88,17 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(Microschema.composeIndexName(), null);
+		return diffAndSync(HibMicroschema.composeIndexName(), null);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Microschema.composeIndexName());
+		return filterIndicesByType(indices, HibMicroschema.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Microschema.composeIndexName());
+		return Collections.singleton(HibMicroschema.composeIndexName());
 	}
 
 	@Override
@@ -113,7 +113,7 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = Microschema.composeIndexName();
+		String indexName = HibMicroschema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "microschema");
 		return Collections.singletonMap(indexName, info);
 	}

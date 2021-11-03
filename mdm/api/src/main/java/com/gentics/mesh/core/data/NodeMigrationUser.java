@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserReference;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -39,15 +38,6 @@ public class NodeMigrationUser implements HibUser {
 	@Override
 	public String getUsername() {
 		return "node_migration";
-	}
-
-	@Override
-	public void updateShortcutEdges() {
-	}
-
-	@Override
-	public String getRolesHash() {
-		return null;
 	}
 
 	@Override
@@ -83,11 +73,6 @@ public class NodeMigrationUser implements HibUser {
 	@Override
 	public String getEmailAddress() {
 		return null;
-	}
-
-	@Override
-	public void remove() {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -212,11 +197,6 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public String getAPITokenIssueDate() {
-		return null;
-	}
-
-	@Override
 	public HibUser setReferencedNode(HibNode node) {
 		return this;
 	}
@@ -319,11 +299,6 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return null;
-	}
-
-	@Override
 	public String getETag(InternalActionContext ac) {
 		return null;
 	}
@@ -338,4 +313,13 @@ public class NodeMigrationUser implements HibUser {
 		
 	}
 
+	@Override
+	public String getName() {
+		return getUsername();
+	}
+
+	@Override
+	public void setName(String name) {
+		setUsername(name);
+	}
 }
