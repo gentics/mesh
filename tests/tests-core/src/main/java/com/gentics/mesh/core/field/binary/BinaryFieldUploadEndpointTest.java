@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.cmdline.params.LanguageParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Ignore;
@@ -614,12 +615,13 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	 * @throws IOException
 	 */
 	@Test
-	public void testDeleteBinaryNodeDeuplication() throws IOException {
+	public void testDeleteBinaryNodeDeduplication() throws IOException {
 		// The data
 		String contentType = "application/blub";
 		int binaryLen = 8000;
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		String fileName = "somefile.dat";
+		String fileNameA = "somefile-a.dat";
+		String fileNameB = "somefile-b.dat";
 
 		// The test nodes
 		HibNode nodeA = folder("news");
@@ -640,9 +642,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// Upload the binary in both nodes
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidA, "en", versionA, "binary", new ByteArrayInputStream(buffer.getBytes()),
-			buffer.length(), fileName, contentType));
+			buffer.length(), fileNameA, contentType));
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidB, "en", versionB, "binary", new ByteArrayInputStream(buffer.getBytes()),
-			buffer.length(), fileName, contentType));
+			buffer.length(), fileNameB, contentType));
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		File binaryFileA;
