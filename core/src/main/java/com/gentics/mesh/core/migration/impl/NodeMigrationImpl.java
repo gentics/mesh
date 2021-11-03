@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -95,12 +96,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
 			Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
 				SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
-				Result<? extends HibNodeFieldContainer> it = schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid());
-				Queue<HibNodeFieldContainer> queue = new ArrayDeque<>();
-				while (it.hasNext()) {
-					queue.add(it.next());
-				}
-				return queue;
+				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).stream()
+						.collect(Collectors.toCollection(ArrayDeque::new));
 			});
 
 			if (metrics.isEnabled()) {
