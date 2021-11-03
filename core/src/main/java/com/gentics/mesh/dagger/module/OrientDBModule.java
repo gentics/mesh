@@ -12,53 +12,8 @@ import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializerImpl;
-import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
-import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
-import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.*;
+import com.gentics.mesh.core.data.dao.impl.*;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.db.Database;
@@ -145,9 +100,6 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract RequestDelegator bindRequestDelegator(ClusterEnabledRequestDelegatorImpl e);
 
-	@Binds
-	abstract Binaries bindBinaries(BinariesImpl e);
-
 	// DAOs
 
 	@Binds
@@ -182,6 +134,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract BinaryDaoWrapper bindBinaryDaoWrapper(BinaryDaoWrapperImpl e);
+
+	@Binds
+	abstract S3BinaryDaoWrapper bindS3BinaryDaoWrapper(S3BinaryDaoWrapperImpl e);
 
 	@Binds
 	abstract BranchDaoWrapper bindBranchDaoWrapper(BranchDaoWrapperImpl e);
@@ -224,6 +179,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract BinaryDao bindBinaryDao(BinaryDaoWrapper e);
+
+	@Binds
+	abstract S3BinaryDao s3BinaryDao(S3BinaryDaoWrapper e);
 
 	@Binds
 	abstract BranchDao bindBranchDao(BranchDaoWrapper e);
