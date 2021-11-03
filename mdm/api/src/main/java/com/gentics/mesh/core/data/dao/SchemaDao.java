@@ -234,7 +234,10 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @param schema
 	 * @return
 	 */
-	Result<HibProject> findLinkedProjects(HibSchema schema);
+	default Result<HibProject> findLinkedProjects(HibSchema schema) {
+		return new TraversalResult<>(Tx.get().projectDao()
+				.findAll().stream().filter(project -> isLinkedToProject(schema, project)));
+	}
 
 	/**
 	 * Load all nodes, accessible the given branch with Read Published permission.

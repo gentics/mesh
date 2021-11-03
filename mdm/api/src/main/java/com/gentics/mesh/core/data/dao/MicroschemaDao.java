@@ -34,6 +34,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
@@ -102,7 +103,10 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @param schema
 	 * @return
 	 */
-	Result<HibProject> findLinkedProjects(HibMicroschema schema);
+	default Result<HibProject> findLinkedProjects(HibMicroschema schema) {
+		return new TraversalResult<>(Tx.get().projectDao()
+				.findAll().stream().filter(project -> isLinkedToProject(schema, project)));
+	}
 
 	/**
 	 * Add the microschema to the project.
