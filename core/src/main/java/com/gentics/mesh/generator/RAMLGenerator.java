@@ -24,7 +24,7 @@ import org.raml.model.Resource;
 import org.raml.model.Response;
 
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.core.endpoint.admin.AdminEndpointImpl;
+import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
@@ -367,7 +367,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		initEndpoint(microschemaEndpoint);
 		addEndpoints(coreBasePath, resources, microschemaEndpoint);
 
-		AdminEndpointImpl adminEndpoint = Mockito.spy(new AdminEndpointImpl());
+		AdminEndpoint adminEndpoint = Mockito.spy(new AdminEndpoint());
 		initEndpoint(adminEndpoint);
 		addEndpoints(coreBasePath, resources, adminEndpoint);
 
