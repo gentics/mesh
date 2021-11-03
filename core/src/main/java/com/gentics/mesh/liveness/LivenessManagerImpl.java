@@ -1,4 +1,4 @@
-package com.gentics.mesh.monitor.liveness;
+package com.gentics.mesh.liveness;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import dagger.Lazy;
