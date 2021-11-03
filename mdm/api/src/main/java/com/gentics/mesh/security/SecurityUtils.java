@@ -10,5 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  */
 public interface SecurityUtils {
 
+	/**
+	 * Get an implementation of {@link PasswordEncoder}.
+	 * 
+	 * @return
+	 */
 	PasswordEncoder passwordEncoder();
 }
