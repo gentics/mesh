@@ -62,9 +62,6 @@ import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.endpoint.admin.AdminHandler;
-import com.gentics.mesh.core.endpoint.admin.ClusterAdminHandler;
-import com.gentics.mesh.core.endpoint.admin.OrientDBAdminHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
@@ -91,8 +88,6 @@ import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.dagger.OrientDBCoreModule;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.gentics.mesh.rest.MeshLocalClusterClient;
-import com.gentics.mesh.rest.MeshLocalClusterClientImpl;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.BucketManagerImpl;
 import com.hazelcast.core.HazelcastInstance;
@@ -131,15 +126,6 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract WriteLock bindWriteLock(WriteLockImpl e);
-
-	@Binds
-	abstract ClusterAdminHandler bindClusterAdminHandler(OrientDBAdminHandler e);
-	
-	@Binds
-	abstract AdminHandler bindAdminHandler(ClusterAdminHandler e);
-
-	@Binds
-	abstract MeshLocalClusterClient meshLocalClusterClient(MeshLocalClusterClientImpl e);
 
 	@Binds
 	abstract RequestDelegator bindRequestDelegator(ClusterEnabledRequestDelegatorImpl e);

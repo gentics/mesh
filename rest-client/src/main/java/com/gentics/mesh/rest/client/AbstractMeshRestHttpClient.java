@@ -7,14 +7,13 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.HttpMethod;
-import com.gentics.mesh.rest.client.method.ClusterAdminClientMethods;
 
 import io.reactivex.Single;
 
 /**
  * Abstract class for mesh REST clients.
  */
-public abstract class AbstractMeshRestHttpClient implements MeshRestClient, ClusterAdminClientMethods {
+public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	public static final int DEFAULT_PORT = 8080;
 
