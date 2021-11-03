@@ -6,6 +6,12 @@ import java.util.stream.Stream;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.context.InternalActionContext;
 
+/**
+ * Util methods, related to the content versioning.
+ *
+ * @author plyhun
+ *
+ */
 public final class VersionUtils {
 
 	private VersionUtils() {}

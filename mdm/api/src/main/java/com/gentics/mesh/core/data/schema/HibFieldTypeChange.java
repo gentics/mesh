@@ -4,11 +4,24 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.*;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.DateField;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -22,6 +35,15 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.*;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.google.common.collect.ImmutableSet;
 
 /**

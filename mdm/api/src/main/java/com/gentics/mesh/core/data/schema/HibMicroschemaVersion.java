@@ -18,6 +18,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
 /**
  * Domain model for microschema versions.
@@ -32,7 +33,19 @@ public interface HibMicroschemaVersion
 		return TYPE_INFO;
 	}
 
-	MicroschemaReference transformToReference();
+	/**
+	 * Transform the version to a reference POJO.
+	 *
+	 * @return
+	 */
+	default MicroschemaReference transformToReference() {
+		MicroschemaReference reference = new MicroschemaReferenceImpl();
+		reference.setName(getName());
+		reference.setUuid(getSchemaContainer().getUuid());
+		reference.setVersion(getVersion());
+		reference.setVersionUuid(getUuid());
+		return reference;
+	}
 
 	// TODO MDM rename method
 	HibMicroschema getSchemaContainer();

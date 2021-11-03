@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
@@ -246,10 +245,5 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	@Override
 	public void unpersist(Schema element) {
 		element.remove();
-	}
-
-	@Override
-	public void deleteVersion(HibSchemaVersion v, BulkActionContext bac) {
-		toGraph(v).delete(bac);		
 	}
 }

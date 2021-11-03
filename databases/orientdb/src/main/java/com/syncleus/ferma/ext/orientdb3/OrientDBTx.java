@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.security.SecurityUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.madl.traversal.RawTraversalResult;
@@ -65,7 +66,6 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;

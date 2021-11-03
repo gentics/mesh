@@ -59,8 +59,6 @@ import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.*;
-import com.gentics.mesh.core.data.dao.impl.*;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.db.Database;
@@ -146,6 +144,10 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract RequestDelegator bindRequestDelegator(ClusterEnabledRequestDelegatorImpl e);
+
+	@Binds
+	abstract Binaries bindBinaries(BinariesImpl e);
+
 	// DAOs
 
 	@Binds
@@ -219,9 +221,6 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract TagFamilyDao bindTagFamilyDao(TagFamilyDaoWrapper e);
-
-	@Binds
-	abstract S3BinaryDaoWrapper s3bindBinaryDao(S3BinaryDaoWrapperImpl e);
 
 	@Binds
 	abstract BinaryDao bindBinaryDao(BinaryDaoWrapper e);

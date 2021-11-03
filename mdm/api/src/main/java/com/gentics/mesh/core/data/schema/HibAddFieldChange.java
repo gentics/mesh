@@ -18,8 +18,25 @@ import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
  * Change entry which contains information for a field to be added to the schema.

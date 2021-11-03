@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -31,6 +30,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -113,11 +113,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	}
 
 	@Override
-	public void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch) {
-		toGraph(project).getMicroschemaContainerRoot().removeMicroschema(toGraph(microschema), batch);
-	}
-
-	@Override
 	public String getETag(HibMicroschema schema, InternalActionContext ac) {
 		return toGraph(schema).getETag(ac);
 	}
@@ -151,18 +146,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	@Override
 	public boolean contains(HibProject project, HibMicroschema microschema) {
 		return toGraph(project).getMicroschemaContainerRoot().contains(microschema);
-	}
-
-	@Override
-	public void addMicroschema(HibProject project, HibUser user, HibMicroschema microschema,
-		EventQueueBatch batch) {
-		Project graphProject = toGraph(project);
-		graphProject.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
-	}
-
-	@Override
-	public void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch) {
-		toGraph(project).getMicroschemaContainerRoot().removeMicroschema(microschema, batch);
 	}
 
 	@Override
@@ -239,11 +222,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	}
 
 	@Override
-	public void deleteVersion(HibMicroschemaVersion version, BulkActionContext bac) {
-		toGraph(version).delete(bac);
-	}
-
-	@Override
 	public HibMicroschemaVersion findVersionByRev(HibMicroschema hibMicroschema, String version) {
 		return toGraph(hibMicroschema).findVersionByRev(version);
 	}
@@ -256,5 +234,11 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	@Override
 	public boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
 		return boot.get().meshRoot().getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public Result<HibProject> findLinkedProjects(HibMicroschema schema) {
+		return new TraversalResult<>(boot.get().meshRoot().getProjectRoot()
+				.findAll().stream().filter(project -> project.getMicroschemaContainerRoot().contains(schema)));
 	}
 }

@@ -7,6 +7,12 @@ import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterRes
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 
+/**
+ * Cluster management methods for an admin client.
+ *
+ * @author plyhun
+ *
+ */
 public interface ClusterAdminClientMethods extends AdminClientMethods {
 
 	/**
