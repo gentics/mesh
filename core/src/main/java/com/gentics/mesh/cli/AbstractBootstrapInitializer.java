@@ -64,6 +64,7 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.distributed.DistributedEventManager;
+import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -144,6 +145,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Inject
 	public BCryptPasswordEncoder passwordEncoder;
+
+	@Inject
+	public MasterElector coordinatorMasterElector;
 
 	@Inject
 	public ChangelogSystem changelogSystem;

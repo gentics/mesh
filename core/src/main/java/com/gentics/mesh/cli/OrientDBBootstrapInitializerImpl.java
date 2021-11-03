@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -59,9 +58,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 	@Inject
 	public ServerSchemaStorageImpl schemaStorage;
-
-	@Inject
-	public MasterElector coordinatorMasterElector;
 
 	@Inject
 	public OrientDBDatabase db;
