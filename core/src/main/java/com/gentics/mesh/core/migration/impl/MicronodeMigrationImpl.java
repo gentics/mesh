@@ -16,7 +16,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
@@ -90,7 +89,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			}
 
 			// Get the containers, that need to be transformed
-			List<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(tx -> {
+			List<? extends HibNodeFieldContainer> fieldContainersResult = db.tx(tx -> {
 				MicroschemaDaoWrapper microschemaDao = (MicroschemaDaoWrapper) tx.microschemaDao();
 				return microschemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).list();
 			});
@@ -141,7 +140,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @throws Exception
 	 */
 	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
-		NodeGraphFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
+		HibNodeFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
 		Set<String> touchedFields, VersionNumber nextDraftVersion)
 		throws Exception {
 		NodeDaoWrapper nodeDao = (NodeDaoWrapper) Tx.get().nodeDao();
@@ -188,7 +187,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 */
 	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, HibBranch branch,
 										   HibMicroschemaVersion fromVersion,
-										   HibMicroschemaVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
+										   HibMicroschemaVersion toVersion, HibNodeFieldContainer container, Set<String> touchedFields,
 										   List<Exception> errorsDetected) {
 		String containerUuid = container.getUuid();
 
@@ -245,7 +244,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @throws Exception
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
-		NodeGraphFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
+		HibNodeFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
 		Set<String> touchedFields) throws Exception {
 		NodeDaoWrapper nodeDao = (NodeDaoWrapper) Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();

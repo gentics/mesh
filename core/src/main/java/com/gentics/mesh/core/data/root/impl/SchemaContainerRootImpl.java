@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
@@ -22,15 +21,13 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaRoot;
-import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
@@ -67,30 +64,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public void addSchemaContainer(HibUser user, HibSchema schema, EventQueueBatch batch) {
-		addItem(toGraph(schema));
-	}
-
-	@Override
-	public void removeSchemaContainer(HibSchema schemaContainer, EventQueueBatch batch) {
-		removeItem(toGraph(schemaContainer));
-	}
-
-	@Override
-	public long globalCount() {
-		return toGraph(db()).count(SchemaContainerImpl.class);
-	}
-
-	@Override
-	public boolean contains(HibSchema schema) {
-		if (findByUuid(schema.getUuid()) == null) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		if (mesh().boot().meshRoot().getSchemaContainerRoot() == this) {
 			throw error(INTERNAL_SERVER_ERROR, "Deletion of the global schema root is not possible");
@@ -108,13 +81,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public Schema create() {
-		return getGraph().addFramedVertex(SchemaContainerImpl.class);
-	}
-
-	@Override
 	public SchemaVersion createVersion() {
-		return getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		return getGraph().addFramedVertex(getSchemaVersionPersistenceClass());
 	}
 
 	/**
@@ -144,5 +112,10 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	@Override
 	public Iterable<? extends SchemaVersion> findAllVersions(Schema schema) {
 		return schema.out(HAS_PARENT_CONTAINER).frameExplicit(SchemaContainerVersionImpl.class);
+	}
+
+	@Override
+	public Class<? extends SchemaVersion> getSchemaVersionPersistenceClass() {
+		return SchemaContainerVersionImpl.class;
 	}
 }

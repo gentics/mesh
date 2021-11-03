@@ -10,6 +10,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -18,7 +21,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 import io.vertx.core.json.JsonObject;
 
@@ -26,10 +28,6 @@ import io.vertx.core.json.JsonObject;
  * @see SchemaChange
  */
 public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> extends MeshVertexImpl implements SchemaChange<T> {
-
-	private static String MIGRATION_SCRIPT_PROPERTY_KEY = "migrationScript";
-
-	public static final String REST_PROPERTY_PREFIX_KEY = "fieldProperty_";
 
 	@Override
 	public HibSchemaChange<?> getNextChange() {
@@ -48,32 +46,29 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public SchemaChange<T> setPreviousChange(SchemaChange<?> change) {
-		setUniqueLinkInTo(change, HAS_CHANGE);
+	public SchemaChange<T> setPreviousChange(HibSchemaChange<?> change) {
+		setUniqueLinkInTo(toGraph(change), HAS_CHANGE);
 		return this;
 	}
 
 	@Override
-	abstract public SchemaChangeOperation getOperation();
-
-	@Override
-	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getPreviousContainerVersion() {
+	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
 		return (R) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setPreviousContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion) {
+	public SchemaChange<T> setPreviousContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		setSingleLinkInTo(toGraph(containerVersion), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
 	@Override
-	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getNextContainerVersion() {
+	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getNextContainerVersion() {
 		return (R) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion) {
+	public HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		setSingleLinkOutTo(toGraph(containerVersion), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
@@ -96,7 +91,11 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public <R> Map<String, R> getRestProperties() {
-		return getProperties(REST_PROPERTY_PREFIX_KEY);
+		Map<String, R> rawMap = getProperties(REST_PROPERTY_PREFIX_KEY);
+		return rawMap.entrySet().stream()
+				.collect(Collectors.toMap(
+						entry -> entry.getKey().replace(REST_PROPERTY_PREFIX_KEY, StringUtils.EMPTY), 
+						entry -> entry.getValue()));
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -53,11 +52,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public void removeUser(User user) {
 		removeItem(user);
-	}
-
-	@Override
-	public long globalCount() {
-		return db().count(UserImpl.class);
 	}
 
 	/**
@@ -102,11 +96,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public boolean update(User element, InternalActionContext ac, EventQueueBatch batch) {
 		throw new RuntimeException("Wrong invocation. Use dao instead");
-	}
-
-	@Override
-	public User create() {
-		return getGraph().addFramedVertex(UserImpl.class);
 	}
 
 	@Override

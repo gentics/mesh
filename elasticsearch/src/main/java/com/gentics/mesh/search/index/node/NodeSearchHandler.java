@@ -146,7 +146,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 					}
 
 					// Locate the matching container and add it to the list of found containers
-					HibNodeFieldContainer container = contentDao.getGraphFieldContainer(element, languageTag, tx.getBranch(ac), type);
+					HibNodeFieldContainer container = contentDao.getFieldContainer(element, languageTag, tx.getBranch(ac), type);
 					if (container != null) {
 						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag), type));
 					} else {

@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -64,7 +63,6 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.field.FieldType;
 
 import io.vertx.core.logging.Logger;
@@ -171,16 +169,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 		linkOut(toGraph(baseNode), HAS_ROOT_NODE);
 	}
 
-	/**
-	 * @deprecated Use {@link ProjectDaoWrapper}{@link #transformToRestSync(InternalActionContext, int, String...)} instead
-	 */
-	@Override
-	@Deprecated
-	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		ProjectDao projectDao = mesh().boot().projectDao();
-		return projectDao.transformToRestSync(this, ac, level, languageTags);
-	}
-
 	@Override
 	public Node createBaseNode(HibUser creator, SchemaVersion schemaVersion) {
 		Node baseNode = getBaseNode();
@@ -246,11 +234,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	public String getSubETag(InternalActionContext ac) {
 		ProjectDao projectRoot = mesh().boot().projectDao();
 		return projectRoot.getSubETag(this, ac);
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandlerImpl.baseRoute(ac) + "/projects/" + getUuid();
 	}
 
 	@Override

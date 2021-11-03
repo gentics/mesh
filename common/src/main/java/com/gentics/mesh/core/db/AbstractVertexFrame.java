@@ -4,11 +4,11 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.AbstractElementFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;

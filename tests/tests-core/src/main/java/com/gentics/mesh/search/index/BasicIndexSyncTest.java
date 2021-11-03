@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -108,9 +109,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("user", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			boot().userDao().findByName("user_3").remove();
-			;
+		tx(tx -> {
+			UserDao userDao = tx.userDao();
+			tx.delete(userDao.findByName("user_3"), userDao);
 		});
 		syncIndex();
 		assertMetrics("user", 0, 0, 1);
@@ -280,7 +281,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert update
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer draft = contentDao.getGraphFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
+			HibNodeFieldContainer draft = contentDao.getFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
 			draft.getString("slug").setString("updated");
 		});
 		syncIndex();
@@ -289,7 +290,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer draft = contentDao.getGraphFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
+			HibNodeFieldContainer draft = contentDao.getFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
 			contentDao.delete(draft, new DummyBulkActionContext()); // TODO may fail
 		});
 		syncIndex();
@@ -323,8 +324,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao.findByName("schema_3");
-			schema.getLatestVersion().deleteElement();
-			schema.deleteElement();
+			schemaDao.deleteVersion(schema.getLatestVersion(), new DummyBulkActionContext());
+			tx.delete(schema, schema.getClass());
 		});
 		syncIndex();
 		assertMetrics("schema", 0, 0, 1);
@@ -354,8 +355,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			MicroschemaDao microschemaDao = tx.microschemaDao();
 			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
-			microschema.getLatestVersion().deleteElement();
-			microschema.deleteElement();
+			microschemaDao.deleteVersion(microschema.getLatestVersion(), new DummyBulkActionContext());
+			tx.delete(microschema, microschema.getClass());
 		});
 		syncIndex();
 		assertMetrics("microschema", 0, 0, 1);

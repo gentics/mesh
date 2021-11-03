@@ -30,19 +30,6 @@ public abstract class AbstractDaoWrapper<T extends HibBaseElement> implements Da
 		this.permissions = permissions;
 	}
 
-	/**
-	 * Compare both values in order to determine whether the graph value should be updated.
-	 * 
-	 * @param restValue
-	 *            Rest model string value
-	 * @param graphValue
-	 *            Graph string value
-	 * @return true if restValue is not null and the restValue is not equal to the graph value. Otherwise false.
-	 */
-	protected <E> boolean shouldUpdate(E restValue, E graphValue) {
-		return restValue != null && !restValue.equals(graphValue);
-	}
-
 	@Override
 	public PermissionInfo getRolePermissions(HibCoreElement<? extends RestModel> element, InternalActionContext ac, String roleUuid) {
 		return permissions.get().getRolePermissions(element, ac, roleUuid);
@@ -57,5 +44,4 @@ public abstract class AbstractDaoWrapper<T extends HibBaseElement> implements Da
 	public void setRolePermissions(T element, InternalActionContext ac, GenericRestResponse model) {
 		model.setRolePerms(permissions.get().getRolePermissions(element, ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
-
 }

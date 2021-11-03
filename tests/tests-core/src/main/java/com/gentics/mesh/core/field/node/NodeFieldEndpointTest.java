@@ -130,7 +130,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			ContentDao contentDao = tx.contentDao();
 			// Assert that the old version was not modified
 			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNode(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNode(FIELD_NAME)).isNotNull();
@@ -285,7 +285,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();
 		}
@@ -305,7 +305,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();
 		}
@@ -349,7 +349,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Create test field
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, referencedNode);
 			tx.success();
 		}
@@ -380,7 +380,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			HibNode node = folder("2015");
 
 			// Create test field
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, referencedNode);
 
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
@@ -401,7 +401,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Create test field
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
 			tx.success();
 		}

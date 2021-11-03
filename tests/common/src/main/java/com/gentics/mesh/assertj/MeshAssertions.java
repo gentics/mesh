@@ -177,7 +177,7 @@ public class MeshAssertions extends Assertions {
 		return new SchemaCreateRequestAssert(actual);
 	}
 
-	public static SchemaContainerAssert assertThat(GraphFieldSchemaContainer<?, ?, ?, ?> actual) {
+	public static SchemaContainerAssert assertThat(GraphFieldSchemaContainer<?, ?, ?, ?, ?> actual) {
 		return new SchemaContainerAssert(actual);
 	}
 

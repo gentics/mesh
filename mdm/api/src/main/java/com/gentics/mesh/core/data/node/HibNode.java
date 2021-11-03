@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node;
 
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +36,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
@@ -679,4 +681,8 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	 */
 	NodeVersionsResponse transformToVersionList(InternalActionContext ac);
 
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/nodes/" + getUuid();
+	}
 }

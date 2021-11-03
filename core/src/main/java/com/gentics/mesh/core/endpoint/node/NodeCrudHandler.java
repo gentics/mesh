@@ -17,9 +17,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.math.NumberUtils;
-
-import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
@@ -28,12 +25,10 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -47,7 +42,6 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -276,7 +270,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				HibBranch branch = tx.getBranch(ac);
 
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
+				// The project is considered within tagDao.loadObjectByUuid();
+				HibTag tag = tagDao.loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 				if (tagDao.hasTag(node, tag, branch)) {
 					if (log.isDebugEnabled()) {
@@ -474,34 +469,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}
-	}
-
-	/**
-	 * Read a single node and respond with a transformed node.
-	 * 
-	 * @param ac
-	 *            Action context
-	 * @param uuid
-	 *            Uuid of the node which should be read
-	 * @param handler
-	 *            Handler which provides the root vertex which will be used to locate the node
-	 */
-	protected void readElement(InternalActionContext ac, String uuid, TxAction1<RootVertex<Node>> handler) {
-		validateParameter(uuid, "uuid");
-
-		utils.syncTx(ac, tx -> {
-			NodeDao nodeDao = tx.nodeDao();
-			RootVertex<Node> root = handler.handle();
-			InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-			// TODO refactor to use dao
-			HibNode node = root.loadObjectByUuid(ac, uuid, requiredPermission);
-			return nodeDao.transformToRestSync(node, ac, 0);
-		}, model -> {
-			HttpResponseStatus code = HttpResponseStatus
-				.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
-			ac.send(model, code);
-		});
-
 	}
 
 	/**

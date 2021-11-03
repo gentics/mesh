@@ -83,7 +83,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.TraversalResult;
 
 public final class TestMocks {
 
@@ -262,7 +262,7 @@ public final class TestMocks {
 		when(schema.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(schema.getEditor()).thenReturn(user);
 		when(schema.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
-		when(schema.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		//when(schema.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(schema.getElementVersion()).thenReturn(UUID_5);
 		return schema;
 	}
@@ -328,7 +328,7 @@ public final class TestMocks {
 		when(container.getNode()).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);
 
-		when(contentDao.getLatestDraftGraphFieldContainer(node, languageTag)).thenReturn(container);
+		when(contentDao.getLatestDraftFieldContainer(node, languageTag)).thenReturn(container);
 
 		when(node.getElementVersion()).thenReturn(UUID_4);
 		return node;

@@ -22,7 +22,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.List;
 
@@ -78,11 +77,10 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.gentics.mesh.handler.VersionHandlerImpl;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -160,11 +158,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 			batch.add(onUpdated());
 		}
 		return modified;
-	}
-
-	@Override
-	public BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return getRoot().transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
@@ -492,8 +485,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	 * @param container
 	 *            Container to handle
 	 */
-	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>> void unassign(
-		HibFieldSchemaElement<R, RM, SC, SCV> container) {
+	protected <
+				R extends FieldSchemaContainer, 
+				RM extends FieldSchemaContainerVersion, 
+				RE extends NameUuidReference<RE>, 
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>
+	> void unassign(HibFieldSchemaElement<R, RM, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaVersion) {
@@ -510,16 +508,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 			unlinkOut(toGraph(version), edgeLabel);
 			version = version.getPreviousVersion();
 		}
-	}
-
-	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return String.valueOf(getLastEditedTimestamp());
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandlerImpl.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();
 	}
 
 	@Override
@@ -568,7 +556,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	protected BranchMeshEventModel createEvent(MeshEvent event) {
+	public BranchMeshEventModel createEvent(MeshEvent event) {
 		BranchMeshEventModel model = new BranchMeshEventModel();
 		model.setEvent(event);
 		fillEventInfo(model);

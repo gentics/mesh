@@ -13,6 +13,8 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.schema.*;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
@@ -21,7 +23,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
@@ -31,16 +33,16 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.error.NameConflictException;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
@@ -62,7 +64,7 @@ import io.vertx.core.logging.LoggerFactory;
  * TODO MDM Use {@link ProjectDao} instead of ProjectRoot once ready
  */
 @Singleton
-public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implements ProjectDaoWrapper {
+public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectResponse, HibProject, Project> implements ProjectDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectDaoWrapperImpl.class);
 
@@ -117,27 +119,9 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
-		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
-		return root.findByName(ac, projectName, perm);
-	}
-
-	@Override
 	public HibProject findByUuid(String uuid) {
 		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
 		return root.findByUuid(uuid);
-	}
-
-	@Override
-	public HibProject loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
-		return root.loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		ProjectRoot root = boot.get().meshRoot().getProjectRoot();
-		return root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -254,6 +238,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
 		NodeDao nodeDao = boot.get().nodeDao();
+		SchemaDao schemaDao = boot.get().schemaDao();
 
 		Project graphProject = toGraph(project);
 
@@ -275,7 +260,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 
 		// Unassign the schema from the container
 		for (Schema container : graphProject.getSchemaContainerRoot().findAll()) {
-			graphProject.getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
+			schemaDao.removeSchema(container, graphProject, bac.batch());
 		}
 
 		// Remove the project schema root from the index
@@ -313,7 +298,6 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		setRolePermissions(graphProject, ac, restProject);
 
 		return restProject;
-
 	}
 
 	@Override
@@ -335,9 +319,15 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public MeshEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment) {
+	public ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment) {
 		Project graphProject = toGraph(project);
 		return graphProject.onSchemaAssignEvent(schema, assignment);
+	}
+
+	@Override
+	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibProject project, HibMicroschema microschema, Assignment assignment) {
+		Project graphProject = toGraph(project);
+		return graphProject.onMicroschemaAssignEvent(microschema, assignment);
 	}
 
 	@Override
@@ -348,6 +338,11 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	@Override
 	public Result<? extends HibProject> findAll() {
 		return boot.get().meshRoot().getProjectRoot().findAll();
+	}
+
+	@Override
+	protected RootVertex<Project> getRoot() {
+		return boot.get().meshRoot().getProjectRoot();
 	}
 
 }

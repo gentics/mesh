@@ -1092,8 +1092,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		ContentDao contentDao = boot().contentDao();
 		final String newName = "english renamed name";
 		String uuid = tx(() -> folder("2015").getUuid());
-		assertEquals("2015", tx(() -> contentDao.getLatestDraftGraphFieldContainer(folder("2015"), english()).getString("slug").getString()));
-		VersionNumber version = tx(() -> contentDao.getLatestDraftGraphFieldContainer(folder("2015"), english()).getVersion());
+		assertEquals("2015", tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getString("slug").getString()));
+		VersionNumber version = tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getVersion());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
@@ -1179,7 +1179,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			folder("2015").setCreated(null);
-			contentDao.getLatestDraftGraphFieldContainer(folder("2015"), english()).setEditor(null);
+			contentDao.getLatestDraftFieldContainer(folder("2015"), english()).setEditor(null);
 			tx.success();
 		}
 
@@ -1672,7 +1672,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			ContentDao contentDao = tx.contentDao();
 			GroupDao groupRoot = tx.groupDao();
 			HibNode prod = content("concorde");
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(prod, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(prod, english());
 			assertEquals("Concorde_english_name", container.getString("teaser").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
 			UserInfo userInfo = data().createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
@@ -1713,7 +1713,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
 		waitForSearchIdleEvent();
@@ -1731,7 +1731,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
@@ -1770,7 +1770,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftGraphFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 
@@ -1923,7 +1923,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parameters.setLanguages("de", "en");
 			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), BAD_REQUEST, "node_unhandled_fields", "folder", "[someField]");
 
-			HibNodeFieldContainer englishContainer = contentDao.getLatestDraftGraphFieldContainer(folder("2015"), english());
+			HibNodeFieldContainer englishContainer = contentDao.getLatestDraftFieldContainer(folder("2015"), english());
 			assertNotEquals("The name should not have been changed.", newName, englishContainer.getString("name").getString());
 		}
 	}

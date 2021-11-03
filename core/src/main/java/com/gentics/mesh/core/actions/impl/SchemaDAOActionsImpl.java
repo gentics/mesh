@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -11,12 +9,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -61,9 +58,9 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<? extends HibSchema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibSchema> loadAll(Tx tx, HibProject project, InternalActionContext ac, PagingParameters pagingInfo) {
 		SchemaDao schemaDao = tx.schemaDao();
-		return schemaDao.findAll(ac, project, pagingInfo);
+		return schemaDao.findAll(project, ac, pagingInfo);
 	}
 
 	@Override
@@ -100,20 +97,17 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public SchemaResponse transformToRestSync(Tx tx, HibSchema schema, InternalActionContext ac, int level, String... languageTags) {
-		Schema graphSchema = toGraph(schema);
-		return graphSchema.transformToRestSync(ac, level, languageTags);
+		return tx.schemaDao().transformToRestSync(schema, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibSchema schema) {
-		Schema graphSchema = toGraph(schema);
-		return graphSchema.getAPIPath(ac);
+		return schema.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibSchema schema) {
-		Schema graphSchema = toGraph(schema);
-		return graphSchema.getETag(ac);
+		return schema.getETag(ac);
 	}
 
 }

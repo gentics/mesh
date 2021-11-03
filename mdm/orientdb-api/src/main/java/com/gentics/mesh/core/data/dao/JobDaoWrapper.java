@@ -7,5 +7,4 @@ import com.gentics.mesh.core.data.job.HibJob;
  */
 public interface JobDaoWrapper extends JobDao {
 
-
 }

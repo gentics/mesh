@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.data.branch;
 
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -22,12 +26,13 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Domain model for branch.
  */
-public interface HibBranch extends HibCoreElement<BranchResponse>, HibUserTracking {
+public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferenceableElement<BranchReference>, HibUserTracking, HibNamedElement {
 
 	/**
 	 * Return the branch name.
@@ -443,4 +448,13 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibUserTracki
 	 */
 	BranchReference transformToReference();
 
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();
+	}
+
+	@Override
+	default String getSubETag(InternalActionContext ac) {
+		return String.valueOf(getLastEditedTimestamp());
+	}
 }

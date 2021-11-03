@@ -30,7 +30,7 @@ public class NodeContainerTransformerTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibBranch branch = project().getLatestBranch();
-			HibNodeFieldContainer node = contentDao.getGraphFieldContainer(content("concorde"), english(), branch, PUBLISHED);
+			HibNodeFieldContainer node = contentDao.getFieldContainer(content("concorde"), english(), branch, PUBLISHED);
 			JsonObject document = transformer.toDocument(node, branch.getUuid(), PUBLISHED);
 			JsonObject families = document.getJsonObject("tagFamilies");
 

@@ -12,22 +12,38 @@ import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializerImpl;
+import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
+import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoCollection;
+import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
@@ -46,6 +62,9 @@ import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.admin.ClusterAdminHandler;
+import com.gentics.mesh.core.endpoint.admin.OrientDBAdminHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
@@ -63,6 +82,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
+import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.coordinator.proxy.ClusterEnabledRequestDelegatorImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
@@ -70,6 +91,8 @@ import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.dagger.OrientDBCoreModule;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
+import com.gentics.mesh.rest.MeshLocalClusterClient;
+import com.gentics.mesh.rest.MeshLocalClusterClientImpl;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.BucketManagerImpl;
 import com.hazelcast.core.HazelcastInstance;
@@ -109,52 +132,109 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract WriteLock bindWriteLock(WriteLockImpl e);
 
+	@Binds
+	abstract ClusterAdminHandler bindClusterAdminHandler(OrientDBAdminHandler e);
+	
+	@Binds
+	abstract AdminHandler bindAdminHandler(ClusterAdminHandler e);
+
+	@Binds
+	abstract MeshLocalClusterClient meshLocalClusterClient(MeshLocalClusterClientImpl e);
+
+	@Binds
+	abstract RequestDelegator bindRequestDelegator(ClusterEnabledRequestDelegatorImpl e);
+
+	@Binds
+	abstract Binaries bindBinaries(BinariesImpl e);
+
 	// DAOs
 
 	@Binds
 	abstract DaoCollection daoCollection(OrientDBDaoCollection daoCollection);
 
 	@Binds
-	abstract UserDaoWrapper bindUserDao(UserDaoWrapperImpl e);
+	abstract UserDaoWrapper bindUserDaoWrapper(UserDaoWrapperImpl e);
 
 	@Binds
-	abstract RoleDaoWrapper bindRoleDao(RoleDaoWrapperImpl e);
+	abstract RoleDaoWrapper bindRoleDaoWrapper(RoleDaoWrapperImpl e);
 
 	@Binds
-	abstract GroupDaoWrapper bindGroupDao(GroupDaoWrapperImpl e);
+	abstract GroupDaoWrapper bindGroupDaoWrapper(GroupDaoWrapperImpl e);
 
 	@Binds
-	abstract ProjectDaoWrapper bindProjectDao(ProjectDaoWrapperImpl e);
+	abstract ProjectDaoWrapper bindProjectDaoWrapper(ProjectDaoWrapperImpl e);
 
 	@Binds
-	abstract NodeDaoWrapper bindNodeDao(NodeDaoWrapperImpl e);
+	abstract NodeDaoWrapper bindNodeDaoWrapper(NodeDaoWrapperImpl e);
 
 	@Binds
-	abstract ContentDaoWrapper bindContentDao(ContentDaoWrapperImpl e);
+	abstract ContentDaoWrapper bindContentDaoWrapper(ContentDaoWrapperImpl e);
 
 	@Binds
-	abstract JobDaoWrapper bindJobDao(JobDaoWrapperImpl e);
+	abstract JobDaoWrapper bindJobDaoWrapper(JobDaoWrapperImpl e);
 
 	@Binds
-	abstract TagDaoWrapper bindTagDao(TagDaoWrapperImpl e);
+	abstract TagDaoWrapper bindTagDaoWrapper(TagDaoWrapperImpl e);
 
 	@Binds
-	abstract TagFamilyDaoWrapper bindTagFamilyDao(TagFamilyDaoWrapperImpl e);
+	abstract TagFamilyDaoWrapper bindTagFamilyDaoWrapper(TagFamilyDaoWrapperImpl e);
 
 	@Binds
-	abstract BinaryDaoWrapper bindBinaryDao(BinaryDaoWrapperImpl e);
+	abstract BinaryDaoWrapper bindBinaryDaoWrapper(BinaryDaoWrapperImpl e);
 
 	@Binds
-	abstract BranchDaoWrapper bindBranchDao(BranchDaoWrapperImpl e);
+	abstract BranchDaoWrapper bindBranchDaoWrapper(BranchDaoWrapperImpl e);
 
 	@Binds
-	abstract SchemaDaoWrapper bindSchemaDao(SchemaDaoWrapperImpl e);
+	abstract SchemaDaoWrapper bindSchemaDaoWrapper(SchemaDaoWrapperImpl e);
 
 	@Binds
-	abstract MicroschemaDaoWrapper bindMicroschemaDao(MicroschemaDaoWrapperImpl e);
+	abstract MicroschemaDaoWrapper bindMicroschemaDaoWrapper(MicroschemaDaoWrapperImpl e);
 
 	@Binds
-	abstract LanguageDaoWrapper bindLanguageDao(LanguageDaoWrapperImpl e);
+	abstract LanguageDaoWrapper bindLanguageDaoWrapper(LanguageDaoWrapperImpl e);
+	
+	@Binds
+	abstract UserDao bindUserDao(UserDaoWrapper e);
+
+	@Binds
+	abstract RoleDao bindRoleDao(RoleDaoWrapper e);
+
+	@Binds
+	abstract GroupDao bindGroupDao(GroupDaoWrapper e);
+
+	@Binds
+	abstract ProjectDao bindProjectDao(ProjectDaoWrapper e);
+
+	@Binds
+	abstract NodeDao bindNodeDao(NodeDaoWrapper e);
+
+	@Binds
+	abstract ContentDao bindContentDao(ContentDaoWrapper e);
+
+	@Binds
+	abstract JobDao bindJobDao(JobDaoWrapper e);
+
+	@Binds
+	abstract TagDao bindTagDao(TagDaoWrapper e);
+
+	@Binds
+	abstract TagFamilyDao bindTagFamilyDao(TagFamilyDaoWrapper e);
+
+	@Binds
+	abstract BinaryDao bindBinaryDao(BinaryDaoWrapper e);
+
+	@Binds
+	abstract BranchDao bindBranchDao(BranchDaoWrapper e);
+
+	@Binds
+	abstract SchemaDao bindSchemaDao(SchemaDaoWrapper e);
+
+	@Binds
+	abstract MicroschemaDao bindMicroschemaDao(MicroschemaDaoWrapper e);
+
+	@Binds
+	abstract LanguageDao bindLanguageDao(LanguageDaoWrapper e);
 
 	// END
 

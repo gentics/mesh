@@ -238,7 +238,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			HibMicroschema vcard = microschemaContainer("vcard");
-			MicroschemaResponse schema = vcard.transformToRestSync(ac, 0, "en");
+			MicroschemaResponse schema = Tx.get().microschemaDao().transformToRestSync(vcard, ac, 0, "en");
 			assertEquals(vcard.getUuid(), schema.getUuid());
 		}
 	}

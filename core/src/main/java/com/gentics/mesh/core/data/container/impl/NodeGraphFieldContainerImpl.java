@@ -96,7 +96,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.impl.PathImpl;
 import com.gentics.mesh.path.impl.PathSegmentImpl;

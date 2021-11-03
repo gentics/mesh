@@ -40,8 +40,8 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			contentDao.getLatestDraftGraphFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
-			contentDao.getLatestDraftGraphFieldContainer(node, german()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, german()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -74,7 +74,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			contentDao.getLatestDraftGraphFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}

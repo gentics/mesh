@@ -13,20 +13,18 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -37,15 +35,11 @@ import dagger.Lazy;
  * @see BranchDaoWrapper
  */
 @Singleton
-public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements BranchDaoWrapper {
-
-	private Lazy<Database> db;
+public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse, HibBranch, Branch, HibProject> implements BranchDaoWrapper {
 
 	@Inject
 	public BranchDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Database> db) {
 		super(boot, permissions);
-		// TODO Fix assignment - Inject DB
-		this.db = db;
 	}
 
 	/**
@@ -104,18 +98,6 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	}
 
 	@Override
-	public HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
 	public String getETag(HibBranch branch, InternalActionContext ac) {
 		Branch graphBranch = toGraph(branch);
 		return graphBranch.getETag(ac);
@@ -171,25 +153,9 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	}
 
 	@Override
-	public Result<? extends HibBranch> findAllDynamic(HibProject root) {
-		return toGraph(root).getBranchRoot().findAllDynamic();
-	}
-
-	@Override
 	public Page<? extends HibBranch> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getBranchRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	@Override
-	public HibBranch findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).getBranchRoot().findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibBranch checkPerms(HibProject root, HibBranch element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).getBranchRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -218,17 +184,6 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	}
 
 	@Override
-	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
-			String roleUuid) {
-		return toGraph(root).getBranchRoot().getRolePermissions(element, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement vertex, InternalPermission perm) {
-		return toGraph(root).getBranchRoot().getRolesWithPerm(vertex, perm);
-	}
-
-	@Override
 	public void delete(HibProject root, HibBranch element, BulkActionContext bac) {
 		toGraph(root).getBranchRoot().delete(toGraph(element), bac);
 	}
@@ -236,5 +191,10 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	@Override
 	public boolean update(HibProject root, HibBranch element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getBranchRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	protected RootVertex<Branch> getRoot(HibProject root) {
+		return toGraph(root).getBranchRoot();
 	}
 }

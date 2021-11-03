@@ -310,7 +310,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			HibBinary binary = ((GraphDBTx) tx).binaries().create("bogus", 1L).runInExistingTx(tx);
-			contentDao.getLatestDraftGraphFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
+			contentDao.getLatestDraftFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link
 			final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";

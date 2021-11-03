@@ -103,7 +103,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHtml(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHtml(FIELD_NAME)).isNotNull();
@@ -149,7 +149,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");
 			tx.success();
 		}

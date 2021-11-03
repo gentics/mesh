@@ -25,10 +25,10 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
+import com.gentics.mesh.core.data.dao.RootDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.RootDao;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -293,7 +293,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibUser element) {
-		return helper.createDocumentRequest(User.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibUser.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
 	}
 
 	/**

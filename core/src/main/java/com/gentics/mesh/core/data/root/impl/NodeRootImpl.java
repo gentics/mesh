@@ -17,7 +17,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -32,7 +31,6 @@ import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -182,49 +180,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Node findByUuid(String uuid) {
 		return getProject().findNode(uuid);
-	}
-
-	@Override
-	public Node loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		Tx tx = Tx.get();
-		UserDao userDao = tx.userDao();
-		ContentDao contentDao = tx.contentDao();
-
-		Node element = findByUuid(uuid);
-		if (!errorIfNotFound && element == null) {
-			return null;
-		}
-		if (element == null) {
-			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
-		}
-
-		HibUser requestUser = ac.getUser();
-		if (perm == READ_PUBLISHED_PERM) {
-			HibBranch branch = tx.getBranch(ac, element.getProject());
-
-			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
-			HibNodeFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(),
-				ac.getVersioningParameters().getVersion());
-
-			if (fieldContainer == null) {
-				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid,
-					String.join(",", requestedLanguageTags), branch.getUuid());
-			}
-			// Additionally check whether the read published permission could grant read
-			// perm for published nodes
-			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
-			if (isPublished && userDao.hasPermission(requestUser, element, READ_PUBLISHED_PERM)) {
-				return element;
-				// The container could be a draft. Check whether READ perm is granted.
-			} else if (!isPublished && userDao.hasPermission(requestUser, element, READ_PERM)) {
-				return element;
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", uuid, READ_PUBLISHED_PERM.getRestPerm().getName());
-			}
-		} else if (userDao.hasPermission(requestUser, element, perm)) {
-			return element;
-		}
-		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());
 	}
 
 	@Override
@@ -385,8 +340,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-
-		applyVertexPermissions(batch, toGraph(role), permissionsToGrant, permissionsToRevoke);
+		super.applyPermissions(batch, toGraph(role), false, permissionsToGrant, permissionsToRevoke);
 	}
-
 }

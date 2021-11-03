@@ -19,10 +19,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -30,13 +29,12 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
@@ -52,7 +50,7 @@ import io.vertx.core.logging.Logger;
 /**
  * @see TagFamilyDaoWrapper
  */
-public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> implements TagFamilyDaoWrapper {
+public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyResponse, HibTagFamily, TagFamily> implements TagFamilyDaoWrapper {
 
 	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
 
@@ -120,7 +118,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 		}
 
 		return restTagFamily;
-
 	}
 
 	@Override
@@ -234,12 +231,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public HibTagFamily loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(project).getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
 	public Page<? extends TagFamily> findAll(HibProject project, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		Project graphProject = toGraph(project);
@@ -264,11 +255,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public Result<? extends HibTagFamily> findAllDynamic(HibProject root) {
-		return toGraph(root).getTagFamilyRoot().findAllDynamic();
-	}
-
-	@Override
 	public Page<? extends HibTagFamily> findAll(HibProject root, InternalActionContext ac, PagingParameters pagingInfo,
 			java.util.function.Predicate<HibTagFamily> extraFilter) {
 		return toGraph(root).getTagFamilyRoot().findAll(ac, pagingInfo, t -> extraFilter.test(t));
@@ -278,17 +264,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	public Page<? extends HibTagFamily> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getTagFamilyRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	@Override
-	public HibTagFamily findByName(HibProject root, InternalActionContext ac, String name, InternalPermission perm) {
-		return toGraph(root).getTagFamilyRoot().findByName(ac, name, perm);
-	}
-
-	@Override
-	public HibTagFamily checkPerms(HibProject root, HibTagFamily element, String uuid, InternalActionContext ac,
-			InternalPermission perm, boolean errorIfNotFound) {
-		return toGraph(root).getTagFamilyRoot().checkPerms(toGraph(element), uuid, ac, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -317,17 +292,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public PermissionInfo getRolePermissions(HibProject root, HibBaseElement element, InternalActionContext ac,
-			String roleUuid) {
-		return toGraph(root).getTagFamilyRoot().getRolePermissions(element, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibProject root, HibBaseElement vertex, InternalPermission perm) {
-		return toGraph(root).getTagFamilyRoot().getRolesWithPerm(vertex, perm);
-	}
-
-	@Override
 	public void delete(HibProject root, HibTagFamily element, BulkActionContext bac) {
 		toGraph(root).getTagFamilyRoot().delete(toGraph(element), bac);
 	}
@@ -335,11 +299,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	@Override
 	public boolean update(HibProject root, HibTagFamily element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getTagFamilyRoot().update(toGraph(element), ac, batch);
-	}
-
-	@Override
-	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return boot.get().meshRoot().getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
@@ -354,9 +313,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public HibTagFamily loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
-			boolean errorIfNotFound) {
-		return boot.get().meshRoot().getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	protected RootVertex<TagFamily> getRoot() {
+		return boot.get().meshRoot().getTagFamilyRoot();
 	}
 
 }

@@ -68,16 +68,6 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse> imple
 	}
 
 	@Override
-	public LanguageResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		LanguageResponse model = new LanguageResponse();
-		model.setUuid(getUuid());
-		model.setLanguageTag(getLanguageTag());
-		model.setName(getName());
-		model.setNativeName(getNativeName());
-		return model;
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		throw new NotImplementedException();
 	}
@@ -91,11 +81,4 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse> imple
 	public String getSubETag(InternalActionContext ac) {
 		return "";
 	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		// Languages don't have a public location
-		return null;
-	}
-
 }

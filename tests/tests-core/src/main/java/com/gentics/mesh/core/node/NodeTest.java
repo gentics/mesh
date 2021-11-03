@@ -145,7 +145,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String german = german();
 			InternalActionContext ac = mockActionContext("lang=de,en&version=draft");
 			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
-			HibNodeFieldContainer germanFields = contentDao.getLatestDraftGraphFieldContainer(newsNode, german);
+			HibNodeFieldContainer germanFields = contentDao.getLatestDraftFieldContainer(newsNode, german);
 			String expectedDisplayName = germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField())
 				.getString();
 			assertEquals("The display name value did not match up", expectedDisplayName, nodeDao.getDisplayName(newsNode, ac));
@@ -298,7 +298,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			germanContainer.createString("content").setString("german content");
 			assertEquals(2, TestUtils.size(contentDao.getDraftFieldContainers(node)));
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english);
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english);
 			assertNotNull(container);
 			String text = container.getString("content").getString();
 			assertNotNull(text);

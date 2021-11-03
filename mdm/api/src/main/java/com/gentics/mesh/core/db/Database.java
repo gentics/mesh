@@ -226,7 +226,15 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	long count(Class<? extends HibBaseElement> clazz);
-	
+
+	/**
+	 * Return the element version.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	String getElementVersion(HibElement element);
+
 	/**
 	 * Asynchronously execute the given handler within a transaction and return the completable.
 	 * 

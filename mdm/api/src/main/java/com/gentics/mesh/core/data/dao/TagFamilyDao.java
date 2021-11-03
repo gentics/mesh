@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.RootDao;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -31,16 +30,6 @@ public interface TagFamilyDao extends DaoGlobal<HibTagFamily>, DaoTransformable<
 	void removeTag(HibTagFamily tagFamily, HibTag tag);
 
 	/**
-	 * Return a page of tags.
-	 * 
-	 * @param tagFamily
-	 * @param user
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibTag> getTags(HibTagFamily tagFamily, HibUser user, PagingParameters pagingInfo);
-
-	/**
 	 * Create the tag family.
 	 * 
 	 * @param project
@@ -52,4 +41,14 @@ public interface TagFamilyDao extends DaoGlobal<HibTagFamily>, DaoTransformable<
 	 * @return
 	 */
 	HibTagFamily create(HibProject project, String name, HibUser user);
+
+	/**
+	 * Return a page of tags.
+	 * 
+	 * @param tagFamily
+	 * @param user
+	 * @param pagingInfo
+	 * @return
+	 */
+	Page<? extends HibTag> getTags(HibTagFamily tagFamily, HibUser user, PagingParameters pagingInfo);
 }

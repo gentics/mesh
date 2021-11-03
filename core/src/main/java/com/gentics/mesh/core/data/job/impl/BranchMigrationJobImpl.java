@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BranchMigrationContext;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -18,6 +19,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
@@ -147,5 +149,4 @@ public class BranchMigrationJobImpl extends JobImpl {
 			createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
-
 }

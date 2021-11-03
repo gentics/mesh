@@ -1,12 +1,10 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.Set;
 
@@ -16,7 +14,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
@@ -130,12 +127,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
-		return tagFamilyDao.transformToRestSync(this, ac, level, languageTags);
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 		tagFamilyDao.delete(this, bac);
@@ -163,11 +154,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getLastEditedTimestamp());
 		return keyBuilder.toString();
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return CURRENT_API_BASE_PATH + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getUuid();
 	}
 
 	@Override
@@ -201,7 +187,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	protected TagFamilyMeshEventModel createEvent(MeshEvent type) {
+	public TagFamilyMeshEventModel createEvent(MeshEvent type) {
 		TagFamilyMeshEventModel event = new TagFamilyMeshEventModel();
 		event.setEvent(type);
 		fillEventInfo(event);
@@ -215,7 +201,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public PermissionChangedProjectElementEventModel onPermissionChanged(Role role) {
+	public PermissionChangedProjectElementEventModel onPermissionChanged(HibRole role) {
 		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
 		fillPermissionChanged(model, role);
 		return model;
@@ -260,5 +246,10 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
 		return getTagFamilyRoot().getRolesWithPerm(vertex, perm);
+	}
+
+	@Override
+	public Tag create() {
+		throw new IllegalStateException("Use TagRoot to create Tag instance, then addTag.");
 	}
 }

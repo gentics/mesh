@@ -5,6 +5,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
+import com.gentics.mesh.cache.CacheCollection;
+import com.gentics.mesh.cache.CacheCollectionImpl;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.cache.PermissionCache;
@@ -47,8 +49,6 @@ import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.context.impl.GraphContextDataRegistryImpl;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
-import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
@@ -73,10 +73,9 @@ import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
 import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
-import com.gentics.mesh.distributed.RequestDelegator;
-import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.handler.RangeRequestHandler;
@@ -103,7 +102,6 @@ import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
@@ -117,6 +115,8 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandlerImpl;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
+import com.gentics.mesh.security.SecurityUtils;
+import com.gentics.mesh.security.SecurityUtilsImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
@@ -175,13 +175,7 @@ public abstract class CommonBindModule {
 	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
 
 	@Binds
-	abstract Binaries bindBinaries(BinariesImpl e);
-
-	@Binds
 	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);
-
-	@Binds
-	abstract RequestDelegator bindRequestDelegator(RequestDelegatorImpl e);
 
 	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
@@ -308,4 +302,10 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract MeshLocalClient meshLocalClient(MeshLocalClientImpl e);
+
+	@Binds
+	abstract CacheCollection bindCacheCollection(CacheCollectionImpl e);
+	
+	@Binds
+	abstract SecurityUtils bindSecurityUtils(SecurityUtilsImpl e);
 }

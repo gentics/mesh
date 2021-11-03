@@ -115,7 +115,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer latest = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDate(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
@@ -183,7 +183,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			ContentDao contentDao = tx.contentDao();
 			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
 			tx.success();
 		}

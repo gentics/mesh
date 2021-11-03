@@ -135,7 +135,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			updateSchema();
-			HibNodeFieldContainer origContainer = contentDao.getLatestDraftGraphFieldContainer(getTestNode(), english());
+			HibNodeFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
 			tx.success();
@@ -302,7 +302,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			updateSchema();
-			HibNodeFieldContainer origContainer = contentDao.getLatestDraftGraphFieldContainer(getTestNode(), english());
+			HibNodeFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
 			tx.success();

@@ -65,8 +65,8 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.test.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
@@ -156,7 +156,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibMicronodeField micronodeField = container.createMicronode("micronodefield", microschema.getLatestVersion());
 			HibMicronode micronode = micronodeField.getMicronode();
 			assertNotNull("Micronode must not be null", micronode);

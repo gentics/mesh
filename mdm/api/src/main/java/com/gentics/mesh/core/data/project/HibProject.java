@@ -1,18 +1,22 @@
 package com.gentics.mesh.core.data.project;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.handler.VersionUtils;
 
 /**
  * Domain model for project.
  */
-public interface HibProject extends HibCoreElement<ProjectResponse>, HibUserTracking, HibBucketableElement {
+public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenceableElement<ProjectReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
 
 	/**
 	 * Set the uuid.
@@ -106,4 +110,9 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibUserTrac
 	 * @return
 	 */
 	HibBaseElement getNodePermissionRoot();
+
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/projects/" + getUuid();
+	}
 }

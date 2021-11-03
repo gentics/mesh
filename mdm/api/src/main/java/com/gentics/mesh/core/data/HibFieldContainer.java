@@ -63,7 +63,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * 
 	 * @return schema container version
 	 */
-	HibFieldSchemaVersionElement<?, ?, ?, ?> getSchemaContainerVersion();
+	HibFieldSchemaVersionElement<?, ?, ?, ?, ?> getSchemaContainerVersion();
 
 	/**
 	 * Set the schema container version used by this container
@@ -71,7 +71,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @param version
 	 *            schema container version
 	 */
-	void setSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> version);
+	void setSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version);
 
 	/**
 	 * Get all nodes that are in any way referenced by this node. This includes the following cases:

@@ -3,19 +3,17 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -28,7 +26,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionHandlerImpl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -65,16 +62,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	@Override
 	public TagReference transformToReference() {
 		return new TagReference().setName(getName()).setUuid(getUuid()).setTagFamily(getTagFamily().getName());
-	}
-
-	/**
-	 * Use {@link TagDaoWrapper#transformToRestSync(Tag, InternalActionContext, int, String...)} instead.
-	 */
-	@Override
-	@Deprecated
-	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagDao tagDao = Tx.get().tagDao();
-		return tagDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
@@ -118,11 +105,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	}
 
 	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandlerImpl.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
-	}
-
-	@Override
 	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
@@ -133,7 +115,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	}
 
 	@Override
-	protected TagMeshEventModel createEvent(MeshEvent type) {
+	public TagMeshEventModel createEvent(MeshEvent type) {
 		TagMeshEventModel event = new TagMeshEventModel();
 		event.setEvent(type);
 		fillEventInfo(event);
@@ -151,7 +133,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	}
 
 	@Override
-	public TagPermissionChangedEventModel onPermissionChanged(Role role) {
+	public TagPermissionChangedEventModel onPermissionChanged(HibRole role) {
 		TagPermissionChangedEventModel model = new TagPermissionChangedEventModel();
 		fillPermissionChanged(model, role);
 		model.setTagFamily(getTagFamily().transformToReference());

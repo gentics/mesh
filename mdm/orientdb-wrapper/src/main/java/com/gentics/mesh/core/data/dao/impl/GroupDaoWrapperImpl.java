@@ -31,15 +31,15 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
@@ -62,7 +62,7 @@ import dagger.Lazy;
  * TODO MDM The methods should be moved to {@link HibGroup}
  */
 @Singleton
-public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements GroupDaoWrapper {
+public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, HibGroup, Group> implements GroupDaoWrapper {
 
 	private Lazy<PermissionCache> permissionCache;
 
@@ -137,13 +137,14 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public void removeUser(HibGroup group, HibUser user) {
+		UserDao userDao = Tx.get().userDao();
 		Group graphGroup = toGraph(group);
 		User graphUser = toGraph(user);
 
 		graphGroup.unlinkIn(graphUser, HAS_USER);
 
 		// The user does no longer belong to the group so lets update the shortcut edges
-		user.updateShortcutEdges();
+		userDao.updateShortcutEdges(user);
 		permissionCache.get().clear();
 	}
 
@@ -176,13 +177,14 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public void removeRole(HibGroup group, HibRole role) {
+		UserDao userDao = Tx.get().userDao();
 		Role graphRole = toGraph(role);
 		Group graphGroup = toGraph(group);
 		graphGroup.unlinkIn(graphRole, HAS_ROLE);
 
 		// Update the shortcut edges since the role does no longer belong to the group
 		for (HibUser user : getUsers(group)) {
-			user.updateShortcutEdges();
+			userDao.updateShortcutEdges(user);
 		}
 		permissionCache.get().clear();
 	}
@@ -296,6 +298,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public void delete(HibGroup group, BulkActionContext bac) {
+		UserDao userDao = Tx.get().userDao();
 		Group graphGroup = toGraph(group);
 		// TODO don't allow deletion of the admin group
 		bac.batch().add(group.onDeleted());
@@ -303,7 +306,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
 		graphGroup.getElement().remove();
 		for (HibUser user : affectedUsers) {
-			user.updateShortcutEdges();
+			userDao.updateShortcutEdges(user);
 			bac.add(user.onUpdated());
 			bac.inc();
 		}
@@ -365,18 +368,6 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
-		return groupRoot.loadObjectByUuid(ac, uuid, perm);
-	}
-
-	@Override
-	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
-		return groupRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	@Override
 	public String getAPIPath(HibGroup group, InternalActionContext ac) {
 		Group graphGroup = toGraph(group);
 		return graphGroup.getAPIPath(ac);
@@ -387,6 +378,11 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 		Group graphGroup = toGraph(group);
 		return graphGroup.getETag(ac);
 		// return boot.get().meshRoot().getGroupRoot().getETag(graphGroup, ac);
+	}
+
+	@Override
+	protected RootVertex<Group> getRoot() {
+		return boot.get().meshRoot().getGroupRoot();
 	}
 
 }

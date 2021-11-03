@@ -13,8 +13,8 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -26,7 +26,6 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -82,7 +81,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	GraphDatabase db;
+	Database db;
 
 	@Inject
 	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
@@ -118,7 +117,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 			roleExamples.getRoleListResponse(), false);
 
 		registerHandler("nodes", (uuid) -> {
-			Node node = db.index().findByUuid(NodeImpl.class, uuid);
+			HibNode node = boot.get().nodeDao().findByUuidGlobal(uuid);
 			return node;
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 

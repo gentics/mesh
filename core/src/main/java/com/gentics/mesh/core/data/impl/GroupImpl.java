@@ -22,7 +22,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.field.FieldType;
 
 /**
@@ -83,16 +82,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 	}
 
 	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return String.valueOf(getLastEditedTimestamp());
-	}
-
-	@Override
-	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandlerImpl.baseRoute(ac) + "/groups/" + getUuid();
-	}
-
-	@Override
 	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
@@ -100,12 +89,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 	@Override
 	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
-	}
-
-	@Override
-	public GroupResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GroupDao groupDao = mesh().boot().groupDao();
-		return groupDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override

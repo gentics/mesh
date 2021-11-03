@@ -103,7 +103,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 			schema.addField(createFieldSchema(true));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibBinary binary = ((GraphDBTx) tx).binaries().create(hash, 10L).runInExistingTx(tx);
 			HibBinaryField field = container.createBinary(BINARY_FIELD, binary);
 			field.setMimeType("image/jpg");

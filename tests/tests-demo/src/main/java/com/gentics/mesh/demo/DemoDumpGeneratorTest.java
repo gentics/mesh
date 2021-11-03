@@ -88,7 +88,7 @@ public class DemoDumpGeneratorTest {
 
 			// Verify that all documents are stored in the index
 			for (HibNode node : nodeDao.findAll(project)) {
-				HibNodeFieldContainer container = contentDao.getLatestDraftGraphFieldContainer(node, "en");
+				HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, "en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
 				String branchUuid = node.getProject().getInitialBranch().getUuid();

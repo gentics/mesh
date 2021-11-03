@@ -82,12 +82,12 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibRole role) {
-		return tx.roleDao().getAPIPath(role, ac);
+		return role.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibRole role) {
-		return tx.roleDao().getETag(role, ac);
+		return role.getETag(ac);
 	}
 
 }

@@ -7,9 +7,13 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cache.CacheCollection;
+import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -42,11 +46,16 @@ import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.AbstractTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
@@ -54,6 +63,7 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -91,14 +101,19 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private final TxData txData;
 	private final ContextDataRegistry contextDataRegistry;
 	private final DaoCollection daos;
+	private final CacheCollection caches;
+	private final SecurityUtils security;
 	private final Binaries binaries;
 
 	private Timer commitTimer;
 
 	@Inject
-	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot, DaoCollection daos, OrientStorage provider,
-		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry,
-		Binaries binaries) {
+	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot, 
+		DaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
+		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, 
+		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler, 
+		WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage, 
+		Binaries binaries, SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -115,9 +130,12 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new TxDataImpl(options, boot, permissionRoots);
+		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler, 
+				webRootLinkReplacer, serverSchemaStorage, schemaComparator, microschemaComparator);
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
+		this.caches = caches;
+		this.security = security;
 		this.binaries = binaries;
 	}
 
@@ -198,11 +216,6 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public TxData data() {
 		return txData;
-	}
-
-	@Override
-	public HibBranch getBranch(InternalActionContext ac) {
-		return contextDataRegistry.getBranch(ac);
 	}
 
 	@Override
@@ -335,6 +348,16 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public Binaries binaries() {
 		return binaries;
+	}
+
+	@Override
+	public PermissionCache permissionCache() {
+		return caches.permissionCache();
+	}
+
+	@Override
+	public PasswordEncoder passwordEncoder() {
+		return security.passwordEncoder();
 	}
 
 }

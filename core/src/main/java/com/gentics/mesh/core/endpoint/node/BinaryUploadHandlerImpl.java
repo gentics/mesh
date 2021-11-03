@@ -277,7 +277,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				}
 
 				// Load the current latest draft
-				HibNodeFieldContainer latestDraftVersion = contentDao.getGraphFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+				HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
 				if (latestDraftVersion == null) {
 					// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());

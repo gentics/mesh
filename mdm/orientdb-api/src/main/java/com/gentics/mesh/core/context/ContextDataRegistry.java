@@ -36,14 +36,4 @@ public interface ContextDataRegistry {
 	 * @return branch
 	 */
 	HibBranch getBranch(InternalActionContext ac, HibProject project);
-
-	/**
-	 * Return the latest branch of the project.
-	 * 
-	 * @param ac
-	 * @return branch
-	 */
-	default HibBranch getBranch(InternalActionContext ac) {
-		return getBranch(ac, null);
-	}
 }

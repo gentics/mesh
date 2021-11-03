@@ -1,32 +1,24 @@
 package com.gentics.mesh.core.data.dao;
 
-import java.util.function.Predicate;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.RootDao;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * DAO for {@link HibBranch}.
  */
 public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, Dao<HibBranch>, RootDao<HibProject, HibBranch> {
-
 	/**
-	 * Return the API path for the given branch.
+	 * Return the API path for the branch.
 	 * 
-	 * @param branch
+	 * @param element
 	 * @param ac
 	 * @return
 	 */
-	String getAPIPath(HibBranch branch, InternalActionContext ac);
+	String getAPIPath(HibBranch element, InternalActionContext ac);
 
 	/**
 	 * Update the branch.

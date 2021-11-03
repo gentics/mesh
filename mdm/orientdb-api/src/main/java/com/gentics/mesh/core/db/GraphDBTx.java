@@ -77,5 +77,6 @@ public interface GraphDBTx extends Tx, GraphDBBaseTransaction {
 	static GraphDBTx getGraphTx() {
 		return (GraphDBTx) Tx.get();
 	}
+
 	Binaries binaries();
 }

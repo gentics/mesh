@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.root;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Spliterator;
 import java.util.Stack;
@@ -30,9 +28,9 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -116,8 +114,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return
 	 */
 	default Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter) {
-		Page<? extends T> page = new DynamicNonTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
-		return page;
+		return new DynamicNonTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
 	}
 
 	/**
@@ -144,33 +141,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	}
 
 	/**
-	 * Load the object by name and check the given permission.
-	 * 
-	 * @param ac
-	 *            Context to be used in order to check user permissions
-	 * @param name
-	 *            Name of the object that should be loaded
-	 * @param perm
-	 *            Permission that must be granted in order to load the object
-	 * @return
-	 */
-	default T findByName(InternalActionContext ac, String name, InternalPermission perm) {
-		T element = findByName(name);
-		if (element == null) {
-			throw error(NOT_FOUND, "object_not_found_for_name", name);
-		}
-
-		HibUser requestUser = ac.getUser();
-		String elementUuid = element.getUuid();
-		UserDao userDao = GraphDBTx.getGraphTx().userDao();
-		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {
-			return element;
-		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
-		}
-	}
-
-	/**
 	 * Find the element with the given uuid.
 	 * 
 	 * @param uuid
@@ -191,81 +161,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Load the object by uuid and check the given permission.
-	 * 
-	 * @param ac
-	 *            Context to be used in order to check user permissions
-	 * @param uuid
-	 *            Uuid of the object that should be loaded
-	 * @param perm
-	 *            Permission that must be granted in order to load the object
-	 * @return Loaded element. A not found error will be thrown if the element could not be found. Returned value will never be null.
-	 */
-	default T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return loadObjectByUuid(ac, uuid, perm, true);
-	}
-
-	/**
-	 * Load the object by uuid and check the given permission.
-	 * 
-	 * @param ac
-	 *            Context to be used in order to check user permissions
-	 * @param uuid
-	 *            Uuid of the object that should be loaded
-	 * @param perm
-	 *            Permission that must be granted in order to load the object
-	 * @param errorIfNotFound
-	 *            True if an error should be thrown, when the element could not be found
-	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
-	 *         be null.
-	 */
-	default T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		T element = findByUuid(uuid);
-		return checkPerms(element, uuid, ac, perm, errorIfNotFound);
-	}
-
-	default T checkPerms(T element, String uuid, InternalActionContext ac, InternalPermission perm, boolean errorIfNotFound) {
-		if (element == null) {
-			if (errorIfNotFound) {
-				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
-			} else {
-				return null;
-			}
-		}
-
-		HibUser requestUser = ac.getUser();
-		String elementUuid = element.getUuid();
-		UserDao userDao = GraphDBTx.getGraphTx().userDao();
-		if (userDao.hasPermission(requestUser, element, perm)) {
-			return element;
-		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
-		}
-	}
-
-	/**
-	 * Load the object by uuid. No permission check will be performed.
-	 * 
-	 * @param uuid
-	 *            Uuid of the object that should be loaded
-	 * @param errorIfNotFound
-	 *            True if an error should be thrown, when the element could not be found
-	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
-	 *         be null.
-	 */
-	default T loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		T element = findByUuid(uuid);
-		if (element == null) {
-			if (errorIfNotFound) {
-				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
-			} else {
-				return null;
-			}
-		}
-		return element;
 	}
 
 	/**
@@ -317,6 +212,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 *            optional uuid to create the object with a given uuid (null to create a random uuid)
 	 */
 	T create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+
+	/**
+	 * Create an uninitialized persisted object.
+	 * 
+	 * @return
+	 */
+	T create();
 
 	/**
 	 * Add the given item to the this root vertex.
@@ -415,5 +317,4 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	default boolean update(T element, InternalActionContext ac, EventQueueBatch batch) {
 		return element.update(ac, batch);
 	}
-
 }

@@ -56,14 +56,14 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
@@ -209,7 +209,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
 		((NodeIndexHandlerImpl) nodeIndexHandler)
-			.storeContainer(contentDao.getLatestDraftGraphFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
+			.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
 			.ignoreElement()
 			.blockingAwait();
 		writeStoreEvent("node.search");
