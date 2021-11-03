@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -109,11 +110,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	public MicroschemaResponse transformToRestSync(HibMicroschema microschema, InternalActionContext ac, int level,
 		String... languageTags) {
 		return toGraph(microschema).transformToRestSync(ac, level, languageTags);
-	}
-
-	@Override
-	public void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch) {
-		toGraph(project).getMicroschemaContainerRoot().removeMicroschema(toGraph(microschema), batch);
 	}
 
 	@Override
@@ -238,5 +234,11 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	@Override
 	public boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
 		return boot.get().meshRoot().getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
+	public Result<HibProject> findLinkedProjects(HibMicroschema schema) {
+		return new TraversalResult<>(boot.get().meshRoot().getProjectRoot()
+				.findAll().stream().filter(project -> project.getMicroschemaContainerRoot().contains(schema)));
 	}
 }

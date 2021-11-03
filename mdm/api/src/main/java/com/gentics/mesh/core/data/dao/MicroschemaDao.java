@@ -9,6 +9,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.stream.Stream;
+
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -25,11 +27,14 @@ import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -90,6 +95,14 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @return
 	 */
 	boolean contains(HibProject project, HibMicroschema microschema);
+
+	/**
+	 * Find all projects which reference the schema.
+	 * 
+	 * @param schema
+	 * @return
+	 */
+	Result<HibProject> findLinkedProjects(HibMicroschema schema);
 
 	/**
 	 * Add the microschema to the project.
@@ -287,6 +300,18 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 		return foundVersion;
 	}
 
+	/**
+	 * Returns events for assignment on the schema action.
+	 * 
+	 * @return
+	 */
+	default Stream<ProjectMicroschemaEventModel> assignEvents(HibMicroschema microschema, Assignment assigned) {
+		ProjectDao projectDao = Tx.get().projectDao();
+		return findLinkedProjects(microschema)
+			.stream()
+			.map(project -> projectDao.onMicroschemaAssignEvent(project, microschema, assigned));
+	}
+
 	@Override
 	default void delete(HibMicroschema microschema, BulkActionContext bac) {
 		for (HibMicroschemaVersion version : findAllVersions(microschema)) {
@@ -307,17 +332,20 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 
 	@Override
 	default void delete(HibProject root, HibMicroschema element, BulkActionContext bac) {
-		delete(element, bac);
+		removeMicroschema(root, element, bac.batch());
+		assignEvents(element, UNASSIGNED).forEach(bac::add);
+		// TODO should we delete the schema completely?
+		//delete(element, bac);
 	}
 
 	@Override
 	default boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
-		return this.update(null, element, ac, batch);
+		throw new NotImplementedException("Updating is not directly supported for microschemas. Please start a microschema migration");
 	}
 
 	@Override
 	default boolean update(HibProject root, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
-		throw new NotImplementedException("Updating is not directly supported for microschemas. Please start a microschema migration");
+		return update(element, ac, batch);
 	}
 
 	@Override
