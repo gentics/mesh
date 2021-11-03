@@ -28,6 +28,13 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 		super(boot, permissions);
 	}
 
+	/**
+	 * Generated the persisted entity in the storage under the given root entity
+	 * 
+	 * @param root
+	 * @param uuid if null, a generated UUID will be used.
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	public L persist(R root, String uuid) {
 		D vertex = getRoot(root).create();
@@ -39,6 +46,12 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 		return entity;
 	}
 
+	/**
+	 * Delete the entity from the storage.
+	 * 
+	 * @param root
+	 * @param element
+	 */
 	public void unpersist(R root, L element) {
 		getRoot(root).findByUuid(element.getUuid()).remove();
 	}

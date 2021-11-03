@@ -18,6 +18,19 @@ import com.gentics.mesh.core.result.Result;
 
 import dagger.Lazy;
 
+/**
+ * A general wrapper implementation for {@link ContainerDao}.
+ * 
+ * @author plyhun
+ *
+ * @param <R> contained entity type
+ * @param <RM> contained entity version type
+ * @param <RE> reference type
+ * @param <SC> contained field element type
+ * @param <SCV> contained field element version type
+ * @param <M> container root entity type
+ * @param <D> corresponding graphdb vertex type wrapper of R 
+ */
 public abstract class AbstractContainerDaoWrapper<
 			R extends FieldSchemaContainer, 
 			RM extends FieldSchemaContainerVersion, 

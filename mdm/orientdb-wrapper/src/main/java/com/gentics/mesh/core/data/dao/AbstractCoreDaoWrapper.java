@@ -27,6 +27,12 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 		super(boot, permissions);
 	}
 
+	/**
+	 * Generate the persisted entity of a given type.
+	 * 
+	 * @param uuid if null, a generated UUID will be used.
+	 * @return
+	 */
 	public D persist(String uuid) {
 		D vertex = getRoot().create();
 		if (uuid != null) {
@@ -36,6 +42,11 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 		return vertex;
 	}
 
+	/**
+	 * Delete the entity from the storage
+	 * 
+	 * @param element
+	 */
 	public void unpersist(D element) {
 		element.remove();
 	}
