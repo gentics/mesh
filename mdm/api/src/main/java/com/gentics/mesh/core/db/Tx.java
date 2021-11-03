@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.s3binary.S3Binaries;
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
  */
-public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, SecurityUtils, TxEntityPersistenceManager {
+public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, SecurityUtils {
 
 	/**
 	 * Thread local that is used to store references to the used graph.
@@ -39,7 +39,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	}
 
 	/**
-	 * Return the current active graph. A transaction should be the only place where this threadlocal is updated.
+	 * Return the current active transaction. A transaction should be the only place where this threadlocal is updated.
 	 * 
 	 * @return Currently active transaction
 	 */

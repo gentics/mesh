@@ -7,7 +7,7 @@ import com.gentics.mesh.core.result.Result;
 /**
  * DAO for schema operation.
  */
-public interface SchemaDaoWrapper extends SchemaDao {
+public interface SchemaDaoWrapper extends PersistingSchemaDao {
 
 	/**
 	 * Return a list of all schema container roots to which the schema container was added.
