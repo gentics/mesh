@@ -12,10 +12,14 @@ import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializerImpl;
+import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.dao.*;
 import com.gentics.mesh.core.data.dao.impl.*;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
+import com.gentics.mesh.core.data.s3binary.impl.S3BinariesImpl;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
@@ -86,6 +90,11 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract RequestDelegator bindRequestDelegator(ClusterEnabledRequestDelegatorImpl e);
 
+	@Binds
+	abstract Binaries bindBinaries(BinariesImpl e);
+
+	@Binds
+	abstract S3Binaries bindS3Binaries(S3BinariesImpl e);
 	// DAOs
 
 	@Binds

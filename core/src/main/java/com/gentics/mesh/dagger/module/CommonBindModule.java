@@ -1,9 +1,5 @@
 package com.gentics.mesh.dagger.module;
 
-import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
-import com.gentics.mesh.core.data.s3binary.S3Binaries;
-import com.gentics.mesh.core.data.s3binary.impl.S3BinariesImpl;
 import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandlerImpl;
 import com.gentics.mesh.storage.S3BinaryStorage;
@@ -187,12 +183,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
-
-	@Binds
-	abstract Binaries bindBinaries(BinariesImpl e);
-
-	@Binds
-	abstract S3Binaries bindS3Binaries(S3BinariesImpl e);
 
 	@Binds
 	abstract S3BinaryStorage bindS3BinaryStorage(S3BinaryStorageImpl e);
