@@ -48,4 +48,9 @@ public class ReIndexRequest implements SearchRequest {
 			}
 		});
 	}
+
+	@Override
+	public String toString() {
+		return String.format("ReIndexRequest(source='%s', dest='%s')", source, dest);
+	}
 }
