@@ -356,11 +356,25 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, Optional<Pattern> indexPattern) {
-		log.info("Handling index sync on handler {" + getClass().getName() + "}");
+		// if an index pattern is given, check whether any index matches the pattern
+		if (indexPattern.isPresent() && !getIndexNames(project, branch, version, type).stream()
+				.filter(indexName -> indexPattern.orElse(MATCH_ALL).matcher(indexName).matches()).findFirst()
+				.isPresent()) {
+			return Flowable.empty();
+		}
+
+		String projectName = project.getName();
+		String branchName = branch.getName();
+		String versionNumber = version.getVersion();
+		String schemaName = version.getName();
+		String typeName = type.name();
+		log.info("Handling index sync on handler {} for project {}, branch {}, version {} of schema {}, type {}",
+				getClass().getName(), projectName, branchName, versionNumber, schemaName, typeName);
 		// Sync each bucket individually
 		Flowable<Bucket> buckets = bucketManager.getBuckets(NodeGraphFieldContainer.class);
 		return buckets.flatMap(bucket -> {
-			log.info("Handling sync of {" + bucket + "}");
+			log.info("Handling sync of {} for project {}, branch {}, version {} of schema {}, type {}", bucket,
+					projectName, branchName, versionNumber, schemaName, typeName);
 			return diffAndSync(project, branch, version, type, bucket, indexPattern);
 		}, 1);
 	}
