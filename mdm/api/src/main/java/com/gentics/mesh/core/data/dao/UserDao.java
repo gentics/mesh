@@ -310,4 +310,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param requestedVersion
 	 */
 	void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion);
+
+	/**
+	 * A CRC32 hash of the users {@link #getRoles roles}.
+	 *
+	 * @return A hash of the users roles
+	 */
+	String getRolesHash(HibUser user);
 }

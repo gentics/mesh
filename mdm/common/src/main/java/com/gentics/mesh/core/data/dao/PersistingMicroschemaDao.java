@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -45,7 +46,7 @@ import com.gentics.mesh.json.JsonUtil;
  * @author plyhun
  *
  */
-public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoGlobal<HibMicroschema> {
+public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
 
 	/**
 	 * Create a new microschema container.
@@ -82,24 +83,6 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoG
 	}
 
 	/**
-	 * Add the microschema to the database.
-	 *
-	 * @param microschema
-	 * @param user
-	 * @param batch
-	 */
-	void addMicroschema(HibMicroschema microschema, HibUser user, EventQueueBatch batch);
-
-	/**
-	 * Check whether the project contains the microschema.
-	 *
-	 * @param project
-	 * @param microschema
-	 * @return
-	 */
-	boolean contains(HibProject project, HibMicroschema microschema);
-
-	/**
 	 * Find all projects which reference the schema.
 	 * 
 	 * @param schema
@@ -119,7 +102,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoG
 	 * @param batch
 	 */
 	default void addMicroschema(HibProject project, HibUser user, HibMicroschema microschemaContainer, EventQueueBatch batch) {
-		ProjectDao projectDao = Tx.get().projectDao();
+		PersistingProjectDao projectDao = CommonTx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
 		batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
@@ -166,7 +149,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoG
 			job.remove();
 		}
 		// Delete version
-		Tx.get().delete(version, version.getClass());
+		CommonTx.get().delete(version, version.getClass());
 	}
 
 	@Override
@@ -178,7 +161,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoG
 	default HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibMicroschema microschema = create(ac, batch, uuid);
 		addMicroschema(root, ac.getUser(), microschema, batch);
-		Tx.get().persist(root, Tx.get().projectDao());
+		CommonTx.get().projectDao().mergeIntoPersisted(root);
 		return microschema;
 	}
 
@@ -203,7 +186,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoG
 		}
 		HibMicroschema container = create(microschema, requestUser, uuid, batch);
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
-		container = Tx.get().persist(container, this);
+		mergeIntoPersisted(container);
 		batch.add(container.onCreated());
 		return container;
 	}
@@ -236,7 +219,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoG
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		HibMicroschema container = Tx.get().create(uuid, this);
+		HibMicroschema container = createPersisted(uuid);
 		HibMicroschemaVersion version = container.getLatestVersion();
 
 		microschema.setVersion("1.0");
@@ -244,12 +227,14 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoG
 		version.setName(microschema.getName());
 		version.setSchema(microschema);
 		version.setSchemaContainer(container);
+		CommonTx.get().persist(version, version.getClass());
+
 		container.setCreated(user);
 		container.setName(microschema.getName());
 		container.generateBucketId();
 		addMicroschema(container, user, batch);
 
-		return Tx.get().persist(container, this);
+		return mergeIntoPersisted(container);
 	}
 
 	/**
@@ -327,7 +312,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingDaoG
 			deleteVersion(version, bac);
 		}
 		bac.add(microschema.onDeleted());
-		Tx.get().delete(microschema, this);
+		deletePersisted(microschema);
 	}
 
 	@Override

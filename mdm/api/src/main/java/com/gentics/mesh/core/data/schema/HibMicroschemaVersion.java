@@ -100,7 +100,7 @@ public interface HibMicroschemaVersion
 		String json = microschema.toJson();
 		setJson(json);
 		setVersion(microschema.getVersion());
-		Tx.get().persist(this, getClass());
+		//Tx.get().persist(this, getClass());
 	}
 
 	@Override

@@ -5,5 +5,5 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 /**
  * DAO to access {@link HibBranch}
  */
-public interface BranchDaoWrapper extends BranchDao {
+public interface BranchDaoWrapper extends PersistingBranchDao {
 }

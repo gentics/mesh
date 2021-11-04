@@ -40,7 +40,7 @@ public abstract class AbstractContainerDaoWrapper<
 			M extends FieldSchemaContainer,
 			D extends MeshCoreVertex<R>> 
 		extends AbstractCoreDaoWrapper<R, SC, D>
-		implements ContainerDao<R, RM, RE, SC, SCV, M> {
+		implements PersistingContainerDao<R, RM, RE, SC, SCV, M> {
 
 	public AbstractContainerDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot,
 			Lazy<PermissionPropertiesImpl> permissions) {

@@ -3,9 +3,11 @@ package com.gentics.mesh.core.data.dao;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -83,6 +85,19 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @return
 	 */
 	ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment);
+
+	/**
+	 * Create a schema assign event for the given input values.
+	 * 
+	 * @param project
+	 *            Project
+	 * @param microschema
+	 *            Microschema
+	 * @param assignment
+	 *            Assignment or unassignment
+	 * @return
+	 */
+	ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibProject project, HibMicroschema microschema, Assignment assignment);
 
 	/**
 	 * Return the sub etag for the project.

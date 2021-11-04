@@ -39,7 +39,9 @@ import dagger.Lazy;
 /**
  * @see MicroschemaDaoWrapper
  */
-public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> implements MicroschemaDaoWrapper {
+public class MicroschemaDaoWrapperImpl 
+			extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> 
+			implements MicroschemaDaoWrapper {
 
 	@Inject
 	public MicroschemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
@@ -207,7 +209,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	}
 
 	@Override
-	public Microschema persist(String uuid) {
+	public Microschema createPersisted(String uuid) {
 		Microschema vertex = boot.get().meshRoot().getMicroschemaContainerRoot().create();
 		if (uuid != null) {
 			vertex.setUuid(uuid);
@@ -217,8 +219,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	}
 
 	@Override
-	public void unpersist(Microschema element) {
-		element.remove();
+	public void deletePersisted(HibMicroschema element) {
+		toGraph(element).remove();
 	}
 
 	@Override

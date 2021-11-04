@@ -46,7 +46,9 @@ import dagger.Lazy;
 /**
  * @see SchemaDaoWrapper
  */
-public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel, Schema> implements SchemaDaoWrapper {
+public class SchemaDaoWrapperImpl 
+			extends AbstractContainerDaoWrapper<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel, Schema> 
+			implements SchemaDaoWrapper {
 
 	@Inject
 	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
@@ -233,7 +235,7 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	}
 
 	@Override
-	public Schema persist(String uuid) {
+	public HibSchema createPersisted(String uuid) {
 		Schema vertex = boot.get().meshRoot().getSchemaContainerRoot().create();
 		if (uuid != null) {
 			vertex.setUuid(uuid);
@@ -243,7 +245,7 @@ public class SchemaDaoWrapperImpl extends AbstractContainerDaoWrapper<SchemaResp
 	}
 
 	@Override
-	public void unpersist(Schema element) {
-		element.remove();
+	public void deletePersisted(HibSchema element) {
+		toGraph(element).remove();
 	}
 }

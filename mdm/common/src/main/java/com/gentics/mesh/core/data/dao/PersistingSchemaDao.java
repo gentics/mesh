@@ -57,7 +57,7 @@ import com.gentics.mesh.json.JsonUtil;
  * @author plyhun
  *
  */
-public interface PersistingSchemaDao extends SchemaDao, PersistingDaoGlobal<HibSchema>, PersistingRootDao<HibProject, HibSchema> {
+public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel> {
 
 	/**
 	 * Create the schema.
@@ -226,13 +226,6 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingDaoGlobal<HibS
 	}
 
 	/**
-	 * Returns an iterable of nodes which are referencing the schema container.
-	 *
-	 * @return
-	 */
-	Result<? extends HibNode> getNodes(HibSchema schema);
-
-	/**
 	 * Find all projects which reference the schema.
 	 * 
 	 * @param schema
@@ -261,13 +254,6 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingDaoGlobal<HibS
 					.anyMatch(container -> container != null)
 				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
 	}
-
-	/**
-	 * Add the schema to the db.
-	 * 
-	 * @param schema
-	 */
-	void addSchema(HibSchema schema);
 
 	/**
 	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.

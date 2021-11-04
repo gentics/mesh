@@ -27,12 +27,10 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -44,12 +42,10 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
@@ -59,6 +55,11 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser> {
+
+	/**
+	 * Update all shortcut edges.
+	 */
+	void updateShortcutEdges(HibUser user);
 
 	/**
 	 * Check the permission on the given element.
@@ -71,16 +72,6 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
 		return hasPermissionForId(user, element.getId(), permission);
 	}
-
-	/**
-	 * Check whether the user has the given permission on the element with the given id.
-	 *
-	 * @param user
-	 * @param elementId
-	 * @param permission
-	 * @return
-	 */
-	boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
@@ -133,96 +124,6 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		init(user, username, creator);
 		return mergeIntoPersisted(user);
 	}
-
-	/**
-	 * Inherit the permissions of the source elment to the target element.
-	 * 
-	 * @param user
-	 *            User to check the permission from
-	 * @param source
-	 *            Element from which the element should be loaded
-	 * @param target
-	 *            Element for which the perms should be applied
-	 * @return
-	 */
-	HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target);
-
-	/**
-	 * Find the user with the given username.
-	 * 
-	 * @param username
-	 * @return
-	 */
-	HibUser findByUsername(String username);
-
-	/**
-	 * Find the mesh auth user with the given username.
-	 * 
-	 * @param username
-	 * @return
-	 */
-	MeshAuthUser findMeshAuthUserByUsername(String username);
-
-	/**
-	 * Find the mesh auth user with the given UUID.
-	 * 
-	 * @param userUuid
-	 * @return
-	 */
-	MeshAuthUser findMeshAuthUserByUuid(String userUuid);
-
-	/**
-	 * Add the user to the given group.
-	 *
-	 * @param user
-	 * @param group
-	 * @return Fluent API
-	 */
-	HibUser addGroup(HibUser user, HibGroup group);
-
-	/**
-	 * Load the roles of the user.
-	 * 
-	 * @param user
-	 * @return
-	 */
-	Iterable<? extends HibRole> getRoles(HibUser user);
-
-	/**
-	 * Load the groups of the user.
-	 * 
-	 * @param user
-	 * @return
-	 */
-	Result<? extends HibGroup> getGroups(HibUser user);
-
-	/**
-	 * Load the effective roles for user via the shortcut edges.
-	 * 
-	 * @param fromUser
-	 * @param authUser
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
-
-	/**
-	 * Return the page of groups which the user is part of.
-	 * 
-	 * @param fromUser
-	 *            User to be checked
-	 * @param authUser
-	 *            User to be used to permission checks
-	 * @param pagingInfo
-	 *            Paging to be applied
-	 * @return
-	 */
-	Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
-
-	/**
-	 * Update all shortcut edges.
-	 */
-	void updateShortcutEdges(HibUser user);
 
 	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
@@ -635,11 +536,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		return mergeIntoPersisted(user);
 	}
 
-	/**
-	 * A CRC32 hash of the users {@link #getRoles roles}.
-	 *
-	 * @return A hash of the users roles
-	 */
+	@Override
 	default String getRolesHash(HibUser user) {
 		return Stream.concat(
 				Stream.of(user.isAdmin() ? "1" : "0"), 
