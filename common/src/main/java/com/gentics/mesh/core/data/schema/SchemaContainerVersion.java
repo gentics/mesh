@@ -5,7 +5,10 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
@@ -75,5 +78,40 @@ public interface SchemaContainerVersion
 	 */
 	boolean isAutoPurgeEnabled();
 
-	String getMicroschemaVersionHash(Branch branch);
+	/**
+	 * Get the hash over all uuids of microschema versions, which are currently assigned to the branch and which are used in the schema version.
+	 * A microschema is "used" by a schema, if the schema contains a field of type "microschema", where the microschema is mentioned in the "allowed" property.
+	 * @param branch branch
+	 * @return hash
+	 */
+	default String getMicroschemaVersionHash(Branch branch) {
+		return getMicroschemaVersionHash(branch, Collections.emptyMap());
+	}
+
+	/**
+	 * Variant of {@link #getMicroschemaVersionHash(Branch)}, that gets a replacement map (which might be empty, but not null). The replacement map may map microschema names
+	 * to microschema version uuids to be used instead of the currently assigned microschema version.
+	 * @param branch branch
+	 * @param replacementMap replacement map
+	 * @return hash
+	 */
+	String getMicroschemaVersionHash(Branch branch, Map<String, String> replacementMap);
+
+	/**
+	 * Get the name of fields, using the microschema.
+	 * A field uses the microschema, if it is either a of type "microschema" or of type "list of microschemas" and mentions the microschema in the "allowed" property.
+	 * @param microschema microschema in question
+	 * @return set of field names
+	 */
+	Set<String> getFieldsUsingMicroschema(MicroschemaContainer microschema);
+
+	/**
+	 * Check whether the schema uses the given microschema.
+	 * A microschema is "used" by a schema, if the schema contains a field of type "microschema", where the microschema is mentioned in the "allowed" property.
+	 * @param microschema microschema in question
+	 * @return true, when the schema version uses the microschema, false if not
+	 */
+	default boolean usesMicroschema(MicroschemaContainer microschema) {
+		return !getFieldsUsingMicroschema(microschema).isEmpty();
+	}
 }

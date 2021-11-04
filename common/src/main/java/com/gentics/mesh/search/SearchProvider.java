@@ -265,4 +265,15 @@ public interface SearchProvider {
 	default Completable check(IndexInfo info) {
 		return Completable.complete();
 	}
+
+	/**
+	 * Re-index documents from the source index to the dest index. 
+	 * @param source source index name (without installation prefix)
+	 * @param dest destination index name (without installation prefix)
+	 * @param query query for restricting the documents, which should be reindexed
+	 * @return completable
+	 */
+	default Completable reIndex(String source, String dest, JsonObject query) {
+		return Completable.complete();
+	}
 }

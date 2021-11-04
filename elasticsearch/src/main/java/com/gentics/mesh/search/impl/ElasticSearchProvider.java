@@ -606,6 +606,19 @@ public class ElasticSearchProvider implements SearchProvider {
 		}).compose(withTimeoutAndLog("Check mappings of index {" + indexName + "}", false));
 	}
 
+	@Override
+	public Completable reIndex(String source, String dest, JsonObject query) {
+		String sourceIndexName = installationPrefix() + source;
+		String destIndexName = installationPrefix() + dest;
+
+		JsonObject reIndex = new JsonObject()
+				.put("source", new JsonObject().put("index", sourceIndexName).put("query", query))
+				.put("dest", new JsonObject().put("index", destIndexName));
+		// TODO don't do this in a single request
+		return client.postBuilder("_reindex", reIndex).async().ignoreElement()
+				.compose(withTimeoutAndLog("ReIndex", false));
+	}
+
 	/**
 	 * Initiate (but do not wait for end of) resync of the given index and complete
 	 * @param indexName index name (without the installation prefix)

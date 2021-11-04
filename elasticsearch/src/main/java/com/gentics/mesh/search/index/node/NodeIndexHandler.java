@@ -5,12 +5,14 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.node.NodeIndexUtil.getDefaultSetting;
 import static com.gentics.mesh.search.index.node.NodeIndexUtil.getLanguageOverride;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -21,6 +23,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.reactivestreams.Publisher;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -30,6 +33,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -121,6 +125,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
+	/**
+	 * Get the indices for the branch in the project as transactional, which returns a map of index names to index info objects
+	 * @param project project
+	 * @param branch branch
+	 * @return transactional
+	 */
 	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
@@ -132,7 +142,28 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
+	/**
+	 * Get the indices for a specific schema version in the branch in the project as transactional, which returns a map of index names to index info objects
+	 * @param project project
+	 * @param branch branch
+	 * @param containerVersion container version
+	 * @return transactional
+	 */
 	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaContainerVersion containerVersion) {
+		return getIndices(project, branch, containerVersion, Collections.emptyMap());
+	}
+
+	/**
+	 * Variant of {@link #getIndices(Project, Branch, SchemaContainerVersion)}, which will replace the assigned microschema versions with the microschema versions of the given replacementMap, if the schema version
+	 * contains micronodes.
+	 * This can be used to get the index names and information for indices, if they would use other versions of microschemas (e.g. the old index names after a micronode migration has happened)
+	 * @param project project
+	 * @param branch branch
+	 * @param containerVersion container version
+	 * @param replacementMap map of microschema names to microschema version uuids (may be empty, but not null)
+	 * @return transactional
+	 */
+	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaContainerVersion containerVersion, Map<String, String> replacementMap) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
 			SchemaModel schema = containerVersion.getSchema();
@@ -140,7 +171,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// Add all language specific indices (might be none)
 			schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 				String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), version, language, containerVersion.getMicroschemaVersionHash(branch));
+					.getUuid(), version, language, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
 				indexInfos.put(indexName, createIndexInfo(branch, schema, language, indexName, schema.getName() + "@" + schema.getVersion()));
@@ -149,12 +180,67 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// And all default indices
 			Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 				String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), version, containerVersion.getMicroschemaVersionHash(branch));
+					.getUuid(), version, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
 				indexInfos.put(indexName, createIndexInfo(branch, schema, null, indexName, schema.getName() + "@" + schema.getVersion()));
 			});
 			return indexInfos;
+		});
+	}
+
+	/**
+	 * Get triples of (old index name, new index name, restriction query) for the indices in the given branch for the given schema version.
+	 * These triples will be used to create reindex requests for reindexing documents from old indices to new indices after a micronode migration.
+	 * <p>The old index names will be use the replacement map to replace the currently assigned microschema versions with older versions.</p>
+	 * <p>The new index names will use the currently assigned microschema versions</p>
+	 * <p>The restricting queries will restrict to documents, which do *not* contain micronodes of the given microschema</p>
+	 * @param project project
+	 * @param branch branch
+	 * @param containerVersion schema version
+	 * @param microschema microschema
+	 * @param replacementMap replacement map
+	 * @return transactional
+	 */
+	public Transactional<List<Triple<String, String, JsonObject>>> getReIndexTriples(Project project, Branch branch,
+			SchemaContainerVersion containerVersion, MicroschemaContainer microschema,
+			Map<String, String> replacementMap) {
+		return db.transactional(tx -> {
+			List<Triple<String, String, JsonObject>> indexPairList = new ArrayList<>();
+			SchemaModel schema = containerVersion.getSchema();
+
+			String oldHash = containerVersion.getMicroschemaVersionHash(branch, replacementMap);
+			String newHash = containerVersion.getMicroschemaVersionHash(branch);
+
+			if (!Objects.equals(oldHash, newHash)) {
+				JsonArray mustNotArray = new JsonArray();
+				JsonObject query = new JsonObject().put("bool", new JsonObject().put("must_not", mustNotArray));
+				for (String field : containerVersion.getFieldsUsingMicroschema(microschema)) {
+					mustNotArray.add(
+							new JsonObject().put("term", new JsonObject().put("fields." + field + ".microschema.uuid",
+									new JsonObject().put("value", microschema.getUuid()))));
+				}
+
+				// Add all language specific indices (might be none)
+				schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {
+					String oldIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
+							containerVersion.getUuid(), version, language, oldHash);
+					String newIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
+							containerVersion.getUuid(), version, language, newHash);
+					indexPairList.add(Triple.of(oldIndexName, newIndexName, query));
+				}));
+
+				// And all default indices
+				Stream.of(DRAFT, PUBLISHED).forEach(version -> {
+					String oldIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
+							containerVersion.getUuid(), version, oldHash);
+					String newIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
+							containerVersion.getUuid(), version, newHash);
+					indexPairList.add(Triple.of(oldIndexName, newIndexName, query));
+				});
+			}
+
+			return indexPairList;
 		});
 	}
 

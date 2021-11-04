@@ -432,9 +432,11 @@ public interface Branch
 	 * @param schemaContainerVersion
 	 * @param assigned
 	 * @param status
+	 * @param oldVersion old version (may be null)
 	 * @return
 	 */
-	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, JobStatus status);
+	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned,
+			JobStatus status, SchemaContainerVersion oldVersion);
 
 	/**
 	 * Create a project microschema assignment event.
@@ -442,8 +444,10 @@ public interface Branch
 	 * @param microschemaContainerVersion
 	 * @param assigned
 	 * @param status
+	 * @param oldVersion old version (may be null)
 	 * @return
 	 */
-	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, JobStatus status);
+	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion,
+			Assignment assigned, JobStatus status, MicroschemaContainerVersion oldVersion);
 
 }
