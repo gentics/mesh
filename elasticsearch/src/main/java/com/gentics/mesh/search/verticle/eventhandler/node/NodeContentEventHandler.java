@@ -122,7 +122,7 @@ public class NodeContentEventHandler implements EventHandler {
 			message.getBranchUuid(),
 			schemaVersionUuid,
 			message.getType(),
-			getIndexLanguage(message).runInNewTx(), getMicroschemaVersionHash(message)
+			getIndexLanguage(message).runInNewTx(), getMicroschemaVersionHash(message, schemaVersionUuid)
 		);
 	}
 
@@ -157,12 +157,12 @@ public class NodeContentEventHandler implements EventHandler {
 			.getUuid());
 	}
 
-	private String getMicroschemaVersionHash(NodeMeshEventModel message) {
+	private String getMicroschemaVersionHash(NodeMeshEventModel message, String schemaVersionUuid) {
 		return helper.getDb().tx(() -> {
 			SchemaContainer schema = boot.schemaContainerRoot().findByUuid(message.getSchema().getUuid());
 			Branch branch = boot.projectRoot().findByUuid(message.getProject().getUuid()).getBranchRoot()
 					.findByUuid(message.getBranchUuid());
-			SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schema);
+			SchemaContainerVersion schemaVersion = schema.findVersionByUuid(schemaVersionUuid);
 			return schemaVersion.getMicroschemaVersionHash(branch);
 		});
 	}

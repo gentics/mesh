@@ -13,7 +13,10 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -35,6 +38,7 @@ import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -44,6 +48,8 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -221,7 +227,7 @@ public class SchemaContainerVersionImpl extends
 	 */
 	private Stream<BranchSchemaAssignEventModel> generateUnassignEvents() {
 		return getBranches().stream()
-			.map(branch -> branch.onSchemaAssignEvent(this, UNASSIGNED, null));
+			.map(branch -> branch.onSchemaAssignEvent(this, UNASSIGNED, null, null));
 	}
 
 	@Override
@@ -253,7 +259,9 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public String getMicroschemaVersionHash(Branch branch) {
+	public String getMicroschemaVersionHash(Branch branch, Map<String, String> replacementMap) {
+		Objects.requireNonNull(branch, "The branch must not be null");
+		Objects.requireNonNull(replacementMap, "The replacement map must not be null (but may be empty)");
 		Set<String> microschemaNames = getSchema().getFields().stream().filter(field -> FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE).flatMap(field -> {
 			String[] allowed = ((MicronodeFieldSchema) field).getAllowedMicroSchemas();
 			return Stream.of(allowed);
@@ -262,22 +270,48 @@ public class SchemaContainerVersionImpl extends
 		if (microschemaNames.isEmpty()) {
 			return null;
 		} else {
-			Set<String> microschemaUuids = new TreeSet<>();
+			Set<String> microschemaVersionUuids = new TreeSet<>();
 			for (BranchMicroschemaEdge edge : branch.findAllLatestMicroschemaVersionEdges()) {
 				MicroschemaContainerVersion version = edge.getMicroschemaContainerVersion();
 				MicroschemaModel microschema = version.getSchema();
 				String microschemaName = microschema.getName();
 
+				// if the microschema is one of the "used" microschemas, we either get the version uuid from the replacement map, or
+				// the uuid of the currently assigned version
 				if (microschemaNames.contains(microschemaName)) {
-					microschemaUuids.add(version.getUuid());
+					microschemaVersionUuids.add(replacementMap.getOrDefault(microschemaName, version.getUuid()));
 				}
 			}
 
-			if (microschemaUuids.isEmpty()) {
+			if (microschemaVersionUuids.isEmpty()) {
 				return null;
 			} else {
-				return DigestUtils.md5Hex(microschemaUuids.stream().collect(Collectors.joining("|")));
+				return DigestUtils.md5Hex(microschemaVersionUuids.stream().collect(Collectors.joining("|")));
 			}
 		}
+	}
+
+	@Override
+	public Set<String> getFieldsUsingMicroschema(MicroschemaContainer microschema) {
+		return getSchema().getFields().stream().filter(field -> {
+			if (FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE) {
+				MicronodeFieldSchema micronodeField = (MicronodeFieldSchema) field;
+				return Arrays.asList(micronodeField.getAllowedMicroSchemas()).contains(microschema.getName());
+			} else if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
+				ListFieldSchema listField = (ListFieldSchema) field;
+				return FieldTypes.valueByName(listField.getListType()) == FieldTypes.MICRONODE
+						&& Arrays.asList(listField.getAllowedSchemas()).contains(microschema.getName());
+			} else {
+				return false;
+			}
+		}).map(FieldSchema::getName).collect(Collectors.toSet());
+	}
+
+	@Override
+	public boolean usesMicroschema(MicroschemaContainer microschema) {
+		return getSchema().getFields().stream()
+				.filter(field -> FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE)
+				.filter(field -> Arrays.asList(((MicronodeFieldSchema) field).getAllowedMicroSchemas())
+						.contains(microschema.getName())).findFirst().isPresent();
 	}
 }
