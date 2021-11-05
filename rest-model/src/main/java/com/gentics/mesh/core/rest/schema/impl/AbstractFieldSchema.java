@@ -104,7 +104,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		}
 		if (fieldProperties.get(SchemaChangeModel.ELASTICSEARCH_KEY) != null) {
 			Object value = fieldProperties.get(ELASTICSEARCH_KEY);
-			JsonObject options = new JsonObject((String) value);
+			JsonObject options = value instanceof JsonObject ? (JsonObject) value : new JsonObject((String) value);
 			setElasticsearch(options);
 		}
 
