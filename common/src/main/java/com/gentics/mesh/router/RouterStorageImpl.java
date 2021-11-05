@@ -14,9 +14,11 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.handler.VersionHandlerImpl;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -58,12 +60,14 @@ public class RouterStorageImpl implements RouterStorage {
 
 	private final RequestDelegator delegator;
 
+	private final TopologyChangeReadonlyHandler topologyChangeReadonlyHandler;
+
 	@Inject
 	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChainImpl authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandlerImpl versionHandler,
 		RouterStorageRegistryImpl routerStorageRegistry,
-		RequestDelegator delegator) {
+		RequestDelegator delegator, TopologyChangeReadonlyHandler topologyChangeReadonlyHandler, LivenessManager liveness) {
 		this.vertx = vertx;
 		this.options = options;
 		this.boot = boot;
@@ -74,9 +78,10 @@ public class RouterStorageImpl implements RouterStorage {
 		this.versionHandler = versionHandler;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.delegator = delegator;
+		this.topologyChangeReadonlyHandler = topologyChangeReadonlyHandler;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
-		rootRouter = new RootRouterImpl(vertx, this, options);
+		rootRouter = new RootRouterImpl(vertx, this, options, liveness);
 
 		// TODO move this to the place where the routerstorage is created
 		routerStorageRegistry.getInstances().add(this);
@@ -176,4 +181,12 @@ public class RouterStorageImpl implements RouterStorage {
 		return delegator;
 	}
 
+	/**
+	 * Get the topology change read-only handler
+	 * @return handler
+	 */
+	@Override
+	public TopologyChangeReadonlyHandler getTopologyChangeReadonlyHandler() {
+		return topologyChangeReadonlyHandler;
+	}
 }

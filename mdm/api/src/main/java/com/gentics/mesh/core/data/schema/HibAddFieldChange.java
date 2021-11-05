@@ -11,6 +11,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.rest.schema.*;
+import com.gentics.mesh.core.rest.schema.impl.*;
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -151,66 +154,87 @@ public interface HibAddFieldChange extends HibSchemaFieldChange {
 		FieldSchema field = null;
 		// TODO avoid case switches like this. We need a central delegator implementation which will be used in multiple places
 		switch (getType()) {
-		case "html":
-			field = new HtmlFieldSchemaImpl();
-			break;
-		case "string":
-			StringFieldSchema stringField = new StringFieldSchemaImpl();
-			stringField.setAllowedValues(getAllowProp());
-			field = stringField;
-			break;
-		case "number":
-			field = new NumberFieldSchemaImpl();
-			break;
-		case "binary":
-			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
-			Boolean content = getRestProperty(BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY);
-			Boolean metadata = getRestProperty(BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY);
-			if (metadata != null || content != null) {
-				BinaryExtractOptions options = new BinaryExtractOptions();
-				options.setContent(BooleanUtils.toBoolean(content));
-				options.setMetadata(BooleanUtils.toBoolean(metadata));
-				binaryField.setBinaryExtractOptions(options);
-			}
-			field = binaryField;
-			break;
-		case "node":
-			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
-			nodeField.setAllowedSchemas(getAllowProp());
-			field = nodeField;
-			break;
-		case "micronode":
-			MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
-			micronodeFieldSchema.setAllowedMicroSchemas(getAllowProp());
-			field = micronodeFieldSchema;
-			break;
-		case "date":
-			field = new DateFieldSchemaImpl();
-			break;
-		case "boolean":
-			field = new BooleanFieldSchemaImpl();
-			break;
-		case "list":
-			ListFieldSchema listField = new ListFieldSchemaImpl();
-			listField.setListType(getListType());
-			field = listField;
-			switch (getListType()) {
-			case "node":
-			case "micronode":
-				listField.setAllowedSchemas(getAllowProp());
+			case "html":
+				field = new HtmlFieldSchemaImpl();
 				break;
-			}
-			break;
-		default:
-			throw error(BAD_REQUEST, "Unknown type");
-		}field.setName(getFieldName());
+			case "string":
+				StringFieldSchema stringField = new StringFieldSchemaImpl();
+				stringField.setAllowedValues(getAllowProp());
+				field = stringField;
+				break;
+			case "number":
+				field = new NumberFieldSchemaImpl();
+				break;
+			case "binary":
+				BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
+				Boolean content = getRestProperty(BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY);
+				Boolean metadata = getRestProperty(BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY);
+				if (metadata != null || content != null) {
+					BinaryExtractOptions options = new BinaryExtractOptions();
+					options.setContent(BooleanUtils.toBoolean(content));
+					options.setMetadata(BooleanUtils.toBoolean(metadata));
+					binaryField.setBinaryExtractOptions(options);
+				}
+				field = binaryField;
+				break;
+			case "s3binary":
+				S3BinaryFieldSchema s3binaryField = new S3BinaryFieldSchemaImpl();
+				Boolean s3Content = getRestProperty(S3BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY);
+				Boolean s3Metadata = getRestProperty(S3BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY);
+				if (s3Metadata != null || s3Content != null) {
+					S3BinaryExtractOptions options = new S3BinaryExtractOptions();
+					options.setContent(BooleanUtils.toBoolean(s3Content));
+					options.setMetadata(BooleanUtils.toBoolean(s3Metadata));
+					s3binaryField.setS3BinaryExtractOptions(options);
+				}
+				field = s3binaryField;
+				break;
+			case "node":
+				NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
+				nodeField.setAllowedSchemas(getAllowProp());
+				field = nodeField;
+				break;
+			case "micronode":
+				MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
+				micronodeFieldSchema.setAllowedMicroSchemas(getAllowProp());
+				field = micronodeFieldSchema;
+				break;
+			case "date":
+				field = new DateFieldSchemaImpl();
+				break;
+			case "boolean":
+				field = new BooleanFieldSchemaImpl();
+				break;
+			case "list":
+				ListFieldSchema listField = new ListFieldSchemaImpl();
+				listField.setListType(getListType());
+				field = listField;
+				switch (getListType()) {
+					case "node":
+					case "micronode":
+						listField.setAllowedSchemas(getAllowProp());
+						break;
+				}
+				break;
+			default:
+				throw error(BAD_REQUEST, "Unknown type");
+		}
+		setCommonFieldProperties(field);
+		container.addField(field, position);
+		return container;
+	}
+
+	private void setCommonFieldProperties(FieldSchema field) {
+		field.setName(getFieldName());
 		field.setLabel(getLabel());
 		Boolean required = getRequired();
 		if (required != null) {
 			field.setRequired(required);
 		}
-		container.addField(field, position);
-		return container;
+		JsonObject elasticSearch = getIndexOptions();
+		if (elasticSearch != null) {
+			field.setElasticsearch(elasticSearch);
+		}
 	}
 
 	@Override

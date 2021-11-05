@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| bucket
+| false
+| string
+| AWS S3 bucket where transformed/resized images will be uploaded to and downloaded from.
+
+| expirationTimeDownload
+| false
+| integer
+| After this time in milliseconds the AWS S3 URL used for download of a transformed image will expire.
+
+| region
+| false
+| string
+| AWS S3 region for transformed / resized images
+
+|======

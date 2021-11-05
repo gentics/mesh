@@ -46,7 +46,18 @@ import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.field.*;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -72,6 +83,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 	public static final String BINARY_FIELD_TYPE_NAME = "BinaryField";
+	public static final String S3_BINARY_FIELD_TYPE_NAME = "S3BinaryField";
 
 	@Inject
 	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
@@ -136,7 +148,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .focalPoint
 		type.field(
-			newFieldDefinition().name("focalPoint").description("Focal point of the image.").type(createFocalPointType()).dataFetcher(fetcher -> {
+			newFieldDefinition().name("focalPoint").description("Focal point of the image.").type(createFocalPointType("FocalPoint")).dataFetcher(fetcher -> {
 				BinaryGraphField field = fetcher.getSource();
 				return field.getImageFocalPoint();
 			}));
@@ -147,8 +159,68 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return type.build();
 	}
 
-	public GraphQLObjectType createFocalPointType() {
-		Builder type = newObject().name("FocalPoint").description("Focal point");
+	public GraphQLObjectType createS3BinaryFieldType() {
+		Builder type = newObject().name(S3_BINARY_FIELD_TYPE_NAME).description("S3 Binary field");
+
+		// .s3binaryUuid
+		type.field(newFieldDefinition().name("s3binaryUuid").description("UUID of the s3 binary data.").type(GraphQLString).dataFetcher(fetcher -> {
+			S3BinaryGraphField field = fetcher.getSource();
+			S3HibBinary s3Binary = field.getS3Binary();
+			return s3Binary == null ? 0 : s3Binary.getUuid();
+		}));
+
+		// .fileName
+		type.field(newFieldDefinition().name("fileName").description("Filename of the uploaded file.").type(GraphQLString));
+
+		// .width
+		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
+			S3BinaryGraphField field = fetcher.getSource();
+			S3HibBinary s3Binary = field.getS3Binary();
+			return s3Binary == null ? 0 : s3Binary.getImageWidth();
+		}));
+
+		// .height
+		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
+			S3BinaryGraphField field = fetcher.getSource();
+			S3HibBinary s3Binary = field.getS3Binary();
+			return s3Binary == null ? 0 : s3Binary.getImageHeight();
+		}));
+
+		// .fileSize
+		type.field(newFieldDefinition().name("fileSize").description("Size of the s3 binary data in bytes").type(GraphQLLong).dataFetcher(fetcher -> {
+			S3BinaryGraphField field = fetcher.getSource();
+			S3HibBinary s3Binary = field.getS3Binary();
+			return s3Binary.getSize();
+		}));
+
+		// .mimeType
+		type.field(newFieldDefinition().name("mimeType").description("Mimetype of the binary data").type(GraphQLString));
+
+		// .dominantColor
+		type.field(
+				newFieldDefinition().name("dominantColor").description("Computed image dominant color").type(GraphQLString).dataFetcher(fetcher -> {
+					S3BinaryGraphField field = fetcher.getSource();
+					return field.getImageDominantColor();
+				}));
+
+		// .focalPoint
+		type.field(
+				newFieldDefinition().name("focalPoint").description("Focal point of the image.").type(createFocalPointType("S3FocalPoint")).dataFetcher(fetcher -> {
+					S3BinaryGraphField field = fetcher.getSource();
+					return field.getImageFocalPoint();
+				}));
+
+		// .plainText
+		type.field(newFieldDefinition().name("plainText").description("Extracted plain text of the uploaded document.").type(GraphQLString));
+
+		// .s3ObjectKey
+		type.field(newFieldDefinition().name("s3ObjectKey").description("S3 object key. Serves as reference to AWS.").type(GraphQLString));
+
+		return type.build();
+	}
+
+	public GraphQLObjectType createFocalPointType(String name) {
+		Builder type = newObject().name(name).description("Focal point");
 
 		// .x
 		type.field(newFieldDefinition().name("x").description("X-axis factor of the focal point. Left is 0 and middle is 0.5.").type(GraphQLFloat)
@@ -174,6 +246,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return container.getBinary(schema.getName());
 			}).build();
 
+	}
+
+	public GraphQLFieldDefinition createS3BinaryDef(FieldSchema schema) {
+		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(S3_BINARY_FIELD_TYPE_NAME))
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					return container.getS3Binary(schema.getName());
+				}).build();
 	}
 
 	public GraphQLFieldDefinition createBooleanDef(FieldSchema schema) {

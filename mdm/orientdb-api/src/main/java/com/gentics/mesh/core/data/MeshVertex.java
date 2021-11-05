@@ -47,7 +47,7 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 
 	/**
 	 * Set the role uuid for the given permission.
-	 * 
+	 *
 	 * @param permission
 	 * @param allowedRoles
 	 */

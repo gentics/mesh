@@ -6,10 +6,13 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 import static com.gentics.mesh.metric.SimpleMetric.NODE_MIGRATION_PENDING;
 
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -32,6 +35,7 @@ import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -90,9 +94,10 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-			List<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
+			Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
 				SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
-				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).list();
+				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).stream()
+						.collect(Collectors.toCollection(ArrayDeque::new));
 			});
 
 			if (metrics.isEnabled()) {

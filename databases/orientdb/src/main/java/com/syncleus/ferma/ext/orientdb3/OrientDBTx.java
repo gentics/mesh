@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.security.SecurityUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.madl.traversal.RawTraversalResult;
@@ -45,10 +46,12 @@ import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.dao.*;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.AbstractTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -63,7 +66,6 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -104,16 +106,17 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private final CacheCollection caches;
 	private final SecurityUtils security;
 	private final Binaries binaries;
+	private final S3Binaries s3binaries;
 
 	private Timer commitTimer;
 
 	@Inject
-	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot, 
+	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
 		DaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
-		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, 
-		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler, 
-		WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage, 
-		Binaries binaries, SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator) {
+		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
+		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler,
+		WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage,
+		Binaries binaries, SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator, S3Binaries s3binaries) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -130,13 +133,14 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler, 
+		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler,
 				webRootLinkReplacer, serverSchemaStorage, schemaComparator, microschemaComparator);
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
 		this.caches = caches;
 		this.security = security;
 		this.binaries = binaries;
+		this.s3binaries = s3binaries;
 	}
 
 	@Override
@@ -331,6 +335,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
+	public S3BinaryDao s3binaryDao() {
+		return daos.s3binaryDao();
+	}
+
+	@Override
 	public BranchDao branchDao() {
 		return daos.branchDao();
 	}
@@ -351,6 +360,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
+	public S3Binaries s3binaries() {
+		return s3binaries;
+	}
+
+	@Override
 	public PermissionCache permissionCache() {
 		return caches.permissionCache();
 	}
@@ -359,5 +373,4 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	public PasswordEncoder passwordEncoder() {
 		return security.passwordEncoder();
 	}
-
 }

@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;

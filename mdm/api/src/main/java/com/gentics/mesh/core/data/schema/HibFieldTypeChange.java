@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.function.Supplier;
 
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.*;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
@@ -32,6 +34,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.impl.*;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -49,7 +52,9 @@ import com.google.common.collect.ImmutableSet;
 public interface HibFieldTypeChange extends HibSchemaFieldChange {
 
 	public static final Set<String> UUID_TYPES = ImmutableSet.of("binary", "node", "micronode");
-	
+
+	String REST_PROPERTY_PREFIX_KEY = "fieldProperty_";
+
 	SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
 
 	@Override
@@ -113,43 +118,53 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		if (newType != null) {
 
 			switch (newType) {
-			case "boolean":
-				field = new BooleanFieldSchemaImpl();
-				break;
-			case "number":
-				field = new NumberFieldSchemaImpl();
-				break;
-			case "date":
-				field = new DateFieldSchemaImpl();
-				break;
-			case "html":
-				field = new HtmlFieldSchemaImpl();
-				break;
-			case "string":
-				field = new StringFieldSchemaImpl();
-				break;
-			case "binary":
-				field = new BinaryFieldSchemaImpl();
-				break;
-			case "list":
-				ListFieldSchema listField = new ListFieldSchemaImpl();
-				listField.setListType(getListType());
-				field = listField;
-				break;
-			case "micronode":
-				field = new MicronodeFieldSchemaImpl();
-				break;
-			case "node":
-				field = new NodeFieldSchemaImpl();
-				break;
-			default:
-				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
+				case "boolean":
+					field = new BooleanFieldSchemaImpl();
+					break;
+				case "number":
+					field = new NumberFieldSchemaImpl();
+					break;
+				case "date":
+					field = new DateFieldSchemaImpl();
+					break;
+				case "html":
+					field = new HtmlFieldSchemaImpl();
+					break;
+				case "string":
+					field = new StringFieldSchemaImpl();
+					break;
+				case "binary":
+					field = new BinaryFieldSchemaImpl();
+					break;
+				case "s3binary":
+					field = new S3BinaryFieldSchemaImpl();
+					break;
+				case "list":
+					ListFieldSchema listField = new ListFieldSchemaImpl();
+					listField.setListType(getListType());
+					field = listField;
+					break;
+				case "micronode":
+					field = new MicronodeFieldSchemaImpl();
+					break;
+				case "node":
+					field = new NodeFieldSchemaImpl();
+					break;
+				default:
+					throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
 			}
 			field.setRequired(fieldSchema.isRequired());
 			field.setLabel(fieldSchema.getLabel());
 			field.setName(fieldSchema.getName());
 
-			field.apply(getRestProperties());
+			// Remove prefix from map keys
+			Map<String, Object> properties = new HashMap<>();
+			for (String key : getRestProperties().keySet()) {
+				Object value = getRestProperties().get(key);
+				key = key.replace(REST_PROPERTY_PREFIX_KEY, "");
+				properties.put(key, value);
+			}
+			field.apply(properties);
 
 			// Remove the old field
 			container.removeField(fieldSchema.getName());
@@ -166,26 +181,28 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		String newType = getType();
 
 		switch (newType) {
-		case "boolean":
-			return Collections.singletonMap(getFieldName(), changeToBoolean(oldSchema, oldContent));
-		case "number":
-			return Collections.singletonMap(getFieldName(), changeToNumber(oldSchema, oldContent));
-		case "date":
-			return Collections.singletonMap(getFieldName(), changeToDate(oldSchema, oldContent));
-		case "html":
-			return Collections.singletonMap(getFieldName(), changeToHtml(oldSchema, oldContent));
-		case "string":
-			return Collections.singletonMap(getFieldName(), changeToString(oldSchema, oldContent));
-		case "binary":
-			return Collections.singletonMap(getFieldName(), changeToBinary(oldSchema, oldContent));
-		case "list":
-			return Collections.singletonMap(getFieldName(), changeToList(oldSchema, oldContent));
-		case "micronode":
-			return Collections.singletonMap(getFieldName(), changeToMicronode(oldSchema, oldContent));
-		case "node":
-			return Collections.singletonMap(getFieldName(), changeToNode(oldSchema, oldContent));
-		default:
-			throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
+			case "boolean":
+				return Collections.singletonMap(getFieldName(), changeToBoolean(oldSchema, oldContent));
+			case "number":
+				return Collections.singletonMap(getFieldName(), changeToNumber(oldSchema, oldContent));
+			case "date":
+				return Collections.singletonMap(getFieldName(), changeToDate(oldSchema, oldContent));
+			case "html":
+				return Collections.singletonMap(getFieldName(), changeToHtml(oldSchema, oldContent));
+			case "string":
+				return Collections.singletonMap(getFieldName(), changeToString(oldSchema, oldContent));
+			case "binary":
+				return Collections.singletonMap(getFieldName(), changeToBinary(oldSchema, oldContent));
+			case "s3binary":
+				return Collections.singletonMap(getFieldName(), changeToS3Binary(oldSchema, oldContent));
+			case "list":
+				return Collections.singletonMap(getFieldName(), changeToList(oldSchema, oldContent));
+			case "micronode":
+				return Collections.singletonMap(getFieldName(), changeToMicronode(oldSchema, oldContent));
+			case "node":
+				return Collections.singletonMap(getFieldName(), changeToNode(oldSchema, oldContent));
+			default:
+				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
 		}
 	}
 
@@ -216,10 +233,10 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 		}
 
 		switch (oldType) {
-		case "number":
-			return oldContent.getFields().getNumberField(fieldName);
-		default:
-			return new NumberFieldImpl().setNumber(typeConverter.toNumber(oldValue));
+			case "number":
+				return oldContent.getFields().getNumberField(fieldName);
+			default:
+				return new NumberFieldImpl().setNumber(typeConverter.toNumber(oldValue));
 		}
 	}
 
@@ -268,10 +285,23 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 
 		String oldType = fieldSchema.getType();
 		switch (oldType) {
-		case "binary":
-			return oldContent.getFields().getBinaryField(fieldName);
-		default:
-			return null;
+			case "binary":
+				return oldContent.getFields().getBinaryField(fieldName);
+			default:
+				return null;
+		}
+	}
+
+	private S3BinaryField changeToS3Binary(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		String oldType = fieldSchema.getType();
+		switch (oldType) {
+			case "s3binary":
+				return oldContent.getFields().getS3BinaryField(fieldName);
+			default:
+				return null;
 		}
 	}
 

@@ -167,6 +167,11 @@
 | coordinationtopology
 | The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.
 
+| clusterOptions.topologyChangeReadOnly
+| false
+| boolean
+| Flag to enable or disable setting the cluster in readonly mode, when the topology changes.
+
 | storageOptions.directory
 | true
 | string
@@ -216,6 +221,11 @@
 | false
 | map
 | Additional set of graph database parameters.
+
+| storageOptions.clusterJoinTimeout
+| false
+| int
+| The timeout for joining the graphdb cluster in milliseconds. This also includes the time it takes to synchronize the graphdb over the network.
 
 | searchOptions.url
 | false
@@ -332,6 +342,16 @@
 | int
 | Configure the index sync batch size. Default: 50000
 
+| searchOptions.indexCheckInterval
+| false
+| long
+| Set the interval of index checks in ms. Default: 60000
+
+| searchOptions.indexMappingCacheTimeout
+| false
+| long
+| Set the timeout for the cache of index mappings in ms. Default: 3600000
+
 | uploadOptions.byteLimit
 | false
 | long
@@ -361,6 +381,76 @@
 | false
 | set
 | If set, the parser will only extract metadata with the keys specified in the list.
+
+| s3options.enabled
+| false
+| boolean
+| Flag to enable or disable the S3 engine.
+
+| s3options.bucket
+| false
+| string
+| AWS S3 bucket where binaries will be uploaded to and downloaded from
+
+| s3options.expirationTimeUpload
+| false
+| int
+| After this time in milliseconds the AWS S3 URL used for upload will expire.
+
+| s3options.expirationTimeDownload
+| false
+| int
+| After this time in milliseconds the AWS S3 URL used for download will expire.
+
+| s3options.linkResolver
+| false
+| string
+| Style of linkResolving:&#x27;s3&#x27; (default) resolved Links will render a pre-signed URL directly to S3 OR &#x27;mesh&#x27; resolved Links will render a mesh-url
+
+| s3options.metadataWhitelist
+| false
+| set
+| If set, the parser will only extract metadata with the keys specified in the list.
+
+| s3options.parserLimit
+| false
+| int
+| The parser limit for uploaded documents (pdf, doc, docx). 
+
+| s3options.region
+| false
+| string
+| AWS S3 region
+
+| s3options.secretAccessKey
+| false
+| string
+| AWS S3 secret access key
+
+| s3options.accessKeyId
+| false
+| string
+| AWS S3 access key id
+
+| s3options.endpoint
+| false
+| string
+| AWS S3 custom endpoint
+
+| s3cacheOptions.bucket
+| false
+| string
+| AWS S3 bucket where transformed/resized images will be uploaded to and downloaded from.
+
+| s3cacheOptions.expirationTimeDownload
+| false
+| int
+| After this time in milliseconds the AWS S3 URL used for download of a transformed image will expire.
+
+| s3cacheOptions.region
+| false
+| string
+| AWS S3 region for transformed / resized images
 
 | authenticationOptions.tokenExpirationTime
 | true

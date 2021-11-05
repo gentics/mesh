@@ -15,8 +15,11 @@
 	<modules>
 		<module>basic</module>
 		<module>basic2</module>
+		<module>client</module>
 		<module>non-mesh</module>
 		<module>failing</module>
+		<module>failing-first</module>
+		<module>init-mutating</module>
 		<module>classloader</module>
 		<module>common</module>
 		<module>extension-provider</module>

@@ -14,54 +14,14 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializerImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
-import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
-import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.*;
+import com.gentics.mesh.core.data.dao.impl.*;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
+import com.gentics.mesh.core.data.s3binary.impl.S3BinariesImpl;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
@@ -102,7 +62,7 @@ import dagger.Provides;
  */
 @Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
-	
+
 	@Binds
 	abstract OrientDBClusterManager orientDBClusterManager(OrientDBClusterManagerImpl e);
 
@@ -111,10 +71,10 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);
-	
+
 	@Binds
 	abstract GraphDatabase bindGraphDatabase(OrientDBDatabase e);
-	
+
 	@Binds
 	abstract BootstrapInitializer bindBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
 
@@ -133,6 +93,8 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract Binaries bindBinaries(BinariesImpl e);
 
+	@Binds
+	abstract S3Binaries bindS3Binaries(S3BinariesImpl e);
 	// DAOs
 
 	@Binds
@@ -169,6 +131,9 @@ public abstract class OrientDBModule {
 	abstract BinaryDaoWrapper bindBinaryDaoWrapper(BinaryDaoWrapperImpl e);
 
 	@Binds
+	abstract S3BinaryDaoWrapper bindS3BinaryDaoWrapper(S3BinaryDaoWrapperImpl e);
+
+	@Binds
 	abstract BranchDaoWrapper bindBranchDaoWrapper(BranchDaoWrapperImpl e);
 
 	@Binds
@@ -179,7 +144,7 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract LanguageDaoWrapper bindLanguageDaoWrapper(LanguageDaoWrapperImpl e);
-	
+
 	@Binds
 	abstract UserDao bindUserDao(UserDaoWrapper e);
 
@@ -211,6 +176,9 @@ public abstract class OrientDBModule {
 	abstract BinaryDao bindBinaryDao(BinaryDaoWrapper e);
 
 	@Binds
+	abstract S3BinaryDao s3BinaryDao(S3BinaryDaoWrapper e);
+
+	@Binds
 	abstract BranchDao bindBranchDao(BranchDaoWrapper e);
 
 	@Binds
@@ -231,6 +199,9 @@ public abstract class OrientDBModule {
 	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
 
 	@Binds
+	abstract ClusterManager bindClusterManager(OrientDBClusterManager e);
+
+	@Binds
 	abstract OrientDBBootstrapInitializer orientDBBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
 
 	@Provides
@@ -241,11 +212,11 @@ public abstract class OrientDBModule {
 			throw new IllegalArgumentException("Unsupported MeshOptions class:" + meshOptions.getClass().getCanonicalName());
 		}
 	}
-	
+
 	/**
 	 * Return the hazelcast instance which is fetched from OrientDB cluster manager.
-	 * 
-	 * @param db
+	 *
+	 * @param clusterManager
 	 * @return
 	 */
 	@Provides

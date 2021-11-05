@@ -48,6 +48,11 @@ import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.*;
+import com.gentics.mesh.core.data.node.field.impl.*;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -61,6 +66,7 @@ import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -216,6 +222,21 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	@Override
 	public BinaryGraphField getBinary(String key) {
 		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
+	}
+
+	@Override
+	public S3BinaryGraphField createS3Binary(String fieldKey, S3HibBinary s3binary) {
+		S3BinaryGraphField edge = addFramedEdge(HAS_FIELD, toGraph(s3binary), S3BinaryGraphFieldImpl.class);
+		edge.setFieldKey(fieldKey);
+		return edge;
+	}
+
+	@Override
+	public S3BinaryGraphField getS3Binary(String key) {
+		return outE(HAS_FIELD)
+				.has(S3BinaryGraphFieldImpl.class)
+				.has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+				.nextOrDefaultExplicit(S3BinaryGraphFieldImpl.class, null);
 	}
 
 	@Override

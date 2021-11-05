@@ -5,24 +5,31 @@ import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.parameter.client.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.FULL, startServer = true)
 public class IndexClearTest extends AbstractMeshTest {
+	@Before
+	public void setup() throws Exception {
+		getProvider().clear().blockingAwait();
+		syncIndex();
+		revokeAdmin();
+	}
 
 	@Test
 	public void testClear() throws Exception {
-		waitForEvent(INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx()));
+		waitForEvent(INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx(), null));
 
 		call(() -> client().invokeIndexClear(), FORBIDDEN, "error_admin_permission_required");
 		grantAdmin();
@@ -30,13 +37,47 @@ public class IndexClearTest extends AbstractMeshTest {
 		GenericMessageResponse message = call(() -> client().invokeIndexClear());
 		assertThat(message).matches("search_admin_index_clear");
 
-		try {
-			getProvider().getDocument(HibUser.composeIndexName(), userUuid()).blockingGet();
-			fail("An error should occur");
-		} catch (Exception e) {
-			HttpErrorException error = (HttpErrorException) e.getCause();
-			assertEquals(404, error.getStatusCode());
-		}
+		assertDocumentDoesNotExist(HibUser.composeIndexName(), HibUser.composeDocumentId(userUuid()));
 
+	}
+
+	/**
+	 * Test that clearing the index restricted by name only clears the specified index
+	 * @throws Exception
+	 */
+	@Test
+	public void testClearWithName() throws Exception {
+		runClearTest(false);
+	}
+
+	/**
+	 * Test that clearing indices can also be done with the full name (including the installation prefix)
+	 * @throws Exception
+	 */
+	@Test
+	public void testClearWithFullName() throws Exception {
+		runClearTest(true);
+	}
+
+	/**
+	 * Run the clear test
+	 * @param prefix true to use the prefixed index name, false to use the bare index name
+	 * @throws Exception
+	 */
+	protected void runClearTest(boolean prefix) throws Exception {
+		String index = prefix ? "mesh-user" : "user";
+		grantAdmin();
+
+		// check that the project is found in index
+		assertDocumentExists(Project.composeIndexName(), Project.composeDocumentId(projectUuid()));
+		// check that the user is found in index
+		assertDocumentExists(HibUser.composeIndexName(), HibUser.composeDocumentId(userUuid()));
+
+		call(() -> client().invokeIndexClear(new IndexMaintenanceParametersImpl().setIndex(index)));
+
+		// check that the project is still found in index
+		assertDocumentExists(Project.composeIndexName(), Project.composeDocumentId(projectUuid()));
+		// check that the user is no longer found in index
+		assertDocumentDoesNotExist(HibUser.composeIndexName(), HibUser.composeDocumentId(userUuid()));
 	}
 }

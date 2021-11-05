@@ -51,15 +51,17 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	private final Counter missCounter;
 	private final Counter hitCounter;
 
-	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Vertx vertx, MeshOptions options, MetricsService metricsService,
-		Predicate<Message<JsonObject>> filter,
-		BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
-		MeshEvent... events) {
+	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Duration expireAfterAccess, Vertx vertx, MeshOptions options, MetricsService metricsService,
+							   Predicate<Message<JsonObject>> filter,
+							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, MeshEvent... events) {
 		this.vertx = vertx;
 		this.options = options;
 		Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().maximumSize(maxSize);
 		if (expireAfter != null) {
 			cacheBuilder = cacheBuilder.expireAfterWrite(expireAfter.getSeconds(), TimeUnit.SECONDS);
+		}
+		if (expireAfterAccess != null) {
+			cacheBuilder = cacheBuilder.expireAfterAccess(expireAfterAccess.getSeconds(), TimeUnit.SECONDS);
 		}
 		this.cache = cacheBuilder.build();
 		this.filter = filter;
@@ -195,6 +197,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		private MeshEvent[] events = null;
 		private Vertx vertx;
 		private Duration expireAfter;
+		private Duration expireAfterAccess;
 		private String name;
 		private MeshOptions options;
 		private MetricsService metricsService;
@@ -208,8 +211,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			Objects.requireNonNull(events, "No events for the cache have been set");
 			Objects.requireNonNull(vertx, "No Vert.x instance has been set");
 			Objects.requireNonNull(name, "No name has been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, vertx, options, metricsService, filter, onNext,
-				events);
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, expireAfterAccess, vertx, options, metricsService, filter, onNext, events);
 			if (disabled) {
 				c.disable();
 			}
@@ -311,6 +313,18 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 */
 		public Builder<K, V> expireAfter(long amount, TemporalUnit unit) {
 			this.expireAfter = Duration.of(amount, unit);
+			return this;
+		}
+
+		/**
+		 * Define when the cache should automatically expire after last access
+		 * 
+		 * @param amount
+		 * @param unit
+		 * @return Fluent API
+		 */
+		public Builder<K, V> expireAfterAccess(long amount, TemporalUnit unit) {
+			this.expireAfterAccess = Duration.of(amount, unit);
 			return this;
 		}
 

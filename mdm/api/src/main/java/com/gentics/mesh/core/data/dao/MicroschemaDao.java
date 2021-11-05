@@ -3,6 +3,14 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import org.apache.commons.lang.NotImplementedException;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -28,6 +36,7 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -41,6 +50,7 @@ import com.gentics.mesh.json.JsonUtil;
 
 /**
  * DAO for microschema operations.
+
 
  */
 public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, RootDao<HibProject, HibMicroschema> {
@@ -99,7 +109,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 
 	/**
 	 * Find all projects which reference the schema.
-	 * 
+	 *
 	 * @param schema
 	 * @return
 	 */
@@ -306,7 +316,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 
 	/**
 	 * Returns events for assignment on the schema action.
-	 * 
+	 *
 	 * @return
 	 */
 	default Stream<ProjectMicroschemaEventModel> assignEvents(HibMicroschema microschema, Assignment assigned) {

@@ -23,6 +23,7 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.etc.config.VertxOptions;
+import com.gentics.mesh.etc.config.*;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 import io.vertx.core.Vertx;
@@ -41,7 +42,7 @@ public class TxDataImpl implements TxData {
 	private final SchemaComparator schemaComparator;
 	private final MicroschemaComparator microschemaComparator;
 
-	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot, 
+	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot,
 			PermissionRoots permissionRoots, NodeIndexHandler nodeIndexHandler,
 			WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage,
 			SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator) {
@@ -203,6 +204,24 @@ public class TxDataImpl implements TxData {
 	@Setter
 	public MeshOptions setPluginDirectory(String pluginDirectory) {
 		return options.setPluginDirectory(pluginDirectory);
+	}
+
+	public S3Options getS3Options() {
+		return options.getS3Options();
+	}
+
+	@Setter
+	public MeshOptions setS3Options(S3Options s3Options) {
+		return options.setS3Options(s3Options);
+	}
+
+	public S3CacheOptions getS3CacheOptions() {
+		return options.getS3Options().getS3CacheOptions();
+	}
+
+	@Setter
+	public S3Options setS3CacheOptions(S3CacheOptions s3cacheOptions) {
+		return options.getS3Options().setS3CacheOptions(s3cacheOptions);
 	}
 
 	public ImageManipulatorOptions getImageOptions() {

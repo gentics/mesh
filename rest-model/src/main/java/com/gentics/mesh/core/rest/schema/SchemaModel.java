@@ -99,7 +99,7 @@ public interface SchemaModel extends FieldSchemaContainer {
 
 		FieldSchema segmentFieldSchema = getField(getSegmentField());
 		if (segmentFieldSchema != null && (!((segmentFieldSchema instanceof StringFieldSchema)
-			|| (segmentFieldSchema instanceof BinaryFieldSchema)))) {
+			|| (segmentFieldSchema instanceof BinaryFieldSchema)|| (segmentFieldSchema instanceof S3BinaryFieldSchema)))) {
 			throw error(BAD_REQUEST, "schema_error_segmentfield_type_invalid", segmentFieldSchema.getType());
 		}
 

@@ -31,10 +31,14 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
@@ -73,7 +77,7 @@ public final class HibClassConverter {
 
 	/**
 	 * Convert the database to a graph counterpart.
-	 * 
+	 *
 	 * @param tx
 	 * @return
 	 */
@@ -83,7 +87,7 @@ public final class HibClassConverter {
 
 	/**
 	 * Convert the transaction to a graph counterpart.
-	 * 
+	 *
 	 * @param tx
 	 * @return
 	 */
@@ -93,7 +97,7 @@ public final class HibClassConverter {
 
 	/**
 	 * Convert the hib binary field to a graph counterpart.
-	 * 
+	 *
 	 * @param element
 	 * @return
 	 */
@@ -101,9 +105,13 @@ public final class HibClassConverter {
 		return checkAndCast(element, BinaryGraphField.class);
 	}
 
+	public static S3BinaryGraphField toGraph(S3HibBinaryField element) {
+		return checkAndCast(element, S3BinaryGraphField.class);
+	}
+
 	/**
 	 * Convert the hib micronode field to a graph counterpart.
-	 * 
+	 *
 	 * @param element
 	 * @return
 	 */
@@ -113,7 +121,7 @@ public final class HibClassConverter {
 
 	/**
 	 * Convert the hib node field to a graph counterpart.
-	 * 
+	 *
 	 * @param element
 	 * @return
 	 */
@@ -123,7 +131,7 @@ public final class HibClassConverter {
 
 	/**
 	 * Convert the generic hib field container to a graph counterpart.
-	 * 
+	 *
 	 * @param element
 	 * @return
 	 */
@@ -153,7 +161,7 @@ public final class HibClassConverter {
 
 	/**
 	 * Convert the tag to a graph element.
-	 * 
+	 *
 	 * @param tag
 	 * @return
 	 */
@@ -218,10 +226,10 @@ public final class HibClassConverter {
 	 * @return
 	 */
 	public static <
-				RE extends NameUuidReference<RE>, 
-				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
-				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
-				R extends FieldSchemaContainer, 
+				RE extends NameUuidReference<RE>,
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>,
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>,
+				R extends FieldSchemaContainer,
 				RM extends FieldSchemaContainerVersion
 			> GraphFieldSchemaContainer<R, RM, RE, SC, SCV> toGraphContainer(HibFieldSchemaElement<R, RM, RE, SC, SCV> element) {
 		return checkAndCast(element, GraphFieldSchemaContainer.class);
@@ -238,10 +246,10 @@ public final class HibClassConverter {
 	 * @return
 	 */
 	public static <
-				RE extends NameUuidReference<RE>, 
-				RM extends FieldSchemaContainerVersion, 
-				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
-				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				RE extends NameUuidReference<RE>,
+				RM extends FieldSchemaContainerVersion,
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>,
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>,
 				R extends FieldSchemaContainer
 			> GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> toGraphVersion(
 		HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> element) {
@@ -337,14 +345,25 @@ public final class HibClassConverter {
 	public static Binary toGraph(HibBinary binary) {
 		return checkAndCast(binary, Binary.class);
 	}
+
 	/**
 	 * Convert the micronode to a graph element.
-	 * 
+	 *
 	 * @param node
 	 * @return
 	 */
 	public static Micronode toGraph(HibMicronode node) {
 		return checkAndCast(node, Micronode.class);
+	}
+
+	/**
+	 * Convert the s3binary to a graph element.
+	 *
+	 * @param s3binary
+	 * @return
+	 */
+	public static S3Binary toGraph(S3HibBinary s3binary) {
+		return checkAndCast(s3binary, S3Binary.class);
 	}
 
 	/**
@@ -394,10 +413,10 @@ public final class HibClassConverter {
 	 * @return
 	 */
 	public static <
-				RE extends NameUuidReference<RE>, 
-				RM extends FieldSchemaContainerVersion, 
-				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
-				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				RE extends NameUuidReference<RE>,
+				RM extends FieldSchemaContainerVersion,
+				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>,
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>,
 				R extends FieldSchemaContainer
 			> GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> toGraph(HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> version) {
 		return checkAndCast(version, GraphFieldSchemaContainerVersion.class);
@@ -405,7 +424,7 @@ public final class HibClassConverter {
 
 	/**
 	 * Apply the cast to the graph element d and return it.
-	 * 
+	 *
 	 * @param <T>
 	 *            Type of the graph field
 	 * @param element
@@ -451,7 +470,7 @@ public final class HibClassConverter {
 
 	/**
 	 * Apply the cast to the graph element and return it.
-	 * 
+	 *
 	 * @param <T>
 	 *            Type of the graph element
 	 * @param element

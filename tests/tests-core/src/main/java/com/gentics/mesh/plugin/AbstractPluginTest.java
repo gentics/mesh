@@ -28,6 +28,8 @@ public class AbstractPluginTest extends AbstractMeshTest {
 
 	public static final String BASIC2_PATH = "../../core/target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
 
+	public static final String CLIENT_PATH = "../../core/test-plugins/client/target/client-plugin-0.0.1-SNAPSHOT.jar";
+
 	public static final String FAILING_PATH = "../../core/target/test-plugins/failing/target/failing-plugin-0.0.1-SNAPSHOT.jar";
 
 	public static final String NON_MESH_PATH = "../../core/target/test-plugins/non-mesh/target/non-mesh-plugin-0.0.1-SNAPSHOT.jar";

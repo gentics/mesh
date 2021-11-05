@@ -29,7 +29,7 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 
 	/**
 	 * Generate the persisted entity of a given type.
-	 * 
+	 *
 	 * @param uuid if null, a generated UUID will be used.
 	 * @return
 	 */
@@ -44,7 +44,7 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 
 	/**
 	 * Delete the entity from the storage
-	 * 
+	 *
 	 * @param element
 	 */
 	public void unpersist(D element) {

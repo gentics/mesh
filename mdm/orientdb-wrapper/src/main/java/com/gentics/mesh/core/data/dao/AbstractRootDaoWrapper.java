@@ -30,7 +30,7 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 
 	/**
 	 * Generated the persisted entity in the storage under the given root entity
-	 * 
+	 *
 	 * @param root
 	 * @param uuid if null, a generated UUID will be used.
 	 * @return
@@ -48,7 +48,7 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 
 	/**
 	 * Delete the entity from the storage.
-	 * 
+	 *
 	 * @param root
 	 * @param element
 	 */

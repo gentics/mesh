@@ -35,6 +35,7 @@ orientdb-plugins
 keystore.jceks
 /bower_components/
 mesh.lock
+mesh.live
 /build
 /dist
 /node

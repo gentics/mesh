@@ -8,7 +8,7 @@ import com.gentics.mesh.context.InternalActionContext;
 
 /**
  * Util methods, related to the content versioning.
- * 
+ *
  * @author plyhun
  *
  */

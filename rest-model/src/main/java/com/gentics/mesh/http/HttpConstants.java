@@ -17,6 +17,14 @@ public final class HttpConstants {
 
 	public static final String APPLICATION_JSON = "application/json";
 
+	public static final String TEXT_PLAIN = "text/plain";
+
+	public static final String TEXT_PLAIN_UTF8 = TEXT_PLAIN + "; charset=utf-8";
+
+	public static final String TEXT_HTML = "text/html";
+
+	public static final String TEXT_HTML_UTF8 = TEXT_HTML + "; charset=utf-8";
+
 	public static final String APPLICATION_JSON_UTF8 = APPLICATION_JSON + "; charset=utf-8";
 
 	public static final String APPLICATION_YAML = "application/x-yaml";

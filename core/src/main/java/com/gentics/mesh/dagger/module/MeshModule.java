@@ -2,16 +2,15 @@ package com.gentics.mesh.dagger.module;
 
 import javax.inject.Singleton;
 
+import com.gentics.mesh.storage.S3BinaryStorage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
-import com.hazelcast.core.HazelcastInstance;
 
 import dagger.Module;
 import dagger.Provides;
@@ -42,8 +41,8 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options, BootstrapInitializer boot) {
-		return new ImgscalrImageManipulator(vertx, options, boot);
+	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options, BootstrapInitializer boot, S3BinaryStorage s3BinaryStorage) {
+		return new ImgscalrImageManipulator(vertx, options, boot, s3BinaryStorage);
 	}
 
 	/**

@@ -27,6 +27,7 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static java.util.Objects.nonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.core.data.node.field.*;
+import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -207,6 +210,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(bac, this);
+		}
+
+		for (S3BinaryGraphField s3binaryField : outE(HAS_FIELD).has(S3BinaryGraphFieldImpl.class).frameExplicit(S3BinaryGraphFieldImpl.class)) {
+			s3binaryField.removeField(bac, this);
 		}
 
 		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
@@ -727,11 +734,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			return stringField.getString();
 		}
 
-		// 3. Try to load the path segment using the binary field since the string field could not be found
+		// 3. Try to load the path segment using the binary field or the s3 binary since the string field could not be found
 		if (stringField == null) {
-			BinaryGraphField binaryField = getBinary(segmentFieldKey);
-			if (binaryField != null) {
-				return binaryField.getFileName();
+			S3BinaryGraphField s3binaryField = getS3Binary(segmentFieldKey);
+			if (nonNull(s3binaryField)) {
+				return s3binaryField.getS3Binary().getFileName();
+			}
+			BinaryGraphField binary = getBinary(segmentFieldKey);
+			if (nonNull(binary)) {
+				return binary.getFileName();
 			}
 		}
 		return null;

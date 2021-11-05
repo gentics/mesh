@@ -210,6 +210,26 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 				"node_error_invalid_string_field_value", "restrictedstringField", "invalid");
 		}
 	}
+	
+	@Test
+	public void testValueRemoveValueRestrictions() {
+		try (Tx tx = tx()) {
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			
+			// unrestrict string field
+			StringFieldSchema restrictedStringFieldSchema = schema.getField("restrictedstringField", StringFieldSchema.class);
+			restrictedStringFieldSchema.setAllowedValues();
+			schema.addField(restrictedStringFieldSchema);
+
+			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
+		}		
+		try (Tx tx = tx()) {
+			NodeResponse response = updateNode("restrictedstringField", new StringFieldImpl().setString("million"));
+			StringFieldImpl field = response.getFields().getStringField("restrictedstringField");
+			assertEquals("million", field.getString());
+		}
+	}
 
 	@Override
 	public NodeResponse createNodeWithField() {

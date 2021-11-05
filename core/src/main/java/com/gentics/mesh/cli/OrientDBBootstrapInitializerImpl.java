@@ -11,6 +11,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -20,6 +21,7 @@ import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -44,6 +46,7 @@ import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
+import io.reactivex.Completable;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBusOptions;
@@ -245,6 +248,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 			// Finally start ES integration
 			searchProvider.init();
 			searchProvider.start();
+			pluginManager.init();
 			if (flags.isReindex()) {
 				createSearchIndicesAndMappings();
 			}
@@ -314,33 +318,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		SYNC_INDEX_ACTION.invoke();
 	}
 
-	// TODO make changelog generalized
-	@Override
-	public void invokeChangelog(PostProcessFlags flags) {
-
-		log.info("Invoking database changelog check...");
-		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
-		if (!cls.applyChanges(flags)) {
-			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
-		}
-
-		// Update graph indices and vertex types (This may take some time)
-		DatabaseHelper.init(db);
-
-		// Now run the high level changelog entries
-		highlevelChangelogSystem.apply(flags, meshRoot);
-
-		log.info("Changelog completed.");
-		cls.setCurrentVersionAndRev();
-	}
-
-	@Override
-	public boolean requiresChangelog() {
-		log.info("Checking whether changelog entries need to be applied");
-		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
-		return cls.requiresChanges() || highlevelChangelogSystem.requiresChanges(meshRoot);
-	}
-
 	@Override
 	public void markChangelogApplied() {
 		log.info("This is the initial setup.. marking all found changelog entries as applied");
@@ -359,5 +336,81 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 				db.clusterManager().startAndSync();
 			}
         }
+	}
+
+	// TODO: make change log generalized
+	@Override
+	public void invokeChangelog(PostProcessFlags flags) {
+
+		log.info("Invoking database changelog check...");
+		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
+		if (!cls.applyChanges(flags)) {
+			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
+		}
+
+		// Update graph indices and vertex types (This may take some time)
+		DatabaseHelper.init(db);
+
+		// Now run the high level changelog entries
+		highlevelChangelogSystem.apply(flags, meshRoot, null);
+
+		log.info("Changelog completed.");
+		cls.setCurrentVersionAndRev();
+	}
+
+	@Override
+	public void invokeChangelogInCluster(PostProcessFlags flags, MeshOptions configuration) {
+		log.info("Invoking database changelog check...");
+		if (requiresChangelog(filter -> !filter.isAllowedInCluster(configuration))) {
+			// Joining of cluster members is only allowed when the changelog has been applied
+			throw new RuntimeException(
+					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
+							+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER + " command line argument to migrate the database.");
+		}
+
+		// wait for writeQuorum, then raise a global lock and execute changelog
+		db.clusterManager().waitUntilWriteQuorumReached()
+				.andThen(doWithLock(executeChangelog(flags, configuration), 60 * 1000)).subscribe();
+	}
+
+	/**
+	 * Return a completable which will try to get a global lock with name {@link #GLOBAL_CHANGELOG_LOCK_KEY} and will then execute the locked action
+	 * @param lockedAction locked action
+	 * @param timeout timeout for waiting for the lock
+	 * @return completable
+	 */
+	protected Completable doWithLock(Completable lockedAction, long timeout) {
+		return mesh.getRxVertx().sharedData().rxGetLockWithTimeout(GLOBAL_CHANGELOG_LOCK_KEY, timeout).toMaybe()
+				.flatMapCompletable(lock -> {
+					log.debug("Acquired lock for executing changelog");
+					return lockedAction.doFinally(() -> {
+						log.debug("Releasing lock for executing changelog");
+						lock.release();
+					});
+				});
+	}
+
+	/**
+	 * Completable which will execute the highlevel changelog and will also store the (new) mesh version and DB revision to the DB
+	 * @param flags
+	 * @param configuration
+	 * @return
+	 */
+	protected Completable executeChangelog(PostProcessFlags flags, MeshOptions configuration) {
+		return Completable.defer(() -> {
+			// Now run the high level changelog entries, which are allowed to be executed in cluase mode
+			highlevelChangelogSystem.apply(flags, meshRoot, filter -> filter.isAllowedInCluster(configuration));
+
+			log.info("Changelog completed.");
+			new ChangelogSystemImpl(db, options).setCurrentVersionAndRev();
+			return Completable.complete();
+		});
+	}
+
+	@Override
+	public boolean requiresChangelog(Predicate<? super HighLevelChange> filter) {
+		log.info("Checking whether changelog entries need to be applied");
+		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
+		return cls.requiresChanges() || highlevelChangelogSystem.requiresChanges(meshRoot, filter);
 	}
 }

@@ -155,7 +155,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 */
 	default HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid) {
 		return create(schema, creator, uuid, false);
-	}	
+	}
 
 	/**
 	 * Create new schema container.
@@ -277,7 +277,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 
 	/**
 	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.
-	 * 
+	 *
 	 * @param version
 	 * @param branchUuid
 	 * @param bucket
@@ -288,7 +288,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 
 	/**
 	 * Returns events for assignment on the schema action.
-	 * 
+	 *
 	 * @return
 	 */
 	default Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assigned) {
@@ -325,7 +325,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 
 	/**
 	 * Remove the schema from the project.
-	 * 
+	 *
 	 * @param schema
 	 * @param project
 	 * @param batch
@@ -376,7 +376,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 
 	/**
 	 * Validate the given schema model using the elasticsearch index handler (needed for ES setting validation).
-	 * 
+	 *
 	 * @param indexHandler
 	 * @param schema
 	 */
@@ -454,7 +454,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 
 	/**
 	 * Genereates branch unassign events for every assigned branch.
-	 * 
+	 *
 	 * @return
 	 */
 	private Stream<BranchSchemaAssignEventModel> generateUnassignEvents(HibSchemaVersion version) {

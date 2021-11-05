@@ -115,21 +115,24 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
-	public void grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+	public boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
 		MeshVertex vertex = (MeshVertex) element;
+		boolean permissionGranted = false;
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles == null) {
 				vertex.setRoleUuidForPerm(permission, Collections.singleton(role.getUuid()));
+				permissionGranted = true;
 			} else {
-				allowedRoles.add(role.getUuid());
+				permissionGranted = allowedRoles.add(role.getUuid()) || permissionGranted;
 				vertex.setRoleUuidForPerm(permission, allowedRoles);
 			}
 		}
+		return permissionGranted;
 	}
 
 	@Override
-	public void revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+	public boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
 		MeshVertex vertex = (MeshVertex) element;
 		boolean permissionRevoked = false;
 		for (InternalPermission permission : permissions) {
@@ -143,6 +146,7 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 		if (permissionRevoked) {
 			permissionCache.get().clear();
 		}
+		return permissionRevoked;
 	}
 
 	@Override

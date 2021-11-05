@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
@@ -61,7 +62,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 		ContentDao contentDao = Tx.get().contentDao();
 
 		log.info("Applying change: " + getName());
-		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
+		FramedTransactionalGraph graph = ((GraphDBTx) Tx.getActive()).getGraph();
 		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
 			GraphFieldContainerEdgeImpl.class);
 		long count = 0;
@@ -123,4 +124,8 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 		db.index().removeVertexIndex("publishedWebrootInfoIndex", NodeGraphFieldContainerImpl.class);
 	}
 
+	@Override
+	public boolean isAllowedInCluster(MeshOptions options) {
+		return false;
+	}
 }

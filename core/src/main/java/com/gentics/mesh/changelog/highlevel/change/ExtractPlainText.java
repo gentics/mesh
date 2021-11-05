@@ -20,6 +20,7 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
@@ -120,4 +121,8 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 		return "Parses the uploads and extracts the plain text";
 	}
 
+	@Override
+	public boolean isAllowedInCluster(MeshOptions options) {
+		return false;
+	}
 }

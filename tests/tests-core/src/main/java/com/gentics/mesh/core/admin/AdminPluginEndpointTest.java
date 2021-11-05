@@ -12,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
@@ -23,6 +24,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.plugin.AbstractPluginTest;
 import com.gentics.mesh.plugin.ClonePlugin;
@@ -33,6 +36,8 @@ import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.category.PluginTests;
 
 /**
+ * Tests for admin endpoint for plugins.
+ * 
  * These tests require the test plugins to be build. You can build these plugins using the /core/build-test-plugins.sh script.
  */
 @Category(PluginTests.class)
@@ -275,6 +280,16 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		call(() -> client().undeployPlugin("extension-provider"));
 		assertEquals("", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/extension-consumer/extensions"));
 
+	}
+
+	@Test
+	public void testClientPlugin() throws IOException {
+		grantAdmin();
+
+		copyAndDeploy(CLIENT_PATH, "client.jar");
+		assertEquals(1, pluginManager().getPluginIds().size());
+
+		assertNotNull("Should find a default John Doe user", JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/client/me"), UserResponse.class));
 	}
 
 }

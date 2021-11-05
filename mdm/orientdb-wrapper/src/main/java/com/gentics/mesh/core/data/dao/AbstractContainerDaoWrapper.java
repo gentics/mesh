@@ -20,7 +20,7 @@ import dagger.Lazy;
 
 /**
  * A general wrapper implementation for {@link ContainerDao}.
- * 
+ *
  * @author plyhun
  *
  * @param <R> contained entity type
@@ -29,7 +29,7 @@ import dagger.Lazy;
  * @param <SC> contained field element type
  * @param <SCV> contained field element version type
  * @param <M> container root entity type
- * @param <D> corresponding graphdb vertex type wrapper of R 
+ * @param <D> corresponding graphdb vertex type wrapper of R
  */
 public abstract class AbstractContainerDaoWrapper<
 			R extends FieldSchemaContainer, 

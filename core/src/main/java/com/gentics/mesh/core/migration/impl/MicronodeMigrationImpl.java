@@ -5,9 +5,12 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -18,7 +21,7 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -89,9 +92,10 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			}
 
 			// Get the containers, that need to be transformed
-			List<? extends HibNodeFieldContainer> fieldContainersResult = db.tx(tx -> {
-				MicroschemaDaoWrapper microschemaDao = (MicroschemaDaoWrapper) tx.microschemaDao();
-				return microschemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).list();
+			Queue<? extends HibNodeFieldContainer> fieldContainersResult = db.tx(tx -> {
+				MicroschemaDao microschemaDao = tx.microschemaDao();
+				return microschemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).stream()
+						.collect(Collectors.toCollection(ArrayDeque::new));
 			});
 
 			// No field containers, migration is done

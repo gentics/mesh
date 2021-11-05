@@ -2,6 +2,7 @@ package com.gentics.mesh.distributed.coordinator;
 
 import static org.junit.Assert.assertEquals;
 
+import com.gentics.mesh.distributed.DistributionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.distributed.coordinator.proxy.ClusterEnabledRequestDelegatorImpl;
@@ -36,7 +37,7 @@ public class RequestDelegatorRegexTest {
 	}
 
 	private void assertReadOnly(String path) {
-		assertEquals("The path {" + path + "} is not read only.", true, ClusterEnabledRequestDelegatorImpl.isReadOnly(path));
+		assertEquals("The path {" + path + "} is not read only.", true, DistributionUtils.isReadOnly(path));
 	}
 
 }
