@@ -65,6 +65,27 @@ public final class ElasticsearchErrorHelper {
 	}
 
 	/**
+	 * Check whether the given error is a "timeout error" sent from elasticsearch
+	 * @param error error
+	 * @return true for timeout error
+	 */
+	public static boolean isTimeoutError(Throwable error) {
+		if (error instanceof HttpErrorException) {
+			HttpErrorException he = (HttpErrorException) error;
+			JsonObject json = he.getBodyObject(JsonObject::new);
+			JsonObject errorObj = json.getJsonObject("error");
+			if (errorObj == null) {
+				json.encodePrettily();
+				return false;
+			}
+			String errorType = errorObj.getString("type");
+			return "timeout_exception".equals(errorType);
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Extract the error from the throwable and return a user friendly error.
 	 * 
 	 * @param error
