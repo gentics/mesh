@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isTimeoutError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -614,9 +615,30 @@ public class ElasticSearchProvider implements SearchProvider {
 		JsonObject reIndex = new JsonObject()
 				.put("source", new JsonObject().put("index", sourceIndexName).put("query", query))
 				.put("dest", new JsonObject().put("index", destIndexName));
-		// TODO don't do this in a single request
-		return client.postBuilder("_reindex", reIndex).async().ignoreElement()
-				.compose(withTimeoutAndLog("ReIndex", false));
+
+		// start the reindex operation, but do not wait for completion.
+		return client.postBuilder("_reindex", reIndex).addQueryParameter("wait_for_completion", "false").async()
+				.doOnSubscribe(ignore -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Start reindex of {} into {}", source, dest);
+					}
+				}).doOnSuccess(ignore -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Successfully started reindex {} into {}", source, dest);
+					}
+				}).map(response -> response.getString("task")).flatMapCompletable(task -> {
+					// now wait for completion (up to 10s), if this fails with a timeout error, retry.
+					return client.getBuilder("_tasks/" + task).addQueryParameter("wait_for_completion", "true")
+							.addQueryParameter("timeout", "10s").async().doOnSubscribe(ignore -> {
+								if (log.isDebugEnabled()) {
+									log.debug("Wait for completion of task {}", task);
+								}
+							}).doOnSuccess(ignore -> {
+								if (log.isDebugEnabled()) {
+									log.debug("Task {} completed", task);
+								}
+							}).retry((count, error) -> isTimeoutError(error)).ignoreElement();
+				});
 	}
 
 	/**
