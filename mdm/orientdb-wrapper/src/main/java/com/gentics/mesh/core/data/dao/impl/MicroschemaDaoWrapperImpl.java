@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -39,7 +38,9 @@ import dagger.Lazy;
 /**
  * @see MicroschemaDaoWrapper
  */
-public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> implements MicroschemaDaoWrapper {
+public class MicroschemaDaoWrapperImpl 
+			extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> 
+			implements MicroschemaDaoWrapper {
 
 	@Inject
 	public MicroschemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
@@ -129,11 +130,6 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	}
 
 	@Override
-	public void addMicroschema(HibMicroschema schema, HibUser user, EventQueueBatch batch) {
-		boot.get().meshRoot().getMicroschemaContainerRoot().addMicroschema(user, schema, batch);
-	}
-
-	@Override
 	public Result<? extends HibMicroschema> findAll(HibProject project) {
 		return toGraph(project).getMicroschemaContainerRoot().findAll();
 	}
@@ -207,18 +203,15 @@ public class MicroschemaDaoWrapperImpl extends AbstractContainerDaoWrapper<Micro
 	}
 
 	@Override
-	public Microschema persist(String uuid) {
-		Microschema vertex = boot.get().meshRoot().getMicroschemaContainerRoot().create();
-		if (uuid != null) {
-			vertex.setUuid(uuid);
-		}
+	public HibMicroschema createPersisted(String uuid) {
+		HibMicroschema vertex = super.createPersisted(uuid);
 		vertex.setLatestVersion(boot.get().meshRoot().getMicroschemaContainerRoot().createVersion());
 		return vertex;
 	}
 
 	@Override
-	public void unpersist(Microschema element) {
-		element.remove();
+	public void deletePersisted(HibMicroschema element) {
+		toGraph(element).remove();
 	}
 
 	@Override

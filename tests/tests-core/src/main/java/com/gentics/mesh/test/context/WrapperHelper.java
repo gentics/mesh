@@ -1,14 +1,14 @@
 package com.gentics.mesh.test.context;
 
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 
 /**
@@ -17,25 +17,25 @@ import com.gentics.mesh.core.db.Tx;
  */
 public interface WrapperHelper {
 
-	default Schema createSchema(Tx tx) {
-		Schema schema = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerImpl.class);
+	default HibSchema createSchema(Tx tx) {
+		HibSchema schema = ((PersistingSchemaDao) tx.schemaDao()).createPersisted(null);
 		schema.generateBucketId();
 		return schema;
 	}
 
 	default HibSchemaVersion createSchemaVersion(Tx tx) {
-		SchemaContainerVersionImpl graphVersion = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainerVersionImpl graphVersion = ((CommonTx) tx).create(SchemaContainerVersionImpl.class);
 		return graphVersion;
 	}
 
 	default HibMicroschema createMicroschema(Tx tx) {
-		HibMicroschema schema = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		HibMicroschema schema = ((PersistingMicroschemaDao) tx.microschemaDao()).createPersisted(null);
 		schema.generateBucketId();
 		return schema;
 	}
 
 	default HibMicroschemaVersion createMicroschemaVersion(Tx tx) {
-		MicroschemaContainerVersionImpl graphVersion = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		MicroschemaContainerVersionImpl graphVersion = ((CommonTx) tx).create(MicroschemaContainerVersionImpl.class);
 		return graphVersion;
 	}
 }

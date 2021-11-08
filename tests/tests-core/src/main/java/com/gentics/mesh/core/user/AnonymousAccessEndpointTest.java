@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -50,7 +51,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 
 		// Verify that anonymous access does not work if the anonymous user is deleted
 		try (Tx tx = tx()) {
-			tx.delete(users().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME), tx.userDao());
+			((CommonTx) tx).userDao().deletePersisted(users().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME));
 			tx.success();
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");

@@ -15,7 +15,7 @@ import com.syncleus.ferma.FramedTransactionalGraph;
  * @author plyhun
  *
  */
-public interface GraphDBTx extends Tx, GraphDBBaseTransaction {
+public interface GraphDBTx extends CommonTx, GraphDBBaseTransaction {
 
 	/**
 	 * Return the framed graph that is bound to the transaction.

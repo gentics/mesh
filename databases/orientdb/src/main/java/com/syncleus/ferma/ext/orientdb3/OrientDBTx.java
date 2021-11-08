@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.security.SecurityUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.madl.traversal.RawTraversalResult;
@@ -31,27 +30,27 @@ import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.*;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingJobDao;
+import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingProjectDao;
+import com.gentics.mesh.core.data.dao.PersistingRoleDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.PersistingTagDao;
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
+import com.gentics.mesh.core.data.dao.S3BinaryDao;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.AbstractTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -66,6 +65,7 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -102,7 +102,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private final BootstrapInitializer boot;
 	private final TxData txData;
 	private final ContextDataRegistry contextDataRegistry;
-	private final DaoCollection daos;
+	private final OrientDBDaoCollection daos;
 	private final CacheCollection caches;
 	private final SecurityUtils security;
 	private final Binaries binaries;
@@ -112,7 +112,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	@Inject
 	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
-		DaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
+		OrientDBDaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
 		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
 		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler,
 		WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage,
@@ -235,7 +235,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	// DAOs
 
 	@Override
-	public UserDao userDao() {
+	public PersistingUserDao userDao() {
 		return daos.userDao();
 	}
 
@@ -285,47 +285,47 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public GroupDao groupDao() {
+	public PersistingGroupDao groupDao() {
 		return daos.groupDao();
 	}
 
 	@Override
-	public RoleDao roleDao() {
+	public PersistingRoleDao roleDao() {
 		return daos.roleDao();
 	}
 
 	@Override
-	public ProjectDao projectDao() {
+	public PersistingProjectDao projectDao() {
 		return daos.projectDao();
 	}
 
 	@Override
-	public JobDao jobDao() {
+	public PersistingJobDao jobDao() {
 		return daos.jobDao();
 	}
 
 	@Override
-	public LanguageDao languageDao() {
+	public PersistingLanguageDao languageDao() {
 		return daos.languageDao();
 	}
 
 	@Override
-	public SchemaDao schemaDao() {
+	public PersistingSchemaDao schemaDao() {
 		return daos.schemaDao();
 	}
 
 	@Override
-	public TagDao tagDao() {
+	public PersistingTagDao tagDao() {
 		return daos.tagDao();
 	}
 
 	@Override
-	public TagFamilyDao tagFamilyDao() {
+	public PersistingTagFamilyDao tagFamilyDao() {
 		return daos.tagFamilyDao();
 	}
 
 	@Override
-	public MicroschemaDao microschemaDao() {
+	public PersistingMicroschemaDao microschemaDao() {
 		return daos.microschemaDao();
 	}
 
@@ -340,7 +340,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public BranchDao branchDao() {
+	public PersistingBranchDao branchDao() {
 		return daos.branchDao();
 	}
 

@@ -18,13 +18,6 @@ package com.gentics.mesh.core.db;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
-import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
-import com.gentics.mesh.core.data.dao.Dao;
-import com.gentics.mesh.core.data.dao.RootDao;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
@@ -117,49 +110,6 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	 */
 	protected void setGraph(T currentGraph) {
 		this.currentGraph = currentGraph;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <B extends HibCoreElement<? extends RestModel>> B create(String uuid, Dao<B> dao) {
-		return ((AbstractCoreDaoWrapper<?, ? extends B, ? extends B>) dao).persist(uuid);
-	}
-	
-	@Override
-	public <B extends HibCoreElement<? extends RestModel>> B persist(B element, Dao<B> dao) {
-		/*
-		 * Since OrientDB does not tell apart POJOs and persistent entities, 
-		 * processing the entity updates directly into the persistent state, 
-		 * the merge implementation here is empty.
-		 */
-		return element;
-	}
-	
-	@Override
-	public <B extends HibCoreElement<? extends RestModel>> void delete(B element, Dao<B> dao) {
-		((MeshCoreVertex<?>) element).remove();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> L createInRoot(R root, String uuid, RootDao<R, L> dao) {
-		return ((AbstractRootDaoWrapper<?, L, ? extends L, R>) dao).persist(root, uuid);
-	}
-	
-	@Override
-	public <R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> L persistInRoot(R root, L element, RootDao<R, L> dao) {
-		/*
-		 * Since OrientDB does not tell apart POJOs and persistent entities, 
-		 * processing the entity updates directly into the persistent state, 
-		 * the merge implementation here is empty.
-		 */
-		return element;		
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public <R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> void deleteInRoot(R root, L element, RootDao<R, L> dao) {
-		((AbstractRootDaoWrapper<?, L, ? extends L, R>) dao).unpersist(root, element);
 	}
 
 	@Override

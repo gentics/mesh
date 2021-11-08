@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -46,12 +45,6 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	@Override
 	public String getRootLabel() {
 		return HAS_SCHEMA_CONTAINER_ITEM;
-	}
-
-	@Override
-	public void addMicroschema(HibUser user, HibMicroschema container, EventQueueBatch batch) {
-		Microschema graphMicroschema = toGraph(container);
-		addItem(graphMicroschema);
 	}
 
 	@Override

@@ -7,14 +7,13 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.test.helper.ExpectedEvent;
-import com.gentics.mesh.test.helper.UnexpectedEvent;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,15 +25,17 @@ import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -52,6 +53,8 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.helper.ExpectedEvent;
+import com.gentics.mesh.test.helper.UnexpectedEvent;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Flowable;
@@ -123,8 +126,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			UserDao userDao = tx.userDao();
-			tx.delete(userDao.findByName("user_3"), userDao);
+			PersistingUserDao userDao = ((CommonTx) tx).userDao();
+			userDao.deletePersisted(userDao.findByName("user_3"));
 		});
 		syncIndex();
 		assertMetrics("user", 0, 0, 1);
@@ -335,10 +338,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			SchemaDao schemaDao = tx.schemaDao();
+			PersistingSchemaDao schemaDao = ((CommonTx) tx).schemaDao();
 			HibSchema schema = schemaDao.findByName("schema_3");
 			schemaDao.deleteVersion(schema.getLatestVersion(), new DummyBulkActionContext());
-			tx.delete(schema, schema.getClass());
+			schemaDao.deletePersisted(schema);
 		});
 		syncIndex();
 		assertMetrics("schema", 0, 0, 1);
@@ -366,10 +369,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			MicroschemaDao microschemaDao = tx.microschemaDao();
+			PersistingMicroschemaDao microschemaDao = ((CommonTx) tx).microschemaDao();
 			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
 			microschemaDao.deleteVersion(microschema.getLatestVersion(), new DummyBulkActionContext());
-			tx.delete(microschema, microschema.getClass());
+			microschemaDao.deletePersisted(microschema);
 		});
 		syncIndex();
 		assertMetrics("microschema", 0, 0, 1);

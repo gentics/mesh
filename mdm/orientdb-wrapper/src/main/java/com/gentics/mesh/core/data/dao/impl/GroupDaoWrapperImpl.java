@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -41,6 +42,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
@@ -137,7 +139,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 
 	@Override
 	public void removeUser(HibGroup group, HibUser user) {
-		UserDao userDao = Tx.get().userDao();
+		PersistingUserDao userDao = CommonTx.get().userDao();
 		Group graphGroup = toGraph(group);
 		User graphUser = toGraph(user);
 
@@ -177,7 +179,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 
 	@Override
 	public void removeRole(HibGroup group, HibRole role) {
-		UserDao userDao = Tx.get().userDao();
+		PersistingUserDao userDao = CommonTx.get().userDao();
 		Role graphRole = toGraph(role);
 		Group graphGroup = toGraph(group);
 		graphGroup.unlinkIn(graphRole, HAS_ROLE);
@@ -298,7 +300,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 
 	@Override
 	public void delete(HibGroup group, BulkActionContext bac) {
-		UserDao userDao = Tx.get().userDao();
+		PersistingUserDao userDao = CommonTx.get().userDao();
 		Group graphGroup = toGraph(group);
 		// TODO don't allow deletion of the admin group
 		bac.batch().add(group.onDeleted());

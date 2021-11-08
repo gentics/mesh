@@ -21,34 +21,37 @@ import dagger.Lazy;
  * @param <D> OrientDB Vertex entity counterpart
  */
 public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibCoreElement<R>, D extends MeshCoreVertex<R>> 
-		extends AbstractDaoWrapper<T> implements DaoGlobal<T>, DaoTransformable<T, R> {
+		extends AbstractDaoWrapper<T> implements PersistingDaoGlobal<T>, DaoTransformable<T, R> {
 
 	public AbstractCoreDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
-	/**
-	 * Generate the persisted entity of a given type.
-	 *
-	 * @param uuid if null, a generated UUID will be used.
-	 * @return
-	 */
-	public D persist(String uuid) {
+	@SuppressWarnings("unchecked")
+	@Override
+	public T createPersisted(String uuid) {
 		D vertex = getRoot().create();
 		if (uuid != null) {
 			vertex.setUuid(uuid);
 		}
 		getRoot().addItem(vertex);
-		return vertex;
+		return (T) vertex;
 	}
 
 	/**
-	 * Delete the entity from the storage
-	 *
-	 * @param element
+	 * Since OrientDB does not tell apart POJOs and persistent entities, 
+	 * processing the entity updates directly into the persistent state, 
+	 * the merge implementation here is empty.
 	 */
-	public void unpersist(D element) {
-		element.remove();
+	@Override
+	public T mergeIntoPersisted(T entity) {
+		return entity;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void deletePersisted(T entity) {
+		((D) entity).remove();
 	}
 
 	@Override
@@ -60,6 +63,7 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 	public long count() {
 		return getRoot().globalCount();
 	}
+
 	/**
 	 * Get root container for the current entity type.
 	 * 

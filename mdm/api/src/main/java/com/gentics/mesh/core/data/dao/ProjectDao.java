@@ -7,8 +7,8 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -26,10 +26,7 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @param perm
 	 * @return
 	 */
-	default HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
-		HibProject project = findByName(projectName);
-		return checkPerms(project, project.getUuid(), ac, perm, true);
-	}
+	HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm);
 
 	/**
 	 * Create the project.
@@ -90,7 +87,7 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 
 	/**
 	 * Create a microschema assign event for the given input values.
-	 *
+	 * 
 	 * @param project
 	 *            Project
 	 * @param microschema

@@ -22,21 +22,15 @@ import dagger.Lazy;
  * @param <R> MDM API root entity type 
  */
 public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends HibCoreElement<RM>, D extends MeshCoreVertex<RM>, R extends HibCoreElement<? extends RestModel>> 
-	extends AbstractDaoWrapper<L> implements DaoTransformable<L, RM> {
+	extends AbstractDaoWrapper<L> implements DaoTransformable<L, RM>, PersistingRootDao<R, L> {
 
 	public AbstractRootDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
-	/**
-	 * Generated the persisted entity in the storage under the given root entity
-	 *
-	 * @param root
-	 * @param uuid if null, a generated UUID will be used.
-	 * @return
-	 */
 	@SuppressWarnings("unchecked")
-	public L persist(R root, String uuid) {
+	@Override
+	public L createPersisted(R root, String uuid) {
 		D vertex = getRoot(root).create();
 		L entity = (L) vertex;
 		if (uuid != null) {
@@ -47,13 +41,18 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 	}
 
 	/**
-	 * Delete the entity from the storage.
-	 *
-	 * @param root
-	 * @param element
+	 * Since OrientDB does not tell apart POJOs and persistent entities, 
+	 * processing the entity updates directly into the persistent state, 
+	 * the merge implementation here is empty.
 	 */
-	public void unpersist(R root, L element) {
-		getRoot(root).findByUuid(element.getUuid()).remove();
+	@Override
+	public L mergeIntoPersisted(R root, L entity) {
+		return entity;
+	}
+
+	@Override
+	public void deletePersisted(R root, L entity) {
+		getRoot(root).findByUuid(entity.getUuid()).remove();
 	}
 
 	@Override
