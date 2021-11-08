@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.security.SecurityUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.madl.traversal.RawTraversalResult;
@@ -46,11 +45,12 @@ import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.PersistingTagDao;
 import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
+import com.gentics.mesh.core.data.dao.S3BinaryDao;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.AbstractTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -65,6 +65,7 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -334,18 +335,12 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-<<<<<<< HEAD
 	public S3BinaryDao s3binaryDao() {
 		return daos.s3binaryDao();
 	}
 
 	@Override
-	public BranchDao branchDao() {
-||||||| merged common ancestors
-	public BranchDao branchDao() {
-=======
 	public PersistingBranchDao branchDao() {
->>>>>>> LLDB DAO re-implemented
 		return daos.branchDao();
 	}
 
