@@ -136,11 +136,4 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @return
 	 */
 	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, HibUser user, ContainerType type);
-
-	/**
-	 * Add the schema to the db.
-	 * 
-	 * @param schema
-	 */
-	void addSchema(HibSchema schema);
 }

@@ -88,15 +88,6 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch);
 
 	/**
-	 * Add the microschema to the database.
-	 * 
-	 * @param schema
-	 * @param user
-	 * @param batch
-	 */
-	void addMicroschema(HibMicroschema schema, HibUser user, EventQueueBatch batch);
-
-	/**
 	 * Add the microschema to the project.
 	 * 
 	 * @param project

@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -76,7 +75,7 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	@Test
 	public void testChangeChain() {
 		try (Tx tx = tx()) {
-			Schema container = createSchema(tx);
+			HibSchema container = createSchema(tx);
 			HibSchemaVersion versionA = createSchemaVersion(tx);
 			HibSchemaVersion versionB = createSchemaVersion(tx);
 			container.setLatestVersion(versionA);

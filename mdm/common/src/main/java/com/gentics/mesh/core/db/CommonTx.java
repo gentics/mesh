@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.db;
 
-import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
@@ -64,10 +61,4 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 
 	@Override
 	PersistingSchemaDao schemaDao();
-
-	BinaryDao binaryDao();
-
-	NodeDao nodeDao();
-
-	ContentDao contentDao();
 }

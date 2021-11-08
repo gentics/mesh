@@ -32,12 +32,12 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -49,10 +49,9 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -86,6 +85,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.IndexOptionHelper;
 import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
 
@@ -935,12 +935,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode secondNode;
 
 		try (Tx tx = tx()) {
-			MicroschemaDao microschemaDao = tx.microschemaDao();
+			PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			HibUser user = user();
 			// create version 1 of the microschema
-			container = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
 			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
@@ -954,8 +954,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			EventQueueBatch batch = createBatch();
-			microschemaDao.addMicroschema(container, user, batch);
+			microschemaDao.mergeIntoPersisted(container);
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = createMicroschemaVersion(tx);
@@ -1048,9 +1047,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode secondNode;
 
 		try (Tx tx = tx()) {
+			PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 			ContentDaoWrapper contentDao = (ContentDaoWrapper) tx.contentDao();
 			// create version 1 of the microschema
-			container = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
 			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
@@ -1064,7 +1064,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaDao().addMicroschema(container, user(), createBatch());
+			microschemaDao.mergeIntoPersisted(container);
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = createMicroschemaVersion(tx);
@@ -1186,9 +1186,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		HibNode firstNode;
 
 		try (Tx tx = tx()) {
+			PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 			ContentDao contentDao = tx.contentDao();
 			// create version 1 of the microschema
-			container = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
 			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
@@ -1202,7 +1203,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaDao().addMicroschema(container, user(), createBatch());
+			microschemaDao.mergeIntoPersisted(container);
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = createMicroschemaVersion(tx);
@@ -1292,17 +1293,18 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	}
 
 	private HibSchema createDummySchemaWithChanges(String oldFieldName, String newFieldName, boolean setAddRaw) {
+		PersistingSchemaDao schemaDao = CommonTx.get().schemaDao();
 
 		// create version 1 of the schema
 		HibSchemaVersion versionA = createSchemaVersion(GraphDBTx.getGraphTx());
-		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 		container.generateBucketId();
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
 		container.setLatestVersion(versionA);
 		versionA.setSchemaContainer(container);
 		EventQueueBatch batch = createBatch();
-		boot().schemaDao().addSchema(container);
+		schemaDao.mergeIntoPersisted(container);
 
 		SchemaVersionModel schemaA = new SchemaModelImpl();
 		schemaA.setName("migratedSchema");
@@ -1346,7 +1348,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
-		boot().schemaDao().addSchema(container);
+		schemaDao.mergeIntoPersisted(container);
 		return container;
 
 	}

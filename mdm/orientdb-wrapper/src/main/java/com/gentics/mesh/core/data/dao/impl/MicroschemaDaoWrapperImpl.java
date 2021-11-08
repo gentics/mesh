@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -131,11 +130,6 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	public void addMicroschema(HibMicroschema schema, HibUser user, EventQueueBatch batch) {
-		boot.get().meshRoot().getMicroschemaContainerRoot().addMicroschema(user, schema, batch);
-	}
-
-	@Override
 	public Result<? extends HibMicroschema> findAll(HibProject project) {
 		return toGraph(project).getMicroschemaContainerRoot().findAll();
 	}
@@ -209,11 +203,8 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	public Microschema createPersisted(String uuid) {
-		Microschema vertex = boot.get().meshRoot().getMicroschemaContainerRoot().create();
-		if (uuid != null) {
-			vertex.setUuid(uuid);
-		}
+	public HibMicroschema createPersisted(String uuid) {
+		HibMicroschema vertex = super.createPersisted(uuid);
 		vertex.setLatestVersion(boot.get().meshRoot().getMicroschemaContainerRoot().createVersion());
 		return vertex;
 	}

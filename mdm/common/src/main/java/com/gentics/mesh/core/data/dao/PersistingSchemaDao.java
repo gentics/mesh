@@ -221,7 +221,6 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 		container.setName(schema.getName());
 		container.generateBucketId();
 
-		addSchema(container, null, creator, null);
 		return mergeIntoPersisted(container);
 	}
 
@@ -299,19 +298,15 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 	 * @param batch
 	 */
 	default void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
-		if (project != null) {
-			ProjectDao projectDao = Tx.get().projectDao();
-			BranchDao branchDao = Tx.get().branchDao();
+		ProjectDao projectDao = Tx.get().projectDao();
+		BranchDao branchDao = Tx.get().branchDao();
 
-			batch.add(projectDao.onSchemaAssignEvent(project, schemaContainer, ASSIGNED));
-			addItem(project, schemaContainer);
+		batch.add(projectDao.onSchemaAssignEvent(project, schemaContainer, ASSIGNED));
+		addItem(project, schemaContainer);
 
-			// assign the latest schema version to all branches of the project
-			for (HibBranch branch : branchDao.findAll(project)) {
-				branch.assignSchemaVersion(user, schemaContainer.getLatestVersion(), batch);
-			}
-		} else {
-			addSchema(schemaContainer);
+		// assign the latest schema version to all branches of the project
+		for (HibBranch branch : branchDao.findAll(project)) {
+			branch.assignSchemaVersion(user, schemaContainer.getLatestVersion(), batch);
 		}
 	}
 

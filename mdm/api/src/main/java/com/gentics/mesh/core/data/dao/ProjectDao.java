@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
-import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -87,7 +86,7 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment);
 
 	/**
-	 * Create a schema assign event for the given input values.
+	 * Create a microschema assign event for the given input values.
 	 * 
 	 * @param project
 	 *            Project

@@ -232,7 +232,6 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 		container.setCreated(user);
 		container.setName(microschema.getName());
 		container.generateBucketId();
-		addMicroschema(container, user, batch);
 
 		return mergeIntoPersisted(container);
 	}

@@ -154,11 +154,6 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	public void addSchema(HibSchema schema) {
-		getRoot().addItem(toGraph(schema));
-	}
-
-	@Override
 	public Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
 		Branch graphBranch = toGraph(branch);
 		return graphBranch.findActiveSchemaVersions();
@@ -236,10 +231,7 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public HibSchema createPersisted(String uuid) {
-		Schema vertex = boot.get().meshRoot().getSchemaContainerRoot().create();
-		if (uuid != null) {
-			vertex.setUuid(uuid);
-		}
+		HibSchema vertex = super.createPersisted(uuid);
 		vertex.setLatestVersion(boot.get().meshRoot().getSchemaContainerRoot().createVersion());
 		return vertex;
 	}

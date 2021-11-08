@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -32,11 +32,9 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -127,17 +125,18 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void removeSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
 		ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
+		PersistingSchemaDao schemaDao = ((PersistingSchemaDao) boot().schemaDao());
 
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 		container.generateBucketId();
-		container.setName(UUIDUtil.randomUUID());
+		container.setName(container.getUuid());
 		container.setCreated(user());
-		boot().schemaDao().addSchema(container);
+		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
 			removedFieldName));
 		container.setLatestVersion(versionA);
@@ -304,17 +303,18 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void renameSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 		throws InterruptedException, ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
+		PersistingSchemaDao schemaDao = ((PersistingSchemaDao) boot().schemaDao());
 
 		String oldFieldName = "oldname";
 		String newFieldName = "newname";
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 		container.generateBucketId();
-		container.setName(UUIDUtil.randomUUID());
+		container.setName(container.getUuid());
 		container.setCreated(user());
-		boot().schemaDao().addSchema(container);
+		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(oldFieldName));
 		container.setLatestVersion(versionA);
 
@@ -494,18 +494,18 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void changeSchemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
-		SchemaDao schemaDao = boot().schemaDao();
+		PersistingSchemaDao schemaDao = (PersistingSchemaDao) boot().schemaDao();
 
 		String fieldName = "changedfield";
 		String schemaName = "schema_" + System.currentTimeMillis();
 
 		// create version 1 of the schema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
-		HibSchema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 		container.generateBucketId();
 		container.setName(schemaName);
 		container.setCreated(user());
-		schemaDao.addSchema(container);
+		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", oldFieldSchema);
 		container.setLatestVersion(versionA);
 
@@ -710,17 +710,18 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void customSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
+		PersistingSchemaDao schemaDao = (PersistingSchemaDao) boot().schemaDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
-		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
-		boot().schemaDao().addSchema(container);
+		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", oldField);
 		container.setLatestVersion(versionA);
 
@@ -887,7 +888,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
 		ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
-		SchemaDao schemaDao = boot().schemaDao();
+		PersistingSchemaDao schemaDao = (PersistingSchemaDao) boot().schemaDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
@@ -898,7 +899,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 
-		schemaDao.addSchema(container);
+		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", oldField);
 		container.setLatestVersion(versionA);
 
