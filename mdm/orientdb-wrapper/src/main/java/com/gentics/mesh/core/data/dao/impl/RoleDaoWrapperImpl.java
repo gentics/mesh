@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -15,18 +11,13 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
@@ -35,8 +26,6 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.result.Result;
@@ -54,14 +43,12 @@ import dagger.Lazy;
 @Singleton
 public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, HibRole, Role> implements RoleDaoWrapper {
 
-	private final Lazy<PermissionCache> permissionCache;
 	private final CommonDaoHelper commonDaoHelper;
 
 	@Inject
-	public RoleDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache,
+	public RoleDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
 		CommonDaoHelper commonDaoHelper) {
 		super(boot, permissions);
-		this.permissionCache = permissionCache;
 		this.commonDaoHelper = commonDaoHelper;
 	}
 
@@ -132,7 +119,7 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
-	public boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+	public boolean revokeRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
 		MeshVertex vertex = (MeshVertex) element;
 		boolean permissionRevoked = false;
 		for (InternalPermission permission : permissions) {
@@ -143,18 +130,7 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 			}
 		}
 
-		if (permissionRevoked) {
-			permissionCache.get().clear();
-		}
 		return permissionRevoked;
-	}
-
-	@Override
-	public void delete(HibRole role, BulkActionContext bac) {
-		bac.add(role.onDeleted());
-		role.removeElement();
-		bac.process();
-		permissionCache.get().clear();
 	}
 
 	@Override
@@ -212,34 +188,6 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 		role.generateBucketId();
 		addRole(role);
 		return role;
-	}
-
-	public HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
-		String roleName = requestModel.getName();
-		UserDao userDao = Tx.get().userDao();
-		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
-
-		HibUser requestUser = ac.getUser();
-		if (StringUtils.isEmpty(roleName)) {
-			throw error(BAD_REQUEST, "error_name_must_be_set");
-		}
-
-		HibRole conflictingRole = findByName(roleName);
-		if (conflictingRole != null) {
-			throw conflict(conflictingRole.getUuid(), roleName, "role_conflicting_name");
-		}
-
-		// TODO use non-blocking code here
-		if (!userDao.hasPermission(requestUser, roleRoot, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", roleRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
-		}
-
-		HibRole role = create(requestModel.getName(), requestUser, uuid);
-		userDao.inheritRolePermissions(requestUser, roleRoot, role);
-		batch.add(role.onCreated());
-		return role;
-
 	}
 
 	@Override

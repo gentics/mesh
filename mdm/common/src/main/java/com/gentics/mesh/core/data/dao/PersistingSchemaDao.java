@@ -436,7 +436,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 			job.remove();
 		}
 		// Delete version
-		((CommonTx) Tx.get()).delete(version, version.getClass());
+		CommonTx.get().delete(version, version.getClass());
 	}
 
 	/**
