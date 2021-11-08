@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
@@ -72,6 +73,41 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
 		return hasPermissionForId(user, element.getId(), permission);
 	}
+
+	@Override
+	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
+		PermissionCache permissionCache = Tx.get().permissionCache();
+		if (permissionCache.hasPermission(user.getId(), permission, elementId)) {
+			return true;
+		} else {
+			// Admin users have all permissions
+			if (user.isAdmin()) {
+				for (InternalPermission perm : InternalPermission.values()) {
+					permissionCache.store(user.getId(), perm, elementId);
+				}
+				return true;
+			}
+
+			boolean hasPermission = hasPermissionForElementId(user, elementId, permission);
+			if (hasPermission) {
+				// We only store granting permissions in the store in order
+				// reduce the invalidation calls.
+				// This way we do not need to invalidate the cache if a role
+				// is removed from a group or a role is deleted.
+				permissionCache.store(user.getId(), permission, elementId);
+				return true;
+			}
+
+			// Fall back to read and check whether the user has read perm. Read permission also includes read published.
+			if (permission == READ_PUBLISHED_PERM) {
+				return hasPermissionForId(user, elementId, READ_PERM);
+			} else {
+				return false;
+			}
+		}
+	}
+
+	boolean hasPermissionForElementId(HibUser user, Object elementId, InternalPermission permission);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
