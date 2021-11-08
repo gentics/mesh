@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Set;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
@@ -46,18 +45,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	HibRole create(String name, HibUser creator, String uuid);
 
 	/**
-	 * Create a new role
-	 * 
-	 * @param ac
-	 * @param batch
-	 * @param uuid
-	 *            Uuid of the role
-	 * @return
-	 */
-	HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid);
-
-	/**
-	 * Grant the given permissions on the vertex.
+	 * Grant the given permissions for the given role.
 	 *
 	 * @param role
 	 * @param element
@@ -67,7 +55,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
-	 * Revoke the given permissions on the vertex.
+	 * Revoke the given permissions for the given role.
 	 *
 	 * @param role
 	 * @param element
@@ -86,7 +74,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	Set<InternalPermission> getPermissions(HibRole role, HibBaseElement element);
 
 	/**
-	 * Add the given role to this aggregation vertex.
+	 * Add the given role to this role.
 	 * 
 	 * @param role
 	 *            HibRoleto be added
@@ -94,7 +82,7 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	void addRole(HibRole role);
 
 	/**
-	 * Remove the given role from this aggregation vertex.
+	 * Remove the given role from this role.
 	 * 
 	 * @param role
 	 *            HibRoleto be removed
