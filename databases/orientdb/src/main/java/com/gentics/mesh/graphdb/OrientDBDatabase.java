@@ -16,11 +16,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
@@ -145,6 +148,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	private boolean diskQuotaExceeded = false;
 
+	/**
+	 * Long Gauge Metric for the total disk space
+	 */
+	private AtomicLong totalDiskSpace;
+
+	/**
+	 * Long Gauge Metric for usable disk space
+	 */
+	private AtomicLong usableDiskSpace;
+
 	@Inject
 	public OrientDBDatabase(
 			OrientDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, 
@@ -156,6 +169,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	) {
 		super(vertx, mesh, metrics);
 		this.options = options;
+		if (metrics != null) {
+			totalDiskSpace = metrics.longGauge(OrientDBStorageMetric.DISK_TOTAL);
+			usableDiskSpace = metrics.longGauge(OrientDBStorageMetric.DISK_USABLE);
+		}
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
 		this.clusterManager = clusterManager;
@@ -752,11 +769,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	/**
 	 * Set the disk-quota-exceeded status locally and in the cluster (if clustering is enabled)
-	 * @param diskQuotaExceeded disk-quota-exceeded status
+	 * @param result result of the disk quota checker as triple of disk-quota-exceeded status, total space and usable space
 	 */
-	private void setDiskQuotaExceededStatus(boolean diskQuotaExceeded) {
-		this.diskQuotaExceeded = diskQuotaExceeded;
+	private void setDiskQuotaExceededStatus(Triple<Boolean, Long, Long> result) {
+		this.diskQuotaExceeded = result.getLeft();
 		this.clusterManager.setLocalMemberDiskQuotaExceeded(diskQuotaExceeded);
+		if (this.totalDiskSpace != null) {
+			this.totalDiskSpace.set(result.getMiddle());
+	}
+		if (this.usableDiskSpace != null) {
+			this.usableDiskSpace.set(result.getRight());
+		}
 	}
 
 	/**
