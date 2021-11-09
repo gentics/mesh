@@ -14,11 +14,14 @@ import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -262,10 +265,10 @@ public class SchemaContainerVersionImpl extends
 	public String getMicroschemaVersionHash(Branch branch, Map<String, String> replacementMap) {
 		Objects.requireNonNull(branch, "The branch must not be null");
 		Objects.requireNonNull(replacementMap, "The replacement map must not be null (but may be empty)");
-		Set<String> microschemaNames = getSchema().getFields().stream().filter(field -> FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE).flatMap(field -> {
-			String[] allowed = ((MicronodeFieldSchema) field).getAllowedMicroSchemas();
-			return Stream.of(allowed);
-		}).collect(Collectors.toSet());
+		Set<String> microschemaNames = getSchema().getFields().stream().filter(filterMicronodeField())
+				.flatMap(field -> {
+					return getAllowedMicroschemas(field).stream();
+				}).collect(Collectors.toSet());
 
 		if (microschemaNames.isEmpty()) {
 			return null;
@@ -293,25 +296,42 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Set<String> getFieldsUsingMicroschema(MicroschemaContainer microschema) {
-		return getSchema().getFields().stream().filter(field -> {
+		return getSchema().getFields().stream().filter(filterMicronodeField())
+				.filter(field -> getAllowedMicroschemas(field).contains(microschema.getName()))
+				.map(FieldSchema::getName).collect(Collectors.toSet());
+	}
+
+	/**
+	 * Return a predicate that filters fields that are either of type "micronode", or "list of micronodes"
+	 * @return predicate
+	 */
+	protected Predicate<FieldSchema> filterMicronodeField() {
+		return field -> {
 			if (FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE) {
-				MicronodeFieldSchema micronodeField = (MicronodeFieldSchema) field;
-				return Arrays.asList(micronodeField.getAllowedMicroSchemas()).contains(microschema.getName());
+				return true;
 			} else if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
 				ListFieldSchema listField = (ListFieldSchema) field;
-				return FieldTypes.valueByName(listField.getListType()) == FieldTypes.MICRONODE
-						&& Arrays.asList(listField.getAllowedSchemas()).contains(microschema.getName());
+				return FieldTypes.valueByName(listField.getListType()) == FieldTypes.MICRONODE;
 			} else {
 				return false;
 			}
-		}).map(FieldSchema::getName).collect(Collectors.toSet());
+		};
 	}
 
-	@Override
-	public boolean usesMicroschema(MicroschemaContainer microschema) {
-		return getSchema().getFields().stream()
-				.filter(field -> FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE)
-				.filter(field -> Arrays.asList(((MicronodeFieldSchema) field).getAllowedMicroSchemas())
-						.contains(microschema.getName())).findFirst().isPresent();
+	/**
+	 * Get the allowed microschemas used by the field
+	 * @param field field
+	 * @return collection of allowed microschema names
+	 */
+	protected Collection<String> getAllowedMicroschemas(FieldSchema field) {
+		if (field instanceof MicronodeFieldSchema) {
+			MicronodeFieldSchema micronodeField = (MicronodeFieldSchema) field;
+			return Arrays.asList(micronodeField.getAllowedMicroSchemas());
+		} else if (field instanceof ListFieldSchema) {
+			ListFieldSchema listField = (ListFieldSchema) field;
+			return Arrays.asList(listField.getAllowedSchemas());
+		} else {
+			return Collections.emptyList();
+		}
 	}
 }
