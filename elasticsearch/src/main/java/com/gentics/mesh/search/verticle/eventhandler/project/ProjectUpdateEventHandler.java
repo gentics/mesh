@@ -80,7 +80,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 						project.getUuid(),
 						branch.getUuid(),
 						container.getSchemaContainerVersion().getUuid(),
-						type, null
+						type, container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)
 					),
 					NodeGraphFieldContainer.composeDocumentId(node.getUuid(), container.getLanguageTag()),
 					((NodeContainerTransformer)entities.nodeContent.getTransformer()).toDocument(
