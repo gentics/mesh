@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.etc.config.DiskQuotaOptions;
 
@@ -20,7 +21,7 @@ public class DiskQuotaChecker implements Runnable {
 
 	private final DiskQuotaOptions options;
 
-	private final Consumer<Boolean> resultConsumer;
+	private final Consumer<Triple<Boolean, Long, Long>> resultConsumer;
 
 	/**
 	 * Create an instance
@@ -28,7 +29,7 @@ public class DiskQuotaChecker implements Runnable {
 	 * @param options disk quota options
 	 * @param resultConsumer result consumer
 	 */
-	public DiskQuotaChecker(File storageDirectory, DiskQuotaOptions options, Consumer<Boolean> resultConsumer) {
+	public DiskQuotaChecker(File storageDirectory, DiskQuotaOptions options, Consumer<Triple<Boolean, Long, Long>> resultConsumer) {
 		this.storageDirectory = storageDirectory;
 		this.options = options;
 		this.resultConsumer = resultConsumer;
@@ -50,18 +51,18 @@ public class DiskQuotaChecker implements Runnable {
 			}
 
 			if (absoluteReadOnlyThreshold > 0 && usableSpace < absoluteReadOnlyThreshold) {
-				resultConsumer.accept(true);
+				resultConsumer.accept(Triple.of(true, totalSpace, usableSpace));
 				log.error(String.format("Total space: %s, usable: %s (%d%%)",
 						FileUtils.byteCountToDisplaySize(totalSpace), FileUtils.byteCountToDisplaySize(usableSpace),
 						quota));
 			} else if (absoluteWarnThreshold > 0 && usableSpace < absoluteWarnThreshold) {
-				resultConsumer.accept(false);
+				resultConsumer.accept(Triple.of(false, totalSpace, usableSpace));
 				// warn
 				log.warn(String.format("Total space: %s, usable: %s (%d%%)",
 						FileUtils.byteCountToDisplaySize(totalSpace), FileUtils.byteCountToDisplaySize(usableSpace),
 						quota));
 			} else {
-				resultConsumer.accept(false);
+				resultConsumer.accept(Triple.of(false, totalSpace, usableSpace));
 				log.info(String.format("Total space: %s, usable: %s (%d%%)",
 						FileUtils.byteCountToDisplaySize(totalSpace), FileUtils.byteCountToDisplaySize(usableSpace),
 						quota));

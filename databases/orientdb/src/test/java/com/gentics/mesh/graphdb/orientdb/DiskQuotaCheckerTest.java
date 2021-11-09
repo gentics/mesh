@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -41,12 +42,12 @@ public class DiskQuotaCheckerTest {
 		DiskQuotaOptions options = new DiskQuotaOptions().setCheckInterval(1_000).setWarnThreshold("10M")
 				.setReadOnlyThreshold("5M");
 		@SuppressWarnings("unchecked")
-		Consumer<Boolean> resultConsumer = mock(Consumer.class);
+		Consumer<Triple<Boolean, Long, Long>> resultConsumer = mock(Consumer.class);
 
 		DiskQuotaChecker checker = new DiskQuotaChecker(storageDirectory, options, resultConsumer);
 		checker.run();
 
-		verify(resultConsumer).accept(false);
+		verify(resultConsumer).accept(Triple.of(false, 100 * MB, 80 * MB));
 		verify(logger).info("Total space: 100 MB, usable: 80 MB (80%)");
 		verify(logger, never()).warn(any());
 		verify(logger, never()).error(any());
@@ -64,12 +65,12 @@ public class DiskQuotaCheckerTest {
 		DiskQuotaOptions options = new DiskQuotaOptions().setCheckInterval(1_000).setWarnThreshold("10M")
 				.setReadOnlyThreshold("5M");
 		@SuppressWarnings("unchecked")
-		Consumer<Boolean> resultConsumer = mock(Consumer.class);
+		Consumer<Triple<Boolean, Long, Long>> resultConsumer = mock(Consumer.class);
 
 		DiskQuotaChecker checker = new DiskQuotaChecker(storageDirectory, options, resultConsumer);
 		checker.run();
 
-		verify(resultConsumer).accept(false);
+		verify(resultConsumer).accept(Triple.of(false, 100 * MB, 8 * MB));
 		verify(logger, never()).info(any());
 		verify(logger).warn("Total space: 100 MB, usable: 8 MB (8%)");
 		verify(logger, never()).error(any());
@@ -87,12 +88,12 @@ public class DiskQuotaCheckerTest {
 		DiskQuotaOptions options = new DiskQuotaOptions().setCheckInterval(1_000).setWarnThreshold("10M")
 				.setReadOnlyThreshold("5M");
 		@SuppressWarnings("unchecked")
-		Consumer<Boolean> resultConsumer = mock(Consumer.class);
+		Consumer<Triple<Boolean, Long, Long>> resultConsumer = mock(Consumer.class);
 
 		DiskQuotaChecker checker = new DiskQuotaChecker(storageDirectory, options, resultConsumer);
 		checker.run();
 
-		verify(resultConsumer).accept(true);
+		verify(resultConsumer).accept(Triple.of(true, 100 * MB, 3 * MB));
 		verify(logger, never()).info(any());
 		verify(logger, never()).warn(any());
 		verify(logger).error("Total space: 100 MB, usable: 3 MB (3%)");
