@@ -157,6 +157,6 @@ public class MicroschemaMigrationEventHandler implements EventHandler {
 	 * @return flowable of reindex requests
 	 */
 	private Flowable<ReIndexRequest> reIndex(List<Triple<String, String, JsonObject>> reIndexTriples) {
-		return Flowable.fromIterable(reIndexTriples).map(pair -> new ReIndexRequest(pair.getLeft(), pair.getMiddle(), pair.getRight()));
+		return Flowable.fromIterable(reIndexTriples).map(triple -> new ReIndexRequest(triple.getLeft(), triple.getMiddle(), triple.getRight()));
 	}
 }
