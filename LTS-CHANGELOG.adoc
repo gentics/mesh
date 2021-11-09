@@ -35,6 +35,9 @@ This update will automatically drop and recreate all existing indices for schema
 
 icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 connection can be configured. By default the allowed headers/origins are set to `*`, the allowed methods are set to `"GET", "PUT", "POST", "DELETE"`. Setting any of the CORS configuration to `null` prevents is to override the server's default configuration. Setting all the CORS configuration to null or empty value prevents the CORS config to be changed at all.
 
+icon:check[] Search: When the ElasticSearch instance is not available, getting version information from the endpoint `/api/v1` failed with an internal
+server error. This has been fixed, calling the endpoint `/api/v1` will not fail anymore, but will not contain the ElasticSearch version.
+
 [[v1.6.22]]
 == 1.6.22 (19.10.2021)
 

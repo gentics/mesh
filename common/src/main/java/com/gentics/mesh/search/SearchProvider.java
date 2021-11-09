@@ -181,9 +181,10 @@ public interface SearchProvider {
 	/**
 	 * Returns the version of the used search engine.
 	 * 
+	 * @param failIfNotAvailable whether the method should fail (with an "internal server error"), if the search engine is not available, or just return null
 	 * @return
 	 */
-	String getVersion();
+	String getVersion(boolean failIfNotAvailable);
 
 	/**
 	 * Initialize and start the search provider.
