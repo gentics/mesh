@@ -445,6 +445,64 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 	}
 
 	/**
+	 * Test indices if schema contains listfield for micronodes
+	 * @throws Exception
+	 */
+	@Test
+	public void testListField() throws Exception {
+		String stringFieldName = "stringfield";
+
+		// create a microschema
+		createMicroschema(MICROSCHEMA_NAME, req -> {
+			req.addField(FieldUtil.createStringFieldSchema(MICROSCHEMA_FIELD_NAME));
+		});
+
+		// create schema using the microschema
+		createSchema(SCHEMA_NAME, req -> {
+			req.addField(FieldUtil.createStringFieldSchema(stringFieldName));
+			req.addField(FieldUtil.createListFieldSchema(MICRONODE_FIELD1_NAME, "micronode")
+					.setAllowedSchemas(MICROSCHEMA_NAME));
+		});
+
+		// create some nodes
+		Set<String> draftNodeUuids = new HashSet<>();
+		Set<String> publishedNodeUuids = new HashSet<>();
+		for (int i = 0; i < 10; i++) {
+			NodeCreateRequest request = new NodeCreateRequest()
+					.setSchemaName(SCHEMA_NAME)
+					.setParentNodeUuid(project.getRootNode().getUuid())
+					.setLanguage("en");
+
+			// every 2nd node will contain a micronode
+			if (i % 2 == 0) {
+				request.getFields().put(MICRONODE_FIELD1_NAME,
+					FieldUtil.createMicronodeListField(
+							FieldUtil.createMicronodeField(MICROSCHEMA_NAME,
+									Tuple.tuple(MICROSCHEMA_FIELD_NAME, FieldUtil.createStringField("one"))),
+							FieldUtil.createMicronodeField(MICROSCHEMA_NAME,
+									Tuple.tuple(MICROSCHEMA_FIELD_NAME, FieldUtil.createStringField("two")))
+					)
+				);
+			}
+
+			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, request));
+			draftNodeUuids.add(node.getUuid());
+
+			// every 3rd node will be published
+			if (i % 3 == 0) {
+				call(() -> client().publishNode(PROJECT_NAME, node.getUuid()));
+				publishedNodeUuids.add(node.getUuid());
+			}
+		}
+		waitForSearchIdleEvent();
+		refreshIndices();
+
+		new TestSchemaInfo(SCHEMA_NAME).assertIndices().assertIndexedDraftDocuments(draftNodeUuids)
+				.assertIndexedPublishedDocuments(publishedNodeUuids);
+
+	}
+
+	/**
 	 * Create a schema with given name
 	 * @param name schema name
 	 * @param requestConsumer consumer for setup of the schema create request
@@ -524,6 +582,9 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 		return new HashSet<>(ids);
 	}
 
+	/**
+	 * Internal class for testing indexes for a schema
+	 */
 	public class TestSchemaInfo {
 		public String schemaVersionUuid;
 
@@ -531,6 +592,11 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 
 		public String expectedPublishedIndex;
 
+		/**
+		 * Create an instance for the given schema. Determines the expected index names
+		 * @param schemaName schema name
+		 * @throws Exception
+		 */
 		public TestSchemaInfo(String schemaName) throws Exception {
 			// get the uuid of the schema version, which is assigned to the branch
 			BranchInfoSchemaList schemaList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, branchUuid));
@@ -618,6 +684,5 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 							.collect(Collectors.toSet()));
 			return this;
 		}
-
 	}
 }
