@@ -48,6 +48,8 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * A persisting extension to {@link UserDao}
@@ -57,10 +59,12 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  */
 public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser> {
 
+	Logger log = LoggerFactory.getLogger(PersistingUserDao.class);
+
 	/**
 	 * Update all shortcut edges.
 	 */
-	void updateShortcutEdges(HibUser user);
+	default void updateShortcutEdges(HibUser user) {}
 
 	/**
 	 * Check the permission on the given element.
@@ -71,6 +75,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @return
 	 */
 	default boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
+		if (log.isTraceEnabled()) {
+			log.debug("Checking permissions for element {" + element.getUuid() + "}");
+		}
 		return hasPermissionForId(user, element.getId(), permission);
 	}
 
@@ -498,7 +505,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		user.setUsername(requestModel.getUsername());
 		user.setLastname(requestModel.getLastname());
 		user.setEmailAddress(requestModel.getEmailAddress());
-		user.setPasswordHash(Tx.get().passwordEncoder().encode(requestModel.getPassword()));
+		changePasswordHash(user, Tx.get().passwordEncoder().encode(requestModel.getPassword()));
 		Boolean forcedPasswordChange = requestModel.getForcedPasswordChange();
 		if (forcedPasswordChange != null) {
 			user.setForcedPasswordChange(forcedPasswordChange);
@@ -568,8 +575,16 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	// blocking
 	@Override
 	default HibUser setPassword(HibUser user, String password) {
-		user.setPasswordHash(Tx.get().passwordEncoder().encode(password));
+		String hashedPassword = Tx.get().passwordEncoder().encode(password);
+		changePasswordHash(user, hashedPassword);
 		return mergeIntoPersisted(user);
+	}
+
+	@Override
+	default void changePasswordHash(HibUser user, String passwordHash) {
+		user.setPasswordHash(passwordHash);
+		// Password has changed, the user is not forced to change their password anymore.
+		user.setForcedPasswordChange(false);
 	}
 
 	@Override
@@ -637,7 +652,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 		if (!isEmpty(requestModel.getPassword())) {
 			if (!dry) {
-				user.setPasswordHash(Tx.get().passwordEncoder().encode(requestModel.getPassword()));
+				changePasswordHash(user, Tx.get().passwordEncoder().encode(requestModel.getPassword()));
 			}
 			modified = true;
 		}

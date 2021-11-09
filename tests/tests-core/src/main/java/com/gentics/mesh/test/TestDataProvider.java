@@ -210,7 +210,7 @@ public class TestDataProvider {
 
 	private void setAdminPassword() {
 		String hash = "$2a$10$X7NA0kiqrFlyX0NUhPdW1e7jevHyoaoB4OyoxV1pdA7B3SLVSkx22";
-		boot.userDao().findByUsername("admin").setPasswordHash(hash);
+		boot.userDao().findByUsername("admin").setPasswordHash(hash).setForcedPasswordChange(false);
 	}
 
 	private void addPermissions(HibBaseElement element) {
@@ -349,6 +349,7 @@ public class TestDataProvider {
 		// Precomputed hash since hashing takes some time and we want to keep out tests
 		// fast
 		user.setPasswordHash(hashedPassword);
+		user.setForcedPasswordChange(false);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setEmailAddress(email);

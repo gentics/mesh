@@ -452,7 +452,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			user.setEmailAddress(EMAIL);
 			user.setFirstname(FIRSTNAME);
 			user.setLastname(LASTNAME);
-			user.setPasswordHash(PASSWDHASH);
+			tx.userDao().changePasswordHash(user, PASSWDHASH);
 			assertTrue(user.isEnabled());
 
 			HibUser reloadedUser = userDao.findByUuid(user.getUuid());

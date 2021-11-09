@@ -317,4 +317,10 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @return A hash of the users roles
 	 */
 	String getRolesHash(HibUser user);
+
+	/**
+	 * Set the user password hash and update forced password change flag
+	 * @param passwordHash
+	 */
+	void changePasswordHash(HibUser user, String passwordHash);
 }

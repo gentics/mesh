@@ -35,27 +35,15 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @see UserDaoWrapper
  */
 public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, HibUser, User> implements UserDaoWrapper {
 
-	private static final Logger log = LoggerFactory.getLogger(UserDaoWrapperImpl.class);
-
 	@Inject
 	public UserDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
-	}
-
-	@Override
-	public boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
-		if (log.isTraceEnabled()) {
-			log.debug("Checking permissions for element {" + element.getUuid() + "}");
-		}
-		return hasPermissionForId(user, element.getId(), permission);
 	}
 
 	@Override
