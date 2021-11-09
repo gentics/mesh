@@ -247,9 +247,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+						schemaContainerVersionUuid, type, null), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
+						schemaContainerVersionUuid, type, null), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
 			assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
@@ -364,7 +364,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-					schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+					schemaContainerVersionUuid, ContainerType.DRAFT, null), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 0, 1, 0, 0);
 
