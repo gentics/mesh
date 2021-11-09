@@ -29,6 +29,9 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 connection can be configured. By default the allowed headers/origins are set to `*`, the allowed methods are set to `"GET", "PUT", "POST", "DELETE"`. Setting any of the CORS configuration to `null` prevents is to override the server's default configuration. Setting all the CORS configuration to null or empty value prevents the CORS config to be changed at all.
 
+icon:check[] Cluster: When doing a rolling update in a cluster, a OConcurrentModificationException could occur during the startup, which could cause
+subsequent errors. This has been fixed.
+
 [[v1.7.20]]
 == 1.7.20 (19.10.2021)
 
