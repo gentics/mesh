@@ -34,6 +34,7 @@ public class AWSContainer extends GenericContainer<AWSContainer> {
             withEnv(MINIO_ACCESS_KEY, credentials.getAccessKey());
             withEnv(MINIO_SECRET_KEY, credentials.getSecretKey());
         }
+        withEnv("MINIO_HTTP_TRACE", "/dev/stdout");
         withCommand("server", DEFAULT_STORAGE_DIRECTORY);
         setWaitStrategy(new HttpWaitStrategy()
                 .forPort(DEFAULT_PORT)

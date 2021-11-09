@@ -33,6 +33,8 @@ changed, if the microschemas were changed. This caused subsequent errors while i
 The naming of such indices have been changed to contain a hash over all allowed microschema versions and when a microschema is changed, a new index will be created now.
 This update will automatically drop and recreate all existing indices for schemas containing fields of type "micronode".
 
+icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 connection can be configured. By default the allowed headers/origins are set to `*`, the allowed methods are set to `"GET", "PUT", "POST", "DELETE"`. Setting any of the CORS configuration to `null` prevents is to override the server's default configuration. Setting all the CORS configuration to null or empty value prevents the CORS config to be changed at all.
+
 [[v1.6.22]]
 == 1.6.22 (19.10.2021)
 
