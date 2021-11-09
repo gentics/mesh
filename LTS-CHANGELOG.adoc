@@ -20,7 +20,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.23]]
 == 1.6.23 (TBD)
 
-icon:plus[] Core: A periodic check for available disk space has been added. If not enough disk space is available, Gentics Mesh will be set to read-only to avoid corruption of the storage due to a full disk.
+icon:plus[] Core: A periodic check for available disk space has been added. If not enough disk space is available, Gentics Mesh will be set to read-only to avoid corruption
+of the storage due to a full disk. Additionally, the metrics `mesh_storage_disk_total` and `mesh_storage_disk_usable` have been added to monitoring.
 
 [[v1.6.22]]
 == 1.6.22 (19.10.2021)
