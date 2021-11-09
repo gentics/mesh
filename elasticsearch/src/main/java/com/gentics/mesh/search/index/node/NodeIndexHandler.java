@@ -206,7 +206,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			SchemaContainerVersion containerVersion, MicroschemaContainer microschema,
 			Map<String, String> replacementMap) {
 		return db.transactional(tx -> {
-			List<Triple<String, String, JsonObject>> indexPairList = new ArrayList<>();
+			List<Triple<String, String, JsonObject>> indexTripleList = new ArrayList<>();
 			SchemaModel schema = containerVersion.getSchema();
 
 			String oldHash = containerVersion.getMicroschemaVersionHash(branch, replacementMap);
@@ -227,7 +227,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							containerVersion.getUuid(), version, language, oldHash);
 					String newIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
 							containerVersion.getUuid(), version, language, newHash);
-					indexPairList.add(Triple.of(oldIndexName, newIndexName, query));
+					indexTripleList.add(Triple.of(oldIndexName, newIndexName, query));
 				}));
 
 				// And all default indices
@@ -236,11 +236,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							containerVersion.getUuid(), version, oldHash);
 					String newIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
 							containerVersion.getUuid(), version, newHash);
-					indexPairList.add(Triple.of(oldIndexName, newIndexName, query));
+					indexTripleList.add(Triple.of(oldIndexName, newIndexName, query));
 				});
 			}
 
-			return indexPairList;
+			return indexTripleList;
 		});
 	}
 
