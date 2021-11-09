@@ -1,13 +1,17 @@
 package com.gentics.mesh.etc.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
-
-import java.util.Set;
 
 /**
  * S3 configuration POJO.
@@ -21,6 +25,9 @@ public class S3Options implements Option {
 	public static final int DEFAULT_EXPIRATION_TIME_UPLOAD = 60_000;
 	public static final int DEFAULT_EXPIRATION_TIME_DOWNLOAD = 360_000;
 	public static final int DEFAULT_PARSER_LIMIT = 40_000;
+	public static final List<String> DEFAULT_CORS_ALLOWED_HEADERS = Arrays.asList("*");
+	public static final List<String> DEFAULT_CORS_ALLOWED_ORIGINS = Arrays.asList("*");
+	public static final List<String> DEFAULT_CORS_ALLOWED_METHODS = Arrays.asList("GET", "PUT", "POST", "DELETE");
 
 	public static final String MESH_S3_BINARY_ENABLED_KEY_ENV = "MESH_S3_BINARY_ENABLED_KEY";
 	public static final String MESH_S3_BINARY_SECRET_ACCESS_KEY_ENV = "MESH_S3_BINARY_SECRET_ACCESS_KEY";
@@ -33,6 +40,9 @@ public class S3Options implements Option {
 	public static final String MESH_S3_BINARY_METADATA_WHITELIST_ENV = "MESH_S3_BINARY_METADATA_WHITELIST";
 	public static final String MESH_S3_BINARY_PARSER_LIMIT_ENV = "MESH_S3_BINARY_PARSER_LIMIT";
 	public static final String MESH_S3_BINARY_REGION_ENV = "MESH_S3_BINARY_REGION";
+	public static final String MESH_S3_CORS_ALLOWED_ORIGINS_ENV = "MESH_S3_CORS_ALLOWED_ORIGINS";
+	public static final String MESH_S3_CORS_ALLOWED_HEADERS_ENV = "MESH_S3_CORS_ALLOWED_HEADERS";
+	public static final String MESH_S3_CORS_ALLOWED_METHODS_ENV = "MESH_S3_CORS_ALLOWED_METHODS";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag to enable or disable the S3 engine.")
@@ -92,6 +102,21 @@ public class S3Options implements Option {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("S3 Cache Bucket Options.")
 	private S3CacheOptions s3cacheOptions = new S3CacheOptions();
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("AWS S3 setting for allowed headers for Cross-Origin Resource Sharing. Setting this to null will force default server values.")
+	@EnvironmentVariable(name = MESH_S3_CORS_ALLOWED_HEADERS_ENV, description = "Override the configured AWS S3 CORS allowed headers.")
+	private List<String> corsAllowedHeaders = DEFAULT_CORS_ALLOWED_HEADERS;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("AWS S3 setting for allowed origins for Cross-Origin Resource Sharing. Setting this to null will force default server values.")
+	@EnvironmentVariable(name = MESH_S3_CORS_ALLOWED_ORIGINS_ENV, description = "Override the configured AWS S3 CORS allowed origins.")
+	private List<String> corsAllowedOrigins = DEFAULT_CORS_ALLOWED_ORIGINS;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("AWS S3 setting for allowed methods for Cross-Origin Resource Sharing. Setting this to null will force default server values.")
+	@EnvironmentVariable(name = MESH_S3_CORS_ALLOWED_METHODS_ENV, description = "Override the configured AWS S3 CORS allowed methods.")
+	private List<String> corsAllowedMethods = DEFAULT_CORS_ALLOWED_METHODS;
 
 	@JsonProperty("s3cacheOptions")
 	public S3CacheOptions getS3CacheOptions() {
@@ -225,5 +250,32 @@ public class S3Options implements Option {
 						"You have not specified the required S3 parameters: accessKeyId, secretAccessKey, bucket, region. Please either fill in the required parameters or disable S3 support.");
 			}
 		}
+	}
+
+	public List<String> getCorsAllowedHeaders() {
+		return corsAllowedHeaders;
+	}
+
+	@Setter
+	public void setCorsAllowedHeaders(Collection<String> corsAllowedHeaders) {
+		this.corsAllowedHeaders = corsAllowedHeaders == null ? null : new ArrayList<>(corsAllowedHeaders);
+	}
+
+	@Setter
+	public List<String> getCorsAllowedOrigins() {
+		return corsAllowedOrigins;
+	}
+
+	@Setter
+	public void setCorsAllowedOrigins(Collection<String> corsAllowedOrigins) {
+		this.corsAllowedOrigins = corsAllowedOrigins == null ? null : new ArrayList<>(corsAllowedOrigins);
+	}
+
+	public List<String> getCorsAllowedMethods() {
+		return corsAllowedMethods;
+	}
+
+	public void setCorsAllowedMethods(Collection<String> corsAllowedMethods) {
+		this.corsAllowedMethods = corsAllowedMethods == null ? null : new ArrayList<>(corsAllowedMethods);
 	}
 }
