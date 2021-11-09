@@ -223,7 +223,6 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 		HibMicroschemaVersion version = container.getLatestVersion();
 
 		microschema.setVersion("1.0");
-		container.setLatestVersion(version);
 		version.setName(microschema.getName());
 		version.setSchema(microschema);
 		version.setSchemaContainer(container);

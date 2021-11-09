@@ -19,11 +19,12 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.root.ContainerRootVertex;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -39,7 +40,12 @@ import dagger.Lazy;
  * @see MicroschemaDaoWrapper
  */
 public class MicroschemaDaoWrapperImpl 
-			extends AbstractContainerDaoWrapper<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel, Microschema> 
+			extends AbstractContainerDaoWrapper<
+				MicroschemaResponse, MicroschemaVersionModel, 
+				MicroschemaReference, HibMicroschema, 
+				HibMicroschemaVersion, MicroschemaModel, 
+				Microschema, MicroschemaVersion
+			> 
 			implements MicroschemaDaoWrapper {
 
 	@Inject
@@ -198,20 +204,8 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	protected RootVertex<Microschema> getRoot() {
+	protected ContainerRootVertex<MicroschemaResponse, MicroschemaVersionModel, Microschema, MicroschemaVersion> getRoot() {
 		return boot.get().meshRoot().getMicroschemaContainerRoot();
-	}
-
-	@Override
-	public HibMicroschema createPersisted(String uuid) {
-		HibMicroschema vertex = super.createPersisted(uuid);
-		vertex.setLatestVersion(boot.get().meshRoot().getMicroschemaContainerRoot().createVersion());
-		return vertex;
-	}
-
-	@Override
-	public void deletePersisted(HibMicroschema element) {
-		toGraph(element).remove();
 	}
 
 	@Override

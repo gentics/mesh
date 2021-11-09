@@ -137,7 +137,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(container.getUuid());
 		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
-		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
+		HibSchemaVersion versionA = fillSchemaVersion(container.getLatestVersion(), container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
 			removedFieldName));
 		container.setLatestVersion(versionA);
 
@@ -315,7 +315,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(container.getUuid());
 		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
-		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(oldFieldName));
+		HibSchemaVersion versionA = fillSchemaVersion(container.getLatestVersion(), container, schemaName, "1.0", creator.create(oldFieldName));
 		container.setLatestVersion(versionA);
 
 		// create version 2 of the schema (with the field renamed)
@@ -506,7 +506,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(schemaName);
 		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
-		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", oldFieldSchema);
+		HibSchemaVersion versionA = fillSchemaVersion(container.getLatestVersion(), container, schemaName, "1.0", oldFieldSchema);
 		container.setLatestVersion(versionA);
 
 		// create version 2 of the schema (with the field modified)
@@ -722,7 +722,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
-		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", oldField);
+		HibSchemaVersion versionA = fillSchemaVersion(container.getLatestVersion(), container, schemaName, "1.0", oldField);
 		container.setLatestVersion(versionA);
 
 		// Create version 2 of the schema (with the field renamed)
@@ -900,7 +900,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setCreated(user());
 
 		schemaDao.mergeIntoPersisted(container);
-		HibSchemaVersion versionA = createSchemaVersion(container, schemaName, "1.0", oldField);
+		HibSchemaVersion versionA = fillSchemaVersion(container.getLatestVersion(), container, schemaName, "1.0", oldField);
 		container.setLatestVersion(versionA);
 
 		// create version 2 of the schema (with the field renamed)
@@ -1005,9 +1005,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @return schema container
 	 */
 	protected HibSchemaVersion createSchemaVersion(HibSchema container, String name, String version, FieldSchema... fields) {
+		return fillSchemaVersion(createSchemaVersion(GraphDBTx.getGraphTx()), container, name, version, fields);
+	}
+
+	protected HibSchemaVersion fillSchemaVersion(HibSchemaVersion containerVersion, HibSchema container, String name, String versionName, FieldSchema... fields) {
 		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName(name);
-		schema.setVersion(version);
+		schema.setVersion(versionName);
 		for (FieldSchema field : fields) {
 			schema.addField(field);
 		}
@@ -1016,7 +1020,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// schema.setSegmentField("name");
 		schema.validate();
 
-		HibSchemaVersion containerVersion = createSchemaVersion(GraphDBTx.getGraphTx());
 		containerVersion.setName(name);
 		containerVersion.setSchema(schema);
 		containerVersion.setSchemaContainer(container);

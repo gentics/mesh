@@ -3,12 +3,14 @@ package com.gentics.mesh.core.data.root;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Root element for microschemas.
  */
-public interface MicroschemaRoot extends RootVertex<Microschema> {
+public interface MicroschemaRoot extends RootVertex<Microschema>, ContainerRootVertex<MicroschemaResponse, MicroschemaVersionModel, Microschema, MicroschemaVersion> {
 
 	public static final String TYPE = "microschemas";
 
@@ -27,18 +29,4 @@ public interface MicroschemaRoot extends RootVertex<Microschema> {
 	 * @return
 	 */
 	boolean contains(HibMicroschema microschema);
-
-	/**
-	 * Create a new microschema.
-	 * 
-	 * @return
-	 */
-	Microschema create();
-
-	/**
-	 * Create a new microschema version.
-	 * 
-	 * @return
-	 */
-	MicroschemaVersion createVersion();
 }

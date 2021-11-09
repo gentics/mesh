@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -17,11 +18,12 @@ import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaChangeTest extends AbstractMeshTest {
@@ -29,11 +31,13 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	@Test
 	public void testDomainModel() {
 		try (Tx tx = tx()) {
-			HibSchema container = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerImpl.class);
+			CommonTx ctx = (CommonTx) tx;
+			PersistingSchemaDao schemaDao = ctx.schemaDao();
+			HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 
-			HibSchemaVersion versionA = createSchemaVersion(tx);
-			HibSchemaVersion versionB = createSchemaVersion(tx);
-			HibSchemaVersion versionC = createSchemaVersion(tx);
+			HibSchemaVersion versionA = container.getLatestVersion();
+			HibSchemaVersion versionB = createSchemaVersion(ctx);
+			HibSchemaVersion versionC = createSchemaVersion(ctx);
 
 			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertNull("Initially no version should have been set", container.getLatestVersion());
@@ -63,9 +67,10 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	@Test
 	public void testMicroschemaChanges() {
 		try (Tx tx = tx()) {
-			HibMicroschema container = createMicroschema(tx);
-			HibMicroschemaVersion versionA = createMicroschemaVersion(tx);
-			HibMicroschemaVersion versionB = createMicroschemaVersion(tx);
+			CommonTx ctx = (CommonTx) tx;
+			HibMicroschema container = createMicroschema(ctx);
+			HibMicroschemaVersion versionA = container.getLatestVersion();
+			HibMicroschemaVersion versionB = createMicroschemaVersion(ctx);
 			container.setLatestVersion(versionB);
 			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
@@ -75,9 +80,10 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	@Test
 	public void testChangeChain() {
 		try (Tx tx = tx()) {
-			HibSchema container = createSchema(tx);
-			HibSchemaVersion versionA = createSchemaVersion(tx);
-			HibSchemaVersion versionB = createSchemaVersion(tx);
+			CommonTx ctx = (CommonTx) tx;
+			HibSchema container = createSchema(ctx);
+			HibSchemaVersion versionA = container.getLatestVersion();
+			HibSchemaVersion versionB = createSchemaVersion(ctx);
 			container.setLatestVersion(versionA);
 			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
@@ -139,7 +145,7 @@ public class SchemaChangeTest extends AbstractMeshTest {
 			lastChange.getNextContainerVersion().getPreviousChange().getUuid());
 
 		// Link the chain root to another schema container instead.
-		HibSchemaVersion versionC = createSchemaVersion(Tx.get());
+		HibSchemaVersion versionC = createSchemaVersion(CommonTx.get());
 		HibSchemaChange<?> firstChange = versionA.getNextChange();
 		firstChange.setPreviousContainerVersion(versionC);
 		assertNotEquals("The first change should no longer be connected to containerA", versionA.getUuid(),

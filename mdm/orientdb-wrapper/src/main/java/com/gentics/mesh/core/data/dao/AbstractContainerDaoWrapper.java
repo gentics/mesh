@@ -7,6 +7,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
+import com.gentics.mesh.core.data.root.ContainerRootVertex;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
@@ -38,7 +39,8 @@ public abstract class AbstractContainerDaoWrapper<
 			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
 			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>,
 			M extends FieldSchemaContainer,
-			D extends MeshCoreVertex<R>> 
+			D extends MeshCoreVertex<R>,
+			DV extends MeshCoreVertex<R>> 
 		extends AbstractCoreDaoWrapper<R, SC, D>
 		implements PersistingContainerDao<R, RM, RE, SC, SCV, M> {
 
@@ -61,4 +63,15 @@ public abstract class AbstractContainerDaoWrapper<
 	public Result<? extends HibBranch> getBranches(SCV version) {
 		return toGraph(version).getBranches();
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public SC createPersisted(String uuid) {
+		SC vertex = super.createPersisted(uuid);
+		vertex.setLatestVersion((SCV) getRoot().createVersion());
+		vertex.getLatestVersion().setSchemaContainer(vertex);
+		return vertex;
+	}
+
+	protected abstract ContainerRootVertex<R, RM, D, DV> getRoot();
 }

@@ -18,7 +18,7 @@ import com.gentics.mesh.core.db.Tx;
 public interface WrapperHelper {
 
 	default HibSchema createSchema(Tx tx) {
-		HibSchema schema = ((PersistingSchemaDao) tx.schemaDao()).createPersisted(null);
+		HibSchema schema = ((CommonTx) tx).schemaDao().createPersisted(null);
 		schema.generateBucketId();
 		return schema;
 	}
@@ -29,7 +29,7 @@ public interface WrapperHelper {
 	}
 
 	default HibMicroschema createMicroschema(Tx tx) {
-		HibMicroschema schema = ((PersistingMicroschemaDao) tx.microschemaDao()).createPersisted(null);
+		HibMicroschema schema = ((CommonTx) tx).microschemaDao().createPersisted(null);
 		schema.generateBucketId();
 		return schema;
 	}

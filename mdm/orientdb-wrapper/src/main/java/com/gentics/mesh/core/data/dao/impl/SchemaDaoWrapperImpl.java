@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.ContainerRootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -47,7 +47,11 @@ import dagger.Lazy;
  * @see SchemaDaoWrapper
  */
 public class SchemaDaoWrapperImpl 
-			extends AbstractContainerDaoWrapper<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel, Schema> 
+			extends AbstractContainerDaoWrapper<
+				SchemaResponse, SchemaVersionModel, SchemaReference, 
+				HibSchema, HibSchemaVersion, SchemaModel, 
+				Schema, SchemaVersion
+			> 
 			implements SchemaDaoWrapper {
 
 	@Inject
@@ -225,19 +229,7 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	protected RootVertex<Schema> getRoot() {
+	protected ContainerRootVertex<SchemaResponse, SchemaVersionModel, Schema, SchemaVersion> getRoot() {
 		return boot.get().meshRoot().getSchemaContainerRoot();
-	}
-
-	@Override
-	public HibSchema createPersisted(String uuid) {
-		HibSchema vertex = super.createPersisted(uuid);
-		vertex.setLatestVersion(boot.get().meshRoot().getSchemaContainerRoot().createVersion());
-		return vertex;
-	}
-
-	@Override
-	public void deletePersisted(HibSchema element) {
-		toGraph(element).remove();
 	}
 }
