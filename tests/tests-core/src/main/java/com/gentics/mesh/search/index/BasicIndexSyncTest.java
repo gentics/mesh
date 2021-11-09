@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.group.HibGroup;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -153,7 +154,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().groupDao().findByName("group_3").removeElement();
+			HibGroup group3 = boot().groupDao().findByName("group_3");
+			CommonTx.get().groupDao().deletePersisted(group3);
 		});
 		syncIndex();
 		assertMetrics("group", 0, 0, 1);
