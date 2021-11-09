@@ -89,12 +89,15 @@ public interface PersistingContainerDao<
 		nextVersion.setName(resultingSchema.getName());
 		version.getSchemaContainer().setName(resultingSchema.getName());
 		version.setNextVersion(nextVersion);
+		nextVersion.setPreviousVersion(version);
 
 		// Update the latest version of the schema container
 		version.getSchemaContainer().setLatestVersion(nextVersion);
 
 		// Update the search index
 		batch.add(version.getSchemaContainer().onUpdated());
+
+		mergeIntoPersisted(version.getSchemaContainer());
 		return nextVersion;
 	}
 

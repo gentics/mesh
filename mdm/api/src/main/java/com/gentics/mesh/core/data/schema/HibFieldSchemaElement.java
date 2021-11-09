@@ -23,8 +23,6 @@ public interface HibFieldSchemaElement<
 			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
 	> extends HibCoreElement<R>, HibReferenceableElement<RE>, HibUserTracking, HibNamedElement {
 
-	String getElementVersion();
-
 	/**
 	 * Return the latest container version.
 	 * 
