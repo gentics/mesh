@@ -3,15 +3,12 @@ package com.gentics.mesh.core.data.generic;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
-import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
-import com.gentics.mesh.core.result.Result;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,16 +26,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
-	@Override
-	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		return mesh().permissionProperties().getRolePermissions(this, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
-		return mesh().permissionProperties().getRolesWithPerm(this, perm);
-	}
-
 	/**
 	 * Set the role permissions to the REST model.
 	 * 
@@ -46,7 +33,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 	 * @param model
 	 */
 	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
-		model.setRolePerms(getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
+		model.setRolePerms(Tx.get().roleDao().getRolePermissions(this, ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
 
 	/**

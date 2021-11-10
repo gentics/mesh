@@ -22,7 +22,6 @@ import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
-import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
@@ -227,7 +226,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 *            Node to which the CRUD permissions will be assigned.
 	 * @return Fluent API
 	 */
-	default HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode) {
+	default HibUser addCRUDPermissionOnRole(HibUser user, HibBaseElement sourceNode, InternalPermission permission, HibBaseElement targetNode) {
 		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM,
 			READ_PUBLISHED_PERM);
 		return user;
@@ -248,13 +247,13 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 *            permissions to grant
 	 * @return Fluent API
 	 */
-	default HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode,
+	default HibUser addPermissionsOnRole(HibUser user, HibBaseElement sourceNode, InternalPermission permission, HibBaseElement targetNode,
 		InternalPermission... toGrant) {
 		// TODO inject dao via DI
 		RoleDao roleDao = Tx.get().roleDao();
 
 		// 2. Add CRUD permission to identified roles and target node
-		for (HibRole role : sourceNode.getRolesWithPerm(permission)) {
+		for (HibRole role : Tx.get().roleDao().getRolesWithPerm(sourceNode, permission)) {
 			roleDao.grantPermissions(role, targetNode, toGrant);
 		}
 		return user;

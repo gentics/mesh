@@ -1,5 +1,19 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -8,15 +22,11 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
-import org.apache.commons.lang3.StringUtils;
-
-import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 /**
  * A persisting extension to {@link RoleDao}
@@ -25,6 +35,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
  *
  */
 public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole> {
+
+    /**
+     * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
+     * @param role the role
+     * @param element
+     * @param permissions
+     */
+    boolean revokeRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
     /**
      * Create a new role
@@ -78,14 +96,6 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
         return permissionsRevoked;
     }
 
-    /**
-     * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
-     * @param role the role
-     * @param element
-     * @param permissions
-     */
-    boolean revokeRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
-
     @Override
     default void delete(HibRole role, BulkActionContext bac) {
         bac.add(role.onDeleted());
@@ -95,4 +105,34 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 
         permissionCache.clear();
     }
+
+    @Override
+	default Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm) {
+		RoleDao roleDao = Tx.get().roleDao();
+		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, perm);
+		Stream<String> stream = roleUuids == null
+			? Stream.empty()
+			: roleUuids.stream();
+		return new TraversalResult<>(stream
+			.map(roleDao::findByUuid)
+			.filter(Objects::nonNull));
+	}
+
+    @Override
+	default PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
+		if (!isEmpty(roleUuid)) {
+			RoleDao roleDao = Tx.get().roleDao();
+			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+			if (role != null) {
+				PermissionInfo permissionInfo = new PermissionInfo();
+				Set<InternalPermission> permSet = roleDao.getPermissions(role, element);
+				for (InternalPermission permission : permSet) {
+					permissionInfo.set(permission.getRestPerm(), true);
+				}
+				permissionInfo.setOthers(false);
+				return permissionInfo;
+			}
+		}
+		return null;
+	}
 }

@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -44,8 +43,8 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	private Lazy<PermissionCache> permissionCache;
 
 	@Inject
-	public GroupDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache) {
-		super(boot, permissions);
+	public GroupDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionCache> permissionCache) {
+		super(boot);
 		this.permissionCache = permissionCache;
 	}
 

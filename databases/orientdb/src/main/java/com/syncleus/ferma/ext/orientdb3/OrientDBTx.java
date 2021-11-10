@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
@@ -39,6 +38,7 @@ import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.dao.PersistingProjectDao;
 import com.gentics.mesh.core.data.dao.PersistingRoleDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
@@ -52,6 +52,7 @@ import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.AbstractTx;
+import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
@@ -65,6 +66,7 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -100,7 +102,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	private final Database db;
 	private final BootstrapInitializer boot;
-	private final TxData txData;
+	private final CommonTxData txData;
 	private final ContextDataRegistry contextDataRegistry;
 	private final OrientDBDaoCollection daos;
 	private final CacheCollection caches;
@@ -116,7 +118,8 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
 		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler,
 		WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage,
-		Binaries binaries, SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator, S3Binaries s3binaries) {
+		Binaries binaries, S3Binaries s3binaries, SchemaComparator schemaComparator, 
+		MicroschemaComparator microschemaComparator, RouterStorageRegistry routerStorageRegistry) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -134,7 +137,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			init(transaction);
 		}
 		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler,
-				webRootLinkReplacer, serverSchemaStorage, schemaComparator, microschemaComparator);
+				webRootLinkReplacer, serverSchemaStorage, schemaComparator, microschemaComparator, routerStorageRegistry);
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
 		this.caches = caches;
@@ -218,7 +221,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public TxData data() {
+	public CommonTxData data() {
 		return txData;
 	}
 
@@ -345,7 +348,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public NodeDao nodeDao() {
+	public PersistingNodeDao nodeDao() {
 		return daos.nodeDao();
 	}
 

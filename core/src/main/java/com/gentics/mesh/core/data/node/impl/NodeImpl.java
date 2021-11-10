@@ -50,7 +50,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -80,7 +79,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
@@ -89,12 +87,14 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -644,7 +644,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Result<HibNode> getBreadcrumbNodes(InternalActionContext ac) {
-		return new TraversalResult<>(() -> Tx.get().nodeDao().getBreadcrumbNodeStream(this, ac).iterator());
+		return new TraversalResult<>(() -> CommonTx.get().nodeDao().getBreadcrumbNodeStream(this, ac).iterator());
 	}
 
 	@Override
@@ -835,7 +835,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public PublishStatusResponse transformToPublishStatus(InternalActionContext ac) {
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
-		Map<String, PublishStatusModel> languages = Tx.get().nodeDao().getLanguageInfo(this, ac);
+		Map<String, PublishStatusModel> languages = CommonTx.get().nodeDao().getLanguageInfo(this, ac);
 		publishStatus.setAvailableLanguages(languages);
 		return publishStatus;
 	}

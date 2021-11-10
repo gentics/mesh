@@ -52,7 +52,6 @@ import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -100,8 +99,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public void addLanguage(Language language) {
-		setUniqueLinkOutTo(language, HAS_LANGUAGE);
+	public void addLanguage(HibLanguage language) {
+		setUniqueLinkOutTo(toGraph(language), HAS_LANGUAGE);
 	}
 
 	@Override
@@ -110,8 +109,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public void removeLanguage(Language language) {
-		unlinkOut(language, HAS_LANGUAGE);
+	public void removeLanguage(HibLanguage language) {
+		unlinkOut(toGraph(language), HAS_LANGUAGE);
 	}
 
 	@Override
@@ -167,21 +166,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	public void setBaseNode(HibNode baseNode) {
 		linkOut(toGraph(baseNode), HAS_ROOT_NODE);
-	}
-
-	@Override
-	public Node createBaseNode(HibUser creator, SchemaVersion schemaVersion) {
-		Node baseNode = getBaseNode();
-		if (baseNode == null) {
-			baseNode = getGraph().addFramedVertex(NodeImpl.class);
-			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
-			baseNode.setProject(this);
-			baseNode.setCreated(creator);
-			HibLanguage language = mesh().boot().languageDao().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
-			baseNode.createFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
-			setBaseNode(baseNode);
-		}
-		return baseNode;
 	}
 
 	/**

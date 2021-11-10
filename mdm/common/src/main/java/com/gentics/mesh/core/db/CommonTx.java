@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.dao.PersistingProjectDao;
 import com.gentics.mesh.core.data.dao.PersistingRoleDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
@@ -28,6 +29,9 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 	static CommonTx get() {
 		return (CommonTx) Tx.get();
 	}
+
+	@Override
+	PersistingNodeDao nodeDao();
 
 	@Override
 	PersistingUserDao userDao();
@@ -61,4 +65,7 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 
 	@Override
 	PersistingSchemaDao schemaDao();
+
+	@Override
+	CommonTxData data();
 }

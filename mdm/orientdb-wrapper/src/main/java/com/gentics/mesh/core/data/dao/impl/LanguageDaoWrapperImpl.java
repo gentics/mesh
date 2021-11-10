@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -37,8 +36,8 @@ import dagger.Lazy;
 public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageResponse, HibLanguage, Language> implements LanguageDaoWrapper {
 
 	@Inject
-	public LanguageDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
+	public LanguageDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	/**

@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -150,4 +151,23 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @return
 	 */
 	Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission);
+
+	/**
+	 * Return the roles which grant the given permission on the element.
+	 * 
+	 * @param element
+	 * @param perm
+	 * @return
+	 */
+	Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm);
+
+	/**
+	 * Return the permission info for the given element and role.
+	 * 
+	 * @param element
+	 * @param ac
+	 * @param roleUuid
+	 * @return
+	 */
+	PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid);
 }

@@ -5,6 +5,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 /**
  * DAO to access {@link HibNode}.
  */
-public interface NodeDaoWrapper extends NodeDao {
+public interface NodeDaoWrapper extends PersistingNodeDao {
 
 }

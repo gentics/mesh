@@ -3,7 +3,6 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
@@ -131,14 +130,19 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	private void addPermissionInfo(JsonObject document, HibNode node, ContainerType type) {
 		List<String> roleUuids = new ArrayList<>();
 
-		for (HibRole role : toGraph(node).getRolesWithPerm(READ_PERM)) {
-			roleUuids.add(role.getUuid());
-		}
+		Tx tx = Tx.get();
 
-		// Also add the roles which would grant read on published nodes if the container is published.
-		if (type == PUBLISHED) {
-			for (HibRole role : toGraph(node).getRolesWithPerm(READ_PUBLISHED_PERM)) {
+		// null check here, as this method can be called from the transactionless documentation generator.
+		if (tx != null) {
+			for (HibRole role : tx.roleDao().getRolesWithPerm(node, READ_PERM)) {
 				roleUuids.add(role.getUuid());
+			}
+
+			// Also add the roles which would grant read on published nodes if the container is published.
+			if (type == PUBLISHED) {
+				for (HibRole role : tx.roleDao().getRolesWithPerm(node, READ_PUBLISHED_PERM)) {
+					roleUuids.add(role.getUuid());
+				}
 			}
 		}
 		document.put("_roleUuids", roleUuids);

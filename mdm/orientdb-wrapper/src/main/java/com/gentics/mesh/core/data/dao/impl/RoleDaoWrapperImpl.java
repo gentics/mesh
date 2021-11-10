@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -46,9 +45,8 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	private final CommonDaoHelper commonDaoHelper;
 
 	@Inject
-	public RoleDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
-		CommonDaoHelper commonDaoHelper) {
-		super(boot, permissions);
+	public RoleDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, CommonDaoHelper commonDaoHelper) {
+		super(boot);
 		this.commonDaoHelper = commonDaoHelper;
 	}
 

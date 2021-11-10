@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
@@ -133,15 +134,6 @@ public interface ContainerDao<
 	boolean isLinkedToProject(SC schema, HibProject project);
 
 	/**
-	 * Unlink the schema from the project.
-	 * 
-	 * @param schema
-	 * @param project
-	 * @param batch
-	 */
-	void unlink(SC schema, HibProject project, EventQueueBatch batch);
-
-	/**
 	 * Apply changes to the schema.
 	 * 
 	 * @param version
@@ -180,4 +172,23 @@ public interface ContainerDao<
 	 * @param bac
 	 */
 	void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bc);
+
+	/**
+	 * Assign the schema to the project.
+	 * 
+	 * @param schemaContainer
+	 * @param project
+	 * @param user
+	 * @param batch
+	 */
+	void assign(SC schemaContainer, HibProject project, HibUser user, EventQueueBatch batch);
+
+	/**
+	 * Remove the schema from the project.
+	 * 
+	 * @param schema
+	 * @param project
+	 * @param batch
+	 */
+	void unassign(SC schema, HibProject project, EventQueueBatch batch);
 }
