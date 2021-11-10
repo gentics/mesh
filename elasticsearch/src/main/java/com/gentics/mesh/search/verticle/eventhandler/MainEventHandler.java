@@ -57,6 +57,7 @@ public class MainEventHandler implements EventHandler {
 	private final SyncEventHandler syncEventHandler;
 	private final BranchEventHandler branchEventHandler;
 	private final SchemaMigrationEventHandler schemaMigrationEventHandler;
+	private final MicroschemaMigrationEventHandler microschemaMigrationEventHandler;
 	private final PermissionChangedEventHandler permissionChangedEventHandler;
 	private final GroupUserAssignmentHandler userGroupAssignmentHandler;
 	private final RoleDeletedEventHandler roleDeletedEventHandler;
@@ -78,6 +79,7 @@ public class MainEventHandler implements EventHandler {
 							ClearEventHandler clearEventHandler,
 							BranchEventHandler branchEventHandler,
 							SchemaMigrationEventHandler schemaMigrationEventHandler,
+							MicroschemaMigrationEventHandler microschemaMigrationEventHandler,
 							PermissionChangedEventHandler permissionChangedEventHandler,
 							GroupUserAssignmentHandler userGroupAssignmentHandler,
 							ProjectUpdateEventHandler projectUpdateEventHandler, ProjectCreateEventHandler projectCreateEventHandler, CheckIndicesHandler checkIndicesHandler) {
@@ -94,6 +96,7 @@ public class MainEventHandler implements EventHandler {
 		this.clearEventHandler = clearEventHandler;
 		this.branchEventHandler = branchEventHandler;
 		this.schemaMigrationEventHandler = schemaMigrationEventHandler;
+		this.microschemaMigrationEventHandler = microschemaMigrationEventHandler;
 		this.permissionChangedEventHandler = permissionChangedEventHandler;
 		this.userGroupAssignmentHandler = userGroupAssignmentHandler;
 		this.projectUpdateEventHandler = projectUpdateEventHandler;
@@ -129,6 +132,7 @@ public class MainEventHandler implements EventHandler {
 			projectCreateEventHandler,
 			branchEventHandler,
 			schemaMigrationEventHandler,
+			microschemaMigrationEventHandler,
 			permissionChangedEventHandler,
 			userGroupAssignmentHandler,
 			checkIndicesHandler

@@ -18,8 +18,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -32,9 +30,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 
 /**
  * Handler for the tag specific search index.
@@ -84,28 +80,6 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	@Override
 	public TagMappingProvider getMappingProvider() {
 		return mappingProvider;
-	}
-
-	@Override
-	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return HibTag.composeDocumentId(entry.getElementUuid());
-	}
-
-	@Override
-	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return HibTag.composeIndexName(entry.getContext().getProjectUuid());
-	}
-
-	@Override
-	public Completable store(HibTag tag, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tag.getProject().getUuid());
-		return super.store(tag, entry);
-	}
-
-	@Override
-	public Observable<IndexBulkEntry> storeForBulk(HibTag tag, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tag.getProject().getUuid());
-		return super.storeForBulk(tag, entry);
 	}
 
 	@Override

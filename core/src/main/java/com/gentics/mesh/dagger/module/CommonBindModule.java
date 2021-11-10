@@ -53,6 +53,10 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
 import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
@@ -100,8 +104,6 @@ import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchMappingsCache;
 import com.gentics.mesh.search.impl.SearchMappingsCacheImpl;
-import com.gentics.mesh.search.index.common.DropIndexHandler;
-import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
@@ -121,11 +123,7 @@ import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 import com.gentics.mesh.security.SecurityUtils;
 import com.gentics.mesh.security.SecurityUtilsImpl;
-import com.gentics.mesh.core.data.storage.BinaryStorage;
-import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
-import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
 
 import dagger.Binds;
 import dagger.Module;
@@ -135,14 +133,12 @@ import dagger.Module;
  */
 @Module
 public abstract class CommonBindModule {
+
 	@Binds
 	abstract TxData txData(CommonTxData e);
 
 	@Binds
 	abstract ContextDataRegistry contextDataRegistry(ContextDataRegistryImpl e);
-
-	@Binds
-	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
 
 	@Binds
 	abstract MeshOAuthService bindOAuthHandler(MeshOAuth2ServiceImpl e);

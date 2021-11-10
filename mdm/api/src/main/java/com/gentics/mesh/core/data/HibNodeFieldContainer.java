@@ -37,7 +37,7 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 * @return
 	 */
 	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
+		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type, null);
 	}
 
 	/**

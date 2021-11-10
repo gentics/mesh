@@ -256,9 +256,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, type), ContentDao.composeDocumentId(node.getUuid(), "en"));
+						schemaContainerVersionUuid, type, null), ContentDao.composeDocumentId(node.getUuid(), "en"));
 					assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, type), ContentDao.composeDocumentId(node.getUuid(), "de"));
+						schemaContainerVersionUuid, type, null), ContentDao.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
 			assertThat(trackingSearchProvider()).hasStore(HibTagFamily.composeIndexName(projectUuid), HibTagFamily.composeDocumentId(parentTagFamily
@@ -379,7 +379,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			for (HibNode node : nodes) {
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid,
-					schemaContainerVersionUuid, ContainerType.DRAFT), ContentDao.composeDocumentId(node.getUuid(), "en"));
+					schemaContainerVersionUuid, ContainerType.DRAFT, null), ContentDao.composeDocumentId(node.getUuid(), "en"));
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 0, 1, 0, 0);
 

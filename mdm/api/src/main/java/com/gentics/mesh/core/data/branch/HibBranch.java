@@ -404,7 +404,7 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 			RE extends NameUuidReference<RE>, 
 			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
 			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
-	> E onContainerAssignEvent(SCV schemaVersion, Assignment assigned, JobStatus status, Supplier<E> modelSupplier) {
+	> E onContainerAssignEvent(SCV schemaVersion, Assignment assigned, JobStatus status, SCV oldVersion, Supplier<E> modelSupplier) {
 		E model = modelSupplier.get();
 		model.setOrigin(Tx.get().data().options().getNodeName());
 		switch (assigned) {
@@ -419,6 +419,9 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 		model.setStatus(status);
 		model.setBranch(transformToReference());
 		model.setProject(getProject().transformToReference());
+		if (oldVersion != null) {
+			model.setOldSchema(oldVersion.transformToReference());
+		}
 		return model;
 	}
 
@@ -428,10 +431,11 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	 * @param schemaVersion
 	 * @param assigned
 	 * @param status
+	 * @param oldVersion old version (may be null)
 	 * @return
 	 */
-	default BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status) {  
-		return onContainerAssignEvent(schemaVersion, assigned, status, BranchSchemaAssignEventModel::new);
+	default BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status, HibSchemaVersion oldVersion) {  
+		return onContainerAssignEvent(schemaVersion, assigned, status, oldVersion, BranchSchemaAssignEventModel::new);
 	}
 
 	/**
@@ -440,11 +444,12 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	 * @param microschemaVersion
 	 * @param assigned
 	 * @param status
+	 * @param oldVersion old version (may be null)
 	 * @return
 	 */
 	default BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned,
-		JobStatus status) {
-		return onContainerAssignEvent(microschemaVersion, assigned, status, BranchMicroschemaAssignModel::new);
+		JobStatus status, HibMicroschemaVersion oldVersion) {
+		return onContainerAssignEvent(microschemaVersion, assigned, status, oldVersion, BranchMicroschemaAssignModel::new);
 	}
 
 	/**
