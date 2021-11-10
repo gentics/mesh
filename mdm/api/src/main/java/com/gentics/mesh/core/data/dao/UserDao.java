@@ -322,5 +322,5 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * Set the user password hash and update forced password change flag
 	 * @param passwordHash
 	 */
-	void changePasswordHash(HibUser user, String passwordHash);
+	void updatePasswordHash(HibUser user, String passwordHash);
 }

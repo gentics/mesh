@@ -982,7 +982,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String oldHash;
 
 		try (Tx tx = tx()) {
-			tx.userDao().changePasswordHash(user(), null);
+			tx.userDao().updatePasswordHash(user(), null);
 			uuid = user().getUuid();
 			oldHash = user().getPasswordHash();
 		}

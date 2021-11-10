@@ -75,7 +75,6 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
             PermissionCache cache = Tx.get().permissionCache();
             cache.clear();
         }
-
         return permissionsRevoked;
     }
 
