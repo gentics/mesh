@@ -34,28 +34,6 @@ import com.gentics.mesh.util.VersionNumber;
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex, BucketableElement {
-
-	/**
-	 * Return the index name for the given parameters.
-	 * 
-	 * @param projectUuid
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
-	}
-
-	/**
-	 * Return the document id for the container.
-	 * 
-	 * @return
-	 */
-	default String getDocumentId() {
-		return ContentDaoWrapper.composeDocumentId(getNode().getUuid(), getLanguageTag());
-	}
-
 	/**
 	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
 	 * well.

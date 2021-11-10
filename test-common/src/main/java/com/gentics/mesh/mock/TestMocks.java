@@ -7,7 +7,6 @@ import static com.gentics.mesh.example.ExampleUuids.LANGUAGE_UUID;
 import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO2_UUID;
-import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
 import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAGFAMILY_FUELS_UUID;
@@ -65,8 +64,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -188,15 +185,6 @@ public final class TestMocks {
 		when(user.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(user.getElementVersion()).thenReturn(UUID_1);
 		return user;
-	}
-
-	public static UpdateDocumentEntry mockUpdateDocumentEntry() {
-		UpdateDocumentEntry entry = mock(UpdateDocumentEntry.class);
-		GenericEntryContextImpl context = new GenericEntryContextImpl();
-		context.setProjectUuid(PROJECT_DEMO_UUID);
-		when(entry.getContext()).thenReturn(context);
-		when(entry.getElementUuid()).thenReturn(UUID_3);
-		return entry;
 	}
 
 	public static HibTagFamily mockTagFamily(String name, HibUser user, HibProject project) {

@@ -1,11 +1,5 @@
 package com.gentics.mesh.dagger.module;
 
-import com.gentics.mesh.core.data.s3binary.S3Binaries;
-import com.gentics.mesh.core.data.s3binary.impl.S3BinariesImpl;
-import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
-import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandlerImpl;
-import com.gentics.mesh.storage.S3BinaryStorage;
-import com.gentics.mesh.storage.s3.S3BinaryStorageImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -59,6 +53,8 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
+import com.gentics.mesh.core.data.s3binary.impl.S3BinariesImpl;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -69,6 +65,8 @@ import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
+import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -113,8 +111,6 @@ import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchMappingsCache;
 import com.gentics.mesh.search.impl.SearchMappingsCacheImpl;
-import com.gentics.mesh.search.index.common.DropIndexHandler;
-import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
@@ -136,6 +132,8 @@ import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
+import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.storage.s3.S3BinaryStorageImpl;
 
 import dagger.Binds;
 import dagger.Module;
@@ -145,9 +143,6 @@ import dagger.Module;
  */
 @Module
 public abstract class CommonBindModule {
-	@Binds
-	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
-
 	@Binds
 	abstract BootstrapInitializer bindBoot(BootstrapInitializerImpl e);
 

@@ -1718,7 +1718,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(uuid, "en"));
+			ContainerType.DRAFT, null), ContentDaoWrapper.composeDocumentId(uuid, "en"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
@@ -1747,7 +1747,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// Verify that exactly the selected language was updated
 			String indexName = ContentDaoWrapper.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
-				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
+				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT, null);
 			String documentId = ContentDaoWrapper.composeDocumentId(uuid, "en");
 			assertThat(trackingSearchProvider()).hasStore(indexName, documentId);
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
@@ -1797,7 +1797,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
 		assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(uuid, "de"));
+			ContainerType.DRAFT, null), ContentDaoWrapper.composeDocumentId(uuid, "de"));
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 	}

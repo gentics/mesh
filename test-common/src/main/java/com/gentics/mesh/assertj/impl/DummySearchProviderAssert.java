@@ -184,7 +184,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 				String projectUuid = project.getUuid();
 				String branchUuid = branch.getUuid();
 				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
-				assertThat(actual).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type),
+				assertThat(actual).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type, node.getSchemaContainer().getLatestVersion().getMicroschemaVersionHash(branch)),
 						ContentDaoWrapper.composeDocumentId(node.getUuid(), lang));
 			}
 		}

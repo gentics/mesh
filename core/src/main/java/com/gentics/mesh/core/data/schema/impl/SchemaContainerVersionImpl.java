@@ -14,8 +14,19 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -24,6 +35,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -33,6 +46,8 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -41,8 +56,13 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -229,7 +249,7 @@ public class SchemaContainerVersionImpl extends
 	 */
 	private Stream<BranchSchemaAssignEventModel> generateUnassignEvents() {
 		return getBranches().stream()
-			.map(branch -> branch.onSchemaAssignEvent(this, UNASSIGNED, null));
+			.map(branch -> branch.onSchemaAssignEvent(this, UNASSIGNED, null, null));
 	}
 
 	@Override
@@ -265,4 +285,77 @@ public class SchemaContainerVersionImpl extends
 		remove();
 	}
 
+	@Override
+	public String getMicroschemaVersionHash(HibBranch branch, Map<String, String> replacementMap) {
+		Objects.requireNonNull(branch, "The branch must not be null");
+		Objects.requireNonNull(replacementMap, "The replacement map must not be null (but may be empty)");
+		Set<String> microschemaNames = getSchema().getFields().stream().filter(filterMicronodeField())
+				.flatMap(field -> {
+					return getAllowedMicroschemas(field).stream();
+				}).collect(Collectors.toSet());
+
+		if (microschemaNames.isEmpty()) {
+			return null;
+		} else {
+			Set<String> microschemaVersionUuids = new TreeSet<>();
+			for (HibBranchMicroschemaVersion edge : branch.findAllLatestMicroschemaVersionEdges()) {
+				HibMicroschemaVersion version = edge.getMicroschemaContainerVersion();
+				MicroschemaVersionModel microschema = version.getSchema();
+				String microschemaName = microschema.getName();
+
+				// if the microschema is one of the "used" microschemas, we either get the version uuid from the replacement map, or
+				// the uuid of the currently assigned version
+				if (microschemaNames.contains(microschemaName)) {
+					microschemaVersionUuids.add(replacementMap.getOrDefault(microschemaName, version.getUuid()));
+				}
+			}
+
+			if (microschemaVersionUuids.isEmpty()) {
+				return null;
+			} else {
+				return DigestUtils.md5Hex(microschemaVersionUuids.stream().collect(Collectors.joining("|")));
+			}
+		}
+	}
+
+	@Override
+	public Set<String> getFieldsUsingMicroschema(HibMicroschema microschema) {
+		return getSchema().getFields().stream().filter(filterMicronodeField())
+				.filter(field -> getAllowedMicroschemas(field).contains(microschema.getName()))
+				.map(FieldSchema::getName).collect(Collectors.toSet());
+	}
+
+	/**
+	 * Return a predicate that filters fields that are either of type "micronode", or "list of micronodes"
+	 * @return predicate
+	 */
+	protected Predicate<FieldSchema> filterMicronodeField() {
+		return field -> {
+			if (FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE) {
+				return true;
+			} else if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
+				ListFieldSchema listField = (ListFieldSchema) field;
+				return FieldTypes.valueByName(listField.getListType()) == FieldTypes.MICRONODE;
+			} else {
+				return false;
+			}
+		};
+	}
+
+	/**
+	 * Get the allowed microschemas used by the field
+	 * @param field field
+	 * @return collection of allowed microschema names
+	 */
+	protected Collection<String> getAllowedMicroschemas(FieldSchema field) {
+		if (field instanceof MicronodeFieldSchema) {
+			MicronodeFieldSchema micronodeField = (MicronodeFieldSchema) field;
+			return Arrays.asList(micronodeField.getAllowedMicroSchemas());
+		} else if (field instanceof ListFieldSchema) {
+			ListFieldSchema listField = (ListFieldSchema) field;
+			return Arrays.asList(listField.getAllowedSchemas());
+		} else {
+			return Collections.emptyList();
+		}
+	}
 }

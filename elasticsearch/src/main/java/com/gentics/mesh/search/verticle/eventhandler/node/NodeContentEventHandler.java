@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -124,7 +125,7 @@ public class NodeContentEventHandler implements EventHandler {
 			message.getBranchUuid(),
 			schemaVersionUuid,
 			message.getType(),
-			getIndexLanguage(message).runInNewTx());
+			getIndexLanguage(message).runInNewTx(), getMicroschemaVersionHash(message, schemaVersionUuid));
 	}
 
 	private Transactional<String> getIndexLanguage(NodeMeshEventModel message) {
@@ -155,6 +156,16 @@ public class NodeContentEventHandler implements EventHandler {
 			HibSchema schema = schemaDao
 				.findByUuid(reference.getUuid());
 			return schemaDao.findVersionByRev(schema, reference.getVersion()).getUuid();
+		});
+	}
+
+	private String getMicroschemaVersionHash(NodeMeshEventModel message, String schemaVersionUuid) {
+		return helper.getDb().tx(tx -> {
+			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
+			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
+			HibBranch branch = tx.branchDao().findByUuid(project, message.getBranchUuid());
+			HibSchemaVersion schemaVersion = tx.schemaDao().findVersionByUuid(schema, schemaVersionUuid);
+			return schemaVersion.getMicroschemaVersionHash(branch);
 		});
 	}
 }
