@@ -26,7 +26,7 @@ include::content/docs/variables.adoc-include[]
 [[v1.7.21]]
 == 1.7.21 (TBD)
 
-icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.14`.
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.15`.
 
 icon:check[] Cluster: When doing a rolling update in a cluster, a OConcurrentModificationException could occur during the startup, which could cause
 subsequent errors. This has been fixed.
