@@ -23,6 +23,15 @@ s3options:
     expirationTimeDownload: 360000
     expirationTimeUpload: 60000
     region: null
+  corsAllowedHeaders:
+  - "*"
+  corsAllowedOrigins:
+  - "*"
+  corsAllowedMethods:
+  - "GET"
+  - "PUT"
+  - "POST"
+  - "DELETE"
 tempDirectory: "/opt/mesh/data/tmp"
 pluginDirectory: "plugins"
 pluginTimeout: 120
@@ -72,6 +81,10 @@ storage:
   txCommitTimeout: 0
   parameters: {}
   clusterJoinTimeout: 500000
+  diskQuota:
+    checkInterval: 10000
+    warnThreshold: "15%"
+    readOnlyThreshold: "10%"
 search:
   url: "http://localhost:9200"
   username: null

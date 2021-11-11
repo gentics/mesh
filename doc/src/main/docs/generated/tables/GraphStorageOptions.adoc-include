@@ -22,6 +22,11 @@
 | string
 | Path to the graph database data directory.
 
+| diskQuota
+| false
+| object
+| Options for the disk quota check
+
 | exportDirectory
 | true
 | string

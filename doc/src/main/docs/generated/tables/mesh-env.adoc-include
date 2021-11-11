@@ -44,6 +44,9 @@
 | *MESH_AUTH_TOKEN_EXP*
 | Override the configured JWT expiration time.
 
+| *MESH_STORAGE_DISK_QUOTA_READ_ONLY_THRESHOLD*
+| Overwrite the disk quota ready only threshold.
+
 | *MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION*
 | Override the configured hostname verification flag.
 
@@ -52,6 +55,9 @@
 
 | *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
 | Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
+
+| *MESH_S3_CORS_ALLOWED_ORIGINS*
+| Override the configured AWS S3 CORS allowed origins.
 
 | *MESH_HTTP_PORT*
 | Override the configured server http port.
@@ -83,6 +89,12 @@
 | *MESH_BINARY_UPLOAD_LIMIT*
 | Override the configured binary byte upload limit.
 
+| *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
+| Overwrite the disk quota warn threshold.
+
+| *MESH_S3_CORS_ALLOWED_HEADERS*
+| Override the configured AWS S3 CORS allowed headers.
+
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
 
@@ -100,6 +112,9 @@
 
 | *MESH_HTTP_SSL_TRUSTED_CERTS*
 | Override the configured trusted SSL certificates.
+
+| *MESH_STORAGE_DISK_QUOTA_CHECK_INTERVAL*
+| Overwrite the disk quota check interval.
 
 | *MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS*
 | Override the search include binary fields flag.
@@ -340,6 +355,9 @@
 
 | *MESH_IMAGE_JPEG_QUALITY*
 | Override the JPEG quality for image resize operations.
+
+| *MESH_S3_CORS_ALLOWED_METHODS*
+| Override the configured AWS S3 CORS allowed methods.
 
 | *MESH_INITIAL_ADMIN_PASSWORD*
 | Password which will be used during initial admin user creation.

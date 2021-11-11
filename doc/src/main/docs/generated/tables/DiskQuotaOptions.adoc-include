@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| checkInterval
+| false
+| integer
+| Check interval in ms. Setting this to 0 will disable the disk quota check. Default: 10000
+
+| readOnlyThreshold
+| false
+| string
+| Threshold for the disk quota ready only level. This can be set either as percentage (e.g. 10%) or as absolute disk space (e.g. 5G). If less than the defined disk space is available, Mesh will automatically be set to readonly. Default: 10%
+
+| warnThreshold
+| false
+| string
+| Threshold for the disk quota warn level. This can be set either as percentage (e.g. 15%) or as absolute disk space (e.g. 10G). If less than the defined disk space is available, warnings will be logged. Default: 15%
+
+|======
