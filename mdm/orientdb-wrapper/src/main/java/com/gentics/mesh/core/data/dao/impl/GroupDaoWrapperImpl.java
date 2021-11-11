@@ -98,7 +98,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 		for (HibUser user : getUsers(group)) {
 			toGraph(user).setUniqueLinkOutTo(graphRole, ASSIGNED_TO_ROLE);
 		}
-
 	}
 
 	@Override
@@ -197,5 +196,4 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	protected RootVertex<Group> getRoot() {
 		return boot.get().meshRoot().getGroupRoot();
 	}
-
 }

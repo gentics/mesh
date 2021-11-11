@@ -87,7 +87,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			setParentNodeInfo(node, ac, branch, restNode);
 		}
 		if (fields.has("perms")) {
-			setRolePermissions(node, ac, restNode);
+			tx.roleDao().setRolePermissions(node, ac, restNode);
 		}
 		if (fields.has("children")) {
 			setChildrenInfo(node, ac, branch, restNode);

@@ -64,7 +64,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	/**
 	 * Update all shortcut edges.
 	 */
-	default void updateShortcutEdges(HibUser user) {}
+	default void updateShortcutEdges(HibUser user) {
+		// We don't expect any indexes or other shortcuts existing, so noop here.
+	}
 
 	/**
 	 * Check the permission on the given element.
@@ -416,7 +418,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			restUser.setForcedPasswordChange(user.isForcedPasswordChange());
 		}
 		user.fillCommonRestFields(ac, fields, restUser);
-		setRolePermissions(user, ac, restUser);
+		Tx.get().roleDao().setRolePermissions(user, ac, restUser);
 
 		return restUser;
 	}
@@ -556,7 +558,10 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 	@Override
 	default void delete(HibUser user, BulkActionContext bac) {
-		// TODO don't allow this for the admin user
+		// TODO unhardcode the admin name
+		if ("admin".equals(user.getUsername())) {
+			throw error(FORBIDDEN, "error_illegal_admin_deletion");
+		}
 		// disable();
 		// TODO we should not really delete users. Instead we should remove
 		// those from all groups and deactivate the access.

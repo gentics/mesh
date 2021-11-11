@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
@@ -170,4 +171,13 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @return
 	 */
 	PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid);
+
+	/**
+	 * Set the role permission for the given element.
+	 * 
+	 * @param element
+	 * @param ac
+	 * @param model
+	 */
+	void setRolePermissions(HibBaseElement element, InternalActionContext ac, GenericRestResponse model);
 }

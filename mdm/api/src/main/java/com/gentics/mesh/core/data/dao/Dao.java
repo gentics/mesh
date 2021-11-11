@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.GenericRestResponse;
 
 /**
  * General DAO.
@@ -17,15 +16,6 @@ import com.gentics.mesh.core.rest.common.GenericRestResponse;
  * @param <T>
  */
 public interface Dao<T extends HibBaseElement> {
-
-	/**
-	 * Set the role permissionf for the given element.
-	 * 
-	 * @param element
-	 * @param ac
-	 * @param model
-	 */
-	void setRolePermissions(T element, InternalActionContext ac, GenericRestResponse model);
 
 	/**
 	 * Compare both values in order to determine whether the stored value should be updated.

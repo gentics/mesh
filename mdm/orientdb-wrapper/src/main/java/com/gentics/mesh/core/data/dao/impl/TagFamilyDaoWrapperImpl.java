@@ -113,7 +113,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 		graphTagFamily.fillCommonRestFields(ac, fields, restTagFamily);
 
 		if (fields.has("perms")) {
-			setRolePermissions(graphTagFamily, ac, restTagFamily);
+			Tx.get().roleDao().setRolePermissions(graphTagFamily, ac, restTagFamily);
 		}
 
 		return restTagFamily;

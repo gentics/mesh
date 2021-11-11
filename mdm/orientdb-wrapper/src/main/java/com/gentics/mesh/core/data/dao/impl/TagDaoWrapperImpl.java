@@ -204,7 +204,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 		}
 
 		graphTag.fillCommonRestFields(ac, fields, restTag);
-		setRolePermissions(graphTag, ac, restTag);
+		Tx.get().roleDao().setRolePermissions(graphTag, ac, restTag);
 		return restTag;
 
 	}

@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.result.Result;
@@ -108,24 +109,22 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 
     @Override
 	default Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm) {
-		RoleDao roleDao = Tx.get().roleDao();
-		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, perm);
+		Set<String> roleUuids = getRoleUuidsForPerm(element, perm);
 		Stream<String> stream = roleUuids == null
 			? Stream.empty()
 			: roleUuids.stream();
 		return new TraversalResult<>(stream
-			.map(roleDao::findByUuid)
+			.map(this::findByUuid)
 			.filter(Objects::nonNull));
 	}
 
     @Override
 	default PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
-			RoleDao roleDao = Tx.get().roleDao();
-			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+			HibRole role = loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				PermissionInfo permissionInfo = new PermissionInfo();
-				Set<InternalPermission> permSet = roleDao.getPermissions(role, element);
+				Set<InternalPermission> permSet = getPermissions(role, element);
 				for (InternalPermission permission : permSet) {
 					permissionInfo.set(permission.getRestPerm(), true);
 				}
@@ -134,5 +133,10 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 			}
 		}
 		return null;
+	}
+
+	@Override
+	default void setRolePermissions(HibBaseElement element, InternalActionContext ac, GenericRestResponse model) {
+		model.setRolePerms(getRolePermissions(element, ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
 }
