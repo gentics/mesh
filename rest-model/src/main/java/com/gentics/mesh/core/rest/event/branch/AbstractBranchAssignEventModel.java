@@ -31,6 +31,10 @@ public abstract class AbstractBranchAssignEventModel<T extends NameUuidReference
 	@JsonPropertyDescription("Status of the migration job that has been created when assigning the schema.")
 	private JobStatus status;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Reference to the old schema version that was assigned before (may be null).")
+	private T oldSchema;
+
 	public BranchReference getBranch() {
 		return branch;
 	}
@@ -63,4 +67,11 @@ public abstract class AbstractBranchAssignEventModel<T extends NameUuidReference
 		this.project = project;
 	}
 
+	public T getOldSchema() {
+		return oldSchema;
+	}
+
+	public void setOldSchema(T oldSchema) {
+		this.oldSchema = oldSchema;
+	}
 }

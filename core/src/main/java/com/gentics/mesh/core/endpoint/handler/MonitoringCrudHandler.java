@@ -6,6 +6,7 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import io.vertx.core.logging.Logger;
@@ -35,13 +36,16 @@ public class MonitoringCrudHandler {
 
 	private final LocalConfigApi localConfigApi;
 
+	private final Database db;
+
 	@Inject
-	public MonitoringCrudHandler(BootstrapInitializer boot, MeshPluginManager pluginManager, ClusterManager clusterManager, LivenessManager liveness, LocalConfigApi localConfigApi) {
+	public MonitoringCrudHandler(BootstrapInitializer boot, MeshPluginManager pluginManager, ClusterManager clusterManager, LivenessManager liveness, LocalConfigApi localConfigApi, Database db) {
 		this.boot = boot;
 		this.pluginManager = pluginManager;
 		this.clusterManager = clusterManager;
 		this.liveness = liveness;
 		this.localConfigApi = localConfigApi;
+		this.db = db;
 	}
 
 	/**
@@ -120,6 +124,8 @@ public class MonitoringCrudHandler {
 				.subscribe(isReadOnly -> {
 					if (isReadOnly) {
 						log.warn("Local node cannot write - read only mode set");
+						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal"));
+					} else if (db.isReadOnly(false)) {
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal"));
 					} else if (clusterManager.isClusterTopologyLocked()) {
 						log.warn("Local node cannot write - cluster topology locked");

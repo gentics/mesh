@@ -17,6 +17,24 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.23]]
+== 1.6.23 (11.11.2021)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.15`.
+
+icon:check[] Cluster: When doing a rolling update in a cluster, a OConcurrentModificationException could occur during the startup, which could cause
+subsequent errors. This has been fixed.
+
+icon:plus[] Core: A periodic check for available disk space has been added. If not enough disk space is available, Gentics Mesh will be set to read-only to avoid corruption
+of the storage due to a full disk. Additionally, the metrics `mesh_storage_disk_total` and `mesh_storage_disk_usable` have been added to monitoring.
+
+icon:check[] Search: The indices for nodes of a schema, which contains fields of type "micronode" have a mapping for the fields in the allowed microschemas, but were not
+changed, if the microschemas were changed. This caused subsequent errors while indexing or searching.
+The naming of such indices have been changed to contain a hash over all allowed microschema versions and when a microschema is changed, a new index will be created now.
+This update will automatically drop and recreate all existing indices for schemas containing fields of type "micronode".
+
+icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 connection can be configured. By default the allowed headers/origins are set to `*`, the allowed methods are set to `"GET", "PUT", "POST", "DELETE"`. Setting any of the CORS configuration to `null` prevents is to override the server's default configuration. Setting all the CORS configuration to null or empty value prevents the CORS config to be changed at all.
+
 [[v1.6.22]]
 == 1.6.22 (19.10.2021)
 

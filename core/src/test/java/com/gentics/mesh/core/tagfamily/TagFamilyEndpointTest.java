@@ -494,7 +494,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(
 										ContentDaoWrapper.composeIndexName(project.getUuid(), branch.getUuid(),
-												schema.getUuid(), containerType),
+												schema.getUuid(), containerType, null),
 										ContentDaoWrapper.composeDocumentId(node.getUuid(),
 												fieldContainer.getLanguageTag()));
 							}

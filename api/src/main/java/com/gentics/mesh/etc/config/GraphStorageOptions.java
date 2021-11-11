@@ -96,6 +96,10 @@ public class GraphStorageOptions implements Option {
 	@EnvironmentVariable(name = MESH_GRAPH_CLUSTER_JOIN_TIMEOUT_ENV, description = "Override the graphdb cluster join timeout. Default: " + DEFAULT_CLUSTER_JOIN_TIMEOUT + " ms")
 	private int clusterJoinTimeout = DEFAULT_CLUSTER_JOIN_TIMEOUT;
 
+	@JsonProperty("diskQuota")
+	@JsonPropertyDescription("Options for the disk quota check")
+	private DiskQuotaOptions diskQuotaOptions = new DiskQuotaOptions();
+
 	public String getDirectory() {
 		return directory;
 	}
@@ -227,6 +231,24 @@ public class GraphStorageOptions implements Option {
 	}
 
 	/**
+	 * Disk quota options
+	 * @return options
+	 */
+	public DiskQuotaOptions getDiskQuotaOptions() {
+		return diskQuotaOptions;
+	}
+
+	/**
+	 * Set the disk quota options
+	 * @param diskQuotaOptions options (if null, the options are reset to the default values)
+	 * @return fluent API
+	 */
+	public GraphStorageOptions setDiskQuotaOptions(DiskQuotaOptions diskQuotaOptions) {
+		this.diskQuotaOptions = diskQuotaOptions != null ? diskQuotaOptions : new DiskQuotaOptions();
+		return this;
+	}
+
+	/**
 	 * Validate the settings.
 	 */
 	public void validate(MeshOptions meshOptions) {
@@ -234,6 +256,7 @@ public class GraphStorageOptions implements Option {
 			throw new NullPointerException(
 				"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");
 		}
+		getDiskQuotaOptions().validate(meshOptions);
 	}
 
 }

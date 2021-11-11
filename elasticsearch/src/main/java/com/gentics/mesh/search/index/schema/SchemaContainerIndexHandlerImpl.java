@@ -15,7 +15,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Tx;
@@ -51,16 +50,6 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 	@Override
 	public String getType() {
 		return "schema";
-	}
-
-	@Override
-	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Schema.composeDocumentId(entry.getElementUuid());
-	}
-
-	@Override
-	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Schema.composeIndexName();
 	}
 
 	@Override

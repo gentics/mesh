@@ -183,6 +183,12 @@ More metrics will be added over time.
 | `graphql_time`
 | Timer which tracks duration of graphql requests.
 
+| `mesh_storage_disk_total`
+| Total disk size in bytes for the storage.
+
+| `mesh_storage_disk_usable`
+| Usable (free) disk size in bytes for the storage.
+
 |======
 
 

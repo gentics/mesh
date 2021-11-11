@@ -21,8 +21,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -35,9 +33,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 
 /**
  * @see TagFamilyIndexHandler
@@ -82,28 +78,6 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	@Override
 	public TagFamilyMappingProvider getMappingProvider() {
 		return mappingProvider;
-	}
-
-	@Override
-	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return TagFamily.composeDocumentId(entry.getElementUuid());
-	}
-
-	@Override
-	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return TagFamily.composeIndexName(entry.getContext().getProjectUuid());
-	}
-
-	@Override
-	public Completable store(HibTagFamily tagFamily, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
-		return super.store(tagFamily, entry);
-	}
-
-	@Override
-	public Observable<IndexBulkEntry> storeForBulk(HibTagFamily tagFamily, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
-		return super.storeForBulk(tagFamily, entry);
 	}
 
 	@Override

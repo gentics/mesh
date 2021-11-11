@@ -104,20 +104,21 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 		log.info("Updating stored database revision and mesh version.");
 		// Version is okay. So lets store the version and the updated revision.
 		String currentVersion = Mesh.getPlainVersion();
-		TransactionalGraph graph = db.rawTx();
-		try {
-			Vertex root = MeshGraphHelper.getMeshRootVertex(graph);
+
+		db.tx(tx -> {
+			Vertex root = MeshGraphHelper.getMeshRootVertex(tx.getGraph());
 			String rev = db.getDatabaseRevision();
-			if (!Objects.equal(root.getProperty(MESH_VERSION), currentVersion)) {
+			String storedVersion = root.getProperty(MESH_VERSION);
+			String storedRev = root.getProperty(MESH_DB_REV);
+			if (!Objects.equal(storedVersion, currentVersion)) {
+				log.info("Changing persisted Mesh Version from {} to {}", storedVersion, currentVersion);
 				root.setProperty(MESH_VERSION, currentVersion);
 			}
-			if (!Objects.equal(root.getProperty(MESH_DB_REV), rev)) {
+			if (!Objects.equal(storedRev, rev)) {
+				log.info("Changing persisted DB Revision from {} to {}", storedRev, rev);
 				root.setProperty(MESH_DB_REV, rev);
 			}
-			graph.commit();
-		} finally {
-			graph.shutdown();
-		}
+		});
 	}
 
 	@Override

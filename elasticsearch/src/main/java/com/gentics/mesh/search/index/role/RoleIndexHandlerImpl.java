@@ -15,7 +15,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Tx;
@@ -63,16 +62,6 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 		return db.tx(tx -> {
 			return tx.roleDao().globalCount();
 		});
-	}
-
-	@Override
-	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Role.composeDocumentId(entry.getElementUuid());
-	}
-
-	@Override
-	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Role.composeIndexName();
 	}
 
 	@Override

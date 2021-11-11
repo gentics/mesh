@@ -413,9 +413,10 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * @param schemaVersion
 	 * @param assigned
 	 * @param status
+	 * @param oldVersion old version (may be null)
 	 * @return
 	 */
-	BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status);
+	BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status, HibSchemaVersion oldVersion);
 
 	/**
 	 * Create a project microschema assignment event.
@@ -423,9 +424,10 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * @param microschemaVersion
 	 * @param assigned
 	 * @param status
+	 * @param oldVersion old version (may be null)
 	 * @return
 	 */
-	BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned, JobStatus status);
+	BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned, JobStatus status, HibMicroschemaVersion oldVersion);
 
 	/**
 	 * Load the tag with the given uuid that was used to tag the branch.

@@ -388,7 +388,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(onSchemaAssignEvent(schemaVersion, ASSIGNED, edge.getMigrationStatus()));
+			batch.add(onSchemaAssignEvent(schemaVersion, ASSIGNED, edge.getMigrationStatus(), currentVersion));
 		}
 		return job;
 	}
@@ -412,13 +412,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(onMicroschemaAssignEvent(microschemaVersion, ASSIGNED, edge.getMigrationStatus()));
+			batch.add(onMicroschemaAssignEvent(microschemaVersion, ASSIGNED, edge.getMigrationStatus(), currentVersion));
 		}
 		return job;
 	}
 
 	@Override
-	public BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status) {
+	public BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status, HibSchemaVersion oldVersion) {
 		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
 		model.setOrigin(options().getNodeName());
 		switch (assigned) {
@@ -433,12 +433,15 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 		model.setStatus(status);
 		model.setBranch(transformToReference());
 		model.setProject(getProject().transformToReference());
+		if (oldVersion != null) {
+			model.setOldSchema(oldVersion.transformToReference());
+		}
 		return model;
 	}
 
 	@Override
 	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned,
-		JobStatus status) {
+		JobStatus status, HibMicroschemaVersion oldVersion) {
 		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
 		model.setOrigin(mesh().options().getNodeName());
 		switch (assigned) {
@@ -453,6 +456,9 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 		model.setStatus(status);
 		model.setBranch(transformToReference());
 		model.setProject(getProject().transformToReference());
+		if (oldVersion != null) {
+			model.setOldSchema(oldVersion.transformToReference());
+		}
 		return model;
 	}
 

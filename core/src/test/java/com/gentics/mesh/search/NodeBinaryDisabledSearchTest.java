@@ -18,13 +18,11 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -32,7 +30,6 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
@@ -51,7 +48,6 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 	}
 
 	@Test
-	@Category({FailingTests.class})
 	public void testBinarySearchMapping() throws Exception {
 		grantAdmin();
 		HibNode nodeA = content("concorde");
@@ -73,9 +69,6 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 		waitForJob(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
 		});
-		waitForJob(() -> {
-			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		});
 
 		// .rtf with lorem text
 		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
@@ -91,7 +84,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 		try (Tx tx = tx()) {
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
-				schemaVersionUuid, ContainerType.DRAFT);
+				schemaVersionUuid, ContainerType.DRAFT, nodeA.getSchemaContainer().getLatestVersion().getMicroschemaVersionHash(initialBranch()));
 			String id = ContentDaoWrapper.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse("The information should not have been added to the search document.",
@@ -138,7 +131,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 
 		try (Tx tx = tx()) {
 			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
+				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
 			String id = ContentDaoWrapper.composeDocumentId(nodeUuid, "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse("The binary content should not be part of the document",
