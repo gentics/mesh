@@ -40,7 +40,7 @@ public class ImgscalrResizeFilterTest extends AbstractImageTest {
 
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
 		BootstrapInitializer boot = mock(BootstrapInitializer.class);
-		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null, null));
+		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null));
 		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, boot, null);
 	}
 

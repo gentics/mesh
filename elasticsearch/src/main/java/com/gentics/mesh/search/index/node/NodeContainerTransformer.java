@@ -130,20 +130,20 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	private void addPermissionInfo(JsonObject document, HibNode node, ContainerType type) {
 		List<String> roleUuids = new ArrayList<>();
 
-		Tx tx = Tx.get();
-
-		// null check here, as this method can be called from the transactionless documentation generator.
-		if (tx != null) {
-			for (HibRole role : tx.roleDao().getRolesWithPerm(node, READ_PERM)) {
+		try {
+			for (HibRole role : Tx.get().roleDao().getRolesWithPerm(node, READ_PERM)) {
 				roleUuids.add(role.getUuid());
 			}
 
 			// Also add the roles which would grant read on published nodes if the container is published.
 			if (type == PUBLISHED) {
-				for (HibRole role : tx.roleDao().getRolesWithPerm(node, READ_PUBLISHED_PERM)) {
+				for (HibRole role : Tx.get().roleDao().getRolesWithPerm(node, READ_PUBLISHED_PERM)) {
 					roleUuids.add(role.getUuid());
 				}
 			}
+		} catch (NullPointerException e) {
+			// null check here, as this method can be called from the transactionless documentation generator.
+			log.error(e);
 		}
 		document.put("_roleUuids", roleUuids);
 	}

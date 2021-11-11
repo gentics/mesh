@@ -46,7 +46,7 @@ public class ReferenceImageCreator {
 		options.setImageCacheDirectory(tmpDir);
 
 		BootstrapInitializer boot = mock(BootstrapInitializer.class);
-		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null, null));
+		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null));
 		ImgscalrImageManipulator manipulator = new ImgscalrImageManipulator(vertx, options, boot, null);
 
 		readImageConfig().blockingForEach(image -> {
