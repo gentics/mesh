@@ -69,18 +69,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 		super(boot);
 	}
 
-	@Override
-	public String getAPIPath(HibTag tag, InternalActionContext ac) {
-		Tag graphTag = toGraph(tag);
-		return graphTag.getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibTag tag, InternalActionContext ac) {
-		Tag graphTag = toGraph(tag);
-		return graphTag.getETag(ac);
-	}
-
 	// New Methods
 
 	@Override

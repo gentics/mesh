@@ -223,17 +223,6 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
-	public String getAPIPath(HibRole role, InternalActionContext ac) {
-		return commonDaoHelper.getRootLevelAPIPath(ac, role);
-	}
-
-	@Override
-	public String getETag(HibRole role, InternalActionContext ac) {
-		Role graphRole = toGraph(role);
-		return graphRole.getETag(ac);
-	}
-
-	@Override
 	public void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive,
 		Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {

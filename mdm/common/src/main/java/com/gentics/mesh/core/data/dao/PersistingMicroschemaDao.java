@@ -155,11 +155,6 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 	}
 
 	@Override
-	default String getAPIPath(HibMicroschema element, InternalActionContext ac) {
-		return element.getAPIPath(ac);
-	}
-
-	@Override
 	default HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibMicroschema microschema = create(ac, batch, uuid);
 		assign(microschema, root, ac.getUser(), batch);

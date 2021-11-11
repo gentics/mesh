@@ -119,11 +119,6 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	public String getETag(HibMicroschema schema, InternalActionContext ac) {
-		return toGraph(schema).getETag(ac);
-	}
-
-	@Override
 	public HibMicroschema findByUuid(String uuid) {
 		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
 		return microschemaRoot.findByUuid(uuid);

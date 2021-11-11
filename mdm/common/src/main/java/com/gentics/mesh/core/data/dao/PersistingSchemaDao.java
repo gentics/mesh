@@ -326,11 +326,6 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 	}
 
 	@Override
-	default String getAPIPath(HibSchema element, InternalActionContext ac) {
-		return element.getAPIPath(ac);
-	}
-
-	@Override
 	default void delete(HibSchema schema, BulkActionContext bac) {
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends HibNode> it = getNodes(schema).iterator();

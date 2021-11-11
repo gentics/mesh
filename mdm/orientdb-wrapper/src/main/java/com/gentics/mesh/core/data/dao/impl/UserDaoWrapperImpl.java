@@ -131,12 +131,6 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	}
 
 	@Override
-	public String getETag(HibUser user, InternalActionContext ac) {
-		User graphUser = toGraph(user);
-		return graphUser.getETag(ac);
-	}
-
-	@Override
 	public Result<? extends HibGroup> getGroups(HibUser user) {
 		User graphUser = toGraph(user);
 		return graphUser.getGroups();

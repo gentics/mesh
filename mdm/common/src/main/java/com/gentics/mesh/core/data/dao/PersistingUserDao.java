@@ -377,11 +377,6 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default String getAPIPath(HibUser element, InternalActionContext ac) {
-		return element.getAPIPath(ac);
-	}
-
-	@Override
 	default UserResponse transformToRestSync(HibUser user, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();

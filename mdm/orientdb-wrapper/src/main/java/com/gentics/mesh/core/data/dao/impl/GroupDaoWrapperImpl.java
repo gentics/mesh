@@ -180,19 +180,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public String getAPIPath(HibGroup group, InternalActionContext ac) {
-		Group graphGroup = toGraph(group);
-		return graphGroup.getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibGroup group, InternalActionContext ac) {
-		Group graphGroup = toGraph(group);
-		return graphGroup.getETag(ac);
-		// return boot.get().meshRoot().getGroupRoot().getETag(graphGroup, ac);
-	}
-
-	@Override
 	protected RootVertex<Group> getRoot() {
 		return boot.get().meshRoot().getGroupRoot();
 	}

@@ -203,16 +203,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public String getETag(HibTagFamily tagfamily, InternalActionContext ac) {
-		return toGraph(tagfamily).getETag(ac);
-	}
-
-	@Override
-	public String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac) {
-		return toGraph(tagFamily).getAPIPath(ac);
-	}
-
-	@Override
 	public void removeTag(HibTagFamily tagFamily, HibTag tag) {
 		TagFamily graphTagFamily = toGraph(tagFamily);
 		graphTagFamily.removeTag(toGraph(tag));

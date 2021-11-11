@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -85,11 +84,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	default HibProject create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
 		HibSchemaVersion schemaVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
-	}
-
-	@Override
-	default String getAPIPath(HibProject project, InternalActionContext ac) {
-		return VersionUtils.baseRoute(ac) + "/projects/" + project.getUuid();
 	}
 
 	@Override

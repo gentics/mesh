@@ -239,11 +239,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public String getETag(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getETag(ac);
-	}
-
-	@Override
 	public Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
 		Node graphNode = toGraph(node);
 		return graphNode.updateTags(ac, batch);

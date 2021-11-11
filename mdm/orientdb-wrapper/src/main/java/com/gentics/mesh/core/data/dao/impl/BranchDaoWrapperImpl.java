@@ -97,12 +97,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public String getETag(HibBranch branch, InternalActionContext ac) {
-		Branch graphBranch = toGraph(branch);
-		return graphBranch.getETag(ac);
-	}
-
-	@Override
 	public String getAPIPath(HibBranch branch, InternalActionContext ac) {
 		Branch graphBranch = toGraph(branch);
 		return graphBranch.getAPIPath(ac);

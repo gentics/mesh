@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -52,11 +51,6 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 	@Override
 	public void deletePersisted(R root, L entity) {
 		getRoot(root).findByUuid(entity.getUuid()).remove();
-	}
-
-	@Override
-	public String getETag(L element, InternalActionContext ac) {
-		return element.getETag(ac);
 	}
 
 	/**

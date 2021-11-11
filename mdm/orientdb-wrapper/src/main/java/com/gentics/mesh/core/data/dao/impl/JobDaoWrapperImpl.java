@@ -104,16 +104,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 
 	@Override
-	public String getAPIPath(HibJob job, InternalActionContext ac) {
-		return toGraph(job).getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibJob job, InternalActionContext ac) {
-		return toGraph(job).getETag(ac);
-	}
-
-	@Override
 	public boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
 		return boot.get().meshRoot().getJobRoot().update(toGraph(job), ac, batch);
 	}
