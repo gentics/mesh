@@ -6,7 +6,6 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.root.ContainerRootVertex;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
@@ -44,9 +43,8 @@ public abstract class AbstractContainerDaoWrapper<
 		extends AbstractCoreDaoWrapper<R, SC, D>
 		implements PersistingContainerDao<R, RM, RE, SC, SCV, M> {
 
-	public AbstractContainerDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot,
-			Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
+	public AbstractContainerDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	@Override
