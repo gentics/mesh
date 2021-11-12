@@ -1,11 +1,8 @@
 package com.gentics.mesh.core.data.generic;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -25,16 +22,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 	implements MeshCoreVertex<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
-
-	/**
-	 * Set the role permissions to the REST model.
-	 * 
-	 * @param ac
-	 * @param model
-	 */
-	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
-		model.setRolePerms(Tx.get().roleDao().getRolePermissions(this, ac, ac.getRolePermissionParameters().getRoleUuid()));
-	}
 
 	/**
 	 * Compare both values in order to determine whether the graph value should be updated.
