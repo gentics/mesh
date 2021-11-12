@@ -57,7 +57,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
-import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
@@ -86,11 +85,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 		index.createIndex(vertexIndex(ProjectImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
-	}
-
-	@Override
-	public ProjectReference transformToReference() {
-		return new ProjectReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override

@@ -36,34 +36,6 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenc
 	}
 
 	/**
-	 * Set the uuid.
-	 * 
-	 * @param uuid
-	 */
-	void setUuid(String uuid);
-
-	/**
-	 * Return the project name.
-	 * 
-	 * @return
-	 */
-	String getName();
-
-	/**
-	 * Set the project name.
-	 * 
-	 * @param name
-	 */
-	void setName(String name);
-
-	/**
-	 * Transform the project to a reference POJO.
-	 * 
-	 * @return
-	 */
-	ProjectReference transformToReference();
-
-	/**
 	 * Locate the branch with the given name or uuid. Fallback to the latest branch if the given branch could not be found.
 	 * 
 	 * @param branchNameOrUuid
@@ -166,5 +138,10 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenc
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/projects/" + getUuid();
+	}
+
+	@Override
+	default ProjectReference transformToReference() {
+		return new ProjectReference().setName(getName()).setUuid(getUuid());
 	}
 }

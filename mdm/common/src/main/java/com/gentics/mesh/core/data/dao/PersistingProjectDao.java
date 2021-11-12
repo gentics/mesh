@@ -267,8 +267,18 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		TagFamilyDao tagFamilyDao = CommonTx.get().tagFamilyDao();
 		BranchDao branchDao = CommonTx.get().branchDao();
 
+		// Remove the nodes in the project hierarchy
+		HibNode base = project.getBaseNode();
+		nodeDao.delete(base, bac, true, true);
+
 		// Remove the tagfamilies from the index
 		tagFamilyDao.onRootDeleted(project, bac);
+
+		// Remove all nodes in this project
+		for (HibNode node : findNodes(project)) {
+			nodeDao.delete(node, bac, true, false);
+			bac.inc();
+		}
 
 		// Finally also remove the node root
 		nodeDao.onRootDeleted(project, bac);

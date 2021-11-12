@@ -500,14 +500,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default void onRootDeleted(HibProject root, BulkActionContext bac) {
-		// Remove all nodes in this project
+		// Remove all nodes in this project, including root.
 		for (HibNode node : findAll(root)) {
 			delete(node, bac, true, false);
 			bac.inc();
 		}
-
-		// Remove the nodes in the project hierarchy
-		HibNode base = root.getBaseNode();
-		delete(base, bac, true, true);
 	}
 }
