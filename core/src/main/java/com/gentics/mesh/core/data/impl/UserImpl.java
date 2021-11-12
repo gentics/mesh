@@ -296,8 +296,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Override
 	public User setPasswordHash(String hash) {
 		property(PASSWORD_HASH_PROPERTY_KEY, hash);
-		// Password has changed, the user is not forced to change their password anymore.
-		setForcedPasswordChange(false);
 		return this;
 	}
 

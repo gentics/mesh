@@ -66,22 +66,6 @@ public interface GroupDao extends DaoGlobal<HibGroup>, DaoTransformable<HibGroup
 	GroupRoleAssignModel createRoleAssignmentEvent(HibGroup group, HibRole role, Assignment assignment);
 
 	/**
-	 * Add the group to the aggregation vertex.
-	 * 
-	 * @param group
-	 *            HibGroup to be added
-	 */
-	void addGroup(HibGroup group);
-
-	/**
-	 * Remove the group from the aggregation vertex.
-	 * 
-	 * @param group
-	 *            HibGroup to be removed
-	 */
-	void removeGroup(HibGroup group);
-
-	/**
 	 * Assign the given user to this group.
 	 *
 	 * @param group

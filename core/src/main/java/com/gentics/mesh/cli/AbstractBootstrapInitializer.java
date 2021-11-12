@@ -260,7 +260,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 					sb.append("- Password: " + pw + "\n");
 					sb.append("-----------------------\n");
 					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
-					adminUser.setPasswordHash(hash);
+					tx.userDao().updatePasswordHash(adminUser, hash);
 					if (config.isForceInitialAdminPasswordReset()) {
 						sb.append("- Password reset forced on initial login.\n");
 						adminUser.setForcedPasswordChange(true);
@@ -833,7 +833,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 					anonymousUser.setCreationTimestamp();
 					anonymousUser.setEditor(anonymousUser);
 					anonymousUser.setLastEditedTimestamp();
-					anonymousUser.setPasswordHash(null);
+					tx.userDao().updatePasswordHash(anonymousUser, null);
 					log.debug("Created anonymous user {" + anonymousUser.getUuid() + "}");
 				}
 

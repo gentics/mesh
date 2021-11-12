@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
@@ -48,6 +49,9 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * A persisting extension to {@link UserDao}
  * 
@@ -56,10 +60,12 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  */
 public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser> {
 
+	Logger log = LoggerFactory.getLogger(PersistingUserDao.class);
+
 	/**
 	 * Update all shortcut edges.
 	 */
-	void updateShortcutEdges(HibUser user);
+	default void updateShortcutEdges(HibUser user) {}
 
 	/**
 	 * Check the permission on the given element.
@@ -70,8 +76,46 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @return
 	 */
 	default boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
+		if (log.isDebugEnabled()) {
+			log.debug("Checking permissions for element {" + element.getUuid() + "}");
+		}
 		return hasPermissionForId(user, element.getId(), permission);
 	}
+
+	@Override
+	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
+		PermissionCache permissionCache = Tx.get().permissionCache();
+		if (permissionCache.hasPermission(user.getId(), permission, elementId)) {
+			return true;
+		} else {
+			// Admin users have all permissions
+			if (user.isAdmin()) {
+				for (InternalPermission perm : InternalPermission.values()) {
+					permissionCache.store(user.getId(), perm, elementId);
+				}
+				return true;
+			}
+
+			boolean hasPermission = hasPermissionForElementId(user, elementId, permission);
+			if (hasPermission) {
+				// We only store granting permissions in the store in order
+				// reduce the invalidation calls.
+				// This way we do not need to invalidate the cache if a role
+				// is removed from a group or a role is deleted.
+				permissionCache.store(user.getId(), permission, elementId);
+				return true;
+			}
+
+			// Fall back to read and check whether the user has read perm. Read permission also includes read published.
+			if (permission == READ_PUBLISHED_PERM) {
+				return hasPermissionForId(user, elementId, READ_PERM);
+			} else {
+				return false;
+			}
+		}
+	}
+
+	boolean hasPermissionForElementId(HibUser user, Object elementId, InternalPermission permission);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
@@ -462,7 +506,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		user.setUsername(requestModel.getUsername());
 		user.setLastname(requestModel.getLastname());
 		user.setEmailAddress(requestModel.getEmailAddress());
-		user.setPasswordHash(Tx.get().passwordEncoder().encode(requestModel.getPassword()));
+		updatePasswordHash(user, Tx.get().passwordEncoder().encode(requestModel.getPassword()));
 		Boolean forcedPasswordChange = requestModel.getForcedPasswordChange();
 		if (forcedPasswordChange != null) {
 			user.setForcedPasswordChange(forcedPasswordChange);
@@ -532,8 +576,16 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	// blocking
 	@Override
 	default HibUser setPassword(HibUser user, String password) {
-		user.setPasswordHash(Tx.get().passwordEncoder().encode(password));
+		String hashedPassword = Tx.get().passwordEncoder().encode(password);
+		updatePasswordHash(user, hashedPassword);
 		return mergeIntoPersisted(user);
+	}
+
+	@Override
+	default void updatePasswordHash(HibUser user, String passwordHash) {
+		user.setPasswordHash(passwordHash);
+		// Password has changed, the user is not forced to change their password anymore.
+		user.setForcedPasswordChange(false);
 	}
 
 	@Override
@@ -601,7 +653,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 		if (!isEmpty(requestModel.getPassword())) {
 			if (!dry) {
-				user.setPasswordHash(Tx.get().passwordEncoder().encode(requestModel.getPassword()));
+				updatePasswordHash(user, Tx.get().passwordEncoder().encode(requestModel.getPassword()));
 			}
 			modified = true;
 		}
