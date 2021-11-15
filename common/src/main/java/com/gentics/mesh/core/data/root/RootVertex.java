@@ -119,7 +119,22 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default TransformablePage<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, true);
+		return findAllNoPerm(ac, pagingInfo, null);
+	}
+
+	/**
+	 * Find all elements and return a paged result. No permission check will be performed.
+	 * 
+	 * @param ac
+	 *            action context
+	 * @param pagingInfo
+	 *            Paging information object that contains page options
+	 * @param extraFilter
+	 *            Additional filter to be applied
+	 * @return
+	 */
+	default TransformablePage<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter) {
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, extraFilter, true);
 	}
 
 	/**

@@ -1442,7 +1442,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<JobListResponse> findJobs(PagingParameters... parameters) {
+	public MeshRequest<JobListResponse> findJobs(ParameterProvider... parameters) {
 		return prepareRequest(GET, "/admin/jobs" + getQuery(parameters), JobListResponse.class);
 	}
 
