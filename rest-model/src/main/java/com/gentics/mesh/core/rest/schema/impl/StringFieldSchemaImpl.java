@@ -61,11 +61,6 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 			}  else {
 				throw new IllegalStateException("Unsupported allowed value type: " + allowedValues.getClass().getCanonicalName());
 			}
-		} else {
-			// What a restriction removal request comes from the REST API,
-			// it gives null instead of an empty array, so the request 
-			// gets eventually lost. In this case we give the empty array back.
-			setAllowedValues(new String[0]);
 		}
 	}
 
