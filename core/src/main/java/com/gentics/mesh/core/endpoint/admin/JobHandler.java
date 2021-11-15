@@ -9,6 +9,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.function.Predicate;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -29,6 +31,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.JobParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import io.vertx.core.logging.Logger;
@@ -62,7 +65,20 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			JobRoot root = boot.jobRoot();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
-			TransformablePage<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
+			JobParameters jobParameters = ac.getJobParameters();
+			Predicate<Job> filter = null;
+			if (!jobParameters.getStatus().isEmpty() || !jobParameters.getType().isEmpty()) {
+				filter = job -> {
+					if (!jobParameters.getStatus().isEmpty() && !jobParameters.getStatus().contains(job.getStatus())) {
+						return false;
+					}
+					if (!jobParameters.getType().isEmpty() && !jobParameters.getType().contains(job.getType())) {
+						return false;
+					}
+					return true;
+				};
+			}
+			TransformablePage<? extends Job> page = root.findAllNoPerm(ac, pagingInfo, filter);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
