@@ -8,7 +8,6 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
@@ -49,7 +48,7 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 
 		// .name
 		roleType.field(newFieldDefinition().name("name").description("The name of the role").type(GraphQLString).dataFetcher((env) -> {
-			Role role = env.getSource();
+			HibRole role = env.getSource();
 			return role.getName();
 		}));
 

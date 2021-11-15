@@ -20,6 +20,7 @@ public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, Transfo
 	 * @param batch
 	 *            Batch to which entries will be added in order to update the search index.
 	 * @return true if the element was updated. Otherwise false
+	 * @deprecated move to DAO or rename
 	 */
 	boolean update(InternalActionContext ac, EventQueueBatch batch);
 

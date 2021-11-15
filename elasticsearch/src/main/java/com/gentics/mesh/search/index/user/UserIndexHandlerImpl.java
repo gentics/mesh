@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -56,8 +55,8 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	}
 
 	@Override
-	public Class<User> getElementClass() {
-		return User.class;
+	public Class<HibUser> getElementClass() {
+		return HibUser.class;
 	}
 
 	@Override

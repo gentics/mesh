@@ -44,6 +44,6 @@ public class S3BinariesImpl implements S3Binaries {
 
 	@Override
 	public Transactional<Stream<S3HibBinary>> findAll() {
-		return database.transactional(tx -> toStream(database.getVerticesForType(S3BinaryImpl.class)));
+		return database.transactional(tx -> toStream(database.getElementsForType(S3BinaryImpl.class)));
 	}
 }

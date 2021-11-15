@@ -298,7 +298,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		if (meshRoot == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Check reference graph and finally create the node when it can't be found.
-				Iterator<? extends MeshRootImpl> it = db.getVerticesForType(MeshRootImpl.class);
+				Iterator<? extends MeshRootImpl> it = db.getElementsForType(MeshRootImpl.class);
 				if (it.hasNext()) {
 					isInitialSetup = false;
 					meshRoot = it.next();

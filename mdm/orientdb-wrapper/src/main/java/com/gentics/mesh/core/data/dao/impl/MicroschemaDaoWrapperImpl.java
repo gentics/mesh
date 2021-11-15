@@ -136,7 +136,7 @@ public class MicroschemaDaoWrapperImpl
 
 	@Override
 	public Result<HibMicroschemaVersion> findActiveSchemaVersions(HibBranch branch) {
-		return toGraph(branch).findActiveMicroschemaVersions();
+		return new TraversalResult<>(toGraph(branch).findActiveMicroschemaVersions());
 	}
 
 	@Override

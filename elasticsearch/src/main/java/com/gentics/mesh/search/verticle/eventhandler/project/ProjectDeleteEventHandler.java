@@ -9,11 +9,11 @@ import java.util.Collection;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -37,8 +37,8 @@ public class ProjectDeleteEventHandler implements EventHandler {
 			MeshElementEventModelImpl model = requireType(MeshElementEventModelImpl.class, messageEvent.message);
 			String projectUuid = model.getUuid();
 
-			DropIndexRequest dropTagIndex = new DropIndexRequest(Tag.composeIndexName(projectUuid));
-			DropIndexRequest dropTagFamilyIndex = new DropIndexRequest(TagFamily.composeIndexName(projectUuid));
+			DropIndexRequest dropTagIndex = new DropIndexRequest(HibTag.composeIndexName(projectUuid));
+			DropIndexRequest dropTagFamilyIndex = new DropIndexRequest(HibTagFamily.composeIndexName(projectUuid));
 
 			return Flowable.fromArray(
 				new DropIndexRequest(ContentDao.composeIndexPattern(projectUuid)),

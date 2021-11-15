@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.db;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -234,6 +235,14 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	String getElementVersion(HibElement element);
+
+	/**
+	 * Locate all vertices for the given type.
+	 * 
+	 * @param classOfVertex
+	 * @return
+	 */
+	<T extends HibBaseElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex);
 
 	/**
 	 * Asynchronously execute the given handler within a transaction and return the completable.

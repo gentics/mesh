@@ -40,8 +40,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
@@ -365,11 +363,11 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasDelete(TagFamily.composeIndexName(projectUuid()),
-				TagFamily.composeDocumentId(tagFamilyUuid));
+		assertThat(trackingSearchProvider()).hasDelete(HibTagFamily.composeIndexName(projectUuid()),
+				HibTagFamily.composeDocumentId(tagFamilyUuid));
 		for (String tagUuid : tagUuids) {
-			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid()),
-					Tag.composeDocumentId(tagUuid));
+			assertThat(trackingSearchProvider()).hasDelete(HibTag.composeIndexName(projectUuid()),
+					HibTag.composeDocumentId(tagUuid));
 		}
 
 		// The TagFamily and the tags must be deleted

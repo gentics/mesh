@@ -54,7 +54,6 @@ import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -118,7 +117,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
-		assertThat(trackingSearchProvider()).hasStore(Schema.composeIndexName(), Schema.composeDocumentId(restSchema.getUuid()));
+		assertThat(trackingSearchProvider()).hasStore(HibSchema.composeIndexName(), HibSchema.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			assertThat(createRequest).matches(restSchema);

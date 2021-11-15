@@ -10,7 +10,6 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -158,8 +157,7 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
-		Branch graphBranch = toGraph(branch);
-		return graphBranch.findActiveSchemaVersions();
+		return new TraversalResult<>(toGraph(branch).findActiveSchemaVersions());
 	}
 
 	@Override

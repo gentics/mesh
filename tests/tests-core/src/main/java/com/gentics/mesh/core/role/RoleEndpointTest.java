@@ -33,7 +33,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -76,7 +75,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
+		assertThat(trackingSearchProvider()).hasStore(HibRole.composeIndexName(), restRole.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
@@ -462,7 +461,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);
+		assertThat(trackingSearchProvider()).hasDelete(HibRole.composeIndexName(), extraRoleUuid);
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {

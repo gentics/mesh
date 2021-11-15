@@ -165,7 +165,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// Check for uniqueness of branch name (per project)
-		Branch conflictingBranch = db().index().checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
+		Branch conflictingBranch = db().index().checkIndexUniqueness(Branch.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
 			.getName()));
 		if (conflictingBranch != null) {
 			throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", request.getName());

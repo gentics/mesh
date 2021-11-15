@@ -10,7 +10,6 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -310,16 +309,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
-	 * Load a stream of nodes with the given perms in the project.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param perm
-	 * @return
-	 */
-	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm);
-
-	/**
 	 * Return the count of nodes for the project.
 	 * 
 	 * @param project
@@ -364,4 +353,13 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 */
 	void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
+	
+	/**
+	 * Find all the existing nodes.<br>
+	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
+	 * Use {@link NodeDao#findAll(HibProject)} with the valid project binding instead.
+	 * 
+	 * @return
+	 */
+	Stream<? extends HibNode> findAllGlobal();
 }

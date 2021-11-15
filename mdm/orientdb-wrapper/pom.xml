@@ -20,5 +20,14 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-mdm-orientdb-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>mesh-orientdb</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>

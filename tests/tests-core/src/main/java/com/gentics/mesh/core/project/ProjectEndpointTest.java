@@ -47,15 +47,14 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -566,7 +565,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			expectedCount += tx.tagDao().count();
 			expectedCount += tx.tagFamilyDao().computeCount(project);
 
-			assertThat(trackingSearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
+			assertThat(trackingSearchProvider()).hasStore(HibProject.composeIndexName(), HibProject.composeDocumentId(uuid));
 			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);
 
 			HibProject reloadedProject = tx.projectDao().findByUuid(uuid);
@@ -636,8 +635,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// }
 			// }
 
-			droppedIndices.add(TagFamily.composeIndexName(projectUuid()));
-			droppedIndices.add(Tag.composeIndexName(projectUuid()));
+			droppedIndices.add(HibTagFamily.composeIndexName(projectUuid()));
+			droppedIndices.add(HibTag.composeIndexName(projectUuid()));
 
 			// 1. Determine a list all project indices which must be dropped
 			droppedIndices.add(ContentDao.composeIndexPattern(uuid));
@@ -676,9 +675,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// assertThat(trackingSearchProvider()).hasDelete(entry.v1(), entry.v2());
 		// }
 
-		assertThat(trackingSearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
-		assertThat(trackingSearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
-		assertThat(trackingSearchProvider()).hasDrop(Tag.composeIndexName(uuid));
+		assertThat(trackingSearchProvider()).hasDelete(HibProject.composeIndexName(), HibProject.composeDocumentId(uuid));
+		assertThat(trackingSearchProvider()).hasDrop(HibTagFamily.composeIndexName(uuid));
+		assertThat(trackingSearchProvider()).hasDrop(HibTag.composeIndexName(uuid));
 		for (String index : droppedIndices) {
 			assertThat(trackingSearchProvider()).hasDrop(index);
 		}

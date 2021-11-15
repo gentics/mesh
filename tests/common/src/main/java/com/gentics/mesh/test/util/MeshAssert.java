@@ -11,8 +11,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
-import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.dao.RootDao;
+import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -25,8 +27,8 @@ public final class MeshAssert {
 
 	private static final Integer DEV_TIMEOUT_SECONDS = 10000;
 
-	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws Exception {
-		Object element = root.findByUuid(uuid);
+	public static <R extends HibCoreElement<? extends RestModel>> void assertElement(RootDao<R,?> rootDao, R root, String uuid, boolean exists) throws Exception {
+		Object element = rootDao.findByUuid(root, uuid);
 		if (exists) {
 			assertNotNull("The element should exist.", element);
 		} else {

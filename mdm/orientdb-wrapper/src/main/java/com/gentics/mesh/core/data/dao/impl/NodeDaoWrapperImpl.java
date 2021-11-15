@@ -305,4 +305,9 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	protected RootVertex<Node> getRoot(HibProject root) {
 		return toGraph(root).getNodeRoot();
 	}
+
+	@Override
+	public Stream<? extends HibNode> findAllGlobal() {
+		return boot.get().meshRoot().findAllNodes().stream();
+	}
 }

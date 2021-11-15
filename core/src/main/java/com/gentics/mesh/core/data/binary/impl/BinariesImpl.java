@@ -45,6 +45,6 @@ public class BinariesImpl implements Binaries {
 
 	@Override
 	public Transactional<Stream<HibBinary>> findAll() {
-		return database.transactional(tx -> toStream(database.getVerticesForType(BinaryImpl.class)));
+		return database.transactional(tx -> toStream(database.getElementsForType(BinaryImpl.class)));
 	}
 }

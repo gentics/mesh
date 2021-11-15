@@ -1,13 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
-
-import java.util.Objects;
-
-import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -22,38 +14,6 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
  */
 public interface Tag
 	extends MeshCoreVertex<TagResponse>, ReferenceableElement<TagReference>, UserTrackingVertex, ProjectElement, HibTag, GraphDBBucketableElement {
-
-	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAG, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
-
-	/**
-	 * Compose the index name for tags. Use the projectUuid in order to create a project specific index.
-	 * 
-	 * @param projectUuid
-	 * @return
-	 */
-	static String composeIndexName(String projectUuid) {
-		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
-		StringBuilder indexName = new StringBuilder();
-		indexName.append("tag");
-		indexName.append("-").append(projectUuid);
-		return indexName.toString();
-	}
-
-	/**
-	 * Return the composed search index document if for the element.
-	 * 
-	 * @param elementUuid
-	 * @return
-	 */
-	static String composeDocumentId(String elementUuid) {
-		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
-		return elementUuid;
-	}
-
-	@Override
-	default TypeInfo getTypeInfo() {
-		return TYPE_INFO;
-	}
 
 	/**
 	 * Return the tag family to which the tag belongs.

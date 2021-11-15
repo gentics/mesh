@@ -111,7 +111,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 
 		// assign the latest microschema version to all branches of the project
 		for (HibBranch branch : branchDao.findAll(project)) {
-			branch.assignMicroschemaVersion(user, microschemaContainer.getLatestVersion(), batch);
+			branchDao.assignMicroschemaVersion(branch, user, microschemaContainer.getLatestVersion(), batch);
 		}
 	}
 

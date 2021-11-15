@@ -307,7 +307,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 
 		// assign the latest schema version to all branches of the project
 		for (HibBranch branch : branchDao.findAll(project)) {
-			branch.assignSchemaVersion(user, schemaContainer.getLatestVersion(), batch);
+			branchDao.assignSchemaVersion(branch, user, schemaContainer.getLatestVersion(), batch);
 		}
 	}
 

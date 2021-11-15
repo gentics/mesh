@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.node;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
@@ -7,8 +10,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -41,6 +46,13 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
 public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTracking, HibBucketableElement, HibTransformableElement<NodeResponse> {
+
+	static final TypeInfo TYPE_INFO = new TypeInfo(ElementType.NODE, NODE_CREATED, NODE_UPDATED, NODE_DELETED);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Return the element version string.

@@ -12,20 +12,19 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.github.fge.jsonschema.SchemaVersion;
 
 import dagger.Lazy;
 import graphql.schema.GraphQLArgument;
@@ -148,8 +147,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			Object source = env.getSource();
 			if (source instanceof NodeContent) {
 				element = ((NodeContent) source).getNode();
-			} else if (source instanceof SchemaVersion) {
-				element = ((SchemaVersion) source).getSchemaContainer();
+			} else if (source instanceof HibSchemaVersion) {
+				element = ((HibSchemaVersion) source).getSchemaContainer();
 			} else {
 				element = env.getSource();
 			}
@@ -159,7 +158,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		// .etag
 		setField.accept(newFieldDefinition().name("etag").description("ETag of the element").type(GraphQLString).dataFetcher(env -> {
 			GraphQLContext gc = env.getContext();
-			TransformableElement<?> element = env.getSource();
+			HibTransformableElement<?> element = env.getSource();
 			return element.getETag(gc);
 		}));
 
@@ -170,7 +169,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				HibCoreElement<?> element = getMeshCoreElement(env.getSource());
 
-				UserDaoWrapper userDao = (UserDaoWrapper) Tx.get().userDao();
+				UserDao userDao = Tx.get().userDao();
 				return userDao.getPermissionInfo(gc.getUser(), element);
 			})
 		);
@@ -229,7 +228,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			setField.accept(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString).dataFetcher(env -> {
 				Object source = env.getSource();
 				if (source instanceof HibSchemaVersion) {
-					source = ((SchemaVersion) source).getSchemaContainer();
+					source = ((HibSchemaVersion) source).getSchemaContainer();
 				}
 				if (source instanceof HibEditorTracking) {
 					HibEditorTracking vertex = (HibEditorTracking) source;
@@ -242,12 +241,12 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			setField.accept(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User"))
 					.dataFetcher(env -> {
 						Object source = env.getSource();
-						if (source instanceof SchemaVersion) {
-							source = ((SchemaVersion) source).getSchemaContainer();
+						if (source instanceof HibSchemaVersion) {
+							source = ((HibSchemaVersion) source).getSchemaContainer();
 						}
-						if (source instanceof EditorTrackingVertex) {
+						if (source instanceof HibEditorTracking) {
 							GraphQLContext gc = env.getContext();
-							EditorTrackingVertex vertex = (EditorTrackingVertex) source;
+							HibEditorTracking vertex = (HibEditorTracking) source;
 							return gc.requiresPerm(vertex.getEditor(), READ_PERM);
 						}
 						return null;
@@ -258,8 +257,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	private HibCoreElement<?> getMeshCoreElement(Object source) {
 		if (source instanceof NodeContent) {
 			return ((NodeContent) source).getNode();
-		} else if (source instanceof SchemaVersion) {
-			return ((SchemaVersion) source).getSchemaContainer();
+		} else if (source instanceof HibSchemaVersion) {
+			return ((HibSchemaVersion) source).getSchemaContainer();
 		} else {
 			return (HibCoreElement<?>) source;
 		}

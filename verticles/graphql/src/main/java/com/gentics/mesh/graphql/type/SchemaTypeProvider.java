@@ -11,16 +11,15 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.xml.validation.Schema;
 
+import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -29,6 +28,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.json.JsonUtil;
+import com.github.fge.jsonschema.SchemaVersion;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -63,8 +63,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newFieldDefinition().name("name").type(GraphQLString).dataFetcher((env) -> {
 			Object source = env.getSource();
-			if (source instanceof NamedElement) {
-				return ((NamedElement) source).getName();
+			if (source instanceof HibNamedElement) {
+				return ((HibNamedElement) source).getName();
 			}
 			return null;
 		}));
