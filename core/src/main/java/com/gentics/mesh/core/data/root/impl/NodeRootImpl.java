@@ -265,7 +265,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		}
 
 		if (requestModel.getTags() != null) {
-			node.updateTags(ac, batch, requestModel.getTags());
+			((Node) node).updateTags(ac, batch, requestModel.getTags());
 		}
 
 		return toGraph(node);

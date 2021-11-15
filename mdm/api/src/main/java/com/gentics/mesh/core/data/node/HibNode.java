@@ -1,46 +1,48 @@
 package com.gentics.mesh.core.data.node;
 
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.*;
+import static com.gentics.mesh.core.rest.common.ContainerType.*;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
 
-import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
-import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.PublishStatusModel;
-import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
-import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.Assignment;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionUtils;
-import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.path.Path;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.VersioningParameters;
 
 public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTracking, HibBucketableElement, HibTransformableElement<NodeResponse> {
+
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.NODE, NODE_CREATED, NODE_UPDATED, NODE_DELETED);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Return the element version string.
@@ -55,11 +57,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	 * @return
 	 */
 	HibProject getProject();
-
-	/**
-	 * Remove the element.
-	 */
-	void removeElement();
 
 	/**
 	 * Maximum depth for transformations: {@value #MAX_TRANSFORMATION_LEVEL}
@@ -98,44 +95,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	Result<HibTag> getTags(HibBranch branch);
 
 	/**
-	 * Return a page of all visible tags that are assigned to the node.
-	 *
-	 * @param user
-	 * @param params
-	 * @param branch
-	 * @return Page which contains the result
-	 */
-	Page<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch);
-
-	/**
-	 * Tests if the node is tagged with the given tag.
-	 *
-	 * @param tag
-	 * @param branch
-	 * @return
-	 */
-	boolean hasTag(HibTag tag, HibBranch branch);
-
-	/**
-	 * Return the draft field container for the given language in the latest branch.
-	 *
-	 * @param languageTag
-	 * @return
-	 */
-	HibNodeFieldContainer getLatestDraftFieldContainer(String languageTag);
-
-	/**
-	 * Return the field container for the given language, type and branch.
-	 *
-	 * @param languageTag
-	 * @param branch
-	 * @param type
-	 *            type
-	 * @return
-	 */
-	HibNodeFieldContainer getFieldContainer(String languageTag, HibBranch branch, ContainerType type);
-
-	/**
 	 * Return the draft field container for the given language in the latest branch.
 	 *
 	 * @param languageTag
@@ -168,22 +127,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser user);
 
 	/**
-	 * Like {@link #createFieldContainer(String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not null).
-	 *
-	 * @param languageTag
-	 * @param branch
-	 * @param editor
-	 *            User which will be set as editor
-	 * @param original
-	 *            Container to be used as a source for the new container
-	 * @param handleDraftEdge
-	 *            Whether to move the existing draft edge or create a new draft edge to the new container
-	 * @return Created container
-	 */
-	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
-		boolean handleDraftEdge);
-
-	/**
 	 * Return the draft field containers of the node in the latest branch.
 	 *
 	 * @return
@@ -214,21 +157,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	Result<HibNodeFieldContainer> getFieldContainers(String branchUuid, ContainerType type);
 
 	/**
-	 * Return containers of the given type
-	 *
-	 * @param type
-	 * @return
-	 */
-	Result<HibNodeFieldContainer> getFieldContainers(ContainerType type);
-
-	/**
-	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
-	 *
-	 * @return
-	 */
-	long getFieldContainerCount();
-
-	/**
 	 * Return a list of language names for draft versions in the latest branch
 	 *
 	 * @return
@@ -241,21 +169,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	 * @param project
 	 */
 	void setProject(HibProject project);
-
-	/**
-	 * Return the children for this node for all branches.
-	 *
-	 * @return
-	 */
-	Result<HibNode> getChildren();
-
-	/**
-	 * Return the children for this node in the given branch.
-	 *
-	 * @param branchUuid
-	 * @return
-	 */
-	Result<HibNode> getChildren(String branchUuid);
 
 	/**
 	 * Returns the parent node of this node.
@@ -275,64 +188,31 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	void setParentNode(String branchUuid, HibNode parentNode);
 
 	/**
-	 * Create a child node in this node in the latest branch of the project.
-	 *
-	 * @param creator
-	 * @param schemaVersion
-	 * @param project
-	 * @return
-	 */
-	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project);
-
-	/**
-	 * Create a child node in this node in the given branch
-	 *
-	 * @param creator
-	 * @param schemaVersion
-	 * @param project
-	 * @param branch
-	 * @return
-	 */
-	default HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch) {
-		return create(creator, schemaVersion, project, branch, null);
-	}
-
-	/**
-	 * Create a child node in this node in the given branch
-	 *
-	 * @param creator
-	 * @param schemaVersion
-	 * @param project
-	 * @param branch
-	 * @param uuid
-	 * @return
-	 */
-	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
-
-	/**
-	 * Return a page with child nodes that are visible to the given user.
-	 *
-	 * @param ac
-	 *            Context of the operation
-	 * @param languageTags
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param pagingParameter
-	 * @return
-	 */
-	Page<HibNode> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
-		PagingParameters pagingParameter);
-
-	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
 	 * node's schema. It may be possible that no display name can be returned since new nodes may not have any values.
 	 *
 	 * @param ac
 	 * @return
 	 */
-	String getDisplayName(InternalActionContext ac);
+	default String getDisplayName(InternalActionContext ac) {
+			NodeParameters nodeParameters = ac.getNodeParameters();
+			VersioningParameters versioningParameters = ac.getVersioningParameters();
+
+			HibNodeFieldContainer container = findVersion(nodeParameters.getLanguageList(Tx.get().data().options()), Tx.get().getBranch(ac, getProject()).getUuid(),
+					versioningParameters
+							.getVersion());
+			if (container == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
+				}
+				return null;
+			} else {
+				// Determine the display field name and load the string value
+				// from that field.
+				return container.getDisplayFieldValue();
+			}
+
+	}
 
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
@@ -383,88 +263,28 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	}
 
 	/**
-	 * Move this node into the target node.
-	 *
-	 * @param ac
-	 * @param targetNode
-	 * @param batch
-	 */
-	void moveTo(InternalActionContext ac, HibNode targetNode, EventQueueBatch batch);
-
-	/**
 	 * Transform the node into a node reference rest model.
 	 *
 	 * @param ac
 	 */
-	NodeReference transformToReference(InternalActionContext ac);
+	default NodeReference transformToReference(InternalActionContext ac) {
+		Tx tx = Tx.get();
+		HibBranch branch = tx.getBranch(ac, getProject());
 
-	/**
-	 * Transform the node into a navigation response rest model.
-	 *
-	 * @param ac
-	 * @return
-	 */
-	NavigationResponse transformToNavigation(InternalActionContext ac);
-
-	/**
-	 * Transform the node into a publish status response rest model.
-	 *
-	 * @param ac
-	 * @return
-	 */
-	PublishStatusResponse transformToPublishStatus(InternalActionContext ac);
-
-	/**
-	 * Publish the node (all languages)
-	 *
-	 * @param ac
-	 * @param bac
-	 * @return
-	 */
-	void publish(InternalActionContext ac, BulkActionContext bac);
-
-	/**
-	 * Take the node offline (all languages)
-	 *
-	 * @param ac
-	 * @param bac
-	 * @return
-	 */
-	void takeOffline(InternalActionContext ac, BulkActionContext bac);
-
-	/**
-	 * Transform the node language into a publish status response rest model.
-	 *
-	 * @param ac
-	 * @param languageTag
-	 * @return
-	 */
-	PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag);
-
-	/**
-	 * Create a new published version of the given language in the branch.
-	 *
-	 * @param ac
-	 *            Action Context
-	 * @param languageTag
-	 *            language
-	 * @param branch
-	 *            branch
-	 * @param user
-	 *            user
-	 * @return published field container
-	 */
-	HibNodeFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
-
-	/**
-	 * Publish a language of the node
-	 *
-	 * @param ac
-	 * @param bac
-	 * @param languageTag
-	 * @return
-	 */
-	void publish(InternalActionContext ac, BulkActionContext bac, String languageTag);
+		NodeReference nodeReference = new NodeReference();
+		nodeReference.setUuid(getUuid());
+		nodeReference.setDisplayName(getDisplayName(ac));
+		nodeReference.setSchema(getSchemaContainer().transformToReference());
+		nodeReference.setProjectName(getProject().getName());
+		if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+			WebRootLinkReplacer linkReplacer = tx.data().webRootLinkReplacer();
+			ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
+			String url = linkReplacer.resolve(ac, branch.getUuid(), type, this, ac.getNodeParameters().getResolveLinks(), ac.getNodeParameters()
+					.getLanguages());
+			nodeReference.setPath(url);
+		}
+		return nodeReference;
+	}
 
 	/**
 	 * Set the graph field container to be the (only) published for the given branch.
@@ -474,106 +294,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	 * @param branchUuid
 	 */
 	void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
-
-	/**
-	 * Take a language of the node offline.
-	 *
-	 * @param ac
-	 * @param bac
-	 * @param branch
-	 * @param languageTag
-	 */
-	void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
-
-	/**
-	 * Delete the language container for the given language from the branch. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
-	 * and branch, and will then delete all "dangling" GFC (GFCs, which are not used by another branch).
-	 *
-	 * @param ac
-	 * @param branch
-	 * @param languageTag
-	 *            Language which will be used to find the field container which should be deleted
-	 * @param bac
-	 * @param failForLastContainer
-	 *            Whether to execute the last container check and fail or not.
-	 */
-	void deleteLanguageContainer(InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer);
-
-	/**
-	 * Resolve the given path and return the path object that contains the resolved nodes.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 *            edge type
-	 * @param nodePath
-	 * @param pathStack
-	 * @return
-	 */
-	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
-
-	/**
-	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
-	 * node.
-	 *
-	 * @param ac
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param languageTag
-	 *
-	 * @return
-	 */
-	String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
-
-	/**
-	 * Return the path segment value of this node preferable in the given language.
-	 *
-	 * If more than one language is given, the path will lead to the first available language
-	 * of the node.
-	 *
-	 * When no language matches and <code>anyLanguage</code> is <code>true</code> the results language
-	 * is nondeterministic.
-	 *
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param anyLanguage
-	 *            whether to return the path segment value of this node in any language, when none in <code>langaugeTag</code> match
-	 * @param languageTag
-	 *
-	 * @return
-	 */
-	String getPathSegment(String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag);
-
-	/**
-	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
-	 * of the node.
-	 *
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param languageTag
-	 *
-	 * @return
-	 */
-	default String getPathSegment(String branchUuid, ContainerType type, String... languageTag) {
-		return getPathSegment(branchUuid, type, false, languageTag);
-	}
-
-	/**
-	 * Delete the node from the given branch. This will also delete children from the branch.
-	 *
-	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
-	 *
-	 * @param ac
-	 * @param branch
-	 * @param bac
-	 * @param ignoreChecks
-	 */
-	void deleteFromBranch(InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
 
 	/**
 	 * Return the schema container for the node.
@@ -590,67 +310,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	void setSchemaContainer(HibSchema container);
 
 	/**
-	 * Delete the node. Please use {@link #deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to delete the node just from a specific branch.
-	 *
-	 * @param bac
-	 * @param ignoreChecks
-	 * @param recursive
-	 */
-	void delete(BulkActionContext bac, boolean ignoreChecks, boolean recursive);
-
-	/**
-	 * Handle the update tags request.
-	 *
-	 * @param ac
-	 * @param batch
-	 * @return Page which includes the new set of tags
-	 *
-	 */
-	// TODO Remove this method
-	Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Update the tags of the node using the provides list of tag references.
-	 *
-	 * @param ac
-	 * @param batch
-	 * @param list
-	 * @return
-	 */
-	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
-
-	/**
-	 * Return the breadcrumb nodes.
-	 *
-	 * @param ac
-	 * @return Deque with breadcrumb nodes
-	 */
-	Result<HibNode> getBreadcrumbNodes(InternalActionContext ac);
-
-	/**
-	 * Create the node specific delete event.
-	 *
-	 * @param uuid
-	 * @param schema
-	 * @param branchUuid
-	 * @param type
-	 * @param languageTag
-	 * @return Created event
-	 */
-	NodeMeshEventModel onDeleted(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag);
-
-	/**
-	 * Create a node tagged / untagged event.
-	 *
-	 * @param tag
-	 * @param branch
-	 * @param assignment
-	 *            Type of the assignment
-	 * @return
-	 */
-	NodeTaggedEventModel onTagged(HibTag tag, HibBranch branch, Assignment assignment);
-
-	/**
 	 * Check whether the node is the base node of its project
 	 *
 	 * @return true for base node
@@ -658,28 +317,150 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	boolean isBaseNode();
 
 	/**
-	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
-	 *
-	 * @param branchUuid
-	 *            branch uuid
-	 * @return true if the node is visible in the branch
-	 */
-	boolean isVisibleInBranch(String branchUuid);
-
-	/**
 	 * Transform the node information to a minimal reference which does not include language or type information.
 	 *
 	 * @return
 	 */
-	NodeReference transformToMinimalReference();
+	default NodeReference transformToMinimalReference() {
+		NodeReference ref = new NodeReference();
+		ref.setUuid(getUuid());
+		ref.setSchema(getSchemaContainer().transformToReference());
+		return ref;
+	}
 
-	/**
-	 * Transform the node information to a version list response.
-	 *
-	 * @param ac
-	 * @return Versions response
-	 */
-	NodeVersionsResponse transformToVersionList(InternalActionContext ac);
+	default String getSubETag(InternalActionContext ac) {
+		Tx tx = Tx.get();
+		UserDao userDao = tx.userDao();
+		TagDao tagDao = tx.tagDao();
+		NodeDao nodeDao = tx.nodeDao();
+
+		StringBuilder keyBuilder = new StringBuilder();
+
+		// Parameters
+		HibBranch branch = tx.getBranch(ac, getProject());
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		ContainerType type = forVersion(versioiningParameters.getVersion());
+
+		HibNode parentNode = getParentNode(branch.getUuid());
+		HibNodeFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(tx.data().options()), branch.getUuid(),
+				ac.getVersioningParameters()
+						.getVersion());
+
+		/**
+		 * branch uuid
+		 */
+		keyBuilder.append(branch.getUuid());
+		keyBuilder.append("-");
+
+		// TODO version, language list
+
+		// We can omit further etag keys since this would return a 404 anyhow
+		// since the requested container could not be found.
+		if (container == null) {
+			keyBuilder.append("404-no-container");
+			return keyBuilder.toString();
+		}
+
+		/**
+		 * Parent node
+		 *
+		 * The node can be moved and this would also affect the response. The etag must also be changed when the node is moved.
+		 */
+		if (parentNode != null) {
+			keyBuilder.append("-");
+			keyBuilder.append(parentNode.getUuid());
+		}
+
+		// fields version
+		if (container != null) {
+			keyBuilder.append("-");
+			keyBuilder.append(container.getETag(ac));
+		}
+
+		/**
+		 * Expansion (all)
+		 *
+		 * The expandAll parameter changes the json response and thus must be included in the etag computation.
+		 */
+		if (ac.getNodeParameters().getExpandAll()) {
+			keyBuilder.append("-");
+			keyBuilder.append("expand:true");
+		}
+
+		// expansion (selective)
+		String expandedFields = Arrays.toString(ac.getNodeParameters().getExpandedFieldNames());
+		keyBuilder.append("-");
+		keyBuilder.append("expandFields:");
+		keyBuilder.append(expandedFields);
+
+		// branch specific tags
+		for (HibTag tag : getTags(branch)) {
+			// Tags can't be moved across branches thus we don't need to add the
+			// tag family etag
+			keyBuilder.append(tagDao.getETag(tag, ac));
+		}
+
+		// branch specific children
+		for (HibNode child : tx.nodeDao().getChildren(this, branch.getUuid())) {
+			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
+				keyBuilder.append("-");
+				keyBuilder.append(child.getSchemaContainer().getName());
+			}
+		}
+
+		// Publish state & availableLanguages
+		for (HibNodeFieldContainer c : getFieldContainers(branch, PUBLISHED)) {
+			keyBuilder.append(c.getLanguageTag() + "published");
+		}
+		for (HibNodeFieldContainer c : getFieldContainers(branch, DRAFT)) {
+			keyBuilder.append(c.getLanguageTag() + "draft");
+		}
+
+		// breadcrumb
+		keyBuilder.append("-");
+		HibNode current = getParentNode(branch.getUuid());
+		if (current != null) {
+			while (current != null) {
+				String key = current.getUuid() + getDisplayName(ac);
+				keyBuilder.append(key);
+				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+					WebRootLinkReplacer linkReplacer = tx.data().webRootLinkReplacer();
+					String url = linkReplacer.resolve(ac, branch.getUuid(), type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+							getProject().getName(), container.getLanguageTag());
+					keyBuilder.append(url);
+				}
+				current = nodeDao.getParentNode(current, branch.getUuid());
+
+			}
+		}
+
+		/**
+		 * webroot path & language paths
+		 *
+		 * The webroot and language paths must be included in the etag computation in order to invalidate the etag once a node language gets updated or once the
+		 * display name of any parent node changes.
+		 */
+		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+
+			WebRootLinkReplacer linkReplacer = tx.data().webRootLinkReplacer();
+			String path = linkReplacer.resolve(ac, branch.getUuid(), type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject()
+					.getName(), container.getLanguageTag());
+			keyBuilder.append(path);
+
+			// languagePaths
+			for (HibNodeFieldContainer currentFieldContainer : getFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
+				String currLanguage = currentFieldContainer.getLanguageTag();
+				keyBuilder.append(currLanguage + "=" + linkReplacer.resolve(ac, branch.getUuid(), type, this, ac.getNodeParameters()
+						.getResolveLinks(), currLanguage));
+			}
+
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
+		}
+		return keyBuilder.toString();
+	}
 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {

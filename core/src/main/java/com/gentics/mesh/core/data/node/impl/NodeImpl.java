@@ -15,7 +15,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
@@ -39,7 +38,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -67,7 +65,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
@@ -80,7 +77,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
@@ -97,31 +93,20 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
-import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
-import com.gentics.mesh.core.rest.navigation.NavigationElement;
-import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.PublishStatusModel;
-import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
-import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
@@ -131,17 +116,13 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
-import com.gentics.mesh.parameter.VersioningParameters;
-import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
-import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
@@ -335,7 +316,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.orElse(null);
 	}
 
-	private void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
+	@Override
+	public void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
 
 		String branchUuid = branch.getUuid();
 		// Check whether the node got a published version and thus is published
@@ -621,7 +603,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
-		return create(creator, schemaVersion, project, project.getLatestBranch());
+		return create(creator, schemaVersion, project, project.getLatestBranch(), null);
 	}
 
 	/**
@@ -642,176 +624,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return node;
 	}
 
-	@Override
-	public Result<HibNode> getBreadcrumbNodes(InternalActionContext ac) {
-		return new TraversalResult<>(() -> Tx.get().nodeDao().getBreadcrumbNodeStream(this, ac).iterator());
-	}
-
-	@Override
-	public NavigationResponse transformToNavigation(InternalActionContext ac) {
-		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
-		if (parameters.getMaxDepth() < 0) {
-			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
-		}
-		Tx tx = GraphDBTx.getGraphTx();
-		// TODO assure that the schema version is correct
-		if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-			throw error(BAD_REQUEST, "navigation_error_no_container");
-		}
-		String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, tx.getBranch(ac, getProject()).getUuid(), forVersion(ac
-			.getVersioningParameters().getVersion()));
-		String etag = ETag.hash(etagKey);
-		ac.setEtag(etag, true);
-		if (ac.matches(etag, true)) {
-			throw new NotModifiedException();
-		} else {
-			NavigationResponse response = new NavigationResponse();
-			return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, tx.getBranch(ac, getProject()).getUuid(),
-				forVersion(ac.getVersioningParameters().getVersion()));
-		}
-	}
-
-	@Override
-	public NodeVersionsResponse transformToVersionList(InternalActionContext ac) {
-		NodeVersionsResponse response = new NodeVersionsResponse();
-		Map<String, List<VersionInfo>> versions = new HashMap<>();
-		getFieldContainers(GraphDBTx.getGraphTx().getBranch(ac), DRAFT).forEach(c -> {
-			versions.put(c.getLanguageTag(), c.versions().stream()
-				.map(v -> v.transformToVersionInfo(ac))
-				.collect(Collectors.toList()));
-		});
-
-		response.setVersions(versions);
-		return response;
-	}
-
-	/**
-	 * Generate the etag key for the requested navigation.
-	 *
-	 * @param ac
-	 * @param node
-	 *            Current node to start building the navigation
-	 * @param maxDepth
-	 *            Maximum depth of navigation
-	 * @param level
-	 *            Current level of recursion
-	 * @param branchUuid
-	 *            Branch uuid used to extract selected tree structure
-	 * @param type
-	 * @return
-	 */
-	private String buildNavigationEtagKey(InternalActionContext ac, NodeImpl node, int maxDepth, int level, String branchUuid, ContainerType type) {
-		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
-		StringBuilder builder = new StringBuilder();
-		builder.append(node.getETag(ac));
-
-		List<HibNode> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
-
-		// Abort recursion when we reach the max level or when no more children
-		// can be found.
-		if (level == maxDepth || nodes.isEmpty()) {
-			return builder.toString();
-		}
-		for (HibNode child : nodes) {
-			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-				builder.append(buildNavigationEtagKey(ac, (NodeImpl) child, maxDepth, level + 1, branchUuid, type));
-			} else if (parameters.isIncludeAll()) {
-				builder.append(buildNavigationEtagKey(ac, (NodeImpl) child, maxDepth, level, branchUuid, type));
-			}
-		}
-		return builder.toString();
-	}
-
-	/**
-	 * Recursively build the navigation response.
-	 *
-	 * @param ac
-	 *            Action context
-	 * @param node
-	 *            Current node that should be handled in combination with the given navigation element
-	 * @param maxDepth
-	 *            Maximum depth for the navigation
-	 * @param level
-	 *            Zero based level of the current navigation element
-	 * @param navigation
-	 *            Current navigation response
-	 * @param currentElement
-	 *            Current navigation element for the given level
-	 * @param branchUuid
-	 *            Branch uuid to be used for loading children of nodes
-	 * @param type
-	 *            container type to be used for transformation
-	 * @return
-	 */
-	private NavigationResponse buildNavigationResponse(InternalActionContext ac, NodeImpl node, int maxDepth, int level,
-		NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
-		List<HibNode> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
-		List<NavigationResponse> responses = new ArrayList<>();
-
-		NodeResponse response = Tx.get().nodeDao().transformToRestSync(node, ac, 0);
-		currentElement.setUuid(response.getUuid());
-		currentElement.setNode(response);
-		responses.add(navigation);
-
-		// Abort recursion when we reach the max level or when no more children
-		// can be found.
-		if (level == maxDepth || nodes.isEmpty()) {
-			return responses.get(responses.size() - 1);
-		}
-		NavigationParameters parameters = new NavigationParametersImpl(ac);
-		// Add children
-		for (HibNode child : nodes) {
-			// TODO assure that the schema version is correct?
-			// TODO also allow navigations over containers
-			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-				NavigationElement childElement = new NavigationElement();
-				// We found at least one child so lets create the array
-				if (currentElement.getChildren() == null) {
-					currentElement.setChildren(new ArrayList<>());
-				}
-				currentElement.getChildren().add(childElement);
-				responses.add(buildNavigationResponse(ac, (NodeImpl) child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
-			} else if (parameters.isIncludeAll()) {
-				// We found at least one child so lets create the array
-				if (currentElement.getChildren() == null) {
-					currentElement.setChildren(new ArrayList<>());
-				}
-				NavigationElement childElement = new NavigationElement();
-				currentElement.getChildren().add(childElement);
-				responses.add(buildNavigationResponse(ac, (NodeImpl) child, maxDepth, level, navigation, childElement, branchUuid, type));
-			}
-		}
-		return responses.get(responses.size() - 1);
-	}
-
-	@Override
-	public NodeReference transformToReference(InternalActionContext ac) {
-		Tx tx = GraphDBTx.getGraphTx();
-		HibBranch branch = tx.getBranch(ac, getProject());
-
-		NodeReference nodeReference = new NodeReference();
-		nodeReference.setUuid(getUuid());
-		nodeReference.setDisplayName(getDisplayName(ac));
-		nodeReference.setSchema(getSchemaContainer().transformToReference());
-		nodeReference.setProjectName(getProject().getName());
-		if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-			WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-			ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
-			String url = linkReplacer.resolve(ac, branch.getUuid(), type, this, ac.getNodeParameters().getResolveLinks(), ac.getNodeParameters()
-				.getLanguages());
-			nodeReference.setPath(url);
-		}
-		return nodeReference;
-	}
-
-	@Override
-	public NodeReference transformToMinimalReference() {
-		NodeReference ref = new NodeReference();
-		ref.setUuid(getUuid());
-		ref.setSchema(getSchemaContainer().transformToReference());
-		return ref;
-	}
-
 	/**
 	 * Create a {@link NodeFieldListItem} that contains the reference to this node.
 	 * 
@@ -830,43 +642,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				languageTags));
 		}
 		return listItem;
-	}
-
-	@Override
-	public PublishStatusResponse transformToPublishStatus(InternalActionContext ac) {
-		PublishStatusResponse publishStatus = new PublishStatusResponse();
-		Map<String, PublishStatusModel> languages = Tx.get().nodeDao().getLanguageInfo(this, ac);
-		publishStatus.setAvailableLanguages(languages);
-		return publishStatus;
-	}
-
-	@Override
-	public void publish(InternalActionContext ac, BulkActionContext bac) {
-		Tx tx = GraphDBTx.getGraphTx();
-		HibBranch branch = tx.getBranch(ac, getProject());
-		String branchUuid = branch.getUuid();
-
-		List<HibNodeFieldContainer> unpublishedContainers = getFieldContainers(branch, ContainerType.DRAFT).stream().filter(c -> !c
-			.isPublished(branchUuid)).collect(Collectors.toList());
-
-		// publish all unpublished containers and handle recursion
-		unpublishedContainers.stream().forEach(c -> {
-			HibNodeFieldContainer newVersion = publish(ac, c.getLanguageTag(), branch, ac.getUser());
-			bac.add(newVersion.onPublish(branchUuid));
-		});
-		assertPublishConsistency(ac, branch);
-
-		// Handle recursion after publishing the current node.
-		// This is done to ensure the publish consistency.
-		// Even if the publishing process stops at the initial
-		// level the consistency is correct.
-		PublishParameters parameters = ac.getPublishParameters();
-		if (parameters.isRecursive()) {
-			for (HibNode node : getChildren(branchUuid)) {
-				node.publish(ac, bac);
-			}
-		}
-		bac.process();
 	}
 
 	private void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
@@ -903,57 +678,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		HibBranch branch = tx.getBranch(ac, getProject());
 		PublishParameters parameters = ac.getPublishParameters();
 		takeOffline(ac, bac, branch, parameters);
-	}
-
-	@Override
-	public PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag) {
-		Tx tx = GraphDBTx.getGraphTx();
-		HibBranch branch = tx.getBranch(ac, getProject());
-
-		HibNodeFieldContainer container = getFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
-		if (container != null) {
-			String date = container.getLastEditedDate();
-			PublishStatusModel status = new PublishStatusModel();
-			status.setPublished(true);
-			status.setVersion(container.getVersion().toString());
-			HibUser editor = container.getEditor();
-			if (editor != null) {
-				status.setPublisher(editor.transformToReference());
-			}
-			status.setPublishDate(date);
-			return status;
-		} else {
-			container = getFieldContainer(languageTag, branch.getUuid(), DRAFT);
-			if (container == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
-			return new PublishStatusModel().setPublished(false).setVersion(container.getVersion().toString());
-		}
-	}
-
-	@Override
-	public void publish(InternalActionContext ac, BulkActionContext bac, String languageTag) {
-		Tx tx = GraphDBTx.getGraphTx();
-		HibBranch branch = tx.getBranch(ac, getProject());
-		String branchUuid = branch.getUuid();
-
-		// get the draft version of the given language
-		HibNodeFieldContainer draftVersion = getFieldContainer(languageTag, branchUuid, DRAFT);
-
-		// if not existent -> NOT_FOUND
-		if (draftVersion == null) {
-			throw error(NOT_FOUND, "error_language_not_found", languageTag);
-		}
-
-		// If the located draft version was already published we are done
-		if (draftVersion.isPublished(branchUuid)) {
-			return;
-		}
-
-		// TODO check whether all required fields are filled, if not -> unable to publish
-		HibNodeFieldContainer publishedContainer = publish(ac, draftVersion.getLanguageTag(), branch, ac.getUser());
-		// Invoke a store of the document since it must now also be added to the published index
-		bac.add(publishedContainer.onPublish(branchUuid));
 	}
 
 	@Override
@@ -1006,18 +730,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		edge.setBranchUuid(branchUuid);
 		edge.setType(PUBLISHED);
 		container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
-	}
-
-	@Override
-	public HibNodeFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
-		String branchUuid = branch.getUuid();
-
-		// create published version
-		HibNodeFieldContainer newVersion = createFieldContainer(languageTag, branch, user);
-		newVersion.setVersion(newVersion.getVersion().nextPublished());
-
-		setPublished(ac, newVersion, branchUuid);
-		return newVersion;
 	}
 
 	@Override
@@ -1145,7 +857,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!parameters.isRecursive()) {
 				throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
 			}
-			child.deleteFromBranch(ac, branch, bac, ignoreChecks);
+			toGraph(child).deleteFromBranch(ac, branch, bac, ignoreChecks);
 		}
 
 		// 2. Delete all language containers
@@ -1225,27 +937,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
-	}
-
-	@Override
-	public String getDisplayName(InternalActionContext ac) {
-		NodeParameters nodeParameters = ac.getNodeParameters();
-		VersioningParameters versioningParameters = ac.getVersioningParameters();
-
-		HibNodeFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), GraphDBTx.getGraphTx().getBranch(ac, getProject()).getUuid(),
-			versioningParameters
-				.getVersion());
-		if (container == null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
-			}
-			return null;
-		} else {
-			// Determine the display field name and load the string value
-			// from that field.
-			return container.getDisplayFieldValue();
-		}
-
 	}
 
 	/**
@@ -1452,51 +1143,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void moveTo(InternalActionContext ac, HibNode targetNode, EventQueueBatch batch) {
-		Tx tx = GraphDBTx.getGraphTx();
-		NodeDao nodeDao = tx.nodeDao();
-
-		// TODO should we add a guard that terminates this loop when it runs to
-		// long?
-
-		// Check whether the target node is part of the subtree of the source
-		// node.
-		// We must detect and prevent such actions because those would
-		// invalidate the tree structure
-		HibBranch branch = tx.getBranch(ac, getProject());
-		String branchUuid = branch.getUuid();
-		HibNode parent = nodeDao.getParentNode(targetNode, branchUuid);
-		while (parent != null) {
-			if (parent.getUuid().equals(getUuid())) {
-				throw error(BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
-			}
-			parent = nodeDao.getParentNode(parent, branchUuid);
-		}
-
-		if (!targetNode.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-			throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
-		}
-
-		if (getUuid().equals(targetNode.getUuid())) {
-			throw error(BAD_REQUEST, "node_move_error_same_nodes");
-		}
-
-		setParentNode(branchUuid, targetNode);
-
-		// Update published graph field containers
-		getFieldContainers(branchUuid, PUBLISHED).stream().forEach(container -> {
-			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
-		});
-
-		// Update draft graph field containers
-		getFieldContainers(branchUuid, DRAFT).stream().forEach(container -> {
-			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
-		});
-		batch.add(onNodeMoved(branchUuid, targetNode));
-		assertPublishConsistency(ac, branch);
-	}
-
-	@Override
 	public void deleteLanguageContainer(InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
 		boolean failForLastContainer) {
 
@@ -1635,153 +1281,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	}
 
-	/**
-	 * Generate the etag for nodes. The etag consists of:
-	 * <ul>
-	 * <li>uuid of the node</li>
-	 * <li>parent node uuid (which is branch specific)</li>
-	 * <li>version and language specific etag of the field container</li>
-	 * <li>availableLanguages</li>
-	 * <li>breadcrumb</li>
-	 * <li>webroot path &amp; language paths</li>
-	 * <li>permissions</li>
-	 * </ul>
-	 */
-	@Override
-	public String getSubETag(InternalActionContext ac) {
-		Tx tx = GraphDBTx.getGraphTx();
-		UserDao userDao = tx.userDao();
-		TagDao tagDao = tx.tagDao();
-		NodeDao nodeDao = tx.nodeDao();
-
-		StringBuilder keyBuilder = new StringBuilder();
-
-		// Parameters
-		HibBranch branch = tx.getBranch(ac, getProject());
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
-		ContainerType type = forVersion(versioiningParameters.getVersion());
-
-		Node parentNode = getParentNode(branch.getUuid());
-		HibNodeFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(),
-			ac.getVersioningParameters()
-				.getVersion());
-
-		/**
-		 * branch uuid
-		 */
-		keyBuilder.append(branch.getUuid());
-		keyBuilder.append("-");
-
-		// TODO version, language list
-
-		// We can omit further etag keys since this would return a 404 anyhow
-		// since the requested container could not be found.
-		if (container == null) {
-			keyBuilder.append("404-no-container");
-			return keyBuilder.toString();
-		}
-
-		/**
-		 * Parent node
-		 *
-		 * The node can be moved and this would also affect the response. The etag must also be changed when the node is moved.
-		 */
-		if (parentNode != null) {
-			keyBuilder.append("-");
-			keyBuilder.append(parentNode.getUuid());
-		}
-
-		// fields version
-		if (container != null) {
-			keyBuilder.append("-");
-			keyBuilder.append(container.getETag(ac));
-		}
-
-		/**
-		 * Expansion (all)
-		 *
-		 * The expandAll parameter changes the json response and thus must be included in the etag computation.
-		 */
-		if (ac.getNodeParameters().getExpandAll()) {
-			keyBuilder.append("-");
-			keyBuilder.append("expand:true");
-		}
-
-		// expansion (selective)
-		String expandedFields = Arrays.toString(ac.getNodeParameters().getExpandedFieldNames());
-		keyBuilder.append("-");
-		keyBuilder.append("expandFields:");
-		keyBuilder.append(expandedFields);
-
-		// branch specific tags
-		for (HibTag tag : getTags(branch)) {
-			// Tags can't be moved across branches thus we don't need to add the
-			// tag family etag
-			keyBuilder.append(tagDao.getETag(tag, ac));
-		}
-
-		// branch specific children
-		for (HibNode child : getChildren(branch.getUuid())) {
-			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
-				keyBuilder.append("-");
-				keyBuilder.append(child.getSchemaContainer().getName());
-			}
-		}
-
-		// Publish state & availableLanguages
-		for (HibNodeFieldContainer c : getFieldContainers(branch, PUBLISHED)) {
-			keyBuilder.append(c.getLanguageTag() + "published");
-		}
-		for (HibNodeFieldContainer c : getFieldContainers(branch, DRAFT)) {
-			keyBuilder.append(c.getLanguageTag() + "draft");
-		}
-
-		// breadcrumb
-		keyBuilder.append("-");
-		HibNode current = getParentNode(branch.getUuid());
-		if (current != null) {
-			while (current != null) {
-				String key = current.getUuid() + toGraph(current).getDisplayName(ac);
-				keyBuilder.append(key);
-				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-					WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-					String url = linkReplacer.resolve(ac, branch.getUuid(), type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-						getProject().getName(), container.getLanguageTag());
-					keyBuilder.append(url);
-				}
-				current = nodeDao.getParentNode(current, branch.getUuid());
-
-			}
-		}
-
-		/**
-		 * webroot path & language paths
-		 *
-		 * The webroot and language paths must be included in the etag computation in order to invalidate the etag once a node language gets updated or once the
-		 * display name of any parent node changes.
-		 */
-		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-
-			WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-			String path = linkReplacer.resolve(ac, branch.getUuid(), type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject()
-				.getName(), container.getLanguageTag());
-			keyBuilder.append(path);
-
-			// languagePaths
-			for (HibNodeFieldContainer currentFieldContainer : getFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
-				String currLanguage = currentFieldContainer.getLanguageTag();
-				keyBuilder.append(currLanguage + "=" + linkReplacer.resolve(ac, branch.getUuid(), type, this, ac.getNodeParameters()
-					.getResolveLinks(), currLanguage));
-			}
-
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
-		}
-		return keyBuilder.toString();
-	}
-
 	@Override
 	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
@@ -1790,23 +1289,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public MeshElementEventModel onDeleted() {
 		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
-	}
-
-	/**
-	 * Create a new node moved event model.
-	 * 
-	 * @param branchUuid
-	 * @param target
-	 * @return
-	 */
-	public NodeMovedEventModel onNodeMoved(String branchUuid, HibNode target) {
-		NodeMovedEventModel model = new NodeMovedEventModel();
-		model.setEvent(NODE_MOVED);
-		model.setBranchUuid(branchUuid);
-		model.setProject(getProject().transformToReference());
-		fillEventInfo(model);
-		model.setTarget(target.transformToMinimalReference());
-		return model;
 	}
 
 	@Override
@@ -1847,8 +1329,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return event;
 	}
 
-	@Override
-	public NodeMeshEventModel onDeleted(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
+	/**
+	 * Create the node specific delete event.
+	 *
+	 * @param uuid
+	 * @param schema
+	 * @param branchUuid
+	 * @param type
+	 * @param languageTag
+	 * @return Created event
+	 */
+	private NodeMeshEventModel onDeleted(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(getTypeInfo().getOnDeleted());
 		event.setUuid(uuid);
@@ -1892,13 +1383,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public boolean isVisibleInBranch(String branchUuid) {
 		return GraphFieldContainerEdgeImpl.matchesBranchAndType(getId(), branchUuid, ContainerType.DRAFT);
-	}
-
-	@Override
-	public PermissionChangedProjectElementEventModel onPermissionChanged(HibRole role) {
-		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
-		fillPermissionChanged(model, role);
-		return model;
 	}
 
 	@Override

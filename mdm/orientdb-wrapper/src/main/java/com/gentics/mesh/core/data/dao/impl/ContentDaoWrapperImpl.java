@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -117,7 +118,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
-		return toGraph(node).publish(ac, languageTag, branch, user);
+		return Tx.get().nodeDao().publish(node, ac, languageTag, branch, user);
 	}
 
 	@Override

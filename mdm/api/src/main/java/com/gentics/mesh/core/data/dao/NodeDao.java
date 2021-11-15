@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -20,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +41,9 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
+import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
+import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -47,21 +52,21 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.NodeParameters;
-import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.parameter.*;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.DateUtils;
+import com.gentics.mesh.util.ETag;
 
 /**
  * Dao for {@link HibNode}
@@ -191,7 +196,58 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param targetNode
 	 * @param batch
 	 */
-	void moveTo(HibNode sourceNode, InternalActionContext ac, HibNode targetNode, EventQueueBatch batch);
+	default void moveTo(HibNode sourceNode, InternalActionContext ac, HibNode targetNode, EventQueueBatch batch) {
+		Tx tx = Tx.get();
+
+		// TODO should we add a guard that terminates this loop when it runs to
+		// long?
+
+		// Check whether the target node is part of the subtree of the source
+		// node.
+		// We must detect and prevent such actions because those would
+		// invalidate the tree structure
+		HibBranch branch = tx.getBranch(ac, sourceNode.getProject());
+		String branchUuid = branch.getUuid();
+		HibNode parent = getParentNode(targetNode, branchUuid);
+		while (parent != null) {
+			if (parent.getUuid().equals(sourceNode.getUuid())) {
+				throw error(BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
+			}
+			parent = getParentNode(parent, branchUuid);
+		}
+
+		if (!targetNode.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
+			throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
+		}
+
+		if (sourceNode.getUuid().equals(targetNode.getUuid())) {
+			throw error(BAD_REQUEST, "node_move_error_same_nodes");
+		}
+
+		sourceNode.setParentNode(branchUuid, targetNode);
+
+		// Update published graph field containers
+		sourceNode.getFieldContainers(branchUuid, PUBLISHED).stream().forEach(container -> {
+			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
+		});
+
+		// Update draft graph field containers
+		sourceNode.getFieldContainers(branchUuid, DRAFT).stream().forEach(container -> {
+			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
+		});
+		batch.add(onNodeMoved(sourceNode, branchUuid, targetNode));
+		assertPublishConsistency(sourceNode, ac, branch);
+	}
+
+	private NodeMovedEventModel onNodeMoved(HibNode node, String branchUuid, HibNode target) {
+		NodeMovedEventModel model = new NodeMovedEventModel();
+		model.setEvent(NODE_MOVED);
+		model.setBranchUuid(branchUuid);
+		model.setProject(node.getProject().transformToReference());
+		node.fillEventInfo(model);
+		model.setTarget(target.transformToMinimalReference());
+		return model;
+	}
 
 	/**
 	 * Transform the node into a navigation response rest model.
@@ -199,7 +255,140 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	NavigationResponse transformToNavigation(HibNode node, InternalActionContext ac);
+	default NavigationResponse transformToNavigation(HibNode node, InternalActionContext ac) {
+		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
+		if (parameters.getMaxDepth() < 0) {
+			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
+		}
+		Tx tx = Tx.get();
+		// TODO assure that the schema version is correct
+		if (!node.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
+			throw error(BAD_REQUEST, "navigation_error_no_container");
+		}
+		String etagKey = buildNavigationEtagKey(ac, node, parameters.getMaxDepth(), 0, tx.getBranch(ac, node.getProject()).getUuid(), forVersion(ac
+				.getVersioningParameters().getVersion()));
+		String etag = ETag.hash(etagKey);
+		ac.setEtag(etag, true);
+		if (ac.matches(etag, true)) {
+			throw new NotModifiedException();
+		} else {
+			NavigationResponse response = new NavigationResponse();
+			return buildNavigationResponse(ac, node, parameters.getMaxDepth(), 0, response, response, tx.getBranch(ac, node.getProject()).getUuid(),
+					forVersion(ac.getVersioningParameters().getVersion()));
+		}
+	}
+
+	/**
+	 * Generate the etag key for the requested navigation.
+	 *
+	 * @param ac
+	 * @param node
+	 *            Current node to start building the navigation
+	 * @param maxDepth
+	 *            Maximum depth of navigation
+	 * @param level
+	 *            Current level of recursion
+	 * @param branchUuid
+	 *            Branch uuid used to extract selected tree structure
+	 * @param type
+	 * @return
+	 */
+	private String buildNavigationEtagKey(InternalActionContext ac, HibNode node, int maxDepth, int level, String branchUuid, ContainerType type) {
+		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
+		StringBuilder builder = new StringBuilder();
+		builder.append(node.getETag(ac));
+
+		List<HibNode> nodes = getChildren(node, ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+
+		// Abort recursion when we reach the max level or when no more children
+		// can be found.
+		if (level == maxDepth || nodes.isEmpty()) {
+			return builder.toString();
+		}
+		for (HibNode child : nodes) {
+			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
+				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, branchUuid, type));
+			} else if (parameters.isIncludeAll()) {
+				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level, branchUuid, type));
+			}
+		}
+		return builder.toString();
+	}
+
+	private Stream<? extends HibNode> getChildren(HibNode node, HibUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
+		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
+		UserDao userRoot = Tx.get().userDao();
+
+		Predicate<HibNode> languageFilter = languageTags == null || languageTags.isEmpty()
+				? item -> true
+				: item -> languageTags.stream().anyMatch(languageTag -> item.getFieldContainer(languageTag, branchUuid, type) != null);
+
+		return getChildren(node, branchUuid)
+				.stream()
+				.filter(languageFilter.and(item -> userRoot.hasPermission(requestUser, item, perm)));
+	}
+
+	/**
+	 * Recursively build the navigation response.
+	 *
+	 * @param ac
+	 *            Action context
+	 * @param node
+	 *            Current node that should be handled in combination with the given navigation element
+	 * @param maxDepth
+	 *            Maximum depth for the navigation
+	 * @param level
+	 *            Zero based level of the current navigation element
+	 * @param navigation
+	 *            Current navigation response
+	 * @param currentElement
+	 *            Current navigation element for the given level
+	 * @param branchUuid
+	 *            Branch uuid to be used for loading children of nodes
+	 * @param type
+	 *            container type to be used for transformation
+	 * @return
+	 */
+	private NavigationResponse buildNavigationResponse(InternalActionContext ac, HibNode node, int maxDepth, int level,
+													   NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
+		List<HibNode> nodes = getChildren(node, ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+		List<NavigationResponse> responses = new ArrayList<>();
+
+		NodeResponse response = Tx.get().nodeDao().transformToRestSync(node, ac, 0);
+		currentElement.setUuid(response.getUuid());
+		currentElement.setNode(response);
+		responses.add(navigation);
+
+		// Abort recursion when we reach the max level or when no more children
+		// can be found.
+		if (level == maxDepth || nodes.isEmpty()) {
+			return responses.get(responses.size() - 1);
+		}
+		NavigationParameters parameters = new NavigationParametersImpl(ac);
+		// Add children
+		for (HibNode child : nodes) {
+			// TODO assure that the schema version is correct?
+			// TODO also allow navigations over containers
+			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
+				NavigationElement childElement = new NavigationElement();
+				// We found at least one child so lets create the array
+				if (currentElement.getChildren() == null) {
+					currentElement.setChildren(new ArrayList<>());
+				}
+				currentElement.getChildren().add(childElement);
+				responses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
+			} else if (parameters.isIncludeAll()) {
+				// We found at least one child so lets create the array
+				if (currentElement.getChildren() == null) {
+					currentElement.setChildren(new ArrayList<>());
+				}
+				NavigationElement childElement = new NavigationElement();
+				currentElement.getChildren().add(childElement);
+				responses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, branchUuid, type));
+			}
+		}
+		return responses.get(responses.size() - 1);
+	}
 
 	/**
 	 * Transform the node into a publish status response rest model.
@@ -207,7 +396,12 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	PublishStatusResponse transformToPublishStatus(HibNode node, InternalActionContext ac);
+	default PublishStatusResponse transformToPublishStatus(HibNode node, InternalActionContext ac) {
+		PublishStatusResponse publishStatus = new PublishStatusResponse();
+		Map<String, PublishStatusModel> languages = Tx.get().nodeDao().getLanguageInfo(node, ac);
+		publishStatus.setAvailableLanguages(languages);
+		return publishStatus;
+	}
 
 	/**
 	 * Publish the node (all languages)
@@ -216,7 +410,33 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param bac
 	 * @return
 	 */
-	void publish(HibNode node, InternalActionContext ac, BulkActionContext bac);
+	default void publish(HibNode node, InternalActionContext ac, BulkActionContext bac) {
+		Tx tx = Tx.get();
+		HibBranch branch = tx.getBranch(ac, node.getProject());
+		String branchUuid = branch.getUuid();
+
+		List<HibNodeFieldContainer> unpublishedContainers = node.getFieldContainers(branch, ContainerType.DRAFT).stream().filter(c -> !c
+				.isPublished(branchUuid)).collect(Collectors.toList());
+
+		// publish all unpublished containers and handle recursion
+		unpublishedContainers.stream().forEach(c -> {
+			HibNodeFieldContainer newVersion = publish(node, ac, c.getLanguageTag(), branch, ac.getUser());
+			bac.add(newVersion.onPublish(branchUuid));
+		});
+		assertPublishConsistency(node, ac, branch);
+
+		// Handle recursion after publishing the current node.
+		// This is done to ensure the publish consistency.
+		// Even if the publishing process stops at the initial
+		// level the consistency is correct.
+		PublishParameters parameters = ac.getPublishParameters();
+		if (parameters.isRecursive()) {
+			for (HibNode nodeToPublish : getChildren(node, branchUuid)) {
+				publish(nodeToPublish, ac, bac);
+			}
+		}
+		bac.process();
+	}
 
 	/**
 	 * Take the node offline (all languages)
@@ -234,7 +454,30 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTag
 	 * @return
 	 */
-	PublishStatusModel transformToPublishStatus(HibNode node, InternalActionContext ac, String languageTag);
+	default PublishStatusModel transformToPublishStatus(HibNode node, InternalActionContext ac, String languageTag) {
+		Tx tx = Tx.get();
+		HibBranch branch = tx.getBranch(ac, node.getProject());
+
+		HibNodeFieldContainer container = node.getFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
+		if (container != null) {
+			String date = container.getLastEditedDate();
+			PublishStatusModel status = new PublishStatusModel();
+			status.setPublished(true);
+			status.setVersion(container.getVersion().toString());
+			HibUser editor = container.getEditor();
+			if (editor != null) {
+				status.setPublisher(editor.transformToReference());
+			}
+			status.setPublishDate(date);
+			return status;
+		} else {
+			container = node.getFieldContainer(languageTag, branch.getUuid(), DRAFT);
+			if (container == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
+			return new PublishStatusModel().setPublished(false).setVersion(container.getVersion().toString());
+		}
+	}
 
 	/**
 	 * Publish a language of the node
@@ -244,7 +487,50 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTag
 	 * @return
 	 */
-	void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag);
+	default void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag) {
+		Tx tx = Tx.get();
+		HibBranch branch = tx.getBranch(ac, node.getProject());
+		String branchUuid = branch.getUuid();
+
+		// get the draft version of the given language
+		HibNodeFieldContainer draftVersion = node.getFieldContainer(languageTag, branchUuid, DRAFT);
+
+		// if not existent -> NOT_FOUND
+		if (draftVersion == null) {
+			throw error(NOT_FOUND, "error_language_not_found", languageTag);
+		}
+
+		// If the located draft version was already published we are done
+		if (draftVersion.isPublished(branchUuid)) {
+			return;
+		}
+
+		// TODO check whether all required fields are filled, if not -> unable to publish
+		HibNodeFieldContainer publishedContainer = publish(node, ac, draftVersion.getLanguageTag(), branch, ac.getUser());
+		// Invoke a store of the document since it must now also be added to the published index
+		bac.add(publishedContainer.onPublish(branchUuid));
+	}
+
+	/**
+	 * Create a new published version of the given language in the branch.
+	 *
+	 * @param node the node
+	 * @param ac Action Context
+	 * @param languageTag language
+	 * @param branch branch
+	 * @param user user
+	 * @return published field container
+	 */
+	default HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
+		String branchUuid = branch.getUuid();
+
+		// create published version
+		HibNodeFieldContainer newVersion = node.createFieldContainer(languageTag, branch, user);
+		newVersion.setVersion(newVersion.getVersion().nextPublished());
+
+		node.setPublished(ac, newVersion, branchUuid);
+		return newVersion;
+	}
 
 	/**
 	 * Take a language of the node offline.
@@ -299,7 +585,9 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac);
+	default Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
+		return new TraversalResult<>(() -> Tx.get().nodeDao().getBreadcrumbNodeStream(node, ac).iterator());
+	}
 
 	/**
 	 * Check whether the node is the base node of its project
@@ -323,7 +611,18 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return Versions response
 	 */
-	NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac);
+	default NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac) {
+		NodeVersionsResponse response = new NodeVersionsResponse();
+		Map<String, List<VersionInfo>> versions = new HashMap<>();
+		node.getFieldContainers(Tx.get().getBranch(ac), DRAFT).forEach(c -> {
+			versions.put(c.getLanguageTag(), c.versions().stream()
+					.map(v -> v.transformToVersionInfo(ac))
+					.collect(Collectors.toList()));
+		});
+
+		response.setVersions(versions);
+		return response;
+	}
 
 	/**
 	 * Update the node.
@@ -387,7 +686,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * Count all the nodes globally.<br>
 	 * <b>Attention: this method serves administration purposes!</b>
 	 * 
-	 * @param uuid
 	 * @return
 	 */
 	long globalCount();
@@ -562,6 +860,15 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 		}
 		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());
 	}
+
+	/**
+	 * Method called whenever we perform a publish action (publish, take offline, move node)
+	 * Should throw an exception if something is not consistent (e.g. publish node has no publish version)
+	 * @param node
+	 * @param ac
+	 * @param branch
+	 */
+	void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch);
 
 	/**
 	 * Set the project reference to the node response model.
@@ -765,7 +1072,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 		UserDao userDao = Tx.get().userDao();
 
-		for (HibNode child : node.getChildren(branch.getUuid())) {
+		for (HibNode child : getChildren(node, branch.getUuid())) {
 			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
 				String schemaName = child.getSchemaContainer().getName();
 				NodeChildrenInfo info = childrenInfo.get(schemaName);

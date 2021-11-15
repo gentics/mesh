@@ -29,11 +29,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.PublishStatusModel;
-import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
@@ -149,43 +145,18 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void moveTo(HibNode sourceNode, InternalActionContext ac, HibNode targetNode, EventQueueBatch batch) {
-		toGraph(sourceNode).moveTo(ac, toGraph(targetNode), batch);
-	}
-
-	@Override
-	public NavigationResponse transformToNavigation(HibNode node, InternalActionContext ac) {
-		return toGraph(node).transformToNavigation(ac);
-	}
-
-	@Override
-	public PublishStatusResponse transformToPublishStatus(HibNode node, InternalActionContext ac) {
-		return toGraph(node).transformToPublishStatus(ac);
-	}
-
-	@Override
-	public void publish(HibNode node, InternalActionContext ac, BulkActionContext bac) {
-		toGraph(node).publish(ac, bac);
-	}
-
-	@Override
 	public void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac) {
 		toGraph(node).takeOffline(ac, bac);
 	}
 
 	@Override
-	public PublishStatusModel transformToPublishStatus(HibNode node, InternalActionContext ac, String languageTag) {
-		return toGraph(node).transformToPublishStatus(ac, languageTag);
-	}
-
-	@Override
-	public void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag) {
-		toGraph(node).publish(ac, bac, languageTag);
-	}
-
-	@Override
 	public void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid) {
 		toGraph(node).setPublished(ac, container, branchUuid);
+	}
+
+	@Override
+	public void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch) {
+		toGraph(node).assertPublishConsistency(ac, branch);
 	}
 
 	@Override
@@ -209,11 +180,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getBreadcrumbNodes(ac);
-	}
-
-	@Override
 	public boolean isBaseNode(HibNode node) {
 		return toGraph(node).isBaseNode();
 	}
@@ -221,11 +187,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public boolean isVisibleInBranch(HibNode node, String branchUuid) {
 		return toGraph(node).isVisibleInBranch(branchUuid);
-	}
-
-	@Override
-	public NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac) {
-		return toGraph(node).transformToVersionList(ac);
 	}
 
 	@Override
@@ -237,11 +198,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public String getAPIPath(HibNode node, InternalActionContext ac) {
 		return toGraph(node).getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getETag(ac);
 	}
 
 	@Override
