@@ -261,7 +261,7 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		}
 		resetDatabase(settings);
-
+		meshTestContextProvider.getInstanceProvider().teardownStorage();
 	}
 
 	public void tearDownOnce(MeshTestSetting settings) throws Exception {

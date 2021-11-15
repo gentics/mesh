@@ -4,7 +4,6 @@ import org.testcontainers.utility.ThrowingFunction;
 
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.test.MeshOptionsTypeAwareContext;
 
 /**
  * A definition of the entity, that provides Mesh building blocks and functions to the test context.
@@ -43,6 +42,10 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	 * 
 	 * @return
 	 */
-	MeshComponent.Builder getComponentBuilder();	
-	
+	MeshComponent.Builder getComponentBuilder();
+
+	/**
+	 * Uninitialize node storage.
+	 */
+	void teardownStorage();
 }

@@ -77,4 +77,9 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 	public OrientDBMeshOptions getOptions() {
 		return meshOptions;
 	}
+
+	@Override
+	public void teardownStorage() {
+		// No extra shutdown logic
+	}
 }
