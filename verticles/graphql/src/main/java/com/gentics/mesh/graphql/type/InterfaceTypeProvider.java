@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -186,8 +187,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				HibCoreElement<?> element = getMeshCoreElement(env.getSource());
 
-				UserDaoWrapper userDao = (UserDaoWrapper) Tx.get().userDao();
-				return userDao.getRolePermissions(element, gc, env.getArgument("role"));
+				RoleDao roleDao = Tx.get().roleDao();
+				return roleDao.getRolePermissions(element, gc, env.getArgument("role"));
 			})
 		);
 

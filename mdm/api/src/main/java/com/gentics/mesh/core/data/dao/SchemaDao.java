@@ -100,25 +100,6 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	Result<? extends HibNode> getNodes(HibSchema schema);
 
 	/**
-	 * Assign the schema to the project.
-	 * 
-	 * @param schemaContainer
-	 * @param project
-	 * @param user
-	 * @param batch
-	 */
-	void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch);
-
-	/**
-	 * Remove the schema from the project.
-	 * 
-	 * @param schema
-	 * @param project
-	 * @param batch
-	 */
-	void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch);
-
-	/**
 	 * Find all projects which reference the schema.
 	 * 
 	 * @param schema

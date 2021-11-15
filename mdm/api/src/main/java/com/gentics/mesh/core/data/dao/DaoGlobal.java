@@ -98,15 +98,6 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	}
 
 	/**
-	 * Return the API path.
-	 * 
-	 * @param element
-	 * @param ac
-	 * @return
-	 */
-	String getAPIPath(T element, InternalActionContext ac);
-
-	/**
 	 * Find the element globally.
 	 * 
 	 * @param uuid

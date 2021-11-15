@@ -65,8 +65,6 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	// @Override
 	// void close();
 
-	TxData data();
-
 	/**
 	 * Return the latest branch of the project.
 	 *
@@ -95,6 +93,13 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 * @return Project or null if no project has been specified in the given context.
 	 */
 	HibProject getProject(InternalActionContext ac);
+
+	/**
+	 * Return the transaction-carried data.
+	 * 
+	 * @return
+	 */
+	TxData data();
 
 	Binaries binaries();
 

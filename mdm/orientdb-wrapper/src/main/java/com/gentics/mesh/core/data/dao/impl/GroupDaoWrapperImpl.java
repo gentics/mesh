@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -44,8 +43,8 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	private Lazy<PermissionCache> permissionCache;
 
 	@Inject
-	public GroupDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache) {
-		super(boot, permissions);
+	public GroupDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionCache> permissionCache) {
+		super(boot);
 		this.permissionCache = permissionCache;
 	}
 
@@ -99,7 +98,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 		for (HibUser user : getUsers(group)) {
 			toGraph(user).setUniqueLinkOutTo(graphRole, ASSIGNED_TO_ROLE);
 		}
-
 	}
 
 	@Override
@@ -182,21 +180,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public String getAPIPath(HibGroup group, InternalActionContext ac) {
-		Group graphGroup = toGraph(group);
-		return graphGroup.getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibGroup group, InternalActionContext ac) {
-		Group graphGroup = toGraph(group);
-		return graphGroup.getETag(ac);
-		// return boot.get().meshRoot().getGroupRoot().getETag(graphGroup, ac);
-	}
-
-	@Override
 	protected RootVertex<Group> getRoot() {
 		return boot.get().meshRoot().getGroupRoot();
 	}
-
 }

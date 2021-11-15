@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -42,8 +41,8 @@ import dagger.Lazy;
 public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, HibUser, User> implements UserDaoWrapper {
 
 	@Inject
-	public UserDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
+	public UserDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	@Override
@@ -129,12 +128,6 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	 */
 	public long count() {
 		return getRoot().globalCount();
-	}
-
-	@Override
-	public String getETag(HibUser user, InternalActionContext ac) {
-		User graphUser = toGraph(user);
-		return graphUser.getETag(ac);
 	}
 
 	@Override

@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -42,8 +41,8 @@ import io.reactivex.Completable;
 public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJob, Job> implements JobDaoWrapper {
 
 	@Inject
-	public JobDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
+	public JobDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	@Override
@@ -102,16 +101,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 		Set<InternalPermission> permissionsToRevoke) {
 		Role graphRole = toGraph(role);
 		boot.get().meshRoot().getJobRoot().applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
-	@Override
-	public String getAPIPath(HibJob job, InternalActionContext ac) {
-		return toGraph(job).getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibJob job, InternalActionContext ac) {
-		return toGraph(job).getETag(ac);
 	}
 
 	@Override

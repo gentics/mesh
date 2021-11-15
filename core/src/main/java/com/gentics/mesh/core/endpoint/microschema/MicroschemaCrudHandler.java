@@ -220,7 +220,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 			if (!microschemaDao.contains(project, microschema)) {
 				// Assign the microschema to the project
 				utils.eventAction(batch -> {
-					microschemaDao.addMicroschema(project, ac.getUser(), microschema, batch);
+					microschemaDao.assign(microschema, project, ac.getUser(), batch);
 				});
 			}
 			return microschemaDao.transformToRestSync(microschema, ac, 0);
@@ -249,7 +249,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 			if (microschemaDao.isLinkedToProject(microschema, project)) {
 				utils.eventAction(batch -> {
 					// Remove the microschema from the project
-					microschemaDao.unlink(microschema, project, batch);
+					microschemaDao.unassign(microschema, project, batch);
 				});
 			}
 		}, () -> ac.send(NO_CONTENT));

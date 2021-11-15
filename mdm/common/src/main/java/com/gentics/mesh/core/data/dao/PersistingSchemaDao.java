@@ -70,7 +70,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 	default HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibUser requestUser = ac.getUser();
 		UserDao userDao = Tx.get().userDao();
-		HibBaseElement schemaRoot = Tx.get().data().permissionRoots().schema();
+		HibBaseElement schemaRoot = CommonTx.get().data().permissionRoots().schema();
 
 		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
@@ -194,8 +194,8 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
-		if (validate && Tx.get().data().vertx() != null) {
-			PersistingSchemaDao.validateSchema(Tx.get().data().nodeIndexHandler(), schema);
+		if (validate && CommonTx.get().data().vertx() != null) {
+			PersistingSchemaDao.validateSchema(CommonTx.get().data().nodeIndexHandler(), schema);
 		}
 
 		String name = schema.getName();
@@ -297,7 +297,8 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 	 * @param user
 	 * @param batch
 	 */
-	default void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
+	@Override
+	default void assign(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
 		ProjectDao projectDao = Tx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -310,14 +311,8 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 		}
 	}
 
-	/**
-	 * Remove the schema from the project.
-	 * 
-	 * @param schema
-	 * @param project
-	 * @param batch
-	 */
-	default void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch) {
+	@Override
+	default void unassign(HibSchema schema, HibProject project, EventQueueBatch batch) {
 		ProjectDao projectDao = Tx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -328,11 +323,6 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 		for (HibBranch branch : branchDao.findAll(project)) {
 			branch.unassignSchema(schema);
 		}
-	}
-
-	@Override
-	default String getAPIPath(HibSchema element, InternalActionContext ac) {
-		return element.getAPIPath(ac);
 	}
 
 	@Override
@@ -355,7 +345,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 
 	@Override
 	default void delete(HibProject root, HibSchema element, BulkActionContext bac) {
-		removeSchema(element, root, bac.batch());
+		unassign(element, root, bac.batch());
 		assignEvents(element, UNASSIGNED).forEach(bac::add);
 		// TODO should we delete the schema completely?
 		//delete(element, bac);
@@ -383,7 +373,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 	@Override
 	default HibSchema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibSchema schema = create(ac, batch, uuid);
-		addSchema(schema, root, ac.getUser(), batch);
+		assign(schema, root, ac.getUser(), batch);
 		CommonTx.get().projectDao().mergeIntoPersisted(root);
 		assignEvents(schema, UNASSIGNED).forEach(batch::add);
 		return schema;
@@ -406,18 +396,13 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 	}
 
 	@Override
-	default void unlink(HibSchema schema, HibProject project, EventQueueBatch batch) {
-		removeSchema(schema, project, batch);
-	}
-
-	@Override
 	default boolean isLinkedToProject(HibSchema schema, HibProject project) {
 		return contains(project, schema);
 	}
 
 	@Override
 	default FieldSchemaContainerComparator<SchemaModel> getFieldSchemaContainerComparator() {
-		return Tx.get().data().schemaComparator();
+		return CommonTx.get().data().schemaComparator();
 	}
 
 	@Override

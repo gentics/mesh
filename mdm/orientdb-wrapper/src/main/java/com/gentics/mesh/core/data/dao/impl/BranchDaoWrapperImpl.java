@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -38,8 +37,8 @@ import dagger.Lazy;
 public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse, HibBranch, Branch, HibProject> implements BranchDaoWrapper {
 
 	@Inject
-	public BranchDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<Database> db) {
-		super(boot, permissions);
+	public BranchDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<Database> db) {
+		super(boot);
 	}
 
 	/**
@@ -95,12 +94,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	public boolean update(HibBranch branch, InternalActionContext ac, EventQueueBatch batch) {
 		Branch graphBranch = toGraph(branch);
 		return graphBranch.update(ac, batch);
-	}
-
-	@Override
-	public String getETag(HibBranch branch, InternalActionContext ac) {
-		Branch graphBranch = toGraph(branch);
-		return graphBranch.getETag(ac);
 	}
 
 	@Override

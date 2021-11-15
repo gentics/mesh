@@ -22,9 +22,4 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 		model.setNativeName(element.getNativeName());
 		return model;
 	}
-
-	@Override
-	default String getAPIPath(HibLanguage element, InternalActionContext ac) {
-		return element.getAPIPath(ac);
-	}
 }

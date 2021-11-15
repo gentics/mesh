@@ -391,9 +391,9 @@ public class TestDataProvider {
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
 			getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();
-		schemaDao.addSchema(getSchemaContainer("folder"), project, jobUser, batch);
-		schemaDao.addSchema(getSchemaContainer("content"), project, jobUser, batch);
-		schemaDao.addSchema(getSchemaContainer("binary_content"), project, jobUser, batch);
+		schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch);
+		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
+		schemaDao.assign(getSchemaContainer("binary_content"), project, jobUser, batch);
 		projectUuid = project.getUuid();
 		branchUuid = project.getInitialBranch().getUuid();
 
@@ -511,7 +511,7 @@ public class TestDataProvider {
 		HibMicroschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(),
 			createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
-		microschemaDao.addMicroschema(project, user(), vcardMicroschemaContainer, createBatch());
+		microschemaDao.assign(vcardMicroschemaContainer, project, user(), createBatch());
 	}
 
 	/**
@@ -542,7 +542,7 @@ public class TestDataProvider {
 		HibMicroschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(),
 			createBatch());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
-		microschemaDao.addMicroschema(project, user(), microschema, createBatch());
+		microschemaDao.assign(microschema, project, user(), createBatch());
 	}
 
 	public HibNode addFolder(HibNode rootNode, String englishName, String germanName) {
