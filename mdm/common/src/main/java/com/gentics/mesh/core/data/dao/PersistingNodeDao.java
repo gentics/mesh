@@ -139,6 +139,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param ac
 	 * @return
 	 */
+	@Override
 	default Stream<HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac) {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
@@ -162,6 +163,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param ac
 	 * @return
 	 */
+	@Override
 	default Map<String, PublishStatusModel> getLanguageInfo(HibNode node, InternalActionContext ac) {
 		Map<String, PublishStatusModel> languages = new HashMap<>();
 		Tx tx = Tx.get();
@@ -523,7 +525,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 	}
 
-
+	@Override
 	default void moveTo(HibNode sourceNode, InternalActionContext ac, HibNode targetNode, EventQueueBatch batch) {
 		Tx tx = Tx.get();
 
@@ -577,7 +579,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return model;
 	}
 
-
+	@Override
 	default NavigationResponse transformToNavigation(HibNode node, InternalActionContext ac) {
 		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		if (parameters.getMaxDepth() < 0) {
@@ -701,6 +703,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return responses.get(responses.size() - 1);
 	}
 
+	@Override
 	default PublishStatusModel transformToPublishStatus(HibNode node, InternalActionContext ac, String languageTag) {
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac, node.getProject());
@@ -726,6 +729,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 	}
 
+	@Override
 	default void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag) {
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac, node.getProject());
@@ -750,6 +754,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		bac.add(publishedContainer.onPublish(branchUuid));
 	}
 
+	@Override
 	default HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
 		String branchUuid = branch.getUuid();
 
@@ -761,10 +766,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return newVersion;
 	}
 
+	@Override
 	default Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
 		return new TraversalResult<>(() -> Tx.get().nodeDao().getBreadcrumbNodeStream(node, ac).iterator());
 	}
 
+	@Override
 	default NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
@@ -778,6 +785,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return response;
 	}
 
+	@Override
 	default PublishStatusResponse transformToPublishStatus(HibNode node, InternalActionContext ac) {
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = Tx.get().nodeDao().getLanguageInfo(node, ac);
@@ -785,6 +793,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return publishStatus;
 	}
 
+	@Override
 	default void publish(HibNode node, InternalActionContext ac, BulkActionContext bac) {
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac, node.getProject());
