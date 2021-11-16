@@ -288,7 +288,8 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	long globalCount(R root);
 
 	/**
-	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
+	 * Remove the element from the root. If the root is the only access point of the element, the element will be deleted permanently. 
+	 * Additional entries will be added to the batch to keep the search index in sync.
 	 *
 	 * @param element
 	 * @param bac
@@ -305,6 +306,14 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return true if the element was updated. Otherwise false
 	 */
 	boolean update(R root, L element, InternalActionContext ac, EventQueueBatch batch);
+
+	/**
+	 * Perform the necessary actions before root deletion.
+	 *
+	 * @param bac
+	 *            the context which keeps track of the process
+	 */
+	default void onRootDeleted(R root, BulkActionContext bac) {}
 
 	/**
 	 * Check whether the given element is assigned to this root node.

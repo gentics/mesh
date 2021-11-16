@@ -43,16 +43,6 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	abstract public String getRootLabel();
 
 	@Override
-	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		return mesh().permissionProperties().getRolePermissions(this, ac, roleUuid);
-	}
-
-	@Override
-	public Result<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
-		return mesh().permissionProperties().getRolesWithPerm(this, perm);
-	}
-
-	@Override
 	public boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		boolean permissionChanged = false;
@@ -67,12 +57,12 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
-		return mesh().permissionProperties().getRolePermissions(element, ac, roleUuid);
+		return mesh().boot().roleDao().getRolePermissions(element, ac, roleUuid);
 	}
 
 	@Override
 	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
-		return mesh().permissionProperties().getRolesWithPerm(vertex, perm);
+		return mesh().boot().roleDao().getRolesWithPerm(vertex, perm);
 	}
 
 	/**

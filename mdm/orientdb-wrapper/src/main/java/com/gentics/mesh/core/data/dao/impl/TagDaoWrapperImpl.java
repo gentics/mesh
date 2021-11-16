@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -66,20 +65,8 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	private static final Logger log = LoggerFactory.getLogger(TagDaoWrapperImpl.class);
 
 	@Inject
-	public TagDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
-	}
-
-	@Override
-	public String getAPIPath(HibTag tag, InternalActionContext ac) {
-		Tag graphTag = toGraph(tag);
-		return graphTag.getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibTag tag, InternalActionContext ac) {
-		Tag graphTag = toGraph(tag);
-		return graphTag.getETag(ac);
+	public TagDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	// New Methods
@@ -205,7 +192,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 		}
 
 		graphTag.fillCommonRestFields(ac, fields, restTag);
-		setRolePermissions(graphTag, ac, restTag);
+		Tx.get().roleDao().setRolePermissions(graphTag, ac, restTag);
 		return restTag;
 
 	}

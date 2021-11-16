@@ -2,12 +2,16 @@ package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+
+import io.vertx.core.json.JsonArray;
 
 /**
  * @see StringFieldSchema
@@ -44,8 +48,19 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 	@Override
 	public void apply(Map<String, Object> fieldProperties) {
 		super.apply(fieldProperties);
-		if (fieldProperties.get(ALLOW_KEY) != null) {
-			setAllowedValues((String[]) fieldProperties.get(ALLOW_KEY));
+		Object allowedValues = fieldProperties.get(ALLOW_KEY);
+		if (allowedValues != null) {
+			if (allowedValues instanceof String[]) {
+				setAllowedValues((String[]) allowedValues);
+			} else if (allowedValues instanceof Collection) {
+				setAllowedValues(((Collection<?>) allowedValues).stream().map(Object::toString).toArray(size -> new String[size]));
+			} else if (allowedValues instanceof Object[]) {
+				setAllowedValues(Arrays.stream(((Object[]) allowedValues)).map(Object::toString).toArray(size -> new String[size]));
+			} else if (allowedValues instanceof JsonArray) {
+				setAllowedValues(((JsonArray) allowedValues).stream().map(Object::toString).toArray(size -> new String[size]));
+			}  else {
+				throw new IllegalStateException("Unsupported allowed value type: " + allowedValues.getClass().getCanonicalName());
+			}
 		}
 	}
 

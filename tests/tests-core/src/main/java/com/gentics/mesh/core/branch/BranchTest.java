@@ -309,7 +309,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			// assign the schema to the project
 			EventQueueBatch batch = createBatch();
-			schemaDao.addSchema(schemaContainer, project(), user(), batch);
+			schemaDao.assign(schemaContainer, project(), user(), batch);
 
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
@@ -335,7 +335,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibBranch newBranch = createBranch("New Branch");
 
 			EventQueueBatch batch = createBatch();
-			schemaDao.removeSchema(schemaContainer, project, batch);
+			schemaDao.unassign(schemaContainer, project, batch);
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
 			}
@@ -368,7 +368,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			// assign the schema to the project
 			EventQueueBatch batch = createBatch();
-			schemaDao.addSchema(schemaContainer, project, user(), batch);
+			schemaDao.assign(schemaContainer, project, user(), batch);
 
 			// update schema
 			updateSchema(schemaContainer, "newfield");
@@ -425,7 +425,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			}
 
 			// assign the schema to the project
-			tx.microschemaDao().addMicroschema(project, user(), microschema, createBatch());
+			tx.microschemaDao().assign(microschema, project, user(), createBatch());
 
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasMicroschema(microschema).hasMicroschemaVersion(latestVersion)
@@ -450,7 +450,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibBranch initialBranch = initialBranch();
 			HibBranch newBranch = createBranch("New Branch");
 
-			microschemaDao.removeMicroschema(project, microschema, createBatch());
+			microschemaDao.unassign(microschema, project, createBatch());
 
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschema)
@@ -468,7 +468,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibMicroschemaVersion firstVersion = microschema.getLatestVersion();
 
 			// assign the microschema to the project
-			tx.microschemaDao().addMicroschema(project, user(), microschema, createBatch());
+			tx.microschemaDao().assign(microschema, project, user(), createBatch());
 
 			// update microschema
 			updateMicroschema(microschema, "newfield");

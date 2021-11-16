@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.reactivex.Single;
@@ -51,6 +52,18 @@ public interface DaoTransformable<T, R extends RestModel> {
 	 * @param ac
 	 * @return Generated etag
 	 */
-	String getETag(T element, InternalActionContext ac);
+	default String getETag(HibTransformableElement<? extends RestModel> element, InternalActionContext ac) {
+		return element.getETag(ac);
+	}
 
+	/**
+	 * Return the API path.
+	 * 
+	 * @param element
+	 * @param ac
+	 * @return
+	 */
+	default String getAPIPath(HibTransformableElement<? extends RestModel> element, InternalActionContext ac) {
+		return element.getAPIPath(ac);
+	}
 }

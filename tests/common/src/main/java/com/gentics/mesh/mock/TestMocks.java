@@ -56,7 +56,6 @@ import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -99,7 +98,6 @@ public final class TestMocks {
 		when(project.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(project.getEditor()).thenReturn(user);
 		when(project.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
-		when(project.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(project.getElementVersion()).thenReturn(UUID_1);
 		return project;
 	}
@@ -151,7 +149,6 @@ public final class TestMocks {
 		when(role.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(role.getName()).thenReturn(roleName);
 		when(role.getUuid()).thenReturn(ROLE_CLIENT_UUID);
-		when(role.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(role.getElementVersion()).thenReturn(UUID_4);
 		return role;
 	}
@@ -186,7 +183,6 @@ public final class TestMocks {
 			when(user.getCreator()).thenReturn(creator);
 			when(user.getEditor()).thenReturn(creator);
 		}
-		when(user.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(user.getElementVersion()).thenReturn(UUID_1);
 		return user;
 	}
@@ -209,7 +205,6 @@ public final class TestMocks {
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(TAGFAMILY_FUELS_UUID);
 		when(tagFamily.getProject()).thenReturn(project);
-		when(tagFamily.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(tagFamily.getElementVersion()).thenReturn(UUID_2);
 		return tagFamily;
 	}
@@ -224,7 +219,6 @@ public final class TestMocks {
 		when(tag.getUuid()).thenReturn(TAG_BLUE_UUID);
 		when(tag.getTagFamily()).thenReturn(tagFamily);
 		when(tag.getProject()).thenReturn(project);
-		when(tag.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(tag.getElementVersion()).thenReturn(UUID_3);
 		return tag;
 	}
@@ -319,9 +313,7 @@ public final class TestMocks {
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
-		when(node.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
-		when(node.getRolesWithPerm(InternalPermission.READ_PUBLISHED_PERM)).thenReturn(createEmptyTraversal());
-
+		
 		HibNodeFieldContainer container = mockContainer(languageTag, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 		when(contentDao.getNode(container)).thenReturn(node);

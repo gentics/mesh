@@ -129,7 +129,7 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
 		HibSchema container = getSchemaContainer();
 		container.fillCommonRestFields(ac, fields, restSchema);
-		restSchema.setRolePerms(Tx.get().schemaDao().getRolePermissions(container, ac, ac.getRolePermissionParameters().getRoleUuid()));
+		restSchema.setRolePerms(Tx.get().roleDao().getRolePermissions(container, ac, ac.getRolePermissionParameters().getRoleUuid()));
 		return restSchema;
 	}
 

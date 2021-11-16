@@ -12,7 +12,6 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -43,7 +42,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
-public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissions, HasPermissionsRoot {
+public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissionsRoot {
 
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 

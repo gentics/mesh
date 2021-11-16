@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
@@ -22,16 +23,18 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.S3CacheOptions;
+import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.etc.config.VertxOptions;
-import com.gentics.mesh.etc.config.*;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.router.RouterStorageRegistry;
 
 import io.vertx.core.Vertx;
 
 /**
  * @see TxData
  */
-public class TxDataImpl implements TxData {
+public class TxDataImpl implements CommonTxData {
 
 	private final OrientDBBootstrapInitializer boot;
 	private final OrientDBMeshOptions options;
@@ -41,11 +44,13 @@ public class TxDataImpl implements TxData {
 	private final ServerSchemaStorage serverSchemaStorage;
 	private final SchemaComparator schemaComparator;
 	private final MicroschemaComparator microschemaComparator;
+	private final RouterStorageRegistry routerStorageRegistry;
 
 	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot,
 			PermissionRoots permissionRoots, NodeIndexHandler nodeIndexHandler,
 			WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage,
-			SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator) {
+			SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator,
+			RouterStorageRegistry routerStorageRegistry) {
 		this.options = options;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
@@ -54,6 +59,7 @@ public class TxDataImpl implements TxData {
 		this.serverSchemaStorage = serverSchemaStorage;
 		this.schemaComparator = schemaComparator;
 		this.microschemaComparator = microschemaComparator;
+		this.routerStorageRegistry = routerStorageRegistry;
 	}
 
 	@Override
@@ -404,4 +410,8 @@ public class TxDataImpl implements TxData {
 		return microschemaComparator;
 	}
 
+	@Override
+	public RouterStorageRegistry routerStorageRegistry() {
+		return routerStorageRegistry;
+	}
 }

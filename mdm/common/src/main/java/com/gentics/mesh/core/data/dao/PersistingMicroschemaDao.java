@@ -101,7 +101,8 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 	 * @param microschemaContainer
 	 * @param batch
 	 */
-	default void addMicroschema(HibProject project, HibUser user, HibMicroschema microschemaContainer, EventQueueBatch batch) {
+	@Override
+	default void assign(HibMicroschema microschemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
 		PersistingProjectDao projectDao = CommonTx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -121,7 +122,8 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 	 * @param microschema
 	 * @param batch
 	 */
-	default void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch) {
+	@Override
+	default void unassign(HibMicroschema microschema, HibProject project, EventQueueBatch batch) {
 		ProjectDao projectDao = Tx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -153,14 +155,9 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 	}
 
 	@Override
-	default String getAPIPath(HibMicroschema element, InternalActionContext ac) {
-		return element.getAPIPath(ac);
-	}
-
-	@Override
 	default HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibMicroschema microschema = create(ac, batch, uuid);
-		addMicroschema(root, ac.getUser(), microschema, batch);
+		assign(microschema, root, ac.getUser(), batch);
 		CommonTx.get().projectDao().mergeIntoPersisted(root);
 		return microschema;
 	}
@@ -175,7 +172,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 	 */
 	default HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		UserDao userRoot = Tx.get().userDao();
-		HibBaseElement microschemaRoot = Tx.get().data().permissionRoots().microschema();
+		HibBaseElement microschemaRoot = CommonTx.get().data().permissionRoots().microschema();
 
 		HibUser requestUser = ac.getUser();
 		MicroschemaVersionModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
@@ -321,7 +318,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 
 	@Override
 	default void delete(HibProject root, HibMicroschema element, BulkActionContext bac) {
-		removeMicroschema(root, element, bac.batch());
+		unassign(element, root, bac.batch());
 		assignEvents(element, UNASSIGNED).forEach(bac::add);
 		// TODO should we delete the schema completely?
 		//delete(element, bac);
@@ -343,12 +340,7 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 	}
 
 	@Override
-	default void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch) {
-		removeMicroschema(project, microschema, batch);
-	}
-
-	@Override
 	default FieldSchemaContainerComparator<MicroschemaModel> getFieldSchemaContainerComparator() {
-		return Tx.get().data().microschemaComparator();
+		return CommonTx.get().data().microschemaComparator();
 	}
 }

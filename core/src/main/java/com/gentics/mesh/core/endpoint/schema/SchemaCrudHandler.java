@@ -153,7 +153,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 								// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
 								for (HibProject project : schemaDao.findLinkedProjects(schemaContainer)) {
 									if (project != null) {
-										microschemaDao.addMicroschema(project, user, microschema, batch);
+										microschemaDao.assign(microschema, project, user, batch);
 									}
 								}
 							}
@@ -253,7 +253,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 				// Assign the schema to the project
 				utils.eventAction(batch -> {
-					schemaDao.addSchema(schema, project, ac.getUser(), batch);
+					schemaDao.assign(schema, project, ac.getUser(), batch);
 				});
 				return schemaDao.transformToRestSync(schema, ac, 0);
 			}, model -> ac.send(model, OK));
@@ -290,7 +290,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 				}
 
 				utils.eventAction(batch -> {
-					schemaDao.removeSchema(schema, project, batch);
+					schemaDao.unassign(schema, project, batch);
 					batch.add(schema.onUpdated());
 				});
 
