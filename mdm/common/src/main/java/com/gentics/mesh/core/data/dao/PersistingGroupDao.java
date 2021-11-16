@@ -6,6 +6,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
@@ -133,9 +134,10 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
     @Override
     default void delete(HibGroup group, BulkActionContext bac) {
         bac.batch().add(group.onDeleted());
-        deletePersisted(group);
         Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
+        deletePersisted(group);
         for (HibUser affectedUser : affectedUsers) {
+            CommonTx.get().userDao().updateShortcutEdges(affectedUser);
             bac.add(affectedUser.onUpdated());
             bac.inc();
         }
@@ -162,6 +164,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
             }
         }
         group.fillCommonRestFields(ac, fields, restGroup);
+        setRolePermissions(group, ac, restGroup);
         return restGroup;
     }
 }
