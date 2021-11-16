@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
@@ -465,5 +467,12 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/nodes/" + getUuid();
+	}
+
+	@Override
+	default PermissionChangedProjectElementEventModel onPermissionChanged(HibRole role) {
+		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
+		fillPermissionChanged(model, role);
+		return model;
 	}
 }
