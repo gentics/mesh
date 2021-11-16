@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.s3binary;
 
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.rest.event.s3binary.S3BinaryEventModel;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 
 /**
@@ -111,4 +112,31 @@ public interface S3HibBinary extends HibBaseElement {
 	 * @return
 	 */
 	S3HibBinary setFileName(String fileName);
+
+	/**
+	 * Create the specific delete event.
+	 *
+	 * @param uuid
+	 * @param s3ObjectKey
+	 * @return
+	 */
+	S3BinaryEventModel onDeleted(String uuid, String s3ObjectKey);
+
+	/**
+	 * Create the specific create event.
+	 *
+	 * @param uuid
+	 * @param s3ObjectKey
+	 * @return
+	 */
+	S3BinaryEventModel onCreated(String uuid, String s3ObjectKey);
+
+	/**
+	 * Create the specific metadata extraction event.
+	 *
+	 * @param uuid
+	 * @param s3ObjectKey
+	 * @return
+	 */
+	S3BinaryEventModel onMetadataExtracted(String uuid, String s3ObjectKey);
 }

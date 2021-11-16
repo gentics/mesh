@@ -11,7 +11,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -31,7 +30,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 
 /**
- * Handler which will accept {@link BinaryGraphField} elements and return the binary data using the given context.
+ * Handler which will accept {@link HibBinaryField} elements and return the binary data using the given context.
  */
 @Singleton
 public class BinaryFieldResponseHandler {

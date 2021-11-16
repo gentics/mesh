@@ -19,10 +19,9 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
@@ -54,13 +53,13 @@ import io.vertx.ext.web.RoutingContext;
 @Singleton
 public class WebRootHandler extends AbstractWebrootHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(WebRootHandler.class);
 
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
 	private final S3BinaryFieldResponseHandler s3binaryFieldResponseHandler;
 
 	@Inject
-	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
+	public WebRootHandler(Database database, WebRootService webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
 	  	S3BinaryFieldResponseHandler s3binaryFieldResponseHandler,
 		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
@@ -87,8 +86,8 @@ public class WebRootHandler extends AbstractWebrootHandler {
 			HibNode node = findNodeByPath(ac, rc, nodePath, path);
 
 			HibField field = graphSegment.getPathField();
-			if (field instanceof BinaryGraphField) {
-				BinaryGraphField binaryField = (BinaryGraphField) field;
+			if (field instanceof HibBinaryField) {
+				HibBinaryField binaryField = (HibBinaryField) field;
 				String sha512sum = binaryField.getBinary().getSHA512Sum();
 
 				// Check the etag
@@ -103,8 +102,8 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				}
 				binaryFieldResponseHandler.handle(rc, binaryField);
 				return null;
-			} else if (field instanceof S3BinaryGraphField) {
-				S3BinaryGraphField s3binaryField = (S3BinaryGraphField) field;
+			} else if (field instanceof S3HibBinaryField) {
+				S3HibBinaryField s3binaryField = (S3HibBinaryField) field;
 				String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
 				String version = s3binaryField.getElementVersion();
 

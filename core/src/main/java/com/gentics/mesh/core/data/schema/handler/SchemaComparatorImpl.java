@@ -12,12 +12,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.schema.SchemaChange;
+import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
- * The schema comparator can be used to generate a set of {@link SchemaChange} objects by comparing two schemas. Some differences in between two schemas may
+ * The schema comparator can be used to generate a set of {@link HibSchemaChange} objects by comparing two schemas. Some differences in between two schemas may
  * result in different changes. (eg. a field rename can also be mapped as an field removal + field addition)
  *
  */

@@ -327,7 +327,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T extends HibBaseElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex) {
+	public <T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		FramedGraph fermaGraph = GraphDBTx.getGraphTx().getGraph();
 		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();

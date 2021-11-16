@@ -242,7 +242,7 @@ public interface Database extends TxFactory {
 	 * @param classOfVertex
 	 * @return
 	 */
-	<T extends HibBaseElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex);
+	<T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex);
 
 	/**
 	 * Asynchronously execute the given handler within a transaction and return the completable.

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
@@ -8,6 +9,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -21,10 +23,13 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -32,7 +37,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.endpoint.admin.consistency.repair.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -40,6 +44,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.FramedGraph;
@@ -434,6 +439,29 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 		return true;
 	}
 
+	@Override
+	public void migrateContainerOntoBranch(HibNodeFieldContainer hibContainer, HibBranch newBranch, HibNode node, EventQueueBatch batch, boolean setInitial) {
+		NodeGraphFieldContainer container = toGraph(hibContainer);
+		if (setInitial) {
+			setInitial(node, container, newBranch);
+		}
+		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		BootstrapInitializer boot = mesh.boot();
+		GraphFieldContainerEdgeImpl draftEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
+		draftEdge.setLanguageTag(container.getLanguageTag());
+		draftEdge.setType(DRAFT);
+		draftEdge.setBranchUuid(newBranch.getUuid());
+		String value = getSegmentFieldValue(container);
+		HibNode parent = boot.nodeDao().getParentNode(node, newBranch.getUuid());
+		if (value != null) {
+			draftEdge.setSegmentInfo(parent, value);
+		} else {
+			draftEdge.setSegmentInfo(null);
+		}
+		draftEdge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
+		batch.add(container.onUpdated(newBranch.getUuid(), DRAFT));
+	}
+
 	private HibNodeFieldContainer findDraft(HibNodeFieldContainer latest) {
 		HibNodeFieldContainer previous = latest.getPreviousVersion();
 		while (previous != null) {
@@ -443,6 +471,17 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 			previous = previous.getPreviousVersion();
 		}
 		return null;
+	}
+
+	/**
+	 * Create a new initial edge between node and container for the given branch.
+	 */
+	private void setInitial(HibNode node, NodeGraphFieldContainer container, HibBranch branch) {
+		GraphFieldContainerEdgeImpl initialEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, container,
+			GraphFieldContainerEdgeImpl.class);
+		initialEdge.setLanguageTag(container.getLanguageTag());
+		initialEdge.setBranchUuid(branch.getUuid());
+		initialEdge.setType(INITIAL);
 	}
 
 	/**

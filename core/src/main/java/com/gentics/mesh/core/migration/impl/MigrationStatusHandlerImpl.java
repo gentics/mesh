@@ -10,7 +10,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
@@ -30,13 +30,13 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private HibBranchVersionAssignment versionEdge;
 
-	private Job job;
+	private HibJob job;
 
 	private long completionCount = 0;
 
 	private JobStatus status;
 
-	public MigrationStatusHandlerImpl(Job job, JobType type) {
+	public MigrationStatusHandlerImpl(HibJob job, JobType type) {
 		this.job = job;
 	}
 

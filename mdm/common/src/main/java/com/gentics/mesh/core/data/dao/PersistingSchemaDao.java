@@ -195,7 +195,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
 		if (validate && CommonTx.get().data().vertx() != null) {
-			PersistingSchemaDao.validateSchema(CommonTx.get().data().nodeIndexHandler(), schema);
+			PersistingSchemaDao.validateSchema(CommonTx.get().data().mesh().nodeContainerIndexHandler(), schema);
 		}
 
 		String name = schema.getName();
@@ -402,7 +402,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 
 	@Override
 	default FieldSchemaContainerComparator<SchemaModel> getFieldSchemaContainerComparator() {
-		return CommonTx.get().data().schemaComparator();
+		return CommonTx.get().data().mesh().schemaComparator();
 	}
 
 	@Override

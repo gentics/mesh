@@ -45,18 +45,14 @@ import com.gentics.mesh.core.actions.impl.TagFamilyDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
-import com.gentics.mesh.core.context.ContextDataRegistry;
-import com.gentics.mesh.core.context.impl.GraphContextDataRegistryImpl;
-import com.gentics.mesh.core.data.PersistenceClassMap;
-import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
-import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.db.CommonTxData;
+import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
@@ -138,10 +134,10 @@ import dagger.Module;
 @Module
 public abstract class CommonBindModule {
 	@Binds
-	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
+	abstract TxData txData(CommonTxData e);
 
 	@Binds
-	abstract WebRootService bindWebrootService(WebRootServiceImpl e);
+	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
 
 	@Binds
 	abstract MeshOAuthService bindOAuthHandler(MeshOAuth2ServiceImpl e);
@@ -186,9 +182,6 @@ public abstract class CommonBindModule {
 	abstract S3BinaryStorage bindS3BinaryStorage(S3BinaryStorageImpl e);
 
 	@Binds
-	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);
-
-	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
 
 	@Binds
@@ -211,9 +204,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
-
-	@Binds
-	abstract ContextDataRegistry contextDataRegistry(GraphContextDataRegistryImpl e);
 
 	@Binds
 	abstract RoleIndexHandler roleIndexHandler(RoleIndexHandlerImpl e);

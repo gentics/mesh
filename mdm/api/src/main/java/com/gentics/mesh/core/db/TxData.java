@@ -2,11 +2,7 @@ package com.gentics.mesh.core.db;
 
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.Vertx;
@@ -45,37 +41,9 @@ public interface TxData {
 	Vertx vertx();
 
 	/**
-	 * A reference to the indexing engine.
-	 * 
-	 * @return
-	 */
-	NodeIndexHandler nodeIndexHandler();
-
-	/**
-	 * A reference to the link replacer.
-	 * 
-	 * @return
-	 */
-	WebRootLinkReplacer webRootLinkReplacer();
-
-	/**
-	 * A schema information storage.
+	 * Schema storage.
 	 * 
 	 * @return
 	 */
 	ServerSchemaStorage serverSchemaStorage();
-
-	/**
-	 * A schema comparator.
-	 * 
-	 * @return
-	 */
-	SchemaComparator schemaComparator();
-
-	/**
-	 * A microschema comparator.
-	 * 
-	 * @return
-	 */
-	MicroschemaComparator microschemaComparator();
 }

@@ -1,5 +1,23 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -9,7 +27,6 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
@@ -30,6 +47,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.storage.S3BinaryStorage;
 import com.gentics.mesh.util.NodeUtil;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.http.impl.MimeMapping;
@@ -37,21 +55,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
-
-import javax.inject.Inject;
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Handler for the metadata extraction of the S3 Binaries.
@@ -181,7 +184,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				ac.send(model, OK), ac::fail);
 	}
 
-	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<S3BinaryGraphField>> fieldModifier, S3UploadContext context,
+	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<S3HibBinaryField>> fieldModifier, S3UploadContext context,
 													String nodeUuid,
 													String languageTag, String nodeVersion,
 													String fieldName) {
@@ -283,8 +286,8 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				field.setMimeType(upload.contentType());
 				field.setFileSize(upload.size());
 
-				for (Consumer<S3BinaryGraphField> modifier : fieldModifier) {
-					modifier.accept(toGraph(field));
+				for (Consumer<S3HibBinaryField> modifier : fieldModifier) {
+					modifier.accept(field);
 				}
 
 				// Now get rid of the old field
@@ -301,13 +304,13 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				}
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
-				batch.add(toGraph(s3binary).onMetadataExtracted(nodeUuid,s3ObjectKey));
+				batch.add(s3binary.onMetadataExtracted(nodeUuid,s3ObjectKey));
 			});
 			return nodeDao.transformToRestSync(node, ac, 0);
 		});
 	}
 
-	private Observable<Consumer<S3BinaryGraphField>> postProcessUpload(S3BinaryDataProcessorContext ctx) {
+	private Observable<Consumer<S3HibBinaryField>> postProcessUpload(S3BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		String contentType = upload.contentType();
 		List<S3BinaryDataProcessor> processors = s3binaryProcessorRegistry.getProcessors(contentType);

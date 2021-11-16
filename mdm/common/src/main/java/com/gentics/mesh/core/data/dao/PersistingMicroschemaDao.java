@@ -341,6 +341,6 @@ public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingCont
 
 	@Override
 	default FieldSchemaContainerComparator<MicroschemaModel> getFieldSchemaContainerComparator() {
-		return CommonTx.get().data().microschemaComparator();
+		return CommonTx.get().data().mesh().microschemaComparator();
 	}
 }

@@ -1,12 +1,18 @@
 package com.gentics.mesh.core.data.job;
 
+import static com.gentics.mesh.core.rest.MeshEvent.JOB_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.JOB_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.JOB_UPDATED;
+
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
@@ -20,6 +26,34 @@ import io.reactivex.Completable;
  * Domain model for job.
  */
 public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking {
+
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.JOB, JOB_CREATED, JOB_UPDATED, JOB_DELETED);
+
+	String TYPE_PROPERTY_KEY = "type";
+
+	String ERROR_DETAIL_PROPERTY_KEY = "error_detail";
+
+	String ERROR_MSG_PROPERTY_KEY = "error_msg";
+
+	String START_TIMESTAMP_PROPERTY_KEY = "startDate";
+
+	String STOP_TIMESTAMP_PROPERTY_KEY = "stopDate";
+
+	String COMPLETION_COUNT_PROPERTY_KEY = "completionCount";
+
+	String STATUS_PROPERTY_KEY = "status";
+
+	String NODE_NAME_PROPERTY_KEY = "nodeName";
+
+	String WARNING_PROPERTY_KEY = "warnings";
+
+	/**
+	 * Set the current node name.
+	 */
+	default void setNodeName() {
+		String nodeName = Tx.get().data().options().getNodeName();
+		setNodeName(nodeName);
+	}
 
 	/**
 	 * Set the branch reference for this job.
@@ -41,13 +75,6 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	 * @return
 	 */
 	HibBranch getBranch();
-
-	/**
-	 * Return the creator of the job.
-	 * 
-	 * @return
-	 */
-	HibUser getCreator();
 
 	/**
 	 * Return the type of the job.
@@ -304,6 +331,7 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	 * @param warning
 	 */
 	void setWarnings(JobWarningList warnings);
+
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/admin/jobs/" + getUuid();

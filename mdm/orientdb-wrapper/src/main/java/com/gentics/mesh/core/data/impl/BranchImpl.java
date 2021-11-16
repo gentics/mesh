@@ -19,8 +19,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersionAssignment;
-import com.gentics.mesh.core.data.branch.HibBranchSchemaVersionAssignment;
+import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
+import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
@@ -263,17 +263,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public Result<? extends HibBranchSchemaVersionAssignment> findAllSchemaVersionEdges() {
+	public Result<? extends BranchSchemaEdge> findAllSchemaVersionEdges() {
 		return outE(HAS_SCHEMA_VERSION, BranchSchemaEdgeImpl.class);
 	}
 
 	@Override
-	public Result<? extends HibBranchMicroschemaVersionAssignment> findAllMicroschemaVersionEdges() {
+	public Result<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges() {
 		return outE(HAS_MICROSCHEMA_VERSION, BranchMicroschemaEdgeImpl.class);
 	}
 
 	@Override
-	public Result<? extends HibBranchMicroschemaVersionAssignment> findAllLatestMicroschemaVersionEdges() {
+	public Result<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
 		Iterable<BranchMicroschemaEdgeImpl> it2 = Observable
 			.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
@@ -286,7 +286,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public Iterable<? extends HibBranchSchemaVersionAssignment> findAllLatestSchemaVersionEdges() {
+	public Iterable<? extends BranchSchemaEdge> findAllLatestSchemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
 		return Observable.fromIterable(outE(HAS_SCHEMA_VERSION).frameExplicit(BranchSchemaEdgeImpl.class)).groupBy(it -> it
 			.getSchemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce(
@@ -371,13 +371,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public HibBranchSchemaVersionAssignment findBranchSchemaEdge(HibSchemaVersion schemaVersion) {
+	public BranchSchemaEdge findBranchSchemaEdge(HibSchemaVersion schemaVersion) {
 		SchemaVersion graphSchemaVersion = toGraph(schemaVersion);
 		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(graphSchemaVersion).back().nextOrDefaultExplicit(BranchSchemaEdgeImpl.class, null);
 	}
 
 	@Override
-	public HibBranchMicroschemaVersionAssignment findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion) {
+	public BranchMicroschemaEdge findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion) {
 		MicroschemaVersion graphMicroschemaVersion = toGraph(microschemaVersion);
 		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(graphMicroschemaVersion).back().nextOrDefaultExplicit(
 			BranchMicroschemaEdgeImpl.class, null);

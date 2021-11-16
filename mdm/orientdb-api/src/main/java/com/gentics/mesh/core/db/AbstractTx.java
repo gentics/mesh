@@ -17,7 +17,7 @@ package com.gentics.mesh.core.db;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
@@ -113,7 +113,7 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	}
 
 	@Override
-	public <B extends HibBaseElement> B create(String uuid, Class<? extends B> classOfB) {
+	public <B extends HibElement> B create(String uuid, Class<? extends B> classOfB) {
 		B entity = getGraph().addFramedVertex(classOfB);
 		if (StringUtils.isNotBlank(uuid)) {
 			entity.setUuid(uuid);
@@ -123,7 +123,7 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	}
 	
 	@Override
-	public <B extends HibBaseElement> B persist(B element, Class<? extends B> classOfB) {
+	public <B extends HibElement> B persist(B element, Class<? extends B> classOfB) {
 		/*
 		 * Since OrientDB does not tell apart POJOs and persistent entities, 
 		 * processing the entity updates directly into the persistent state, 
@@ -133,7 +133,7 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	}
 	
 	@Override
-	public <B extends HibBaseElement> void delete(B element, Class<? extends B> classOfB) {
+	public <B extends HibElement> void delete(B element, Class<? extends B> classOfB) {
 		((ElementFrame) element).remove();
 	}
 }

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field;
 import java.util.Map;
 import java.util.Objects;
 
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -11,7 +12,7 @@ import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.util.UniquenessUtil;
 
-public interface HibBinaryField extends HibField, HibBasicField<BinaryField> {
+public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, HibElement {
 
 	/**
 	 * Return the binary filename.

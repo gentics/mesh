@@ -105,7 +105,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 * @param filterByLanguage
 	 *            Whether to append the language filter
 	 */
-	private <T extends HibCoreElement, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
+	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);

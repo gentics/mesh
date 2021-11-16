@@ -1,6 +1,5 @@
 package com.gentics.mesh.context.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.rest.client.AbstractMeshRestHttpClient.getQuery;
 
 import java.util.HashMap;
@@ -11,12 +10,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.json.JsonUtil;
@@ -53,6 +52,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private Class<? extends T> classOfResponse;
 	private Set<FileUpload> fileUploads = new HashSet<>();
 	private LogDelegate securityLogger = new DummyLogger();
+	private BootstrapInitializer boot;
 
 	/**
 	 * Create a new local action context.
@@ -64,8 +64,9 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param requestParameters
 	 *            Query parameters which will form the complete query string
 	 */
-	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse,
+	public LocalActionContextImpl(BootstrapInitializer boot, MeshAuthUser user, Class<? extends T> classOfResponse,
 		ParameterProvider... requestParameters) {
+		this.boot = boot;
 		this.query = getQuery(requestParameters);
 		this.user = user;
 		this.classOfResponse = classOfResponse;
@@ -196,7 +197,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param projectName
 	 */
 	public void setProject(String projectName) {
-		MeshComponent mesh = toGraph(user).getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		MeshComponent mesh = boot.mesh().internal();
 		HibProject project = mesh.database().tx(tx -> {
 			return tx.projectDao().findByName(projectName);
 		});

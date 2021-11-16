@@ -65,7 +65,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.syncleus.ferma.ElementFrame;
 
 /**
  * Converter which can transform MDM domain model objects to graph domain element.
@@ -423,29 +422,6 @@ public final class HibClassConverter {
 	}
 
 	/**
-	 * Apply the cast to the graph element d and return it.
-	 *
-	 * @param <T>
-	 *            Type of the graph field
-	 * @param element
-	 *            MDM element to be casted
-	 * @param clazz
-	 *            Element class to validate the cast operation
-	 * @return Casted element object
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T checkAndCast(HibElement element, Class<? extends ElementFrame> clazz) {
-		if (element == null) {
-			return null;
-		}
-		if (clazz.isInstance(element)) {
-			return (T) clazz.cast(element);
-		} else {
-			throw new RuntimeException("The received element was not an OrientDB element. Got: " + element.getClass().getName());
-		}
-	}
-
-	/**
 	 * Apply the cast to the graph element and return it.
 	 * 
 	 * @param <T>
@@ -480,7 +456,7 @@ public final class HibClassConverter {
 	 * @return Casted element object
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T, C> T checkAndCast(C element, Class<? extends C> clazz) {
+	public static <T extends C, C> T checkAndCast(C element, Class<? extends T> clazz) {
 		if (element == null) {
 			return null;
 		}

@@ -24,7 +24,6 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
@@ -159,15 +158,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	@Override
 	public Vertx vertx() {
 		return mesh().vertx();
-	}
-
-	/**
-	 * Create a new event queue batch for CUD operations.
-	 * 
-	 * @return
-	 */
-	public EventQueueBatch createBatch() {
-		return mesh().batchProvider().get();
 	}
 
 	/**

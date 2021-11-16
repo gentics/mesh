@@ -196,7 +196,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
-		CommonTx.get().data().routerStorageRegistry().assertProjectName(requestModel.getName());
+		CommonTx.get().data().mesh().routerStorageRegistry().assertProjectName(requestModel.getName());
 
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
@@ -238,7 +238,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		String oldName = project.getName();
 		String newName = requestModel.getName();
-		CommonTx.get().data().routerStorageRegistry().assertProjectName(newName);
+		CommonTx.get().data().mesh().routerStorageRegistry().assertProjectName(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
 			HibProject projectWithSameName = findByName(newName);

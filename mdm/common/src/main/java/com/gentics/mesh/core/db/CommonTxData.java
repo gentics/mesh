@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.db;
 
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.dagger.BaseMeshComponent;
 
 /**
  * A developer extension API for {@link TxData}.
@@ -11,9 +11,9 @@ import com.gentics.mesh.router.RouterStorageRegistry;
 public interface CommonTxData extends TxData {
 
 	/**
-	 * A router storage registry
+	 * Root Mesh component access.
 	 * 
 	 * @return
 	 */
-	RouterStorageRegistry routerStorageRegistry();
+	BaseMeshComponent mesh();
 }
