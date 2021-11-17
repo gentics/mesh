@@ -10,10 +10,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.UpdateFieldChange;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -30,7 +27,8 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			HibUpdateFieldChange change = createChange(schemaDao(tx), version, UPDATEFIELD);
 			change.setLabel("testLabel");
 			assertEquals("testLabel", change.getLabel());
 		}
@@ -40,13 +38,12 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = ((GraphDBTx) tx).getGraph()
-					.addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
 
 			SchemaModelImpl schema = new SchemaModelImpl("test");
 			schema.addField(FieldUtil.createStringFieldSchema("name"));
 
-			UpdateFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange change = createChange(schemaDao(tx), version, UPDATEFIELD);
 			change.setFieldName("name");
 			change.setLabel("updated");
 			version.setSchema(schema);
@@ -62,9 +59,10 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+
 			SchemaChangeModel model = new SchemaChangeModel(UPDATEFIELD, "someField");
-			UpdateFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-			change.updateFromRest(model);
+			HibUpdateFieldChange change = (HibUpdateFieldChange) schemaDao(tx).createChange(version, model);
 			assertEquals("someField", change.getFieldName());
 		}
 	}
@@ -73,13 +71,13 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			HibUpdateFieldChange change = createChange(schemaDao(tx), version, UPDATEFIELD);
 			change.setFieldName("fieldName");
 
 			SchemaChangeModel model = change.transformToRest();
 			assertEquals("fieldName", model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
-			assertEquals(UpdateFieldChange.OPERATION, model.getOperation());
+			assertEquals(HibUpdateFieldChange.OPERATION, model.getOperation());
 		}
 	}
-
 }

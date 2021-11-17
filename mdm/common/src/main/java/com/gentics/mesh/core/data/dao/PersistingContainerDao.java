@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
@@ -32,6 +33,22 @@ public interface PersistingContainerDao<
 			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
 			M extends FieldSchemaContainer
 		> extends PersistingDaoGlobal<SC>, ContainerDao<R, RM, RE, SC, SCV, M> {
+
+	/**
+	 * Create new persisted version entity for the container entity.
+	 * 
+	 * @return
+	 */
+	SCV createPersistedVersion(SC container);
+
+	/**
+	 * Create the corresponding persisted instance of the schema change operation for the given schema version.
+	 * 
+	 * @param version
+	 * @param schemaChangeOperation
+	 * @return
+	 */
+	HibSchemaChange<?> createPersistedChange(SCV version, SchemaChangeOperation schemaChangeOperation);
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -119,5 +136,15 @@ public interface PersistingContainerDao<
 			deleteChange(next, bc);
 		}
 		CommonTx.get().delete(change, change.getClass());
+	}
+
+	@Override
+	default HibSchemaChange<?> createChange(SCV version, SchemaChangeModel restChange) {
+		// Create an instance
+		HibSchemaChange<?> schemaChange = createPersistedChange(version, restChange.getOperation());
+		
+		// Set properties from rest model
+		schemaChange.updateFromRest(restChange);
+		return schemaChange;
 	}
 }

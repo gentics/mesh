@@ -16,7 +16,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -32,10 +31,10 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -376,19 +375,19 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			// TODO move into OrientDB tests when available.
-			TagRoot root = ((OrientDBBootstrapInitializer) boot()).meshRoot().getTagRoot();
-			assertEquals(tags().size(), root.computeCount());
+			HibTagFamily tagFamily = tagFamily("colors");
+			TagDao tagDao = tx.<CommonTx>unwrap().tagDao();
+			assertEquals(tags().size(), tagDao.count());
 			HibTag tag = tag("red");
-			root.removeTag(tag);
-			assertEquals(tags().size() - 1, root.computeCount());
-			root.removeTag(tag);
-			assertEquals(tags().size() - 1, root.computeCount());
-			root.addTag(tag);
-			assertEquals(tags().size(), root.computeCount());
-			root.addTag(tag);
-			assertEquals(tags().size(), root.computeCount());
-			root.delete(createBulkContext());
+			tagDao.removeItem(tagFamily, tag);
+			assertEquals(tags().size() - 1, tagDao.count());
+			tagDao.removeItem(tagFamily, tag);
+			assertEquals(tags().size() - 1, tagDao.count());
+			tagDao.addItem(tagFamily, tag);
+			assertEquals(tags().size(), tagDao.count());
+			tagDao.addItem(tagFamily, tag);
+			assertEquals(tags().size(), tagDao.computeCount(null));
+			tagDao.onRootDeleted(tagFamily, createBulkContext());
 		}
 	}
 

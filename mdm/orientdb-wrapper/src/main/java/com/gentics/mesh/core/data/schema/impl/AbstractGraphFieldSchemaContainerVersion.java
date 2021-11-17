@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraphContainer;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -20,7 +18,6 @@ import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -101,37 +98,6 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<
 	@Override
 	public void setNextVersion(SCV container) {
 		setSingleLinkOutTo(toGraph(container), HAS_VERSION);
-	}
-
-	@Override
-	public SchemaChange<?> createChange(SchemaChangeModel restChange) {
-		SchemaChange<?> schemaChange = null;
-		switch (restChange.getOperation()) {
-		case ADDFIELD:
-			schemaChange = getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			break;
-		case REMOVEFIELD:
-			schemaChange = getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-			break;
-		case UPDATEFIELD:
-			schemaChange = getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-			break;
-		case CHANGEFIELDTYPE:
-			schemaChange = getGraph().addFramedVertex(FieldTypeChangeImpl.class);
-			break;
-		case UPDATESCHEMA:
-			schemaChange = getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
-			break;
-		case UPDATEMICROSCHEMA:
-			schemaChange = getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
-			break;
-		default:
-			throw error(BAD_REQUEST, "error_change_operation_unknown", String.valueOf(restChange.getOperation()));
-		}
-		// Set properties from rest model
-		schemaChange.updateFromRest(restChange);
-		return schemaChange;
-
 	}
 
 	@Override

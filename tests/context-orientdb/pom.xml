@@ -13,5 +13,13 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-tests-context-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>tests-mesh-core</artifactId>
+		</dependency>
 	</dependencies>
 </project>

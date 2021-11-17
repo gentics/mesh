@@ -40,9 +40,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.cli.MeshImpl;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
@@ -55,7 +53,6 @@ import com.gentics.mesh.etc.config.S3CacheOptions;
 import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
-import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
@@ -149,9 +146,6 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	public void setup(MeshTestSetting settings) throws Exception {
-		if (!settings.inMemoryDB() && (meshDagger.database() instanceof GraphDatabase)) {
-			DatabaseHelper.init(HibClassConverter.toGraph(meshDagger.database()));
-		}
 		initFolders(mesh.getOptions());
 		boolean setAdminPassword = settings.optionChanger() != MeshOptionChanger.INITIAL_ADMIN_PASSWORD;
 		setupData(mesh.getOptions(), setAdminPassword);
@@ -564,7 +558,7 @@ public class MeshTestContext extends TestWatcher {
 		MonitoringConfig monitoringOptions = meshOptions.getMonitoringOptions();
 		monitoringOptions.setPort(monitoringPort);
 
-		meshInstanceProvider.initStorage(settings);
+		meshInstanceProvider.initStorage(settings, mesh);
 
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		S3Options s3Options = meshOptions.getS3Options();

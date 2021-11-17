@@ -2,13 +2,10 @@ package com.gentics.mesh.core.field.binary;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.util.HibClassConverter;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.core.graph.GraphAttribute;
-import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
@@ -31,13 +28,12 @@ public interface BinaryFieldTestHelper {
 	};
 
 	final DataProvider FILL_BASIC = (container, name) -> {
-		MeshComponent mesh = HibClassConverter.toGraph(container).getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		String sha512Sum = FileUtils.hash(buffer).blockingGet();
-		HibBinary binary = GraphDBTx.getGraphTx().binaries().create(sha512Sum, Long.valueOf(buffer.length())).runInExistingTx(Tx.get());
+		HibBinary binary = Tx.get().binaries().create(sha512Sum, Long.valueOf(buffer.length())).runInExistingTx(Tx.get());
 
 		String tmpId = UUIDUtil.randomUUID();
-		BinaryStorage storage = mesh.binaryStorage();
+		BinaryStorage storage = CommonTx.get().data().mesh().binaryStorage();
 		storage.storeInTemp(Flowable.just(buffer), tmpId).blockingAwait();
 		storage.moveInPlace(binary.getUuid(), tmpId).blockingAwait();
 

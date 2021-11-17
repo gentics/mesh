@@ -13,14 +13,13 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibRemoveFieldChange;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.db.CommonTx;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
@@ -36,10 +35,10 @@ public class SchemaChangeTest extends AbstractMeshTest {
 			HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 
 			HibSchemaVersion versionA = container.getLatestVersion();
-			HibSchemaVersion versionB = createSchemaVersion(ctx);
-			HibSchemaVersion versionC = createSchemaVersion(ctx);
+			HibSchemaVersion versionB = createSchemaVersion(ctx, container);
+			HibSchemaVersion versionC = createSchemaVersion(ctx, container);
 
-			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			HibRemoveFieldChange change = (HibRemoveFieldChange) schemaDao.createPersistedChange(versionA, SchemaChangeOperation.REMOVEFIELD);
 			assertNull("Initially no version should have been set", container.getLatestVersion());
 			container.setLatestVersion(versionA);
 			assertEquals("The uuid of the latest version did not match to versionA's uuid.", versionA.getUuid(),
@@ -70,7 +69,7 @@ public class SchemaChangeTest extends AbstractMeshTest {
 			CommonTx ctx = (CommonTx) tx;
 			HibMicroschema container = createMicroschema(ctx);
 			HibMicroschemaVersion versionA = container.getLatestVersion();
-			HibMicroschemaVersion versionB = createMicroschemaVersion(ctx);
+			HibMicroschemaVersion versionB = createMicroschemaVersion(ctx, container);
 			container.setLatestVersion(versionB);
 			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
@@ -83,7 +82,7 @@ public class SchemaChangeTest extends AbstractMeshTest {
 			CommonTx ctx = (CommonTx) tx;
 			HibSchema container = createSchema(ctx);
 			HibSchemaVersion versionA = container.getLatestVersion();
-			HibSchemaVersion versionB = createSchemaVersion(ctx);
+			HibSchemaVersion versionB = createSchemaVersion(ctx, container);
 			container.setLatestVersion(versionA);
 			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
@@ -99,8 +98,9 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	 */
 	private HibSchemaChange<?> chainChanges(HibFieldSchemaVersionElement versionA, HibFieldSchemaVersionElement versionB) {
 		HibSchemaChange<?> oldChange = null;
+		PersistingSchemaDao schemaDao = CommonTx.get().schemaDao();
 		for (int i = 0; i < 3; i++) {
-			HibSchemaChange<?> change = GraphDBTx.getGraphTx().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			HibSchemaChange<?> change = schemaDao.createPersistedChange((HibSchemaVersion) versionB, SchemaChangeOperation.REMOVEFIELD);
 			if (oldChange == null) {
 				oldChange = change;
 				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainerVersion());
@@ -145,7 +145,7 @@ public class SchemaChangeTest extends AbstractMeshTest {
 			lastChange.getNextContainerVersion().getPreviousChange().getUuid());
 
 		// Link the chain root to another schema container instead.
-		HibSchemaVersion versionC = createSchemaVersion(CommonTx.get());
+		HibSchemaVersion versionC = createSchemaVersion(CommonTx.get(), (HibSchema) container);
 		HibSchemaChange<?> firstChange = versionA.getNextChange();
 		firstChange.setPreviousContainerVersion(versionC);
 		assertNotEquals("The first change should no longer be connected to containerA", versionA.getUuid(),

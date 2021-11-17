@@ -6,12 +6,18 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.testcontainers.utility.ThrowingFunction;
 
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.impl.DatabaseHelper;
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.dagger.BaseMeshComponent;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshComponent.Builder;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
@@ -33,7 +39,12 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 	}
 
 	@Override
-	public void initStorage(MeshTestSetting settings) throws IOException {
+	public void initStorage(MeshTestSetting settings, Mesh mesh) throws IOException {
+		Database db = mesh.<BaseMeshComponent>internal().database();
+		if (!settings.inMemoryDB() && (db instanceof GraphDatabase)) {
+			DatabaseHelper.init(HibClassConverter.toGraph(db));
+		}
+
 		// The database provider will switch to in memory mode when no directory has been specified.
 		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 
