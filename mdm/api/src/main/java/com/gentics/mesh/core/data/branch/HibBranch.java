@@ -1,10 +1,16 @@
 package com.gentics.mesh.core.data.branch;
 
+import static com.gentics.mesh.ElementType.BRANCH;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
@@ -33,6 +39,13 @@ import com.gentics.mesh.parameter.PagingParameters;
  * Domain model for branch.
  */
 public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferenceableElement<BranchReference>, HibUserTracking, HibNamedElement {
+
+	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Return the branch name.
@@ -269,7 +282,7 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	Result<? extends HibBranchMicroschemaVersion> findAllLatestMicroschemaVersionEdges();
 
 	/**
-	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
+	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link HibNodeFieldContainer}'s or one which
 	 * is queued and will soon contain containers due to an executed node migration.
 	 * 
 	 * @return Iterable
@@ -277,7 +290,7 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	Result<? extends HibSchemaVersion> findActiveSchemaVersions();
 
 	/**
-	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
+	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link HibNodeFieldContainer}'s or one
 	 * which is queued and will soon contain containers due to an executed node migration.
 	 *
 	 * @return Iterable

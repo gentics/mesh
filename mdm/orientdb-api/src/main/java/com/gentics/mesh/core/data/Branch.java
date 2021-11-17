@@ -55,13 +55,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 public interface Branch
 	extends MeshCoreVertex<BranchResponse>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement, HibBranch {
 
-	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
-
-	@Override
-	default TypeInfo getTypeInfo() {
-		return TYPE_INFO;
-	}
-
 	static final String NAME = "name";
 
 	static final String HOSTNAME = "hostname";
