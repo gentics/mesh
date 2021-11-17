@@ -103,16 +103,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
-	 * Update the tags of the node using the provides list of tag references.
-	 *
-	 * @param ac
-	 * @param batch
-	 * @param list
-	 * @return
-	 */
-	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
-
-	/**
 	 * Remove the element.
 	 */
 	void removeElement();

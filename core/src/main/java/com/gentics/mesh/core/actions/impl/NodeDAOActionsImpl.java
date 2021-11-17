@@ -53,10 +53,8 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 
 	@Override
 	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		// TODO MDM refactor TransformablePage
-		//NodeDao nodeDao = ctx.tx().nodeDao();
-		//return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
-		return toGraph(ctx.project()).getNodeRoot().findAll(ctx.ac(), pagingInfo);
+		NodeDao nodeDao = ctx.tx().nodeDao();
+		return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
 	}
 
 	@Override

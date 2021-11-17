@@ -30,8 +30,10 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -343,7 +345,7 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
-		HibNode parentNode = getParentNode(branch.getUuid());
+		HibNode parentNode = nodeDao.getParentNode(this, branch.getUuid());
 		HibNodeFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(tx.data().options()), branch.getUuid(),
 				ac.getVersioningParameters()
 						.getVersion());
@@ -420,7 +422,7 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 
 		// breadcrumb
 		keyBuilder.append("-");
-		HibNode current = getParentNode(branch.getUuid());
+		HibNode current = nodeDao.getParentNode(this, branch.getUuid());
 		if (current != null) {
 			while (current != null) {
 				String key = current.getUuid() + getDisplayName(ac);
@@ -475,4 +477,14 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 		fillPermissionChanged(model, role);
 		return model;
 	}
+
+	/**
+	 * Update the tags of the node using the provides list of tag references.
+	 *
+	 * @param ac
+	 * @param batch
+	 * @param list
+	 * @return
+	 */
+	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
 }

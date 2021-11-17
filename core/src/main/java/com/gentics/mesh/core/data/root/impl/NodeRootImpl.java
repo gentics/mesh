@@ -20,6 +20,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.HibCoreElement;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
@@ -272,6 +273,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
+	@Deprecated
+	/**
+	 * use {@link NodeDao#create(HibCoreElement, InternalActionContext, EventQueueBatch, String)} )}
+	 */
 	public Node create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac);

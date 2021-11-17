@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
@@ -8,9 +9,11 @@ import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -33,6 +36,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
@@ -45,6 +49,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
@@ -53,11 +58,14 @@ import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.handler.VersionUtils;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NavigationParameters;
@@ -68,6 +76,7 @@ import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
+import org.apache.commons.lang3.StringUtils;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 
@@ -820,5 +829,131 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 		}
 		bac.process();
+	}
+
+	@Override
+	default HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		Tx tx = Tx.get();
+		HibBranch branch = tx.getBranch(ac);
+		UserDao userDao = tx.userDao();
+		SchemaDao schemaDao = tx.schemaDao();
+
+		// Override any given version parameter. Creation is always scoped to drafts
+		ac.getVersioningParameters().setVersion("draft");
+
+		HibUser requestUser = ac.getUser();
+
+		String body = ac.getBodyAsString();
+
+		// 1. Extract the schema information from the given JSON
+		SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
+		boolean missingSchemaInfo = schemaInfo.getSchema() == null
+				|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid())
+				&& StringUtils.isEmpty(schemaInfo.getSchema().getName()));
+		if (missingSchemaInfo) {
+			throw error(BAD_REQUEST, "error_schema_parameter_missing");
+		}
+
+		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
+			// 2. Use schema reference by uuid first
+			HibSchema schemaByUuid = schemaDao.loadObjectByUuid(project, ac, schemaInfo.getSchema().getUuid(), READ_PERM);
+			HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			if (schemaVersion == null) {
+				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
+			}
+			return createNode(ac, schemaVersion, batch, uuid);
+		}
+
+		// 3. Or just schema reference by name
+		if (!isEmpty(schemaInfo.getSchema().getName())) {
+			HibSchema schemaByName = schemaDao.findByName(project, schemaInfo.getSchema().getName());
+			if (schemaByName != null) {
+				String schemaName = schemaByName.getName();
+				String schemaUuid = schemaByName.getUuid();
+				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
+					HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					if (schemaVersion == null) {
+						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
+								project.getName());
+					}
+					return createNode(ac, schemaVersion, batch, uuid);
+				} else {
+					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName, READ_PERM.getRestPerm().getName());
+				}
+
+			} else {
+				throw error(NOT_FOUND, "schema_not_found", schemaInfo.getSchema().getName());
+			}
+		} else {
+			throw error(BAD_REQUEST, "error_schema_parameter_missing");
+		}
+	}
+
+	/**
+	 * Create a new node using the specified schema container.
+	 *
+	 * @param ac
+	 * @param schemaVersion
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
+	// TODO use schema container version instead of container
+	private HibNode createNode(InternalActionContext ac, HibSchemaVersion schemaVersion, EventQueueBatch batch,
+							String uuid) {
+		Tx tx = Tx.get();
+		HibProject project = tx.getProject(ac);
+		HibUser requestUser = ac.getUser();
+		UserDao userRoot = tx.userDao();
+		NodeDao nodeDao = tx.nodeDao();
+
+		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
+		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
+			throw error(BAD_REQUEST, "node_missing_parentnode_field");
+		}
+		if (isEmpty(requestModel.getLanguage())) {
+			throw error(BAD_REQUEST, "node_no_languagecode_specified");
+		}
+
+		// Load the parent node in order to create the node
+		HibNode parentNode = nodeDao.loadObjectByUuid(project, ac, requestModel.getParentNode().getUuid(),
+				CREATE_PERM);
+		HibBranch branch = tx.getBranch(ac);
+		// BUG: Don't use the latest version. Use the version which is linked to the
+		// branch!
+		HibNode node = nodeDao.create(parentNode, requestUser, schemaVersion, project, branch, uuid);
+
+		// Add initial permissions to the created node
+		userRoot.inheritRolePermissions(requestUser, parentNode, node);
+
+		// Create the language specific graph field container for the node
+		HibLanguage language = Tx.get().languageDao().findByLanguageTag(requestModel.getLanguage());
+		if (language == null) {
+			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
+		}
+		HibNodeFieldContainer container = node.createFieldContainer(language.getLanguageTag(), branch, requestUser);
+		container.updateFieldsFromRest(ac, requestModel.getFields());
+
+		batch.add(node.onCreated());
+		batch.add(container.onCreated(branch.getUuid(), DRAFT));
+
+		// Check for webroot input data consistency (PUT on webroot)
+		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");
+		if (webrootSegment != null) {
+			String current = container.getSegmentFieldValue();
+			if (!webrootSegment.equals(current)) {
+				throw error(BAD_REQUEST, "webroot_error_segment_field_mismatch", webrootSegment, current);
+			}
+		}
+
+		if (requestModel.getTags() != null) {
+			node.updateTags(ac, batch, requestModel.getTags());
+		}
+
+		return node;
+	}
+
+	default String getAPIPath(HibNode node, InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(node.getProject().getName()) + "/nodes/" + node.getUuid();
 	}
 }
