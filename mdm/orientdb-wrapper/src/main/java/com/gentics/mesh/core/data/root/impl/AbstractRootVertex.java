@@ -89,20 +89,6 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	/**
-	 * Root elements can't be transformed to REST.
-	 * 
-	 * @param element
-	 * @param ac
-	 * @param level
-	 * @param languageTags
-	 * @return
-	 */
-	public RestModel transformToRestSync(T element, InternalActionContext ac, int level, String... languageTags) {
-		// TODO FIXME remove this method, must be implemented in all derived classes
-		throw new RuntimeException("Not implemented");
-	}
-
-	/**
 	 * Generate the eTag for the element. Every time the edges to the root vertex change the internal element version gets updated.
 	 * 
 	 * @param element

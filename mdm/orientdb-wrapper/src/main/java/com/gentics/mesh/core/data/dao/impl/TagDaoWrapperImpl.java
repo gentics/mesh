@@ -366,12 +366,12 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 
 	@Override
 	public void delete(HibTagFamily root, HibTag element, BulkActionContext bac) {
-		toGraph(root).delete(toGraph(element), bac);
+		toGraph(element).delete(bac);
 	}
 
 	@Override
 	public boolean update(HibTagFamily root, HibTag element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).update(toGraph(element), ac, batch);
+		return toGraph(element).update(ac, batch);
 	}
 
 	@Override

@@ -12,8 +12,6 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -37,10 +35,8 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -131,26 +127,6 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		tag.setTagFamily(tagFamily);
 		tag.generateBucketId();
 		return tag;
-	}
-
-	@Override
-	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new NotImplementedException("The tag family is the root element thus should be used for creation of tags.");
-	}
-
-	@Override
-	public boolean update(Tag element, InternalActionContext ac, EventQueueBatch batch) {
-		return super.update(element, ac, batch);
-	}
-
-	@Override
-	public void delete(Tag element, BulkActionContext bac) {
-		throw new RuntimeException("Wrong invocation. Use dao instead");
-	}
-
-	@Override
-	public TagResponse transformToRestSync(Tag element, InternalActionContext ac, int level, String... languageTags) {
-		throw new RuntimeException("Wrong invocation. Use dao instead");
 	}
 
 	@Override

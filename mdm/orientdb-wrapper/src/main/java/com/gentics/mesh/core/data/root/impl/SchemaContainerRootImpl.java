@@ -14,7 +14,6 @@ import java.util.Iterator;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -27,7 +26,6 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
@@ -73,11 +71,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 		}
 		getElement().remove();
 		bac.inc();
-	}
-
-	@Override
-	public Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new RuntimeException("Wrong invocation. Use dao instead");
 	}
 
 	@Override

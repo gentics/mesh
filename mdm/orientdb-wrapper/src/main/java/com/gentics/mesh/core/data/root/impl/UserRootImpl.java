@@ -8,15 +8,12 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * @see UserRoot
@@ -84,28 +81,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public UserResponse transformToRestSync(User user, InternalActionContext ac, int level, String... languageTags) {
-		throw new RuntimeException("Wrong invocation. Use dao instead");
-	}
-
-	@Override
-	public void delete(User user, BulkActionContext bac) {
-		throw new RuntimeException("Wrong invocation. Use dao instead");
-	}
-
-	@Override
-	public boolean update(User element, InternalActionContext ac, EventQueueBatch batch) {
-		throw new RuntimeException("Wrong invocation. Use dao instead");
-	}
-
-	@Override
 	public void delete(BulkActionContext context) {
 		throw new NotImplementedException("The user root should never be deleted");
 	}
-
-	@Override
-	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new RuntimeException("Wrong invocation. Use Dao instead.");
-	}
-
 }

@@ -17,7 +17,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -27,9 +26,6 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * @see ProjectRoot
@@ -129,22 +125,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	@Override
 	public void delete(BulkActionContext bac) {
 		throw new NotImplementedException("The project root should never be deleted.");
-	}
-
-	@Override
-	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new RuntimeException("Wrong invocation. Use dao instead.");
-	}
-
-	@Override
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaVersion schemaVersion, String uuid, EventQueueBatch batch) {
-		throw new RuntimeException("Wrong invocation. Use dao instead.");
-	}
-
-	@Override
-	public ProjectResponse transformToRestSync(Project element, InternalActionContext ac, int level, String... languageTags) {
-		throw new RuntimeException("Wrong invocation. Use dao instead.");
 	}
 
 	@Override

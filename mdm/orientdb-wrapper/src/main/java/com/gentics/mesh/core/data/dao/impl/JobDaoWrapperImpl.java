@@ -9,6 +9,8 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -105,17 +107,17 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 
 	@Override
 	public boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().meshRoot().getJobRoot().update(toGraph(job), ac, batch);
+		return toGraph(job).update(ac, batch);
 	}
 
 	@Override
 	public HibJob create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return boot.get().meshRoot().getJobRoot().create(ac, batch, uuid);
+		throw new NotImplementedException("Jobs cannot be created using REST");
 	}
 
 	@Override
 	public void delete(HibJob job, BulkActionContext bac) {
-		boot.get().meshRoot().getJobRoot().delete(toGraph(job), bac);
+		toGraph(job).delete(bac);
 	}
 
 	@Override

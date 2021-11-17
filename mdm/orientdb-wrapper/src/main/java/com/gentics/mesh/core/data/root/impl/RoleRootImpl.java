@@ -9,7 +9,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -19,8 +18,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -92,15 +89,4 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	public Role create() {
 		return getGraph().addFramedVertex(RoleImpl.class);
 	}
-
-	@Override
-	public Role create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new RuntimeException("Wrong invocation. Use Dao instead.");
-	}
-
-	@Override
-	public RoleResponse transformToRestSync(Role element, InternalActionContext ac, int level, String... languageTags) {
-		throw new RuntimeException("Wrong invocation. Use Dao instead.");
-	}
-
 }

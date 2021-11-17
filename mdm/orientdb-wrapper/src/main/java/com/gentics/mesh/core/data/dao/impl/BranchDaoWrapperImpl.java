@@ -33,13 +33,11 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -57,20 +55,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	public BranchDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<GraphDatabase> db) {
 		super(boot);
 		this.db = db;
-	}
-
-	/**
-	 * Transform the given branch to REST.
-	 * 
-	 * @param branch
-	 * @param ac
-	 * @param level
-	 * @param languageTags
-	 * @return
-	 */
-	public BranchResponse transformToRestSync(HibBranch branch, InternalActionContext ac, int level, String... languageTags) {
-		Branch graphBranch = toGraph(branch);
-		return graphBranch.getRoot().transformToRestSync(graphBranch, ac, level, languageTags);
 	}
 
 	/**
@@ -121,25 +105,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public HibBranch create(HibProject project, String name, HibUser user, EventQueueBatch batch) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().create(name, user, batch);
-	}
-
-	@Override
-	public HibBranch create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().create(ac, batch, uuid);
-	}
-
-	@Override
-	public HibBranch create(HibProject project, String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch,
-		EventQueueBatch batch) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().create(name, creator, uuid, setLatest, baseBranch, batch);
-	}
-
-	@Override
 	public HibBranch getLatestBranch(HibProject project) {
 		Project graphProject = toGraph(project);
 		return graphProject.getBranchRoot().getLatestBranch();
@@ -186,16 +151,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getBranchRoot().globalCount();
-	}
-
-	@Override
-	public void delete(HibProject root, HibBranch element, BulkActionContext bac) {
-		toGraph(root).getBranchRoot().delete(toGraph(element), bac);
-	}
-
-	@Override
-	public boolean update(HibProject root, HibBranch element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).getBranchRoot().update(toGraph(element), ac, batch);
 	}
 
 	@Override
@@ -249,5 +204,13 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	@Override
 	public HibBranchMicroschemaVersion connectToMicroschemaVersion(HibBranch branch, HibMicroschemaVersion version) {
 		return toGraph(branch).addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, toGraph(version), BranchMicroschemaEdgeImpl.class);
+	}
+
+	@Override
+	public void onRootDeleted(HibProject root, BulkActionContext bac) {
+		// Delete all leaf data
+		super.onRootDeleted(root, bac);
+		// Delete the root itself
+		getRoot(root).delete();
 	}
 }

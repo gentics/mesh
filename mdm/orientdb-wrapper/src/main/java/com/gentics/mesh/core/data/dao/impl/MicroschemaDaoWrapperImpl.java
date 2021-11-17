@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -168,11 +167,6 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	public HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return toGraph(root).getMicroschemaContainerRoot().create(ac, batch, uuid);
-	}
-
-	@Override
 	public void addItem(HibProject root, HibMicroschema item) {
 		toGraph(root).getMicroschemaContainerRoot().addItem(toGraph(item));
 	}
@@ -210,11 +204,6 @@ public class MicroschemaDaoWrapperImpl
 	@Override
 	public HibMicroschemaVersion findVersionByUuid(HibMicroschema schema, String versionUuid) {
 		return toGraph(schema).findVersionByUuid(versionUuid);
-	}
-
-	@Override
-	public boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().meshRoot().getMicroschemaContainerRoot().update(toGraph(element), ac, batch);
 	}
 
 	@Override

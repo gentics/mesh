@@ -436,4 +436,10 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		return GraphDBTx.getGraphTx().branchDao().update(this, ac, batch);
 	}
+
+	@Override
+	public HibBranch setInitial() {
+		getRoot().setInitialBranch(this);
+		return this;
+	}
 }

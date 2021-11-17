@@ -10,7 +10,6 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -77,15 +76,4 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	public MicroschemaVersion createVersion() {
 		return getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 	}
-
-	@Override
-	public Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new RuntimeException("Wrong invocation. Use dao instead.");
-	}
-
-	@Override
-	public Microschema create(InternalActionContext ac, EventQueueBatch batch) {
-		throw new RuntimeException("Wrong invocation. Use dao instead.");
-	}
-
 }

@@ -83,4 +83,14 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, Referencea
 	 */
 	void removeTag(Tag tag);
 
+	/**
+	 * @deprecated Remove after PersistingTag/FamilyDao approached.
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
+	@Deprecated
+	Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+
 }

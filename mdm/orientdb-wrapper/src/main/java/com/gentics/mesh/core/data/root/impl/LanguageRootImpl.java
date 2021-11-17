@@ -13,14 +13,12 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -54,28 +52,6 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	@Override
 	public long globalCount() {
 		return db().count(LanguageImpl.class);
-	}
-
-	@Override
-	public void addLanguage(Language language) {
-		addItem(language);
-	}
-
-	@Override
-	public Language create(String languageName, String languageTag, String uuid) {
-		Language language = getGraph().addFramedVertex(LanguageImpl.class);
-		if (uuid != null) {
-			language.setUuid(uuid);
-		}
-		language.setName(languageName);
-		language.setLanguageTag(languageTag);
-		addLanguage(language);
-		return language;
-	}
-
-	@Override
-	public Language create(InternalActionContext rc, EventQueueBatch batch, String uuid) {
-		throw new NotImplementedException("Languages can be created using REST");
 	}
 
 	/**

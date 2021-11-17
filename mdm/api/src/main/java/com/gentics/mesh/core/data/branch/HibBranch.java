@@ -178,6 +178,13 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	HibBranch setLatest();
 
 	/**
+	 * Make the branch the initial branch of the project
+	 * 
+	 * @return
+	 */
+	HibBranch setInitial();
+
+	/**
 	 * Get the next Branch.
 	 * 
 	 * @return next Branch

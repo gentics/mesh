@@ -11,7 +11,6 @@ import java.util.Stack;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
@@ -20,8 +19,6 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.event.EventQueueBatch;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -131,20 +128,4 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 			}
 		}
 	}
-
-	@Override
-	public boolean update(TagFamily element, InternalActionContext ac, EventQueueBatch batch) {
-		throw new RuntimeException("Wrong invocation. Use the dao instead.");
-	}
-
-	@Override
-	public TagFamilyResponse transformToRestSync(TagFamily element, InternalActionContext ac, int level, String... languageTags) {
-		throw new RuntimeException("Wrong invocation. Use the dao instead.");
-	}
-
-	@Override
-	public TagFamily create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new RuntimeException("Wrong invocation. Use the dao instead.");
-	}
-
 }

@@ -5,7 +5,6 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -29,7 +28,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -65,6 +63,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
+import com.syncleus.ferma.ElementFrame;
 
 /**
  * Converter which can transform MDM domain model objects to graph domain element.
@@ -422,10 +421,10 @@ public final class HibClassConverter {
 	}
 
 	/**
-	 * Apply the cast to the graph element and return it.
-	 * 
+	 * Apply the cast to the graph element d and return it.
+	 *
 	 * @param <T>
-	 *            Type of the graph element
+	 *            Type of the graph field
 	 * @param element
 	 *            MDM element to be casted
 	 * @param clazz
@@ -433,14 +432,14 @@ public final class HibClassConverter {
 	 * @return Casted element object
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T checkAndCast(HibField element, Class<? extends GraphField> clazz) {
+	public static <T> T checkAndCast(HibElement element, Class<? extends ElementFrame> clazz) {
 		if (element == null) {
 			return null;
 		}
 		if (clazz.isInstance(element)) {
 			return (T) clazz.cast(element);
 		} else {
-			throw new RuntimeException("The received field was not an OrientDB field. Got: " + element.getClass().getName());
+			throw new RuntimeException("The received element was not an OrientDB element. Got: " + element.getClass().getName());
 		}
 	}
 
@@ -455,7 +454,6 @@ public final class HibClassConverter {
 	 *            Element class to validate the cast operation
 	 * @return Casted element object
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T extends C, C> T checkAndCast(C element, Class<? extends T> clazz) {
 		if (element == null) {
 			return null;

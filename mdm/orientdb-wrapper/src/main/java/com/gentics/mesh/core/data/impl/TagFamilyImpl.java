@@ -122,6 +122,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
+	@Deprecated
 	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return HibClassConverter.toGraph(mesh().boot().tagDao().create(this, ac, batch, uuid));
 	}

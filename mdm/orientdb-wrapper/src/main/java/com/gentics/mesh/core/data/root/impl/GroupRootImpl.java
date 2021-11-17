@@ -13,7 +13,6 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -26,9 +25,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -95,20 +92,4 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	public Group create() {
 		return getGraph().addFramedVertex(GroupImpl.class);
 	}
-
-	@Override
-	public Group create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new RuntimeException("Wrong invocation. Use Dao instead.");
-	}
-
-	@Override
-	public Group create(InternalActionContext ac, EventQueueBatch batch) {
-		throw new RuntimeException("Wrong invocation. Use Dao instead.");
-	}
-	
-	@Override
-	public GroupResponse transformToRestSync(Group element, InternalActionContext ac, int level, String... languageTags) {
-		throw new RuntimeException("Wrong invocation. Use Dao instead.");
-	}
-
 }

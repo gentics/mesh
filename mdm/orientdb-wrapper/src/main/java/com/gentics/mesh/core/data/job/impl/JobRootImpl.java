@@ -39,7 +39,6 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
@@ -197,11 +196,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public MeshVertex resolveToElement(Stack<String> stack) {
 		throw error(BAD_REQUEST, "Jobs are not accessible");
-	}
-
-	@Override
-	public Job create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new NotImplementedException("Jobs can be created using REST");
 	}
 
 	/**
