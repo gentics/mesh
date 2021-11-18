@@ -1014,7 +1014,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibNode parentNode = folder("news");
 			uuid = parentNode.getUuid();
 
-			nNodesFound = nodeDao.computeCount(project());
+			nNodesFound = nodeDao.count(project());
 		}
 
 		Function<Long, NodeCreateRequest> createRequest = nr -> {

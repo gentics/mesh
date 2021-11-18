@@ -82,7 +82,7 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public long computeCount(HibProject project) {
+	public long count(HibProject project) {
 		return toGraph(project).getNodeRoot().computeCount();
 	}
 

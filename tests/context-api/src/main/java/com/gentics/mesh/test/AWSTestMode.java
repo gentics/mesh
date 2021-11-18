@@ -1,4 +1,4 @@
-package com.gentics.mesh.test.context;
+package com.gentics.mesh.test;
 
 /**
  * Various test modes for AWS S3 tests.
@@ -6,13 +6,18 @@ package com.gentics.mesh.test.context;
 public enum AWSTestMode {
 
 	/**
+	 * Run with the real AWS connection
+	 */
+	AWS,
+
+	/**
 	 * Run with a local minio container
 	 */
 	MINIO,
 
 	/**
-	 * Run with the real AWS connection
+	 * No AWS connection setup
 	 */
-	AWS;
+	NONE;
 
 }

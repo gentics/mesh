@@ -40,7 +40,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -50,12 +49,11 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -84,7 +82,6 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.ElementFrame;
 
 import io.reactivex.Observable;
 
@@ -563,7 +560,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 				expectedCount += tx.contentDao().getFieldContainerCount(node);
 			}
 			expectedCount += tx.tagDao().count();
-			expectedCount += tx.tagFamilyDao().computeCount(project);
+			expectedCount += tx.tagFamilyDao().count(project);
 
 			assertThat(trackingSearchProvider()).hasStore(HibProject.composeIndexName(), HibProject.composeDocumentId(uuid));
 			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);
@@ -760,9 +757,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		});
 
 		try (Tx tx = tx()) {
-			long n = StreamSupport.stream(((GraphDBTx) tx).getGraph().getVertices(ElementFrame.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
-				.spliterator(), true).count();
-			long nProjectsAfter = tx.projectDao().count();
+			CommonTx ctx = tx.unwrap();
+			long n = ctx.count(ctx.projectDao().getPersistenceClass());
+			long nProjectsAfter = ctx.projectDao().count();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);
 		}

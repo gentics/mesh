@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
@@ -92,8 +93,9 @@ public abstract class AbstractBasicGraphFieldList<T extends HibListableField, RM
 
 	@Override
 	public GraphField cloneTo(HibFieldContainer container) {
-		toGraph(container).linkOut(this, HAS_LIST);
-		return container.getList(getClass(), getFieldKey());
+		GraphFieldContainer graphContainer = toGraph(container);
+		graphContainer.linkOut(this, HAS_LIST);
+		return graphContainer.getList(getClass(), getFieldKey());
 	}
 
 	@Override

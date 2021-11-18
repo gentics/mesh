@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
@@ -31,8 +32,15 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param setInitial is this branch initial for the project?
 	 */
 	void migrateContainerOntoBranch(HibNodeFieldContainer container, HibBranch newBranch, HibNode node, EventQueueBatch batch, boolean setInitial);
-	
+
 	// Those are stubs. They will be replaced during ContentDao implementation.
+
+	/**
+	 * Get the final type of the micronode entity.
+	 * 
+	 * @return
+	 */
+	Class<? extends HibMicronode> getMicronodePersistenceClass();
 
 	@Deprecated
 	HibNodeFieldContainer createContainer();

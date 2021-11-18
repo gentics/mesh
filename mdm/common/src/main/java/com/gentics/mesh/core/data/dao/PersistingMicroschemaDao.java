@@ -46,7 +46,10 @@ import com.gentics.mesh.json.JsonUtil;
  * @author plyhun
  *
  */
-public interface PersistingMicroschemaDao extends MicroschemaDao, PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
+public interface PersistingMicroschemaDao 
+		extends MicroschemaDao, 
+			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>,
+			ElementResolvingRootDao<HibProject, HibMicroschema>{
 
 	/**
 	 * Create a new microschema container.

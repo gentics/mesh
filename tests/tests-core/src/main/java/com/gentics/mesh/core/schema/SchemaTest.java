@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -19,12 +18,10 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -61,12 +58,12 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testGetContentFromSchemaVersion() {
 		Bucket bucket = new Bucket(0, Integer.MAX_VALUE / 2, 0, 1);
 		HibNodeFieldContainer content = tx(tx -> {
-			return toGraph(content()).getLatestDraftFieldContainer("en");
+			return content().getLatestDraftFieldContainer("en");
 		});
 		HibSchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());
 
 		long before = tx(tx -> {
-			SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			content.setBucketId(Integer.MAX_VALUE);
 			// Count contents in bucket 0 to MaxInt/2
 			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
@@ -78,7 +75,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should find one more content.", before + 1, after);
@@ -90,7 +87,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should still find the altered element ", before + 1, after);
@@ -102,22 +99,12 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should still find the altered element ", before, after);
 		});
 
-	}
-
-	@Test
-	public void testGetRoot() {
-		try (Tx tx = tx()) {
-			SchemaDao schemaDao = tx.schemaDao();
-			HibSchema schemaContainer = schemaDao.findByName("content");
-			RootVertex<? extends HibSchema> root = toGraph(schemaContainer).getRoot();
-			assertNotNull(root);
-		}
 	}
 
 	@Test

@@ -12,15 +12,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.FieldTypeChange;
+import com.gentics.mesh.core.data.schema.HibFieldTypeChange;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.schema.UpdateFieldChange;
+import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
-import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -33,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -43,6 +41,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.IndexOptionHelper;
@@ -56,11 +55,13 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	private FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();
 
 	@Test
-	public void testNullOperation() {
+	public void testNullOperation() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaModelImpl schema = new SchemaModelImpl();
-			version.setSchema(schema);
+			CommonTx ctx = tx.unwrap();
+			SchemaModelImpl schemaModel = new SchemaModelImpl();
+			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
+			version.setSchema(schemaModel);
 			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
 			assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
@@ -68,22 +69,24 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testUpdateTypeAndAllowProperty() {
+	public void testUpdateTypeAndAllowProperty() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			CommonTx ctx = tx.unwrap();
 
 			// 1. Create schema
-			SchemaModelImpl schema = new SchemaModelImpl("testschema");
+			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
+			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
 
 			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
 			numberField.setName("testField");
 			numberField.setRequired(true);
 			numberField.setLabel("originalLabel");
-			schema.addField(numberField);
+			schemaModel.addField(numberField);
 
-			version.setSchema(schema);
+			version.setSchema(schemaModel);
 
-			FieldTypeChange fieldTypeChange = ((GraphDBTx) tx).getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			HibFieldTypeChange fieldTypeChange = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			fieldTypeChange.setFieldName("testField");
 			fieldTypeChange.setRestProperty(SchemaChangeModel.TYPE_KEY, "string");
 			fieldTypeChange.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "testValue" });
@@ -99,23 +102,25 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testUpdateLabel() {
+	public void testUpdateLabel() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			CommonTx ctx = tx.unwrap();
 
 			// 1. Create schema
-			SchemaModelImpl schema = new SchemaModelImpl("testschema");
+			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
+			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
 			stringField.setAllowedValues("blub");
 			stringField.setName("stringField");
 			stringField.setRequired(true);
 			stringField.setLabel("originalLabel");
-			schema.addField(stringField);
+			schemaModel.addField(stringField);
 
-			version.setSchema(schema);
+			version.setSchema(schemaModel);
 
-			UpdateFieldChange stringFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange stringFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.LABEL_KEY, "UpdatedLabel");
 			version.setNextChange(stringFieldUpdate);
@@ -130,113 +135,115 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testAUpdateFields() {
+	public void testAUpdateFields() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			CommonTx ctx = tx.unwrap();
 
 			// 1. Create schema
-			SchemaModelImpl schema = new SchemaModelImpl("testschema");
-			
+			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
+			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
+
 			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
 			binaryField.setName("binaryField");
 			binaryField.setAllowedMimeTypes("oldTypes");
 			binaryField.setRequired(true);
-			schema.addField(binaryField);
+			schemaModel.addField(binaryField);
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
 			stringField.setAllowedValues("blub");
 			stringField.setName("stringField");
 			stringField.setRequired(true);
-			schema.addField(stringField);
+			schemaModel.addField(stringField);
 
 			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
 			nodeField.setAllowedSchemas("blub");
 			nodeField.setName("nodeField");
 			nodeField.setRequired(true);
-			schema.addField(nodeField);
+			schemaModel.addField(nodeField);
 
 			MicronodeFieldSchema micronodeField = new MicronodeFieldSchemaImpl();
 			micronodeField.setAllowedMicroSchemas("blub");
 			micronodeField.setName("micronodeField");
 			micronodeField.setRequired(true);
-			schema.addField(micronodeField);
+			schemaModel.addField(micronodeField);
 
 			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
 			numberField.setName("numberField");
 			numberField.setRequired(true);
-			schema.addField(numberField);
+			schemaModel.addField(numberField);
 
 			HtmlFieldSchema htmlField = new HtmlFieldSchemaImpl();
 			htmlField.setName("htmlField");
 			htmlField.setRequired(true);
-			schema.addField(htmlField);
+			schemaModel.addField(htmlField);
 
 			BooleanFieldSchema booleanField = new BooleanFieldSchemaImpl();
 			booleanField.setName("booleanField");
 			booleanField.setRequired(true);
-			schema.addField(booleanField);
+			schemaModel.addField(booleanField);
 
 			DateFieldSchema dateField = new DateFieldSchemaImpl();
 			dateField.setName("dateField");
 			dateField.setRequired(true);
-			schema.addField(dateField);
+			schemaModel.addField(dateField);
 
 			ListFieldSchema listField = new ListFieldSchemaImpl();
 			listField.setName("listField");
 			listField.setListType("micronode");
 			listField.setRequired(true);
-			schema.addField(listField);
+			schemaModel.addField(listField);
 
-			version.setSchema(schema);
+			version.setSchema(schemaModel);
 
 			// 2. Create schema field update change
-			UpdateFieldChange binaryFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange binaryFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			binaryFieldUpdate.setFieldName("binaryField");
 			binaryFieldUpdate.setRestProperty("allowedMimeTypes", new String[] { "newTypes" });
 			binaryFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			version.setNextChange(binaryFieldUpdate);
 
-			UpdateFieldChange nodeFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange nodeFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			nodeFieldUpdate.setFieldName("nodeField");
 			nodeFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "schemaA", "schemaB" });
 			nodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
-			UpdateFieldChange stringFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange stringFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			stringFieldUpdate.setIndexOptions(IndexOptionHelper.getRawFieldOption());
 			nodeFieldUpdate.setNextChange(stringFieldUpdate);
 
-			UpdateFieldChange htmlFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange htmlFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			htmlFieldUpdate.setFieldName("htmlField");
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.ELASTICSEARCH_KEY, IndexOptionHelper.getRawFieldOption().encode());
 			stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
-			UpdateFieldChange numberFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange numberFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			numberFieldUpdate.setFieldName("numberField");
 			numberFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			htmlFieldUpdate.setNextChange(numberFieldUpdate);
 
-			UpdateFieldChange dateFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange dateFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			dateFieldUpdate.setFieldName("dateField");
 			dateFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			numberFieldUpdate.setNextChange(dateFieldUpdate);
 
-			UpdateFieldChange booleanFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange booleanFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			booleanFieldUpdate.setFieldName("booleanField");
 			booleanFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			dateFieldUpdate.setNextChange(booleanFieldUpdate);
 
-			UpdateFieldChange micronodeFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange micronodeFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			micronodeFieldUpdate.setFieldName("micronodeField");
 			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A", "B", "C" });
 			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			booleanFieldUpdate.setNextChange(micronodeFieldUpdate);
 
-			UpdateFieldChange listFieldUpdate = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			HibUpdateFieldChange listFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			listFieldUpdate.setFieldName("listField");
 			listFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			listFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A1", "B1", "C1" });

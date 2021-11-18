@@ -314,7 +314,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param project
 	 * @return
 	 */
-	long computeCount(HibProject project);
+	long count(HibProject project);
 
 	/**
 	 * Create a new node.

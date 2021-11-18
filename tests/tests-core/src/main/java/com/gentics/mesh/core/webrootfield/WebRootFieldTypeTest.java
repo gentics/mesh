@@ -21,20 +21,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
-import com.gentics.mesh.core.rest.schema.impl.*;
-import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
-import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.AbstractMeshTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
@@ -60,12 +52,29 @@ import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
+import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.json.JsonArray;
@@ -112,7 +121,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		Optional<FieldSchema> maybeS3BinaryField = fieldShouldExist ? Optional.of(new S3BinaryFieldSchemaImpl()
 				.setAllowedMimeTypes("image/*").setName("s3binary").setLabel("S3 Binary content")) : Optional.empty();
 
-		Optional<Consumer<Node>> maybeS3BinaryContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeS3BinaryContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String nodeUuid = tx(() -> node.getUuid());
 			call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, nodeUuid, "s3binary",
 					new S3BinaryUploadRequest().setFilename(fileName).setLanguage("en").setVersion("1.0")));
@@ -139,7 +148,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				new BinaryFieldSchemaImpl().setAllowedMimeTypes("image/*").setName("binary").setLabel("Binary content"))
 				: Optional.empty();
 
-		Optional<Consumer<Node>> maybeBinaryContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeBinaryContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String contentType = "application/octet-stream";
 			int binaryLen = 8000;
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
@@ -179,7 +188,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new HtmlFieldSchemaImpl().setName("html_content").setLabel("HTML content"))
 				: Optional.empty();
 
-		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -223,7 +232,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new StringFieldSchemaImpl().setName("string_content").setLabel("String content"))
 				: Optional.empty();
 
-		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -286,7 +295,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new BooleanFieldSchemaImpl().setName("boolean_content").setLabel("Boolean content"))
 				: Optional.empty();
 
-		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -352,7 +361,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new DateFieldSchemaImpl().setName("date_content").setLabel("Date content"))
 				: Optional.empty();
 
-		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -422,7 +431,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new NumberFieldSchemaImpl().setName("number_content").setLabel("Float number content"))
 				: Optional.empty();
 
-		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -495,7 +504,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 						.setName("micronode_content").setLabel("Micronode VCARD content"))
 				: Optional.empty();
 
-		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -603,7 +612,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				new NodeFieldSchemaImpl().setAllowedSchemas("folder").setName("node_content").setLabel("Node content"))
 				: Optional.empty();
 
-		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -689,7 +698,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				: Optional.empty();
 
 		@SuppressWarnings("unchecked")
-		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -744,7 +753,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private <F extends FieldSchema> void testField(String path, Optional<F> field,
-			Optional<Consumer<Node>> contentSupplier, Consumer<MeshWebrootFieldResponse> resultsConsumer,
+			Optional<Consumer<HibNode>> contentSupplier, Consumer<MeshWebrootFieldResponse> resultsConsumer,
 			boolean isBinaryContent) throws IOException {
 		HibNode node = content("news_2015");
 		String nodeUuid = tx(() -> node.getUuid());
@@ -763,7 +772,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				fieldName = schema.getName();
 			}
 			if (contentSupplier.isPresent()) {
-				contentSupplier.get().accept((Node) node);
+				contentSupplier.get().accept(node);
 			}
 		} else {
 			fieldName = "field";

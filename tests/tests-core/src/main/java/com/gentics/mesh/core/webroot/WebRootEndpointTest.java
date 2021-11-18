@@ -33,19 +33,17 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -184,8 +182,10 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// Modify the cache entry by adding another bogus segment. The validation should
 		// pick up the inconsistency and invalidate the whole path entry
 		tx(tx -> {
-			NodeGraphFieldContainerImpl bogusContainer = HibClassConverter.toGraph(tx).addVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphField bogusField = new StringGraphFieldImpl("name", bogusContainer);
+			CommonTx ctx = tx.unwrap();
+			PersistingContentDao contentDao = ctx.contentDao();
+			HibNodeFieldContainer bogusContainer = contentDao.createContainer();
+			HibStringField bogusField = contentDao.createString(bogusContainer, "name");
 			Path entry = mesh().pathCache().getPath(project(), initialBranch(), ContainerType.DRAFT, path);
 			entry.addSegment(new PathSegmentImpl(bogusContainer, bogusField, "en", "bogus"));
 			tx.rollback();
@@ -715,7 +715,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	 * @param language language
 	 * @param newName  new name
 	 */
-	protected void updateName(Node node, Branch branch, String language, String newName) {
+	protected void updateName(HibNode node, HibBranch branch, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
 		update.getFields().put("name", FieldUtil.createStringField(newName));

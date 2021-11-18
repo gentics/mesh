@@ -292,7 +292,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public long computeCount(HibTagFamily tagFamily) {
+	public long count(HibTagFamily tagFamily) {
 		TagFamily graphTagFamily = toGraph(tagFamily);
 		return graphTagFamily.computeCount();
 	}

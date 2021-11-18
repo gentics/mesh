@@ -88,9 +88,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNull(tagFamily.getDescription());
 			tagFamily.setDescription("description");
 			assertEquals("description", tagFamily.getDescription());
-			assertEquals(0, tagDao.computeCount(tagFamily));
+			assertEquals(0, tagDao.count(tagFamily));
 			assertNotNull(tagDao.create(tagFamily, GERMAN_NAME, project(), user()));
-			assertEquals(1, tagDao.computeCount(tagFamily));
+			assertEquals(1, tagDao.count(tagFamily));
 		}
 	}
 
@@ -341,11 +341,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			HibTagFamily basicTagFamily = tagFamily("basic");
-			long beforeCount = tagDao.computeCount(basicTagFamily);
+			long beforeCount = tagDao.count(basicTagFamily);
 			HibTag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
 			tagFamilyDao.addTag(basicTagFamily, noPermTag);
 			assertNotNull(noPermTag.getUuid());
-			assertEquals(beforeCount + 1, tagDao.computeCount(basicTagFamily));
+			assertEquals(beforeCount + 1, tagDao.count(basicTagFamily));
 
 			Page<? extends HibTag> tagfamilyTagpage = tagDao.findAll(basicTagFamily, mockActionContext(), new PagingParametersImpl(1, 20L));
 			assertPage(tagfamilyTagpage, beforeCount);
@@ -386,7 +386,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			tagDao.addItem(tagFamily, tag);
 			assertEquals(tags().size(), tagDao.count());
 			tagDao.addItem(tagFamily, tag);
-			assertEquals(tags().size(), tagDao.computeCount(null));
+			assertEquals(tags().size(), tagDao.count(null));
 			tagDao.onRootDeleted(tagFamily, createBulkContext());
 		}
 	}
@@ -428,7 +428,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull("The folder could not be found.", loadedTag);
 			String name = loadedTag.getName();
 			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-			assertEquals(10, tagDao.computeCount(tagFamily));
+			assertEquals(10, tagDao.count(tagFamily));
 			latch.countDown();
 			HibTag projectTag = tagDao.findByUuid(tagFamily, uuid);
 			assertNotNull("The tag should also be assigned to the project tag root", projectTag);

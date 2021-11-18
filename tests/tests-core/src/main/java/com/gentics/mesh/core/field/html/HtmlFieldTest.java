@@ -14,13 +14,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -54,8 +50,8 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	public void testFieldUpdate() {
 		try (Tx tx = tx()) {
 			// Create field
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibHtmlField htmlField = container.createHTML(HTML_FIELD);
 
 			// Check field key
 			assertEquals(HTML_FIELD, htmlField.getFieldKey());
@@ -65,11 +61,11 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 			assertEquals("dummyHTML", htmlField.getHTML());
 
 			// Check bogus key
-			HtmlGraphField bogusField1 = container.getHtml("bogus");
+			HibHtmlField bogusField1 = container.getHtml("bogus");
 			assertNull(bogusField1);
 
 			// Test field loading
-			HtmlGraphField reloadedHTMLField = container.getHtml(HTML_FIELD);
+			HibHtmlField reloadedHTMLField = container.getHtml(HTML_FIELD);
 			assertNotNull(reloadedHTMLField);
 			assertEquals(HTML_FIELD, reloadedHTMLField.getFieldKey());
 			assertEquals("dummyHTML", reloadedHTMLField.getHTML());
@@ -116,9 +112,9 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphField fieldA = container.createHTML("fieldA");
-			HtmlGraphField fieldB = container.createHTML("fieldB");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibHtmlField fieldA = container.createHTML("fieldA");
+			HibHtmlField fieldB = container.createHTML("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.setHtml("someText");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -134,10 +130,10 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphField fieldA = container.createHTML("htmlField1");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibHtmlField fieldA = container.createHTML("htmlField1");
 			assertFalse(fieldA.equals((Field) null));
-			assertFalse(fieldA.equals((GraphField) null));
+			assertFalse(fieldA.equals((HibHtmlField) null));
 		}
 	}
 
@@ -145,8 +141,8 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphField fieldA = container.createHTML("htmlField1");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibHtmlField fieldA = container.createHTML("htmlField1");
 
 			// graph empty - rest empty
 			assertTrue("The html field should be equal to the html rest field since both fields have no value.", fieldA.equals(new HtmlFieldImpl()));
@@ -169,11 +165,11 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibHtmlField htmlField = container.createHTML(HTML_FIELD);
 			htmlField.setHtml("<i>HTML</i>");
 
-			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
 			htmlField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getHtml(HTML_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(htmlField, "parentContainer");

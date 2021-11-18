@@ -2,7 +2,6 @@ package com.gentics.mesh.core.graphql;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
 import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
@@ -45,7 +44,6 @@ import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -92,7 +90,6 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.hazelcast.util.function.Consumer;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -360,7 +357,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			HibBinary binary = ((GraphDBTx) tx).binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
@@ -493,10 +490,11 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * @param uuid
 	 */
 	private void safelySetUuid(Tx tx, HibSchema schemaContainer, String uuid) {
-		for (Vertex node : ((GraphDBTx) tx).getGraph().getVertices("schema", schemaContainer.getUuid())) {
-			node.setProperty("schema", uuid);
-		}
-		toGraph(schemaContainer).setUuid(uuid);
+// TODO refactor
+//		for (Vertex node : ((GraphDBTx) tx).getGraph().getVertices("schema", schemaContainer.getUuid())) {
+//			node.setProperty("schema", uuid);
+//		}
+		schemaContainer.setUuid(uuid);
 	}
 
 	private long dateToMilis(String date) throws ParseException {

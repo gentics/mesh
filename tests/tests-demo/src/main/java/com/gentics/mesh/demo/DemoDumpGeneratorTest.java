@@ -69,7 +69,7 @@ public class DemoDumpGeneratorTest {
 			NodeDao nodeDao = tx.nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
-			assertTrue(nodeDao.computeCount(project) > 0);
+			assertTrue(nodeDao.count(project) > 0);
 			HibUser user = userDao.findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
 			assertFalse("The webclient user should also have at least one group assigned to it.", !userDao.getGroups(user).iterator().hasNext());
@@ -81,7 +81,7 @@ public class DemoDumpGeneratorTest {
 			assertTrue("The webclient user has no permission on itself.", userDao.hasPermission(user, user, InternalPermission.READ_PERM));
 			assertTrue("The webclient user has no read permission on the user root node..", userDao.hasPermission(user, tx.data().permissionRoots().user(), InternalPermission.READ_PERM));
 
-			assertTrue("We expected to find at least 5 nodes.", nodeDao.computeCount(project) > 5);
+			assertTrue("We expected to find at least 5 nodes.", nodeDao.count(project) > 5);
 
 			// Verify that the uuids have been updated
 			assertNotNull(nodeDao.findByUuid(project, "df8beb3922c94ea28beb3922c94ea2f6"));

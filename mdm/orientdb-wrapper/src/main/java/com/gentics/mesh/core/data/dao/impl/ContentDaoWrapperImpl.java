@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -546,48 +548,47 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	@Deprecated
 	public HibNodeFieldContainer createContainer() {
-		// TODO Auto-generated method stub
 		return GraphDBTx.getGraphTx().getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
 	@Deprecated
 	public HibBooleanField createBoolean(HibNodeFieldContainer container, String name) {
-		// TODO Auto-generated method stub
 		return new BooleanGraphFieldImpl(name, (NodeGraphFieldContainerImpl) container);
 	}
 
 	@Override
 	@Deprecated
 	public HibStringField createString(HibNodeFieldContainer container, String name) {
-		// TODO Auto-generated method stub
 		return new StringGraphFieldImpl(name, (NodeGraphFieldContainerImpl) container);
 	}
 
 	@Override
 	@Deprecated
 	public HibNumberField createNumber(HibNodeFieldContainer container, String name) {
-		// TODO Auto-generated method stub
 		return new NumberGraphFieldImpl(name, (NodeGraphFieldContainerImpl) container);
 	}
 
 	@Override
 	@Deprecated
 	public HibDateField createDate(HibNodeFieldContainer container, String name) {
-		// TODO Auto-generated method stub
 		return new DateGraphFieldImpl(name, (NodeGraphFieldContainerImpl) container);
 	}
 
 	@Override
 	@Deprecated
 	public HibHtmlField createHtml(HibNodeFieldContainer container, String name) {
-		// TODO Auto-generated method stub
 		return new HtmlGraphFieldImpl(name, (NodeGraphFieldContainerImpl) container);
 	}
 
 	@Override
+	@Deprecated
 	public HibBinaryField createBinary() {
-		// TODO Auto-generated method stub
 		return new BinaryGraphFieldImpl();
+	}
+
+	@Override
+	public Class<? extends HibMicronode> getMicronodePersistenceClass() {
+		return MicronodeImpl.class;
 	}
 }

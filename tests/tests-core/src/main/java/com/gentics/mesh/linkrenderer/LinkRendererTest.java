@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -314,7 +313,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			HibBinary binary = ((GraphDBTx) tx).binaries().create("bogus", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("bogus", 1L).runInExistingTx(tx);
 			contentDao.getLatestDraftFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link

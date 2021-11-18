@@ -15,6 +15,9 @@
  */
 package com.gentics.mesh.core.db;
 
+import java.util.Iterator;
+import java.util.stream.StreamSupport;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.data.HibElement;
@@ -135,5 +138,22 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	@Override
 	public <B extends HibElement> void delete(B element, Class<? extends B> classOfB) {
 		((ElementFrame) element).remove();
+	}
+
+	@Override
+	public <B extends HibElement> long count(Class<? extends B> classOfB) {
+		return StreamSupport.stream(getGraph().getVertices(ElementFrame.TYPE_RESOLUTION_KEY, classOfB.getName())
+				.spliterator(), true).count();
+	}
+
+	@Override
+	public <B extends HibElement> B load(Object id, Class<? extends B> classOfB) {
+		return getGraph().getFramedVertexExplicit(classOfB, id);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <I extends HibElement, B extends I> Iterator<I> loadAll(Class<B> classOfB) {
+		return (Iterator<I>) getGraph().v().has(classOfB).frameExplicit(classOfB).iterator();
 	}
 }

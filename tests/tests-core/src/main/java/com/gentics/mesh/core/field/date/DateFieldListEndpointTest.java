@@ -18,7 +18,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -137,7 +136,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			List<Long> oldValue;
 			try (Tx tx = tx()) {
 				container = boot().contentDao().getFieldContainer(node, "en");
-				oldValue = getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME);
+				oldValue = getListValues(container::getDateList, FIELD_NAME);
 				List<String> newValue = valueCombinations.get(i % valueCombinations.size());
 				for (String value : newValue) {
 					list.add(value);
@@ -151,7 +150,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME));
+				assertEquals("Check old value", oldValue, getListValues(container::getDateList, FIELD_NAME));
 			}
 		}
 	}

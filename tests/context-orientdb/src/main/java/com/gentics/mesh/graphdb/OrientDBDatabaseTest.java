@@ -29,7 +29,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
-public class DatabaseTest extends AbstractMeshTest {
+public class OrientDBDatabaseTest extends AbstractMeshTest {
 
 	private File outputDirectory;
 

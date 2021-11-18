@@ -619,8 +619,10 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		}
 		switch (settings.awsContainer()) {
-			case AWS:
+			case NONE:
 				break;
+			case AWS:
+				throw new IllegalStateException("AWS test container is currently unsupported");
 			case MINIO:
 				String ACCESS_KEY = "accessKey";
 				String SECRET_KEY = "secretKey";

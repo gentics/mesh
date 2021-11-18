@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.tagfamily;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
@@ -17,13 +16,14 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -70,18 +70,18 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			List<? extends HibTagFamily> families = tx.tagFamilyDao().findAll().list();
+			CommonTx ctx = tx.unwrap();
+			PersistingTagFamilyDao tagFamilyDao = ctx.tagFamilyDao();
+
+			List<? extends HibTagFamily> families = tagFamilyDao.findAll().list();
 			assertNotNull(families);
 			assertEquals(2, families.size());
 
-			TagFamilyRoot projectTagFamilyRoot = toGraph(project()).getTagFamilyRoot();
-			assertNotNull(projectTagFamilyRoot);
-
-			HibTagFamily projectTagFamily = tx.tagFamilyDao().findByName(project(), "colors");
+			HibTagFamily projectTagFamily = tagFamilyDao.findByName(project(), "colors");
 			assertNotNull(projectTagFamily);
 
-			assertNotNull(projectTagFamilyRoot.create("bogus", user()));
-			assertEquals(3, projectTagFamilyRoot.computeCount());
+			assertNotNull(tagFamilyDao.create(project(), "bogus", user()));
+			assertEquals(3, ctx.count(tagFamilyDao.getPersistenceClass()));
 			assertEquals(3, tx.tagFamilyDao().count());
 		}
 	}
@@ -90,10 +90,12 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			TagFamilyRoot root = toGraph(project()).getTagFamilyRoot();
-			long nProjectsBefore = root.computeCount();
-			assertNotNull(root.create("test1234556", user()));
-			long nProjectsAfter = root.computeCount();
+			CommonTx ctx = tx.unwrap();
+			PersistingTagFamilyDao tagFamilyDao = ctx.tagFamilyDao();
+
+			long nProjectsBefore = tagFamilyDao.count(project());
+			assertNotNull(tagFamilyDao.create(project(), "test1234556", user()));
+			long nProjectsAfter = tagFamilyDao.count(project());
 			assertEquals(nProjectsBefore + 1, nProjectsAfter);
 		}
 	}
@@ -246,7 +248,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
 			assertFalse(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));
-			userDao.inheritRolePermissions(user(), toGraph(project()).getTagFamilyRoot(), tagFamily);
+			userDao.inheritRolePermissions(user(), project().getTagFamilyPermissionRoot(), tagFamily);
 			assertTrue(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));
 		}
 	}

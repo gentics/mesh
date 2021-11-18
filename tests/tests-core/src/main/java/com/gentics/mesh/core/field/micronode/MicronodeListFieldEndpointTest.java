@@ -35,10 +35,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -127,7 +124,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		for (int i = 0; i < 20; i++) {
 
 			final HibNodeFieldContainer currentContainer = container;
-			List<HibMicronode> oldValue = tx(() -> getListValues(currentContainer, MicronodeGraphFieldListImpl.class, FIELD_NAME));
+			List<HibMicronode> oldValue = tx(() -> getListValues(currentContainer::getMicronodeList, FIELD_NAME));
 			FieldList<MicronodeField> newValue = new MicronodeFieldListImpl();
 			NodeResponse response = null;
 			if (oldValue == null) {
@@ -180,13 +177,13 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 					assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 					assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
-						getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
+						getListValues(container::getMicronodeList, FIELD_NAME));
 					container = newContainer;
 				}
 			} else {
 				try (Tx tx = tx()) {
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
-						getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
+						getListValues(container::getMicronodeList, FIELD_NAME));
 					assertEquals("The version should not have been updated.", container.getVersion().toString(), response.getVersion());
 				}
 			}
@@ -587,8 +584,9 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
 		try (Tx tx = tx()) {
-			TraversalResult<? extends Micronode> s = new TraversalResult<>(((GraphDBTx) tx).getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class));
-			Set<? extends Micronode> unboundMicronodes = s.stream()
+			CommonTx ctx = tx.unwrap();
+			TraversalResult<? extends HibMicronode> s = new TraversalResult<>(ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass()));
+			Set<? extends HibMicronode> unboundMicronodes = s.stream()
 				.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();
 		}
