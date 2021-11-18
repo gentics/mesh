@@ -1468,25 +1468,4 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		});
 	}
 
-
-	private NodeTaggedEventModel onTagged(HibNode node, HibTag tag, HibBranch branch, Assignment assignment) {
-		NodeTaggedEventModel model = new NodeTaggedEventModel();
-		model.setTag(tag.transformToReference());
-
-		model.setBranch(branch.transformToReference());
-		model.setProject(node.getProject().transformToReference());
-		model.setNode(node.transformToMinimalReference());
-
-		switch (assignment) {
-			case ASSIGNED:
-				model.setEvent(NODE_TAGGED);
-				break;
-
-			case UNASSIGNED:
-				model.setEvent(NODE_UNTAGGED);
-				break;
-		}
-
-		return model;
-	}
 }

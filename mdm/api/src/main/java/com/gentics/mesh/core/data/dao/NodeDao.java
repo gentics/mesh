@@ -531,4 +531,15 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 */
 	void removePublishedEdge(HibNode node, String languageTag, String branchUuid);
+
+	/**
+	 * Create a node tagged / untagged event.
+	 *
+	 * @param tag
+	 * @param branch
+	 * @param assignment
+	 *            Type of the assignment
+	 * @return
+	 */
+	NodeTaggedEventModel onTagged(HibNode node, HibTag tag, HibBranch branch, Assignment assignment);
 }

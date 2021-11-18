@@ -281,7 +281,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 					utils.eventAction(batch -> {
 						tagDao.addTag(node, tag, branch);
 
-						batch.add(toGraph(node).onTagged(tag, branch, ASSIGNED));
+						batch.add(nodeDao.onTagged(node, tag, branch, ASSIGNED));
 					});
 				}
 
@@ -318,7 +318,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				if (tagDao.hasTag(node, tag, branch)) {
 					utils.eventAction(batch -> {
 						tagDao.removeTag(node, tag, branch);
-						batch.add(toGraph(node).onTagged(tag, branch, UNASSIGNED));
+						batch.add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
 					});
 				} else {
 					if (log.isDebugEnabled()) {

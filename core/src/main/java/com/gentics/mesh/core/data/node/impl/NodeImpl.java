@@ -15,8 +15,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -85,14 +83,12 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -841,28 +837,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			event.setSchema(schema.transformToReference());
 		}
 		return event;
-	}
-
-	@Override
-	public NodeTaggedEventModel onTagged(HibTag tag, HibBranch branch, Assignment assignment) {
-		NodeTaggedEventModel model = new NodeTaggedEventModel();
-		model.setTag(tag.transformToReference());
-
-		model.setBranch(branch.transformToReference());
-		model.setProject(getProject().transformToReference());
-		model.setNode(transformToMinimalReference());
-
-		switch (assignment) {
-		case ASSIGNED:
-			model.setEvent(NODE_TAGGED);
-			break;
-
-		case UNASSIGNED:
-			model.setEvent(NODE_UNTAGGED);
-			break;
-		}
-
-		return model;
 	}
 
 	@Override

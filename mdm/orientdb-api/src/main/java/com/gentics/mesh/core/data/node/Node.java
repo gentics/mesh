@@ -204,17 +204,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	}
 
 	/**
-	 * Create a node tagged / untagged event.
-	 *
-	 * @param tag
-	 * @param branch
-	 * @param assignment
-	 *            Type of the assignment
-	 * @return
-	 */
-	NodeTaggedEventModel onTagged(HibTag tag, HibBranch branch, Assignment assignment);
-
-	/**
 	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
 	 *
 	 * @param branchUuid
