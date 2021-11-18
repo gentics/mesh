@@ -31,13 +31,9 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -64,7 +60,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -85,7 +80,6 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -110,12 +104,9 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -125,7 +116,6 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.StreamUtil;
-import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -231,90 +221,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container != null) {
 			container.postfixSegmentFieldValue();
 		}
-	}
-
-	@Override
-	public String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
-		NodeDao nodeDao = GraphDBTx.getGraphTx().nodeDao();
-
-		// We want to avoid rending the path again for nodes which we have already handled.
-		// Thus utilise the action context data map to retrieve already handled paths.
-		String cacheKey = getUuid() + branchUuid + type.getCode() + Arrays.toString(languageTag);
-		return (String) ac.data().computeIfAbsent(cacheKey, key -> {
-
-			List<String> segments = new ArrayList<>();
-			String segment = getPathSegment(branchUuid, type, languageTag);
-			if (segment == null) {
-				// Fall back to url fields
-				return getUrlFieldPath(branchUuid, type, languageTag);
-			}
-			segments.add(segment);
-
-			// For the path segments of the container, we add all (additional)
-			// project languages to the list of languages for the fallback.
-			HibNode current = this;
-			while (current != null) {
-				current = nodeDao.getParentNode(current, branchUuid);
-				if (current == null || nodeDao.getParentNode(current, branchUuid) == null) {
-					break;
-				}
-				// For the path segments of the container, we allow ANY language (of the project)
-				segment = toGraph(current).getPathSegment(branchUuid, type, true, languageTag);
-
-				// Abort early if one of the path segments could not be resolved.
-				// We need to fall back to url fields in those cases.
-				if (segment == null) {
-					return getUrlFieldPath(branchUuid, type, languageTag);
-				}
-				segments.add(segment);
-			}
-
-			Collections.reverse(segments);
-
-			// Finally construct the path from all segments
-			StringBuilder builder = new StringBuilder();
-
-			// Append the prefix first
-			BranchDao branchDao = GraphDBTx.getGraphTx().branchDao();
-			HibBranch branch = branchDao.findByUuid(getProject(), branchUuid);
-			if (branch != null) {
-				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
-				if (!prefix.isEmpty()) {
-					String[] prefixSegments = prefix.split("/");
-					for (String prefixSegment : prefixSegments) {
-						if (prefixSegment.isEmpty()) {
-							continue;
-						}
-						builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
-					}
-				}
-			}
-
-			Iterator<String> it = segments.iterator();
-			while (it.hasNext()) {
-				String currentSegment = it.next();
-				builder.append("/").append(URIUtils.encodeSegment(currentSegment));
-			}
-			return builder.toString();
-		});
-
-	}
-
-	/**
-	 * Return the first url field path found.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 * @param languages
-	 *            The order of languages will be used to search for the url field values.
-	 * @return null if no url field could be found.
-	 */
-	private String getUrlFieldPath(String branchUuid, ContainerType type, String... languages) {
-		return Stream.of(languages)
-			.flatMap(language -> Stream.ofNullable(getFieldContainer(language, branchUuid, type)))
-			.flatMap(HibNodeFieldContainer::getUrlFieldValues)
-			.findFirst()
-			.orElse(null);
 	}
 
 	@Override
@@ -1171,33 +1077,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Language of the content that was updated (if known)
 	 * @return
 	 */
-	public NodeMeshEventModel onReferenceUpdated(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
+	private NodeMeshEventModel onReferenceUpdated(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(NODE_REFERENCE_UPDATED);
-		event.setUuid(uuid);
-		event.setLanguageTag(languageTag);
-		event.setType(type);
-		event.setBranchUuid(branchUuid);
-		event.setProject(getProject().transformToReference());
-		if (schema != null) {
-			event.setSchema(schema.transformToReference());
-		}
-		return event;
-	}
-
-	/**
-	 * Create the node specific delete event.
-	 *
-	 * @param uuid
-	 * @param schema
-	 * @param branchUuid
-	 * @param type
-	 * @param languageTag
-	 * @return Created event
-	 */
-	private NodeMeshEventModel onDeleted(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(getTypeInfo().getOnDeleted());
 		event.setUuid(uuid);
 		event.setLanguageTag(languageTag);
 		event.setType(type);

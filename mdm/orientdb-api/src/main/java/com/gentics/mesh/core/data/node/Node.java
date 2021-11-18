@@ -187,21 +187,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
-	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
-	 * node.
-	 *
-	 * @param ac
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param languageTag
-	 *
-	 * @return
-	 */
-	String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
-
-	/**
 	 * Return the path segment value of this node preferable in the given language.
 	 *
 	 * If more than one language is given, the path will lead to the first available language

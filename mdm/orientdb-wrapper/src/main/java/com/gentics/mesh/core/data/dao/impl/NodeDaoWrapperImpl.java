@@ -99,11 +99,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return toGraph(project).getNodeRoot().create(ac, batch, uuid);
-	}
-
-	@Override
 	public Result<? extends HibNode> getChildren(HibNode node) {
 		return toGraph(node).getChildren();
 	}
@@ -162,11 +157,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
 		toGraph(node).takeOffline(ac, bac, branch, languageTag);
-	}
-
-	@Override
-	public String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
-		return toGraph(node).getPath(ac, branchUuid, type, languageTag);
 	}
 
 	@Override

@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,7 +66,9 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
+import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.DeleteParameters;
@@ -79,6 +82,7 @@ import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.URIUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
@@ -185,14 +189,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 			String date = DateUtils.toISO8601(c.getLastEditedTimestamp(), 0);
 
-			PublishStatusModel status = new PublishStatusModel();
-			status.setPublished(true);
-			status.setVersion(c.getVersion().toString());
-			HibUser editor = c.getEditor();
-			if (editor != null) {
-				status.setPublisher(editor.transformToReference());
-			}
-			status.setPublishDate(date);
+			PublishStatusModel status = buildPublishStatusModel(c, date);
 			languages.put(c.getLanguageTag(), status);
 		});
 
@@ -726,15 +723,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		HibNodeFieldContainer container = contentDao.getFieldContainer(node, languageTag, branch.getUuid(), PUBLISHED);
 		if (container != null) {
 			String date = container.getLastEditedDate();
-			PublishStatusModel status = new PublishStatusModel();
-			status.setPublished(true);
-			status.setVersion(container.getVersion().toString());
-			HibUser editor = container.getEditor();
-			if (editor != null) {
-				status.setPublisher(editor.transformToReference());
-			}
-			status.setPublishDate(date);
-			return status;
+			return buildPublishStatusModel(container, date);
 		} else {
 			container = contentDao.getFieldContainer(node, languageTag, branch.getUuid(), DRAFT);
 			if (container == null) {
@@ -742,6 +731,19 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 			return new PublishStatusModel().setPublished(false).setVersion(container.getVersion().toString());
 		}
+	}
+
+	private PublishStatusModel buildPublishStatusModel(HibNodeFieldContainer container, String date) {
+		PublishStatusModel status = new PublishStatusModel();
+		status.setPublished(true);
+		status.setVersion(container.getVersion().toString());
+		HibUser editor = container.getEditor();
+		if (editor != null) {
+			status.setPublisher(editor.transformToReference());
+		}
+		status.setPublishDate(date);
+
+		return status;
 	}
 
 	@Override
@@ -1120,5 +1122,89 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	default Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node) {
 		// FIX ME: We should not rely on specific branches.
 		return getFieldContainers(node, node.getProject().getLatestBranch(), DRAFT);
+	}
+
+	@Override
+	default String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
+		ContentDao contentDao = Tx.get().contentDao();
+		// We want to avoid rending the path again for nodes which we have already handled.
+		// Thus utilise the action context data map to retrieve already handled paths.
+		String cacheKey = node.getUuid() + branchUuid + type.getCode() + Arrays.toString(languageTag);
+		return (String) ac.data().computeIfAbsent(cacheKey, key -> {
+
+			List<String> segments = new ArrayList<>();
+			String segment = contentDao.getPathSegment(node, branchUuid, type, languageTag);
+			if (segment == null) {
+				// Fall back to url fields
+				return getUrlFieldPath(node, branchUuid, type, languageTag);
+			}
+			segments.add(segment);
+
+			// For the path segments of the container, we add all (additional)
+			// project languages to the list of languages for the fallback.
+			HibNode current = node;
+			while (current != null) {
+				current = getParentNode(current, branchUuid);
+				if (current == null || getParentNode(current, branchUuid) == null) {
+					break;
+				}
+				// For the path segments of the container, we allow ANY language (of the project)
+				segment = contentDao.getPathSegment(current, branchUuid, type, true, languageTag);
+
+				// Abort early if one of the path segments could not be resolved.
+				// We need to fall back to url fields in those cases.
+				if (segment == null) {
+					return getUrlFieldPath(node, branchUuid, type, languageTag);
+				}
+				segments.add(segment);
+			}
+
+			Collections.reverse(segments);
+
+			// Finally construct the path from all segments
+			StringBuilder builder = new StringBuilder();
+
+			// Append the prefix first
+			BranchDao branchDao = Tx.get().branchDao();
+			HibBranch branch = branchDao.findByUuid(node.getProject(), branchUuid);
+			if (branch != null) {
+				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
+				if (!prefix.isEmpty()) {
+					String[] prefixSegments = prefix.split("/");
+					for (String prefixSegment : prefixSegments) {
+						if (prefixSegment.isEmpty()) {
+							continue;
+						}
+						builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
+					}
+				}
+			}
+
+			Iterator<String> it = segments.iterator();
+			while (it.hasNext()) {
+				String currentSegment = it.next();
+				builder.append("/").append(URIUtils.encodeSegment(currentSegment));
+			}
+			return builder.toString();
+		});
+	}
+
+	/**
+	 * Return the first url field path found.
+	 *
+	 * @param node
+	 * @param branchUuid
+	 * @param type
+	 * @param languages
+	 *            The order of languages will be used to search for the url field values.
+	 * @return null if no url field could be found.
+	 */
+	private String getUrlFieldPath(HibNode node, String branchUuid, ContainerType type, String... languages) {
+		ContentDao contentDao = Tx.get().contentDao();
+		return Stream.of(languages)
+				.flatMap(language -> Stream.ofNullable(contentDao.getFieldContainer(node, language, branchUuid, type)))
+				.flatMap(HibNodeFieldContainer::getUrlFieldValues)
+				.findFirst()
+				.orElse(null);
 	}
 }
