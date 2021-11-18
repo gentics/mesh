@@ -81,7 +81,10 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 				ctx.put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 				ctx.next();
 			});
-			router.mountSubRouter("/" + encodedName, projectRouter);
+			// Note: the end slash in the subrouter mount point is important, otherwise the subrouter for e.g. /project
+			// (for a project named "project") would also match for the route /projects, which will cause problems,
+			// if the project "project" is deleted
+			router.mountSubRouter("/" + encodedName + "/", projectRouter);
 			projectRouter.mountSubRouter("/", this.projectRouter.getRouter());
 			// mountSubRoutersForProjectRouter(projectRouter, encodedName);
 		}

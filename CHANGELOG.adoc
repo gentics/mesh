@@ -29,6 +29,9 @@ include::content/docs/variables.adoc-include[]
 icon:check[] Search: When the ElasticSearch instance is not available, getting version information from the endpoint `/api/v1` failed with an internal
 server error. This has been fixed, calling the endpoint `/api/v1` will not fail anymore, but will not contain the ElasticSearch version.
 
+icon:check[] Rest: When a project with name "project" was deleted, calls to the endpoint `/projects` would cause 404 errors, until the Mesh instance was restarted.
+This has been fixed now.
+
 [[v1.7.21]]
 == 1.7.21 (11.11.2021)
 
