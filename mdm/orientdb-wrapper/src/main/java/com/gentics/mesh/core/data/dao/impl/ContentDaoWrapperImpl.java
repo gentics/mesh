@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -47,11 +46,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNodeFieldContainer getLatestDraftFieldContainer(HibNode node, String languageTag) {
 		return toGraph(node).getLatestDraftFieldContainer(languageTag);
-	}
-
-	@Override
-	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
-		return Tx.get().nodeDao().getFieldContainer(node, languageTag, branch, type);
 	}
 
 	@Override
@@ -76,21 +70,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node) {
-		return Tx.get().nodeDao().getDraftFieldContainers(node);
-	}
-
-	@Override
-	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
-		return Tx.get().nodeDao().getFieldContainers(node, branchUuid, type);
-	}
-
-	@Override
-	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
-		return Tx.get().nodeDao().getFieldContainers(node, type);
-	}
-
-	@Override
 	public long getFieldContainerCount(HibNode node) {
 		return toGraph(node).getFieldContainerCount();
 	}
@@ -101,24 +80,8 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
-		boolean failForLastContainer) {
-		Tx.get().nodeDao().deleteLanguageContainer(node, ac, branch, languageTag, bac, failForLastContainer);
-	}
-
-	@Override
 	public String getPathSegment(HibNode node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
 		return toGraph(node).getPathSegment(branchUuid, type, anyLanguage, languageTag);
-	}
-
-	@Override
-	public void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
-		Tx.get().nodeDao().deleteFromBranch(node, ac, branch, bac, ignoreChecks);
-	}
-
-	@Override
-	public HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
-		return Tx.get().nodeDao().publish(node, ac, languageTag, branch, user);
 	}
 
 	@Override
