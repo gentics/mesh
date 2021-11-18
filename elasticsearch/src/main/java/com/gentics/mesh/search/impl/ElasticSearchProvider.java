@@ -480,13 +480,17 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public String getVersion() {
+	public String getVersion(boolean failIfNotAvailable) {
 		try {
 			JsonObject info = client.info().sync();
 			return info.getJsonObject("version").getString("number");
 		} catch (HttpErrorException e) {
 			log.error("Unable to fetch node information.", e);
-			throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");
+			if (failIfNotAvailable) {
+				throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");
+			} else {
+				return null;
+			}
 		}
 	}
 

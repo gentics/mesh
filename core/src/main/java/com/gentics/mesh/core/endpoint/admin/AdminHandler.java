@@ -305,7 +305,7 @@ public class AdminHandler extends AbstractHandler {
 			info.setDatabaseVendor(db.getVendorName());
 			info.setSearchVendor(searchProvider.getVendorName());
 			info.setDatabaseVersion(db.getVersion());
-			info.setSearchVersion(searchProvider.getVersion());
+			info.setSearchVersion(searchProvider.getVersion(false));
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setVertxVersion(VersionCommand.getVersion());
 			info.setDatabaseRevision(db.getDatabaseRevision());
