@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -77,6 +78,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	@Override
 	default HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
 		HibProject project = findByName(projectName);
+		if (project == null) {
+			throw error(NOT_FOUND, "object_not_found_for_name", projectName);
+		}
 		return checkPerms(project, project.getUuid(), ac, perm, true);
 	}
 
