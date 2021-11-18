@@ -140,8 +140,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac) {
-		toGraph(node).takeOffline(ac, bac);
+	public void removePublishedEdges(HibNode node, String branchUuid, BulkActionContext bac) {
+		toGraph(node).removePublishedEdges(branchUuid, bac);
 	}
 
 	@Override
@@ -155,8 +155,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
-		toGraph(node).takeOffline(ac, bac, branch, languageTag);
+	public void removePublishedEdge(HibNode node, String languageTag, String branchUuid) {
+		toGraph(node).removePublishedEdge(languageTag, branchUuid);
 	}
 
 	@Override

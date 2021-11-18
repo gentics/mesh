@@ -155,24 +155,14 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 */
 	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
 
-	/**
-	 * Take a language of the node offline.
-	 *
-	 * @param ac
-	 * @param bac
-	 * @param branch
-	 * @param languageTag
-	 */
-	void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
 
 	/**
-	 * Take the node offline (all languages)
+	 * Remove published edges for each container found
 	 *
-	 * @param ac
+	 * @param branchUuid
 	 * @param bac
-	 * @return
 	 */
-	void takeOffline(InternalActionContext ac, BulkActionContext bac);
+	void removePublishedEdges(String branchUuid, BulkActionContext bac);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -367,6 +357,14 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	void removeInitialFieldContainerEdge(HibNodeFieldContainer initial, String branchUUID);
 
 	/**
+	 * Remove the published edge for the given language tag and branch UUID
+	 *
+	 * @param languageTag
+	 * @param branchUuid
+	 */
+    void removePublishedEdge(String languageTag, String branchUuid);
+
+    /**
 	 * Set the graph field container to be the (only) published for the given branch.
 	 *
 	 * @param ac

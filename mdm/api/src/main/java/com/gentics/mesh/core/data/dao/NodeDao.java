@@ -212,6 +212,14 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
 
 	/**
+	 * Remove published edges for each container found
+	 * @param node
+	 * @param branchUuid
+	 * @param bac
+	 */
+	void removePublishedEdges(HibNode node, String branchUuid, BulkActionContext bac);
+
+	/**
 	 * Take a language of the node offline.
 	 *
 	 * @param ac
@@ -512,4 +520,13 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUUID
 	 */
 	void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID);
+
+	/**
+	 * Remove the published edge for the given language tag and branch UUID
+	 *
+	 * @param node
+	 * @param languageTag
+	 * @param branchUuid
+	 */
+	void removePublishedEdge(HibNode node, String languageTag, String branchUuid);
 }

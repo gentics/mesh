@@ -1110,6 +1110,48 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
+	default void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac) {
+		Tx tx = Tx.get();
+		HibBranch branch = tx.getBranch(ac, node.getProject());
+		PublishParameters parameters = ac.getPublishParameters();
+		takeOffline(node, ac, bac, branch, parameters);
+	}
+
+	private void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
+		// Handle recursion first to start at the leaves
+		if (parameters.isRecursive()) {
+			for (HibNode child : getChildren(node, branch.getUuid())) {
+				takeOffline(child, ac, bac, branch, parameters);
+			}
+		}
+
+		String branchUuid = branch.getUuid();
+		removePublishedEdges(node, branchUuid, bac);
+		assertPublishConsistency(node, ac, branch);
+
+		bac.process();
+	}
+
+	@Override
+	default void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
+		ContentDao contentDao = Tx.get().contentDao();
+		String branchUuid = branch.getUuid();
+
+		// Locate the published container
+		HibNodeFieldContainer published = contentDao.getFieldContainer(node, languageTag, branchUuid, PUBLISHED);
+		if (published == null) {
+			throw error(NOT_FOUND, "error_language_not_found", languageTag);
+		}
+		bac.add(published.onTakenOffline(branchUuid));
+
+		// Remove the "published" edge
+		removePublishedEdge(node, languageTag, branchUuid);
+		assertPublishConsistency(node, ac, branch);
+
+		bac.process();
+	}
+
+	@Override
 	default List<String> getAvailableLanguageNames(HibNode node) {
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge

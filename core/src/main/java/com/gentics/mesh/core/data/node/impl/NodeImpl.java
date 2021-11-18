@@ -110,7 +110,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -551,17 +550,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return listItem;
 	}
 
-	private void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
-		// Handle recursion first to start at the leaves
-		if (parameters.isRecursive()) {
-			for (HibNode node : getChildren(branch.getUuid())) {
-				NodeImpl impl = (NodeImpl) node;
-				impl.takeOffline(ac, bac, branch, parameters);
-			}
-		}
-
-		String branchUuid = branch.getUuid();
-
+	@Override
+	public void removePublishedEdges(String branchUuid, BulkActionContext bac) {
 		Result<? extends GraphFieldContainerEdgeImpl> publishEdges = getFieldContainerEdges(branchUuid, PUBLISHED);
 
 		// Remove the published edge for each found container
@@ -573,36 +563,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				content.purge(bac);
 			}
 		});
-
-		assertPublishConsistency(ac, branch);
-
-		bac.process();
 	}
 
 	@Override
-	public void takeOffline(InternalActionContext ac, BulkActionContext bac) {
-		Tx tx = GraphDBTx.getGraphTx();
-		HibBranch branch = tx.getBranch(ac, getProject());
-		PublishParameters parameters = ac.getPublishParameters();
-		takeOffline(ac, bac, branch, parameters);
-	}
-
-	@Override
-	public void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
-		String branchUuid = branch.getUuid();
-
-		// Locate the published container
-		HibNodeFieldContainer published = getFieldContainer(languageTag, branchUuid, PUBLISHED);
-		if (published == null) {
-			throw error(NOT_FOUND, "error_language_not_found", languageTag);
-		}
-		bac.add(published.onTakenOffline(branchUuid));
-
-		// Remove the "published" edge
+	public void removePublishedEdge(String languageTag, String branchUuid) {
 		getGraphFieldContainerEdge(languageTag, branchUuid, PUBLISHED).remove();
-		assertPublishConsistency(ac, branch);
-
-		bac.process();
 	}
 
 	@Override
