@@ -247,27 +247,27 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 	default Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user,
 			ContainerType type) {
 		UserDao userDao = Tx.get().userDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDao contentDao = Tx.get().contentDao();
+
 		return new TraversalResult<>(getNodes(version.getSchemaContainer()).stream()
-			.filter(node -> node.getAvailableLanguageNames().stream()
-					.map(lang -> node.getFieldContainer(lang, branchUuid, type))
+			.filter(node -> nodeDao.getAvailableLanguageNames(node).stream()
+					.map(lang -> contentDao.getFieldContainer(node, lang, branchUuid, type))
 					.anyMatch(container -> container != null)
 				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
 	}
 
 	/**
-	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
 	 * 
-	 * @param versiSchemaDAOActions schemaActions();
-
-	on
+	 * @param version
 	 * @param branchUuid
-	 *            branch Uuid
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
 
 	/**
-	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
 	 * 
 	 * @param version
 	 * @param branchUuid

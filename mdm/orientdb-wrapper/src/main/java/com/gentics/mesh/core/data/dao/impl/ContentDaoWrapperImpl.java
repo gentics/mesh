@@ -51,7 +51,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
-		return toGraph(node).getFieldContainer(languageTag, branch, type);
+		return Tx.get().nodeDao().getFieldContainer(node, languageTag, branch, type);
 	}
 
 	@Override
@@ -77,17 +77,17 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node) {
-		return toGraph(node).getDraftFieldContainers();
+		return Tx.get().nodeDao().getDraftFieldContainers(node);
 	}
 
 	@Override
 	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
-		return toGraph(node).getFieldContainers(branchUuid, type);
+		return Tx.get().nodeDao().getFieldContainers(node, branchUuid, type);
 	}
 
 	@Override
 	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
-		return toGraph(node).getFieldContainers(type);
+		return Tx.get().nodeDao().getFieldContainers(node, type);
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
 		boolean failForLastContainer) {
-		toGraph(node).deleteLanguageContainer(ac, branch, languageTag, bac, failForLastContainer);
+		Tx.get().nodeDao().deleteLanguageContainer(node, ac, branch, languageTag, bac, failForLastContainer);
 	}
 
 	@Override
@@ -113,7 +113,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
-		toGraph(node).deleteFromBranch(ac, branch, bac, ignoreChecks);
+		Tx.get().nodeDao().deleteFromBranch(node, ac, branch, bac, ignoreChecks);
 	}
 
 	@Override

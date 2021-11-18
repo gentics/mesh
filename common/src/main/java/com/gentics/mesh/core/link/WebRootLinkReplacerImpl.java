@@ -14,12 +14,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -164,8 +164,9 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			} else {
 				language = languageTags[0];
 			}
+			ContentDao contentDao = Tx.get().contentDao();
 
-			HibNodeFieldContainer nullableGraphFieldContainer = node.getFieldContainer(language);
+			HibNodeFieldContainer nullableGraphFieldContainer = contentDao.getFieldContainer(node, language);
 			Optional<HibNodeFieldContainer> maybeGraphFieldContainer = Optional.ofNullable(nullableGraphFieldContainer);
 
 			Optional<S3HibBinary> maybeBinaryField = maybeGraphFieldContainer

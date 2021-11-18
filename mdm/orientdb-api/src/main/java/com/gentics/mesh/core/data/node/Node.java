@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Stream;
@@ -118,6 +119,15 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project);
 
 	/**
+	 * Adds reference update events to the context for all draft and published contents that reference this node.
+	 *
+	 * @param bac
+	 */
+	void addReferenceUpdates(BulkActionContext bac);
+
+	void removeParent(String branchUuid);
+
+	/**
 	 * Return a page with child nodes that are visible to the given user.
 	 *
 	 * @param ac
@@ -163,20 +173,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	void takeOffline(InternalActionContext ac, BulkActionContext bac);
-
-	/**
-	 * Delete the language container for the given language from the branch. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
-	 * and branch, and will then delete all "dangling" GFC (GFCs, which are not used by another branch).
-	 *
-	 * @param ac
-	 * @param branch
-	 * @param languageTag
-	 *            Language which will be used to find the field container which should be deleted
-	 * @param bac
-	 * @param failForLastContainer
-	 *            Whether to execute the last container check and fail or not.
-	 */
-	void deleteLanguageContainer(InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -243,27 +239,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	}
 
 	/**
-	 * Delete the node. Please use {@link #deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to delete the node just from a specific branch.
-	 *
-	 * @param bac
-	 * @param ignoreChecks
-	 * @param recursive
-	 */
-	void delete(BulkActionContext bac, boolean ignoreChecks, boolean recursive);
-
-	/**
-	 * Delete the node from the given branch. This will also delete children from the branch.
-	 *
-	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
-	 *
-	 * @param ac
-	 * @param branch
-	 * @param bac
-	 * @param ignoreChecks
-	 */
-	void deleteFromBranch(InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
-
-	/**
 	 * Create a node tagged / untagged event.
 	 *
 	 * @param tag
@@ -292,17 +267,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	HibNodeFieldContainer getLatestDraftFieldContainer(String languageTag);
 
 	/**
-	 * Return the field container for the given language, type and branch.
-	 *
-	 * @param languageTag
-	 * @param branch
-	 * @param type
-	 *            type
-	 * @return
-	 */
-	HibNodeFieldContainer getFieldContainer(String languageTag, HibBranch branch, ContainerType type);
-
-	/**
 	 * Like {@link #createFieldContainer(String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not null).
 	 *
 	 * @param languageTag
@@ -327,9 +291,112 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	Result<HibNodeFieldContainer> getFieldContainers(ContainerType type);
 
 	/**
+	 * Return the field container for the given language, type and branch.
+	 *
+	 * @param languageTag
+	 * @param branch
+	 * @param type
+	 *            type
+	 * @return
+	 */
+	HibNodeFieldContainer getFieldContainer(String languageTag, HibBranch branch, ContainerType type);
+
+    /**
+     * Return traversal of graph field containers of given type for the node in the given branch.
+     *
+     * @param branchUuid
+     * @param type
+     * @return
+     */
+    Result<HibNodeFieldContainer> getFieldContainers(String branchUuid, ContainerType type);
+
+	/**
+	 * Return the draft field container for the given language in the latest branch.
+	 *
+	 * @param languageTag
+	 * @return
+	 */
+	HibNodeFieldContainer getFieldContainer(String languageTag);
+
+	/**
+	 * Return the field container for the given language, type and branch Uuid.
+	 *
+	 * @param languageTag
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	HibNodeFieldContainer getFieldContainer(String languageTag, String branchUuid, ContainerType type);
+
+	/**
+	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will be
+	 * the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
+	 * container will be a clone of the last draft and will have the next version number.
+	 *
+	 * @param languageTag
+	 * @param branch
+	 *            branch
+	 * @param user
+	 *            user
+	 * @return
+	 */
+	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser user);
+
+	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
 	 *
 	 * @return
 	 */
 	long getFieldContainerCount();
+
+	/**
+	 * Iterate the version chain from the back in order to find the given version.
+	 *
+	 * @param languageTag
+	 * @param branchUuid
+	 * @param version
+	 * @return Found version or null when no version could be found.
+	 */
+	default HibNodeFieldContainer findVersion(String languageTag, String branchUuid, String version) {
+		return findVersion(Arrays.asList(languageTag), branchUuid, version);
+	}
+
+	/**
+	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
+	 * is no de version the en version will be selected and returned.
+	 *
+	 * @param languageTags
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @param version
+	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
+	 * @return Next matching field container or null when no language matches
+	 */
+	HibNodeFieldContainer findVersion(List<String> languageTags, String branchUuid, String version);
+
+	/**
+	 * Remove all edges to field container with type {@link ContainerType#INITIAL} for the specified branch uuid
+	 * @param initial
+	 * @param branchUUID
+	 */
+	void removeInitialFieldContainerEdge(HibNodeFieldContainer initial, String branchUUID);
+
+	/**
+	 * Set the graph field container to be the (only) published for the given branch.
+	 *
+	 * @param ac
+	 * @param container
+	 * @param branchUuid
+	 */
+	void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
+
+	/**
+	 * Update the tags of the node using the provides list of tag references.
+	 *
+	 * @param ac
+	 * @param batch
+	 * @param list
+	 * @return
+	 */
+	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
 }

@@ -158,13 +158,14 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	default HibNode createBaseNode(HibProject project, HibUser creator, HibSchemaVersion schemaVersion) {
 		HibNode baseNode = project.getBaseNode();
 		CommonTx ctx = CommonTx.get();
+		ContentDao contentDao = ctx.contentDao();
 		if (baseNode == null) {
 			baseNode = ctx.create(CommonTx.get().nodeDao().getPersistenceClass(project));
 			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
 			baseNode.setProject(project);
 			baseNode.setCreated(creator);
 			HibLanguage language = ctx.languageDao().findByLanguageTag(ctx.data().options().getDefaultLanguage());
-			baseNode.createFieldContainer(language.getLanguageTag(), project.getLatestBranch(), creator);
+			contentDao.createFieldContainer(baseNode, language.getLanguageTag(), project.getLatestBranch(), creator);
 			project.setBaseNode(baseNode);
 		}
 		return baseNode;
@@ -224,7 +225,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
-		project.getBaseNode().getDraftFieldContainers().forEach(c -> {
+		Tx.get().nodeDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
 			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
 

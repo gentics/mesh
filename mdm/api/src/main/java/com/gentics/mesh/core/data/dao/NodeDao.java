@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
@@ -310,6 +311,17 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
+	 * Update the tags of the node using the provides list of tag references.
+	 *
+	 * @param node
+	 * @param ac
+	 * @param batch
+	 * @param list
+	 * @return
+	 */
+	void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
+
+	/**
 	 * Load a stream of nodes with the given perms in the project.
 	 * 
 	 * @param project
@@ -390,4 +402,114 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branch
 	 */
 	void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch);
+
+
+	/**
+	 * Delete the node from the given branch. This will also delete children from the branch.
+	 *
+	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
+	 *
+	 * @param node
+	 * @param ac
+	 * @param branch
+	 * @param bac
+	 * @param ignoreChecks
+	 */
+	void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
+
+	/**
+	 * Remove branch parent of the node
+	 * @param node
+	 * @param branchUuid
+	 */
+	void removeParent(HibNode node, String branchUuid);
+
+
+	/**
+	 * Delete the language container for the given language from the branch. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
+	 * and branch, and will then delete all "dangling" GFC (GFCs, which are not used by another branch).
+	 *
+	 * @param node
+	 * @param ac
+	 * @param branch
+	 * @param languageTag
+	 *            Language which will be used to find the field container which should be deleted
+	 * @param bac
+	 * @param failForLastContainer
+	 *            Whether to execute the last container check and fail or not.
+	 */
+	void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
+								 boolean failForLastContainer);
+
+	/**
+	 * Return containers of the given type
+	 *
+	 * @param node
+	 * @param type
+	 * @return
+	 */
+	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type);
+
+	/**
+	 * Return traversal of graph field containers of given type for the node in the given branch.
+	 *
+	 * @param node
+	 * @param branch
+	 * @param type
+	 * @return
+	 */
+	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, HibBranch branch, ContainerType type);
+
+
+	/**
+	 * Return traversal of graph field containers of given type for the node in the given branch.
+	 *
+	 * @param node
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type);
+
+	/**
+	 * Return the field container for the given language, type and branch.
+	 *
+	 * @param node
+	 * @param languageTag
+	 * @param branch
+	 * @param type
+	 * @return
+	 */
+	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type);
+
+	/**
+	 * Return the draft field containers of the node in the latest branch.
+	 *
+	 * @param  node
+	 * @return
+	 */
+	Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node);
+
+	/**
+	 * Adds reference update events to the context for all draft and published contents that reference this node.
+	 *
+	 * @param node
+	 * @param bac
+	 */
+	void addReferenceUpdates(HibNode node, BulkActionContext bac);
+
+	/**
+	 * Delete the given element
+	 * @param node
+	 */
+	void removeElement(HibNode node);
+
+	/**
+	 * Remove all edges to field container with type {@link ContainerType#INITIAL} for the specified branch uuid
+	 *
+	 * @param node
+	 * @param initial
+	 * @param branchUUID
+	 */
+	void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID);
 }

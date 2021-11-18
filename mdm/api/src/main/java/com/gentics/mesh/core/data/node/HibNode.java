@@ -6,31 +6,32 @@ import static com.gentics.mesh.core.rest.common.ContainerType.*;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -99,75 +100,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	Result<HibTag> getTags(HibBranch branch);
 
 	/**
-	 * Return the draft field container for the given language in the latest branch.
-	 *
-	 * @param languageTag
-	 * @return
-	 */
-	HibNodeFieldContainer getFieldContainer(String languageTag);
-
-	/**
-	 * Return the field container for the given language, type and branch Uuid.
-	 *
-	 * @param languageTag
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	HibNodeFieldContainer getFieldContainer(String languageTag, String branchUuid, ContainerType type);
-
-	/**
-	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will be
-	 * the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
-	 * container will be a clone of the last draft and will have the next version number.
-	 *
-	 * @param languageTag
-	 * @param branch
-	 *            branch
-	 * @param user
-	 *            user
-	 * @return
-	 */
-	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser user);
-
-	/**
-	 * Return the draft field containers of the node in the latest branch.
-	 *
-	 * @return
-	 */
-	default Result<HibNodeFieldContainer> getDraftFieldContainers() {
-		// FIX ME: We should not rely on specific branches.
-		return getFieldContainers(getProject().getLatestBranch(), DRAFT);
-	}
-
-	/**
-	 * Return a traversal of graph field containers of given type for the node in the given branch.
-	 *
-	 * @param branch
-	 * @param type
-	 * @return
-	 */
-	default Result<HibNodeFieldContainer> getFieldContainers(HibBranch branch, ContainerType type) {
-		return getFieldContainers(branch.getUuid(), type);
-	}
-
-	/**
-	 * Return traversal of graph field containers of given type for the node in the given branch.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	Result<HibNodeFieldContainer> getFieldContainers(String branchUuid, ContainerType type);
-
-	/**
-	 * Return a list of language names for draft versions in the latest branch
-	 *
-	 * @return
-	 */
-	List<String> getAvailableLanguageNames();
-
-	/**
 	 * Set the project of the node.
 	 *
 	 * @param project
@@ -199,71 +131,23 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	 * @return
 	 */
 	default String getDisplayName(InternalActionContext ac) {
-			NodeParameters nodeParameters = ac.getNodeParameters();
-			VersioningParameters versioningParameters = ac.getVersioningParameters();
+		NodeParameters nodeParameters = ac.getNodeParameters();
+		VersioningParameters versioningParameters = ac.getVersioningParameters();
+		ContentDao contentDao = Tx.get().contentDao();
 
-			HibNodeFieldContainer container = findVersion(nodeParameters.getLanguageList(Tx.get().data().options()), Tx.get().getBranch(ac, getProject()).getUuid(),
-					versioningParameters
-							.getVersion());
-			if (container == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
-				}
-				return null;
-			} else {
-				// Determine the display field name and load the string value
-				// from that field.
-				return container.getDisplayFieldValue();
+		HibNodeFieldContainer container = contentDao.findVersion(this, nodeParameters.getLanguageList(Tx.get().data().options()), Tx.get().getBranch(ac, getProject()).getUuid(),
+				versioningParameters
+						.getVersion());
+		if (container == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
 			}
-
-	}
-
-	/**
-	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
-	 * is no de version the en version will be selected and returned.
-	 *
-	 * @param languageTags
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param version
-	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
-	 * @return Next matching field container or null when no language matches
-	 */
-	HibNodeFieldContainer findVersion(List<String> languageTags, String branchUuid, String version);
-
-	/**
-	 * Iterate the version chain from the back in order to find the given version.
-	 *
-	 * @param languageTag
-	 * @param branchUuid
-	 * @param version
-	 * @return Found version or null when no version could be found.
-	 */
-	default HibNodeFieldContainer findVersion(String languageTag, String branchUuid, String version) {
-		return findVersion(Arrays.asList(languageTag), branchUuid, version);
-	}
-
-	/**
-	 * Find a node field container that matches the nearest possible value for the language parameter.
-	 *
-	 * @param ac
-	 * @param languageTags
-	 * @return Next matching field container or null when no language matches
-	 */
-	default HibNodeFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, String version) {
-		return findVersion(languageTags, Tx.get().getBranch(ac).getUuid(), version);
-	}
-
-	/**
-	 * Find the content that matches the given parameters (languages, type).
-	 *
-	 * @param ac
-	 * @param languageTags
-	 * @param type
-	 * @return
-	 */
-	default HibNodeFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, ContainerType type) {
-		return findVersion(ac, languageTags, type.getHumanCode());
+			return null;
+		} else {
+			// Determine the display field name and load the string value
+			// from that field.
+			return container.getDisplayFieldValue();
+		}
 	}
 
 	/**
@@ -289,15 +173,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 		}
 		return nodeReference;
 	}
-
-	/**
-	 * Set the graph field container to be the (only) published for the given branch.
-	 *
-	 * @param ac
-	 * @param container
-	 * @param branchUuid
-	 */
-	void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
 
 	/**
 	 * Return the schema container for the node.
@@ -337,6 +212,7 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 		UserDao userDao = tx.userDao();
 		TagDao tagDao = tx.tagDao();
 		NodeDao nodeDao = tx.nodeDao();
+		ContentDao contentDao = tx.contentDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 
@@ -346,7 +222,7 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		HibNode parentNode = nodeDao.getParentNode(this, branch.getUuid());
-		HibNodeFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(tx.data().options()), branch.getUuid(),
+		HibNodeFieldContainer container = contentDao.findVersion(this, ac.getNodeParameters().getLanguageList(tx.data().options()), branch.getUuid(),
 				ac.getVersioningParameters()
 						.getVersion());
 
@@ -413,10 +289,10 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 		}
 
 		// Publish state & availableLanguages
-		for (HibNodeFieldContainer c : getFieldContainers(branch, PUBLISHED)) {
+		for (HibNodeFieldContainer c : nodeDao.getFieldContainers(this, branch.getUuid(), PUBLISHED)) {
 			keyBuilder.append(c.getLanguageTag() + "published");
 		}
-		for (HibNodeFieldContainer c : getFieldContainers(branch, DRAFT)) {
+		for (HibNodeFieldContainer c : nodeDao.getFieldContainers(this, branch.getUuid(), DRAFT)) {
 			keyBuilder.append(c.getLanguageTag() + "draft");
 		}
 
@@ -452,7 +328,7 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 			keyBuilder.append(path);
 
 			// languagePaths
-			for (HibNodeFieldContainer currentFieldContainer : getFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
+			for (HibNodeFieldContainer currentFieldContainer : nodeDao.getFieldContainers(this, branch.getUuid(), forVersion(versioiningParameters.getVersion()))) {
 				String currLanguage = currentFieldContainer.getLanguageTag();
 				keyBuilder.append(currLanguage + "=" + linkReplacer.resolve(ac, branch.getUuid(), type, this, ac.getNodeParameters()
 						.getResolveLinks(), currLanguage));
@@ -478,13 +354,17 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 		return model;
 	}
 
-	/**
-	 * Update the tags of the node using the provides list of tag references.
-	 *
-	 * @param ac
-	 * @param batch
-	 * @param list
-	 * @return
-	 */
-	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
+	@Override
+	default boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
+									Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+		boolean permissionChanged = false;
+		if (recursive) {
+			// We don't need to filter by branch. Branch nodes can't have dedicated perms
+			for (HibNode child : Tx.get().nodeDao().getChildren(this)) {
+				permissionChanged = child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			}
+		}
+		permissionChanged = HibCoreElement.super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		return permissionChanged;
+	}
 }

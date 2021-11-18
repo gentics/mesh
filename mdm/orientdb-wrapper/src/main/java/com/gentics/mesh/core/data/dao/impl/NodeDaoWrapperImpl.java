@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
@@ -128,14 +129,14 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
-		ContainerType type, PagingParameters pagingParameter) {
-		return toGraph(node).getChildren(ac, languageTags, branchUuid, type, pagingParameter);
+	public void removeParent(HibNode node, String branchUuid) {
+		toGraph(node).removeParent(branchUuid);
 	}
 
 	@Override
-	public List<String> getAvailableLanguageNames(HibNode node) {
-		return toGraph(node).getAvailableLanguageNames();
+	public Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
+		ContainerType type, PagingParameters pagingParameter) {
+		return toGraph(node).getChildren(ac, languageTags, branchUuid, type, pagingParameter);
 	}
 
 	@Override
@@ -174,8 +175,33 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void delete(HibNode node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
-		toGraph(node).delete(bac, ignoreChecks, recursive);
+	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
+		return toGraph(node).getFieldContainer(languageTag, branch, type);
+	}
+
+	@Override
+	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
+		return toGraph(node).getFieldContainers(type);
+	}
+
+	@Override
+	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
+		return toGraph(node).getFieldContainers(branchUuid, type);
+	}
+
+	@Override
+	public void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID) {
+		toGraph(node).removeInitialFieldContainerEdge(initial, branchUUID);
+	}
+
+	@Override
+	public void addReferenceUpdates(HibNode node, BulkActionContext bac) {
+		toGraph(node).addReferenceUpdates(bac);
+	}
+
+	@Override
+	public void removeElement(HibNode node) {
+		toGraph(node).removeElement();
 	}
 
 	@Override
@@ -198,6 +224,11 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	public Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
 		Node graphNode = toGraph(node);
 		return graphNode.updateTags(ac, batch);
+	}
+
+	@Override
+	public void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
+		toGraph(node).updateTags(ac, batch, list);
 	}
 
 	@Override

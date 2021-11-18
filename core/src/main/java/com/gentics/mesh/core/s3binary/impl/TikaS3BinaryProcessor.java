@@ -150,7 +150,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			HibNodeFieldContainer latestDraftVersion = toGraph(node).getFieldContainers(branch, ContainerType.DRAFT).next();
+			HibNodeFieldContainer latestDraftVersion = nodeDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()

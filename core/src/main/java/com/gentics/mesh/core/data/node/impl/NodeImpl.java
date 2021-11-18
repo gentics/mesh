@@ -48,6 +48,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -760,63 +761,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<String> getAvailableLanguageNames() {
-		List<String> languageTags = new ArrayList<>();
-		// TODO it would be better to store the languagetag along with the edge
-		for (HibNodeFieldContainer container : getDraftFieldContainers()) {
-			languageTags.add(container.getLanguageTag());
-		}
-		return languageTags;
-	}
-
-	@Override
-	public void delete(BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
-		if (!ignoreChecks) {
-			// Prevent deletion of basenode
-			if (getProject().getBaseNode().getUuid().equals(getUuid())) {
-				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
-			}
-		}
-		// Delete subfolders
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting node {" + getUuid() + "}");
-		}
-		if (recursive) {
-			// No need to check the branch since this delete must affect all branches
-			for (HibNode child : getChildren()) {
-				toGraph(child).delete(bac);
-				bac.process();
-			}
-		}
-
-		// Delete all initial containers (which will delete all containers)
-		for (HibNodeFieldContainer container : getFieldContainers(INITIAL)) {
-			container.delete(bac);
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting node {" + getUuid() + "} vertex.");
-		}
-
-		addReferenceUpdates(bac);
-
-		bac.add(onDeleted(getUuid(), getSchemaContainer(), null, null, null));
-		getElement().remove();
-		bac.process();
-	}
-
-	@Override
 	public Stream<HibNodeField> getInboundReferences() {
 		return toStream(inE(HAS_FIELD, HAS_ITEM)
 			.has(NodeGraphFieldImpl.class)
 			.frameExplicit(NodeGraphFieldImpl.class));
 	}
 
-	/**
-	 * Adds reference update events to the context for all draft and published contents that reference this node.
-	 *
-	 * @param bac
-	 */
-	private void addReferenceUpdates(BulkActionContext bac) {
+	@Override
+	public void addReferenceUpdates(BulkActionContext bac) {
 		Set<String> handledNodeUuids = new HashSet<>();
 
 		getInboundReferences()
@@ -842,38 +794,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		delete(bac, false, true);
+		Tx.get().nodeDao().delete(this, bac, false, true);
 	}
 
 	@Override
-	public void deleteFromBranch(InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
-
-		DeleteParameters parameters = ac.getDeleteParameters();
-
-		// 1. Remove subfolders from branch
-		String branchUuid = branch.getUuid();
-
-		for (HibNode child : getChildren(branchUuid)) {
-			if (!parameters.isRecursive()) {
-				throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
-			}
-			toGraph(child).deleteFromBranch(ac, branch, bac, ignoreChecks);
-		}
-
-		// 2. Delete all language containers
-		for (HibNodeFieldContainer container : getFieldContainers(branch, DRAFT)) {
-			deleteLanguageContainer(ac, branch, container.getLanguageTag(), bac, false);
-		}
-
-		// 3. Now check if the node has no more field containers in any branch. We can delete it in those cases
-		if (getFieldContainerCount() == 0) {
-			delete(bac);
-		} else {
-			removeParent(branchUuid);
-		}
-	}
-
-	private void removeParent(String branchUuid) {
+	public void removeParent(String branchUuid) {
 		Set<String> branchParents = property(BRANCH_PARENTS_KEY_PROPERTY);
 		if (branchParents != null) {
 			// Divide parents by branch uuid.
@@ -904,10 +829,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private Stream<HibNode> getChildren(HibUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		UserDao userRoot = GraphDBTx.getGraphTx().userDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
 		Predicate<HibNode> languageFilter = languageTags == null || languageTags.isEmpty()
 			? item -> true
-			: item -> languageTags.stream().anyMatch(languageTag -> item.getFieldContainer(languageTag, branchUuid, type) != null);
+			: item -> languageTags.stream().anyMatch(languageTag -> contentDao.getFieldContainer(item, languageTag, branchUuid, type) != null);
 
 		return getChildren(branchUuid).stream()
 			.filter(languageFilter.and(item -> userRoot.hasPermission(requestUser, item, perm)));
@@ -923,20 +849,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Page<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
 		return new DynamicTransformablePageImpl<>(user, traversal, params, READ_PERM, TagImpl.class);
-	}
-
-	@Override
-	public boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		boolean permissionChanged = false;
-		if (recursive) {
-			// We don't need to filter by branch. Branch nodes can't have dedicated perms
-			for (HibNode child : getChildren()) {
-				permissionChanged = child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-			}
-		}
-		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-		return permissionChanged;
 	}
 
 	/**
@@ -1143,72 +1055,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
-		boolean failForLastContainer) {
-
-		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
-		HibNodeFieldContainer container = getFieldContainer(languageTag, branch, PUBLISHED);
-		if (container != null) {
-			takeOffline(ac, bac, branch, languageTag);
-		}
-
-		// 2. Load the draft container and remove it from the branch
-		container = getFieldContainer(languageTag, branch, DRAFT);
-		if (container == null) {
-			throw error(NOT_FOUND, "node_no_language_found", languageTag);
-		}
-		container.deleteFromBranch(branch, bac);
-		// No need to delete the published variant because if the container was published the take offline call handled it
-
-		// starting with the old draft, delete all GFC that have no next and are not draft (for other branches)
-		HibNodeFieldContainer dangling = container;
-		while (dangling != null && !dangling.isDraft() && !dangling.hasNextVersion()) {
-			HibNodeFieldContainer toDelete = dangling;
-			dangling = toDelete.getPreviousVersion();
-			toDelete.delete(bac);
-		}
-
-		HibNodeFieldContainer initial = getFieldContainer(languageTag, branch, INITIAL);
-		if (initial != null) {
-			// Remove the initial edge
-			toGraph(initial).inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())
+	public void removeInitialFieldContainerEdge(HibNodeFieldContainer initial, String branchUUID) {
+		toGraph(initial).inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUUID)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).removeAll();
-
-			// starting with the old initial, delete all GFC that have no previous and are not initial (for other branches)
-			dangling = initial;
-			while (dangling != null && !dangling.isInitial() && !dangling.hasPreviousVersion()) {
-				HibNodeFieldContainer toDelete = dangling;
-				// since the GFC "toDelete" was only used by this branch, it can not have more than one "next" GFC
-				// (multiple "next" would have to belong to different branches, and for every branch, there would have to be
-				// an INITIAL, which would have to be either this GFC or a previous)
-				dangling = mesh().boot().contentDao().getNextVersions(toDelete).iterator().next();
-				toDelete.delete(bac, false);
-			}
-		}
-
-		// 3. Check whether this was be the last container of the node for this branch
-		DeleteParameters parameters = ac.getDeleteParameters();
-		if (failForLastContainer) {
-			Result<HibNodeFieldContainer> draftContainers = getFieldContainers(branch.getUuid(), DRAFT);
-			Result<HibNodeFieldContainer> publishContainers = getFieldContainers(branch.getUuid(), PUBLISHED);
-			boolean wasLastContainer = !draftContainers.iterator().hasNext() && !publishContainers.iterator().hasNext();
-
-			if (!parameters.isRecursive() && wasLastContainer) {
-				throw error(BAD_REQUEST, "node_error_delete_failed_last_container_for_branch");
-			}
-
-			// Also delete the node and children
-			if (parameters.isRecursive() && wasLastContainer) {
-				deleteFromBranch(ac, branch, bac, false);
-			}
-		}
-
 	}
 
 	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
+		NodeDao nodeDao = Tx.get().nodeDao();
 
 		// Check the different language versions
-		for (HibNodeFieldContainer container : getFieldContainers(branchUuid, type)) {
+		for (HibNodeFieldContainer container : nodeDao.getFieldContainers(this, branchUuid, type)) {
 			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
 			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name
