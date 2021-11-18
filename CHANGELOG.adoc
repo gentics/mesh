@@ -23,6 +23,12 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.22]]
+== 1.7.22 (TBD)
+
+icon:check[] Search: When the ElasticSearch instance is not available, getting version information from the endpoint `/api/v1` failed with an internal
+server error. This has been fixed, calling the endpoint `/api/v1` will not fail anymore, but will not contain the ElasticSearch version.
+
 [[v1.7.21]]
 == 1.7.21 (11.11.2021)
 

@@ -102,7 +102,7 @@ public class MeshTypeProvider {
 		root.field(
 				newFieldDefinition().name("searchVersion").description("Version of the used search index").type(GraphQLString).dataFetcher(env -> {
 					if (isTokenAllowed(env)) {
-						return searchProvider.getVersion();
+						return searchProvider.getVersion(true);
 					} else {
 						return null;
 					}
