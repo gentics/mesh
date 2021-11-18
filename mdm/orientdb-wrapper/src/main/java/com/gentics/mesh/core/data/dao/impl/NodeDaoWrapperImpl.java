@@ -25,14 +25,11 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
@@ -202,23 +199,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public boolean isVisibleInBranch(HibNode node, String branchUuid) {
 		return toGraph(node).isVisibleInBranch(branchUuid);
-	}
-
-	@Override
-	public boolean update(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(node).update(ac, batch);
-		// return ac.getProject().getNodeRoot().update(element, ac, batch);
-	}
-
-	@Override
-	public Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
-		Node graphNode = toGraph(node);
-		return graphNode.updateTags(ac, batch);
-	}
-
-	@Override
-	public void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
-		toGraph(node).updateTags(ac, batch, list);
 	}
 
 	@Override

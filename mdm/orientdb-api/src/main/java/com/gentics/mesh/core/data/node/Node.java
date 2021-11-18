@@ -35,7 +35,7 @@ import com.syncleus.ferma.EdgeFrame;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVertex, Taggable, ProjectElement, HibNode, GraphDBBucketableElement {
+public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVertex, ProjectElement, HibNode, GraphDBBucketableElement {
 
 	String BRANCH_UUID_KEY = "branchUuid";
 
@@ -92,16 +92,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	boolean hasTag(HibTag tag, HibBranch branch);
-
-	/**
-	 * Handle the update tags request.
-	 *
-	 * @param ac
-	 * @param batch
-	 * @return Page which includes the new set of tags
-	 *
-	 */
-	Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Remove the element.
@@ -372,14 +362,4 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @param branchUuid
 	 */
 	void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
-
-	/**
-	 * Update the tags of the node using the provides list of tag references.
-	 *
-	 * @param ac
-	 * @param batch
-	 * @param list
-	 * @return
-	 */
-	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
 }

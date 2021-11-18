@@ -4,11 +4,15 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -22,9 +26,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,8 +39,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -45,15 +54,18 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -67,6 +79,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionUtils;
@@ -76,12 +89,14 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -1248,5 +1263,230 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				.flatMap(HibNodeFieldContainer::getUrlFieldValues)
 				.findFirst()
 				.orElse(null);
+	}
+
+	/**
+	 * Update the node language or create a new draft for the specific language. This method will also apply conflict detection and take care of deduplication.
+	 *
+	 *
+	 * <p>
+	 * Conflict detection: Conflict detection only occurs during update requests. Two diffs are created. The update request will be compared against base
+	 * version graph field container (version which is referenced by the request). The second diff is being created in-between the base version graph field
+	 * container and the latest version of the graph field container. This diff identifies previous changes in between those version. These both diffs are
+	 * compared in order to determine their intersection. The intersection identifies those fields which have been altered in between both versions and which
+	 * would now also be touched by the current request. This situation causes a conflict and the update would abort.
+	 *
+	 * <p>
+	 * Conflict cases
+	 * <ul>
+	 * <li>Initial creates - No conflict handling needs to be performed</li>
+	 * <li>Migration check - Nodes which have not yet migrated can't be updated</li>
+	 * </ul>
+	 *
+	 *
+	 * <p>
+	 * Deduplication: Field values that have not been changed in between the request data and the last version will not cause new fields to be created in new
+	 * version graph field containers. The new version graph field container will instead reference those fields from the previous graph field container
+	 * version. Please note that this deduplication only applies to complex fields (e.g.: Lists, Micronode)
+	 *
+	 * @param ac
+	 * @param batch
+	 *            Batch which will be used to update the search index
+	 * @return
+	 */
+	@Override
+	default boolean update(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
+		NodeUpdateRequest requestModel = ac.fromJson(NodeUpdateRequest.class);
+		if (isEmpty(requestModel.getLanguage())) {
+			throw error(BAD_REQUEST, "error_language_not_set");
+		}
+
+		// Check whether the tags need to be updated
+		List<TagReference> tags = requestModel.getTags();
+		if (tags != null) {
+			updateTags(node, ac, batch, requestModel.getTags());
+		}
+
+		// Set the language tag parameter here in order to return the updated language in the response
+		String languageTag = requestModel.getLanguage();
+		NodeParameters nodeParameters = ac.getNodeParameters();
+		nodeParameters.setLanguages(languageTag);
+
+		Tx tx = Tx.get();
+		HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+		if (language == null) {
+			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+		}
+		NodeDao nodeDao = tx.nodeDao();
+		ContentDao contentDao = tx.contentDao();
+		HibBranch branch = tx.getBranch(ac, node.getProject());
+		HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
+
+		// Check whether this is the first time that an update for the given language and branch occurs. In this case a new container must be created.
+		// This means that no conflict check can be performed. Conflict checks only occur for updates on existing contents.
+		if (latestDraftVersion == null) {
+			// Create a new field container
+			latestDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser());
+
+			// Check whether the node has a parent node in this branch, if not, the request is supposed to be a create request
+			// and we get the parent node from this create request
+			if (getParentNode(node, branch.getUuid()) == null) {
+				NodeCreateRequest createRequest = JsonUtil.readValue(ac.getBodyAsString(), NodeCreateRequest.class);
+				if (createRequest.getParentNode() == null || isEmpty(createRequest.getParentNode().getUuid())) {
+					throw error(BAD_REQUEST, "node_missing_parentnode_field");
+				}
+				HibNode parentNode = nodeDao.loadObjectByUuid(node.getProject(), ac, createRequest.getParentNode().getUuid(), CREATE_PERM);
+				// check whether the parent node is visible in the branch
+				if (!parentNode.isBaseNode() && !isVisibleInBranch(parentNode, branch.getUuid())) {
+					log.error(
+							String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
+									branch.getName(), parentNode.getUuid()));
+					throw error(NOT_FOUND, "object_not_found_for_uuid", createRequest.getParentNode().getUuid());
+				}
+				setParentNode(node, branch.getUuid(), parentNode);
+			}
+
+			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
+			batch.add(latestDraftVersion.onCreated(branch.getUuid(), DRAFT));
+			return true;
+		} else {
+			String version = requestModel.getVersion();
+			if (version == null) {
+				log.debug("No version was specified. Assuming 'draft' for latest version");
+				version = "draft";
+			}
+
+			// Make sure the container was already migrated. Otherwise the update can't proceed.
+			HibSchemaVersion schemaVersion = latestDraftVersion.getSchemaContainerVersion();
+			if (!latestDraftVersion.getSchemaContainerVersion().equals(branch.findLatestSchemaVersion(schemaVersion
+					.getSchemaContainer()))) {
+				throw error(BAD_REQUEST, "node_error_migration_incomplete");
+			}
+
+			// Load the base version field container in order to create the diff
+			HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, requestModel.getLanguage(), branch.getUuid(), version);
+			if (baseVersionContainer == null) {
+				throw error(BAD_REQUEST, "node_error_draft_not_found", version, requestModel.getLanguage());
+			}
+
+			latestDraftVersion.getSchemaContainerVersion().getSchema().assertForUnhandledFields(requestModel.getFields());
+
+			// TODO handle simplified case in which baseContainerVersion and
+			// latestDraftVersion are equal
+			List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+			List<FieldContainerChange> requestVersionDiff = latestDraftVersion.compareTo(requestModel.getFields());
+
+			// Compare both sets of change sets
+			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
+
+			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+			if (!latestDraftVersion.getVersion().getFullVersion().equals(version)) {
+
+				// Check whether a conflict has been detected
+				if (intersect.size() > 0) {
+					NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+					conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+					conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+					for (FieldContainerChange fcc : intersect) {
+						conflictException.addConflict(fcc.getFieldCoordinates());
+					}
+					throw conflictException;
+				}
+			}
+
+			// Make sure to only update those fields which have been altered in between the latest version and the current request. Remove
+			// unaffected fields from the rest request in order to prevent duplicate references. We don't want to touch field that have not been changed.
+			// Otherwise the graph field references would no longer point to older revisions of the same field.
+			Set<String> fieldsToKeepForUpdate = requestVersionDiff.stream().map(e -> e.getFieldKey()).collect(Collectors.toSet());
+			for (String fieldKey : requestModel.getFields().keySet()) {
+				if (fieldsToKeepForUpdate.contains(fieldKey)) {
+					continue;
+				}
+				if (log.isDebugEnabled()) {
+					log.debug("Removing field from request {" + fieldKey + "} in order to handle deduplication.");
+				}
+				requestModel.getFields().remove(fieldKey);
+			}
+
+			// Check whether the request still contains data which needs to be updated.
+			if (!requestModel.getFields().isEmpty()) {
+
+				// Create new field container as clone of the existing
+				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, language.getLanguageTag(), branch, ac.getUser(),
+						latestDraftVersion, true);
+				// Update the existing fields
+				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
+
+				// Purge the old draft
+				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge();
+				}
+
+				latestDraftVersion = newDraftVersion;
+				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	default Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
+		Tx tx = Tx.get();
+		List<HibTag> tags = Taggable.getTagsToSet(node.getProject(), ac, batch);
+		HibBranch branch = tx.getBranch(ac);
+		applyTags(node, branch, tags, batch);
+		HibUser user = ac.getUser();
+		return tx.tagDao().getTags(node, user, ac.getPagingParameters(), branch);
+	}
+
+	@Override
+	default void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
+		Tx tx = Tx.get();
+		List<HibTag> tags = Taggable.getTagsToSet(node.getProject(), list, ac, batch);
+		HibBranch branch = tx.getBranch(ac);
+		applyTags(node, branch, tags, batch);
+	}
+
+	private void applyTags(HibNode node, HibBranch branch, List<? extends HibTag> tags, EventQueueBatch batch) {
+		List<HibTag> currentTags = node.getTags(branch).list();
+
+		List<HibTag> toBeAdded = tags.stream()
+				.filter(StreamUtil.not(new HashSet<>(currentTags)::contains))
+				.collect(Collectors.toList());
+		toBeAdded.forEach(tag -> {
+			node.addTag(tag, branch);
+			batch.add(onTagged(node, tag, branch, ASSIGNED));
+		});
+
+		List<HibTag> toBeRemoved = currentTags.stream()
+				.filter(StreamUtil.not(new HashSet<>(tags)::contains))
+				.collect(Collectors.toList());
+		toBeRemoved.forEach(tag -> {
+			node.removeTag(tag, branch);
+			batch.add(onTagged(node, tag, branch, UNASSIGNED));
+		});
+	}
+
+
+	private NodeTaggedEventModel onTagged(HibNode node, HibTag tag, HibBranch branch, Assignment assignment) {
+		NodeTaggedEventModel model = new NodeTaggedEventModel();
+		model.setTag(tag.transformToReference());
+
+		model.setBranch(branch.transformToReference());
+		model.setProject(node.getProject().transformToReference());
+		model.setNode(node.transformToMinimalReference());
+
+		switch (assignment) {
+			case ASSIGNED:
+				model.setEvent(NODE_TAGGED);
+				break;
+
+			case UNASSIGNED:
+				model.setEvent(NODE_UNTAGGED);
+				break;
+		}
+
+		return model;
 	}
 }

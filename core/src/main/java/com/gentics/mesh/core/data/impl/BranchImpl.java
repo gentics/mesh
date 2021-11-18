@@ -32,6 +32,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
@@ -641,7 +642,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
-		List<HibTag> tags = getTagsToSet(ac, batch);
+		List<HibTag> tags = Taggable.getTagsToSet(getProject(), ac, batch);
 		// TODO Rework this code. We should only add the needed tags and don't dispatch all events.
 		removeAllTags();
 		tags.forEach(tag -> {

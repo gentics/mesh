@@ -1,12 +1,6 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.ElementType.BRANCH;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
-
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -53,7 +47,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * 
  */
 public interface Branch
-	extends MeshCoreVertex<BranchResponse>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement, HibBranch {
+	extends MeshCoreVertex<BranchResponse>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, ProjectElement, HibBranch {
 
 	static final String NAME = "name";
 

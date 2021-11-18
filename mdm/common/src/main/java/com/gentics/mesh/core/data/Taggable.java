@@ -28,24 +28,24 @@ import com.gentics.mesh.json.JsonUtil;
 /**
  * A taggable element is a graph element that can reference Tags
  */
-public interface Taggable {
-	/**
-	 * Project to which the element belongs.
-	 * 
-	 * @return Project of the element
-	 */
-	HibProject getProject();
+public class Taggable {
+
+	private Taggable() {
+		// hide constructor for util classes
+	}
 
 	/**
 	 * Extract the tags to be set from the TagListUpdateRequest which is expected to be in the body of the action context.
 	 * 
+	 *
+	 * @param project
 	 * @param ac action context
 	 * @param batch search queue batch
 	 * @return list of tags
 	 */
-	default List<HibTag> getTagsToSet(InternalActionContext ac, EventQueueBatch batch) {
+	public static List<HibTag> getTagsToSet(HibProject project, InternalActionContext ac, EventQueueBatch batch) {
 		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
-		return getTagsToSet(request.getTags(), ac, batch);
+		return getTagsToSet(project, request.getTags(), ac, batch);
 	}
 
 	/**
@@ -55,9 +55,8 @@ public interface Taggable {
 	 * @param batch
 	 * @return
 	 */
-	default List<HibTag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
+	public static List<HibTag> getTagsToSet(HibProject project, List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
 		List<HibTag> tags = new ArrayList<>();
-		HibProject project = getProject();
 		UserDao userDao = Tx.get().userDao();
 		TagDao tagDao = Tx.get().tagDao();
 		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
