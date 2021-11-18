@@ -817,4 +817,24 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		deleteRole(role.getUuid());
 		createProject("testProject");
 	}
+
+	/**
+	 * Test that the endpoints for /api/v[x]/projects is unaffected from deleting a project named "project"
+	 */
+	@Test
+	public void testDeleteProjectNamedProject() {
+		// create project named "project"
+		ProjectResponse project = createProject("project");
+
+		// get all projects
+		ProjectListResponse list = call(() -> client().findProjects());
+		assertThat(list.getData().stream().map(ProjectResponse::getName)).as("List of projects").containsOnly("dummy", "project");
+
+		// delete project
+		deleteProject(project.getUuid());
+
+		// get the list of projects
+		list = call(() -> client().findProjects());
+		assertThat(list.getData().stream().map(ProjectResponse::getName)).as("List of projects").containsOnly("dummy");
+	}
 }
