@@ -181,7 +181,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 				@Override
 				public void onFailure(Call call, IOException e) {
 					if (!sub.isDisposed()) {
-						sub.onError(e);
+						sub.onError(new IOException(String.format("I/O Error in %s %s : %s (%s)",
+								HttpMethod.valueOf(method.toUpperCase()), url, e.getClass().getSimpleName(), e.getLocalizedMessage()), e));
 					}
 				}
 

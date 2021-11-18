@@ -26,6 +26,8 @@ server error. This has been fixed, calling the endpoint `/api/v1` will not fail 
 icon:check[] Rest: When a project with name "project" was deleted, calls to the endpoint `/projects` would cause 404 errors, until the Mesh instance was restarted.
 This has been fixed now.
 
+icon:check[] Java Rest Client: If requests to mesh fail with I/O errors (including timeouts), the thrown exception will now also contain the request method and URL.
+
 [[v1.6.23]]
 == 1.6.23 (11.11.2021)
 
