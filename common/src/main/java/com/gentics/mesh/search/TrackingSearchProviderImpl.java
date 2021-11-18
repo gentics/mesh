@@ -188,7 +188,7 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 	}
 
 	@Override
-	public String getVersion() {
+	public String getVersion(boolean failIfNotAvailable) {
 		return "1.0";
 	}
 
