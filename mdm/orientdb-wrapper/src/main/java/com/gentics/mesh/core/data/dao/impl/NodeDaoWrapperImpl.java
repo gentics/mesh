@@ -239,11 +239,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void delete(HibProject root, HibNode element, BulkActionContext bac) {
-		toGraph(root).getNodeRoot().delete(toGraph(element), bac);
-	}
-
-	@Override
 	public boolean update(HibProject root, HibNode element, InternalActionContext ac, EventQueueBatch batch) {
 		return toGraph(root).getNodeRoot().update(toGraph(element), ac, batch);
 	}

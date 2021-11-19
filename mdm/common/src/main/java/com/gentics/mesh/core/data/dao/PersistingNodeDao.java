@@ -987,6 +987,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
+	default void delete(HibProject root, HibNode element, BulkActionContext bac) {
+		delete(element, bac, false, true);
+	}
+
+	@Override
 	default void delete(HibNode node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
 		if (!ignoreChecks) {
 			// Prevent deletion of basenode
@@ -1468,4 +1473,25 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		});
 	}
 
+	@Override
+	default NodeTaggedEventModel onTagged(HibNode node, HibTag tag, HibBranch branch, Assignment assignment) {
+		NodeTaggedEventModel model = new NodeTaggedEventModel();
+		model.setTag(tag.transformToReference());
+
+		model.setBranch(branch.transformToReference());
+		model.setProject(node.getProject().transformToReference());
+		model.setNode(node.transformToMinimalReference());
+
+		switch (assignment) {
+			case ASSIGNED:
+				model.setEvent(NODE_TAGGED);
+				break;
+
+			case UNASSIGNED:
+				model.setEvent(NODE_UNTAGGED);
+				break;
+		}
+
+		return model;
+	}
 }
