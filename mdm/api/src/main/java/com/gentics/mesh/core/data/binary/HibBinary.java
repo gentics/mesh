@@ -3,10 +3,8 @@ package com.gentics.mesh.core.data.binary;
 import java.io.InputStream;
 
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.rest.node.field.image.Point;
-import com.gentics.mesh.core.result.Result;
 
 /**
  * Domain model for binaries.
@@ -86,13 +84,6 @@ public interface HibBinary extends HibBaseElement {
 	 * @param uuid
 	 */
 	void setUuid(String uuid);
-
-	/**
-	 * Find all binary fields which make use of this binary.
-	 * 
-	 * @return
-	 */
-	Result<HibBinaryField> findFields();
 
 	/**
 	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)

@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
@@ -66,7 +65,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		ImageManipulatorOptions options = new ImageManipulatorOptions();
 
 		BootstrapInitializer boot = mock(BootstrapInitializer.class);
-		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null));
+		when(boot.binaryDao()).thenReturn(mockBinaryDao());
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
 		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, boot,null);
 	}

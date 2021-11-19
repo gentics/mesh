@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.BaseMeshComponent;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.router.route.SecurityLoggingHandler;
@@ -197,7 +197,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param projectName
 	 */
 	public void setProject(String projectName) {
-		MeshComponent mesh = boot.mesh().internal();
+		BaseMeshComponent mesh = boot.mesh().internal();
 		HibProject project = mesh.database().tx(tx -> {
 			return tx.projectDao().findByName(projectName);
 		});

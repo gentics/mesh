@@ -8,7 +8,7 @@ import static com.gentics.mesh.parameter.LinkType.SHORT;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;

@@ -2,7 +2,7 @@ package com.gentics.mesh.linkrenderer;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

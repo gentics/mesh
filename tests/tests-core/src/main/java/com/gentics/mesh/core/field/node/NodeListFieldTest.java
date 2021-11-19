@@ -14,16 +14,11 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -76,8 +71,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			// Create node field
-			Node node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibNodeFieldList list = container.createNodeList("dummyList");
 
 			// Add item
@@ -112,15 +107,15 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			Node node = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeImpl.class);
+			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
 
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibNodeFieldList testField = container.createNodeList("testField");
 			testField.createNode("1", node);
 			testField.createNode("2", node);
 			testField.createNode("3", node);
 
-			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
@@ -131,7 +126,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibNodeFieldList fieldA = container.createNodeList("fieldA");
 			HibNodeFieldList fieldB = container.createNodeList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -149,10 +144,10 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibNodeFieldList fieldA = container.createNodeList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
-			assertFalse(fieldA.equals((GraphField) null));
+			assertFalse(fieldA.equals((HibNodeFieldList) null));
 		}
 	}
 
@@ -160,7 +155,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			String dummyKey = "test123";
 
 			// rest null - graph null

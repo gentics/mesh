@@ -23,14 +23,6 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	 * @throws Exception
 	 */
 	void initStorage(MeshTestSetting settings, Mesh mesh) throws Exception;
-
-	/**
-	 * Initialize node storage for the test context.
-	 * 
-	 * @param settings attribute settings for the distinct test
-	 * @throws Exception
-	 */
-	void initStorage(MeshTestSetting settings) throws Exception;
 	
 	/**
 	 * Initialize filesystem for the test context.

@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.cmdline.params.LanguageParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Ignore;
@@ -38,7 +37,6 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -572,7 +570,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)));
 
 		HibBinary binary = tx(tx -> {
-			return HibClassConverter.toGraph(tx).binaries().findByHash(hash).runInExistingTx(tx);
+			return tx.binaries().findByHash(hash).runInExistingTx(tx);
 		});
 
 		assertNull("The binary for the hash should have also been removed since only one node used the binary.", binary);
@@ -675,7 +673,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuidA, new DeleteParametersImpl().setRecursive(true)));
 
 		HibBinary binaryA = tx(tx -> {
-			return HibClassConverter.toGraph(tx).binaries().findByHash(hashA).runInExistingTx(tx);
+			return tx.binaries().findByHash(hashA).runInExistingTx(tx);
 		});
 
 		assertNotNull("The binary for the hash should not have been removed since it is still in use.", binaryA);
@@ -686,7 +684,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuidB, new DeleteParametersImpl().setRecursive(true)));
 
 		binaryA = tx(tx -> {
-			return HibClassConverter.toGraph(tx).binaries().findByHash(hashA).runInExistingTx(tx);
+			return tx.binaries().findByHash(hashA).runInExistingTx(tx);
 		});
 		assertNull("The binary for the hash should have also been removed since only one node used the binary.", binaryA);
 		assertFalse("The binary file should have been removed.", binaryFileA.exists());

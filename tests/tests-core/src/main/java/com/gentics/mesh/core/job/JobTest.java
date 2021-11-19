@@ -12,19 +12,19 @@ import java.util.stream.Collectors;
 
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.job.BranchMigrationJob;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
-import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
-import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
+import com.gentics.mesh.core.data.job.MicronodeMigrationJob;
+import com.gentics.mesh.core.data.job.NodeMigrationJob;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.util.TestUtils;
 
@@ -87,12 +87,12 @@ public class JobTest extends AbstractMeshTest {
 			JobDao root = boot().jobDao();
 			HibJob job = root.enqueueBranchMigration(user(), initialBranch());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
-			Exception ex = buildExceptionStackTraceLongerThan(Job.ERROR_DETAIL_MAX_LENGTH * 2);
-			assertThat(ExceptionUtils.getStackTrace(ex).length()).isGreaterThan(Job.ERROR_DETAIL_MAX_LENGTH);
+			Exception ex = buildExceptionStackTraceLongerThan(HibJob.ERROR_DETAIL_MAX_LENGTH * 2);
+			assertThat(ExceptionUtils.getStackTrace(ex).length()).isGreaterThan(HibJob.ERROR_DETAIL_MAX_LENGTH);
 			// Now test the if the error details are really truncated
 			job.markAsFailed(ex);
 			assertNotNull(job.getErrorDetail());
-			assertThat(job.getErrorDetail().length()).isLessThanOrEqualTo(Job.ERROR_DETAIL_MAX_LENGTH);
+			assertThat(job.getErrorDetail().length()).isLessThanOrEqualTo(HibJob.ERROR_DETAIL_MAX_LENGTH);
 			tx.success();
 		}
 
@@ -105,21 +105,25 @@ public class JobTest extends AbstractMeshTest {
 			// Verify the transformation to rest
 			JobResponse response = root.transformToRestSync(job, null, 0);
 			assertNotNull(response.getErrorDetail());
-			assertThat(response.getErrorDetail().length()).isLessThanOrEqualTo(Job.ERROR_DETAIL_MAX_LENGTH);
+			assertThat(response.getErrorDetail().length()).isLessThanOrEqualTo(HibJob.ERROR_DETAIL_MAX_LENGTH);
 		}
 	}
 
 	@Test
 	public void testJobRootTypeHandling() {
 		try (Tx tx = tx()) {
-			JobDao dao = boot().jobDao();
-			dao.enqueueSchemaMigration(user(), latestBranch(), createSchemaVersion(tx), createSchemaVersion(tx));
-			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx), createMicroschemaVersion(tx));
+			JobDao dao = tx.jobDao();
+			HibSchema schema = tx.<CommonTx>unwrap().schemaDao().createPersisted(null);
+			HibMicroschema microschema = tx.<CommonTx>unwrap().microschemaDao().createPersisted(null);
+			dao.enqueueSchemaMigration(user(), latestBranch(), createSchemaVersion(tx, schema), createSchemaVersion(tx, schema));
+			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx, microschema), createMicroschemaVersion(tx, microschema));
 			dao.enqueueBranchMigration(user(), latestBranch());
 
-			List<String> list = TestUtils.toList(dao.findAll()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
-			assertThat(list).containsExactly(NodeMigrationJobImpl.class.getName(), MicronodeMigrationJobImpl.class.getName(),
-					BranchMigrationJobImpl.class.getName());
+			List<Class<? extends HibJob>> list = TestUtils.toList(dao.findAll()).stream().map(i -> i.getClass()).collect(Collectors.toList());
+			assertThat(list.get(0)).isInstanceOf(NodeMigrationJob.class);
+			assertThat(list.get(0)).isInstanceOf(MicronodeMigrationJob.class);
+			assertThat(list.get(0)).isInstanceOf(BranchMigrationJob.class);
+			assertThat(list.size()).isEqualTo(3);
 		}
 	}
 }

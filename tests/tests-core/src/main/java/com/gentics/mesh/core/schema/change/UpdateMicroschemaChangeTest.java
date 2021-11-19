@@ -7,15 +7,16 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
-import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibUpdateMicroschemaChange;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.test.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
@@ -27,7 +28,10 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
+			HibMicroschema microschema = microschemaDao.createPersisted(null);
+			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema);
+			HibUpdateMicroschemaChange change = (HibUpdateMicroschemaChange) microschemaDao.createPersistedChange(version, SchemaChangeOperation.UPDATEMICROSCHEMA);
 			change.setDescription("test");
 			assertEquals("test", change.getDescription());
 		}
@@ -37,10 +41,13 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			MicroschemaVersion version = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
+			HibMicroschema microschema = microschemaDao.createPersisted(null);
+			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema);
+			
 			MicroschemaModelImpl schema = new MicroschemaModelImpl();
 
-			UpdateMicroschemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			HibUpdateMicroschemaChange change = (HibUpdateMicroschemaChange) microschemaDao.createPersistedChange(version, SchemaChangeOperation.UPDATEMICROSCHEMA);
 			change.setName("updated");
 			change.setIndexOptions(new JsonObject().put("key", "value"));
 			version.setSchema(schema);
@@ -50,7 +57,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 			assertEquals("updated", updatedSchema.getName());
 			assertEquals("value", updatedSchema.getElasticsearch().getString("key"));
 
-			change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			change = (HibUpdateMicroschemaChange) microschemaDao.createPersistedChange(version, SchemaChangeOperation.UPDATEMICROSCHEMA);
 			change.setDescription("text");
 			version.setNextChange(change);
 			updatedSchema = mutator.apply(version);
@@ -62,10 +69,14 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
+			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
+			HibMicroschema microschema = microschemaDao.createPersisted(null);
+			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema);
+			
 			SchemaChangeModel model = SchemaChangeModel.createUpdateMicroschemaChange();
 			model.setProperty(SchemaChangeModel.NAME_KEY, "someName");
 
-			UpdateMicroschemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			HibUpdateMicroschemaChange change = (HibUpdateMicroschemaChange) microschemaDao.createChange(version, model);
 			change.updateFromRest(model);
 			assertEquals("someName", change.getName());
 		}
@@ -75,7 +86,10 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
+			HibMicroschema microschema = microschemaDao.createPersisted(null);
+			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema);
+			HibUpdateMicroschemaChange change = (HibUpdateMicroschemaChange) microschemaDao.createPersistedChange(version, SchemaChangeOperation.UPDATEMICROSCHEMA);
 			change.setName("vcard");
 
 			SchemaChangeModel model = change.transformToRest();

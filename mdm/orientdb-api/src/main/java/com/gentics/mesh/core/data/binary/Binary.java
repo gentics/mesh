@@ -2,7 +2,9 @@ package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.core.result.Result;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
@@ -28,11 +30,18 @@ public interface Binary extends MeshVertex, HibBinary {
 	Flowable<Buffer> getStream();
 
 	/**
-	 * Return the data as base 64 encoded string in the same thread blockingly.
+	 * Return the data as base 64 encoded string in the same thread, blocking.
 	 *
 	 * @return
 	 */
 	String getBase64ContentSync();
+
+	/**
+	 * Find all binary fields which make use of this binary.
+	 * 
+	 * @return
+	 */
+	Result<HibBinaryField> findFields();
 
 	/**
 	 * Return the sha512 checksum.

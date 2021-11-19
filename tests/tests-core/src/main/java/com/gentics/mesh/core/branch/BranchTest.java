@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.branch;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,24 +14,25 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -107,7 +106,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testRootNode() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			BranchRoot branchRoot = toGraph(project).getBranchRoot();
+			HibBaseElement branchRoot = project.getBranchPermissionRoot();
 			assertThat(branchRoot).as("Branch Root of Project").isNotNull();
 			HibBranch initialBranch = project.getInitialBranch();
 			assertThat(initialBranch).as("Initial Branch of Project").isNotNull().isActive().isNamed(project.getName()).hasUuid().hasNext(null)
@@ -258,18 +257,19 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testReadSchemaVersions() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaDao schemaDao = tx.schemaDao();
+			PersistingSchemaDao schemaDao = tx.<CommonTx>unwrap().schemaDao();
+			PersistingBranchDao branchDao = tx.<CommonTx>unwrap().branchDao();
 			HibProject project = project();
 			HibBranch branch = latestBranch();
 			List<HibSchemaVersion> versions = schemaDao.findAll(project).stream().filter(v -> !v.getName().equals("content"))
 				.map(HibSchema::getLatestVersion).collect(Collectors.toList());
 
-			SchemaContainerVersionImpl newVersion = ((GraphDBTx) tx).getGraph().addFramedVertexExplicit(SchemaContainerVersionImpl.class);
+			HibSchemaVersion newVersion = schemaDao.createPersistedVersion(schemaContainer("content"));
 			newVersion.setVersion("4.0");
 			newVersion.setName("content");
 			versions.add(newVersion);
-			newVersion.setSchemaContainer(toGraph(schemaContainer("content")));
-			toGraph(branch).linkOut(newVersion, HAS_SCHEMA_VERSION);
+			newVersion.setSchemaContainer(schemaContainer("content"));
+			branchDao.connectToSchemaVersion(branch, newVersion);
 
 			List<HibSchemaVersion> found = new ArrayList<>();
 			for (HibBranchSchemaVersion versionedge : branch.findAllLatestSchemaVersionEdges()) {

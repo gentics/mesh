@@ -3,7 +3,7 @@ package com.gentics.mesh.core.s3binary;
 import static com.gentics.mesh.core.field.binary.BinaryFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.s3binary.S3BinaryFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.s3binary.S3BinaryFieldTestHelper.FILL_BASIC;
-import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

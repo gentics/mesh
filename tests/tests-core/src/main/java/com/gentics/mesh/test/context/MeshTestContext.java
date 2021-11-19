@@ -707,7 +707,7 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			@NotNull MeshComponent.Builder builder = getMeshDaggerBuilder();
 			mesh = new MeshImpl(options, builder);
-			meshDagger = this.createMeshComponent(mesh, options, settings);
+			meshDagger = createMeshComponent(options, settings);
 			dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
 			if (meshDagger.searchProvider() instanceof TrackingSearchProviderImpl) {
 				trackingSearchProvider = meshDagger.trackingSearchProvider();
@@ -726,15 +726,15 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	@NotNull
-	private MeshComponent.Builder getMeshDaggerBuilder() {
+	protected MeshComponent.Builder getMeshDaggerBuilder() {
 		return meshTestContextProvider.getInstanceProvider().getComponentBuilder();
 	}
 
-	public MeshComponent createMeshComponent(Mesh mesh, MeshOptions options, MeshTestSetting settings) {
+	public MeshComponent createMeshComponent(MeshOptions options, MeshTestSetting settings) {
 		return meshDagger = getMeshDaggerBuilder()
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())
-			.mesh(mesh)
+			//.mesh(mesh)
 			.build();
 	}
 

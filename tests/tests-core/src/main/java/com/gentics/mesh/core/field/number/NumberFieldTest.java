@@ -14,15 +14,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
-import com.gentics.mesh.core.data.node.field.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -51,32 +46,14 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	}
 
 	@Test
-	public void testSimpleNumber() {
-		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NumberGraphFieldImpl field = new NumberGraphFieldImpl("test", container);
-			assertEquals(2, container.getPropertyKeys().size());
-			assertNull(container.getProperty("test-number"));
-			assertEquals(2, container.getPropertyKeys().size());
-			field.setNumber(42);
-			assertEquals(42, field.getNumber());
-			assertEquals(new Integer(42), container.getProperty("test-number"));
-			assertEquals(3, container.getPropertyKeys().size());
-			field.setNumber(null);
-			assertNull(field.getNumber());
-			assertNull(container.getProperty("test-number"));
-		}
-	}
-
-	@Test
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NumberGraphField testField = container.createNumber("testField");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNumberField testField = container.createNumber("testField");
 			testField.setNumber(4711);
 
-			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNumber("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField,
@@ -88,14 +65,14 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			NumberGraphField numberField = container.createNumber("numberField");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNumberField numberField = container.createNumber("numberField");
 			assertEquals("numberField", numberField.getFieldKey());
 			numberField.setNumber(42);
 			assertEquals(42, numberField.getNumber());
-			StringGraphField bogusField1 = container.getString("bogus");
+			HibStringField bogusField1 = container.getString("bogus");
 			assertNull(bogusField1);
-			NumberGraphField reloadedNumberField = container.getNumber("numberField");
+			HibNumberField reloadedNumberField = container.getNumber("numberField");
 			assertNotNull(reloadedNumberField);
 			assertEquals("numberField", reloadedNumberField.getFieldKey());
 		}
@@ -139,7 +116,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			Long number = System.currentTimeMillis();
 			HibNumberField fieldA = container.createNumber(NUMBER_FIELD);
 			HibNumberField fieldB = container.createNumber(NUMBER_FIELD + "_2");
@@ -153,7 +130,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibNumberField fieldA = container.createNumber(NUMBER_FIELD);
 			HibNumberField fieldB = container.createNumber(NUMBER_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -164,7 +141,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			Long number = System.currentTimeMillis();
 
 			// rest null - graph null

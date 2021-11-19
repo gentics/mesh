@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.webrootfield;
 
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

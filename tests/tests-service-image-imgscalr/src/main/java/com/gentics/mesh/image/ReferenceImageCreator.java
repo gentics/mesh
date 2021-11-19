@@ -13,7 +13,6 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 
@@ -46,7 +45,7 @@ public class ReferenceImageCreator {
 		options.setImageCacheDirectory(tmpDir);
 
 		BootstrapInitializer boot = mock(BootstrapInitializer.class);
-		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null));
+		when(boot.binaryDao()).thenReturn(AbstractImageTest.mockBinaryDao());
 		ImgscalrImageManipulator manipulator = new ImgscalrImageManipulator(vertx, options, boot, null);
 
 		readImageConfig().blockingForEach(image -> {
