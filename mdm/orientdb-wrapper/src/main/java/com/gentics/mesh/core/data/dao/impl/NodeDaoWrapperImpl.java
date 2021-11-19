@@ -239,11 +239,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public boolean update(HibProject root, HibNode element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).getNodeRoot().update(toGraph(element), ac, batch);
-	}
-
-	@Override
 	public HibNode findByUuidGlobal(String uuid) {
 		return boot.get().meshRoot().findNodeByUuid(uuid);
 	}
