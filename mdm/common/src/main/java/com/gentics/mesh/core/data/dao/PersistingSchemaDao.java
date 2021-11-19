@@ -391,11 +391,6 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 	}
 
 	@Override
-	default boolean update(HibProject project, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
-		return update(element, ac, batch);
-	}
-
-	@Override
 	default boolean isLinkedToProject(HibSchema schema, HibProject project) {
 		return contains(project, schema);
 	}

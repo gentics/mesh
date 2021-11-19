@@ -182,11 +182,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public boolean update(HibProject root, HibBranch element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).getBranchRoot().update(toGraph(element), ac, batch);
-	}
-
-	@Override
 	protected RootVertex<Branch> getRoot(HibProject root) {
 		return toGraph(root).getBranchRoot();
 	}
