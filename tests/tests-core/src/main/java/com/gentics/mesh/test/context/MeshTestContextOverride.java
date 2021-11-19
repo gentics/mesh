@@ -14,7 +14,7 @@ public class MeshTestContextOverride extends MeshTestContext {
 		return getMeshDaggerBuilder()
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())
-			//.waitUtil(getWaitUtil())
+			.searchWaitUtilSupplier(this::getWaitUtil)
 			.build();
 	}
 

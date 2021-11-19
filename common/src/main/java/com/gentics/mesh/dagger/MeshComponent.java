@@ -1,6 +1,7 @@
 package com.gentics.mesh.dagger;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -13,6 +14,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 /**
  * Central dagger mesh component which will expose dependencies.
@@ -59,6 +61,14 @@ public interface MeshComponent extends BaseMeshComponent {
 		 * @return
 		 */
 		Builder searchProviderType(@Nullable SearchProviderType type);
+
+		/**
+		 * Inject the own instance of {@link SearchWaitUtil}.
+		 * 
+		 * @param type
+		 * @return
+		 */
+		Builder searchWaitUtilSupplier(@Nullable Supplier<SearchWaitUtil> swUtil);
 
 		/**
 		 * Build the component.

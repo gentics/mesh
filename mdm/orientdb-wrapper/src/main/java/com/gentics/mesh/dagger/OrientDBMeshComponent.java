@@ -1,5 +1,7 @@
 package com.gentics.mesh.dagger;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
@@ -11,6 +13,7 @@ import com.gentics.mesh.dagger.module.OrientDBModule;
 import com.gentics.mesh.dagger.module.SearchWaitUtilProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 import dagger.BindsInstance;
 import dagger.Component;
@@ -41,6 +44,9 @@ public interface OrientDBMeshComponent extends MeshComponent {
 
 		@BindsInstance
 		Builder searchProviderType(@Nullable SearchProviderType type);
+
+		@BindsInstance
+		Builder searchWaitUtilSupplier(@Nullable Supplier<SearchWaitUtil> swUtil);
 
 		OrientDBMeshComponent build();
 	}
