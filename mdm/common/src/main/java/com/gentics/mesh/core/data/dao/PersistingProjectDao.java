@@ -1,6 +1,10 @@
 package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -8,6 +12,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
+import com.gentics.mesh.event.Assignment;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -311,5 +318,37 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		deletePersisted(project);
 
 		bac.process(true);
+	}
+
+	@Override
+	default ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assigned) {
+		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
+		switch (assigned) {
+			case ASSIGNED:
+				model.setEvent(PROJECT_SCHEMA_ASSIGNED);
+				break;
+			case UNASSIGNED:
+				model.setEvent(PROJECT_SCHEMA_UNASSIGNED);
+				break;
+		}
+		model.setProject(project.transformToReference());
+		model.setSchema(schema.transformToReference());
+		return model;
+	}
+
+	@Override
+	default ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibProject project, HibMicroschema microschema, Assignment assigned) {
+		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
+		switch (assigned) {
+			case ASSIGNED:
+				model.setEvent(PROJECT_MICROSCHEMA_ASSIGNED);
+				break;
+			case UNASSIGNED:
+				model.setEvent(PROJECT_MICROSCHEMA_UNASSIGNED);
+				break;
+		}
+		model.setProject(project.transformToReference());
+		model.setMicroschema(microschema.transformToReference());
+		return model;
 	}
 }

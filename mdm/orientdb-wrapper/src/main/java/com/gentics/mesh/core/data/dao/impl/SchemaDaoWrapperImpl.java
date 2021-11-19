@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractContainerDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -29,6 +30,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -113,10 +115,11 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assigned) {
+		ProjectDao projectDao = Tx.get().projectDao();
 		return getRoots(schema).stream()
 			.map(SchemaRoot::getProject)
 			.filter(Objects::nonNull)
-			.map(project -> project.onSchemaAssignEvent(schema, assigned));
+			.map(project -> projectDao.onSchemaAssignEvent(project, schema, assigned));
 	}
 
 	@Override

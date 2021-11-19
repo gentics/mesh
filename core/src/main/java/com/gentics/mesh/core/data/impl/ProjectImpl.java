@@ -239,38 +239,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public ProjectSchemaEventModel onSchemaAssignEvent(HibSchema schema, Assignment assigned) {
-		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
-		switch (assigned) {
-		case ASSIGNED:
-			model.setEvent(PROJECT_SCHEMA_ASSIGNED);
-			break;
-		case UNASSIGNED:
-			model.setEvent(PROJECT_SCHEMA_UNASSIGNED);
-			break;
-		}
-		model.setProject(transformToReference());
-		model.setSchema(schema.transformToReference());
-		return model;
-	}
-
-	@Override
-	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibMicroschema microschema, Assignment assigned) {
-		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
-		switch (assigned) {
-		case ASSIGNED:
-			model.setEvent(PROJECT_MICROSCHEMA_ASSIGNED);
-			break;
-		case UNASSIGNED:
-			model.setEvent(PROJECT_MICROSCHEMA_UNASSIGNED);
-			break;
-		}
-		model.setProject(transformToReference());
-		model.setMicroschema(microschema.transformToReference());
-		return model;
-	}
-
-	@Override
 	public Result<? extends Node> findNodes() {
 		return db().getVerticesTraversal(NodeImpl.class, new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getUuid() });
 	}
