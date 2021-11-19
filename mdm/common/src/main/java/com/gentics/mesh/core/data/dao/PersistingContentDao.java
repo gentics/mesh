@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.event.EventQueueBatch;
 
 public interface PersistingContentDao extends ContentDao {
@@ -29,9 +30,11 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param newBranch branch to migrate to
 	 * @param node container owning node
 	 * @param batch event queue for the notifications
+	 * @param container type
 	 * @param setInitial is this branch initial for the project?
 	 */
-	void migrateContainerOntoBranch(HibNodeFieldContainer container, HibBranch newBranch, HibNode node, EventQueueBatch batch, boolean setInitial);
+	void migrateContainerOntoBranch(HibNodeFieldContainer container, HibBranch newBranch, 
+			HibNode node, EventQueueBatch batch, ContainerType containerType, boolean setInitial);
 
 	// Those are stubs. They will be replaced during ContentDao implementation.
 

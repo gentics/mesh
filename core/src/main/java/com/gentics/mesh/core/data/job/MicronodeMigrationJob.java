@@ -119,9 +119,11 @@ public interface MicronodeMigrationJob extends JobCore {
 
 	@Override
 	default Completable processTask(Database db) {
+		MicronodeMigration handler = db.tx(tx -> { 
+			return tx.<CommonTx>unwrap().data().mesh().micronodeMigrationHandler();
+		});
 		return Completable.defer(() -> {
 			MicronodeMigrationContext context = prepareContext(db);
-			MicronodeMigration handler = CommonTx.get().data().mesh().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)
 				.doOnComplete(() -> {
 					db.tx(() -> {

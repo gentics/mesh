@@ -382,7 +382,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			HibMicroschemaVersion currentVersion = branch.findLatestMicroschemaVersion(microschemaVersion.getSchemaContainer());
-			edge = connectToMicroschemaVersion(branch, currentVersion);
+			edge = connectToMicroschemaVersion(branch, microschemaVersion);
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
 			if (currentVersion != null) {

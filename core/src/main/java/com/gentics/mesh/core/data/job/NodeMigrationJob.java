@@ -124,8 +124,9 @@ public interface NodeMigrationJob extends JobCore {
 
 	@Override
 	default Completable processTask(Database db) {
-		NodeMigration handler = CommonTx.get().data().mesh().nodeMigrationHandler();
-
+		NodeMigration handler = db.tx(tx -> { 
+			return tx.<CommonTx>unwrap().data().mesh().nodeMigrationHandler(); 
+		});
 		return Completable.defer(() -> {
 			NodeMigrationActionContextImpl context = prepareContext(db);
 

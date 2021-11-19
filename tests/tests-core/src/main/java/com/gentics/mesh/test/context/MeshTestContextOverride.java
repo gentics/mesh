@@ -15,6 +15,7 @@ public class MeshTestContextOverride extends MeshTestContext {
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())
 			.searchWaitUtilSupplier(this::getWaitUtil)
+			.mesh(getMesh())
 			.build();
 	}
 

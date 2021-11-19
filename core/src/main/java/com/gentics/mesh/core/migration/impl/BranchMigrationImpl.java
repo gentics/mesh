@@ -131,14 +131,14 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				drafts.forEach(container -> {
 					// We only need to set the initial edge if there are no published containers.
 					// Otherwise the initial edge will be set using the published container.
-					contentDao.migrateContainerOntoBranch(container, newBranch, node, batch, !published.hasNext());
+					contentDao.migrateContainerOntoBranch(container, newBranch, node, batch, DRAFT, !published.hasNext());
 				});
 
 				// 2. Migrate published containers
 				published.forEach(container -> {
 					// Set the initial edge for published containers since the published container may be an older version and created before the draft container was created.
 					// The initial edge should always point to the oldest container of either draft or published.
-					contentDao.migrateContainerOntoBranch(container, newBranch, node, batch, true);
+					contentDao.migrateContainerOntoBranch(container, newBranch, node, batch, PUBLISHED, true);
 				});
 
 				// Migrate tags

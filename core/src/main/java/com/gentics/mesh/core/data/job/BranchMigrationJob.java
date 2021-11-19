@@ -96,8 +96,9 @@ public interface BranchMigrationJob extends JobCore {
 	}
 
 	default Completable processTask(Database db) {
-		BranchMigration handler = CommonTx.get().data().mesh().branchMigrationHandler();
-
+		BranchMigration handler = db.tx(tx -> { 
+			return tx.<CommonTx>unwrap().data().mesh().branchMigrationHandler(); 
+		});
 		return Completable.defer(() -> {
 			BranchMigrationContext context = prepareContext(db);
 

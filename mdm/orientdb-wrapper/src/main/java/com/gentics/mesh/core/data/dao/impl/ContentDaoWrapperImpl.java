@@ -456,26 +456,26 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public void migrateContainerOntoBranch(HibNodeFieldContainer hibContainer, HibBranch newBranch, HibNode node, EventQueueBatch batch, boolean setInitial) {
+	public void migrateContainerOntoBranch(HibNodeFieldContainer hibContainer, HibBranch newBranch, HibNode node, EventQueueBatch batch, ContainerType containerType, boolean setInitial) {
 		NodeGraphFieldContainer container = toGraph(hibContainer);
 		if (setInitial) {
 			setInitial(node, container, newBranch);
 		}
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		BootstrapInitializer boot = mesh.boot();
-		GraphFieldContainerEdgeImpl draftEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
-		draftEdge.setLanguageTag(container.getLanguageTag());
-		draftEdge.setType(DRAFT);
-		draftEdge.setBranchUuid(newBranch.getUuid());
+		GraphFieldContainerEdgeImpl edge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
+		edge.setLanguageTag(container.getLanguageTag());
+		edge.setType(containerType);
+		edge.setBranchUuid(newBranch.getUuid());
 		String value = getSegmentFieldValue(container);
 		HibNode parent = boot.nodeDao().getParentNode(node, newBranch.getUuid());
 		if (value != null) {
-			draftEdge.setSegmentInfo(parent, value);
+			edge.setSegmentInfo(parent, value);
 		} else {
-			draftEdge.setSegmentInfo(null);
+			edge.setSegmentInfo(null);
 		}
-		draftEdge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
-		batch.add(container.onUpdated(newBranch.getUuid(), DRAFT));
+		edge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
+		batch.add(container.onUpdated(newBranch.getUuid(), containerType));
 	}
 
 	private HibNodeFieldContainer findDraft(HibNodeFieldContainer latest) {

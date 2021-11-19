@@ -146,6 +146,7 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	public void setup(MeshTestSetting settings) throws Exception {
+		meshTestContextProvider.getInstanceProvider().initMeshData(settings, meshDagger);
 		initFolders(mesh.getOptions());
 		boolean setAdminPassword = settings.optionChanger() != MeshOptionChanger.INITIAL_ADMIN_PASSWORD;
 		setupData(mesh.getOptions(), setAdminPassword);
@@ -558,7 +559,7 @@ public class MeshTestContext extends TestWatcher {
 		MonitoringConfig monitoringOptions = meshOptions.getMonitoringOptions();
 		monitoringOptions.setPort(monitoringPort);
 
-		meshInstanceProvider.initStorage(settings, mesh);
+		meshInstanceProvider.initPhysicalStorage(settings);
 
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		S3Options s3Options = meshOptions.getS3Options();
@@ -734,7 +735,7 @@ public class MeshTestContext extends TestWatcher {
 		return meshDagger = getMeshDaggerBuilder()
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())
-			//.mesh(mesh)
+			.mesh(mesh)
 			.build();
 	}
 

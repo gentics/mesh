@@ -2,7 +2,6 @@ package com.gentics.mesh.test;
 
 import org.testcontainers.utility.ThrowingFunction;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -19,11 +18,18 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	 * Initialize node storage for the test context.
 	 * 
 	 * @param settings attribute settings for the distinct test
-	 * @param mesh Mesh test instance
 	 * @throws Exception
 	 */
-	void initStorage(MeshTestSetting settings, Mesh mesh) throws Exception;
-	
+	void initPhysicalStorage(MeshTestSetting settings) throws Exception;
+
+	/**
+	 * Prepare database for Mesh.
+	 * 
+	 * @param settings
+	 * @param meshDagger
+	 */
+	void initMeshData(MeshTestSetting settings, MeshComponent meshDagger);
+
 	/**
 	 * Initialize filesystem for the test context.
 	 * 

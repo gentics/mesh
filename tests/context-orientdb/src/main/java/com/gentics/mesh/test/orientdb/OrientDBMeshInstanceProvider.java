@@ -39,12 +39,7 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 	}
 
 	@Override
-	public void initStorage(MeshTestSetting settings, Mesh mesh) throws IOException {
-		Database db = mesh.<BaseMeshComponent>internal().database();
-		if (!settings.inMemoryDB() && (db instanceof GraphDatabase)) {
-			DatabaseHelper.init(HibClassConverter.toGraph(db));
-		}
-
+	public void initPhysicalStorage(MeshTestSetting settings) throws IOException {
 		// The database provider will switch to in memory mode when no directory has been specified.
 		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 
@@ -92,5 +87,13 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 	@Override
 	public void teardownStorage() {
 		// No extra shutdown logic
+	}
+
+	@Override
+	public void initMeshData(MeshTestSetting settings, MeshComponent mesh) {
+		Database db = mesh.database();
+		if (!settings.inMemoryDB() && (db instanceof GraphDatabase)) {
+			DatabaseHelper.init(HibClassConverter.toGraph(db));
+		}
 	}
 }
