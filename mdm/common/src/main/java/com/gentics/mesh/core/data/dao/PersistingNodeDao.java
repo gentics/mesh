@@ -801,7 +801,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
-		return new TraversalResult<>(() -> Tx.get().nodeDao().getBreadcrumbNodeStream(node, ac).iterator());
+		return new TraversalResult<>(() -> getBreadcrumbNodeStream(node, ac).iterator());
 	}
 
 	@Override
