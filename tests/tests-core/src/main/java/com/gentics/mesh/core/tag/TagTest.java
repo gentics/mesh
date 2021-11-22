@@ -377,16 +377,16 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			HibTagFamily tagFamily = tagFamily("colors");
 			TagDao tagDao = tx.<CommonTx>unwrap().tagDao();
-			assertEquals(tags().size(), tagDao.count());
+			long tagsSize = tagDao.count(tagFamily);
 			HibTag tag = tag("red");
 			tagDao.removeItem(tagFamily, tag);
-			assertEquals(tags().size() - 1, tagDao.count());
+			assertEquals(tagsSize - 1, tagDao.count(tagFamily));
 			tagDao.removeItem(tagFamily, tag);
-			assertEquals(tags().size() - 1, tagDao.count());
+			assertEquals(tagsSize - 1, tagDao.count(tagFamily));
 			tagDao.addItem(tagFamily, tag);
-			assertEquals(tags().size(), tagDao.count());
+			assertEquals(tagsSize, tagDao.count(tagFamily));
 			tagDao.addItem(tagFamily, tag);
-			assertEquals(tags().size(), tagDao.count(null));
+			assertEquals(tagsSize, tagDao.count(tagFamily));
 			tagDao.onRootDeleted(tagFamily, createBulkContext());
 		}
 	}

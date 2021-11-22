@@ -16,6 +16,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.HttpQueryUtils;
@@ -49,7 +50,8 @@ public final class Mocks {
 		RoutingContext rc = mock(RoutingContext.class);
 		Session session = mock(Session.class);
 		HttpServerRequest request = mock(HttpServerRequest.class);
-		Database db = mock(Database.class);
+		CommonTx ctx = CommonTx.get();
+		Database db = ctx != null ? ctx.data().mesh().database() : mock(Database.class);
 		when(request.query()).thenReturn(query);
 		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
 		MultiMap paramMultiMap = MultiMap.caseInsensitiveMultiMap();
