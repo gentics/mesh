@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.xml.validation.Schema;
 
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -28,7 +27,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.json.JsonUtil;
-import com.github.fge.jsonschema.SchemaVersion;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -151,7 +149,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		Object source = env.getSource();
 		if (source instanceof HibSchemaVersion) {
 			return (HibSchemaVersion) source;
-		} else if (source instanceof Schema) {
+		} else if (source instanceof HibSchema) {
 			return ((HibSchema) source).getLatestVersion();
 		} else {
 			throw new RuntimeException("Invalid type {" + source + "}.");
@@ -160,12 +158,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 	private SchemaVersionModel loadModelWithFallback(DataFetchingEnvironment env) {
 		Object source = env.getSource();
-		if (source instanceof Schema) {
+		if (source instanceof HibSchema) {
 			HibSchema schema = env.getSource();
 			SchemaVersionModel model = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 			return model;
 		}
-		if (source instanceof SchemaVersion) {
+		if (source instanceof HibSchemaVersion) {
 			HibSchemaVersion schema = env.getSource();
 			SchemaVersionModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;

@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.github.fge.jsonschema.SchemaVersion;
 
 import dagger.Lazy;
 import graphql.schema.GraphQLArgument;
@@ -199,7 +198,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 					HibCreatorTracking element = null;
 					if (source instanceof NodeContent) {
 						element = ((NodeContent) source).getNode();
-					} else if (source instanceof SchemaVersion) {
+					} else if (source instanceof HibSchemaVersion) {
 						element = ((HibSchemaVersion) source).getSchemaContainer();
 					} else {
 						element = env.getSource();
