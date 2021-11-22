@@ -160,12 +160,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public long count() {
-		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
-		return groupRoot.globalCount();
-	}
-
-	@Override
 	public Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findAll(ac, pagingInfo);
