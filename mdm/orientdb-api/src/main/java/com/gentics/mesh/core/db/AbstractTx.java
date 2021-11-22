@@ -20,6 +20,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -142,8 +143,12 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 
 	@Override
 	public <B extends HibElement> long count(Class<? extends B> classOfB) {
-		return StreamSupport.stream(getGraph().getVertices(ElementFrame.TYPE_RESOLUTION_KEY, classOfB.getName())
-				.spliterator(), true).count();
+		if (HibBaseElement.class.isAssignableFrom(classOfB)) {
+			return data().mesh().database().count((Class<? extends HibBaseElement>) classOfB);
+		} else {
+			return StreamSupport.stream(getGraph().getVertices(ElementFrame.TYPE_RESOLUTION_KEY, classOfB.getName())
+					.spliterator(), true).count();
+		}
 	}
 
 	@Override

@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -72,7 +71,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 
 			// Delete all users to get empty set of vertices to work with
 			for (HibUser user : userDao.findAll().list()) {
-				userDao.delete(user, new DummyBulkActionContext());
+				ctx.delete(user, user.getClass());
 			}
 			long userCount = ctx.count(userDao.getPersistenceClass());
 			assertEquals(0, userCount);
