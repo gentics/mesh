@@ -12,7 +12,10 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -151,5 +154,20 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return null;
+	}
+
+	@Override
+	default MeshEvent getBranchAssignEvent() {
+		return MeshEvent.SCHEMA_BRANCH_ASSIGN;
+	}
+
+	@Override
+	default MeshEvent getBranchUnassignEvent() {
+		return MeshEvent.SCHEMA_BRANCH_UNASSIGN;
+	}
+
+	@Override
+	default Class<? extends AbstractBranchAssignEventModel<SchemaReference>> getBranchAssignEventModelClass() {
+		return BranchSchemaAssignEventModel.class;
 	}
 }

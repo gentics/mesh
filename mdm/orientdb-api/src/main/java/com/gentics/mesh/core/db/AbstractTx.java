@@ -148,7 +148,13 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 
 	@Override
 	public <B extends HibElement> B load(Object id, Class<? extends B> classOfB) {
-		return getGraph().getFramedVertexExplicit(classOfB, id);
+		B b = getGraph().getFramedVertexExplicit(classOfB, id);
+		try {
+			b.getUuid();
+		} catch (Throwable e) {
+			b = null;
+		}
+		return b;
 	}
 
 	@SuppressWarnings("unchecked")

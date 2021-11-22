@@ -17,13 +17,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
@@ -137,24 +135,6 @@ public interface PersistingMicroschemaDao
 		for (HibBranch branch : branchDao.findAll(project)) {
 			branch.unassignMicroschema(microschema);
 		}
-	}
-
-	@Override
-	default void deleteVersion(HibMicroschemaVersion version, BulkActionContext bac) {
-		// Delete change
-		HibSchemaChange<?> change = version.getNextChange();
-		if (change != null) {
-			deleteChange(change, bac);
-		}
-		// Delete referenced jobs
-		for (HibJob job : version.referencedJobsViaFrom()) {
-			job.remove();
-		}
-		for (HibJob job : version.referencedJobsViaTo()) {
-			job.remove();
-		}
-		// Delete version
-		CommonTx.get().delete(version, version.getClass());
 	}
 
 	@Override

@@ -628,6 +628,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		String versionUuid = tx(() -> schemaContainer("content").getLatestVersion().getUuid());
+		Object versionId = tx(() -> schemaContainer("content").getLatestVersion().getId());
 		assertNotNull("The version should exist.", tx(tx -> {
 			return tx.<CommonTx>unwrap().schemaDao().findVersionByUuid(schemaContainer("content"), versionUuid);
 		}));
@@ -646,7 +647,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertNull("The referenced job should have been deleted", tx.<CommonTx>unwrap().jobDao().findByUuid(jobUuid));
 			HibSchema reloaded = schemaDao.findByUuid(uuid);
 			assertNull("The version of the schema container should have been deleted as well.", 
-					tx.<CommonTx>unwrap().schemaDao().findVersionByUuid(schemaContainer("content"), versionUuid));
+					tx.<CommonTx>unwrap().load(versionId, tx.<CommonTx>unwrap().schemaDao().getVersionPersistenceClass()));
+					// TODO find deleted version throws a NPE. This most probably should not be the case.
+					//tx.<CommonTx>unwrap().schemaDao().findVersionByUuid(schemaContainer("content"), versionUuid));
 			assertNull("The schema should have been deleted.", reloaded);
 		}
 	}

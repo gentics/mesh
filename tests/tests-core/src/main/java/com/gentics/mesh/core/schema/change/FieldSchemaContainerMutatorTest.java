@@ -64,7 +64,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			version.setSchema(schemaModel);
 			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
-			assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
+			assertEquals("No changes were specified. No modification should happen.", schemaModel, updatedSchema);
 		}
 	}
 

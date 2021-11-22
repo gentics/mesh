@@ -9,4 +9,11 @@ import com.gentics.mesh.core.rest.job.JobResponse;
  */
 public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex, HibJob {
 
+	/**
+	 * Remove the job.
+	 * 
+	 * @deprecated remove after PersistingJobDao is settled.
+	 */
+	@Deprecated
+	void remove();
 }

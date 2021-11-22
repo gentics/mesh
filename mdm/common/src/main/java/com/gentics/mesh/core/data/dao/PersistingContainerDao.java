@@ -2,14 +2,17 @@ package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
@@ -17,6 +20,7 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -33,6 +37,13 @@ public interface PersistingContainerDao<
 			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
 			M extends FieldSchemaContainer
 		> extends PersistingDaoGlobal<SC>, ContainerDao<R, RM, RE, SC, SCV, M> {
+
+	/**
+	 * Get the final type of the version persistence entity of the dao.
+	 * 
+	 * @return
+	 */
+	Class<? extends SCV> getVersionPersistenceClass();
 
 	/**
 	 * Create new persisted version entity for the container entity.
@@ -146,5 +157,42 @@ public interface PersistingContainerDao<
 		// Set properties from rest model
 		schemaChange.updateFromRest(restChange);
 		return schemaChange;
+	}
+
+	@Override
+	default void deleteVersion(SCV version, BulkActionContext bac) {
+		CommonTx ctx = CommonTx.get();
+		generateUnassignEvents(version).forEach(bac::add);
+		// Delete change
+		HibSchemaChange<?> change = version.getNextChange();
+		if (change != null) {
+			deleteChange(change, bac);
+		}
+		// Delete referenced jobs
+		for (HibJob job : version.referencedJobsViaFrom()) {
+			ctx.jobDao().delete(job, bac);
+		}
+		for (HibJob job : version.referencedJobsViaTo()) {
+			ctx.jobDao().delete(job, bac);
+		}
+		// Delete version
+		ctx.delete(version, version.getClass());
+	}
+
+	/**
+	 * Generates branch unassign events for every assigned branch.
+	 * 
+	 * @return
+	 */
+	private Stream<? extends AbstractBranchAssignEventModel<RE>> generateUnassignEvents(SCV version) {
+		
+		return getBranches(version).stream()
+			.map(branch -> branch.onContainerAssignEvent(version, UNASSIGNED, null, () -> {
+				try {
+					return version.getBranchAssignEventModelClass().getDeclaredConstructor().newInstance();
+				} catch (Throwable e) {
+					throw new RuntimeException(e);
+				}
+			}));
 	}
 }

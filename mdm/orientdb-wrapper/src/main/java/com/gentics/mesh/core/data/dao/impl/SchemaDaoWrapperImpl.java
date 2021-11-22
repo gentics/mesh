@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
@@ -228,5 +229,10 @@ public class SchemaDaoWrapperImpl
 	@Override
 	protected ContainerRootVertex<SchemaResponse, SchemaVersionModel, Schema, SchemaVersion> getRoot() {
 		return boot.get().meshRoot().getSchemaContainerRoot();
+	}
+
+	@Override
+	public Class<? extends HibSchemaVersion> getVersionPersistenceClass() {
+		return SchemaContainerVersionImpl.class;
 	}
 }

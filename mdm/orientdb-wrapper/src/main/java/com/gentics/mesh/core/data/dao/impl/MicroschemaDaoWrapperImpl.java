@@ -13,6 +13,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.dao.AbstractContainerDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
@@ -210,5 +211,10 @@ public class MicroschemaDaoWrapperImpl
 	public Result<HibProject> findLinkedProjects(HibMicroschema schema) {
 		return new TraversalResult<>(boot.get().meshRoot().getProjectRoot()
 				.findAll().stream().filter(project -> project.getMicroschemaContainerRoot().contains(schema)));
+	}
+
+	@Override
+	public Class<? extends HibMicroschemaVersion> getVersionPersistenceClass() {
+		return MicroschemaContainerVersionImpl.class;
 	}
 }

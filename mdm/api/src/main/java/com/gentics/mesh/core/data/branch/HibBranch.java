@@ -6,15 +6,12 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_UNASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -24,6 +21,8 @@ import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -35,6 +34,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
@@ -42,6 +43,8 @@ import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -426,22 +429,36 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	}
 
 	/**
-	 * Create a project schema assignment event.
-	 *
+	 * Create a generic container assignment event.
+	 * 
+	 * @param <E> branch assignment model type
+	 * @param <R> REST model type
+	 * @param <RM> version model type
+	 * @param <RE> schema model reference type
+	 * @param <SC> entity type
+	 * @param <SCV> entity version model type
 	 * @param schemaVersion
 	 * @param assigned
 	 * @param status
+	 * @param modelSupplier
 	 * @return
 	 */
-	default BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status) {
-		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
+	default <
+			E extends AbstractBranchAssignEventModel<RE>,
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
+	> E onContainerAssignEvent(SCV schemaVersion, Assignment assigned, JobStatus status, Supplier<E> modelSupplier) {
+		E model = modelSupplier.get();
 		model.setOrigin(Tx.get().data().options().getNodeName());
 		switch (assigned) {
 		case ASSIGNED:
-			model.setEvent(SCHEMA_BRANCH_ASSIGN);
+			model.setEvent(schemaVersion.getBranchAssignEvent());
 			break;
 		case UNASSIGNED:
-			model.setEvent(SCHEMA_BRANCH_UNASSIGN);
+			model.setEvent(schemaVersion.getBranchUnassignEvent());
 			break;
 		}
 		model.setSchema(schemaVersion.transformToReference());
@@ -449,6 +466,18 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 		model.setBranch(transformToReference());
 		model.setProject(getProject().transformToReference());
 		return model;
+	}
+
+	/**
+	 * Create a project schema assignment event.
+	 *
+	 * @param schemaVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	default BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status) {  
+		return onContainerAssignEvent(schemaVersion, assigned, status, BranchSchemaAssignEventModel::new);
 	}
 
 	/**
@@ -461,21 +490,7 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	 */
 	default BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned,
 		JobStatus status) {
-		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
-		model.setOrigin(Tx.get().data().options().getNodeName());
-		switch (assigned) {
-		case ASSIGNED:
-			model.setEvent(MICROSCHEMA_BRANCH_ASSIGN);
-			break;
-		case UNASSIGNED:
-			model.setEvent(MICROSCHEMA_BRANCH_UNASSIGN);
-			break;
-		}
-		model.setSchema(microschemaVersion.transformToReference());
-		model.setStatus(status);
-		model.setBranch(transformToReference());
-		model.setProject(getProject().transformToReference());
-		return model;
+		return onContainerAssignEvent(microschemaVersion, assigned, status, BranchMicroschemaAssignModel::new);
 	}
 
 	/**

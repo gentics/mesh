@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
@@ -119,10 +118,10 @@ public class JobTest extends AbstractMeshTest {
 			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx, microschema), createMicroschemaVersion(tx, microschema));
 			dao.enqueueBranchMigration(user(), latestBranch());
 
-			List<Class<? extends HibJob>> list = TestUtils.toList(dao.findAll()).stream().map(i -> i.getClass()).collect(Collectors.toList());
+			List<? extends HibJob> list = dao.findAll().list();
 			assertThat(list.get(0)).isInstanceOf(NodeMigrationJob.class);
-			assertThat(list.get(0)).isInstanceOf(MicronodeMigrationJob.class);
-			assertThat(list.get(0)).isInstanceOf(BranchMigrationJob.class);
+			assertThat(list.get(1)).isInstanceOf(MicronodeMigrationJob.class);
+			assertThat(list.get(2)).isInstanceOf(BranchMigrationJob.class);
 			assertThat(list.size()).isEqualTo(3);
 		}
 	}

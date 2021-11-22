@@ -138,11 +138,6 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	boolean hasFailed();
 
 	/**
-	 * Remove the job.
-	 */
-	void remove();
-
-	/**
 	 * The max length before detail error messages will be truncated
 	 */
 	int ERROR_DETAIL_MAX_LENGTH = 50000;
