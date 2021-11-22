@@ -27,6 +27,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
@@ -57,6 +58,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
@@ -130,6 +132,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 			linkOut(root, HAS_SCHEMA_ROOT);
 		}
 		return root;
+	}
+
+	@Override
+	public HibBaseElement getSchemaPermissionRoot() {
+		return getSchemaContainerRoot();
 	}
 
 	@Override

@@ -28,7 +28,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			// Valid paths
 			expectSuccess("projects", tx.data().permissionRoots().project());
 			expectSuccess("projects/" + project().getUuid(), project());
-			expectSuccess("projects/" + project().getUuid() + "/schemas", tx.data().permissionRoots().schema());
+			expectSuccess("projects/" + project().getUuid() + "/schemas", project().getSchemaPermissionRoot());
 			expectSuccess("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid(), schemaContainer("folder"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies", project().getTagFamilyPermissionRoot());
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), tagFamily("colors"));

@@ -82,7 +82,14 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenc
 	void setBaseNode(HibNode baseNode);
 
 	/**
-	 * Return the hib base element which is used to track permissions.
+	 * Return the schema hib base element which is used to track permissions.
+	 * 
+	 * @return
+	 */
+	HibBaseElement getSchemaPermissionRoot();
+
+	/**
+	 * Return the branch hib base element which is used to track permissions.
 	 * 
 	 * @return
 	 */
