@@ -178,19 +178,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		boolean permissionChanged = false;
-		if (recursive) {
-			permissionChanged = getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-			permissionChanged = getBranchRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-			permissionChanged = getBaseNode().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-		}
-		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-		return permissionChanged;
-	}
-
-	@Override
 	public HibBranch getInitialBranch() {
 		return getBranchRoot().getInitialBranch();
 	}
