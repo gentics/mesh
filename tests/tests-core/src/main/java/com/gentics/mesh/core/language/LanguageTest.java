@@ -1,10 +1,8 @@
 package com.gentics.mesh.core.language;
 
-import static com.gentics.mesh.test.performance.StopWatch.stopWatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
@@ -12,17 +10,14 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.google.common.collect.Iterators;
-import com.tinkerpop.blueprints.Vertex;
 
 @MeshTestSetting(testSize = TestSize.PROJECT, startServer = false)
 public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcases {
@@ -52,22 +47,6 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 
 			long nLanguagesAfter = languageDao.count();
 			assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
-		}
-	}
-
-	@Test
-	public void testLanguageIndex() {
-		try (Tx tx = tx()) {
-			stopWatch("languageindex.read", 50000, (step) -> {
-				Iterable<Vertex> it = ((GraphDBTx) tx).getGraph().getVertices("LanguageImpl.languageTag", "en");
-				assertTrue(it.iterator().hasNext());
-				Iterable<Vertex> it2 = ((GraphDBTx) tx).getGraph().getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY,
-					"en");
-				assertTrue(it2.iterator().hasNext());
-				Vertex vertex = it2.iterator().next();
-				assertNotNull("The language node with languageTag 'en' could not be found.", vertex);
-				assertEquals("en", vertex.getProperty(LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY));
-			});
 		}
 	}
 

@@ -2,25 +2,25 @@ package com.gentics.mesh.core.link;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -177,7 +177,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 				.flatMap(s3binaryFieldSchema -> {
 					String linkResolver = options.getS3Options().getLinkResolver();
 					//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
-					if (isNull(linkResolver) || linkResolver.equals("s3")) {
+					if (Objects.isNull(linkResolver) || linkResolver.equals("s3")) {
 						String fieldName = s3binaryFieldSchema.getName();
 						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName).getS3Binary());
 					} else {

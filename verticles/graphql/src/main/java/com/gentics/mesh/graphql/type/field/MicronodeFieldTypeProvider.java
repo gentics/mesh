@@ -17,8 +17,9 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -28,7 +29,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.MicroschemaTypeProvider;
@@ -74,8 +74,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 			GraphQLUnionType fieldType = newUnionType().name(MICRONODE_TYPE_NAME).possibleTypes(typeArray).description("Fields of the micronode.")
 				.typeResolver(env -> {
 					Object object = env.getObject();
-					if (object instanceof Micronode) {
-						Micronode fieldContainer = (Micronode) object;
+					if (object instanceof HibMicronode) {
+						HibMicronode fieldContainer = (HibMicronode) object;
 						HibMicroschemaVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
 						String schemaName = micronodeFieldSchema.getName();
 						GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
@@ -89,7 +89,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 			GraphQLInterfaceType fieldType = newInterface()
 				.name(MICRONODE_TYPE_NAME)
 				.typeResolver(env -> {
-					Micronode fieldContainer = env.getObject();
+					HibMicronode fieldContainer = env.getObject();
 					HibMicroschemaVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
 					String schemaName = micronodeFieldSchema.getName();
 					return env.getSchema().getObjectType(schemaName);
@@ -107,7 +107,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				.name("uuid")
 				.description("The uuid of the micronode")
 				.type(GraphQLString)
-				.dataFetcher(micronodeFetcher(MeshElement::getUuid))
+				.dataFetcher(micronodeFetcher(HibElement::getUuid))
 				.build(),
 			newFieldDefinition()
 				.name("microschema")
@@ -118,7 +118,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		);
 	}
 
-	private DataFetcher<?> micronodeFetcher(Function<Micronode, ?> mapper) {
+	private DataFetcher<?> micronodeFetcher(Function<HibMicronode, ?> mapper) {
 		return env -> mapper.apply(env.getSource());
 	}
 

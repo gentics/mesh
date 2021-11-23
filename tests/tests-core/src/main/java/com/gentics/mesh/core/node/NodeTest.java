@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
@@ -62,7 +61,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			HibNode node = content();
 			InternalActionContext ac = mockActionContext("?version=draft");
-			NodeReference reference = node.transformToReference(ac);
+			NodeReference reference = tx.nodeDao().transformToReference(node, ac);
 			assertNotNull(reference);
 			assertEquals(node.getUuid(), reference.getUuid());
 		}
@@ -312,7 +311,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
 			String uuid = node.getUuid();
-			MeshAssert.assertElement(toGraph(project()).getNodeRoot(), uuid, true);
+			MeshAssert.assertElement(tx.nodeDao(), project(), uuid, true);
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
@@ -320,7 +319,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				tx2.success();
 			}
 
-			MeshAssert.assertElement(toGraph(project()).getNodeRoot(), uuid, false);
+			MeshAssert.assertElement(tx.nodeDao(), project(), uuid, false);
 		}
 	}
 

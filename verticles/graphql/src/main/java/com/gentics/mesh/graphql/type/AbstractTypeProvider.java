@@ -21,9 +21,9 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.core.action.DAOActions;
-import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
@@ -128,7 +128,7 @@ public abstract class AbstractTypeProvider {
 	 * @param source
 	 * @return
 	 */
-	public List<String> getLanguageArgument(DataFetchingEnvironment env, GraphFieldContainer source) {
+	public List<String> getLanguageArgument(DataFetchingEnvironment env, HibFieldContainer source) {
 		return getLanguageArgument(env, Arrays.asList(source.getLanguageTag()));
 	}
 

@@ -12,15 +12,13 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -63,8 +61,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newFieldDefinition().name("name").type(GraphQLString).dataFetcher((env) -> {
 			Object source = env.getSource();
-			if (source instanceof NamedElement) {
-				return ((NamedElement) source).getName();
+			if (source instanceof HibNamedElement) {
+				return ((HibNamedElement) source).getName();
 			}
 			return null;
 		}));
@@ -151,7 +149,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		Object source = env.getSource();
 		if (source instanceof HibSchemaVersion) {
 			return (HibSchemaVersion) source;
-		} else if (source instanceof Schema) {
+		} else if (source instanceof HibSchema) {
 			return ((HibSchema) source).getLatestVersion();
 		} else {
 			throw new RuntimeException("Invalid type {" + source + "}.");
@@ -160,12 +158,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 	private SchemaVersionModel loadModelWithFallback(DataFetchingEnvironment env) {
 		Object source = env.getSource();
-		if (source instanceof Schema) {
+		if (source instanceof HibSchema) {
 			HibSchema schema = env.getSource();
 			SchemaVersionModel model = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 			return model;
 		}
-		if (source instanceof SchemaVersion) {
+		if (source instanceof HibSchemaVersion) {
 			HibSchemaVersion schema = env.getSource();
 			SchemaVersionModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;

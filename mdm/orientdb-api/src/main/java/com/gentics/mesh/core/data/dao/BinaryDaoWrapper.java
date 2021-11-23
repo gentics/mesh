@@ -5,6 +5,6 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 /**
  * DAO for {@link HibBinary} operations.
  */
-public interface BinaryDaoWrapper extends BinaryDao {
+public interface BinaryDaoWrapper extends PersistingBinaryDao {
 
 }

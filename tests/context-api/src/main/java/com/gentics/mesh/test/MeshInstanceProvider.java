@@ -20,8 +20,16 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	 * @param settings attribute settings for the distinct test
 	 * @throws Exception
 	 */
-	void initStorage(MeshTestSetting settings) throws Exception;
-	
+	void initPhysicalStorage(MeshTestSetting settings) throws Exception;
+
+	/**
+	 * Prepare database for Mesh.
+	 * 
+	 * @param settings
+	 * @param meshDagger
+	 */
+	void initMeshData(MeshTestSetting settings, MeshComponent meshDagger);
+
 	/**
 	 * Initialize filesystem for the test context.
 	 * 

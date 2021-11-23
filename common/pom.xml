@@ -33,7 +33,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+			<artifactId>mesh-mdm-common</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.dagger</groupId>

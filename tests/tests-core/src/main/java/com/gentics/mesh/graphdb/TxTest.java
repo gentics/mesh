@@ -18,21 +18,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.impl.TagFamilyImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -175,6 +168,7 @@ public class TxTest extends AbstractMeshTest {
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
 							try (Tx tx = tx()) {
+								CommonTx ctx = tx.unwrap();
 								TagDao tagDao = tx.tagDao();
 								if (retry == 0) {
 									try {
@@ -187,10 +181,10 @@ public class TxTest extends AbstractMeshTest {
 									}
 								}
 								// Load used elements
-								TagFamily reloadedTagFamily = ((GraphDBTx) tx).getGraph().getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.getId());
-								Node reloadedNode = ((GraphDBTx) tx).getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
-								HibUser reloadedUser = ((GraphDBTx) tx).getGraph().getFramedVertexExplicit(UserImpl.class, user.getId());
-								Project reloadedProject = ((GraphDBTx) tx).getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getId());
+								HibTagFamily reloadedTagFamily = ctx.load(tagFamily.getId(), ctx.tagFamilyDao().getPersistenceClass());
+								HibNode reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
+								HibUser reloadedUser = ctx.load(user.getId(), ctx.userDao().getPersistenceClass());
+								HibProject reloadedProject = ctx.load(project.getId(), ctx.projectDao().getPersistenceClass());
 
 								HibTag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
@@ -226,10 +220,11 @@ public class TxTest extends AbstractMeshTest {
 			}
 			// Thread.sleep(1000);
 			try (Tx tx = tx()) {
+				CommonTx ctx = tx.unwrap();
 				TagDao tagDao = tx.tagDao();
 
 				int expect = nThreads * (r + 1);
-				Node reloadedNode = ((GraphDBTx) tx).getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
+				HibNode reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
 						tagDao.getTags(reloadedNode, project().getLatestBranch()).count());

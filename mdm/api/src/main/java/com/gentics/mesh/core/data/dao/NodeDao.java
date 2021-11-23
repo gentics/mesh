@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -36,6 +37,7 @@ import com.gentics.mesh.path.Path;
  * Dao for {@link HibNode}
  */
 public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
+
 	/**
 	 * Return the API path for the node.
 	 * 
@@ -347,7 +349,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param project
 	 * @return
 	 */
-	long computeCount(HibProject project);
+	long count(HibProject project);
 
 	/**
 	 * Create a new node.
@@ -542,4 +544,31 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	NodeTaggedEventModel onTagged(HibNode node, HibTag tag, HibBranch branch, Assignment assignment);
+	
+	/**
+	 * Find all the existing nodes.<br>
+	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
+	 * Use {@link NodeDao#findAll(HibProject)} with the valid project binding instead.
+	 * 
+	 * @return
+	 */
+	Stream<? extends HibNode> findAllGlobal();
+
+	/**
+	 * Get ETag part of node.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @return
+	 */
+	String getSubETag(HibNode node, InternalActionContext ac);
+
+	/**
+	 * Transform the node to a reference.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @return
+	 */
+	NodeReference transformToReference(HibNode node, InternalActionContext ac);
 }

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
@@ -9,10 +10,8 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.schema.HibRemoveFieldChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -27,8 +26,9 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			HibRemoveFieldChange change = createChange(schemaDao(tx), version, REMOVEFIELD);
+			
 			change.setFieldName("someField");
 			assertEquals("someField", change.getFieldName());
 		}
@@ -38,14 +38,14 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createSchemaVersion(tx);
-
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			
 			// 1. Create schema with field
 			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("test"));
 
 			// 2. Create remove field change
-			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			HibRemoveFieldChange change = createChange(schemaDao(tx), version, REMOVEFIELD);
 			change.setFieldName("test");
 
 			version.setNextChange(change);
@@ -62,10 +62,9 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testUpdateFromRest() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaChangeModel model = new SchemaChangeModel();
-			model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "someField");
-			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-			change.updateFromRest(model);
+			SchemaChangeModel model = new SchemaChangeModel(REMOVEFIELD, "someField");
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			HibRemoveFieldChange change = (HibRemoveFieldChange) schemaDao(tx).createChange(version, model);
 			assertEquals("someField", change.getFieldName());
 		}
 	}
@@ -74,8 +73,9 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			RemoveFieldChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-			assertEquals(RemoveFieldChange.OPERATION, change.transformToRest().getOperation());
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			HibRemoveFieldChange change = createChange(schemaDao(tx), version, REMOVEFIELD);
+			assertEquals(HibRemoveFieldChange.OPERATION, change.transformToRest().getOperation());
 			change.setFieldName("test2");
 
 			SchemaChangeModel model = change.transformToRest();

@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.result.Result;
 
 /**
@@ -40,12 +39,4 @@ public interface GraphFieldSchemaContainerVersion<
 	 * @return Found branches of this version
 	 */
 	Result<? extends HibBranch> getBranches();
-
-	/**
-	 * Create a new graph change from the given rest change.
-	 * 
-	 * @param restChange
-	 * @return
-	 */
-	SchemaChange<?> createChange(SchemaChangeModel restChange);
 }

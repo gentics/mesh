@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 
 /**
@@ -8,6 +9,6 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
  * @author plyhun
  *
  */
-public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingDaoGlobal<HibTagFamily> {
+public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingDaoGlobal<HibTagFamily>, ElementResolvingRootDao<HibProject, HibTagFamily> {
 
 }

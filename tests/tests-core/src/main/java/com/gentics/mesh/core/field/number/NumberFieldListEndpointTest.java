@@ -18,7 +18,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -127,7 +126,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			final HibNodeFieldContainer currentContainer = container;
-			List<Number> oldValue = tx(() -> getListValues(currentContainer, NumberGraphFieldListImpl.class, FIELD_NAME));
+			List<Number> oldValue = tx(() -> getListValues(currentContainer::getNumberList, FIELD_NAME));
 			List<Number> newValue = valueCombinations.get(i % valueCombinations.size());
 
 			NumberFieldListImpl list = new NumberFieldListImpl();
@@ -142,7 +141,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				ContentDao contentDao = tx.contentDao();
 				HibNodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME));
+				assertEquals("Check old value", oldValue, getListValues(container::getNumberList, FIELD_NAME));
 				container = newContainerVersion;
 			}
 		}

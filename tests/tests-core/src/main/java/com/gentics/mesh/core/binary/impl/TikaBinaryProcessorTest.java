@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
@@ -38,7 +37,7 @@ public class TikaBinaryProcessorTest implements MeshOptionsTypeUnawareContext {
 		Maybe<Consumer<HibBinaryField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
 
 		Consumer<HibBinaryField> consumer = result.blockingGet();
-		BinaryGraphField field = Mockito.mock(BinaryGraphField.class);
+		HibBinaryField field = Mockito.mock(HibBinaryField.class);
 		consumer.accept(field);
 	}
 
@@ -75,7 +74,7 @@ public class TikaBinaryProcessorTest implements MeshOptionsTypeUnawareContext {
 		Maybe<Consumer<HibBinaryField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
 
 		Consumer<HibBinaryField> consumer = result.blockingGet();
-		BinaryGraphField field = Mockito.mock(BinaryGraphField.class);
+		HibBinaryField field = Mockito.mock(HibBinaryField.class);
 		consumer.accept(field);
 	}
 

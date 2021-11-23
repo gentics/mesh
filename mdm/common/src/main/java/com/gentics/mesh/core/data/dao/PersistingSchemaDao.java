@@ -23,12 +23,10 @@ import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -36,7 +34,6 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -57,7 +54,10 @@ import com.gentics.mesh.json.JsonUtil;
  * @author plyhun
  *
  */
-public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel> {
+public interface PersistingSchemaDao 
+			extends SchemaDao, 
+			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, 
+			ElementResolvingRootDao<HibProject, HibSchema> {
 
 	/**
 	 * Create the schema.
@@ -195,7 +195,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
 		if (validate && CommonTx.get().data().vertx() != null) {
-			PersistingSchemaDao.validateSchema(CommonTx.get().data().nodeIndexHandler(), schema);
+			PersistingSchemaDao.validateSchema(CommonTx.get().data().mesh().nodeContainerIndexHandler(), schema);
 		}
 
 		String name = schema.getName();
@@ -307,7 +307,7 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 
 		// assign the latest schema version to all branches of the project
 		for (HibBranch branch : branchDao.findAll(project)) {
-			branch.assignSchemaVersion(user, schemaContainer.getLatestVersion(), batch);
+			branchDao.assignSchemaVersion(branch, user, schemaContainer.getLatestVersion(), batch);
 		}
 	}
 
@@ -397,35 +397,6 @@ public interface PersistingSchemaDao extends SchemaDao, PersistingContainerDao<S
 
 	@Override
 	default FieldSchemaContainerComparator<SchemaModel> getFieldSchemaContainerComparator() {
-		return CommonTx.get().data().schemaComparator();
-	}
-
-	@Override
-	default void deleteVersion(HibSchemaVersion version, BulkActionContext bac) {
-		generateUnassignEvents(version).forEach(bac::add);
-		// Delete change
-		HibSchemaChange<?> change = version.getNextChange();
-		if (change != null) {
-			deleteChange(change, bac);
-		}
-		// Delete referenced jobs
-		for (HibJob job : version.referencedJobsViaFrom()) {
-			job.remove();
-		}
-		for (HibJob job : version.referencedJobsViaTo()) {
-			job.remove();
-		}
-		// Delete version
-		CommonTx.get().delete(version, version.getClass());
-	}
-
-	/**
-	 * Genereates branch unassign events for every assigned branch.
-	 * 
-	 * @return
-	 */
-	private Stream<BranchSchemaAssignEventModel> generateUnassignEvents(HibSchemaVersion version) {
-		return getBranches(version).stream()
-			.map(branch -> branch.onSchemaAssignEvent(version, UNASSIGNED, null));
+		return CommonTx.get().data().mesh().schemaComparator();
 	}
 }

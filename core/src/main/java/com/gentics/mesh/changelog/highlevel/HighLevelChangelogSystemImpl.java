@@ -7,10 +7,10 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.PostProcessFlags;
-import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.changelog.HighLevelChange;
+import com.gentics.mesh.core.data.dao.ChangelogDao;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -36,11 +36,11 @@ public class HighLevelChangelogSystemImpl implements HighLevelChangelogSystem {
 	}
 
 	@Override
-	public void apply(PostProcessFlags flags, MeshRoot meshRoot, Predicate<? super HighLevelChange> filter) {
+	public void apply(PostProcessFlags flags, ChangelogDao dao, Predicate<? super HighLevelChange> filter) {
 		List<HighLevelChange> changes = highLevelChangesList.getList();
 		for (HighLevelChange change : changes) {
 			db.tx(tx2 -> {
-				if (!isApplied(meshRoot, change)) {
+				if (!isApplied(dao, change)) {
 					// if a filter is given and a change does not pass its test, we fail
 					if (filter != null && !filter.test(change)) {
 						throw new RuntimeException("Cannot execute change " + change.getName()
@@ -60,7 +60,7 @@ public class HighLevelChangelogSystemImpl implements HighLevelChangelogSystem {
 						change.applyNoTx();
 						long duration = System.currentTimeMillis() - start;
 						db.tx(tx -> {
-							meshRoot.getChangelogRoot().add(change, duration);
+							dao.add(change, duration);
 							tx.success();
 						});
 						if (change.requiresReindex()) {
@@ -76,24 +76,24 @@ public class HighLevelChangelogSystemImpl implements HighLevelChangelogSystem {
 	}
 
 	@Override
-	public void markAllAsApplied(MeshRoot meshRoot) {
+	public void markAllAsApplied(ChangelogDao dao) {
 		db.tx(tx -> {
 			List<HighLevelChange> changes = highLevelChangesList.getList();
 			for (HighLevelChange change : changes) {
-				meshRoot.getChangelogRoot().add(change, 0);
+				dao.add(change, 0);
 			}
 			tx.success();
 		});
 	}
 
 	@Override
-	public boolean requiresChanges(MeshRoot meshRoot, Predicate<? super HighLevelChange> filter) {
+	public boolean requiresChanges(ChangelogDao dao, Predicate<? super HighLevelChange> filter) {
 		return db.tx(tx -> {
 			Stream<HighLevelChange> stream = highLevelChangesList.getList().stream();
 			if (filter != null) {
 				stream = stream.filter(filter);
 			}
-			return stream.filter(change -> !isApplied(meshRoot, change)).findFirst().isPresent();
+			return stream.filter(change -> !isApplied(dao, change)).findFirst().isPresent();
 		});
 	}
 

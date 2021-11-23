@@ -1,7 +1,6 @@
 package com.gentics.mesh.mock;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.shared.SharedKeys.API_VERSION_CONTEXT_KEY;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -14,10 +13,11 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.HttpQueryUtils;
 
@@ -50,6 +50,8 @@ public final class Mocks {
 		RoutingContext rc = mock(RoutingContext.class);
 		Session session = mock(Session.class);
 		HttpServerRequest request = mock(HttpServerRequest.class);
+		CommonTx ctx = CommonTx.get();
+		Database db = ctx != null ? ctx.data().mesh().database() : mock(Database.class);
 		when(request.query()).thenReturn(query);
 		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
 		MultiMap paramMultiMap = MultiMap.caseInsensitiveMultiMap();
@@ -63,8 +65,7 @@ public final class Mocks {
 		});
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		if (user != null) {
-			User graphUser = toGraph(user);
-			MeshAuthUserImpl requestUser = MeshAuthUserImpl.create(graphUser.db(), graphUser);
+			MeshAuthUserImpl requestUser = MeshAuthUserImpl.create(db, user);
 
 			when(rc.user()).thenReturn(requestUser);
 			// JsonObject principal = new JsonObject();

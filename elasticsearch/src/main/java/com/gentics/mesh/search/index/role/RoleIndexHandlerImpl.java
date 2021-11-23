@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -54,8 +53,8 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	}
 
 	@Override
-	public Class<Role> getElementClass() {
-		return Role.class;
+	public Class<HibRole> getElementClass() {
+		return HibRole.class;
 	}
 
 	@Override
@@ -67,12 +66,12 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Role.composeDocumentId(entry.getElementUuid());
+		return HibRole.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Role.composeIndexName();
+		return HibRole.composeIndexName();
 	}
 
 	@Override
@@ -87,24 +86,24 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = Role.composeIndexName();
+		String indexName = HibRole.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "role");
 		return Collections.singletonMap(indexName, info);
 	}
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Role.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibRole.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Role.composeIndexName());
+		return filterIndicesByType(indices, HibRole.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Role.composeIndexName());
+		return Collections.singleton(HibRole.composeIndexName());
 	}
 
 	@Override

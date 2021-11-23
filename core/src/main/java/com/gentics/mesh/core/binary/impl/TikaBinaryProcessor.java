@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -48,7 +47,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
 /**
- * This class can be used to parse binary data from {@link BinaryGraphField} fields. Once parsed the processor will populate the field with additional meta data
+ * This class can be used to parse binary data from {@link HibBinaryField} fields. Once parsed the processor will populate the field with additional meta data
  * from the parsing result.
  */
 @Singleton

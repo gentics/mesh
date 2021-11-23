@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -70,5 +71,25 @@ public interface HibSchema extends HibFieldSchemaElement<SchemaResponse, SchemaV
 			}
 			return foundVersion.transformToRestSync(ac, level, languageTags);
 		}
+	}
+
+	/**
+	 * Compose the documentId for schema index documents.
+	 * 
+	 * @param schemaContainerUuid
+	 * @return
+	 */
+	static String composeDocumentId(String schemaContainerUuid) {
+		Objects.requireNonNull(schemaContainerUuid, "A schemaContainerUuid must be provided.");
+		return schemaContainerUuid;
+	}
+
+	/**
+	 * Compose the index name for the schema index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexName() {
+		return "schemacontainer";
 	}
 }

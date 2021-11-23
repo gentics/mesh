@@ -57,6 +57,12 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 		return getRoot().globalCount();
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public Class<? extends T> getPersistenceClass() {
+		return (Class<? extends T>) getRoot().getPersistanceClass();
+	}
+
 	/**
 	 * Get root container for the current entity type.
 	 * 

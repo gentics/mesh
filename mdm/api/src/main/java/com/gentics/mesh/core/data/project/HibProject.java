@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 
+import java.util.Objects;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -80,7 +82,14 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenc
 	void setBaseNode(HibNode baseNode);
 
 	/**
-	 * Return the hib base element which is used to track permissions.
+	 * Return the schema hib base element which is used to track permissions.
+	 * 
+	 * @return
+	 */
+	HibBaseElement getSchemaPermissionRoot();
+
+	/**
+	 * Return the branch hib base element which is used to track permissions.
 	 * 
 	 * @return
 	 */
@@ -143,5 +152,25 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenc
 	@Override
 	default ProjectReference transformToReference() {
 		return new ProjectReference().setName(getName()).setUuid(getUuid());
+	}
+
+	/**
+	 * Compose the document id for project index documents.
+	 * 
+	 * @param projectUuid
+	 * @return
+	 */
+	static String composeDocumentId(String projectUuid) {
+		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
+		return projectUuid;
+	}
+
+	/**
+	 * Compose the index name for the project index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexName() {
+		return "project";
 	}
 }

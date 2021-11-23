@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -30,11 +30,11 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class NavRootHandler {
 
-	private WebRootServiceImpl webrootService;
+	private WebRootService webrootService;
 	private HandlerUtilities utils;
 
 	@Inject
-	public NavRootHandler(WebRootServiceImpl webRootService, HandlerUtilities utils) {
+	public NavRootHandler(WebRootService webRootService, HandlerUtilities utils) {
 		this.webrootService = webRootService;
 		this.utils = utils;
 	}

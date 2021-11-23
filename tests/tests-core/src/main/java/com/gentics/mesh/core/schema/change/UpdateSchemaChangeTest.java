@@ -16,13 +16,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
-import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.data.schema.HibUpdateSchemaChange;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
@@ -30,7 +29,7 @@ import com.gentics.mesh.util.IndexOptionHelper;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Test {@link UpdateSchemaChangeImpl} methods
+ * Test {@link HibUpdateSchemaChange} methods
  */
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class UpdateSchemaChangeTest extends AbstractChangeTest {
@@ -39,7 +38,8 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			HibUpdateSchemaChange change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
 			assertNull("Initially no container flag value should be set.", change.getContainerFlag());
 			change.setContainerFlag(true);
 			assertTrue("The container flag should be set to true.", change.getContainerFlag());
@@ -64,9 +64,9 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApply() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createSchemaVersion(tx);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
 			SchemaVersionModel schema = new SchemaModelImpl();
-			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			HibUpdateSchemaChange change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
 			change.setIndexOptions(new JsonObject().put("key", "value"));
 			change.setName("updated");
 			version.setSchema(schema);
@@ -75,7 +75,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaModel updatedSchema = mutator.apply(version);
 			assertEquals("updated", updatedSchema.getName());
 			assertEquals("value", updatedSchema.getElasticsearch().getString("key"));
-			change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
 			change.setDescription("text");
 			version.setNextChange(change);
 			updatedSchema = mutator.apply(version);
@@ -87,7 +87,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	public void testFieldOrderChange() {
 		try (Tx tx = tx()) {
 			// 1. Create the schema container
-			HibSchemaVersion version = createSchemaVersion(tx);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
 
 			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
@@ -96,7 +96,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			version.setSchema(schema);
 
 			// 2. Create the schema update change
-			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			HibUpdateSchemaChange change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
 			change.setOrder("second", "first");
 			version.setNextChange(change);
 
@@ -113,14 +113,14 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testUpdateSchemaSegmentFieldToNull() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createSchemaVersion(tx);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
 
 			// 1. Create schema
 			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 
 			// 2. Create schema update change
-			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			HibUpdateSchemaChange change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
 			change.setSegmentField("");
 
 			version.setSchema(schema);
@@ -135,13 +135,13 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testUpdateSchema() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createSchemaVersion(tx);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
 
 			// 1. Create schema
 			SchemaVersionModel schema = new SchemaModelImpl();
 
 			// 2. Create schema update change
-			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			HibUpdateSchemaChange change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
 			change.setDisplayField("newDisplayField");
 			change.setContainerFlag(true);
 			change.setSegmentField("newSegmentField");
@@ -162,6 +162,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() throws IOException {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
+			model.setOperation(SchemaChangeOperation.UPDATESCHEMA);
 			model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
 			model.setProperty(SchemaChangeModel.ELASTICSEARCH_KEY, IndexOptionHelper.getRawFieldOption().encode());
 			model.setProperty(SchemaChangeModel.CONTAINER_FLAG_KEY, true);
@@ -171,7 +172,8 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			model.setProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY, "displayField");
 			model.setProperty(SchemaChangeModel.NAME_KEY, "newName");
 			model.setProperty(SchemaChangeModel.FIELD_ORDER_KEY, new String[] { "A", "B", "C" });
-			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			HibUpdateSchemaChange change = (HibUpdateSchemaChange) schemaDao(tx).createChange(version, model);
 			change.updateFromRest(model);
 			assertTrue("The required flag should be set to true.", change.getRestProperty(REQUIRED_KEY));
 			assertEquals("description", change.getDescription());
@@ -181,7 +183,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			assertEquals("Indexer option has not been set correctly", IndexOptionHelper.getRawFieldOption().encode(), change.getRestProperty(
 					ELASTICSEARCH_KEY));
 			assertTrue("Container flag should have been set.", change.getContainerFlag());
-			assertEquals(UpdateSchemaChange.OPERATION, change.getOperation());
+			assertEquals(HibUpdateSchemaChange.OPERATION, change.getOperation());
 			assertArrayEquals(new String[] { "A", "B", "C" }, change.getOrder().toArray());
 		}
 	}
@@ -190,10 +192,11 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			UpdateSchemaChange change = ((GraphDBTx) tx).getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			HibUpdateSchemaChange change = createChange(schemaDao(tx), version, SchemaChangeOperation.UPDATESCHEMA);
 			SchemaChangeModel model = change.transformToRest();
 			assertNotNull(model);
-			assertEquals(UpdateSchemaChange.OPERATION, model.getOperation());
+			assertEquals(HibUpdateSchemaChange.OPERATION, model.getOperation());
 			assertEquals(change.getUuid(), model.getUuid());
 
 			// Add more custom values

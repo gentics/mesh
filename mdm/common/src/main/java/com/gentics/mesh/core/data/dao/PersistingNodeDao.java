@@ -35,11 +35,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -89,7 +90,6 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
@@ -98,9 +98,28 @@ import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
+
+	@Override
+	default NodeReference transformToReference(HibNode node, InternalActionContext ac) {
+		CommonTx tx = CommonTx.get();
+		HibBranch branch = tx.getBranch(ac, node.getProject());
+
+		NodeReference nodeReference = new NodeReference();
+		nodeReference.setUuid(node.getUuid());
+		nodeReference.setDisplayName(node.getDisplayName(ac));
+		nodeReference.setSchema(node.getSchemaContainer().transformToReference());
+		nodeReference.setProjectName(node.getProject().getName());
+		if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+			WebRootLinkReplacer linkReplacer = tx.data().mesh().webRootLinkReplacer();
+			ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
+			String url = linkReplacer.resolve(ac, branch.getUuid(), type, node, ac.getNodeParameters().getResolveLinks(), ac.getNodeParameters()
+					.getLanguages());
+			nodeReference.setPath(url);
+		}
+		return nodeReference;
+	}
 
 	@Override
 	default NodeResponse transformToRestSync(HibNode node, InternalActionContext ac, int level, String... languageTags) {
@@ -158,7 +177,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	private void setBreadcrumbToRest(HibNode node, InternalActionContext ac, NodeResponse restNode) {
 		List<NodeReference> breadcrumbs = getBreadcrumbNodeStream(node, ac)
-			.map(node1 -> node1.transformToReference(ac))
+			.map(node1 -> transformToReference(node1, ac))
 			.collect(Collectors.toList());
 		restNode.setBreadcrumb(breadcrumbs);
 	}
@@ -282,7 +301,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	private void setParentNodeInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
 		HibNode parentNode = getParentNode(node, branch.getUuid());
 		if (parentNode != null) {
-			restNode.setParentNode(parentNode.transformToReference(ac));
+			restNode.setParentNode(transformToReference(parentNode, ac));
 		} else {
 			// Only the base node of the project has no parent. Therefore this
 			// node must be a container.
@@ -517,7 +536,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			LinkType linkType = ac.getNodeParameters().getResolveLinks();
 
 			// Path
-			WebRootLinkReplacer linkReplacer = CommonTx.get().data().webRootLinkReplacer();
+			WebRootLinkReplacer linkReplacer = CommonTx.get().data().mesh().webRootLinkReplacer();
 			String path = linkReplacer.resolve(ac, branchUuid, type, node.getUuid(), linkType, node.getProject().getName(), true, restNode.getLanguage());
 			restNode.setPath(path);
 
@@ -532,7 +551,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Map<String, String> languagePaths = new HashMap<>();
-		WebRootLinkReplacer linkReplacer = CommonTx.get().data().webRootLinkReplacer();
+		WebRootLinkReplacer linkReplacer = CommonTx.get().data().mesh().webRootLinkReplacer();
 		for (HibNodeFieldContainer currentFieldContainer : getFieldContainers(node, branch, forVersion(versioiningParameters.getVersion()))) {
 			String currLanguage = currentFieldContainer.getLanguageTag();
 			String languagePath = linkReplacer.resolve(ac, branchUuid, type, node, linkType, true, currLanguage);
@@ -1438,7 +1457,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	@Override
 	default Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
 		Tx tx = Tx.get();
-		List<HibTag> tags = Taggable.getTagsToSet(node.getProject(), ac, batch);
+		List<HibTag> tags = node.getTagsToSet(ac, batch);
 		HibBranch branch = tx.getBranch(ac);
 		applyTags(node, branch, tags, batch);
 		HibUser user = ac.getUser();
@@ -1446,9 +1465,145 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
+	default String getSubETag(HibNode node, InternalActionContext ac) {
+		CommonTx tx = CommonTx.get();
+		UserDao userDao = tx.userDao();
+		TagDao tagDao = tx.tagDao();
+		NodeDao nodeDao = tx.nodeDao();
+		ContentDao contentDao = tx.contentDao();
+
+		StringBuilder keyBuilder = new StringBuilder();
+
+		// Parameters
+		HibBranch branch = tx.getBranch(ac, node.getProject());
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		ContainerType type = forVersion(versioiningParameters.getVersion());
+
+		HibNode parentNode = getParentNode(node, branch.getUuid());
+		HibNodeFieldContainer container = contentDao.findVersion(node, ac.getNodeParameters().getLanguageList(tx.data().options()), branch.getUuid(),
+				ac.getVersioningParameters()
+						.getVersion());
+
+		/**
+		 * branch uuid
+		 */
+		keyBuilder.append(branch.getUuid());
+		keyBuilder.append("-");
+
+		// TODO version, language list
+
+		// We can omit further etag keys since this would return a 404 anyhow
+		// since the requested container could not be found.
+		if (container == null) {
+			keyBuilder.append("404-no-container");
+			return keyBuilder.toString();
+		}
+
+		/**
+		 * Parent node
+		 *
+		 * The node can be moved and this would also affect the response. The etag must also be changed when the node is moved.
+		 */
+		if (parentNode != null) {
+			keyBuilder.append("-");
+			keyBuilder.append(parentNode.getUuid());
+		}
+
+		// fields version
+		if (container != null) {
+			keyBuilder.append("-");
+			keyBuilder.append(container.getETag(ac));
+		}
+
+		/**
+		 * Expansion (all)
+		 *
+		 * The expandAll parameter changes the json response and thus must be included in the etag computation.
+		 */
+		if (ac.getNodeParameters().getExpandAll()) {
+			keyBuilder.append("-");
+			keyBuilder.append("expand:true");
+		}
+
+		// expansion (selective)
+		String expandedFields = Arrays.toString(ac.getNodeParameters().getExpandedFieldNames());
+		keyBuilder.append("-");
+		keyBuilder.append("expandFields:");
+		keyBuilder.append(expandedFields);
+
+		// branch specific tags
+		for (HibTag tag : node.getTags(branch)) {
+			// Tags can't be moved across branches thus we don't need to add the
+			// tag family etag
+			keyBuilder.append(tagDao.getETag(tag, ac));
+		}
+
+		// branch specific children
+		for (HibNode child : getChildren(node, branch.getUuid())) {
+			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
+				keyBuilder.append("-");
+				keyBuilder.append(child.getSchemaContainer().getName());
+			}
+		}
+
+		// Publish state & availableLanguages
+		for (HibNodeFieldContainer c : getFieldContainers(node, branch.getUuid(), PUBLISHED)) {
+			keyBuilder.append(c.getLanguageTag() + "published");
+		}
+		for (HibNodeFieldContainer c : getFieldContainers(node, branch.getUuid(), DRAFT)) {
+			keyBuilder.append(c.getLanguageTag() + "draft");
+		}
+
+		// breadcrumb
+		keyBuilder.append("-");
+		HibNode current = getParentNode(node, branch.getUuid());
+		if (current != null) {
+			while (current != null) {
+				String key = current.getUuid() + node.getDisplayName(ac);
+				keyBuilder.append(key);
+				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+					WebRootLinkReplacer linkReplacer = tx.data().mesh().webRootLinkReplacer();
+					String url = linkReplacer.resolve(ac, branch.getUuid(), type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+							node.getProject().getName(), container.getLanguageTag());
+					keyBuilder.append(url);
+				}
+				current = nodeDao.getParentNode(current, branch.getUuid());
+
+			}
+		}
+
+		/**
+		 * webroot path & language paths
+		 *
+		 * The webroot and language paths must be included in the etag computation in order to invalidate the etag once a node language gets updated or once the
+		 * display name of any parent node changes.
+		 */
+		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+
+			WebRootLinkReplacer linkReplacer = tx.data().mesh().webRootLinkReplacer();
+			String path = linkReplacer.resolve(ac, branch.getUuid(), type, node.getUuid(), ac.getNodeParameters().getResolveLinks(), node.getProject()
+					.getName(), container.getLanguageTag());
+			keyBuilder.append(path);
+
+			// languagePaths
+			for (HibNodeFieldContainer currentFieldContainer : getFieldContainers(node, branch.getUuid(), forVersion(versioiningParameters.getVersion()))) {
+				String currLanguage = currentFieldContainer.getLanguageTag();
+				keyBuilder.append(currLanguage + "=" + linkReplacer.resolve(ac, branch.getUuid(), type, node, ac.getNodeParameters()
+						.getResolveLinks(), currLanguage));
+			}
+
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
+		}
+		return keyBuilder.toString();
+	}
+
+	@Override
 	default void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
 		Tx tx = Tx.get();
-		List<HibTag> tags = Taggable.getTagsToSet(node.getProject(), list, ac, batch);
+		List<HibTag> tags = node.getTagsToSet(list, ac, batch);
 		HibBranch branch = tx.getBranch(ac);
 		applyTags(node, branch, tags, batch);
 	}

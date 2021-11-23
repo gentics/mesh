@@ -1,10 +1,6 @@
 package com.gentics.mesh.core.data;
 
-import java.util.List;
-
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.data.node.field.list.HibListField;
 
 /**
  * A graph field container (eg. a container for fields of a node) is used to hold i18n specific graph fields.
@@ -17,4 +13,13 @@ public interface GraphFieldContainer extends HibFieldContainer, BasicFieldContai
 	 * @param key
 	 */
 	void deleteFieldEdge(String key);
+
+	/**
+	 * Get the list field of specified type
+	 * 
+	 * @param classOfT
+	 * @param fieldKey
+	 * @return
+	 */
+	<T extends HibListField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey);
 }

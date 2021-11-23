@@ -123,7 +123,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 							throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 						}
-						branch.assignSchemaVersion(ac.getUser(), version, event);
+						branchDao.assignSchemaVersion(branch, ac.getUser(), version, event);
 					}
 					// 2. Invoke migrations which will populate the created index
 					event.add(() -> MeshEvent.triggerJobWorker(boot.mesh()));
@@ -183,7 +183,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 							throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 						}
-						branch.assignMicroschemaVersion(user, version, batch);
+						branchDao.assignMicroschemaVersion(branch, user, version, batch);
 					}
 					batch.add(() -> MeshEvent.triggerJobWorker(boot.mesh()));
 				});

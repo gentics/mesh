@@ -6,33 +6,30 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.syncleus.ferma.FramedGraph;
 
 public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 
-	protected NodeGraphFieldContainer createContainer(FieldSchema field) {
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
+	protected HibNodeFieldContainer createContainer(FieldSchema field) {
+		CommonTx ctx = CommonTx.get();
 		// 1. Setup schema
-		Schema schemaContainer = graph.addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersionImpl version = graph.addFramedVertex(SchemaContainerVersionImpl.class);
+		HibSchema schemaContainer = ctx.schemaDao().createPersisted(null);
+		HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schemaContainer);
 		version.setSchemaContainer(schemaContainer);
 
 		SchemaVersionModel schema = createSchema(field);
 		version.setSchema(schema);
 
-		NodeGraphFieldContainerImpl container = graph.addFramedVertex(NodeGraphFieldContainerImpl.class);
+		HibNodeFieldContainer container = ctx.contentDao().createContainer();
 		container.setSchemaContainerVersion(version);
 		return container;
 	}

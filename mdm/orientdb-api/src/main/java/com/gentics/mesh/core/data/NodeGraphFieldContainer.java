@@ -18,4 +18,9 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	 * @return
 	 */
 	Iterator<GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
+
+	@Override
+	default boolean isValid() {
+		return getElement() != null;
+	}
 }

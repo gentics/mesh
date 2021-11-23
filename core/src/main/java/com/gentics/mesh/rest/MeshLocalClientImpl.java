@@ -12,8 +12,9 @@ import javax.inject.Singleton;
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
@@ -211,11 +212,14 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public Vertx vertx;
 
 	@Inject
+	public BootstrapInitializer boot;
+
+	@Inject
 	public MeshLocalClientImpl() {
 
 	}
 
-	private Map<String, Project> projects = new HashMap<>();
+	private Map<String, HibProject> projects = new HashMap<>();
 
 	@Override
 	public void setUser(MeshAuthUser user) {
@@ -1336,7 +1340,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	 * @return
 	 */
 	private <T> LocalActionContextImpl<T> createContext(Class<? extends T> responseType, ParameterProvider... parameters) {
-		LocalActionContextImpl<T> ac = new LocalActionContextImpl<>(user, responseType, parameters);
+		LocalActionContextImpl<T> ac = new LocalActionContextImpl<>(boot, user, responseType, parameters);
 		return ac;
 	}
 
@@ -1346,7 +1350,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	 * @param name
 	 * @param project
 	 */
-	public void addProject(String name, Project project) {
+	public void addProject(String name, HibProject project) {
 		this.projects.put(name, project);
 	}
 

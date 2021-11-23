@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.security.SecurityUtils;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
@@ -101,7 +102,25 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 */
 	TxData data();
 
+	/**
+	 * Create a new event queue batch for CUD operations.
+	 * 
+	 * @return
+	 */
+	EventQueueBatch createBatch();
+
 	Binaries binaries();
 
 	S3Binaries s3binaries();
+
+	/**
+	 * An automatic cast of a higher level TXx to its implementors.
+	 * 
+	 * @param <T>
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default <T extends Tx> T unwrap() {
+		return (T) this;
+	}
 }

@@ -16,7 +16,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -61,8 +60,8 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	}
 
 	@Override
-	public Class<TagFamily> getElementClass() {
-		return TagFamily.class;
+	public Class<HibTagFamily> getElementClass() {
+		return HibTagFamily.class;
 	}
 
 	@Override
@@ -84,12 +83,12 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return TagFamily.composeDocumentId(entry.getElementUuid());
+		return HibTagFamily.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return TagFamily.composeIndexName(entry.getContext().getProjectUuid());
+		return HibTagFamily.composeIndexName(entry.getContext().getProjectUuid());
 	}
 
 	@Override
@@ -109,7 +108,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 		return db.tx(() -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			for (HibProject project : boot.projectDao().findAll()) {
-				String indexName = TagFamily.composeIndexName(project.getUuid());
+				String indexName = HibTagFamily.composeIndexName(project.getUuid());
 				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tagFamily");
 				indexInfo.put(indexName, info);
 			}
@@ -123,7 +122,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 			return boot.projectDao().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
-					String indexName = TagFamily.composeIndexName(uuid);
+					String indexName = HibTagFamily.composeIndexName(uuid);
 					return diffAndSync(indexName, uuid, indexPattern);
 				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
@@ -135,7 +134,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 			ProjectDao projectDao = tx.projectDao();
 			Set<String> activeIndices = new HashSet<>();
 			for (HibProject project : projectDao.findAll()) {
-				activeIndices.add(TagFamily.composeIndexName(project.getUuid()));
+				activeIndices.add(HibTagFamily.composeIndexName(project.getUuid()));
 			}
 
 			return indices.stream()
@@ -150,7 +149,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 		return db.tx(tx -> {
 			HibProject project = tx.getProject(ac);
 			if (project != null) {
-				return Collections.singleton(TagFamily.composeIndexName(project.getUuid()));
+				return Collections.singleton(HibTagFamily.composeIndexName(project.getUuid()));
 			} else {
 				return getIndices().keySet();
 			}

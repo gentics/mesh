@@ -2,7 +2,7 @@ package com.gentics.mesh.core.s3binary;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

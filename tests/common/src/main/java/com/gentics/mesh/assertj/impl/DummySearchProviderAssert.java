@@ -16,8 +16,6 @@ import java.util.stream.IntStream;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -198,7 +196,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @return Fluent API
 	 */
 	public DummySearchProviderAssert stored(HibTag tag) {
-		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeDocumentId(tag.getUuid()));
+		assertThat(actual).hasStore(HibTag.composeIndexName(tag.getProject().getUuid()), HibTag.composeDocumentId(tag.getUuid()));
 		return this;
 	}
 
@@ -209,7 +207,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @return Fluent API
 	 */
 	public DummySearchProviderAssert stored(HibTagFamily tagfamily) {
-		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeDocumentId(tagfamily.getUuid()));
+		assertThat(actual).hasStore(HibTagFamily.composeIndexName(tagfamily.getProject().getUuid()), HibTagFamily.composeDocumentId(tagfamily.getUuid()));
 		return this;
 	}
 

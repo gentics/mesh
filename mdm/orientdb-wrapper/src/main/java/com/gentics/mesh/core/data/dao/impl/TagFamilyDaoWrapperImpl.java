@@ -232,7 +232,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public long computeCount(HibProject project) {
+	public long count(HibProject project) {
 		Project graphProject = toGraph(project);
 		return graphProject.getTagFamilyRoot().computeCount();
 	}
@@ -282,7 +282,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 
 	@Override
 	public void delete(HibProject root, HibTagFamily element, BulkActionContext bac) {
-		toGraph(root).getTagFamilyRoot().delete(toGraph(element), bac);
+		toGraph(element).delete(bac);
 	}
 
 	@Override

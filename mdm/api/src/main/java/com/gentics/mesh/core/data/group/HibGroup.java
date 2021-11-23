@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionUtils;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -69,5 +70,25 @@ public interface HibGroup extends HibCoreElement<GroupResponse>, HibReferenceabl
 		}
 		permissionChanged = HibCoreElement.super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
+	}
+
+	/**
+	 * Compose the document id for the group index.
+	 * 
+	 * @param groupUuid
+	 * @return
+	 */
+	static String composeDocumentId(String groupUuid) {
+		Objects.requireNonNull(groupUuid, "A groupUuid must be provided.");
+		return groupUuid;
+	}
+
+	/**
+	 * Compose the index name for the group index.
+	 * 
+	 * @return
+	 */
+	static String composeIndexName() {
+		return "group";
 	}
 }

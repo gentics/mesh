@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
@@ -78,7 +77,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), restGroup.getUuid());
+		assertThat(trackingSearchProvider()).hasStore(HibGroup.composeIndexName(), restGroup.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		trackingSearchProvider().clear().blockingAwait();
 
@@ -117,7 +116,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), uuid);
+		assertThat(trackingSearchProvider()).hasStore(HibGroup.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
@@ -359,7 +358,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid);
+		assertThat(trackingSearchProvider()).hasStore(HibGroup.composeIndexName(), groupUuid);
 		assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), userUuid());
 		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 
@@ -496,7 +495,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), uuid);
+		assertThat(trackingSearchProvider()).hasDelete(HibGroup.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), userUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 

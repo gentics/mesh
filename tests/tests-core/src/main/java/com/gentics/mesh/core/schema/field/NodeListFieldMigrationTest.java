@@ -18,10 +18,11 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.core.field.FieldTestHelper.NOOP;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.node.NodeListFieldTestHelper;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -29,7 +30,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest implements NodeListFieldTestHelper {
 	private final DataProvider FILL = (container, name) -> {
-		NodeGraphFieldList field = (NodeGraphFieldList) container.createNodeList(name);
+		HibNodeFieldList field = container.createNodeList(name);
 		field.createNode("0", folder("2015"));
 		field.createNode("1", folder("news"));
 	};

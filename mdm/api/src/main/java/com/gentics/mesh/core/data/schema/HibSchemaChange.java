@@ -170,8 +170,10 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	 * @param restChange
 	 */
 	default void updateFromRest(SchemaChangeModel restChange) {
-		for (String key : restChange.getProperties().keySet()) {
-			setRestProperty(key, restChange.getProperties().get(key));
+		if (restChange != null && restChange.getProperties() != null) {
+			for (String key : restChange.getProperties().keySet()) {
+				setRestProperty(key, restChange.getProperties().get(key));
+			}
 		}
 	}
 }

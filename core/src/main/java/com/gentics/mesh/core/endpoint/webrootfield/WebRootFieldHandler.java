@@ -9,16 +9,16 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.db.Database;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryDownloadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryTransformHandler;
@@ -54,7 +54,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 	private BinaryDownloadHandler binaryDownloadHandler;
 
 	@Inject
-	public WebRootFieldHandler(Database database, WebRootServiceImpl webrootService,
+	public WebRootFieldHandler(Database database, WebRootService webrootService,
 							   BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler,
 							   NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);

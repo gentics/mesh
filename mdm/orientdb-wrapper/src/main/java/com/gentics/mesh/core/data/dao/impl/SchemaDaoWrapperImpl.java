@@ -10,7 +10,6 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -29,6 +28,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -161,8 +161,7 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
-		Branch graphBranch = toGraph(branch);
-		return graphBranch.findActiveSchemaVersions();
+		return new TraversalResult<>(toGraph(branch).findActiveSchemaVersions());
 	}
 
 	@Override
@@ -233,5 +232,10 @@ public class SchemaDaoWrapperImpl
 	@Override
 	protected ContainerRootVertex<SchemaResponse, SchemaVersionModel, Schema, SchemaVersion> getRoot() {
 		return boot.get().meshRoot().getSchemaContainerRoot();
+	}
+
+	@Override
+	public Class<? extends HibSchemaVersion> getVersionPersistenceClass() {
+		return SchemaContainerVersionImpl.class;
 	}
 }

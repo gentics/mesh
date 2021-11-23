@@ -52,7 +52,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -177,7 +177,7 @@ public class MeshAssertions extends Assertions {
 		return new SchemaCreateRequestAssert(actual);
 	}
 
-	public static SchemaContainerAssert assertThat(GraphFieldSchemaContainer<?, ?, ?, ?, ?> actual) {
+	public static SchemaContainerAssert assertThat(HibFieldSchemaElement<?, ?, ?, ?, ?> actual) {
 		return new SchemaContainerAssert(actual);
 	}
 

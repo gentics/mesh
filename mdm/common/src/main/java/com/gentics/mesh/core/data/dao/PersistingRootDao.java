@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
  * @param <R> root entity type
  * @param <L> managed(leaf) entity type
  */
-public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends RootDao<R, L> {
+public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends RootDao<R, L>, ElementResolvingRootDao<R, L> {
 
 	/**
 	 * Created a persisted entity within the given root. 
