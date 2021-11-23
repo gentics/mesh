@@ -13,7 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
+import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -58,7 +58,6 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.test.MeshTestSetting;
 
@@ -303,8 +302,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			HibMicronode micronode = field.getMicronode();
 			String originalUuid = micronode.getUuid();
 
-			List<? extends HibMicronode> existingMicronodes = new TraversalResult(ctx.loadAll(ctx.microschemaDao().getPersistenceClass())).list();
-			for (HibMicronode foundMicronode : existingMicronodes) {
+			Iterator<? extends HibMicronode> existingMicronodes = ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass());
+			while (existingMicronodes.hasNext()) {
+				HibMicronode foundMicronode = existingMicronodes.next();
 				assertEquals(micronode.getUuid(), foundMicronode.getUuid());
 			}
 
@@ -314,8 +314,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 			assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));
 
-			existingMicronodes = new TraversalResult(ctx.loadAll(ctx.microschemaDao().getPersistenceClass())).list();
-			for (HibMicronode foundMicronode : existingMicronodes) {
+			existingMicronodes = ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass());
+			while (existingMicronodes.hasNext()) {
+				HibMicronode foundMicronode = existingMicronodes.next();
 				assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
 			}
 		}
