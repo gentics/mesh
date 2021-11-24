@@ -25,6 +25,7 @@ import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.binary.impl.TikaResult;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -151,12 +152,13 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	private Maybe<S3BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
 		return db.maybeTx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
+			ContentDao contentDao = tx.contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			HibNodeFieldContainer latestDraftVersion = nodeDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()

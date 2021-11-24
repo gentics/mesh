@@ -81,7 +81,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				// Create the batch first since we can't delete the container and access it later in batch creation
 				utils.bulkableAction(bac -> {
 					HibBranch branch = tx.getBranch(ac);
-					tx.contentDao().deleteFromBranch(node, ac, branch, bac, false);
+					nodeDao.deleteFromBranch(node, ac, branch, bac, false);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}

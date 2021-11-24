@@ -555,4 +555,20 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	public Class<? extends HibMicronode> getMicronodePersistenceClass() {
 		return MicronodeImpl.class;
 	}
+
+	@Override
+	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch,
+			ContainerType type) {
+		return toGraph(node).getFieldContainer(languageTag, branch, type);
+	}
+
+	@Override
+	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
+		return toGraph(node).getFieldContainers(branchUuid, type);
+	}
+
+	@Override
+	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
+		return toGraph(node).getFieldContainers(type);
+	}
 }

@@ -715,10 +715,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
-		NodeDao nodeDao = Tx.get().nodeDao();
-
 		// Check the different language versions
-		for (HibNodeFieldContainer container : nodeDao.getFieldContainers(this, branchUuid, type)) {
+		for (HibNodeFieldContainer container : Tx.get().contentDao().getFieldContainers(this, branchUuid, type)) {
 			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
 			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name

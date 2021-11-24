@@ -237,7 +237,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
-		Tx.get().nodeDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
+		Tx.get().contentDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
 			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
 
