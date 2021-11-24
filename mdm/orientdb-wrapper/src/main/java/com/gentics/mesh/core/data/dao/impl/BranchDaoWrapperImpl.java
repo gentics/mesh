@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -154,6 +155,11 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
+	public boolean update(HibProject root, HibBranch element, InternalActionContext ac, EventQueueBatch batch) {
+		return toGraph(root).getBranchRoot().update(toGraph(element), ac, batch);
+	}
+
+	@Override
 	protected RootVertex<Branch> getRoot(HibProject root) {
 		return toGraph(root).getBranchRoot();
 	}
@@ -167,15 +173,15 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 
 	/**
 	 * Unassigns the latest version of the container from the branch.
-	 * 
+	 *
 	 * @param container
 	 *            Container to handle
 	 */
 	protected <
-				R extends FieldSchemaContainer, 
-				RM extends FieldSchemaContainerVersion, 
-				RE extends NameUuidReference<RE>, 
-				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				R extends FieldSchemaContainer,
+				RM extends FieldSchemaContainerVersion,
+				RE extends NameUuidReference<RE>,
+				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>,
 				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>
 	> void unassign(HibBranch branch, HibFieldSchemaElement<R, RM, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
