@@ -4,14 +4,12 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 
 /**
  * A schema container root is an aggregation vertex which is used to aggregate schema container vertices.
  */
-public interface SchemaRoot extends RootVertex<Schema>, ContainerRootVertex<SchemaResponse, SchemaVersionModel, Schema, SchemaVersion> {
+public interface SchemaRoot extends RootVertex<Schema> {
 
 	public static final String TYPE = "schemas";
 

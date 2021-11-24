@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.ContainerRootVertex;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -230,7 +230,7 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	protected ContainerRootVertex<SchemaResponse, SchemaVersionModel, Schema, SchemaVersion> getRoot() {
+	protected RootVertex<Schema> getRoot() {
 		return boot.get().meshRoot().getSchemaContainerRoot();
 	}
 

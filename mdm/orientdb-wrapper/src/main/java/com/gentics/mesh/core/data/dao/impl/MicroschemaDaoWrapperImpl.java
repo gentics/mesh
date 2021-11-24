@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.ContainerRootVertex;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -193,7 +193,7 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	protected ContainerRootVertex<MicroschemaResponse, MicroschemaVersionModel, Microschema, MicroschemaVersion> getRoot() {
+	protected RootVertex<Microschema> getRoot() {
 		return boot.get().meshRoot().getMicroschemaContainerRoot();
 	}
 

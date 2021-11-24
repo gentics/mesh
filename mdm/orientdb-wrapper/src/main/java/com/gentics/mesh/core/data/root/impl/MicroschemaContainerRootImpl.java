@@ -11,12 +11,10 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -70,10 +68,5 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	@Override
 	public Microschema create() {
 		return getGraph().addFramedVertex(MicroschemaContainerImpl.class);
-	}
-
-	@Override
-	public MicroschemaVersion createVersion() {
-		return getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 	}
 }
