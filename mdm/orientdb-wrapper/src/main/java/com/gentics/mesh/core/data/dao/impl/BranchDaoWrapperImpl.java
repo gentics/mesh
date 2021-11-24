@@ -38,7 +38,6 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -152,11 +151,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getBranchRoot().globalCount();
-	}
-
-	@Override
-	public boolean update(HibProject root, HibBranch element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).getBranchRoot().update(toGraph(element), ac, batch);
 	}
 
 	@Override

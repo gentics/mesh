@@ -1319,7 +1319,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	@Override
-	default boolean update(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(HibProject project, HibNode node, InternalActionContext ac, EventQueueBatch batch) {
+		// Don't update the branch, if it does not belong to the requested project.
+		if (!project.getUuid().equals(node.getProject().getUuid())) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", node.getUuid());
+		}
+
 		NodeUpdateRequest requestModel = ac.fromJson(NodeUpdateRequest.class);
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "error_language_not_set");

@@ -65,32 +65,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	}
 
 	/**
-	 * Return the branch name.
-	 * 
-	 * @return
-	 */
-	String getName();
-
-	/**
-	 * Set branch name.
-	 * 
-	 * @param string
-	 */
-	void setName(String string);
-
-	/**
-	 * Return the creator of the branch.
-	 */
-	HibUser getCreator();
-
-	/**
-	 * Return the project.
-	 * 
-	 * @return
-	 */
-	HibProject getProject();
-
-	/**
 	 * Get whether the branch is active.
 	 * 
 	 * @return true for active branch
@@ -374,13 +348,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	 * @return
 	 */
 	HibTag findTagByUuid(String uuid);
-
-	/**
-	 * Transform the branch into a reference.
-	 * 
-	 * @return
-	 */
-	BranchReference transformToReference();
 
 	/**
 	 * Get an iterable of all latest schema container versions.

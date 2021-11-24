@@ -705,7 +705,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		return Tx.get().nodeDao().update(this, ac, batch);
+		return Tx.get().nodeDao().update(this.getProject(), this, ac, batch);
 	}
 
 	@Override

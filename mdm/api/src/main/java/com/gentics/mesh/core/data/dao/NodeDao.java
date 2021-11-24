@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -303,16 +302,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac);
 
 	/**
-	 * Update the node.
-	 * 
-	 * @param node
-	 * @param ac
-	 * @param batch
-	 * @return
-	 */
-	boolean update(HibNode node, InternalActionContext ac, EventQueueBatch batch);
-
-	/**
 	 * Update the tags of the node and return a page of updated tags.
 	 * 
 	 * @param node
@@ -332,24 +321,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
-
-	/**
-	 * Load a stream of nodes with the given perms in the project.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param perm
-	 * @return
-	 */
-	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm);
-
-	/**
-	 * Return the count of nodes for the project.
-	 * 
-	 * @param project
-	 * @return
-	 */
-	long count(HibProject project);
 
 	/**
 	 * Create a new node.

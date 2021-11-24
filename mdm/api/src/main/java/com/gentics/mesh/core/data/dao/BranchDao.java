@@ -55,16 +55,6 @@ public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, 
 	String getAPIPath(HibBranch element, InternalActionContext ac);
 
 	/**
-	 * Update the branch.
-	 * 
-	 * @param branch
-	 * @param ac
-	 * @param batch
-	 * @return
-	 */
-	boolean update(HibBranch branch, InternalActionContext ac, EventQueueBatch batch);
-
-	/**
 	 * Create the branch.
 	 * 
 	 * @param project

@@ -33,20 +33,6 @@ public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibRefe
 	}
 
 	/**
-	 * Return the name.
-	 * 
-	 * @return
-	 */
-	String getName();
-
-	/**
-	 * Set the tag family name.
-	 * 
-	 * @param name
-	 */
-	void setName(String name);
-
-	/**
 	 * Return the project in which the tag family is used.
 	 * 
 	 * @return
@@ -57,22 +43,6 @@ public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibRefe
 	 * Delete the tag family.
 	 */
 	void deleteElement();
-
-	/**
-	 * Return the current element version.
-	 * 
-	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
-	/**
-	 * Transform the tag family to a reference.
-	 * 
-	 * @return
-	 */
-	TagFamilyReference transformToReference();
 
 	/**
 	 * Return the description.

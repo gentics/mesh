@@ -7,6 +7,7 @@ import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.stream.Stream;
@@ -313,7 +314,11 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default boolean update(HibProject root, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(HibProject project, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+		// Don't update the item, if it does not belong to the requested root.
+		if (project.getMicroschemas().stream().noneMatch(schema -> element.getUuid().equals(schema.getUuid()))) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", element.getUuid());
+		}
 		return update(element, ac, batch);
 	}
 

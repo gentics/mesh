@@ -44,20 +44,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	}
 
 	/**
-	 * Return the element version string.
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
-	/**
-	 * Return the project of the node.
-	 * 
-	 * @return
-	 */
-	HibProject getProject();
-
-	/**
 	 * Maximum depth for transformations: {@value #MAX_TRANSFORMATION_LEVEL}
 	 */
 	public static final int MAX_TRANSFORMATION_LEVEL = 3;

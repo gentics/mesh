@@ -372,11 +372,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public boolean update(HibTagFamily root, HibTag element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).update(toGraph(element), ac, batch);
-	}
-
-	@Override
 	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo);
 	}
