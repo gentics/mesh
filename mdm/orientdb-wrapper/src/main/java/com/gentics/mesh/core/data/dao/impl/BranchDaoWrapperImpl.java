@@ -47,7 +47,8 @@ import dagger.Lazy;
  * @see BranchDaoWrapper
  */
 @Singleton
-public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse, HibBranch, Branch, HibProject> implements BranchDaoWrapper {
+public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse, HibBranch, Branch, HibProject>
+		implements BranchDaoWrapper {
 
 	private final Lazy<GraphDatabase> db;
 
@@ -85,7 +86,7 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 
 	@Override
 	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo,
-		Predicate<HibBranch> extraFilter) {
+			Predicate<HibBranch> extraFilter) {
 		Project graphProject = toGraph(project);
 		return graphProject.getBranchRoot().findAll(ac, pagingInfo, branch -> {
 			return extraFilter.test(branch);
@@ -99,7 +100,8 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac,
+			PagingParameters pagingInfo) {
 		Project graphProject = toGraph(project);
 		return graphProject.getBranchRoot().findAll(ac, pagingInfo);
 	}
@@ -168,16 +170,10 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	/**
 	 * Unassigns the latest version of the container from the branch.
 	 *
-	 * @param container
-	 *            Container to handle
+	 * @param container Container to handle
 	 */
-	protected <
-				R extends FieldSchemaContainer,
-				RM extends FieldSchemaContainerVersion,
-				RE extends NameUuidReference<RE>,
-				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>,
-				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>
-	> void unassign(HibBranch branch, HibFieldSchemaElement<R, RM, RE, SC, SCV> container) {
+	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>> void unassign(
+			HibBranch branch, HibFieldSchemaElement<R, RM, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaVersion) {
@@ -201,8 +197,10 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 		return toGraph(branch).addFramedEdgeExplicit(HAS_SCHEMA_VERSION, toGraph(version), BranchSchemaEdgeImpl.class);
 	}
 
+	@Override
 	public HibBranchMicroschemaVersion connectToMicroschemaVersion(HibBranch branch, HibMicroschemaVersion version) {
-		return toGraph(branch).addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, toGraph(version), BranchMicroschemaEdgeImpl.class);
+		return toGraph(branch).addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, toGraph(version),
+				BranchMicroschemaEdgeImpl.class);
 	}
 
 	@Override
