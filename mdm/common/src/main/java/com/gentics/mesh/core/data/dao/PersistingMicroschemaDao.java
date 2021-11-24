@@ -313,6 +313,11 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
+	default boolean update(HibProject root, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
+		return update(element, ac, batch);
+	}
+
+	@Override
 	default boolean isLinkedToProject(HibMicroschema microschema, HibProject project) {
 		return contains(project, microschema);
 	}
