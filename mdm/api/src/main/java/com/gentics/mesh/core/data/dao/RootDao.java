@@ -271,6 +271,16 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	void delete(R root, L element, BulkActionContext bac);
 
 	/**
+	 * Update the element using the action context information.
+	 *
+	 * @param ac
+	 * @param batch
+	 *            Batch to which entries will be added in order to update the search index.
+	 * @return true if the element was updated. Otherwise false
+	 */
+	boolean update(R root, L element, InternalActionContext ac, EventQueueBatch batch);
+
+	/**
 	 * Perform the necessary actions before root deletion.
 	 *
 	 * @param bac
