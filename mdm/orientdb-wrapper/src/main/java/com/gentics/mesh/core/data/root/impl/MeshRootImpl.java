@@ -103,18 +103,22 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public ChangelogRoot getChangelogRoot() {
 		if (changelogRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				ChangelogRoot foundChangelogRoot = out(HAS_CHANGELOG_ROOT).nextOrDefaultExplicit(ChangelogRootImpl.class, null);
-				if (foundChangelogRoot == null) {
-					changelogRoot = getGraph().addFramedVertex(ChangelogRootImpl.class);
-					linkOut(changelogRoot, HAS_CHANGELOG_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Created changelog root {" + changelogRoot.getUuid() + "}");
+			db().tx(() -> {
+				synchronized (MeshRootImpl.class) {
+					if (changelogRoot == null) {
+						ChangelogRoot foundChangelogRoot = out(HAS_CHANGELOG_ROOT).nextOrDefaultExplicit(ChangelogRootImpl.class, null);
+						if (foundChangelogRoot == null) {
+							changelogRoot = getGraph().addFramedVertex(ChangelogRootImpl.class);
+							linkOut(changelogRoot, HAS_CHANGELOG_ROOT);
+							if (log.isInfoEnabled()) {
+								log.info("Created changelog root {" + changelogRoot.getUuid() + "}");
+							}
+						} else {
+							changelogRoot = foundChangelogRoot;
+						}
 					}
-				} else {
-					changelogRoot = foundChangelogRoot;
 				}
-			}
+			});
 		}
 		return changelogRoot;
 	}
