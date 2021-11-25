@@ -45,6 +45,8 @@ import com.gentics.mesh.core.actions.impl.TagFamilyDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
+import com.gentics.mesh.core.context.ContextDataRegistry;
+import com.gentics.mesh.core.context.impl.ContextDataRegistryImpl;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -135,6 +137,9 @@ import dagger.Module;
 public abstract class CommonBindModule {
 	@Binds
 	abstract TxData txData(CommonTxData e);
+
+	@Binds
+	abstract ContextDataRegistry contextDataRegistry(ContextDataRegistryImpl e);
 
 	@Binds
 	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);

@@ -14,8 +14,6 @@ import com.gentics.mesh.changelog.highlevel.OrientDBHighLevelChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializerImpl;
-import com.gentics.mesh.core.context.ContextDataRegistry;
-import com.gentics.mesh.core.context.impl.GraphContextDataRegistryImpl;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -132,9 +130,6 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract CommonTxData commonTxData(TxDataImpl e);
-
-	@Binds
-	abstract ContextDataRegistry contextDataRegistry(GraphContextDataRegistryImpl e);
 
 	@Binds
 	abstract OrientDBClusterManager orientDBClusterManager(OrientDBClusterManagerImpl e);
