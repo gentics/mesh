@@ -224,6 +224,25 @@ Server-side validation will check whether mandatory fields have been filled by t
 
 When using server-side rendering, the form will be rendered with the template `<templatesPath>/form.hbs`.
 
+The form plugin will put relevant information in form of a JSON object in the render context under the name `form`, which looks like this:
+
+```json
+{
+  "id": "<FORM_UUID>",
+  "multipage": false,
+  "options": { /* Plugin configuration */ },
+  "pathPrefix": "/prefix",
+  "elements": [ /* Form elements */ ]
+}
+```
+
+Where
+* `id` is the UUID of the form node
+* `multipage` is `true` when there is at least one `formpage` element in the form, and `false` otherwise
+* `options` is a JSON representation of the plugin configuration
+* `pathPrefix` is the path prefix of the projects default branch
+* `elements` contains the active form elements
+
 # Extending
 
 For extending the forms-plugin, a new maven project must be created, that uses the forms-plugin as dependency and builds a custom mesh-plugin, containing the forms-plugin together with the custom extension classes.

@@ -58,6 +58,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 
 	protected final static String PROJECT_NAME = "testproject";
 	protected final static String PROJECT_HOSTNAME = "testhost";
+	protected final static String PROJECT_PATH_PREFIX = "/testprefix";
 
 	static {
 		// Use slf4j instead of JUL

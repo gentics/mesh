@@ -10,8 +10,13 @@
 
 = Mesh Forms Plugin
 
+[[v1.6.16]]
+== 1.6.16 (2021-11-25)
+
+icon:plus[] Rendering: Adds the path prefix of the projects default branch to the render context via the key `pathPrefix`. This is mainly intended for creating the forms action URL in the handlebars templates.
+
 [[v1.6.13]]
-== 1.6.13 (TBD)
+== 1.6.13 (2021-09-27)
 
 icon:check[] Form data exported as CSV or returned via REST will now contain the fields in the order, they are included in the form.
 
@@ -35,7 +40,7 @@ data and the error messages.
 [[v1.6.9]]
 == 1.6.9 (2021-05-27)
 
-icon:check[] The `formsElementTemplate` handlebar helper now checks for the parameter `defaultSubtype` to fallback to if no `subtype` is given by the context. See `forms-plugin/src/main/resources/templates/elements/selectgroup.hbs` for a usage example. 
+icon:check[] The `formsElementTemplate` handlebar helper now checks for the parameter `defaultSubtype` to fallback to if no `subtype` is given by the context. See `forms-plugin/src/main/resources/templates/elements/selectgroup.hbs` for a usage example.
 
 [[v1.6.8]]
 == 1.6.8 (2021-04-22)

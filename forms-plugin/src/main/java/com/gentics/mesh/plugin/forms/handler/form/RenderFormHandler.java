@@ -9,12 +9,14 @@ import javax.inject.Singleton;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.plugin.forms.service.FormService;
+import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 
 import io.reactivex.Completable;
 
 @Singleton
 public class RenderFormHandler extends AbstractFormsHandler {
+
 	private final FormService formService;
 
 	@Inject
@@ -27,10 +29,12 @@ public class RenderFormHandler extends AbstractFormsHandler {
 		String projectName = context.project().getString("name");
 		String uuid = context.pathParam("formUuid");
 
-		return formService.render(projectName, uuid, context, ParameterUtil.getLanguages(context)).doOnEvent((buffer, t) -> {
-			if (buffer != null) {
-				context.response().putHeader(CONTENT_TYPE, String.format("%s; charset=UTF-8", DEFAULT_CONTENT_TYPE)).end(buffer.toString());
-			}
-		}).ignoreElement();
+		return formService.render(projectName, uuid, context, ParameterUtil.getLanguages(context))
+			.doOnEvent((buffer, t) -> {
+				if (buffer != null) {
+					context.response().putHeader(CONTENT_TYPE, String.format("%s; charset=UTF-8", DEFAULT_CONTENT_TYPE)).end(buffer.toString());
+				}
+			})
+			.ignoreElement();
 	}
 }

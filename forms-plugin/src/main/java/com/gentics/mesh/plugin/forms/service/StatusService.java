@@ -247,7 +247,7 @@ public class StatusService {
 	 * @param projectName project name
 	 * @return single path prefix
 	 */
-	protected Single<String> getPathPrefixOfDefaultBranch(String projectName) {
+	public Single<String> getPathPrefixOfDefaultBranch(String projectName) {
 		return adminClient.findBranches(projectName).toSingle()
 				.flatMapObservable(branchesListResponse -> Observable.fromIterable(branchesListResponse.getData()))
 				.filter(branch -> branch.getLatest() != null && branch.getLatest())

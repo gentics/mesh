@@ -428,23 +428,27 @@ public class FormService {
 	 */
 	public Single<Buffer> render(String projectName, String uuid, RoutingContext rc, String...lang) {
 		return statusService.languageFallback(projectName, lang)
-				.flatMap(langFallback -> loadAsAdmin(projectName, uuid, true, langFallback).flatMap(formNode -> {
-					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
+			.flatMap(langFallback -> statusService.getPathPrefixOfDefaultBranch(projectName)
+				.flatMap(pathPrefix -> loadAsAdmin(projectName, uuid, true, langFallback)
+					.flatMap(formNode -> {
+						JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 
-					removeInactiveElements(formJson);
+						removeInactiveElements(formJson);
 
-					// add id
-					formJson.put("id", uuid);
-					// add property "multipage"
-					formJson.put("multipage", isMultipage(formJson));
-					// add options
-					formJson.put("options", JsonObject.mapFrom(configuration));
-					markFormpages(formJson, Collections.emptySet());
+						// add id
+						formJson.put("id", uuid);
+						// add property "multipage"
+						formJson.put("multipage", isMultipage(formJson));
+						// add options
+						formJson.put("options", JsonObject.mapFrom(configuration));
+						// add path prefix
+						formJson.put("pathPrefix", pathPrefix);
+						markFormpages(formJson, Collections.emptySet());
 
-					rc.put("form", formJson);
+						rc.put("form", formJson);
 
-					return templateEngine.rxRender(rc.data(), "form");
-				}));
+						return templateEngine.rxRender(rc.data(), "form");
+					})));
 	}
 
 	/**
