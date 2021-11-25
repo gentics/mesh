@@ -16,7 +16,7 @@ public class MeshContainerTest {
 	// We are hardcoding mesh versions here since we can't use a 
 	// fixed version because the docker build is has not been created at 
 	// that point.
-	public static MeshContainer server = new MeshContainer("gentics/mesh:1.6.0")
+	public static MeshContainer server = new OrientDBMeshContainer("gentics/mesh:1.6.0")
 		.withDebug(9200)
 		.waitForStartup();
 

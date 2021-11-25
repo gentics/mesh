@@ -77,6 +77,8 @@ import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
+import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.admin.OrientDBAdminHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
@@ -260,6 +262,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract LanguageDao bindLanguageDao(LanguageDaoWrapper e);
+
+	@Binds
+	abstract AdminHandler adminHandler(OrientDBAdminHandler e);
 
 	// END
 

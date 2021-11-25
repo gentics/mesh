@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -37,7 +37,6 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
@@ -71,9 +70,9 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	 * Local provider for docker image. The provider will utilize the class and jar files from a local Gentics Mesh checkout. This way a development version of
 	 * Gentics Mesh can be used in a container test setup.
 	 */
-	public static final Supplier<ImageFromDockerfile> LOCAL_PROVIDER = () -> {
+	public static final Function<MeshOptions, ImageFromDockerfile> LOCAL_PROVIDER = (options) -> {
 		if (cachedImage == null) {
-			cachedImage = prepareDockerImage(true);
+			cachedImage = prepareDockerImage(options, true);
 		}
 		return cachedImage;
 	};
@@ -127,9 +126,9 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	
 	private Map<String, ContainerPath> pathOverrides = new HashMap<>(3);
 	
-	public MeshContainer(Supplier<ImageFromDockerfile> imageProvider) {
+	public MeshContainer(Function<MeshOptions, ImageFromDockerfile> imageProvider, MeshOptions options) {
 		init();
-		setImage(imageProvider.get());
+		setImage(imageProvider.apply(options));
 		setWaitStrategy(new NoWaitStrategy());
 	}
 
@@ -329,11 +328,12 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	/**
 	 * Prepare the docker image for the container which will contain all locally found classes.
+	 * @param options 
 	 * 
 	 * @param enableClustering
 	 * @return
 	 */
-	public static ImageFromDockerfile prepareDockerImage(boolean enableClustering) {
+	public static ImageFromDockerfile prepareDockerImage(MeshOptions options, boolean enableClustering) {
 		ImageFromDockerfile dockerImage = new ImageFromDockerfile("mesh-local", true);
 		try {
 			File projectRoot = new File("..");
@@ -384,7 +384,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			dockerImage.withFileFromString("Dockerfile", dockerFile);
 
 			// Add custom mesh.yml
-			String yaml = generateMeshYML(enableClustering);
+			String yaml = generateMeshYML(options, enableClustering);
 			dockerImage.withFileFromString("/mesh.yml", yaml);
 
 			return dockerImage;
@@ -394,8 +394,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 
 	// TODO de-orientDB this?
-	private static String generateMeshYML(boolean enableClustering) throws JsonProcessingException {
-		OrientDBMeshOptions options = new OrientDBMeshOptions();
+	private static String generateMeshYML(MeshOptions options, boolean enableClustering) throws JsonProcessingException {
 		options.getClusterOptions().setEnabled(enableClustering);
 		options.getClusterOptions().setVertxPort(8600);
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());

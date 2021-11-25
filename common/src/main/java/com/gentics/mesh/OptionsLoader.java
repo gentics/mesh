@@ -22,7 +22,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
@@ -37,17 +36,6 @@ public final class OptionsLoader {
 
 	private OptionsLoader() {
 
-	}
-
-	/**
-	 * 
-	 * @param <T>
-	 * @param optionsClass
-	 * @param args
-	 * @return
-	 */
-	public static OrientDBMeshOptions createOrloadOptions(String... args) {
-		return createOrloadOptions(OrientDBMeshOptions.class, args);
 	}
 	
 	/**

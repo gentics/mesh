@@ -12,10 +12,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
@@ -52,7 +49,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private Mesh mesh;
 
-	private OrientDBMeshOptions meshOptions;
+	private MeshOptions meshOptions;
 
 	/**
 	 * Create a new local server.
@@ -60,11 +57,12 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 * @param clusterName
 	 * @param initCluster
 	 */
-	public MeshLocalServer() {
+	public MeshLocalServer(MeshOptions meshOptions) {
 		if (inUse) {
 			throw new RuntimeException("The MeshLocalServer rule can't be used twice in the same JVM.");
 		}
 		inUse = true;
+		this.meshOptions = meshOptions;
 	}
 
 	@Override
@@ -76,21 +74,10 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		System.setProperty("mesh.confDirName", basePath + "/config");
 
 		String[] args = new String[] {};
-		if (initCluster) {
-			args = new String[] { "-" + MeshCLI.INIT_CLUSTER };
-		}
-
-		if (meshOptions == null) {
-			meshOptions = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
-		}
 		if (nodeName != null) {
 			meshOptions.setNodeName(nodeName);
 		}
-		if (isInMemory) {
-			meshOptions.getStorageOptions().setDirectory(null);
-		} else {
-			meshOptions.getStorageOptions().setDirectory(basePath + "/graph");
-		}
+		meshOptions.setInitCluster(initCluster);
 		meshOptions.getUploadOptions().setDirectory(basePath + "/binaryFiles");
 		meshOptions.getUploadOptions().setTempDirectory(basePath + "/temp");
 		meshOptions.getHttpServerOptions().setPort(httpPort);
@@ -233,16 +220,6 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	}
 
 	/**
-	 * Set the memory mode flag.
-	 * 
-	 * @return Fluent API
-	 */
-	public MeshLocalServer withInMemoryMode() {
-		this.isInMemory = true;
-		return this;
-	}
-
-	/**
 	 * Start the embedded ES
 	 * 
 	 * @return Fluent API
@@ -279,7 +256,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 * @param meshOptions
 	 * @return Fluent API
 	 */
-	public MeshLocalServer withOptions(OrientDBMeshOptions meshOptions) {
+	public MeshLocalServer withOptions(MeshOptions meshOptions) {
 		this.meshOptions = meshOptions;
 		return this;
 	}
