@@ -10,8 +10,6 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
  */
 public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot<Branch, BranchResponse> {
 
-	public static final String TYPE = "branches";
-
 	/**
 	 * Get the project of this branch root.
 	 * 

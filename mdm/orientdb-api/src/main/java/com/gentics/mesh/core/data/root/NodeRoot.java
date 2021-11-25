@@ -12,8 +12,6 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public interface NodeRoot extends RootVertex<Node> {
 
-	public static final String TYPE = "nodes";
-
 	// Move these to DAO
 	/**
 	 * Create a new node.

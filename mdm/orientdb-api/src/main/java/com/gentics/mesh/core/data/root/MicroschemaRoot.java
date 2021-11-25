@@ -9,8 +9,6 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public interface MicroschemaRoot extends RootVertex<Microschema> {
 
-	public static final String TYPE = "microschemas";
-
 	/**
 	 * Remove the microschema container from the aggregation node.
 	 * 

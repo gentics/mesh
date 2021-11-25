@@ -22,8 +22,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, TagResponse> {
 
-	public static final String TYPE = "tags";
-
 	/**
 	 * Add the given tag to the aggregation vertex.
 	 * 

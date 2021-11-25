@@ -11,8 +11,6 @@ import com.gentics.mesh.core.result.Result;
  */
 public interface SchemaRoot extends RootVertex<Schema> {
 
-	public static final String TYPE = "schemas";
-
 	/**
 	 * Returns the project to which the schema container root belongs.
 	 * 

@@ -12,8 +12,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public interface RoleRoot extends RootVertex<Role>, TransformableElementRoot<Role, RoleResponse> {
 
-	public static final String TYPE = "roles";
-
 	/**
 	 * Return the page of groups for the given role.
 	 * 

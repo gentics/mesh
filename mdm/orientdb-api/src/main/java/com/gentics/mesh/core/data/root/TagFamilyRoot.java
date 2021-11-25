@@ -10,8 +10,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
  */
 public interface TagFamilyRoot extends RootVertex<TagFamily>, TransformableElementRoot<TagFamily, TagFamilyResponse> {
 
-	public static final String TYPE = "tagFamilies";
-
 	/**
 	 * Create a new tag family with the given name and assign creator and editor field using the provided user.
 	 * 
