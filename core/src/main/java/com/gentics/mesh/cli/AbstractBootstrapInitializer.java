@@ -373,7 +373,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Override
 	public void init(Mesh mesh, boolean forceResync, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
-		this.mesh = (MeshImpl) mesh;
+		bootstrapMesh(mesh);
+
 		PostProcessFlags flags = new PostProcessFlags(forceResync, false);
 
 		boolean isClustered = options.getClusterOptions().isEnabled();
@@ -1016,5 +1017,13 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	@Override
 	public S3BinaryDao s3binaryDao() {
 		return daoCollection.s3binaryDao();
+	}
+
+	public void bootstrapMesh(Mesh mesh) {
+		if (this.mesh == null) {
+			this.mesh = (MeshImpl) mesh;
+		} else {
+			throw new IllegalStateException("Mesh is already set");
+		}
 	}
 }

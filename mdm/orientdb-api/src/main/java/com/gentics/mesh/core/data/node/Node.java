@@ -62,11 +62,11 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * Get an existing edge.
 	 *
 	 * @param languageTag
-	 *            language tag
+	 *			language tag
 	 * @param branchUuid
-	 *            branch uuid
+	 *			branch uuid
 	 * @param type
-	 *            edge type
+	 *			edge type
 	 * @return existing edge or null
 	 */
 	EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
@@ -120,12 +120,12 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * Return a page with child nodes that are visible to the given user.
 	 *
 	 * @param ac
-	 *            Context of the operation
+	 *			Context of the operation
 	 * @param languageTags
 	 * @param branchUuid
-	 *            branch Uuid
+	 *			branch Uuid
 	 * @param type
-	 *            edge type
+	 *			edge type
 	 * @param pagingParameter
 	 * @return
 	 */
@@ -158,7 +158,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 *
 	 * @param branchUuid
 	 * @param type
-	 *            edge type
+	 *			edge type
 	 * @param nodePath
 	 * @param pathStack
 	 * @return
@@ -175,11 +175,11 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * is nondeterministic.
 	 *
 	 * @param branchUuid
-	 *            branch Uuid
+	 *			branch Uuid
 	 * @param type
-	 *            edge type
+	 *			edge type
 	 * @param anyLanguage
-	 *            whether to return the path segment value of this node in any language, when none in <code>langaugeTag</code> match
+	 *			whether to return the path segment value of this node in any language, when none in <code>langaugeTag</code> match
 	 * @param languageTag
 	 *
 	 * @return
@@ -191,9 +191,9 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * of the node.
 	 *
 	 * @param branchUuid
-	 *            branch Uuid
+	 *			branch Uuid
 	 * @param type
-	 *            edge type
+	 *			edge type
 	 * @param languageTag
 	 *
 	 * @return
@@ -206,7 +206,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
 	 *
 	 * @param branchUuid
-	 *            branch uuid
+	 *			branch uuid
 	 * @return true if the node is visible in the branch
 	 */
 	boolean isVisibleInBranch(String branchUuid);
@@ -225,11 +225,11 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @param languageTag
 	 * @param branch
 	 * @param editor
-	 *            User which will be set as editor
+	 *			User which will be set as editor
 	 * @param original
-	 *            Container to be used as a source for the new container
+	 *			Container to be used as a source for the new container
 	 * @param handleDraftEdge
-	 *            Whether to move the existing draft edge or create a new draft edge to the new container
+	 *			Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
 	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
@@ -249,19 +249,19 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @param languageTag
 	 * @param branch
 	 * @param type
-	 *            type
+	 *			type
 	 * @return
 	 */
 	HibNodeFieldContainer getFieldContainer(String languageTag, HibBranch branch, ContainerType type);
 
-    /**
-     * Return traversal of graph field containers of given type for the node in the given branch.
-     *
-     * @param branchUuid
-     * @param type
-     * @return
-     */
-    Result<HibNodeFieldContainer> getFieldContainers(String branchUuid, ContainerType type);
+	/**
+	 * Return traversal of graph field containers of given type for the node in the given branch.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Result<HibNodeFieldContainer> getFieldContainers(String branchUuid, ContainerType type);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
@@ -288,9 +288,9 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 *
 	 * @param languageTag
 	 * @param branch
-	 *            branch
+	 *			branch
 	 * @param user
-	 *            user
+	 *			user
 	 * @return
 	 */
 	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser user);
@@ -320,9 +320,9 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 *
 	 * @param languageTags
 	 * @param branchUuid
-	 *            branch Uuid
+	 *			branch Uuid
 	 * @param version
-	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
+	 *			requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matches
 	 */
 	HibNodeFieldContainer findVersion(List<String> languageTags, String branchUuid, String version);
@@ -340,9 +340,9 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @param languageTag
 	 * @param branchUuid
 	 */
-    void removePublishedEdge(String languageTag, String branchUuid);
+	void removePublishedEdge(String languageTag, String branchUuid);
 
-    /**
+	/**
 	 * Set the graph field container to be the (only) published for the given branch.
 	 *
 	 * @param ac

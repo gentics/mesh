@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
-import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
 import io.reactivex.Flowable;
@@ -30,12 +30,12 @@ import io.reactivex.Flowable;
 @Singleton
 public class BranchEventHandler implements EventHandler {
 
-	private final NodeIndexHandlerImpl nodeIndexHandler;
+	private final NodeIndexHandler nodeIndexHandler;
 
 	private final MeshHelper helper;
 
 	@Inject
-	public BranchEventHandler(NodeIndexHandlerImpl nodeIndexHandler, MeshHelper helper) {
+	public BranchEventHandler(NodeIndexHandler nodeIndexHandler, MeshHelper helper) {
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.helper = helper;
 	}

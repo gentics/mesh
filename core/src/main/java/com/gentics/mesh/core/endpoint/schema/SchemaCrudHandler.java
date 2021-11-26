@@ -40,11 +40,11 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
-import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -58,13 +58,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private final NodeIndexHandlerImpl nodeIndexHandler;
+	private final NodeIndexHandler nodeIndexHandler;
 
 	private final ProjectSchemaLoadAllActionImpl projectSchemaDAOActions;
 
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparatorImpl comparator, Lazy<BootstrapInitializer> boot,
-		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions,
+		HandlerUtilities utils, NodeIndexHandler nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions,
 		SchemaDAOActions schemaActions) {
 		super(db, utils, writeLock, schemaActions);
 		this.comparator = comparator;

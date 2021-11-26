@@ -7,7 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
-import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 
 import io.reactivex.Observable;
 
@@ -16,9 +16,9 @@ import io.reactivex.Observable;
  */
 public class MoveDocumentEntryImpl extends AbstractEntry<MoveEntryContext> implements MoveDocumentEntry {
 
-	private NodeIndexHandlerImpl indexHandler;
+	private NodeIndexHandler indexHandler;
 
-	public MoveDocumentEntryImpl(NodeIndexHandlerImpl indexHandler, MoveEntryContext context) {
+	public MoveDocumentEntryImpl(NodeIndexHandler indexHandler, MoveEntryContext context) {
 		super(MOVE_ACTION);
 		this.indexHandler = indexHandler;
 		this.context = context;

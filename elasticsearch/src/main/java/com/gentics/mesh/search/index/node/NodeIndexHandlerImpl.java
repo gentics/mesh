@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -88,21 +87,21 @@ import io.vertx.core.logging.LoggerFactory;
  * target language will result in multiple store actions. Each language container will be loaded and stored. This behaviour will also be applied to branches and
  * project information.
  */
-@Singleton
 public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implements NodeIndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandlerImpl.class);
 
-	@Inject
-	public NodeContainerTransformer transformer;
+	public final NodeContainerTransformer transformer;
+
+	public final NodeContainerMappingProvider mappingProvider;
 
 	@Inject
-	public NodeContainerMappingProviderImpl mappingProvider;
-
-	@Inject
-	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
+	public NodeIndexHandlerImpl(NodeContainerTransformer transformer, NodeContainerMappingProvider mappingProvider, 
+			SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+			SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
 		super(searchProvider, db, boot, helper, options, syncMetersFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override
@@ -162,15 +161,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		});
 	}
 
-	/**
-	 * Return a map of indices for the given project and branch.
-	 * 
-	 * This will list all schema version, draft/published and language specific indices for the projct branch arrangement.
-	 * 
-	 * @param project
-	 * @param branch
-	 * @return
-	 */
+	@Override
 	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
@@ -182,14 +173,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		});
 	}
 
-	/**
-	 * Return a transactional which produces a map that contains all indices that are needed for the given container version, project, branch arrangement.
-	 * 
-	 * @param project
-	 * @param branch
-	 * @param containerVersion
-	 * @return
-	 */
+	@Override
 	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
@@ -652,12 +636,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			branchUuid, type));
 	}
 
-	/**
-	 * Create a bulk entry for a move document queue entry.
-	 * 
-	 * @param entry
-	 * @return
-	 */
+	@Override
 	public Observable<BulkEntry> moveForBulk(MoveDocumentEntry entry) {
 		ContentDao contentDao = boot.contentDao();
 		MoveEntryContext context = entry.getContext();
@@ -690,14 +669,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		return searchProvider.deleteDocument(contentDao.getIndexName(container, projectUuid, branchUuid, type), contentDao.getDocumentId(container));
 	}
 
-	/**
-	 * Generate an elasticsearch document object from the given container and stores it in the search index.
-	 * 
-	 * @param container
-	 * @param branchUuid
-	 * @param type
-	 * @return Single with affected index name
-	 */
+	@Override
 	public Single<String> storeContainer(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
 		ContentDao contentDao = boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
@@ -790,22 +762,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			.flatMapCompletable(searchProvider::validateCreateViaTemplate);
 	}
 
-	/**
-	 * Construct the full index settings using the provided schema and language as a source.
-	 *
-	 * @param schema
-	 * @return
-	 */
-	public JsonObject createIndexSettings(SchemaModel schema) {
-		return createIndexSettings(schema, null);
-	}
-
-	/**
-	 * Construct the full index settings using the provided schema and language as a source.
-	 *
-	 * @param schema
-	 * @return
-	 */
+	@Override
 	public JsonObject createIndexSettings(SchemaModel schema, String language) {
 		return searchProvider.createIndexSettings(createDummyIndexInfo(schema, language));
 	}
@@ -831,15 +788,11 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	@Override
 	public Function<String, HibNode> elementLoader() {
-		// TODO override in OrientDB implementation to use index for performance, if required
-		//return (uuid) -> HibClassConverter.toGraph(db).index().findByUuid(HibNode.class, uuid);
 		return uuid -> CommonTx.get().nodeDao().findByUuidGlobal(uuid);
 	}
 
 	@Override
 	public Stream<? extends HibNode> loadAllElements() {
-		// TODO override in OrientDB implementation to use index for performance, if required
-		//return HibClassConverter.toGraph(db).type().findAll(HibNode.class);
 		return CommonTx.get().nodeDao().findAllGlobal();
 	}
 

@@ -14,7 +14,6 @@ import com.gentics.mesh.test.docker.MeshContainer;
 
 import io.vertx.core.Vertx;
 
-// TODO Should be MeshOptionsTypaAwareContext.
 public abstract class AbstractClusterTest {
 
 	public static Vertx vertx = Vertx.vertx();

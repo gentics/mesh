@@ -33,6 +33,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -54,7 +55,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchHandler.class);
 
 	@Inject
-	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandlerImpl nodeIndexHandler,
+	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandler nodeIndexHandler,
 		MeshOptions options, NodeDAOActions actions) {
 		super(db, searchProvider, options, nodeIndexHandler, actions);
 	}

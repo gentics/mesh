@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
-import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
 import com.gentics.mesh.search.index.role.RoleIndexHandlerImpl;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandlerImpl;
@@ -26,7 +25,7 @@ import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 public class IndexHandlerRegistryImpl implements IndexHandlerRegistry {
 
 	@Inject
-	NodeIndexHandlerImpl nodeIndexHandler;
+	NodeIndexHandler nodeIndexHandler;
 
 	@Inject
 	UserIndexHandlerImpl userIndexHandler;

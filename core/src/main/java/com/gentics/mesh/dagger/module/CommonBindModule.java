@@ -71,7 +71,7 @@ import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
 import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
-import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.core.search.index.node.NodeContainerMappingProvider;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
@@ -106,7 +106,7 @@ import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
+import com.gentics.mesh.search.index.node.NodeContainerMappingProviderImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
@@ -135,6 +135,10 @@ import dagger.Module;
  */
 @Module
 public abstract class CommonBindModule {
+
+	@Binds 
+	abstract NodeContainerMappingProvider nodeContainerMappingProvider(NodeContainerMappingProviderImpl e);
+	
 	@Binds
 	abstract TxData txData(CommonTxData e);
 
@@ -194,9 +198,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract PasswordEncoder bindPasswordEncoder(BCryptPasswordEncoder e);
-
-	@Binds
-	abstract NodeIndexHandler bindNodeIndexHandler(NodeIndexHandlerImpl e);
 
 	@Binds
 	abstract BinaryProcessorRegistry bindBinaryProcessorRegistry(BinaryProcessorRegistryImpl e);

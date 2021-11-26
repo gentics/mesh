@@ -1,7 +1,6 @@
 package com.gentics.mesh.dagger;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -10,7 +9,9 @@ import com.gentics.mesh.MeshFactory;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
@@ -32,6 +33,9 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	@Getter
 	LivenessManager livenessManager();
+
+	@Getter
+	MeshEventSender meshEventSender();
 
 	/**
 	 * Builder for the main dagger component. It allows injection of options and the mesh instance which will be created by the {@link MeshFactory} outside of
@@ -65,10 +69,18 @@ public interface MeshComponent extends BaseMeshComponent {
 		/**
 		 * Inject the own instance of {@link SearchWaitUtil}.
 		 * 
-		 * @param type
+		 * @param provider
 		 * @return
 		 */
-		Builder searchWaitUtilSupplier(@Nullable Supplier<SearchWaitUtil> swUtil);
+		Builder searchWaitUtilSupplier(@Nullable OverrideSupplier<SearchWaitUtil> provider);
+
+		/**
+		 * Inject the own instance of {@link NodeIndexHandler}.
+		 * 
+		 * @param provider
+		 * @return
+		 */
+		Builder nodeIndexHandlerSupplier(@Nullable OverrideSupplier<NodeIndexHandler> provider);
 
 		/**
 		 * Build the component.
