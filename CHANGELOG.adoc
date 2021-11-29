@@ -35,6 +35,8 @@ This has been fixed now.
 
 icon:check[] Java Rest Client: If requests to mesh fail with I/O errors (including timeouts), the thrown exception will now also contain the request method and URL.
 
+icon:check[] Server: Liveness-Check script `live.sh` will now fail if the `mesh.live` file has not been changed since 20s (previously 60s)
+
 [[v1.7.21]]
 == 1.7.21 (11.11.2021)
 
