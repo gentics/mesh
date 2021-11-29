@@ -54,8 +54,7 @@ import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
@@ -118,7 +117,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
-		assertThat(trackingSearchProvider()).hasStore(Schema.composeIndexName(), Schema.composeDocumentId(restSchema.getUuid()));
+		assertThat(trackingSearchProvider()).hasStore(HibSchema.composeIndexName(), HibSchema.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			assertThat(createRequest).matches(restSchema);
@@ -629,8 +628,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		String versionUuid = tx(() -> schemaContainer("content").getLatestVersion().getUuid());
-		assertTrue("The version should exist.", tx(tx -> {
-			return ((GraphDBTx) tx).getGraph().getVertices("uuid", versionUuid).iterator().hasNext();
+		Object versionId = tx(() -> schemaContainer("content").getLatestVersion().getId());
+		assertNotNull("The version should exist.", tx(tx -> {
+			return tx.<CommonTx>unwrap().schemaDao().findVersionByUuid(schemaContainer("content"), versionUuid);
 		}));
 
 		expect(SCHEMA_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
@@ -644,10 +644,12 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
-			assertFalse("The referenced job should have been deleted", ((GraphDBTx) tx).getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
+			assertNull("The referenced job should have been deleted", tx.<CommonTx>unwrap().jobDao().findByUuid(jobUuid));
 			HibSchema reloaded = schemaDao.findByUuid(uuid);
-			assertFalse("The version of the schema container should have been deleted as well.", ((GraphDBTx) tx).getGraph().getVertices("uuid", versionUuid)
-				.iterator().hasNext());
+			assertNull("The version of the schema container should have been deleted as well.", 
+					tx.<CommonTx>unwrap().load(versionId, tx.<CommonTx>unwrap().schemaDao().getVersionPersistenceClass()));
+					// TODO find deleted version throws a NPE. This most probably should not be the case.
+					//tx.<CommonTx>unwrap().schemaDao().findVersionByUuid(schemaContainer("content"), versionUuid));
 			assertNull("The schema should have been deleted.", reloaded);
 		}
 	}

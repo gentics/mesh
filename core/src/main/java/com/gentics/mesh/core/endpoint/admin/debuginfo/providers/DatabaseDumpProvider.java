@@ -10,8 +10,6 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoFileEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 
 import io.reactivex.Flowable;
 import io.vertx.reactivex.core.Vertx;
@@ -26,14 +24,12 @@ public class DatabaseDumpProvider implements DebugInfoProvider {
 	private final AdminHandler adminHandler;
 	private final Database db;
 	private final FileSystem fs;
-	private final MeshOptions options;
-
+	
 	@Inject
-	public DatabaseDumpProvider(AdminHandler adminHandler, Database db, DebugInfoUtil util, Vertx vertx, MeshOptions options) {
+	public DatabaseDumpProvider(AdminHandler adminHandler, Database db, DebugInfoUtil util, Vertx vertx) {
 		this.adminHandler = adminHandler;
 		this.db = db;
 		this.fs = vertx.fileSystem();
-		this.options = options;
 	}
 
 	@Override
@@ -43,10 +39,9 @@ public class DatabaseDumpProvider implements DebugInfoProvider {
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		if (!(options instanceof OrientDBMeshOptions) || ((OrientDBMeshOptions)options).getStorageOptions().getDirectory() == null) {
+		if (!adminHandler.isBackupSupported()) {
 			return Flowable.empty();
 		}
-
 		return db.singleTx(adminHandler::backup)
 			.map(filename -> DebugInfoFileEntry.fromFile(fs, filename, "graphdb.zip", true))
 			.toFlowable();

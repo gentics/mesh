@@ -27,7 +27,7 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverA = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -36,21 +36,21 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverB = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
 		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshContainer serverC = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverC = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeC")
 		.withDataPathPostfix(randomToken())
 		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshContainer serverD = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverD = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeD")
 		.withDataPathPostfix(randomToken())

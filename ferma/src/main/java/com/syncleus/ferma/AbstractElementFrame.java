@@ -64,7 +64,6 @@ public abstract class AbstractElementFrame implements ElementFrame {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	public Object getId() {
 		return id;
 	}

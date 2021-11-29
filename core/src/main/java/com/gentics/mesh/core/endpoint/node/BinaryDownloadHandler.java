@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
-import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -85,7 +84,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 				if (field == null) {
 					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
 				}
-				s3binaryFieldResponseHandler.handle(rc, node, HibClassConverter.toGraph(field));
+				s3binaryFieldResponseHandler.handle(rc, node, field);
 			} else {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}

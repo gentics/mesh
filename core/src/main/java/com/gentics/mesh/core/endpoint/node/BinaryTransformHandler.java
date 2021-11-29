@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.endpoint.node;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import javax.inject.Inject;
@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageInfo;
@@ -51,6 +52,7 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
+
 import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -62,8 +64,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
-
-import static java.util.Objects.nonNull;
 
 /**
  * Handler for binary or s3binary transformer requests.
@@ -387,7 +387,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
 			if (oldField != null) {
 				oldField.copyTo(field);
-				toGraph(oldField).remove();
+				tx.<CommonTx>unwrap().delete(oldField, oldField.getClass());
 			}
 			S3HibBinary currentS3Binary = field.getS3Binary();
 
@@ -457,7 +457,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
 			if (oldField != null) {
 				oldField.copyTo(field);
-				toGraph(oldField).remove();
+				tx.<CommonTx>unwrap().delete(oldField, oldField.getClass());
 			}
 			HibBinary currentBinary = field.getBinary();
 			currentBinary.setSize(result.getSize());

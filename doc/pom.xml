@@ -33,7 +33,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core</artifactId>
+			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
 		</dependency>
 
 		<dependency>

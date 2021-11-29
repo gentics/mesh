@@ -4,24 +4,28 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.ClassRule;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.test.MeshOptionsTypeAwareContext;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
-@Ignore("Is no longer working due to maven dep issue. Should be removed")
-public class LocalServerTest {
+public abstract class LocalServerTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
 
 	private static String clusterPostFix = randomUUID();
 
-	@ClassRule
-	public static MeshLocalServer serverA = new MeshLocalServer()
-		.withNodeName("localNodeA")
-		.withClusterName("cluster" + clusterPostFix)
-		.withInitCluster()
-		.waitForStartup();
+	@BeforeClass
+	public void initServerA() {
+		serverA = new MeshLocalServer(getOptions())
+				.withNodeName("localNodeA")
+				.withClusterName("cluster" + clusterPostFix)
+				.withInitCluster()
+				.waitForStartup();
+	}
+	
+	public static MeshLocalServer serverA;
 
 	@Test
 	public void testServer() {
@@ -30,5 +34,4 @@ public class LocalServerTest {
 		UserListResponse users = call(() -> serverA.client().findUsers());
 		assertNotNull(users);
 	}
-
 }

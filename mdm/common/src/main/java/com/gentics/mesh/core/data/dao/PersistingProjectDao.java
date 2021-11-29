@@ -12,9 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
-import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
-import com.gentics.mesh.event.Assignment;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -32,9 +29,12 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.NameConflictException;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -93,7 +93,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 			restProject.setName(project.getName());
 		}
 		if (fields.has("rootNode")) {
-			restProject.setRootNode(project.getBaseNode().transformToReference(ac));
+			restProject.setRootNode(Tx.get().nodeDao().transformToReference(project.getBaseNode(), ac));
 		}
 
 		project.fillCommonRestFields(ac, fields, restProject);
@@ -110,6 +110,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	@Override
 	default HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
+		PersistingBranchDao branchDao = CommonTx.get().branchDao();
 		
 		HibProject project = createPersisted(uuid);
 		project.setName(name);
@@ -118,7 +119,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		getNodePermissionRoot(project);
 
 		// Create the initial branch for the project and add the used schema version to it
-		HibBranch branch = CommonTx.get().branchDao().create(project, name, creator, batch);
+		HibBranch branch = branchDao.create(project, name, creator, batch);
 		
 		//project.getBranchRoot().create(name, creator, batch);
 		branch.setMigrated(true);
@@ -133,7 +134,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		} else {
 			branch.setPathPrefix("");
 		}
-		branch.assignSchemaVersion(creator, schemaVersion, batch);
+		branchDao.assignSchemaVersion(branch, creator, schemaVersion, batch);
 
 		// Assign the provided schema container to the project
 		CommonTx.get().schemaDao().addItem(project, schemaVersion.getSchemaContainer());
@@ -193,7 +194,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
-		CommonTx.get().data().routerStorageRegistry().assertProjectName(requestModel.getName());
+		CommonTx.get().data().mesh().routerStorageRegistry().assertProjectName(requestModel.getName());
 
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
@@ -222,7 +223,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
-		Tx.get().nodeDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
+		Tx.get().contentDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
 			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
 
@@ -235,7 +236,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		String oldName = project.getName();
 		String newName = requestModel.getName();
-		CommonTx.get().data().routerStorageRegistry().assertProjectName(newName);
+		CommonTx.get().data().mesh().routerStorageRegistry().assertProjectName(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
 			HibProject projectWithSameName = findByName(newName);

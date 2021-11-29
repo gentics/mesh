@@ -21,7 +21,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.crypto.KeyStoreHelper;
-import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -64,10 +63,6 @@ public class MeshImpl implements Mesh {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		log = LoggerFactory.getLogger(MeshImpl.class);
-	}
-
-	public MeshImpl(MeshOptions options) {
-		this(options, DaggerOrientDBMeshComponent.builder());
 	}
 
 	public MeshImpl(MeshOptions options, MeshComponent.Builder builder) {

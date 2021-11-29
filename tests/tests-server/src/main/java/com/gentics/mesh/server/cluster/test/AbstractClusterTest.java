@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -24,8 +25,6 @@ public abstract class AbstractClusterTest extends ClusterServer {
 	static final long txDelay = 0;
 	static final boolean lockTx = true;
 	static final boolean lockForDBSync = false;
-
-	protected Database db;
 
 	protected static Mesh mesh;
 
@@ -93,6 +92,11 @@ public abstract class AbstractClusterTest extends ClusterServer {
 	public Database getDb() {
 		MeshComponent component = mesh.internal();
 		return component.database();
+	}
+
+	public BootstrapInitializer getBoot() {
+		MeshComponent component = mesh.internal();
+		return component.boot();
 	}
 
 	public static Mesh getMesh() {

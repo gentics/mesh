@@ -15,7 +15,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -68,7 +67,7 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Class<? extends HibBucketableElement> getElementClass() {
-		return Microschema.class;
+		return HibMicroschema.class;
 	}
 
 	@Override

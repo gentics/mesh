@@ -18,6 +18,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectMicroschemaLoadAllActionImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -89,6 +90,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 
 			utils.syncTx(ac, tx -> {
 				MicroschemaDao microschemaDao = tx.microschemaDao();
+				BranchDao branchDao = tx.branchDao();
 				HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				MicroschemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 				requestModel.validate();
@@ -119,7 +121,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 							}
 
 							// Assign the new version to the branch
-							branch.assignMicroschemaVersion(user, createdVersion, batch);
+							branchDao.assignMicroschemaVersion(branch, user, createdVersion, batch);
 						}
 						batch.add(() -> MeshEvent.triggerJobWorker(boot.get().mesh()));
 					}

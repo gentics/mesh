@@ -126,7 +126,8 @@
 						<dependency>com.gentics.mesh:tests-mesh-service-jwt-auth</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-service-local-storage</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-admin-gui</dependency>>
+						<dependency>com.gentics.mesh:tests-mesh-admin-gui</dependency>
+						<dependency>com.gentics.mesh:mesh-tests-context-orientdb</dependency>
 					</dependenciesToScan>
 				</configuration>
 			</plugin>

@@ -34,7 +34,7 @@ public abstract class ClusterServer {
 	public static OrientDBMeshOptions init(String[] args) {
 		LoggingConfigurator.init();
 		log = LoggerFactory.getLogger(ClusterServer.class);
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(args);
+		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
 
 		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);

@@ -29,7 +29,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
@@ -76,7 +75,7 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public long computeCount(HibProject project) {
+	public long count(HibProject project) {
 		return toGraph(project).getNodeRoot().computeCount();
 	}
 
@@ -162,21 +161,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
-		return toGraph(node).getFieldContainer(languageTag, branch, type);
-	}
-
-	@Override
-	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
-		return toGraph(node).getFieldContainers(type);
-	}
-
-	@Override
-	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
-		return toGraph(node).getFieldContainers(branchUuid, type);
-	}
-
-	@Override
 	public void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID) {
 		toGraph(node).removeInitialFieldContainerEdge(initial, branchUUID);
 	}
@@ -251,5 +235,10 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	protected RootVertex<Node> getRoot(HibProject root) {
 		return toGraph(root).getNodeRoot();
+	}
+
+	@Override
+	public Stream<? extends HibNode> findAllGlobal() {
+		return boot.get().meshRoot().findAllNodes().stream();
 	}
 }

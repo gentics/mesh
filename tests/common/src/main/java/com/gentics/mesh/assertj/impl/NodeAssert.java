@@ -1,6 +1,5 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -12,13 +11,13 @@ import java.util.stream.StreamSupport;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.EditorTrackingVertex;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.user.HibCreatorTracking;
+import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -156,7 +155,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	}
 
 	public NodeAssert matches(NodeResponse restNode) {
-		assertGenericNode(toGraph(actual), restNode);
+		assertGenericNode(actual, restNode);
 		HibSchema schema = actual.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), restNode.getSchema().getName());
@@ -166,23 +165,23 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 		return this;
 	}
 
-	public void assertGenericNode(MeshCoreVertex<?> node, AbstractGenericRestResponse model) {
+	public void assertGenericNode(HibCoreElement<?> node, AbstractGenericRestResponse model) {
 		assertNotNull(node);
 		assertNotNull(model);
 		assertNotNull("UUID field was not set in the rest response.", model.getUuid());
 		assertEquals("The uuids should not be different", node.getUuid(), model.getUuid());
 		assertNotNull("Permissions field was not set in the rest response.", model.getPermissions());
-		if (node instanceof EditorTrackingVertex) {
+		if (node instanceof HibEditorTracking) {
 			assertNotNull("Editor field was not set in the rest response.", model.getEditor());
-			EditorTrackingVertex editedNode = (EditorTrackingVertex) node;
+			HibEditorTracking editedNode = (HibEditorTracking) node;
 			assertNotNull("The editor of the graph node was not set.", editedNode.getEditor());
 			assertEquals(editedNode.getEditor().getFirstname(), model.getEditor());
 			assertEquals(editedNode.getEditor().getLastname(), model.getEditor().getLastName());
 			assertEquals(editedNode.getEditor().getUuid(), model.getEditor().getUuid());
 		}
-		if (node instanceof CreatorTrackingVertex && ((CreatorTrackingVertex) node).getCreator() != null) {
+		if (node instanceof HibCreatorTracking && ((HibCreatorTracking) node).getCreator() != null) {
 			assertNotNull("Creator field was not set in the rest response.", model.getCreator());
-			CreatorTrackingVertex createdNode = (CreatorTrackingVertex) node;
+			HibCreatorTracking createdNode = (HibCreatorTracking) node;
 			assertEquals(createdNode.getCreator().getFirstname(), model.getCreator().getFirstName());
 			assertEquals(createdNode.getCreator().getLastname(), model.getCreator().getLastName());
 			assertEquals(createdNode.getCreator().getUuid(), model.getCreator().getUuid());

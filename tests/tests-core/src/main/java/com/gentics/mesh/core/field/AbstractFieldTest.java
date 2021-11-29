@@ -13,11 +13,11 @@ import org.mockito.Mockito;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -40,14 +40,19 @@ import com.gentics.mesh.util.Tuple;
 public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractMeshTest implements FieldTestcases {
 
 	abstract protected FS createFieldSchema(boolean isRequired);
+	
+	protected PersistingContentDao contentDao() {
+		return contentDao(Tx.get());
+	}
+	protected PersistingContentDao contentDao(Tx tx) {
+		return tx.<CommonTx>unwrap().contentDao();
+	}
 
 	protected Tuple<HibNode, HibNodeFieldContainer> createNode(boolean isRequiredField, String segmentField) {
 		NodeDao nodeDao = Tx.get().nodeDao();
 
-		Schema container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(SchemaContainerImpl.class);
-		HibSchemaVersion version = createSchemaVersion(Tx.get());
-		version.setSchemaContainer(container);
-		container.setLatestVersion(version);
+		HibSchema container = CommonTx.get().schemaDao().createPersisted(null);;
+		HibSchemaVersion version = createSchemaVersion(Tx.get(), container);
 		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.addField(createFieldSchema(isRequiredField));
@@ -58,7 +63,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		HibNode node = nodeDao.create(project(), user(), version);
 		nodeDao.setParentNode(node, initialBranchUuid(), project().getBaseNode());
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		initialBranch().assignSchemaVersion(user(), version, batch);
+		Tx.get().branchDao().assignSchemaVersion(initialBranch(), user(), version, batch);
 		HibNodeFieldContainer nodeContainer = boot().contentDao().createFieldContainer(node, english(), initialBranch(), user());
 
 		return Tuple.tuple(node, nodeContainer);

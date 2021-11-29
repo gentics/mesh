@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.parameter.client.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
@@ -69,14 +69,14 @@ public class IndexClearTest extends AbstractMeshTest {
 		grantAdmin();
 
 		// check that the project is found in index
-		assertDocumentExists(Project.composeIndexName(), Project.composeDocumentId(projectUuid()));
+		assertDocumentExists(HibProject.composeIndexName(), HibProject.composeDocumentId(projectUuid()));
 		// check that the user is found in index
 		assertDocumentExists(HibUser.composeIndexName(), HibUser.composeDocumentId(userUuid()));
 
 		call(() -> client().invokeIndexClear(new IndexMaintenanceParametersImpl().setIndex(index)));
 
 		// check that the project is still found in index
-		assertDocumentExists(Project.composeIndexName(), Project.composeDocumentId(projectUuid()));
+		assertDocumentExists(HibProject.composeIndexName(), HibProject.composeDocumentId(projectUuid()));
 		// check that the user is no longer found in index
 		assertDocumentDoesNotExist(HibUser.composeIndexName(), HibUser.composeDocumentId(userUuid()));
 	}

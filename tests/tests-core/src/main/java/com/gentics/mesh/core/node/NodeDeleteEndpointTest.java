@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -268,7 +267,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		// Assert that the node was only deleted in the new branch
 		try (Tx tx = tx()) {
-			assertElement(toGraph(project()).getNodeRoot(), uuid, true);
+			assertElement(tx.nodeDao(), project(), uuid, true);
 			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
 			assertThat(boot().contentDao().getFieldContainers(node, newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
 		}
@@ -307,7 +306,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		// Assert deletion - nodes should only be deleted for new branch
 		try (Tx tx = tx()) {
-			assertElement(toGraph(project()).getNodeRoot(), uuid, true);
+			assertElement(tx.nodeDao(), project(), uuid, true);
 			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
 			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
 				.isNotEmpty();

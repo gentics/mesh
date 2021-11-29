@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Objects;
@@ -15,17 +17,28 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
+import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
+import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -34,25 +47,15 @@ import dagger.Lazy;
  * @see BranchDaoWrapper
  */
 @Singleton
-public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse, HibBranch, Branch, HibProject> implements BranchDaoWrapper {
+public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse, HibBranch, Branch, HibProject>
+		implements BranchDaoWrapper {
+
+	private final Lazy<GraphDatabase> db;
 
 	@Inject
-	public BranchDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<Database> db) {
+	public BranchDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<GraphDatabase> db) {
 		super(boot);
-	}
-
-	/**
-	 * Transform the given branch to REST.
-	 * 
-	 * @param branch
-	 * @param ac
-	 * @param level
-	 * @param languageTags
-	 * @return
-	 */
-	public BranchResponse transformToRestSync(HibBranch branch, InternalActionContext ac, int level, String... languageTags) {
-		Branch graphBranch = toGraph(branch);
-		return graphBranch.getRoot().transformToRestSync(graphBranch, ac, level, languageTags);
+		this.db = db;
 	}
 
 	/**
@@ -83,17 +86,11 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 
 	@Override
 	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo,
-		Predicate<HibBranch> extraFilter) {
+			Predicate<HibBranch> extraFilter) {
 		Project graphProject = toGraph(project);
 		return graphProject.getBranchRoot().findAll(ac, pagingInfo, branch -> {
 			return extraFilter.test(branch);
 		});
-	}
-
-	@Override
-	public boolean update(HibBranch branch, InternalActionContext ac, EventQueueBatch batch) {
-		Branch graphBranch = toGraph(branch);
-		return graphBranch.update(ac, batch);
 	}
 
 	@Override
@@ -103,28 +100,10 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac,
+			PagingParameters pagingInfo) {
 		Project graphProject = toGraph(project);
 		return graphProject.getBranchRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
-	public HibBranch create(HibProject project, String name, HibUser user, EventQueueBatch batch) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().create(name, user, batch);
-	}
-
-	@Override
-	public HibBranch create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().create(ac, batch, uuid);
-	}
-
-	@Override
-	public HibBranch create(HibProject project, String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch,
-		EventQueueBatch batch) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().create(name, creator, uuid, setLatest, baseBranch, batch);
 	}
 
 	@Override
@@ -177,12 +156,58 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public void delete(HibProject root, HibBranch element, BulkActionContext bac) {
-		toGraph(root).getBranchRoot().delete(toGraph(element), bac);
+	protected RootVertex<Branch> getRoot(HibProject root) {
+		return toGraph(root).getBranchRoot();
 	}
 
 	@Override
-	protected RootVertex<Branch> getRoot(HibProject root) {
-		return toGraph(root).getBranchRoot();
+	public HibBranch findConflictingBranch(HibBranch branch, String name) {
+		Branch graphBranch = toGraph(branch);
+		return db.get().index().checkIndexUniqueness(Branch.UNIQUENAME_INDEX_NAME, graphBranch,
+				graphBranch.getRoot().getUniqueNameKey(name));
+	}
+
+	/**
+	 * Unassigns the latest version of the container from the branch.
+	 *
+	 * @param container Container to handle
+	 */
+	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>> void unassign(
+			HibBranch branch, HibFieldSchemaElement<R, RM, RE, SC, SCV> container) {
+		SCV version = container.getLatestVersion();
+		String edgeLabel = null;
+		if (version instanceof SchemaVersion) {
+			edgeLabel = HAS_SCHEMA_VERSION;
+		}
+		if (version instanceof MicroschemaVersion) {
+			edgeLabel = HAS_MICROSCHEMA_VERSION;
+		}
+
+		// Iterate over all versions of the container and unassign it from the
+		// branch. We don't know which version was assigned to the branch
+		// so we just unassign all versions of the container.
+		while (version != null) {
+			toGraph(branch).unlinkOut(toGraph(version), edgeLabel);
+			version = version.getPreviousVersion();
+		}
+	}
+
+	@Override
+	public HibBranchSchemaVersion connectToSchemaVersion(HibBranch branch, HibSchemaVersion version) {
+		return toGraph(branch).addFramedEdgeExplicit(HAS_SCHEMA_VERSION, toGraph(version), BranchSchemaEdgeImpl.class);
+	}
+
+	@Override
+	public HibBranchMicroschemaVersion connectToMicroschemaVersion(HibBranch branch, HibMicroschemaVersion version) {
+		return toGraph(branch).addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, toGraph(version),
+				BranchMicroschemaEdgeImpl.class);
+	}
+
+	@Override
+	public void onRootDeleted(HibProject root, BulkActionContext bac) {
+		// Delete all leaf data
+		super.onRootDeleted(root, bac);
+		// Delete the root itself
+		getRoot(root).delete();
 	}
 }

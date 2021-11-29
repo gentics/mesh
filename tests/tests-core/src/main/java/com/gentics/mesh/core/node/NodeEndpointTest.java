@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
@@ -1014,7 +1013,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibNode parentNode = folder("news");
 			uuid = parentNode.getUuid();
 
-			nNodesFound = nodeDao.computeCount(project());
+			nNodesFound = nodeDao.count(project());
 		}
 
 		Function<Long, NodeCreateRequest> createRequest = nr -> {
@@ -1949,7 +1948,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			assertElement(toGraph(project()).getNodeRoot(), uuid, false);
+			assertElement(tx.nodeDao(), project(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
 			int deletes = 4;
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, deletes, 0, 0);

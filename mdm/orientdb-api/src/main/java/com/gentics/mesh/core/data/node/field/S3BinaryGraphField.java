@@ -1,17 +1,13 @@
 package com.gentics.mesh.core.data.node.field;
 
+import java.util.Objects;
+
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.s3binary.S3Binary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
-import com.gentics.mesh.util.UniquenessUtil;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * The S3BinaryField Domain Model interface. The field is an edge between the field container and the {@link S3Binary}
@@ -52,14 +48,6 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	}
 
 	/**
-	 * Copy the values of this field to the specified target field.
-	 * 
-	 * @param target
-	 * @return Fluent API
-	 */
-	S3HibBinaryField copyTo(S3HibBinaryField target);
-
-	/**
 	 * Set the S3 binary filename.
 	 * 
 	 * @param fileName
@@ -68,25 +56,6 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	default S3HibBinaryField setFileName(String fileName) {
 		property(S3_BINARY_FILENAME_PROPERTY_KEY, fileName);
 		return this;
-	}
-
-	/**
-	 * Increment any found postfix number in the filename.
-	 * 
-	 * e.g:
-	 * <ul>
-	 * <li>test.txt -> test_1.txt</li>
-	 * <li>test -> test_1</li>
-	 * <li>test.blub.txt -> test.blub_1.txt</li>
-	 * <ul>
-	 * 
-	 */
-	default void postfixFileName() {
-		String oldName = getFileName();
-		if (oldName != null && !oldName.isEmpty()) {
-			setFileName(UniquenessUtil.suggestNewName(oldName));
-		}
-
 	}
 
 	/**
@@ -108,13 +77,6 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 		property(S3_BINARY_CONTENT_TYPE_PROPERTY_KEY, mimeType);
 		return this;
 	}
-
-	/**
-	 * Check whether the s3binary data represents an image.
-	 * 
-	 * @return
-	 */
-	boolean hasProcessableImage();
 
 	/**
 	 * Set the S3 binary image dominant color.
@@ -159,42 +121,6 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 		property(S3_BINARY_IMAGE_FOCAL_POINT_X, point.getX());
 		property(S3_BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
 	}
-
-	/**
-	 * Return the uuid of the s3binary field.
-	 * 
-	 * @return
-	 */
-	String getUuid();
-
-	/**
-	 * Set the uuid of the s3binary field.
-	 * 
-	 * @param uuid
-	 */
-	void setUuid(String uuid);
-
-	/**
-	 * Return the referenced s3binary.
-	 * 
-	 * @return
-	 */
-	S3HibBinary getS3Binary();
-
-	/**
-	 * Set the metadata property.
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	void setMetadata(String key, String value);
-
-	/**
-	 * Return the metadata properties.
-	 * 
-	 * @return
-	 */
-	Map<String, String> getMetadataProperties();
 
 	/**
 	 * Set the location information.
@@ -280,26 +206,6 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 				setMetadata(e.substring(META_DATA_PROPERTY_PREFIX.length()), null);
 			});
 	}
-
-	/**
-	 * Return the {@link S3BinaryMetadata} REST model of the field.
-	 * 
-	 * @return
-	 */
-	S3BinaryMetadata getMetadata();
-
-	/**
-	 * Set the plain text content.
-	 * @param text
-	 */
-	void setPlainText(String text);
-
-	/**
-	 * Return the extracted plain text content of the S3 binary.
-	 * @return
-	 */
-	String getPlainText();
-
 
 	/**
 	 * Return the S3 Object Key that serves as reference to AWS

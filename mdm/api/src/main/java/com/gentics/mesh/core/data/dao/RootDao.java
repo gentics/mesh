@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -199,26 +198,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 *            Stack which contains the remaining path elements which should be resolved starting with the current element
 	 * @return
 	 */
-	default HibBaseElement resolveToElement(R root, Stack<String> stack) {
-		if (log.isDebugEnabled()) {
-			log.debug("Resolving for {" + getPersistenceClass(root).getSimpleName() + "}.");
-			if (stack.isEmpty()) {
-				log.debug("Stack: is empty");
-			} else {
-				log.debug("Stack: " + stack.peek());
-			}
-		}
-		if (stack.isEmpty()) {
-			return root;
-		} else {
-			String uuid = stack.pop();
-			if (stack.isEmpty()) {
-				return findByUuid(root, uuid);
-			} else {
-				throw error(BAD_REQUEST, "Can't resolve remaining segments. Next segment would be: " + stack.peek());
-			}
-		}
-	}
+	HibBaseElement resolveToElement(R root, Stack<String> stack);
 
 	/**
 	 * Create a new leaf object which is connected or directly related to this root element.
@@ -264,18 +244,11 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	String getRootLabel(R root);
 
 	/**
-	 * Return the persistence class for the items of the root element. (eg. NodeImpl, TagImpl...)
+	 * Return the total count of all tracked elements in the given root.
 	 * 
 	 * @return
 	 */
-	Class<? extends L> getPersistenceClass(R root);
-
-	/**
-	 * Return the total count of all tracked elements.
-	 * 
-	 * @return
-	 */
-	default long computeCount(R root) {
+	default long count(R root) {
 		return findAll(root).count();
 	}
 
@@ -296,6 +269,16 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 *            Deletion context which keeps track of the deletion process
 	 */
 	void delete(R root, L element, BulkActionContext bac);
+
+	/**
+	 * Update the element using the action context information.
+	 *
+	 * @param ac
+	 * @param batch
+	 *            Batch to which entries will be added in order to update the search index.
+	 * @return true if the element was updated. Otherwise false
+	 */
+	boolean update(R root, L element, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Perform the necessary actions before root deletion.

@@ -13,7 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
+import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -22,15 +22,10 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
@@ -39,11 +34,9 @@ import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -65,7 +58,6 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.test.MeshTestSetting;
 
@@ -235,7 +227,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	public void testCreateMicronodeField() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 
 			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			assertNotNull(field);
@@ -263,7 +255,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	public void testMicronodeUpdateFromRest() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 
 			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			HibMicronode micronode = field.getMicronode();
@@ -287,10 +279,10 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 
-			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
 			field.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getMicronode("testMicronodeField")).as("cloned field").isNotNull();
@@ -303,14 +295,16 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			CommonTx ctx = tx.unwrap();
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 
 			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			HibMicronode micronode = field.getMicronode();
 			String originalUuid = micronode.getUuid();
 
-			List<? extends MicronodeImpl> existingMicronodes = new TraversalResult(((GraphDBTx) tx).getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class)).list();
-			for (Micronode foundMicronode : existingMicronodes) {
+			Iterator<? extends HibMicronode> existingMicronodes = ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass());
+			while (existingMicronodes.hasNext()) {
+				HibMicronode foundMicronode = existingMicronodes.next();
 				assertEquals(micronode.getUuid(), foundMicronode.getUuid());
 			}
 
@@ -320,8 +314,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 			assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));
 
-			existingMicronodes = new TraversalResult(((GraphDBTx) tx).getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class)).list();
-			for (MicronodeImpl foundMicronode : existingMicronodes) {
+			existingMicronodes = ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass());
+			while (existingMicronodes.hasNext()) {
+				HibMicronode foundMicronode = existingMicronodes.next();
 				assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
 			}
 		}
@@ -331,9 +326,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
-			MicronodeGraphField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibMicronodeField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
+			HibMicronodeField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.getMicronode().createString("firstName").setString("someStringValue");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -349,10 +344,10 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibMicronodeField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
 			assertFalse(fieldA.equals((Field) null));
-			assertFalse(fieldA.equals((GraphField) null));
+			assertFalse(fieldA.equals((HibMicronodeField) null));
 		}
 	}
 
@@ -360,9 +355,10 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			CommonTx ctx = tx.unwrap();
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			// Create microschema for the micronode
-			MicroschemaVersion containerVersion = ((GraphDBTx) tx).getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			HibMicroschemaVersion containerVersion = ctx.microschemaDao().createPersistedVersion(dummyMicroschema);
 			MicroschemaVersionModel microschema = new MicroschemaModelImpl();
 			microschema.setVersion("1.0");
 			microschema.addField(FieldUtil.createStringFieldSchema("string"));

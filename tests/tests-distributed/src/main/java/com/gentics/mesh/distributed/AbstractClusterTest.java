@@ -9,10 +9,12 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.MeshOptionsProvider;
 import com.gentics.mesh.test.docker.MeshContainer;
 
 import io.vertx.core.Vertx;
 
+// TODO Should be MeshOptionsTypaAwareContext.
 public abstract class AbstractClusterTest {
 
 	public static Vertx vertx = Vertx.vertx();
@@ -86,7 +88,7 @@ public abstract class AbstractClusterTest {
 	}
 
 	protected MeshContainer prepareSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, boolean waitForStartup, int writeQuorum) {
-		MeshContainer server = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+		MeshContainer server = createDefaultMeshContainer()
 			.withDataPathPostfix(dataPathPostfix)
 			.withClusterName(clusterName)
 			.withNodeName(nodeName)
@@ -101,6 +103,10 @@ public abstract class AbstractClusterTest {
 		return server;
 	}
 	
+	public static MeshContainer createDefaultMeshContainer() {
+		return new MeshContainer(MeshContainer.LOCAL_PROVIDER, MeshOptionsProvider.getProvider().getOptions());
+	}
+
 	protected void login(MeshContainer server) {
 		server.client().setLogin("admin", "admin");
 		server.client().login().blockingGet();

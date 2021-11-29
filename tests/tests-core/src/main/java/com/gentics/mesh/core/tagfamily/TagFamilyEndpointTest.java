@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
@@ -40,8 +39,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
@@ -53,6 +50,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -248,11 +246,11 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
 		String tagFamilyRootUuid = tx(tx -> {
-			return toGraph(project()).getTagFamilyRoot().getUuid();
+			return project().getTagFamilyPermissionRoot().getUuid();
 		});
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			roleDao.revokePermissions(role(), toGraph(project()).getTagFamilyRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), project().getTagFamilyPermissionRoot(), CREATE_PERM);
 			tx.success();
 		}
 		call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid,
@@ -301,14 +299,14 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testCreateWithoutPerm() {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			roleDao.revokePermissions(role(), toGraph(project()).getTagFamilyRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), project().getTagFamilyPermissionRoot(), CREATE_PERM);
 			tx.success();
 		}
 		try (Tx tx = tx()) {
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName("SuperDoll");
 			call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm",
-					toGraph(project()).getTagFamilyRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
+					project().getTagFamilyPermissionRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -325,7 +323,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		HibTagFamily basicTagFamily = tagFamily("basic");
 		String tagFamilyUuid = tx(() -> basicTagFamily.getUuid());
 		try (Tx tx = tx()) {
-			assertNotNull(toGraph(project()).getTagFamilyRoot().findByUuid(tagFamilyUuid));
+			assertNotNull(tx.<CommonTx>unwrap().tagFamilyDao().findByUuid(project(), tagFamilyUuid));
 		}
 
 		expect(TAG_FAMILY_DELETED).match(1, TagFamilyMeshEventModel.class, event -> {
@@ -365,11 +363,11 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasDelete(TagFamily.composeIndexName(projectUuid()),
-				TagFamily.composeDocumentId(tagFamilyUuid));
+		assertThat(trackingSearchProvider()).hasDelete(HibTagFamily.composeIndexName(projectUuid()),
+				HibTagFamily.composeDocumentId(tagFamilyUuid));
 		for (String tagUuid : tagUuids) {
-			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid()),
-					Tag.composeDocumentId(tagUuid));
+			assertThat(trackingSearchProvider()).hasDelete(HibTag.composeIndexName(projectUuid()),
+					HibTag.composeDocumentId(tagUuid));
 		}
 
 		// The TagFamily and the tags must be deleted
@@ -379,7 +377,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		assertThat(trackingSearchProvider()).hasEvents(stored, 0, deleted, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(toGraph(project()).getTagFamilyRoot(), tagFamilyUuid, false);
+			assertElement(tx.tagFamilyDao(), project(), tagFamilyUuid, false);
 		}
 	}
 
@@ -395,12 +393,11 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		}
 
 		try (Tx tx = tx()) {
-			assertElement(toGraph(project()).getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+			assertElement(tx.tagFamilyDao(), project(), basicTagFamily.getUuid(), true);
 			call(() -> client().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN,
 					"error_missing_perm", basicTagFamily.getUuid(), DELETE_PERM.getRestPerm().getName());
-			assertElement(toGraph(project()).getTagFamilyRoot(), basicTagFamily.getUuid(), true);
+			assertElement(tx.tagFamilyDao(), project(), basicTagFamily.getUuid(), true);
 		}
-
 	}
 
 	@Test

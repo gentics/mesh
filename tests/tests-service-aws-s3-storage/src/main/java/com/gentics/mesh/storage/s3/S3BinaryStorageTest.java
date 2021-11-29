@@ -1,17 +1,24 @@
 package com.gentics.mesh.storage.s3;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.storage.S3BinaryStorage;
-import com.gentics.mesh.test.docker.AWSContainer;
-import hu.akarnokd.rxjava2.interop.SingleInterop;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import java.net.URI;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.S3Options;
+import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
+import com.gentics.mesh.test.docker.AWSContainer;
+
+import hu.akarnokd.rxjava2.interop.SingleInterop;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -22,12 +29,7 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 
-import java.net.URI;
-
-import static org.junit.Assert.*;
-
-
-public class S3BinaryStorageTest {
+public class S3BinaryStorageTest implements MeshOptionsTypeUnawareContext {
     private static final String ACCESS_KEY = "accessKey";
     private static final String SECRET_KEY = "secretKey";
     private static final String BUCKET = "bucket";
@@ -43,7 +45,7 @@ public class S3BinaryStorageTest {
         s3Options.setBucket(BUCKET);
         s3Options.setSecretAccessKey(SECRET_KEY);
         s3Options.setAccessKeyId(ACCESS_KEY);
-        meshOptions = new OrientDBMeshOptions();
+        meshOptions = getOptions();
         meshOptions.setS3Options(s3Options);
          container = new AWSContainer(
                 new AWSContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY));

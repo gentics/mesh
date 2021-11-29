@@ -14,14 +14,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
-import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -86,35 +81,16 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	}
 
 	@Test
-	public void testSimpleBoolean() {
-		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BooleanGraphFieldImpl field = new BooleanGraphFieldImpl("test", container);
-			assertEquals(2, container.getPropertyKeys().size());
-			assertNull(container.getProperty("test-boolean"));
-			field.setBoolean(new Boolean(true));
-
-			assertEquals("true", container.getProperty("test-boolean"));
-			// assertEquals(5, container.getPropertyKeys().size());
-			field.setBoolean(new Boolean(false));
-			assertEquals("false", container.getProperty("test-boolean"));
-			field.setBoolean(null);
-			assertNull(container.getProperty("test-boolean"));
-			assertNull(field.getBoolean());
-		}
-	}
-
-	@Test
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BooleanGraphField trueBooleanField = container.createBoolean("trueBooleanField");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibBooleanField trueBooleanField = container.createBoolean("trueBooleanField");
 			trueBooleanField.setBoolean(true);
-			BooleanGraphField falseBooleanField = container.createBoolean("falseBooleanField");
+			HibBooleanField falseBooleanField = container.createBoolean("falseBooleanField");
 			falseBooleanField.setBoolean(false);
 
-			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
 			trueBooleanField.cloneTo(otherContainer);
 			falseBooleanField.cloneTo(otherContainer);
 
@@ -129,8 +105,8 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BooleanGraphField booleanField = container.createBoolean(BOOLEAN_FIELD);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();;
+			HibBooleanField booleanField = container.createBoolean(BOOLEAN_FIELD);
 			assertEquals(BOOLEAN_FIELD, booleanField.getFieldKey());
 			booleanField.setBoolean(true);
 			assertTrue("The boolean field value was not changed to true", booleanField.getBoolean());
@@ -141,10 +117,10 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 			booleanField.setBoolean(null);
 			assertNull("The boolean field value was not set to null.", booleanField.getBoolean());
 
-			BooleanGraphField bogusField2 = container.getBoolean("bogus");
+			HibBooleanField bogusField2 = container.getBoolean("bogus");
 			assertNull("No field with the name bogus should have been found.", bogusField2);
 
-			BooleanGraphField reloadedBooleanField = container.getBoolean("booleanField");
+			HibBooleanField reloadedBooleanField = container.getBoolean("booleanField");
 			assertNull("The boolean field value was set to null and thus the field should have been removed.", reloadedBooleanField);
 		}
 	}
@@ -153,9 +129,9 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BooleanGraphField fieldA = container.createBoolean("fieldA");
-			BooleanGraphField fieldB = container.createBoolean("fieldB");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibBooleanField fieldA = container.createBoolean("fieldA");
+			HibBooleanField fieldB = container.createBoolean("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.setBoolean(true);
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -171,10 +147,10 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BooleanGraphField fieldA = container.createBoolean("fieldA");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibBooleanField fieldA = container.createBoolean("fieldA");
 			assertFalse(fieldA.equals((Field) null));
-			assertFalse(fieldA.equals((GraphField) null));
+			assertFalse(fieldA.equals((HibBooleanField) null));
 		}
 	}
 
@@ -182,8 +158,8 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			BooleanGraphField fieldA = container.createBoolean("fieldA");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibBooleanField fieldA = container.createBoolean("fieldA");
 
 			// graph empty - rest empty
 			assertTrue("The field should be equal to the rest field since both fields have no value.", fieldA.equals(new BooleanFieldImpl()));

@@ -17,7 +17,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -129,7 +128,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 
 			try (Tx tx = tx()) {
 				container = boot().contentDao().getFieldContainer(node, "en");
-				oldValue = getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME);
+				oldValue = getListValues(container::getBooleanList, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size());
 
 				for (Boolean value : newValue) {
@@ -142,7 +141,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 
 			try (Tx tx = tx()) {
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME));
+				assertEquals("Check old value", oldValue, getListValues(container::getBooleanList, FIELD_NAME));
 			}
 		}
 	}

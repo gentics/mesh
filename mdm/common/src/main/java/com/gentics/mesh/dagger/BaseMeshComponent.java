@@ -11,8 +11,10 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -53,6 +55,9 @@ import io.vertx.core.Vertx;
 public interface BaseMeshComponent {
 
 	@Getter
+	Database database();
+
+	@Getter
 	MeshOptions options();
 
 	@Getter
@@ -63,6 +68,9 @@ public interface BaseMeshComponent {
 
 	@Getter
 	SchemaComparator schemaComparator();
+
+	@Getter
+	MicroschemaComparator microschemaComparator();
 
 	// Data
 

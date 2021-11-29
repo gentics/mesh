@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -36,6 +36,7 @@ import com.gentics.mesh.path.Path;
  * Dao for {@link HibNode}
  */
 public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
+
 	/**
 	 * Return the API path for the node.
 	 * 
@@ -202,18 +203,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag);
 
 	/**
-	 * Create a new published version of the given language in the branch.
-	 *
-	 * @param node the node
-	 * @param ac Action Context
-	 * @param languageTag language
-	 * @param branch branch
-	 * @param user user
-	 * @return published field container
-	 */
-	HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
-
-	/**
 	 * Remove published edges for each container found
 	 * @param node
 	 * @param branchUuid
@@ -301,16 +290,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac);
 
 	/**
-	 * Update the node.
-	 * 
-	 * @param node
-	 * @param ac
-	 * @param batch
-	 * @return
-	 */
-	boolean update(HibNode node, InternalActionContext ac, EventQueueBatch batch);
-
-	/**
 	 * Update the tags of the node and return a page of updated tags.
 	 * 
 	 * @param node
@@ -330,24 +309,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
-
-	/**
-	 * Load a stream of nodes with the given perms in the project.
-	 * 
-	 * @param project
-	 * @param ac
-	 * @param perm
-	 * @return
-	 */
-	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm);
-
-	/**
-	 * Return the count of nodes for the project.
-	 * 
-	 * @param project
-	 * @return
-	 */
-	long computeCount(HibProject project);
 
 	/**
 	 * Create a new node.
@@ -434,72 +395,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 */
 	void removeParent(HibNode node, String branchUuid);
 
-
-	/**
-	 * Delete the language container for the given language from the branch. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
-	 * and branch, and will then delete all "dangling" GFC (GFCs, which are not used by another branch).
-	 *
-	 * @param node
-	 * @param ac
-	 * @param branch
-	 * @param languageTag
-	 *            Language which will be used to find the field container which should be deleted
-	 * @param bac
-	 * @param failForLastContainer
-	 *            Whether to execute the last container check and fail or not.
-	 */
-	void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
-								 boolean failForLastContainer);
-
-	/**
-	 * Return containers of the given type
-	 *
-	 * @param node
-	 * @param type
-	 * @return
-	 */
-	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type);
-
-	/**
-	 * Return traversal of graph field containers of given type for the node in the given branch.
-	 *
-	 * @param node
-	 * @param branch
-	 * @param type
-	 * @return
-	 */
-	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, HibBranch branch, ContainerType type);
-
-
-	/**
-	 * Return traversal of graph field containers of given type for the node in the given branch.
-	 *
-	 * @param node
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type);
-
-	/**
-	 * Return the field container for the given language, type and branch.
-	 *
-	 * @param node
-	 * @param languageTag
-	 * @param branch
-	 * @param type
-	 * @return
-	 */
-	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type);
-
-	/**
-	 * Return the draft field containers of the node in the latest branch.
-	 *
-	 * @param  node
-	 * @return
-	 */
-	Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node);
-
 	/**
 	 * Adds reference update events to the context for all draft and published contents that reference this node.
 	 *
@@ -542,4 +437,31 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	NodeTaggedEventModel onTagged(HibNode node, HibTag tag, HibBranch branch, Assignment assignment);
+	
+	/**
+	 * Find all the existing nodes.<br>
+	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
+	 * Use {@link NodeDao#findAll(HibProject)} with the valid project binding instead.
+	 * 
+	 * @return
+	 */
+	Stream<? extends HibNode> findAllGlobal();
+
+	/**
+	 * Get ETag part of node.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @return
+	 */
+	String getSubETag(HibNode node, InternalActionContext ac);
+
+	/**
+	 * Transform the node to a reference.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @return
+	 */
+	NodeReference transformToReference(HibNode node, InternalActionContext ac);
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.path;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+
 /**
  * Resolved path segments for a {@link Path} object.
  */
@@ -19,4 +21,10 @@ public interface PathSegment {
 	 */
 	String getLanguageTag();
 
+	/**
+	 * Return the container for the segment.
+	 * 
+	 * @return
+	 */
+	HibNodeFieldContainer getContainer();
 }

@@ -25,7 +25,6 @@ import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -328,7 +327,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex) {
+	public <T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		FramedGraph fermaGraph = GraphDBTx.getGraphTx().getGraph();
 		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();

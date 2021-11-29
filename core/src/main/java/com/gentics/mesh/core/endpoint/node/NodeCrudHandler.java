@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
@@ -82,7 +81,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				// Create the batch first since we can't delete the container and access it later in batch creation
 				utils.bulkableAction(bac -> {
 					HibBranch branch = tx.getBranch(ac);
-					tx.contentDao().deleteFromBranch(node, ac, branch, bac, false);
+					nodeDao.deleteFromBranch(node, ac, branch, bac, false);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}
@@ -280,7 +279,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				} else {
 					utils.eventAction(batch -> {
 						tagDao.addTag(node, tag, branch);
-
 						batch.add(nodeDao.onTagged(node, tag, branch, ASSIGNED));
 					});
 				}

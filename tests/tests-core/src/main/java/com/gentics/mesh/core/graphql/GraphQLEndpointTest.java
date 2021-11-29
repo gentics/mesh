@@ -2,7 +2,6 @@ package com.gentics.mesh.core.graphql;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
 import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
@@ -23,8 +22,6 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
@@ -45,7 +42,6 @@ import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -88,11 +84,8 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.hazelcast.util.function.Consumer;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -100,23 +93,21 @@ import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-@RunWith(Parameterized.class)
-@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
-public class GraphQLEndpointTest extends AbstractMeshTest {
+public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 
-	private static final String FOLDER_SCHEMA_UUID = "70bf14ed1267446eb70c5f02cfec0e38";
-	private static final String NODE_WITH_LINKS_UUID = "8d2f5769fe114353af5769fe11e35355";
-	private static final String NODE_WITH_NODE_REF_UUID = "e8f5c7875b2f49a7b5c7875b2fa9a718";
+	protected static final String FOLDER_SCHEMA_UUID = "70bf14ed1267446eb70c5f02cfec0e38";
+	protected static final String NODE_WITH_LINKS_UUID = "8d2f5769fe114353af5769fe11e35355";
+	protected static final String NODE_WITH_NODE_REF_UUID = "e8f5c7875b2f49a7b5c7875b2fa9a718";
 
-	private final String queryName;
+	protected final String queryName;
 
-	private final boolean withMicroschema;
+	protected final boolean withMicroschema;
 
-	private final String version;
-	private final String apiVersion;
+	protected final String version;
+	protected final String apiVersion;
 
-	private final Consumer<JsonObject> assertion;
-	private MeshRestClient client;
+	protected final Consumer<JsonObject> assertion;
+	protected MeshRestClient client;
 
 	/**
 	 * Default constructor.
@@ -132,7 +123,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * @param version Whether to use the <code>draft</code> or <code>published</code> version
 	 * @param assertion A custom assertion to be applied on the GraphQL query result
 	 */
-	public GraphQLEndpointTest(String queryName, boolean withMicroschema, String version, Consumer<JsonObject> assertion, String apiVersion) {
+	protected GraphQLEndpointTest(String queryName, boolean withMicroschema, String version, Consumer<JsonObject> assertion, String apiVersion) {
 		this.queryName = queryName;
 		this.withMicroschema = withMicroschema;
 		this.version = version;
@@ -360,7 +351,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			HibBinary binary = ((GraphDBTx) tx).binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
@@ -492,18 +483,13 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * @param schemaContainer
 	 * @param uuid
 	 */
-	private void safelySetUuid(Tx tx, HibSchema schemaContainer, String uuid) {
-		for (Vertex node : ((GraphDBTx) tx).getGraph().getVertices("schema", schemaContainer.getUuid())) {
-			node.setProperty("schema", uuid);
-		}
-		toGraph(schemaContainer).setUuid(uuid);
-	}
+	protected abstract void safelySetUuid(Tx tx, HibSchema schemaContainer, String uuid);
 
-	private long dateToMilis(String date) throws ParseException {
+	protected long dateToMilis(String date) throws ParseException {
 		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date).getTime();
 	}
 
-	private Completable createLanguageLinkResolvingNode(String nodeUuid, String parentUuid, String referencedUuid) throws Exception {
+	protected Completable createLanguageLinkResolvingNode(String nodeUuid, String parentUuid, String referencedUuid) throws Exception {
 
 		Function<String, FieldMap> createFields = language -> {
 			FieldMap map = new FieldMapImpl();
@@ -567,7 +553,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 *
 	 * @param result The JSON object from the GraphQL response
 	 */
-	private static void checkNodeLinkChildrenResponse(JsonObject result) {
+	protected static void checkNodeLinkChildrenResponse(JsonObject result) {
 		Collector<Object, ?, Map<String, List<Object>>> groupByLanguage = Collectors.groupingBy(o -> ((JsonObject) o).getString("language"));
 		System.out.println(result.encodePrettily());
 		JsonObject node = result.getJsonObject("data").getJsonObject("node");
@@ -600,7 +586,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 *
 	 * @param result
 	 */
-	private static void checkNodeLanguageContent(JsonObject result) {
+	protected static void checkNodeLanguageContent(JsonObject result) {
 		JsonArray languages = result.getJsonObject("data").getJsonObject("node").getJsonArray("languages");
 		assertThat(languages).containsJsonObjectHashesInAnyOrder(
 			obj -> hash(

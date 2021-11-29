@@ -1,7 +1,6 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
@@ -14,7 +13,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.group.HibGroup;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,6 +29,7 @@ import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -221,9 +220,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Test
 	public void testTagFamilySync() throws Exception {
 		// Assert insert
-		tx(() -> {
+		tx(tx -> {
+			CommonTx ctx = tx.unwrap();			
 			for (int i = 0; i < 400; i++) {
-				toGraph(project()).getTagFamilyRoot().create("tagfamily_" + i, user());
+				ctx.tagFamilyDao().create(project(), "tagfamily_" + i, user());
 			}
 		});
 		syncIndex();

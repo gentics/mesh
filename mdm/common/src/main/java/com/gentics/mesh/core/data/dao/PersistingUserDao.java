@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -440,7 +441,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		if (expandReference) {
 			restUser.setNodeResponse(Tx.get().nodeDao().transformToRestSync(node, ac, level));
 		} else {
-			NodeReference userNodeReference = node.transformToReference(ac);
+			NodeReference userNodeReference = Tx.get().nodeDao().transformToReference(node, ac);
 			restUser.setNodeReference(userNodeReference);
 		}
 	}

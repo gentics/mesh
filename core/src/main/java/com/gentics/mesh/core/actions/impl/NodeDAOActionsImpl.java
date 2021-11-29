@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -66,7 +64,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	@Override
 	public boolean update(Tx tx, HibNode node, InternalActionContext ac, EventQueueBatch batch) {
 		NodeDao nodeDao = tx.nodeDao();
-		return nodeDao.update(node, ac, batch);
+		return nodeDao.update(tx.getProject(ac), node, ac, batch);
 	}
 
 	@Override

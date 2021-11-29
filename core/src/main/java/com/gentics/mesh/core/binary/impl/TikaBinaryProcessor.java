@@ -26,9 +26,9 @@ import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -48,7 +48,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
 /**
- * This class can be used to parse binary data from {@link BinaryGraphField} fields. Once parsed the processor will populate the field with additional meta data
+ * This class can be used to parse binary data from {@link HibBinaryField} fields. Once parsed the processor will populate the field with additional meta data
  * from the parsing result.
  */
 @Singleton
@@ -151,12 +151,13 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	private Maybe<BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
 		return db.maybeTx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
+			ContentDao contentDao = tx.contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			HibNodeFieldContainer latestDraftVersion = nodeDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()

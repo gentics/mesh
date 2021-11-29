@@ -3,8 +3,15 @@ package com.gentics.mesh.core.data.branch;
 import static com.gentics.mesh.ElementType.BRANCH;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -12,9 +19,11 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibReferenceableElement;
-import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -22,13 +31,21 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.HibUserTracking;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -38,7 +55,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * Domain model for branch.
  */
-public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferenceableElement<BranchReference>, HibUserTracking, HibNamedElement {
+public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferenceableElement<BranchReference>, HibUserTracking, HibNamedElement, Taggable {
 
 	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 
@@ -46,32 +63,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
 	}
-
-	/**
-	 * Return the branch name.
-	 * 
-	 * @return
-	 */
-	String getName();
-
-	/**
-	 * Set branch name.
-	 * 
-	 * @param string
-	 */
-	void setName(String string);
-
-	/**
-	 * Return the creator of the branch.
-	 */
-	HibUser getCreator();
-
-	/**
-	 * Return the project.
-	 * 
-	 * @return
-	 */
-	HibProject getProject();
 
 	/**
 	 * Get whether the branch is active.
@@ -165,6 +156,13 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	HibBranch setLatest();
 
 	/**
+	 * Make the branch the initial branch of the project
+	 * 
+	 * @return
+	 */
+	HibBranch setInitial();
+
+	/**
 	 * Get the next Branch.
 	 * 
 	 * @return next Branch
@@ -186,16 +184,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	 * @return previous Branch
 	 */
 	HibBranch getPreviousBranch();
-
-	/**
-	 * Assign the given schema version to the branch and queue a job which will trigger the migration.
-	 * 
-	 * @param user
-	 * @param schemaVersion
-	 * @param batch
-	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
-	 */
-	HibJob assignSchemaVersion(HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.
@@ -229,17 +217,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	 * @return
 	 */
 	Result<? extends HibSchemaVersion> findAllSchemaVersions();
-
-	/**
-	 * Assign the given microschema version to the branch and queue a job which executes the migration.
-	 * 
-	 * @param user
-	 * 
-	 * @param microschemaVersion
-	 * @param batch
-	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
-	 */
-	HibJob assignMicroschemaVersion(HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
@@ -282,7 +259,7 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	Result<? extends HibBranchMicroschemaVersion> findAllLatestMicroschemaVersionEdges();
 
 	/**
-	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link HibNodeFieldContainer}'s or one which
+	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
 	 * is queued and will soon contain containers due to an executed node migration.
 	 * 
 	 * @return Iterable
@@ -298,49 +275,12 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	Iterable<? extends HibMicroschemaVersion> findActiveMicroschemaVersions();
 
 	/**
-	 * Get an iterable of all latest schema container versions.
-	 * 
-	 * @return Iterable
-	 */
-	Iterable<? extends HibBranchSchemaVersion> findAllLatestSchemaVersionEdges();
-
-	/**
 	 * Assign the branch to a specific project.
 	 * 
 	 * @param project
 	 * @return Fluent API
 	 */
 	HibBranch setProject(HibProject project);
-
-	/**
-	 * Return all schema versions which are linked to the branch.
-	 * 
-	 * @return
-	 */
-	Result<? extends HibBranchSchemaVersion> findAllSchemaVersionEdges();
-
-	/**
-	 * Return all microschema versions which are linked to the branch.
-	 * 
-	 * @return
-	 */
-	Result<? extends HibBranchMicroschemaVersion> findAllMicroschemaVersionEdges();
-
-	/**
-	 * Find the branch schema edge for the given version.
-	 * 
-	 * @param schemaVersion
-	 * @return Found edge between branch and version
-	 */
-	HibBranchSchemaVersion findBranchSchemaEdge(HibSchemaVersion schemaVersion);
-
-	/**
-	 * Find the branch microschema edge for the given version.
-	 * 
-	 * @param microschemaVersion
-	 * @return Found edge between branch and version
-	 */
-	HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion);
 
 	/**
 	 * Find the latest schema version which is assigned to the branch which matches the provided schema container
@@ -402,51 +342,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	boolean hasTag(HibTag tag);
 
 	/**
-	 * Handle the update tags request.
-	 *
-	 * @param ac
-	 * @param batch
-	 * @return Page which includes the new set of tags
-	 */
-	Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Generate event which is send when the branch is set to be the latest of the project.
-	 *
-	 * @return
-	 */
-	ProjectBranchEventModel onSetLatest();
-
-	/**
-	 * Generate a tagging event for the branch.
-	 *
-	 * @param tag
-	 * @param assignment
-	 * @return
-	 */
-	BranchTaggedEventModel onTagged(HibTag tag, Assignment assignment);
-
-	/**
-	 * Create a project schema assignment event.
-	 *
-	 * @param schemaVersion
-	 * @param assigned
-	 * @param status
-	 * @return
-	 */
-	BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status);
-
-	/**
-	 * Create a project microschema assignment event.
-	 *
-	 * @param microschemaVersion
-	 * @param assigned
-	 * @param status
-	 * @return
-	 */
-	BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned, JobStatus status);
-
-	/**
 	 * Load the tag with the given uuid that was used to tag the branch.
 	 *
 	 * @param uuid
@@ -455,11 +350,41 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	HibTag findTagByUuid(String uuid);
 
 	/**
-	 * Transform the branch into a reference.
+	 * Get an iterable of all latest schema container versions.
+	 * 
+	 * @return Iterable
+	 */
+	Iterable<? extends HibBranchSchemaVersion> findAllLatestSchemaVersionEdges();
+
+	/**
+	 * Return all schema versions which are linked to the branch.
 	 * 
 	 * @return
 	 */
-	BranchReference transformToReference();
+	Result<? extends HibBranchSchemaVersion> findAllSchemaVersionEdges();
+
+	/**
+	 * Return all microschema versions which are linked to the branch.
+	 * 
+	 * @return
+	 */
+	Result<? extends HibBranchMicroschemaVersion> findAllMicroschemaVersionEdges();
+
+	/**
+	 * Find the branch schema edge for the given version.
+	 * 
+	 * @param schemaVersion
+	 * @return Found edge between branch and version
+	 */
+	HibBranchSchemaVersion findBranchSchemaEdge(HibSchemaVersion schemaVersion);
+
+	/**
+	 * Find the branch microschema edge for the given version.
+	 * 
+	 * @param microschemaVersion
+	 * @return Found edge between branch and version
+	 */
+	HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion);
 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
@@ -469,5 +394,149 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	@Override
 	default String getSubETag(InternalActionContext ac) {
 		return String.valueOf(getLastEditedTimestamp());
+	}
+
+	/**
+	 * Create a generic container assignment event.
+	 * 
+	 * @param <E> branch assignment model type
+	 * @param <R> REST model type
+	 * @param <RM> version model type
+	 * @param <RE> schema model reference type
+	 * @param <SC> entity type
+	 * @param <SCV> entity version model type
+	 * @param schemaVersion
+	 * @param assigned
+	 * @param status
+	 * @param modelSupplier
+	 * @return
+	 */
+	default <
+			E extends AbstractBranchAssignEventModel<RE>,
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
+	> E onContainerAssignEvent(SCV schemaVersion, Assignment assigned, JobStatus status, Supplier<E> modelSupplier) {
+		E model = modelSupplier.get();
+		model.setOrigin(Tx.get().data().options().getNodeName());
+		switch (assigned) {
+		case ASSIGNED:
+			model.setEvent(schemaVersion.getBranchAssignEvent());
+			break;
+		case UNASSIGNED:
+			model.setEvent(schemaVersion.getBranchUnassignEvent());
+			break;
+		}
+		model.setSchema(schemaVersion.transformToReference());
+		model.setStatus(status);
+		model.setBranch(transformToReference());
+		model.setProject(getProject().transformToReference());
+		return model;
+	}
+
+	/**
+	 * Create a project schema assignment event.
+	 *
+	 * @param schemaVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	default BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status) {  
+		return onContainerAssignEvent(schemaVersion, assigned, status, BranchSchemaAssignEventModel::new);
+	}
+
+	/**
+	 * Create a project microschema assignment event.
+	 *
+	 * @param microschemaVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	default BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned,
+		JobStatus status) {
+		return onContainerAssignEvent(microschemaVersion, assigned, status, BranchMicroschemaAssignModel::new);
+	}
+
+	/**
+	 * Handle the update tags request.
+	 *
+	 * @param ac
+	 * @param batch
+	 * @return Page which includes the new set of tags
+	 */
+	default Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+		List<HibTag> tags = getTagsToSet(ac, batch);
+		// TODO Rework this code. We should only add the needed tags and don't dispatch all events.
+		removeAllTags();
+		tags.forEach(tag -> {
+			batch.add(onTagged(tag, ASSIGNED));
+			addTag(tag);
+		});
+		return getTags(ac.getUser(), ac.getPagingParameters());
+	}
+
+	/**
+	 * Generate event which is send when the branch is set to be the latest of the project.
+	 *
+	 * @return
+	 */
+	default ProjectBranchEventModel onSetLatest() {
+		ProjectBranchEventModel model = new ProjectBranchEventModel();
+		model.setEvent(PROJECT_LATEST_BRANCH_UPDATED);
+
+		// .project
+		HibProject project = getProject();
+		ProjectReference reference = project.transformToReference();
+		model.setProject(reference);
+
+		fillEventInfo(model);
+		return model;
+	}
+
+	/**
+	 * Generate a tagging event for the branch.
+	 *
+	 * @param tag
+	 * @param assignment
+	 * @return
+	 */
+	default BranchTaggedEventModel onTagged(HibTag tag, Assignment assignment) {
+		BranchTaggedEventModel model = new BranchTaggedEventModel();
+		model.setTag(tag.transformToReference());
+		model.setBranch(transformToReference());
+		model.setProject(getProject().transformToReference());
+		switch (assignment) {
+		case ASSIGNED:
+			model.setEvent(BRANCH_TAGGED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(BRANCH_UNTAGGED);
+			break;
+		}
+
+		return model;
+	}
+
+	@Override
+	default BranchMeshEventModel onCreated() {
+		return createEvent(getTypeInfo().getOnCreated());
+	}
+
+	@Override
+	default BranchMeshEventModel createEvent(MeshEvent event) {
+		BranchMeshEventModel model = new BranchMeshEventModel();
+		model.setEvent(event);
+		fillEventInfo(model);
+
+		// .project
+		HibProject project = getProject();
+		ProjectReference reference = project.transformToReference();
+		model.setProject(reference);
+
+		return model;
 	}
 }

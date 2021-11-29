@@ -40,7 +40,7 @@ public class RunnerNodeA {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions("-" + MeshCLI.INIT_CLUSTER);
+		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, "-" + MeshCLI.INIT_CLUSTER);
 		options.getStorageOptions().setDirectory(basePath + "/graph");
 		// options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");

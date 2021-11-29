@@ -2,6 +2,7 @@ package com.gentics.mesh.distributed.coordinatortoken;
 
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.distributed.AbstractClusterTest.createDefaultMeshContainer;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -17,7 +18,7 @@ public class ClusterCoordinatorTokenTest extends AbstractClusterCoordinatorToken
 	private static String clusterPostFix = randomUUID();
 	private static String coordinatorRegex = "nodeA";
 
-	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverA = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -29,7 +30,7 @@ public class ClusterCoordinatorTokenTest extends AbstractClusterCoordinatorToken
 		.waitForStartup()
 		.withClearFolders();
 
-	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverB = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())

@@ -37,6 +37,10 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tests-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-client</artifactId>
 		</dependency>
 
