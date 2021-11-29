@@ -227,6 +227,10 @@ public class TestDataProvider {
 
 		HibRole role = userInfo.getRole();
 		for (HibBaseElement meshVertex : elements) {
+			if (Mockito.mockingDetails(meshVertex).isMock()) {
+				// to make the setup work for enterprise, we are temporarily using mocks for unimplemented entities
+				continue;
+			}
 			if (log.isTraceEnabled()) {
 				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
 			}
@@ -367,6 +371,7 @@ public class TestDataProvider {
 		group.setCreationTimestamp();
 		group.setEditor(user);
 		group.setLastEditedTimestamp();
+		userDao.addGroup(user, group);
 		groups.put(groupName, group);
 
 		String roleName = username + "_role";
