@@ -25,7 +25,7 @@ import io.vertx.core.json.JsonObject;
 public class AuthenticationOptions implements Option {
 
 	public static final String DEFAULT_ALGORITHM = "HS256";
-	public static final String DEFAULT_ISSUER = "Gentics Mesh";
+	public static final String DEFAULT_ISSUER = null;//"Gentics Mesh";
 
 	public static final int DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; // 1 hour
 	public static final int DEFAULT_LEEWAY = 0;
@@ -80,7 +80,7 @@ public class AuthenticationOptions implements Option {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The expected audience of the JWT.")
 	@EnvironmentVariable(name = MESH_AUTH_JWT_AUDIENCE_ENV, description = "Override the configured audience of the JWT.")
-	private List<String> audience = new ArrayList<>();
+	private List<String> audience = null;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("If expired JWT should still be accepted and processed.")

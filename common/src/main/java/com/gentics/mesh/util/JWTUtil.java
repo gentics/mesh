@@ -8,9 +8,11 @@ public class JWTUtil {
 	
 	public static JWTOptions createJWTOptions(AuthenticationOptions options) {
 		return new JWTOptions()
+			.setAlgorithm(options.getAlgorithm())
 			.setLeeway(options.getLeeway())
 			.setIssuer(options.getIssuer())
 			.setAudience(options.getAudience())
-			.setIgnoreExpiration(options.isIgnoreExpiration());
+			.setIgnoreExpiration(options.isIgnoreExpiration())
+			.setExpiresInSeconds(options.getTokenExpirationTime());
 	}
 }

@@ -3,12 +3,17 @@ package com.gentics.mesh.core.user;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.function.Consumer;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.User;
@@ -23,9 +28,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = PROJECT, startServer = true)
@@ -54,6 +56,9 @@ public class JWTConfigurationTest extends AbstractMeshTest {
 	@Test
 	public void testJWTPayload() throws IOException {
 		try (Tx tx = tx()) {
+			MeshOptions options = this.options();
+			this.optionChanger.accept(options);
+
 			User user = user();
 			String username = user.getUsername();
 
@@ -72,11 +77,12 @@ public class JWTConfigurationTest extends AbstractMeshTest {
 			assertNotNull(token);
 
 			JsonObject payload = new JsonObject(new String(Base64.getDecoder().decode(token.split("\\.")[1])));
-			MeshOptions options = this.options();
-			this.optionChanger.accept(options);
-
-			assertEquals(payload.getString("iss"), options.getAuthenticationOptions().getIssuer());
-			assertEquals(payload.getJsonArray("aud"), new JsonArray(options.getAuthenticationOptions().getAudience()));
+			assertEquals(options.getAuthenticationOptions().getIssuer(), payload.getString("iss"));
+			if (options.getAuthenticationOptions().getAudience() != null) {
+				assertEquals(new JsonArray(options.getAuthenticationOptions().getAudience()), payload.getJsonArray("aud"));
+			} else {
+				assertNull(payload.getJsonArray("aud"));
+			}
 		}
 	}
 }
