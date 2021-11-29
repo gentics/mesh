@@ -1,7 +1,7 @@
 #!/bin/sh
 
 file=mesh.live
-maxage=60
+maxage=20
 
 if [ ! -r $file ]
     then
