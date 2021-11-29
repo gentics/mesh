@@ -32,6 +32,7 @@ public class ElasticSearchOptions implements Option {
 	public static final int DEFAULT_RETRY_INTERVAL = 5000;
 	public static final int DEFAULT_RETRY_LIMIT = 3;
 	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
+	public static final long DEFAULT_WAIT_FOR_IDLE_TIMEOUT = 60_000L;
 	public static final boolean DEFAULT_INCLUDE_BINARY_FIELDS = true;
 	public static final MappingMode DEFAULT_MAPPING_MODE = MappingMode.DYNAMIC;
 	public static final ComplianceMode DEFAULT_COMPLIANCE_MODE = ComplianceMode.ES_6;
@@ -63,6 +64,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
 	public static final String MESH_ELASTICSEARCH_RETRY_LIMIT_ENV = "MESH_ELASTICSEARCH_RETRY_LIMIT";
 	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
+	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_TIMEOUT_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE_TIMEOUT";
 	public static final String MESH_ELASTICSEARCH_MAPPING_MODE_ENV = "MESH_ELASTICSEARCH_MAPPING_MODE";
 	public static final String MESH_ELASTICSEARCH_COMPLIANCE_MODE_ENV = "MESH_ELASTICSEARCH_COMPLIANCE_MODE";
 	public static final String MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV = "MESH_ELASTICSEARCH_SYNC_BATCH_SIZE";
@@ -173,6 +175,11 @@ public class ElasticSearchOptions implements Option {
 		+ DEFAULT_WAIT_FOR_IDLE)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV, description = "Override the search idle wait flag.")
 	private boolean waitForIdle = DEFAULT_WAIT_FOR_IDLE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Timeout in ms for waiting until elasticsearch is idle. Default: " + DEFAULT_WAIT_FOR_IDLE_TIMEOUT + "ms")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_WAIT_FOR_IDLE_TIMEOUT_ENV, description = "Override the search idle wait timeout.")
+	private long waitForIdleTimeout = DEFAULT_WAIT_FOR_IDLE_TIMEOUT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("If true, the content and metadata of binary fields will be included in the search index. Default: "
@@ -401,6 +408,15 @@ public class ElasticSearchOptions implements Option {
 
 	public ElasticSearchOptions setWaitForIdle(boolean waitForIdle) {
 		this.waitForIdle = waitForIdle;
+		return this;
+	}
+
+	public long getWaitForIdleTimeout() {
+		return waitForIdleTimeout;
+	}
+
+	public ElasticSearchOptions setWaitForIdleTimeout(long waitForIdleTimeout) {
+		this.waitForIdleTimeout = waitForIdleTimeout;
 		return this;
 	}
 

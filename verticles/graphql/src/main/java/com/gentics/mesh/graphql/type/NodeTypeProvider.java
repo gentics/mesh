@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -70,6 +71,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
+import io.reactivex.Completable;
 
 /**
  * Type provider for the node type. Internally this will map partially to {@link Node} and {@link NodeGraphFieldContainer} vertices.
@@ -627,7 +629,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		try {
 			// Wait for the search to be resolved before attempting to load from it
 			if (this.waitUtil.delayRequested(gc)) {
-				this.waitUtil.awaitSync(gc).blockingAwait();
+				if (!this.waitUtil.awaitSync(gc).blockingAwait(this.waitUtil.waitTimeoutMs(), TimeUnit.MILLISECONDS)) {
+					throw new TimeoutException("Timeout after " + this.waitUtil.waitTimeoutMs()
+							+ " ms while waiting for elasticsearch to become idle.");
+				}
 			}
 
 			return nodeSearchHandler.handleContainerSearch(gc, query, pagingInfo, type, READ_PERM, READ_PUBLISHED_PERM);
@@ -649,7 +654,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		try {
 			// Wait for the search to be resolved before attempting to load from it
 			if (this.waitUtil.delayRequested(gc)) {
-				this.waitUtil.awaitSync(gc).blockingAwait();
+				if (!this.waitUtil.awaitSync(gc).blockingAwait(this.waitUtil.waitTimeoutMs(), TimeUnit.MILLISECONDS)) {
+					throw new TimeoutException("Timeout after " + this.waitUtil.waitTimeoutMs()
+							+ " ms while waiting for elasticsearch to become idle.");
+				}
 			}
 
 			return nodeSearchHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);

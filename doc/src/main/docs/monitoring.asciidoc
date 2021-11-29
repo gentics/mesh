@@ -189,6 +189,27 @@ More metrics will be added over time.
 | `mesh_storage_disk_usable`
 | Usable (free) disk size in bytes for the storage.
 
+| `mesh_index_requests_open`
+| Number of currently open indexing requests
+
+| `mesh_index_transformations_open`
+| Number of currently open indexing transformations
+
+| `mesh_search_idle`
+| 1 if the indexer is idle, 0 if the indexer is busy.
+
+| `mesh_index_buffered_events`
+| Number of currently buffered events
+
+| `mesh_search_requests_waiting`
+| Number of currently waiting search requests
+
+| `mesh_search_requests_wait_time`
+| Waiting time for requests before the search became idle
+
+| `mesh_index_store`
+| Number of currently open document store requests
+
 |======
 
 

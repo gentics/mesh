@@ -21,6 +21,12 @@ public interface SearchWaitUtil {
 	boolean delayRequested(ParameterProviderContext ppc);
 
 	/**
+	 * Get the wait timeout in ms
+	 * @return wait timeout
+	 */
+	long waitTimeoutMs();
+
+	/**
 	 * The actual implementation which waits until elasticsearch is stable/done synchronizing.
 	 *
 	 * @return A Completable which resolves once elasticsearch is ready.

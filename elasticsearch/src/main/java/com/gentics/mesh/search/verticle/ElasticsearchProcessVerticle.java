@@ -28,6 +28,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.metric.SearchRequestMetric;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.ElasticsearchResponseErrorStreamable;
 import com.gentics.mesh.search.verticle.bulk.BulkOperator;
@@ -70,6 +72,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private final SyncEventHandler syncEventHandler;
 	private final ElasticSearchOptions options;
 	private final RequestDelegator delegator;
+	private final MetricsService metrics;
 	private final String nodeName;
 	private final boolean clusteringEnabled;
 
@@ -86,13 +89,15 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 										IdleChecker idleChecker,
 										SyncEventHandler syncEventHandler,
 										MeshOptions options,
-										RequestDelegator delegator) {
+										RequestDelegator delegator,
+										MetricsService metrics) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
 		this.idleChecker = idleChecker;
 		this.syncEventHandler = syncEventHandler;
 		this.options = options.getSearchOptions();
 		this.delegator = delegator;
+		this.metrics = metrics;
 		this.nodeName = options.getNodeName();
 		this.clusteringEnabled = options.getClusterOptions().isEnabled();
 	}
@@ -231,6 +236,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 */
 	private <T> Flowable<T> bufferEvents(Flowable<T> upstream) {
 		AtomicInteger bufferedEvents = new AtomicInteger(0);
+
+		if (metrics != null && metrics.isEnabled()) {
+			metrics.getMetricRegistry().gauge(SearchRequestMetric.BUFFERED.key(), bufferedEvents);
+		}
+
 		return upstream
 			.doOnNext(request -> {
 				bufferedEvents.incrementAndGet();

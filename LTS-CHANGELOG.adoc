@@ -37,6 +37,10 @@ icon:check[] Server: Liveness-Check script `live.sh` will now fail if the `mesh.
 
 icon:plus[] Docker-Image: The base image has been changed from JRE to JDK to include more tools for analyzing (e.g. creating heap-dumps). The base image has been updated to a newer JDK minor version (`11.0.12`)
 
+icon:check[] Search: Search requests or graphQl requests containing a search, which should wait until the search (indexing) is idle, will not wait for ever, but will
+only wait until either the indexing becomes idle or a timeout occurs. The timeout can be configured with the setting `search.waitForIdleTimeout`, which defaults to 60_000 ms.
+Additionally, some metrics have been added for monitoring of indexing and search. See link:{{< relref "monitoring.asciidoc" >}#metrics[Monitoring Metrics] for details.
+
 [[v1.6.23]]
 == 1.6.23 (11.11.2021 - Unreleased)
 
