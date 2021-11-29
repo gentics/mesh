@@ -213,8 +213,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			JsonObject tokenData = new JsonObject();
 			String uuid = db.tx(((MeshAuthUser) user).getDelegate()::getUuid);
 			tokenData.put(USERID_FIELD_NAME, uuid);
-			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
-				.setExpiresInSeconds(options.getTokenExpirationTime());
+			JWTOptions jwtOptions = JWTUtil.createJWTOptions(options);
 			return jwtProvider.generateToken(tokenData, jwtOptions);
 		} else {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
@@ -236,7 +235,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		JsonObject tokenData = new JsonObject()
 			.put(USERID_FIELD_NAME, user.getUuid())
 			.put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
-		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm());
+		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
+				.setAudience(options.getAudience()).setIssuer(options.getIssuer());
 		if (expireDuration != null) {
 			jwtOptions.setExpiresInMinutes(expireDuration);
 		}
