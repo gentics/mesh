@@ -52,8 +52,6 @@ import com.gentics.mesh.search.SearchMappingsCache;
 import com.gentics.mesh.search.impl.SearchMappingsCacheImpl;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.BucketManagerImpl;
-import com.gentics.mesh.search.index.common.DropIndexHandler;
-import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.storage.S3BinaryStorage;
@@ -64,9 +62,6 @@ import dagger.Module;
 
 @Module
 public abstract class BindModule {
-
-	@Binds
-	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
 
 	@Binds
 	abstract BootstrapInitializer bindBoot(BootstrapInitializerImpl e);

@@ -1,16 +1,15 @@
 package com.gentics.mesh.search;
 
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Set;
+
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.
@@ -101,16 +100,6 @@ public interface SearchProvider {
 
 	/**
 	 * Process the bulk request.
-	 * 
-	 * @param entries
-	 * @return
-	 */
-	@Deprecated
-	Completable processBulkOld(List<? extends BulkEntry> entries);
-
-
-	/**
-	 * Process the bulk request.
 	 *
 	 * @param entries
 	 * @return
@@ -192,9 +181,10 @@ public interface SearchProvider {
 	/**
 	 * Returns the version of the used search engine.
 	 * 
+	 * @param failIfNotAvailable whether the method should fail (with an "internal server error"), if the search engine is not available, or just return null
 	 * @return
 	 */
-	String getVersion();
+	String getVersion(boolean failIfNotAvailable);
 
 	/**
 	 * Initialize and start the search provider.
@@ -274,6 +264,17 @@ public interface SearchProvider {
 	 * @return completable
 	 */
 	default Completable check(IndexInfo info) {
+		return Completable.complete();
+	}
+
+	/**
+	 * Re-index documents from the source index to the dest index. 
+	 * @param source source index name (without installation prefix)
+	 * @param dest destination index name (without installation prefix)
+	 * @param query query for restricting the documents, which should be reindexed
+	 * @return completable
+	 */
+	default Completable reIndex(String source, String dest, JsonObject query) {
 		return Completable.complete();
 	}
 }

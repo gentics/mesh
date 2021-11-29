@@ -142,7 +142,9 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 					.onErrorResumeNext(e -> {
 						// try to create new bucket if bucket cannot be found
 						if (e instanceof CompletionException && e.getCause() != null && e.getCause() instanceof NoSuchBucketException) {
-							CreateBucketRequest bucketCreationRequest = CreateBucketRequest.builder().bucket(bucketName).build();
+							CreateBucketRequest bucketCreationRequest = CreateBucketRequest.builder()
+									.bucket(bucketName)
+									.build();
 							return SingleInterop.fromFuture(client.createBucket(bucketCreationRequest)).map(r -> r != null);
 						} else {
 							return Single.error(e);
@@ -311,10 +313,28 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 
 	// TODO parameterize CORS rules
 	private Single<Boolean> assignCorsToBucket(String bucketName) {
-		CORSRule corsRule = CORSRule.builder().allowedHeaders("*").allowedMethods("GET", "PUT", "POST", "DELETE")
-				.allowedOrigins("*").build();
-		CORSConfiguration corsConfiguration = CORSConfiguration.builder().corsRules(corsRule).build();
+		List<String> corsAllowedHeaders = s3Options.getCorsAllowedHeaders();
+		List<String> corsAllowedOrigins = s3Options.getCorsAllowedOrigins();
+		List<String> corsAllowedMethods = s3Options.getCorsAllowedMethods();
 
+		if ((corsAllowedHeaders == null || corsAllowedHeaders.size() < 1)
+				&& (corsAllowedOrigins == null || corsAllowedOrigins.size() < 1)
+				&& (corsAllowedMethods == null || corsAllowedMethods.size() < 1)) {
+			log.info("Skipping AWS CORS setup due to the missing configuration");
+			return Single.just(true);
+		}
+
+		CORSRule.Builder corsRule = CORSRule.builder();
+		if (corsAllowedOrigins != null) {
+			corsRule.allowedOrigins(corsAllowedOrigins);
+		}
+		if (corsAllowedHeaders != null) {
+			corsRule.allowedHeaders(corsAllowedHeaders);
+		}
+		if (corsAllowedMethods != null) {
+			corsRule.allowedMethods(corsAllowedMethods);
+		}
+		CORSConfiguration corsConfiguration = CORSConfiguration.builder().corsRules(corsRule.build()).build();
 		PutBucketCorsRequest putBucketCorsRequest = PutBucketCorsRequest.builder().bucket(bucketName)
 				.corsConfiguration(corsConfiguration).build();
 		return SingleInterop.fromFuture(client.putBucketCors(putBucketCorsRequest)).map(r -> r != null);

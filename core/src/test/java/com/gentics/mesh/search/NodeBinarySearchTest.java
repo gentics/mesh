@@ -72,9 +72,6 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		waitForJob(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
 		});
-		waitForJob(() -> {
-			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		});
 
 		// .rtf with lorem text
 		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
@@ -90,7 +87,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-				schemaVersionUuid, ContainerType.DRAFT);
+				schemaVersionUuid, ContainerType.DRAFT, nodeA.getSchemaContainer().getLatestVersion().getMicroschemaVersionHash(initialBranch()));
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertEquals("Lorem ipsum dolor sit amet",
@@ -167,7 +164,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
+				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertEquals("Lorem ipsum dolor sit amet",

@@ -260,6 +260,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	}
 
 	private Completable assertReadOnlyDeactivated() {
+		if (db.isReadOnly(true)) {
+			return Completable.error(error(METHOD_NOT_ALLOWED, "error_readonly_mode_oauth"));
+		}
 		return localConfigApi.getActiveConfig()
 			.flatMapCompletable(config -> {
 				if (config.isReadOnly()) {

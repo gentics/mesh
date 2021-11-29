@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.6.23-SNAPSHOT</version>
+	<version>1.6.24-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>

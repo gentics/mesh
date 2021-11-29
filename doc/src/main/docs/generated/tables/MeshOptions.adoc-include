@@ -227,6 +227,21 @@
 | int
 | The timeout for joining the graphdb cluster in milliseconds. This also includes the time it takes to synchronize the graphdb over the network.
 
+| diskQuota.checkInterval
+| false
+| int
+| Check interval in ms. Setting this to 0 will disable the disk quota check. Default: 10000
+
+| diskQuota.warnThreshold
+| false
+| string
+| Threshold for the disk quota warn level. This can be set either as percentage (e.g. 15%) or as absolute disk space (e.g. 10G). If less than the defined disk space is available, warnings will be logged. Default: 15%
+
+| diskQuota.readOnlyThreshold
+| false
+| string
+| Threshold for the disk quota ready only level. This can be set either as percentage (e.g. 10%) or as absolute disk space (e.g. 5G). If less than the defined disk space is available, Mesh will automatically be set to readonly. Default: 10%
+
 | searchOptions.url
 | false
 | string
@@ -451,6 +466,21 @@
 | false
 | string
 | AWS S3 region for transformed / resized images
+
+| s3options.corsAllowedHeaders
+| false
+| list
+| AWS S3 setting for allowed headers for Cross-Origin Resource Sharing. Setting this to null will force default server values.
+
+| s3options.corsAllowedOrigins
+| false
+| list
+| AWS S3 setting for allowed origins for Cross-Origin Resource Sharing. Setting this to null will force default server values.
+
+| s3options.corsAllowedMethods
+| false
+| list
+| AWS S3 setting for allowed methods for Cross-Origin Resource Sharing. Setting this to null will force default server values.
 
 | authenticationOptions.tokenExpirationTime
 | true

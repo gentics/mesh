@@ -474,6 +474,9 @@ public class MeshTestContext extends TestWatcher {
 		// disable periodic index check
 		meshOptions.getSearchOptions().setIndexCheckInterval(0);
 
+		// disable periodic disk quota check
+		meshOptions.getStorageOptions().getDiskQuotaOptions().setCheckInterval(0);
+
 		// Clustering options
 		if (settings.clusterMode()) {
 			meshOptions.getClusterOptions().setEnabled(true);
@@ -612,11 +615,14 @@ public class MeshTestContext extends TestWatcher {
 			case AWS:
 				break;
 			case MINIO:
-				AWSContainer awsContainer = new AWSContainer(
-						new AWSContainer.CredentialsProvider("accessKey", "secretKey"));
-				awsContainer.start();
 				String ACCESS_KEY = "accessKey";
 				String SECRET_KEY = "secretKey";
+				AWSContainer awsContainer = new AWSContainer(
+						new AWSContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY));
+				awsContainer.start();
+				s3Options.setCorsAllowedOrigins(null);
+				s3Options.setCorsAllowedHeaders(null);
+				s3Options.setCorsAllowedMethods(null);
 				s3Options.setEnabled(true);
 				s3Options.setAccessKeyId(ACCESS_KEY);
 				s3Options.setBucket("test-bucket");

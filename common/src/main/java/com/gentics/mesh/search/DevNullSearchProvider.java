@@ -1,6 +1,9 @@
 package com.gentics.mesh.search;
 
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -9,11 +12,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Search provider which will accept any action without actually doing anything.
@@ -81,11 +79,6 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable processBulkOld(List<? extends BulkEntry> entries) {
-		return Completable.complete();
-	}
-
-	@Override
 	public Completable storeDocument(String index, String uuid, JsonObject document) {
 		return Completable.complete();
 	}
@@ -123,7 +116,7 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public String getVersion() {
+	public String getVersion(boolean failIfNotAvailable) {
 		return "1.0";
 	}
 
