@@ -228,7 +228,8 @@ public class TestDataProvider {
 		HibRole role = userInfo.getRole();
 		for (HibBaseElement meshVertex : elements) {
 			if (Mockito.mockingDetails(meshVertex).isMock()) {
-				// to make the setup work for enterprise, we are temporarily using mocks for unimplemented entities
+				// TODO to make the setup work for enterprise, we are temporarily using mocks for unimplemented entities.
+				// Should be considered for removal after Enterprise code is fully settled.
 				continue;
 			}
 			if (log.isTraceEnabled()) {
