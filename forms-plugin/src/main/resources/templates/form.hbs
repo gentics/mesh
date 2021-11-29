@@ -8,7 +8,7 @@
 		--}}
 		{{#unless multipage }}
 			<form method="POST"
-                enctype="multipart/form-data"
+				enctype="multipart/form-data"
 				action="{{pathPrefix}}/api/forms/forms/{{ id }}/data{{#if dataid}}/{{ dataid }}{{/if}}">
 		{{/unless}}
 		{{!-- loop through all form fields and render their template - type == templatename --}}
