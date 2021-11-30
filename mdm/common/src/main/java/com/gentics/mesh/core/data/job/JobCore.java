@@ -11,6 +11,12 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 
 import io.reactivex.Completable;
 
+/**
+ * The core functionality interface for a {@link HibJob}.
+ * 
+ * @author plyhun
+ *
+ */
 public interface JobCore extends HibJob {
 
 	@Override
@@ -60,7 +66,7 @@ public interface JobCore extends HibJob {
 	}
 
 	/**
-	 * Actual implementation of the task which the job executes.
+	 * Actual implementation of the task, executed by a job.
 	 */
 	Completable processTask(Database db);
 }

@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
  * @see WebRootService
  */
 @Singleton
-public class WebRootServiceImpl extends AbstractWebRootFieldService {
+public class WebRootServiceImpl extends AbstractWebRootService {
 
 	@Inject
 	public WebRootServiceImpl(Database database, WebrootPathCache pathStore) {

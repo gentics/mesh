@@ -48,13 +48,6 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject> {
 
 	/**
-	 * Return the tagFamily permission root for the project. This method will create a root when no one could be found.
-	 * 
-	 * @return
-	 */
-	HibBaseElement getTagFamilyPermissionRoot(HibProject project);
-
-	/**
 	 * Return the schema container permission root for the project.
 	 * 
 	 * @return
@@ -67,13 +60,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	 * @return
 	 */
 	HibBaseElement getMicroschemaContainerPermissionRoot(HibProject project);
-
-	/**
-	 * Return the branch permission root of the project. Internally this method will create the root when it has not yet been created.
-	 * 
-	 * @return Branch root element
-	 */
-	HibBaseElement getBranchPermissionRoot(HibProject project);
 
 	/**
 	 * Return the node permission root of the project. Internally this method will create the root when it has not yet been created.
