@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -155,6 +156,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 			.mesh(mesh)
 			.build();
 		provider = (TrackingSearchProviderImpl) meshDagger.searchProvider();
+		mesh.setMeshInternal(meshDagger);
+		((AbstractBootstrapInitializer) meshDagger.boot()).bootstrapMesh(mesh);
 
 		try {
 			Tx tx = mockTx();
