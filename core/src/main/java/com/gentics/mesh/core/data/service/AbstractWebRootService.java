@@ -21,13 +21,13 @@ import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 
-public abstract class AbstractWebRootFieldService implements WebRootService {
+public abstract class AbstractWebRootService implements WebRootService {
 
 	protected final Database database;
 
 	protected final WebrootPathCache pathStore;
 
-	public AbstractWebRootFieldService(Database database, WebrootPathCache pathStore) {
+	public AbstractWebRootService(Database database, WebrootPathCache pathStore) {
 		this.database = database;
 		this.pathStore = pathStore;
 	}

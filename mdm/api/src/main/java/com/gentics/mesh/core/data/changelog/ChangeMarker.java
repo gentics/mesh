@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.changelog;
 import com.gentics.mesh.core.data.HibBaseElement;
 
 /**
- * Marker vertex which is used to mark the change as executed by storing it in the graph.
+ * Marker element which is used to mark the change as executed by storing it in the DB.
  */
 public interface ChangeMarker extends HibBaseElement {
 
