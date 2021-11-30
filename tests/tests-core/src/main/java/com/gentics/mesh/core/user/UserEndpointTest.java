@@ -29,7 +29,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpHeaders.HOST;
 import static io.vertx.core.http.HttpHeaders.LOCATION;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -42,6 +41,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.db.CommonTx;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -119,11 +120,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 1. Get new token
 		UserResetTokenResponse response = call(() -> client().getUserResetToken(uuid));
-		assertNotNull("The user token code should now be set to a non-null value but it was not.", tx(() -> user().getResetToken()));
-		assertNotNull("The token code issue timestamp should be set.", tx(() -> user().getResetTokenIssueTimestamp()));
+		assertNotNull("The user token code should now be set to a non-null value but it was not.", tx(response::getToken));
+		assertNotNull("The token code issue timestamp should be set.", tx(response::getCreated));
 
 		// 2. Fake an old issue timestamp
-		tx(() -> user().setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60));
+		HibUser user = tx(() -> boot().userDao().findByUuid(uuid));
+		user.setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60);
+		tx(() -> CommonTx.get().userDao().mergeIntoPersisted(user));
 
 		// 2. Logout the current client user
 		client().logout().blockingGet();
@@ -135,7 +138,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			"user_error_provided_token_invalid");
 
 		// 4. Assert that the password was not updated
-		String newHash = tx(() -> user().getPasswordHash());
+		String newHash = tx(() -> boot().userDao().findByUuid(uuid).getPasswordHash());
 		assertEquals("The password hash has not been updated.", oldHash, newHash);
 		assertNull("The token code should have been set to null since it has expired.", tx(() -> user().getResetToken()));
 		assertNull("The token issue timestamp should have been set to null since it has expired", tx(() -> user().getResetTokenIssueTimestamp()));
@@ -170,8 +173,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(uuid, request, new UserParametersImpl(response.getToken())));
 
 		// 4. Assert that the password was updated
-		String newHash = tx(() -> user().getPasswordHash());
-		assertNull("The token code should have been set to null since it is now used up", tx(() -> user().getResetToken()));
+		HibUser updatedUser = boot().userDao().findByUuid(uuid);
+		String newHash = tx(updatedUser::getPasswordHash);
+		assertNull("The token code should have been set to null since it is now used up", tx(updatedUser::getResetToken));
 
 		assertNotEquals("The password hash has not been updated.", oldHash, newHash);
 	}
@@ -260,7 +264,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		UserResetTokenResponse response = call(() -> client().getUserResetToken(uuid));
 		assertThat(response.getToken()).isNotEmpty();
-		String storedToken = tx(() -> user().getResetToken());
+		String storedToken = tx(() -> boot().userDao().findByUuid(uuid).getResetToken());
 		assertEquals("The token that is currently stored did not match up with the returned token by the API", storedToken, response.getToken());
 	}
 
@@ -274,7 +278,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNull("The key was previously not issued.", response.getPreviousIssueDate());
 		assertThat(response.getToken()).isNotEmpty();
 
-		assertNotNull(tx(() -> user().getAPIKeyTokenCode()));
+		assertNotNull(tx(() -> boot().userDao().findByUuid(uuid).getAPIKeyTokenCode()));
 		client().setLogin(null, null);
 		client().setAPIKey(response.getToken());
 
@@ -298,8 +302,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().findUserByUuid(uuid));
 
 		call(() -> client().invalidateAPIToken(uuid));
-		assertNull(tx(() -> user().getAPIKeyTokenCode()));
-		assertNull(tx(() -> user().getAPITokenIssueTimestamp()));
+		assertNull(tx(() -> boot().userDao().findByUuid(uuid).getAPIKeyTokenCode()));
+		assertNull(tx(() -> boot().userDao().findByUuid(uuid).getAPITokenIssueTimestamp()));
 		call(() -> client().findUserByUuid(uuid), UNAUTHORIZED, "error_not_authorized");
 	}
 
@@ -666,7 +670,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse restUser = call(() -> client().updateUser(userUuid, updateRequest));
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			assertNotNull(user().getReferencedNode());
+			assertNotNull(boot().userDao().findByUuid(user().getUuid()).getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
@@ -710,7 +714,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			assertNotNull(user().getReferencedNode());
+			assertNotNull(boot().userDao().findByUuid(user().getUuid()).getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
@@ -1410,9 +1414,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			userDao.addGroup(user, group());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
-			roleDao.grantPermissions(role(), user, UPDATE_PERM);
-			roleDao.grantPermissions(role(), user, CREATE_PERM);
-			roleDao.grantPermissions(role(), user, READ_PERM);
+			HibRole role = tx(() -> boot().roleDao().findByUuid(role().getUuid()));
+			roleDao.grantPermissions(role, user, UPDATE_PERM, CREATE_PERM, READ_PERM);
 			tx.success();
 		}
 
@@ -1439,13 +1442,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
+			HibRole role = roleDao.findByUuid(role().getUuid());
 
 			String name = "extraUser";
 			HibUser extraUser = userDao.create(name, user());
 			userDao.addGroup(extraUser, group());
 			uuid = extraUser.getUuid();
-			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
-			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, extraUser));
+			roleDao.grantPermissions(role, extraUser, DELETE_PERM);
+			assertTrue(roleDao.hasPermission(role, DELETE_PERM, extraUser));
 			HibUser user = userDao.findByUuid(uuid);
 			assertEquals(1, userDao.getGroups(user).count());
 			assertTrue("The user should be enabled", user.isEnabled());
