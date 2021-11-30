@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import java.util.Objects;
-
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -29,26 +27,6 @@ import com.gentics.mesh.event.Assignment;
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
 public interface Project extends MeshCoreVertex<ProjectResponse>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking, HibProject, GraphDBBucketableElement {
-
-	/**
-	 * Compose the index name for the project index.
-	 * 
-	 * @return
-	 */
-	static String composeIndexName() {
-		return "project";
-	}
-
-	/**
-	 * Compose the document id for project index documents.
-	 * 
-	 * @param projectUuid
-	 * @return
-	 */
-	static String composeDocumentId(String projectUuid) {
-		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
-		return projectUuid;
-	}
 
 	/**
 	 * Return the tagFamilyRoot for the project. This method will create a new tag family root when no one could be found.

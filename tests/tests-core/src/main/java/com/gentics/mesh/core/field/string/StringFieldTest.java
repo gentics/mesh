@@ -14,14 +14,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibStringField;
-import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -85,25 +80,14 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	}
 
 	@Test
-	public void testSimpleString() {
-		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphFieldImpl field = new StringGraphFieldImpl("test", container);
-			assertEquals(2, container.getPropertyKeys().size());
-			field.setString("dummyString");
-			assertEquals("dummyString", field.getString());
-		}
-	}
-
-	@Test
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphField testField = container.createString("testField");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibStringField testField = container.createString("testField");
 			testField.setString("this is the string");
 
-			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField,
@@ -115,14 +99,14 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-			StringGraphField stringField = container.createString("stringField");
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibStringField stringField = container.createString("stringField");
 			assertEquals("stringField", stringField.getFieldKey());
 			stringField.setString("dummyString");
 			assertEquals("dummyString", stringField.getString());
-			StringGraphField bogusField1 = container.getString("bogus");
+			HibStringField bogusField1 = container.getString("bogus");
 			assertNull(bogusField1);
-			StringGraphField reloadedStringField = container.getString("stringField");
+			HibStringField reloadedStringField = container.getString("stringField");
 			assertNotNull(reloadedStringField);
 			assertEquals("stringField", reloadedStringField.getFieldKey());
 		}
@@ -132,7 +116,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			String testValue = "test123";
 			HibStringField fieldA = container.createString(STRING_FIELD);
 			HibStringField fieldB = container.createString(STRING_FIELD + "_2");
@@ -146,7 +130,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibStringField fieldA = container.createString(STRING_FIELD);
 			HibStringField fieldB = container.createString(STRING_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -157,7 +141,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			String dummyValue = "test123";
 
 			// rest null - graph null

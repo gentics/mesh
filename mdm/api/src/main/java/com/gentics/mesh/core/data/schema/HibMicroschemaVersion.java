@@ -10,6 +10,9 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -111,6 +114,21 @@ public interface HibMicroschemaVersion
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return null;
+	}
+
+	@Override
+	default MeshEvent getBranchAssignEvent() {
+		return MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+	}
+
+	@Override
+	default MeshEvent getBranchUnassignEvent() {
+		return MeshEvent.MICROSCHEMA_BRANCH_UNASSIGN;
+	}
+
+	@Override
+	default Class<? extends AbstractBranchAssignEventModel<MicroschemaReference>> getBranchAssignEventModelClass() {
+		return BranchMicroschemaAssignModel.class;
 	}
 
 	@Override

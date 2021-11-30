@@ -8,11 +8,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -67,13 +66,14 @@ public class BucketManagerTest extends AbstractMeshTest {
 		int syncBatchSize = 100;
 		options().getSearchOptions().setSyncBatchSize(syncBatchSize);
 		try (Tx tx = tx()) {
-			UserDao userDao = boot().userDao();
+			CommonTx ctx = tx.unwrap();
+			PersistingUserDao userDao = ctx.userDao();
 
 			// Delete all users to get empty set of vertices to work with
 			for (HibUser user : userDao.findAll().list()) {
-				userDao.delete(user, new DummyBulkActionContext());
+				ctx.delete(user, user.getClass());
 			}
-			long userCount = db().count(UserImpl.class);
+			long userCount = ctx.count(userDao.getPersistenceClass());
 			assertEquals(0, userCount);
 
 			// Test bulk manager
@@ -119,14 +119,15 @@ public class BucketManagerTest extends AbstractMeshTest {
 	}
 
 	private long createUsers(int nUsers) {
-		UserDao userDao = Tx.get().userDao();
+		CommonTx ctx = CommonTx.get();
+		PersistingUserDao userDao = ctx.userDao();
 
 		// Create extra users
 		for (int i = 0; i < nUsers; i++) {
 			HibUser user = userDao.create("Anton" + i, user());
 			assertNotNull(user.getBucketId());
 		}
-		long userCount = db().count(UserImpl.class);
+		long userCount = ctx.count(userDao.getPersistenceClass());
 		// 4 = admin, anonymous + two test users
 		assertEquals(nUsers + 4, userCount);
 		return userCount;

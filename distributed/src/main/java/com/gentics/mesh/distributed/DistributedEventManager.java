@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
-import static com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS.ONLINE;
 
 import java.util.Map;
 
@@ -14,13 +13,10 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.graphdb.cluster.TopologyEventBridge;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
-import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -61,7 +57,7 @@ public class DistributedEventManager {
 	}
 
 	/**
-	 * Handle events which were dispatched by the {@link TopologyEventBridge}.
+	 * Handle events which were dispatched by the db-level topology change listener implementation.
 	 */
 	public void registerHandlers() {
 		EventBus eb = vertx.get().eventBus();
@@ -83,13 +79,13 @@ public class DistributedEventManager {
 		});
 
 		// React on project creates
-		eb.consumer(Project.TYPE_INFO.getOnCreated().getAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(HibProject.TYPE_INFO.getOnCreated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project create event");
 			handleClusterTopologyUpdate(handler);
 		});
 
 		// React on project updates
-		eb.consumer(Project.TYPE_INFO.getOnUpdated().getAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(HibProject.TYPE_INFO.getOnUpdated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project update event.");
 			handleClusterTopologyUpdate(handler);
 		});
@@ -98,9 +94,10 @@ public class DistributedEventManager {
 			JsonObject info = handler.body();
 			String node = info.getString("node");
 			String db = info.getString("database");
-			DB_STATUS status = DB_STATUS.valueOf(info.getString("status"));
-			log.info("Received status update from node {" + node + ":" + db + "} - " + status.name());
-			if (ONLINE == status) {
+			String statusText = info.getString("status");
+			boolean online = info.getBoolean("online", false);
+			log.info("Received status update from node {" + node + ":" + db + "} - " + statusText);
+			if (online) {
 				handleClusterTopologyUpdate(handler);
 			}
 		});

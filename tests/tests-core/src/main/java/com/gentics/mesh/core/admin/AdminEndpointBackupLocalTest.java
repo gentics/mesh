@@ -11,9 +11,8 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.parameter.client.BackupParametersImpl;
@@ -33,8 +32,9 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 		assertThat(message).matches("backup_finished");
 
 		// Now produce inconsistency
-		Node bogusNode = tx(tx -> {
-			Node bogus = HibClassConverter.toGraph(tx).getGraph().addFramedVertex(NodeImpl.class);
+		HibNode bogusNode = tx(tx -> {
+			CommonTx ctx = tx.unwrap();
+			HibNode bogus = ctx.create(ctx.nodeDao().getPersistenceClass(project()));
 			bogus.setUuid(UUIDUtil.randomUUID());
 			bogus.setProject(project());
 			return bogus;
@@ -46,7 +46,7 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 		// Remove the node to avoid test consistency check errors
 		tx(tx -> {
-			bogusNode.remove();
+			tx.<CommonTx>unwrap().delete(bogusNode, bogusNode.getClass());
 		});
 	}
 

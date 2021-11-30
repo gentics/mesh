@@ -1,13 +1,10 @@
 package com.gentics.mesh.core.s3binary;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.core.graph.GraphAttribute;
-import com.gentics.mesh.dagger.MeshComponent;
 
 public interface S3BinaryFieldTestHelper {
 
@@ -24,8 +21,6 @@ public interface S3BinaryFieldTestHelper {
 	};
 
 	final DataProvider FILL_BASIC = (container, name) -> {
-		NodeGraphFieldContainer graphContainer = (NodeGraphFieldContainer) container;
-		MeshComponent mesh = graphContainer.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		S3HibBinary s3binary = Tx.get().s3binaries().create(container.getUuid(), container.getUuid() + "/s3", FILENAME).runInExistingTx(Tx.get());
 
 		S3HibBinaryField field = container.createS3Binary(name, s3binary);

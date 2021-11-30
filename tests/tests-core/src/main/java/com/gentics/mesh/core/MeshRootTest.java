@@ -1,6 +1,5 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,11 +28,11 @@ public class MeshRootTest extends AbstractMeshTest {
 			// Valid paths
 			expectSuccess("projects", tx.data().permissionRoots().project());
 			expectSuccess("projects/" + project().getUuid(), project());
-			expectSuccess("projects/" + project().getUuid() + "/schemas", toGraph(project()).getSchemaContainerRoot());
+			expectSuccess("projects/" + project().getUuid() + "/schemas", project().getSchemaPermissionRoot());
 			expectSuccess("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid(), schemaContainer("folder"));
-			expectSuccess("projects/" + project().getUuid() + "/tagFamilies", toGraph(project()).getTagFamilyRoot());
+			expectSuccess("projects/" + project().getUuid() + "/tagFamilies", project().getTagFamilyPermissionRoot());
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), tagFamily("colors"));
-			expectSuccess("projects/" + project().getUuid() + "/nodes", toGraph(project()).getNodeRoot());
+			expectSuccess("projects/" + project().getUuid() + "/nodes", project().getNodePermissionRoot());
 			expectSuccess("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid(), folder("2015"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags", tagFamily("colors"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/" + tag("red").getUuid(),

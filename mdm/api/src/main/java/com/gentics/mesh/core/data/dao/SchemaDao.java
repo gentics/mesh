@@ -1,6 +1,10 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.stream.Stream;
+
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -117,4 +121,27 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @return
 	 */
 	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, HibUser user, ContainerType type);
+
+	/**
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * 
+	 * @param versiSchemaDAOActions schemaActions();
+
+	on
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
+
+	/**
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @param bucket
+	 *            Bucket to limit the selection by
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
 }

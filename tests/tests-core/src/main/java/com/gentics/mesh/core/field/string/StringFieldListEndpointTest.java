@@ -18,7 +18,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -172,7 +171,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			List<String> oldValue;
 			List<String> newValue;
 			try (Tx tx = tx()) {
-				oldValue = getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME);
+				oldValue = getListValues(container::getStringList, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size());
 
 				for (String value : newValue) {
@@ -189,8 +188,8 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(),
 					response.getVersion().toString());
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
-				assertEquals("Check new value", newValue, getListValues(newContainerVersion, StringGraphFieldListImpl.class, FIELD_NAME));
+				assertEquals("Check old value", oldValue, getListValues(container::getStringList, FIELD_NAME));
+				assertEquals("Check new value", newValue, getListValues(newContainerVersion::getStringList, FIELD_NAME));
 				container = newContainerVersion;
 			}
 		}

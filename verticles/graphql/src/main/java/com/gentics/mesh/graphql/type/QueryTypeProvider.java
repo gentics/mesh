@@ -51,7 +51,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -72,7 +71,7 @@ import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
 import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.impl.PathSegmentImpl;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.project.ProjectSearchHandler;
 import com.gentics.mesh.search.index.role.RoleSearchHandler;
@@ -231,7 +230,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				} else {
 					// The node was found, check the permissions.
 					try {
-						return (Node) gc.requiresPerm(node.getRight(), READ_PERM, READ_PUBLISHED_PERM);
+						return (HibNode) gc.requiresPerm(node.getRight(), READ_PERM, READ_PUBLISHED_PERM);
 					} catch (PermissionException e) {
 						error = e;
 					}
@@ -292,7 +291,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			}
 
 			// TODO HIB
-			PathSegmentImpl graphSegment = (PathSegmentImpl) pathResult.getLast();
+			PathSegment graphSegment = pathResult.getLast();
 			HibNodeFieldContainer container = graphSegment.getContainer();
 			HibNode nodeOfContainer = contentDao.getNode(container);
 

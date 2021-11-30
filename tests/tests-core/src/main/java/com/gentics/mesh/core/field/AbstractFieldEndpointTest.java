@@ -5,13 +5,13 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.ListGraphField;
+import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -108,8 +108,8 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 *            field name
 	 * @return values or null
 	 */
-	protected <U, T extends ListGraphField<?, ?, U>> List<U> getListValues(HibNodeFieldContainer container, Class<T> classOfT, String fieldKey) {
-		T field = container.getList(classOfT, fieldKey);
+	protected <U, T extends HibListField<?, ?, U>> List<U> getListValues(Function<String, T> getter, String fieldKey) {
+		T field = getter.apply(fieldKey);
 		return field != null ? field.getValues() : null;
 	}
 

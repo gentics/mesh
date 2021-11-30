@@ -1,14 +1,8 @@
 package com.gentics.mesh.core.data.node;
 
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-
 import java.util.stream.Stream;
 
-import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -30,13 +24,6 @@ import com.syncleus.ferma.EdgeFrame;
 public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVertex, Taggable, ProjectElement, HibNode, GraphDBBucketableElement {
 
 	String BRANCH_UUID_KEY = "branchUuid";
-
-	static final TypeInfo TYPE_INFO = new TypeInfo(ElementType.NODE, NODE_CREATED, NODE_UPDATED, NODE_DELETED);
-
-	@Override
-	default TypeInfo getTypeInfo() {
-		return TYPE_INFO;
-	}
 
 	@Override
 	default boolean hasPublishPermissions() {

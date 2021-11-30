@@ -1,14 +1,6 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
-
-import java.util.Objects;
-
-import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -28,38 +20,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
 	RootVertex<Tag>, ProjectElement, HibTagFamily, GraphDBBucketableElement {
-
-	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
-
-	/**
-	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.
-	 * 
-	 * @param projectUuid
-	 * @return
-	 */
-	static String composeIndexName(String projectUuid) {
-		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
-		StringBuilder indexName = new StringBuilder();
-		indexName.append("tagfamily");
-		indexName.append("-").append(projectUuid);
-		return indexName.toString();
-	}
-
-	@Override
-	default TypeInfo getTypeInfo() {
-		return TYPE_INFO;
-	}
-
-	/**
-	 * Construct the documentId for tag family index documents.
-	 * 
-	 * @param elementUuid
-	 * @return documentId
-	 */
-	static String composeDocumentId(String elementUuid) {
-		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
-		return elementUuid;
-	}
 
 	/**
 	 * Return the description of the tag family.
@@ -122,5 +82,15 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, Referencea
 	 *            Tag to be removed
 	 */
 	void removeTag(Tag tag);
+
+	/**
+	 * @deprecated Remove after PersistingTag/FamilyDao approached.
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
+	@Deprecated
+	Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 }

@@ -1,15 +1,7 @@
 package com.gentics.mesh.test;
 
-import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
-import static com.gentics.mesh.test.MeshOptionChanger.NO_CHANGE;
-import static com.gentics.mesh.test.TestSize.PROJECT;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
-import com.gentics.mesh.test.context.AWSTestMode;
-
-import static com.gentics.mesh.test.context.AWSTestMode.AWS;
 
 /**
  * 
@@ -22,21 +14,21 @@ public @interface MeshTestSetting {
 	 * 
 	 * @return
 	 */
-	ElasticsearchTestMode elasticsearch() default NONE;
+	ElasticsearchTestMode elasticsearch() default ElasticsearchTestMode.NONE;
 
 	/**
 	 * Flag which indicates whether the AWS docker container should be started.
 	 *
 	 * @return
 	 */
-	AWSTestMode awsContainer() default AWS;
+	AWSTestMode awsContainer() default AWSTestMode.NONE;
 
 	/**
 	 * Setting which indicates what size of test data should be created.
 	 * 
 	 * @return
 	 */
-	TestSize testSize() default PROJECT;
+	TestSize testSize() default TestSize.PROJECT;
 
 	/**
 	 * Flag which indicates whether the mesh http server should be started.
@@ -92,5 +84,5 @@ public @interface MeshTestSetting {
 	 * 
 	 * @return
 	 */
-	MeshOptionChanger optionChanger() default NO_CHANGE;
+	MeshOptionChanger optionChanger() default MeshOptionChanger.NO_CHANGE;
 }

@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -84,7 +83,7 @@ public class TagFamilyEventHandler implements EventHandler {
 				} else {
 					// TODO Update related elements.
 					// At the moment we cannot look up related elements, because the element was already deleted.
-					return Flowable.just(helper.deleteDocumentRequest(TagFamily.composeIndexName(projectUuid), model.getUuid(), complianceMode));
+					return Flowable.just(helper.deleteDocumentRequest(HibTagFamily.composeIndexName(projectUuid), model.getUuid(), complianceMode));
 				}
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);

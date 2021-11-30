@@ -18,14 +18,14 @@ import org.junit.Test;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -51,13 +51,13 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		extraIndices.add("node-blub");
 		extraIndices.add("node-blub2");
 		extraIndices.add(HibUser.composeIndexName() + "2");
-		extraIndices.add(Group.composeIndexName() + "2");
-		extraIndices.add(Role.composeIndexName() + "2");
-		extraIndices.add(TagFamily.composeIndexName(projectUuid()) + "bogus");
+		extraIndices.add(HibGroup.composeIndexName() + "2");
+		extraIndices.add(HibRole.composeIndexName() + "2");
+		extraIndices.add(HibTagFamily.composeIndexName(projectUuid()) + "bogus");
 		extraIndices.add(HibMicroschema.composeIndexName() + "bogus");
-		extraIndices.add(Schema.composeIndexName() + "bogus");
-		extraIndices.add(Schema.composeIndexName() + "bogus");
-		extraIndices.add(Project.composeIndexName() + "bogus");
+		extraIndices.add(HibSchema.composeIndexName() + "bogus");
+		extraIndices.add(HibSchema.composeIndexName() + "bogus");
+		extraIndices.add(HibProject.composeIndexName() + "bogus");
 
 		// 1. Create extra bogus indices
 		for (String idx : extraIndices) {
@@ -83,13 +83,13 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		// Check that all bogus indices have been removed and correct indices remain.
 		List<String> remainingIndices = new ArrayList<>();
 		remainingIndices.add("mesh-" + HibUser.composeIndexName());
-		remainingIndices.add("mesh-" + Group.composeIndexName());
-		remainingIndices.add("mesh-" + Role.composeIndexName());
-		remainingIndices.add("mesh-" + Schema.composeIndexName());
+		remainingIndices.add("mesh-" + HibGroup.composeIndexName());
+		remainingIndices.add("mesh-" + HibRole.composeIndexName());
+		remainingIndices.add("mesh-" + HibSchema.composeIndexName());
 		remainingIndices.add("mesh-" + HibMicroschema.composeIndexName());
-		remainingIndices.add("mesh-" + Project.composeIndexName());
-		remainingIndices.add("mesh-" + TagFamily.composeIndexName(projectUuid()));
-		remainingIndices.add("mesh-" + Tag.composeIndexName(projectUuid()));
+		remainingIndices.add("mesh-" + HibProject.composeIndexName());
+		remainingIndices.add("mesh-" + HibTagFamily.composeIndexName(projectUuid()));
+		remainingIndices.add("mesh-" + HibTag.composeIndexName(projectUuid()));
 		assertThat(indices())
 			.doesNotContainAnyElementsOf(extraIndices)
 			.contains("mesh-different", "thirdparty")
@@ -128,14 +128,14 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		deleteIndex("mesh-user", "mesh-project");
 		// recreate invalid indices for user and project
 		createThirdPartyIndex("mesh-" + HibUser.composeIndexName());
-		createThirdPartyIndex("mesh-" + Project.composeIndexName());
+		createThirdPartyIndex("mesh-" + HibProject.composeIndexName());
 
 		try (ExpectedEvent syncFinished = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, timeout)) {
 			call(() -> client().invokeIndexSync(new IndexMaintenanceParametersImpl().setIndex(index)));
 		}
 
 		// check that the project is not found in index
-		assertDocumentDoesNotExist(Project.composeIndexName(), Project.composeDocumentId(projectUuid()));
+		assertDocumentDoesNotExist(HibProject.composeIndexName(), HibProject.composeDocumentId(projectUuid()));
 		// check that the user is found in index
 		assertDocumentExists(HibUser.composeIndexName(), HibUser.composeDocumentId(userUuid()));
 	}

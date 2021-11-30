@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -75,7 +74,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.dataFetcher((env) -> {
 					ContentDao contentDao = Tx.get().contentDao();
 					GraphQLContext gc = env.getContext();
-					Tag tag = env.getSource();
+					HibTag tag = env.getSource();
 					TagDao tagDao = Tx.get().tagDao();
 
 					List<String> languageTags = getLanguageArgument(env);

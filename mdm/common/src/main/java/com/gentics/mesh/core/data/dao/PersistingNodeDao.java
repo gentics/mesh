@@ -474,7 +474,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			LinkType linkType = ac.getNodeParameters().getResolveLinks();
 
 			// Path
-			WebRootLinkReplacer linkReplacer = CommonTx.get().data().webRootLinkReplacer();
+			WebRootLinkReplacer linkReplacer = CommonTx.get().data().mesh().webRootLinkReplacer();
 			String path = linkReplacer.resolve(ac, branchUuid, type, node.getUuid(), linkType, node.getProject().getName(), true, restNode.getLanguage());
 			restNode.setPath(path);
 
@@ -489,7 +489,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Map<String, String> languagePaths = new HashMap<>();
-		WebRootLinkReplacer linkReplacer = CommonTx.get().data().webRootLinkReplacer();
+		WebRootLinkReplacer linkReplacer = CommonTx.get().data().mesh().webRootLinkReplacer();
 		for (HibNodeFieldContainer currentFieldContainer : node.getFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
 			String currLanguage = currentFieldContainer.getLanguageTag();
 			String languagePath = linkReplacer.resolve(ac, branchUuid, type, node, linkType, true, currLanguage);

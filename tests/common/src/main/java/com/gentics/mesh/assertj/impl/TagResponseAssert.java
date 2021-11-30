@@ -1,6 +1,5 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -15,7 +14,7 @@ public class TagResponseAssert extends AbstractMeshAssert<TagResponseAssert, Tag
 	}
 
 	public TagResponseAssert matches(HibTag tag) {
-		assertGenericNode(toGraph(tag), actual);
+		assertGenericNode(tag, actual);
 		assertEquals(tag.getUuid(), actual.getUuid());
 		return this;
 	}

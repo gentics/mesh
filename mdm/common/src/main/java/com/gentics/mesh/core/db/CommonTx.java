@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.db;
 
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
@@ -65,6 +66,9 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 
 	@Override
 	PersistingSchemaDao schemaDao();
+
+	@Override
+	PersistingContentDao contentDao();
 
 	@Override
 	CommonTxData data();

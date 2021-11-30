@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
@@ -281,7 +280,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 					utils.eventAction(batch -> {
 						tagDao.addTag(node, tag, branch);
 
-						batch.add(toGraph(node).onTagged(tag, branch, ASSIGNED));
+						batch.add(node.onTagged(tag, branch, ASSIGNED));
 					});
 				}
 
@@ -318,7 +317,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				if (tagDao.hasTag(node, tag, branch)) {
 					utils.eventAction(batch -> {
 						tagDao.removeTag(node, tag, branch);
-						batch.add(toGraph(node).onTagged(tag, branch, UNASSIGNED));
+						batch.add(node.onTagged(tag, branch, UNASSIGNED));
 					});
 				} else {
 					if (log.isDebugEnabled()) {

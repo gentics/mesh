@@ -6,7 +6,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.util.StreamUtil;
@@ -178,6 +180,28 @@ public interface HibFieldSchemaVersionElement<
 	 * @return
 	 */
 	Iterable<? extends HibJob> referencedJobsViaFrom();
+
+	/**
+	 * Get an event type to trigger on assigned to a branch.
+	 * 
+	 * @return
+	 */
+	MeshEvent getBranchAssignEvent();
+
+
+	/**
+	 * Get an event type to trigger on unassigned from a branch.
+	 * 
+	 * @return
+	 */
+	MeshEvent getBranchUnassignEvent();
+
+	/**
+	 * Get branch assignment event model class.
+	 * 
+	 * @return
+	 */
+	Class<? extends AbstractBranchAssignEventModel<RE>> getBranchAssignEventModelClass();
 
 	/**
 	 * Transform the element into the matching rest model response synchronously.

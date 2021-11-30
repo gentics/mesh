@@ -29,15 +29,13 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -52,7 +50,7 @@ import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.db.Tx;
@@ -109,7 +107,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	@Override
 	public Class<? extends HibBucketableElement> getElementClass() {
-		return Node.class;
+		return HibNode.class;
 	}
 
 	@Override
@@ -311,17 +309,18 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param bucket
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type,
+	private Map<String, Map<String, HibNodeFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type,
 		Bucket bucket) {
 		return db.tx(tx -> {
-			ContentDao contentDao = tx.contentDao();
-			SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
+			CommonTx ctx = (CommonTx) tx;
+			ContentDao contentDao = ctx.contentDao();
+			PersistingSchemaDao schemaDao = ctx.schemaDao();
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
 			return schemaDao.getFieldContainers(version, branchUuid, bucket)
 				.filter(c -> c.isType(type, branchUuid))
-				.map(NodeGraphFieldContainer.class::cast)
+				.map(HibNodeFieldContainer.class::cast)
 				.collect(Collectors.groupingBy(content -> {
 					String languageTag = content.getLanguageTag();
 					return ContentDao.composeIndexName(
@@ -364,7 +363,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type, Bucket bucket, Optional<Pattern> indexPattern) {
 		return Flowable.defer(() -> {
-			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucket);
+			Map<String, Map<String, HibNodeFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucket);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
 				.filter(indexName -> {
 					boolean match = indexPattern.orElse(MATCH_ALL).matcher(indexName).matches();
@@ -375,7 +374,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				})
 				.flatMap(indexName -> loadVersionsFromIndex(indexName, bucket).flatMapPublisher(sinkVersions -> {
 					log.debug("Handling index sync on handler {" + getClass().getName() + "} for bucket {" + bucket + "}");
-					Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
+					Map<String, HibNodeFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
 					String branchUuid = branch.getUuid();
 
 					Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
@@ -665,7 +664,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getBranchUuid();
 
-		NodeGraphFieldContainer newContainer = context.getNewContainer();
+		HibNodeFieldContainer newContainer = context.getNewContainer();
 		String newProjectUuid = contentDao.getNode(newContainer).getProject().getUuid();
 		String newIndexName = ContentDao.composeIndexName(newProjectUuid, releaseUuid,
 			newContainer.getSchemaContainerVersion().getUuid(),
@@ -685,7 +684,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param type
 	 * @return
 	 */
-	private Completable deleteContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+	private Completable deleteContainer(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
 		ContentDao contentDao = boot.contentDao();
 		String projectUuid = contentDao.getNode(container).getProject().getUuid();
 		return searchProvider.deleteDocument(contentDao.getIndexName(container, projectUuid, branchUuid, type), contentDao.getDocumentId(container));
@@ -826,18 +825,22 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param type
 	 * @return
 	 */
-	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+	public String generateVersion(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
 		return getTransformer().generateVersion(container, branchUuid, type);
 	}
 
 	@Override
 	public Function<String, HibNode> elementLoader() {
-		return (uuid) -> HibClassConverter.toGraph(db).index().findByUuid(Node.class, uuid);
+		// TODO override in OrientDB implementation to use index for performance, if required
+		//return (uuid) -> HibClassConverter.toGraph(db).index().findByUuid(HibNode.class, uuid);
+		return uuid -> CommonTx.get().nodeDao().findByUuidGlobal(uuid);
 	}
 
 	@Override
 	public Stream<? extends HibNode> loadAllElements() {
-		return HibClassConverter.toGraph(db).type().findAll(Node.class);
+		// TODO override in OrientDB implementation to use index for performance, if required
+		//return HibClassConverter.toGraph(db).type().findAll(HibNode.class);
+		return CommonTx.get().nodeDao().findAllGlobal();
 	}
 
 }

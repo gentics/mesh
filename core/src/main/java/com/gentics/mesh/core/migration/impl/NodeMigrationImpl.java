@@ -22,8 +22,8 @@ import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Database;
@@ -35,7 +35,6 @@ import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -95,7 +94,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
 			Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
-				SchemaDaoWrapper schemaDao = (SchemaDaoWrapper) tx.schemaDao();
+				SchemaDao schemaDao = tx.schemaDao();
 				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).stream()
 						.collect(Collectors.toCollection(ArrayDeque::new));
 			});
@@ -222,7 +221,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			HibNodeFieldContainer container, HibSchemaVersion fromVersion, HibSchemaVersion toVersion,
 			Set<String> touchedFields,
 			SchemaVersionModel newSchema, VersionNumber nextDraftVersion) throws Exception {
-		NodeDaoWrapper nodeDao = (NodeDaoWrapper) Tx.get().nodeDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();
 
 		String branchUuid = branch.getUuid();
@@ -283,7 +282,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
 		HibNodeFieldContainer content, HibSchemaVersion fromVersion, HibSchemaVersion toVersion,
 		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
-		NodeDaoWrapper nodeDao = (NodeDaoWrapper) Tx.get().nodeDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();
 
 		String languageTag = content.getLanguageTag();

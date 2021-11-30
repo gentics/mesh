@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -66,7 +65,7 @@ public class GroupEventHandler implements EventHandler {
 			} else if (event == GROUP_DELETED) {
 				// TODO Update users that were part of that group.
 				// At the moment we cannot look up users that were in the group if the group is already deleted.
-				return Flowable.just(helper.deleteDocumentRequest(Group.composeIndexName(), model.getUuid(), complianceMode));
+				return Flowable.just(helper.deleteDocumentRequest(HibGroup.composeIndexName(), model.getUuid(), complianceMode));
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}

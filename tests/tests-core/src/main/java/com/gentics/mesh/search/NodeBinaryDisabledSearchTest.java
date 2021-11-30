@@ -70,10 +70,10 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 			schemaUpdateRequest.addField(binaryField);
 		}
 		waitForJob(() -> {
-			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
+			return call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
 		});
 		waitForJob(() -> {
-			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
+			return call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
 		});
 
 		// .rtf with lorem text

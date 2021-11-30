@@ -17,7 +17,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -142,7 +141,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			List<String> oldValue;
 			List<String> newValue;
 			try (Tx tx = tx()) {
-				oldValue = getListValues(container, HtmlGraphFieldListImpl.class, FIELD_NAME);
+				oldValue = getListValues(container::getHTMLList, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size());
 			}
 
@@ -165,7 +164,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				assertEquals("The container version number did not match up with the response version number.",
 					updatedContainer.getVersion().toString(), response.getVersion());
 				assertEquals("We expected container {" + container.getVersion().toString() + "} to contain the old value.", newValue,
-					getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
+					getListValues(updatedContainer::getHTMLList, FIELD_NAME));
 				// assertEquals("We expected container {" + updatedContainer.getVersion().toString() +"} to contain the old value.", oldValue,
 				// getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
 				container = updatedContainer;

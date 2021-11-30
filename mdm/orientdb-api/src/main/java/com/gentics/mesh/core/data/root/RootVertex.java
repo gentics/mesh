@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -28,7 +27,6 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -191,28 +189,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	}
 
 	/**
-	 * Create a new object which is connected or directly related to this aggregation vertex.
-	 * 
-	 * @param ac
-	 *            Context which is used to load information needed for the object creation
-	 * @param batch
-	 */
-	default T create(InternalActionContext ac, EventQueueBatch batch) {
-		return create(ac, batch, null);
-	}
-
-	/**
-	 * Create a new object which is connected or directly related to this aggregation vertex.
-	 * 
-	 * @param ac
-	 *            Context which is used to load information needed for the object creation
-	 * @param batch
-	 * @param uuid
-	 *            optional uuid to create the object with a given uuid (null to create a random uuid)
-	 */
-	T create(InternalActionContext ac, EventQueueBatch batch, String uuid);
-
-	/**
 	 * Create an uninitialized persisted object.
 	 * 
 	 * @return
@@ -293,27 +269,4 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return
 	 */
 	Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm);
-
-	/**
-	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
-	 *
-	 * @param element
-	 * @param bac
-	 *            Deletion context which keeps track of the deletion process
-	 */
-	default void delete(T element, BulkActionContext bac) {
-		element.delete(bac);
-	}
-
-	/**
-	 * Update the vertex using the action context information.
-	 *
-	 * @param ac
-	 * @param batch
-	 *            Batch to which entries will be added in order to update the search index.
-	 * @return true if the element was updated. Otherwise false
-	 */
-	default boolean update(T element, InternalActionContext ac, EventQueueBatch batch) {
-		return element.update(ac, batch);
-	}
 }

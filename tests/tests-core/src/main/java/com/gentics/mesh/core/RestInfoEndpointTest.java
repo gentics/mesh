@@ -12,7 +12,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.orientechnologies.orient.core.OConstants;
 
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 
@@ -38,7 +37,6 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 		assertEquals("dev-null", info.getSearchVendor());
 		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
 		assertEquals(options().getNodeName(), info.getMeshNodeName());
-		assertEquals("The database version did not match.", OConstants.getVersion(), info.getDatabaseVersion());
 		assertEquals("1.0", info.getSearchVersion());
 		assertEquals(db().getDatabaseRevision(), info.getDatabaseRevision());
 	}

@@ -136,6 +136,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			statusInfo.put("node", nodeName);
 			statusInfo.put("database", iDatabaseName);
 			statusInfo.put("status", iNewStatus.name());
+			statusInfo.put("online", iNewStatus == DB_STATUS.ONLINE);
 			getEventBus().publish(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
 		}
 		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && nodeName.equals(manager.getNodeName())) {

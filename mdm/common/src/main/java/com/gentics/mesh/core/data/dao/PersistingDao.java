@@ -13,6 +13,13 @@ import com.gentics.mesh.core.data.HibBaseElement;
 public interface PersistingDao<T extends HibBaseElement> {
 
 	/**
+	 * Get the final type of the persistence entity of the dao.
+	 * 
+	 * @return
+	 */
+	Class<? extends T> getPersistenceClass();
+
+	/**
 	 * Created a persisted entity.
 	 * 
 	 * @param uuid

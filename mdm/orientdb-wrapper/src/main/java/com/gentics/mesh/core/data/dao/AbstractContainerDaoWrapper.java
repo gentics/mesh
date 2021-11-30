@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
@@ -10,11 +12,19 @@ import com.gentics.mesh.core.data.root.ContainerRootVertex;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.schema.SchemaChange;
+import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.result.Result;
+import com.syncleus.ferma.FramedGraph;
 
 import dagger.Lazy;
 
@@ -53,8 +63,32 @@ public abstract class AbstractContainerDaoWrapper<
 	}
 
 	@Override
-	public HibSchemaChange<?> createChange(SCV version, SchemaChangeModel restChange) {
-		return toGraph(version).createChange(restChange);
+	public HibSchemaChange<?> createPersistedChange(SCV version, SchemaChangeOperation schemaChangeOperation) {
+		FramedGraph graph = toGraph(version).getGraph();
+		SchemaChange<?> schemaChange = null;
+		switch (schemaChangeOperation) {
+		case ADDFIELD:
+			schemaChange = graph.addFramedVertex(AddFieldChangeImpl.class);
+			break;
+		case REMOVEFIELD:
+			schemaChange = graph.addFramedVertex(RemoveFieldChangeImpl.class);
+			break;
+		case UPDATEFIELD:
+			schemaChange = graph.addFramedVertex(UpdateFieldChangeImpl.class);
+			break;
+		case CHANGEFIELDTYPE:
+			schemaChange = graph.addFramedVertex(FieldTypeChangeImpl.class);
+			break;
+		case UPDATESCHEMA:
+			schemaChange = graph.addFramedVertex(UpdateSchemaChangeImpl.class);
+			break;
+		case UPDATEMICROSCHEMA:
+			schemaChange = graph.addFramedVertex(UpdateMicroschemaChangeImpl.class);
+			break;
+		default:
+			throw error(BAD_REQUEST, "error_change_operation_unknown", String.valueOf(schemaChangeOperation));
+		}
+		return schemaChange;
 	}
 
 	@Override
@@ -62,13 +96,19 @@ public abstract class AbstractContainerDaoWrapper<
 		return toGraph(version).getBranches();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public SC createPersisted(String uuid) {
 		SC vertex = super.createPersisted(uuid);
-		vertex.setLatestVersion((SCV) getRoot().createVersion());
-		vertex.getLatestVersion().setSchemaContainer(vertex);
+		vertex.setLatestVersion(createPersistedVersion(vertex));
 		return vertex;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public SCV createPersistedVersion(SC container) {
+		SCV version = (SCV) getRoot().createVersion();
+		version.setSchemaContainer(container);
+		return version;
 	}
 
 	protected abstract ContainerRootVertex<R, RM, D, DV> getRoot();

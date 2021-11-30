@@ -15,7 +15,6 @@ import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
@@ -46,7 +45,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	Field getRestField(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level);
 
 	/**
-	 * Return the graph field for the given field schema.
+	 * Return the field for the given field schema.
 	 * 
 	 * @param fieldSchema
 	 * @return
@@ -109,7 +108,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 
 	/**
 	 * 
-	 * Return the string graph field for the given key.
+	 * Return the string field for the given key.
 	 * 
 	 * @param key
 	 * @return
@@ -117,7 +116,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibStringField getString(String key);
 
 	/**
-	 * Create a new string graph field.
+	 * Create a new string field.
 	 * 
 	 * @param key
 	 * @return
@@ -159,7 +158,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	S3HibBinaryField createS3Binary(String fieldKey, S3HibBinary binary);
 
 	/**
-	 * Return the node graph field for the given key.
+	 * Return the node field for the given key.
 	 * 
 	 * @param key
 	 * @return
@@ -167,7 +166,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNodeField getNode(String key);
 
 	/**
-	 * Create a new node graph field.
+	 * Create a new node field.
 	 * 
 	 * @param key
 	 *            Key of the field
@@ -178,7 +177,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNodeField createNode(String key, HibNode node);
 
 	/**
-	 * Return the date graph field.
+	 * Return the date field.
 	 * 
 	 * @param key
 	 * @return
@@ -186,7 +185,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibDateField getDate(String key);
 
 	/**
-	 * Create a new date graph field.
+	 * Create a new date field.
 	 * 
 	 * @param key
 	 * @return
@@ -194,7 +193,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibDateField createDate(String key);
 
 	/**
-	 * Return the number graph field.
+	 * Return the number field.
 	 * 
 	 * @param key
 	 * @return
@@ -202,7 +201,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNumberField getNumber(String key);
 
 	/**
-	 * Create the number graph field.
+	 * Create the number field.
 	 * 
 	 * @param key
 	 * @return
@@ -210,7 +209,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNumberField createNumber(String key);
 
 	/**
-	 * Return the html graph field.
+	 * Return the html field.
 	 * 
 	 * @param key
 	 * @return
@@ -218,7 +217,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibHtmlField getHtml(String key);
 
 	/**
-	 * Create a new html graph field.
+	 * Create a new html field.
 	 * 
 	 * @param key
 	 * @return
@@ -226,7 +225,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibHtmlField createHTML(String key);
 
 	/**
-	 * Return the boolean graph field.
+	 * Return the boolean field.
 	 * 
 	 * @param key
 	 * @return
@@ -234,7 +233,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibBooleanField getBoolean(String key);
 
 	/**
-	 * Create a new boolean graph field.
+	 * Create a new boolean field.
 	 * 
 	 * @param key
 	 * @return
@@ -242,7 +241,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibBooleanField createBoolean(String key);
 
 	/**
-	 * Return the micronode graph field.
+	 * Return the micronode field.
 	 * 
 	 * @param key
 	 * @return
@@ -250,7 +249,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibMicronodeField getMicronode(String key);
 
 	/**
-	 * Create a new micronode graph field. This method ensures that only one micronode exists per key.
+	 * Create a new micronode field. This method ensures that only one micronode exists per key.
 	 * 
 	 * @param key
 	 * @param microschemaVersion
@@ -259,7 +258,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibMicronodeField createMicronode(String key, HibMicroschemaVersion microschemaVersion);
 
 	/**
-	 * Return the graph date list.
+	 * Return the date list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -267,7 +266,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibDateFieldList getDateList(String fieldKey);
 
 	/**
-	 * Create a new graph date list.
+	 * Create a new date list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -275,7 +274,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibDateFieldList createDateList(String fieldKey);
 
 	/**
-	 * Return graph html list.
+	 * Return html list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -283,7 +282,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibHtmlFieldList getHTMLList(String fieldKey);
 
 	/**
-	 * Create a new graph html list.
+	 * Create a new html list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -291,7 +290,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibHtmlFieldList createHTMLList(String fieldKey);
 
 	/**
-	 * Return graph number list.
+	 * Return number list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -299,7 +298,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNumberFieldList getNumberList(String fieldKey);
 
 	/**
-	 * Create a new graph number list.
+	 * Create a new number list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -307,7 +306,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNumberFieldList createNumberList(String fieldKey);
 
 	/**
-	 * Return graph node list.
+	 * Return node list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -315,7 +314,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNodeFieldList getNodeList(String fieldKey);
 
 	/**
-	 * Create a new graph node list.
+	 * Create a new node list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -323,7 +322,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNodeFieldList createNodeList(String fieldKey);
 
 	/**
-	 * Return graph string list.
+	 * Return string list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -331,7 +330,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibStringFieldList getStringList(String fieldKey);
 
 	/**
-	 * Create a new graph string list.
+	 * Create a new string list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -339,7 +338,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibStringFieldList createStringList(String fieldKey);
 
 	/**
-	 * Return graph boolean list.
+	 * Return boolean list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -347,7 +346,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibBooleanFieldList getBooleanList(String fieldKey);
 
 	/**
-	 * Create a new graph boolean list.
+	 * Create a new boolean list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -355,7 +354,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibBooleanFieldList createBooleanList(String fieldKey);
 
 	/**
-	 * Return graph node list.
+	 * Return node list.
 	 * 
 	 * @param fieldKey
 	 * @return
@@ -363,20 +362,11 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibMicronodeFieldList getMicronodeList(String fieldKey);
 
 	/**
-	 * Create a new graph micronode list.
+	 * Create a new micronode list.
 	 * 
 	 * @param fieldKey
 	 * @return
 	 */
 	// TODO remove field from method name
 	HibMicronodeFieldList createMicronodeFieldList(String fieldKey);
-
-	/**
-	 * Get the list graph field of specified type
-	 * 
-	 * @param classOfT
-	 * @param fieldKey
-	 * @return
-	 */
-	<T extends HibListField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey);
 }

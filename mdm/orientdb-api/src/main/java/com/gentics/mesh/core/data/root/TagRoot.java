@@ -15,7 +15,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -40,48 +39,6 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *            Tag to be removed
 	 */
 	void removeTag(HibTag tag);
-
-	/**
-	 * Create a new tag with the given parameters and assign it to this tag root. Note that the created tag will also be assigned to the global and project tag
-	 * root vertex.
-	 * 
-	 * @param name
-	 *            Name of the tag
-	 * @param project
-	 *            Project in which the tag was created
-	 * @param tagFamily
-	 *            Tag family to which the tag should be assigned.
-	 * @param creator
-	 *            Creator of the tag
-	 * @return
-	 */
-	HibTag create(String name, HibProject project, HibTagFamily tagFamily, HibUser creator);
-
-	/**
-	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
-	 * be assigned to the global root vertex.
-	 *
-	 * @param name
-	 *            Name of the new tag.
-	 * @param project
-	 *            Root project of the tag.
-	 * @param creator
-	 *            User that is used to assign creator and editor references of the new tag.
-	 * @param uuid
-	 *            Optional uuid
-	 * @return
-	 */
-	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
-
-	/**
-	 * Update the tag
-	 * 
-	 * @param tag
-	 * @param ac
-	 * @param batch
-	 * @return
-	 */
-	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
@@ -115,5 +72,12 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @return Result
 	 */
 	Result<? extends Node> getNodes(Tag tag, HibBranch branch);
+
+	// Move these to DAO
+	@Deprecated
+	HibTag create(String name, HibProject project, HibTagFamily tagFamily, HibUser creator);
+
+	@Deprecated
+	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
 
 }

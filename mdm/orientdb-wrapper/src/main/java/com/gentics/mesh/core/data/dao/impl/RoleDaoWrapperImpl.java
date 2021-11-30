@@ -133,7 +133,9 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 
 	@Override
 	public Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission) {
-		return ((MeshVertex) element).getRoleUuidsForPerm(permission);
+		return (element instanceof MeshVertex) 
+				? ((MeshVertex) element).getRoleUuidsForPerm(permission)
+				: Collections.emptySet();
 	}
 
 	@Override

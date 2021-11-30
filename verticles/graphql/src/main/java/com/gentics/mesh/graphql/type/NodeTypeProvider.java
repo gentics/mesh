@@ -33,14 +33,12 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -81,7 +79,7 @@ import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
 
 /**
- * Type provider for the node type. Internally this will map partially to {@link Node} and {@link NodeGraphFieldContainer} vertices.
+ * Type provider for the node type. Internally this will map partially to {@link HibNode} and {@link NodeGraphFieldContainer} vertices.
  */
 @Singleton
 public class NodeTypeProvider extends AbstractTypeProvider {
@@ -586,7 +584,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .version
 		builder.field(newFieldDefinition().name("version").description("Version of the content").type(GraphQLString).dataFetcher((env) -> {
-			NodeGraphFieldContainer version = env.getSource();
+			HibNodeFieldContainer version = env.getSource();
 			return version.getVersion();
 		}));
 
@@ -596,7 +594,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				Tx tx = Tx.get();
 				GraphQLContext gc = env.getContext();
 				String branchUuid = tx.getBranch(gc).getUuid();
-				NodeGraphFieldContainer version = env.getSource();
+				HibNodeFieldContainer version = env.getSource();
 				return version.isDraft(branchUuid);
 			}));
 
@@ -606,7 +604,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				Tx tx = Tx.get();
 				GraphQLContext gc = env.getContext();
 				String branchUuid = tx.getBranch(gc).getUuid();
-				NodeGraphFieldContainer version = env.getSource();
+				HibNodeFieldContainer version = env.getSource();
 				return version.isPublished(branchUuid);
 			}));
 
@@ -614,14 +612,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		builder.field(newFieldDefinition().name("branchRoot")
 			.description("Flag that indicates whether the version is used as a branch root version for a branch.").type(GraphQLBoolean)
 			.dataFetcher((env) -> {
-				NodeGraphFieldContainer version = env.getSource();
+				HibNodeFieldContainer version = env.getSource();
 				return version.isInitial();
 			}));
 
 		// .created
 		builder.field(
 			newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString).dataFetcher(env -> {
-				NodeGraphFieldContainer source = env.getSource();
+				HibNodeFieldContainer source = env.getSource();
 				return source.getLastEditedDate();
 			}));
 
@@ -629,7 +627,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		builder.field(
 			newFieldDefinition().name("creator").description("Creator of the version").type(new GraphQLTypeReference("User")).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				NodeGraphFieldContainer source = env.getSource();
+				HibNodeFieldContainer source = env.getSource();
 				return gc.requiresPerm(source.getEditor(), READ_PERM);
 			}));
 
@@ -696,8 +694,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLUnionType fieldType = newUnionType().name(NODE_FIELDS_TYPE_NAME).possibleTypes(typeArray).description("Fields of the node.")
 			.typeResolver(env -> {
 				Object object = env.getObject();
-				if (object instanceof NodeGraphFieldContainer) {
-					NodeGraphFieldContainer fieldContainer = (NodeGraphFieldContainer) object;
+				if (object instanceof HibNodeFieldContainer) {
+					HibNodeFieldContainer fieldContainer = (HibNodeFieldContainer) object;
 					String schemaName = fieldContainer.getSchemaContainerVersion().getName();
 					GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
 					if (foundType == null) {

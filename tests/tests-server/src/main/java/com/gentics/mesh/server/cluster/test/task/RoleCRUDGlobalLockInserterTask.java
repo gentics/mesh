@@ -49,7 +49,7 @@ public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 				return userDao.findMeshAuthUserByUsername("admin");
 			});
 			String roleUuid = UUIDUtil.randomUUID();
-			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(user, RoleResponse.class);
+			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(test.getBoot(), user, RoleResponse.class);
 			ac.setPayloadObject(new RoleCreateRequest().setName("test" + roleUuid));
 			crudHandler.handleCreate(ac);
 			System.out.println("Inserted " + roleUuid);

@@ -5,7 +5,6 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -29,7 +28,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -447,29 +445,6 @@ public final class HibClassConverter {
 
 	/**
 	 * Apply the cast to the graph element and return it.
-	 * 
-	 * @param <T>
-	 *            Type of the graph element
-	 * @param element
-	 *            MDM element to be casted
-	 * @param clazz
-	 *            Element class to validate the cast operation
-	 * @return Casted element object
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T checkAndCast(HibField element, Class<? extends GraphField> clazz) {
-		if (element == null) {
-			return null;
-		}
-		if (clazz.isInstance(element)) {
-			return (T) clazz.cast(element);
-		} else {
-			throw new RuntimeException("The received field was not an OrientDB field. Got: " + element.getClass().getName());
-		}
-	}
-
-	/**
-	 * Apply the cast to the graph element and return it.
 	 *
 	 * @param <T>
 	 *            Type of the graph element
@@ -479,8 +454,7 @@ public final class HibClassConverter {
 	 *            Element class to validate the cast operation
 	 * @return Casted element object
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T, C> T checkAndCast(C element, Class<? extends C> clazz) {
+	public static <T extends C, C> T checkAndCast(C element, Class<? extends T> clazz) {
 		if (element == null) {
 			return null;
 		}

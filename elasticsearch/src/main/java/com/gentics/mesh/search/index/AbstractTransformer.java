@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.user.HibCreatorTracking;
+import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 
@@ -63,13 +63,13 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 */
 	protected void addBasicReferences(JsonObject document, HibBaseElement element) {
 		document.put("uuid", element.getUuid());
-		if (element instanceof CreatorTrackingVertex) {
-			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) element;
+		if (element instanceof HibCreatorTracking) {
+			HibCreatorTracking createdVertex = (HibCreatorTracking) element;
 			addUser(document, "creator", createdVertex.getCreator());
 			document.put("created", createdVertex.getCreationDate());
 		}
-		if (element instanceof EditorTrackingVertex) {
-			EditorTrackingVertex editedVertex = (EditorTrackingVertex) element;
+		if (element instanceof HibEditorTracking) {
+			HibEditorTracking editedVertex = (HibEditorTracking) element;
 			addUser(document, "editor", editedVertex.getEditor());
 			document.put("edited", editedVertex.getLastEditedDate());
 		}

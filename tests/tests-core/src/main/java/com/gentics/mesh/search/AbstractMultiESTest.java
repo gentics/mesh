@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import com.gentics.mesh.test.context.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.test.AWSTestMode;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;

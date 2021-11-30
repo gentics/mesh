@@ -113,6 +113,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	@Override
 	default HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
+		PersistingBranchDao branchDao = CommonTx.get().branchDao();
 		
 		HibProject project = createPersisted(uuid);
 		project.setName(name);
@@ -121,7 +122,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		getNodePermissionRoot(project);
 
 		// Create the initial branch for the project and add the used schema version to it
-		HibBranch branch = CommonTx.get().branchDao().create(project, name, creator, batch);
+		HibBranch branch = branchDao.create(project, name, creator, batch);
 		
 		//project.getBranchRoot().create(name, creator, batch);
 		branch.setMigrated(true);
@@ -136,7 +137,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		} else {
 			branch.setPathPrefix("");
 		}
-		branch.assignSchemaVersion(creator, schemaVersion, batch);
+		branchDao.assignSchemaVersion(branch, creator, schemaVersion, batch);
 
 		// Assign the provided schema container to the project
 		CommonTx.get().schemaDao().addItem(project, schemaVersion.getSchemaContainer());
@@ -195,7 +196,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
-		CommonTx.get().data().routerStorageRegistry().assertProjectName(requestModel.getName());
+		CommonTx.get().data().mesh().routerStorageRegistry().assertProjectName(requestModel.getName());
 
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
@@ -237,7 +238,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		String oldName = project.getName();
 		String newName = requestModel.getName();
-		CommonTx.get().data().routerStorageRegistry().assertProjectName(newName);
+		CommonTx.get().data().mesh().routerStorageRegistry().assertProjectName(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
 			HibProject projectWithSameName = findByName(newName);

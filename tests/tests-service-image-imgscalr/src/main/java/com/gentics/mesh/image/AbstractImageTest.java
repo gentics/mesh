@@ -1,5 +1,7 @@
 package com.gentics.mesh.image;
 
+import static org.mockito.Mockito.mock;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +12,8 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+
+import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
 
 public class AbstractImageTest {
 
@@ -35,4 +39,7 @@ public class AbstractImageTest {
 		return ImageIO.read(ins);
 	}
 
+	public static PersistingBinaryDao mockBinaryDao() {
+		return mock(PersistingBinaryDao.class);
+	}
 }

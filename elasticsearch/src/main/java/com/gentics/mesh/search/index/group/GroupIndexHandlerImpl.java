@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -53,8 +52,8 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	}
 
 	@Override
-	public Class<Group> getElementClass() {
-		return Group.class;
+	public Class<HibGroup> getElementClass() {
+		return HibGroup.class;
 	}
 
 	@Override
@@ -76,7 +75,7 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = Group.composeIndexName();
+		String indexName = HibGroup.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "group");
 		return Collections.singletonMap(indexName, info);
 	}
@@ -88,12 +87,12 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Group.composeIndexName();
+		return HibGroup.composeIndexName();
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Group.composeIndexName());
+		return Collections.singleton(HibGroup.composeIndexName());
 	}
 
 	@Override
@@ -108,12 +107,12 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Group.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibGroup.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Group.composeIndexName());
+		return filterIndicesByType(indices, HibGroup.composeIndexName());
 	}
 
 }

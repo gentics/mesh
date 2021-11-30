@@ -5,6 +5,12 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 
 public interface HibBranchVersionAssignment extends HibElement {
 
+	public static final String ACTIVE_PROPERTY_KEY = "active";
+
+	public static final String MIGRATION_STATUS_PROPERTY_KEY = "migrationStatus";
+
+	public static final String JOB_UUID_PROPERTY_KEY = "jobUuid";
+
 	/**
 	 * Return the job uuid.
 	 * 
@@ -41,4 +47,17 @@ public interface HibBranchVersionAssignment extends HibElement {
 	 */
 	void setMigrationStatus(JobStatus status);
 
+	/**
+	 * Return the branch of this edge.
+	 * 
+	 * @return
+	 */
+	HibBranch getBranch();
+
+	/**
+	 * Set the references job.
+	 * 
+	 * @param uuid
+	 */
+	void setJobUuid(String uuid);
 }

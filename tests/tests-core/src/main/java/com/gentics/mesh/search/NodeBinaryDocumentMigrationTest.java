@@ -32,7 +32,7 @@ public class NodeBinaryDocumentMigrationTest extends AbstractMultiESTest {
 	public void schemaMigrationWithDocumentBinary() {
 		grantAdmin();
 		uploadDocumentNode();
-		waitForJobs(this::migrateSchema, JobStatus.COMPLETED, 1);
+		waitForJobs((Runnable) this::migrateSchema, JobStatus.COMPLETED, 1);
 	}
 
 	private void uploadDocumentNode() {
