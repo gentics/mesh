@@ -45,6 +45,7 @@ public interface HibBaseElement extends HibElement {
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
 	 */
+	// TODO This functionality looks too complex for an Entity and should most probably belong to DAO.
 	default boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
 			Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
 		RoleDao roleDao = Tx.get().roleDao();

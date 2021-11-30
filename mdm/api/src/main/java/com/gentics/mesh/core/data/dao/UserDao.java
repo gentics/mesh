@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.dao;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -270,7 +269,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            Node to which the CRUD permissions will be assigned.
 	 * @return Fluent API
 	 */
-	HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode);
+	HibUser addCRUDPermissionOnRole(HibUser user, HibBaseElement sourceNode, InternalPermission permission, HibBaseElement targetNode);
 
 	/**
 	 * This method adds additional permissions to the target node. The roles are selected like in method
@@ -287,7 +286,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            permissions to grant
 	 * @return Fluent API
 	 */
-	HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, HibBaseElement targetNode,
+	HibUser addPermissionsOnRole(HibUser user, HibBaseElement sourceNode, InternalPermission permission, HibBaseElement targetNode,
 		InternalPermission... toGrant);
 
 	/**

@@ -1,8 +1,15 @@
 package com.gentics.mesh.core.data.tag;
 
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
+import java.util.Objects;
+
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
@@ -19,19 +26,12 @@ import com.gentics.mesh.handler.VersionUtils;
  */
 public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableElement<TagReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
 
-	/**
-	 * Return the tag name.
-	 * 
-	 * @return
-	 */
-	String getName();
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAG, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
 
-	/**
-	 * Set the name.
-	 * 
-	 * @param name
-	 */
-	void setName(String name);
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Return the tag family of the tag.
@@ -52,24 +52,33 @@ public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableEle
 	 */
 	void deleteElement();
 
-	/**
-	 * Transform the tag to a reference.
-	 * 
-	 * @return
-	 */
-	TagReference transformToReference();
-
-	/**
-	 * Return the current element version.
-	 * 
-	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
+	}
+
+	/**
+	 * Return the composed search index document if for the element.
+	 * 
+	 * @param elementUuid
+	 * @return
+	 */
+	static String composeDocumentId(String elementUuid) {
+		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
+		return elementUuid;
+	}
+
+	/**
+	 * Compose the index name for tags. Use the projectUuid in order to create a project specific index.
+	 * 
+	 * @param projectUuid
+	 * @return
+	 */
+	static String composeIndexName(String projectUuid) {
+		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
+		StringBuilder indexName = new StringBuilder();
+		indexName.append("tag");
+		indexName.append("-").append(projectUuid);
+		return indexName.toString();
 	}
 }

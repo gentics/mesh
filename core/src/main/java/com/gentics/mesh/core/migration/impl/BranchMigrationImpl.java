@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.migration.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -11,7 +9,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -20,12 +17,12 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
@@ -115,7 +112,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 			db.tx((tx) -> {
 				NodeDao nodeDao = tx.nodeDao();
 				TagDao tagDao = tx.tagDao();
-				ContentDao contentDao = tx.contentDao();
+				PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 
 				// Check whether the node already has an initial container and thus was already migrated
 				if (contentDao.getFieldContainers(node, newBranch, INITIAL).hasNext()) {
@@ -134,42 +131,14 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				drafts.forEach(container -> {
 					// We only need to set the initial edge if there are no published containers.
 					// Otherwise the initial edge will be set using the published container.
-					if (!published.hasNext()) {
-						setInitial(node, container, newBranch);
-					}
-
-					GraphFieldContainerEdgeImpl draftEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
-					draftEdge.setLanguageTag(container.getLanguageTag());
-					draftEdge.setType(DRAFT);
-					draftEdge.setBranchUuid(newBranch.getUuid());
-					String value = contentDao.getSegmentFieldValue(container);
-					if (value != null) {
-						draftEdge.setSegmentInfo(parent, value);
-					} else {
-						draftEdge.setSegmentInfo(null);
-					}
-					draftEdge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
-					batch.add(container.onUpdated(newBranch.getUuid(), DRAFT));
+					contentDao.migrateContainerOntoBranch(container, newBranch, node, batch, DRAFT, !published.hasNext());
 				});
 
 				// 2. Migrate published containers
 				published.forEach(container -> {
 					// Set the initial edge for published containers since the published container may be an older version and created before the draft container was created.
 					// The initial edge should always point to the oldest container of either draft or published.
-					setInitial(node, container, newBranch);
-
-					GraphFieldContainerEdgeImpl publishEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
-					publishEdge.setLanguageTag(container.getLanguageTag());
-					publishEdge.setType(PUBLISHED);
-					publishEdge.setBranchUuid(newBranch.getUuid());
-					String value = contentDao.getSegmentFieldValue(container);
-					if (value != null) {
-						publishEdge.setSegmentInfo(parent, value);
-					} else {
-						publishEdge.setSegmentInfo(null);
-					}
-					publishEdge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
-					batch.add(container.onUpdated(newBranch.getUuid(), PUBLISHED));
+					contentDao.migrateContainerOntoBranch(container, newBranch, node, batch, PUBLISHED, true);
 				});
 
 				// Migrate tags
@@ -179,16 +148,5 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 			log.error("Error while handling node {" + node.getUuid() + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
-	}
-
-	/**
-	 * Create a new initial edge between node and container for the given branch.
-	 */
-	private void setInitial(HibNode node, HibNodeFieldContainer container, HibBranch branch) {
-		GraphFieldContainerEdgeImpl initialEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container),
-			GraphFieldContainerEdgeImpl.class);
-		initialEdge.setLanguageTag(container.getLanguageTag());
-		initialEdge.setBranchUuid(branch.getUuid());
-		initialEdge.setType(INITIAL);
 	}
 }

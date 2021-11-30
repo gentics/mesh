@@ -7,18 +7,21 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
 /**
  * Domain model for microschema versions.
@@ -114,10 +117,25 @@ public interface HibMicroschemaVersion
 	}
 
 	@Override
+	default MeshEvent getBranchAssignEvent() {
+		return MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+	}
+
+	@Override
+	default MeshEvent getBranchUnassignEvent() {
+		return MeshEvent.MICROSCHEMA_BRANCH_UNASSIGN;
+	}
+
+	@Override
+	default Class<? extends AbstractBranchAssignEventModel<MicroschemaReference>> getBranchAssignEventModelClass() {
+		return BranchMicroschemaAssignModel.class;
+	}
+
+	@Override
 	default MicroschemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
-		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		// Load the microschema and add/overwrite some properties
 		MicroschemaResponse microschema = JsonUtil.readValue(getJson(), MicroschemaResponse.class);
@@ -125,7 +143,7 @@ public interface HibMicroschemaVersion
 
 		// Role permissions
 		HibMicroschema container = getSchemaContainer();
-		microschema.setRolePerms(microschemaDao.getRolePermissions(container, ac, ac.getRolePermissionParameters().getRoleUuid()));
+		microschema.setRolePerms(roleDao.getRolePermissions(container, ac, ac.getRolePermissionParameters().getRoleUuid()));
 		container.fillCommonRestFields(ac, fields, microschema);
 
 		return microschema;

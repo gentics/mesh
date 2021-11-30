@@ -1,10 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 
@@ -23,8 +21,8 @@ import dagger.Lazy;
 public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibCoreElement<R>, D extends MeshCoreVertex<R>> 
 		extends AbstractDaoWrapper<T> implements PersistingDaoGlobal<T>, DaoTransformable<T, R> {
 
-	public AbstractCoreDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
+	public AbstractCoreDaoWrapper(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -55,13 +53,14 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 	}
 
 	@Override
-	public String getETag(T element, InternalActionContext ac) {
-		return element.getETag(ac);
-	}
-
-	@Override
 	public long count() {
 		return getRoot().globalCount();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Class<? extends T> getPersistenceClass() {
+		return (Class<? extends T>) getRoot().getPersistanceClass();
 	}
 
 	/**

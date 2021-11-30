@@ -1,8 +1,15 @@
 package com.gentics.mesh.core.data.tagfamily;
 
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
+import java.util.Objects;
+
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
@@ -18,19 +25,12 @@ import com.gentics.mesh.handler.VersionUtils;
  */
 public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibReferenceableElement<TagFamilyReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
 
-	/**
-	 * Return the name.
-	 * 
-	 * @return
-	 */
-	String getName();
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
 
-	/**
-	 * Set the tag family name.
-	 * 
-	 * @param name
-	 */
-	void setName(String name);
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Return the project in which the tag family is used.
@@ -43,22 +43,6 @@ public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibRefe
 	 * Delete the tag family.
 	 */
 	void deleteElement();
-
-	/**
-	 * Return the current element version.
-	 * 
-	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
-	/**
-	 * Transform the tag family to a reference.
-	 * 
-	 * @return
-	 */
-	TagFamilyReference transformToReference();
 
 	/**
 	 * Return the description.
@@ -77,5 +61,30 @@ public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibRefe
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getUuid();
+	}
+
+	/**
+	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.
+	 * 
+	 * @param projectUuid
+	 * @return
+	 */
+	static String composeIndexName(String projectUuid) {
+		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
+		StringBuilder indexName = new StringBuilder();
+		indexName.append("tagfamily");
+		indexName.append("-").append(projectUuid);
+		return indexName.toString();
+	}
+
+	/**
+	 * Construct the documentId for tag family index documents.
+	 * 
+	 * @param elementUuid
+	 * @return documentId
+	 */
+	static String composeDocumentId(String elementUuid) {
+		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
+		return elementUuid;
 	}
 }

@@ -10,16 +10,11 @@ import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -46,11 +41,11 @@ import io.vertx.ext.web.RoutingContext;
  */
 public abstract class AbstractWebrootHandler {
 
-	protected static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
+	protected static final Logger log = LoggerFactory.getLogger(WebRootService.class);
 
 	protected static final String WEBROOT_LAST_SEGMENT = "WEBROOT_SEGMENT_NAME";
 
-	protected final WebRootServiceImpl webrootService;
+	protected final WebRootService webrootService;
 
 	protected final Database db;
 
@@ -64,7 +59,7 @@ public abstract class AbstractWebrootHandler {
 
 	protected final HandlerUtilities utils;
 
-	public AbstractWebrootHandler(Database database, WebRootServiceImpl webrootService,
+	public AbstractWebrootHandler(Database database, WebRootService webrootService,
 		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		this.db = database;
 		this.webrootService = webrootService;
@@ -98,7 +93,7 @@ public abstract class AbstractWebrootHandler {
 	 * @param ac action context
 	 * @param rc routing context
 	 * @param projectPath path without the project segment
-	 * @return found {@link Node}
+	 * @return found {@link HibNode}
 	 */
 	protected HibNode findNodeByPath(InternalActionContext ac, RoutingContext rc, String projectPath) {
 		Path nodePath = findNodePathByProjectPath(ac, projectPath);
@@ -112,7 +107,7 @@ public abstract class AbstractWebrootHandler {
 	 * @param rc routing context
 	 * @param nodePath node {@link Path}
 	 * @param projectPath original path without the project segment, used in the error logging
-	 * @return found {@link Node}
+	 * @return found {@link HibNode}
 	 */
 	protected HibNode findNodeByPath(InternalActionContext ac, RoutingContext rc, Path nodePath, String projectPath) {
 		HibUser requestUser = ac.getUser();

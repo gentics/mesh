@@ -1,20 +1,22 @@
 package com.gentics.mesh.core.data.s3binary;
 
 
+import java.util.Map;
+import java.util.Objects;
+
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.node.field.HibBasicField;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
-
-import java.util.Map;
-import java.util.Objects;
+import com.gentics.mesh.util.UniquenessUtil;
 
 /**
  * MDM interface for the s3binary field information.
  */
-public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField> {
+public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>, HibElement {
 
 	/**
 	 * Return the referenced s3binary entity.
@@ -196,4 +198,36 @@ public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>
 	 * @param size
 	 */
     void setFileSize(Long size);
+   
+    /**
+	 * Return the S3 Object Key that serves as reference to AWS
+	 *
+	 * @return
+	 */
+	String getS3ObjectKey();
+
+	/**
+	 * Return the S3 file size
+	 *
+	 * @return
+	 */
+	Long getFileSize();
+
+	/**
+	 * Increment any found postfix number in the filename.
+	 * 
+	 * e.g:
+	 * <ul>
+	 * <li>test.txt -> test_1.txt</li>
+	 * <li>test -> test_1</li>
+	 * <li>test.blub.txt -> test.blub_1.txt</li>
+	 * <ul>
+	 * 
+	 */
+	default void postfixFileName() {
+		String oldName = getFileName();
+		if (oldName != null && !oldName.isEmpty()) {
+			setFileName(UniquenessUtil.suggestNewName(oldName));
+		}
+	}
 }

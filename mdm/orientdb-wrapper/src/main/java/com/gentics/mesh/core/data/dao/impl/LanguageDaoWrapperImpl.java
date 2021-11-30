@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -16,14 +14,12 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -37,29 +33,8 @@ import dagger.Lazy;
 public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageResponse, HibLanguage, Language> implements LanguageDaoWrapper {
 
 	@Inject
-	public LanguageDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language create(String languageName, String languageTag) {
-		return boot.get().meshRoot().getLanguageRoot().create(languageName, languageTag);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language create(String languageName, String languageTag, String uuid) {
-		return boot.get().meshRoot().getLanguageRoot().create(languageName, languageTag, uuid);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public void addLanguage(Language language) {
-		boot.get().meshRoot().getLanguageRoot().addLanguage(language);
+	public LanguageDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	/**
@@ -111,27 +86,6 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 		return boot.get().meshRoot().getLanguageRoot().findByName(name);
 	}
 
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language create(InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().meshRoot().getLanguageRoot().create(ac, batch);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Language create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return boot.get().meshRoot().getLanguageRoot().create(ac, batch, uuid);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public void delete(Language element, BulkActionContext bac) {
-		boot.get().meshRoot().getLanguageRoot().delete(element, bac);
-	}
-
 	@Override
 	public HibLanguage findByUuid(String uuid) {
 		return boot.get().meshRoot().getLanguageRoot().findByUuid(uuid);
@@ -145,11 +99,6 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	@Override
 	public void delete(HibLanguage element, BulkActionContext bac) {
 		boot.get().meshRoot().getLanguageRoot().delete(bac);
-	}
-
-	@Override
-	public boolean update(HibLanguage element, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().meshRoot().getLanguageRoot().update(toGraph(element), ac, batch);
 	}
 
 	@Override

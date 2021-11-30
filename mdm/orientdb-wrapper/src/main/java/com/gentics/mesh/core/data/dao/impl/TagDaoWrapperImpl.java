@@ -25,10 +25,10 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -66,20 +66,8 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	private static final Logger log = LoggerFactory.getLogger(TagDaoWrapperImpl.class);
 
 	@Inject
-	public TagDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
-	}
-
-	@Override
-	public String getAPIPath(HibTag tag, InternalActionContext ac) {
-		Tag graphTag = toGraph(tag);
-		return graphTag.getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibTag tag, InternalActionContext ac) {
-		Tag graphTag = toGraph(tag);
-		return graphTag.getETag(ac);
+	public TagDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	// New Methods
@@ -205,7 +193,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 		}
 
 		graphTag.fillCommonRestFields(ac, fields, restTag);
-		setRolePermissions(graphTag, ac, restTag);
+		Tx.get().roleDao().setRolePermissions(graphTag, ac, restTag);
 		return restTag;
 
 	}
@@ -219,11 +207,12 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 		}
 		bac.add(tag.onDeleted());
 
+		NodeDao nodeDao = Tx.get().nodeDao();
 		// For node which have been previously tagged we need to fire the untagged event.
 		Project graphProject = toGraph(tag.getProject());
 		for (Branch branch : graphProject.getBranchRoot().findAll()) {
 			for (HibNode node : getNodes(tag, branch)) {
-				bac.add(toGraph(node).onTagged(tag, branch, UNASSIGNED));
+				bac.add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
 			}
 		}
 		tag.deleteElement();
@@ -305,7 +294,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public long computeCount(HibTagFamily tagFamily) {
+	public long count(HibTagFamily tagFamily) {
 		TagFamily graphTagFamily = toGraph(tagFamily);
 		return graphTagFamily.computeCount();
 	}
@@ -379,12 +368,7 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 
 	@Override
 	public void delete(HibTagFamily root, HibTag element, BulkActionContext bac) {
-		toGraph(root).delete(toGraph(element), bac);
-	}
-
-	@Override
-	public boolean update(HibTagFamily root, HibTag element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).update(toGraph(element), ac, batch);
+		toGraph(element).delete(bac);
 	}
 
 	@Override

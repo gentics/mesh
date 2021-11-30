@@ -5,7 +5,7 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import java.util.Optional;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
@@ -25,7 +25,7 @@ public class NodeMeshEntity extends MeshEntity<HibNodeFieldContainer> {
 	private static final Logger log = LoggerFactory.getLogger(NodeMeshEntity.class);
 
 	public NodeMeshEntity(Transformer<HibNodeFieldContainer> transformer, EventVertexMapper<HibNodeFieldContainer> eventVertexMapper) {
-		super(transformer, Node.TYPE_INFO, eventVertexMapper);
+		super(transformer, HibNode.TYPE_INFO, eventVertexMapper);
 	}
 
 	@Override

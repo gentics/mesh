@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
@@ -62,7 +61,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			HibNode node = content();
 			InternalActionContext ac = mockActionContext("?version=draft");
-			NodeReference reference = node.transformToReference(ac);
+			NodeReference reference = tx.nodeDao().transformToReference(node, ac);
 			assertNotNull(reference);
 			assertEquals(node.getUuid(), reference.getUuid());
 		}
@@ -231,7 +230,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(subNode.getUuid());
 			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
-			boot().contentDao().deleteFromBranch(subNode, ac, project().getLatestBranch(), context, false);
+			boot().nodeDao().deleteFromBranch(subNode, ac, project().getLatestBranch(), context, false);
 		}
 	}
 
@@ -312,15 +311,15 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
 			String uuid = node.getUuid();
-			MeshAssert.assertElement(toGraph(project()).getNodeRoot(), uuid, true);
+			MeshAssert.assertElement(tx.nodeDao(), project(), uuid, true);
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
-				boot().contentDao().deleteFromBranch(node, ac, project().getLatestBranch(), createBulkContext(), false);
+				boot().nodeDao().deleteFromBranch(node, ac, project().getLatestBranch(), createBulkContext(), false);
 				tx2.success();
 			}
 
-			MeshAssert.assertElement(toGraph(project()).getNodeRoot(), uuid, false);
+			MeshAssert.assertElement(tx.nodeDao(), project(), uuid, false);
 		}
 	}
 
@@ -400,7 +399,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. delete folder for initial release
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			boot().contentDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
+			boot().nodeDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
 
 			// 3. assert for new branch
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
@@ -465,7 +464,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 8. delete folder for initial release
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			boot().contentDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
+			boot().nodeDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
 
 			// 9. assert for new branch
 			assertThat(folder).as("folder").hasChildren(newBranch, subSubFolder);
@@ -522,7 +521,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 3. delete
 			InternalActionContext ac = mockActionContext("");
 			tx(tx2 -> {
-				tx2.contentDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, bac, false);
+				tx2.nodeDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, bac, false);
 			});
 
 			// 4. assert published and draft gone
@@ -572,7 +571,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 3. delete from initial branch
 			InternalActionContext ac = mockActionContext("");
 			tx(() -> {
-				boot().contentDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, createBulkContext(),
+				boot().nodeDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, createBulkContext(),
 					false);
 			});
 

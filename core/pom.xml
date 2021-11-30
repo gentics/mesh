@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.21-SNAPSHOT</version>
+		<version>1.8.0-alpha1</version>
 	</parent>
 
 	<properties>
@@ -44,19 +44,6 @@
 		<!-- </dependency> -->
 
 		<!-- Internal dependencies -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-orientdb</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-distributed</artifactId>
@@ -125,12 +112,6 @@
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
-		</dependency>
-
-		<!-- Changelog system -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-changelog-system</artifactId>
 		</dependency>
 
 		<dependency>

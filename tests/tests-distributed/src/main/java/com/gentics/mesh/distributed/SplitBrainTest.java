@@ -2,6 +2,7 @@ package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.distributed.AbstractClusterTest.createDefaultMeshContainer;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,7 +29,7 @@ public class SplitBrainTest {
 
 	private static final int WRITE_QUORUM = 2;
 
-	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverA = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -38,7 +39,7 @@ public class SplitBrainTest {
 		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverB = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
@@ -46,7 +47,7 @@ public class SplitBrainTest {
 		.withWriteQuorum(WRITE_QUORUM)
 		.withClearFolders();
 
-	public static MeshContainer serverC = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverC = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeC")
 		.withDataPathPostfix(randomToken())
@@ -54,7 +55,7 @@ public class SplitBrainTest {
 		.withWriteQuorum(WRITE_QUORUM)
 		.withClearFolders();
 
-	public static MeshContainer serverD = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverD = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeD")
 		.withDataPathPostfix(randomToken())

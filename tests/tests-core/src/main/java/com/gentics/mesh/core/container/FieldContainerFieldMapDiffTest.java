@@ -8,7 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.db.Tx;
@@ -23,7 +23,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Override
 	public void testNoDiffByValue() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
@@ -35,7 +35,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Override
 	public void testDiffByValue() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
@@ -48,7 +48,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Override
 	public void testNoDiffByValuesNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", null);
@@ -61,7 +61,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Override
 	public void testDiffByValueNonNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
@@ -74,7 +74,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Override
 	public void testDiffByValueNonNull2() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", null);
@@ -87,7 +87,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Override
 	public void testDiffBySchemaFieldRemoved() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", null);
@@ -102,7 +102,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	public void testDiffBySchemaFieldAdded() {
 		try (Tx tx = tx()) {
 			// Create a container which does not contain a dummy field value 
-			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
@@ -117,7 +117,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	public void testDiffBySchemaFieldTypeChanged() {
 		try (Tx tx = tx()) {
 			// Create container with string field value
-			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 
 			// Create fieldmap with html field value

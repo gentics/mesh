@@ -40,7 +40,7 @@ public abstract class AbstractClusterTortureTest extends AbstractClusterTest {
 	protected static String clusterPostFix = randomUUID();
 	
 	protected void torture(Torture torture) throws Exception {
-		MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+		MeshContainer serverA = createDefaultMeshContainer()
 				.withClusterName("dockerCluster" + clusterPostFix)
 				.withNodeName("nodeA")
 				.withDataPathPostfix(randomToken())
@@ -139,7 +139,7 @@ public abstract class AbstractClusterTortureTest extends AbstractClusterTest {
 
 		// Start the primary node, check for start errors.
 		if (!serverA.isRunning()) {
-			serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+			serverA = createDefaultMeshContainer()
 					.withDataPathPostfix(serverA.getDataPathPostfix())
 					.withClusterName("dockerCluster" + clusterPostFix)
 					.withNodeName("nodeA")

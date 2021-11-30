@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 /**
  * DAO for {@link HibContent} operations.
  */
-public interface ContentDaoWrapper extends ContentDao {
+public interface ContentDaoWrapper extends PersistingContentDao {
 
 	/**
 	 * Return an iterator over the edges for the given type and branch.

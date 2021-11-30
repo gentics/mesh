@@ -35,6 +35,15 @@ import com.gentics.mesh.util.VersionNumber;
 public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTracking, HibBucketableElement {
 
 	/**
+	 * Check if the field container exists in the storage.
+	 * 
+	 * @return
+	 */
+	default boolean isValid() {
+		return true;
+	}
+
+	/**
 	 * Return the index name for the given parameters.
 	 * 
 	 * @param projectUuid

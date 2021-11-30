@@ -7,6 +7,18 @@ import com.gentics.mesh.core.data.HibBaseElement;
  */
 public interface PermissionRoots {
 
+	String PROJECTS = "projects";
+	String USERS = "users";
+	String GROUPS = "groups";
+	String ROLES = "roles";
+	String MICROSCHEMAS = "microschemas";
+	String SCHEMAS = "schemas";
+	String BRANCHES = "branches";
+	String TAG_FAMILIES = "tagFamilies";
+	String NODES = "nodes";
+	String TAGS = "tags";
+	String MESH = "mesh";
+
 	/**
 	 * Return the root for projects.
 	 * 

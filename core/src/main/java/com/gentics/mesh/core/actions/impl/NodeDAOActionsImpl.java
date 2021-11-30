@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -53,10 +51,8 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 
 	@Override
 	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		// TODO MDM refactor TransformablePage
-		//NodeDao nodeDao = ctx.tx().nodeDao();
-		//return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
-		return toGraph(ctx.project()).getNodeRoot().findAll(ctx.ac(), pagingInfo);
+		NodeDao nodeDao = ctx.tx().nodeDao();
+		return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
 	}
 
 	@Override
@@ -68,7 +64,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	@Override
 	public boolean update(Tx tx, HibNode node, InternalActionContext ac, EventQueueBatch batch) {
 		NodeDao nodeDao = tx.nodeDao();
-		return nodeDao.update(node, ac, batch);
+		return nodeDao.update(tx.getProject(ac), node, ac, batch);
 	}
 
 	@Override

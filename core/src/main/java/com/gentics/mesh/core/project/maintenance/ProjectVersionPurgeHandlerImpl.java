@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.project.maintenance;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -11,7 +9,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -64,7 +61,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 		Iterable<? extends HibNodeFieldContainer> initials = tx.contentDao().getFieldContainers(node, ContainerType.INITIAL);
 		for (HibNodeFieldContainer initial : initials) {
 			Long counter = 0L;
-			purgeVersion(tx, counter, bac, toGraph(initial), toGraph(initial), false, maxAge);
+			purgeVersion(tx, counter, bac, initial, initial, false, maxAge);
 		}
 	}
 
@@ -83,7 +80,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 	 *            Flag which indicated whether the previous version has been removed
 	 * @param maxAge
 	 */
-	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
+	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, HibNodeFieldContainer lastRemaining, HibNodeFieldContainer version,
 		boolean previousRemoved, ZonedDateTime maxAge) {
 
 		ContentDao contentDao = tx.contentDao();
@@ -123,12 +120,12 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 		} else {
 			// Continue with next versions
 			for (HibNodeFieldContainer next : nextVersions) {
-				purgeVersion(tx, txCounter, bac, lastRemaining, toGraph(next), previousRemoved, maxAge);
+				purgeVersion(tx, txCounter, bac, lastRemaining, next, previousRemoved, maxAge);
 			}
 		}
 	}
 
-	private boolean isOlderThanMaxAge(NodeGraphFieldContainer version, ZonedDateTime maxAge) {
+	private boolean isOlderThanMaxAge(HibNodeFieldContainer version, ZonedDateTime maxAge) {
 		Long editTs = version.getLastEditedTimestamp();
 		ZonedDateTime editDate = DateUtils.toZonedDateTime(editTs);
 		ZonedDateTime maxDate = maxAge;

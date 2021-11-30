@@ -19,6 +19,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectSchemaLoadAllActionImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
@@ -105,6 +106,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 				UserDao userDao = tx1.userDao();
 				SchemaDao schemaDao = tx1.schemaDao();
 				MicroschemaDao microschemaDao = tx1.microschemaDao();
+				BranchDao branchDao = tx1.branchDao();
 
 				// 1. Load the schema container with update permissions
 				HibSchema schemaContainer = schemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -153,7 +155,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 								// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
 								for (HibProject project : schemaDao.findLinkedProjects(schemaContainer)) {
 									if (project != null) {
-										microschemaDao.addMicroschema(project, user, microschema, batch);
+										microschemaDao.assign(microschema, project, user, batch);
 									}
 								}
 							}
@@ -179,7 +181,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 							}
 
 							// Assign the new version to the branch
-							branch.assignSchemaVersion(user, createdVersion, batch);
+							branchDao.assignSchemaVersion(branch, user, createdVersion, batch);
 						}
 						batch.add(() -> MeshEvent.triggerJobWorker(boot.get().mesh()));
 					}
@@ -253,7 +255,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 				// Assign the schema to the project
 				utils.eventAction(batch -> {
-					schemaDao.addSchema(schema, project, ac.getUser(), batch);
+					schemaDao.assign(schema, project, ac.getUser(), batch);
 				});
 				return schemaDao.transformToRestSync(schema, ac, 0);
 			}, model -> ac.send(model, OK));
@@ -290,7 +292,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 				}
 
 				utils.eventAction(batch -> {
-					schemaDao.removeSchema(schema, project, batch);
+					schemaDao.unassign(schema, project, batch);
 					batch.add(schema.onUpdated());
 				});
 

@@ -40,9 +40,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.cli.MeshImpl;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
@@ -55,7 +53,6 @@ import com.gentics.mesh.etc.config.S3CacheOptions;
 import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
-import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
@@ -149,9 +146,7 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	public void setup(MeshTestSetting settings) throws Exception {
-		if (!settings.inMemoryDB() && (meshDagger.database() instanceof GraphDatabase)) {
-			DatabaseHelper.init(HibClassConverter.toGraph(meshDagger.database()));
-		}
+		meshTestContextProvider.getInstanceProvider().initMeshData(settings, meshDagger);
 		initFolders(mesh.getOptions());
 		boolean setAdminPassword = settings.optionChanger() != MeshOptionChanger.INITIAL_ADMIN_PASSWORD;
 		setupData(mesh.getOptions(), setAdminPassword);
@@ -564,7 +559,7 @@ public class MeshTestContext extends TestWatcher {
 		MonitoringConfig monitoringOptions = meshOptions.getMonitoringOptions();
 		monitoringOptions.setPort(monitoringPort);
 
-		meshInstanceProvider.initStorage(settings);
+		meshInstanceProvider.initPhysicalStorage(settings);
 
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		S3Options s3Options = meshOptions.getS3Options();
@@ -625,8 +620,10 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		}
 		switch (settings.awsContainer()) {
-			case AWS:
+			case NONE:
 				break;
+			case AWS:
+				throw new IllegalStateException("AWS test container is currently unsupported");
 			case MINIO:
 				String ACCESS_KEY = "accessKey";
 				String SECRET_KEY = "secretKey";
@@ -711,7 +708,7 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			@NotNull MeshComponent.Builder builder = getMeshDaggerBuilder();
 			mesh = new MeshImpl(options, builder);
-			meshDagger = this.createMeshComponent(mesh, options, settings);
+			meshDagger = createMeshComponent(options, settings);
 			dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
 			if (meshDagger.searchProvider() instanceof TrackingSearchProviderImpl) {
 				trackingSearchProvider = meshDagger.trackingSearchProvider();
@@ -730,11 +727,11 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	@NotNull
-	private MeshComponent.Builder getMeshDaggerBuilder() {
+	protected MeshComponent.Builder getMeshDaggerBuilder() {
 		return meshTestContextProvider.getInstanceProvider().getComponentBuilder();
 	}
 
-	public MeshComponent createMeshComponent(Mesh mesh, MeshOptions options, MeshTestSetting settings) {
+	public MeshComponent createMeshComponent(MeshOptions options, MeshTestSetting settings) {
 		return meshDagger = getMeshDaggerBuilder()
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())

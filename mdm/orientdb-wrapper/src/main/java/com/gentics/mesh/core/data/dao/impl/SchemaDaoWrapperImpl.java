@@ -10,26 +10,27 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractContainerDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.ContainerRootVertex;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -55,8 +56,8 @@ public class SchemaDaoWrapperImpl
 			implements SchemaDaoWrapper {
 
 	@Inject
-	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
+	public SchemaDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	@Override
@@ -114,10 +115,11 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assigned) {
+		ProjectDao projectDao = Tx.get().projectDao();
 		return getRoots(schema).stream()
 			.map(SchemaRoot::getProject)
 			.filter(Objects::nonNull)
-			.map(project -> project.onSchemaAssignEvent(schema, assigned));
+			.map(project -> projectDao.onSchemaAssignEvent(project, schema, assigned));
 	}
 
 	@Override
@@ -159,8 +161,7 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
-		Branch graphBranch = toGraph(branch);
-		return graphBranch.findActiveSchemaVersions();
+		return new TraversalResult<>(toGraph(branch).findActiveSchemaVersions());
 	}
 
 	@Override
@@ -229,7 +230,12 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	protected ContainerRootVertex<SchemaResponse, SchemaVersionModel, Schema, SchemaVersion> getRoot() {
+	protected RootVertex<Schema> getRoot() {
 		return boot.get().meshRoot().getSchemaContainerRoot();
+	}
+
+	@Override
+	public Class<? extends HibSchemaVersion> getVersionPersistenceClass() {
+		return SchemaContainerVersionImpl.class;
 	}
 }

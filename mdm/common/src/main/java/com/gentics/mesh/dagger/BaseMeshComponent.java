@@ -2,7 +2,6 @@ package com.gentics.mesh.dagger;
 
 import javax.inject.Provider;
 
-import com.gentics.mesh.storage.S3BinaryStorage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.annotation.Getter;
@@ -11,10 +10,11 @@ import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -45,6 +45,7 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.gentics.mesh.storage.S3BinaryStorage;
 
 import io.vertx.core.Vertx;
 
@@ -52,6 +53,9 @@ import io.vertx.core.Vertx;
  * Dagger interface for the central mesh components. The method allow quick access to elements outside of the dagger di scope.
  */
 public interface BaseMeshComponent {
+
+	@Getter
+	Database database();
 
 	@Getter
 	MeshOptions options();
@@ -65,10 +69,10 @@ public interface BaseMeshComponent {
 	@Getter
 	SchemaComparator schemaComparator();
 
-	// Data
-
 	@Getter
-	PermissionProperties permissionProperties();
+	MicroschemaComparator microschemaComparator();
+
+	// Data
 
 	@Getter
 	UserProperties userProperties();

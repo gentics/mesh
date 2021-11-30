@@ -38,7 +38,7 @@ public class RunnerNodeB {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions();
+		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class);
 		options.getStorageOptions().setDirectory(basePath + "/graph");
 		// options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");

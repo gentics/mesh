@@ -15,8 +15,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public interface GroupRoot extends RootVertex<Group>, TransformableElementRoot<Group, GroupResponse> {
 
-	public static final String TYPE = "groups";
-
 	/**
 	 * Load a result of all users of the group.
 	 * 

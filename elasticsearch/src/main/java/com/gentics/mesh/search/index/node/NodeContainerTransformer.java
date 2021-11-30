@@ -3,7 +3,6 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
@@ -26,6 +25,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -82,10 +82,12 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	private static final String VERSION_KEY = "version";
 
 	private final MeshOptions options;
+	private final RoleDao roleDao;
 
 	@Inject
-	public NodeContainerTransformer(MeshOptions options) {
+	public NodeContainerTransformer(MeshOptions options, RoleDao roleDao) {
 		this.options = options;
+		this.roleDao = roleDao;
 	}
 
 	/**
@@ -131,13 +133,13 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 	private void addPermissionInfo(JsonObject document, HibNode node, ContainerType type) {
 		List<String> roleUuids = new ArrayList<>();
 
-		for (HibRole role : toGraph(node).getRolesWithPerm(READ_PERM)) {
+		for (HibRole role : roleDao.getRolesWithPerm(node, READ_PERM)) {
 			roleUuids.add(role.getUuid());
 		}
 
 		// Also add the roles which would grant read on published nodes if the container is published.
 		if (type == PUBLISHED) {
-			for (HibRole role : toGraph(node).getRolesWithPerm(READ_PUBLISHED_PERM)) {
+			for (HibRole role : roleDao.getRolesWithPerm(node, READ_PUBLISHED_PERM)) {
 				roleUuids.add(role.getUuid());
 			}
 		}

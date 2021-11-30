@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -199,26 +198,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 *            Stack which contains the remaining path elements which should be resolved starting with the current element
 	 * @return
 	 */
-	default HibBaseElement resolveToElement(R root, Stack<String> stack) {
-		if (log.isDebugEnabled()) {
-			log.debug("Resolving for {" + getPersistenceClass(root).getSimpleName() + "}.");
-			if (stack.isEmpty()) {
-				log.debug("Stack: is empty");
-			} else {
-				log.debug("Stack: " + stack.peek());
-			}
-		}
-		if (stack.isEmpty()) {
-			return root;
-		} else {
-			String uuid = stack.pop();
-			if (stack.isEmpty()) {
-				return findByUuid(root, uuid);
-			} else {
-				throw error(BAD_REQUEST, "Can't resolve remaining segments. Next segment would be: " + stack.peek());
-			}
-		}
-	}
+	HibBaseElement resolveToElement(R root, Stack<String> stack);
 
 	/**
 	 * Create a new leaf object which is connected or directly related to this root element.
@@ -264,18 +244,11 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	String getRootLabel(R root);
 
 	/**
-	 * Return the persistence class for the items of the root element. (eg. NodeImpl, TagImpl...)
+	 * Return the total count of all tracked elements in the given root.
 	 * 
 	 * @return
 	 */
-	Class<? extends L> getPersistenceClass(R root);
-
-	/**
-	 * Return the total count of all tracked elements.
-	 * 
-	 * @return
-	 */
-	default long computeCount(R root) {
+	default long count(R root) {
 		return findAll(root).count();
 	}
 
@@ -288,7 +261,8 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	long globalCount(R root);
 
 	/**
-	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
+	 * Remove the element from the root. If the root is the only access point of the element, the element will be deleted permanently. 
+	 * Additional entries will be added to the batch to keep the search index in sync.
 	 *
 	 * @param element
 	 * @param bac
@@ -305,6 +279,14 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return true if the element was updated. Otherwise false
 	 */
 	boolean update(R root, L element, InternalActionContext ac, EventQueueBatch batch);
+
+	/**
+	 * Perform the necessary actions before root deletion.
+	 *
+	 * @param bac
+	 *            the context which keeps track of the process
+	 */
+	default void onRootDeleted(R root, BulkActionContext bac) {}
 
 	/**
 	 * Check whether the given element is assigned to this root node.

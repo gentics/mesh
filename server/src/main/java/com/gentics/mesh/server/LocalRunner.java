@@ -34,7 +34,7 @@ public class LocalRunner {
 		LoggingConfigurator.init();
 		Logger log = LoggerFactory.getLogger(LocalRunner.class);
 
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(args);
+		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
 
 		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);

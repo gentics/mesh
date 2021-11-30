@@ -1,15 +1,23 @@
 package com.gentics.mesh.core.s3binary;
 
+import static com.gentics.mesh.core.field.binary.BinaryFieldTestHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.s3binary.S3BinaryFieldTestHelper.FETCH;
+import static com.gentics.mesh.core.s3binary.S3BinaryFieldTestHelper.FILL_BASIC;
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -25,15 +33,6 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.FramedTransactionalGraph;
-import org.junit.Test;
-
-import static com.gentics.mesh.core.field.binary.BinaryFieldTestHelper.CREATE_EMPTY;
-import static com.gentics.mesh.core.s3binary.S3BinaryFieldTestHelper.FETCH;
-import static com.gentics.mesh.core.s3binary.S3BinaryFieldTestHelper.FILL_BASIC;
-import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 @MeshTestSetting(awsContainer = MINIO, testSize = TestSize.PROJECT_AND_NODE)
 public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
@@ -85,9 +84,9 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testFieldUpdate() {
         try (Tx tx = tx()) {
-            NodeGraphFieldContainerImpl container = getGraph(tx).addFramedVertex(NodeGraphFieldContainerImpl.class);
+            HibNodeFieldContainer container = contentDao(tx).createContainer();
             S3HibBinary s3binary = tx.s3binaries().create("1234", "1234/s3", "img.jpg").runInExistingTx(tx);
-            S3BinaryGraphField field = container.createS3Binary(S3_BINARY_FIELD, s3binary);
+            S3HibBinaryField field = container.createS3Binary(S3_BINARY_FIELD, s3binary);
             field.getS3Binary().setSize(Long.valueOf(220));
             assertNotNull(field);
             assertEquals(S3_BINARY_FIELD, field.getFieldKey());
@@ -98,7 +97,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
             field.getS3Binary().setImageHeight(133);
             field.getS3Binary().setImageWidth(7);
 
-            S3BinaryGraphField loadedField = container.getS3Binary(S3_BINARY_FIELD);
+            S3HibBinaryField loadedField = container.getS3Binary(S3_BINARY_FIELD);
             S3HibBinary loadedS3Binary = loadedField.getS3Binary();
             assertNotNull("The previously created field could not be found.", loadedField);
             assertEquals(220, loadedS3Binary.getSize().intValue());
@@ -115,10 +114,10 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testClone() {
         try (Tx tx = tx()) {
-            NodeGraphFieldContainerImpl container = getGraph(tx).addFramedVertex(NodeGraphFieldContainerImpl.class);
+            HibNodeFieldContainer container = contentDao(tx).createContainer();
 
             S3HibBinary s3binary = tx.s3binaries().create("1234","1234/s3","img.jg").runInExistingTx(tx);
-            S3BinaryGraphField field = container.createS3Binary("s3", s3binary);
+            S3HibBinaryField field = container.createS3Binary("s3", s3binary);
             field.getS3Binary().setSize(Long.valueOf(220));
             assertNotNull(field);
             assertEquals("s3", field.getFieldKey());
@@ -129,10 +128,10 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
             field.getS3Binary().setImageHeight(133);
             field.getS3Binary().setImageWidth(7);
 
-            NodeGraphFieldContainerImpl otherContainer = getGraph(tx).addFramedVertex(NodeGraphFieldContainerImpl.class);
+            HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
             field.cloneTo(otherContainer);
 
-            S3BinaryGraphField clonedField = otherContainer.getS3Binary("s3");
+            S3HibBinaryField clonedField = otherContainer.getS3Binary("s3");
             assertThat(clonedField).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(field, "outV", "id", "uuid", "element");
             assertThat(clonedField.getS3Binary()).as("referenced binary of cloned field").isNotNull().isEqualToComparingFieldByField(field.getS3Binary());
         }
@@ -142,10 +141,10 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testEquals() {
         try (Tx tx = tx()) {
-            NodeGraphFieldContainerImpl container = getGraph(tx).addFramedVertex(NodeGraphFieldContainerImpl.class);
+            HibNodeFieldContainer container = contentDao(tx).createContainer();
             S3HibBinary s3binary = tx.s3binaries().create("1234","1234/s3","img.jg").runInExistingTx(tx);
-            S3BinaryGraphField fieldA = container.createS3Binary("fieldA", s3binary);
-            S3BinaryGraphField fieldB = container.createS3Binary("fieldB", s3binary);
+            S3HibBinaryField fieldA = container.createS3Binary("fieldA", s3binary);
+            S3HibBinaryField fieldB = container.createS3Binary("fieldB", s3binary);
             assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
             fieldA.setFileName("someText");
             assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -161,11 +160,11 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testEqualsNull() {
         try (Tx tx = tx()) {
-            NodeGraphFieldContainerImpl container = getGraph(tx).addFramedVertex(NodeGraphFieldContainerImpl.class);
+            HibNodeFieldContainer container = contentDao(tx).createContainer();
             S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), "/s3", "img.jpg").runInExistingTx(tx);
-            S3BinaryGraphField fieldA = container.createS3Binary(S3_BINARY_FIELD, s3binary);
+            S3HibBinaryField fieldA = container.createS3Binary(S3_BINARY_FIELD, s3binary);
             assertFalse(fieldA.equals((Field) null));
-            assertFalse(fieldA.equals((GraphField) null));
+            assertFalse(fieldA.equals((S3HibBinaryField) null));
         }
     }
 
@@ -173,10 +172,10 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testEqualsRestField() {
         try (Tx tx = tx()) {
-            NodeGraphFieldContainerImpl container = getGraph(tx).addFramedVertex(NodeGraphFieldContainerImpl.class);
+            HibNodeFieldContainer container = contentDao(tx).createContainer();
             container.setVersion(new VersionNumber(2, 1));
             S3HibBinary s3binary = tx.s3binaries().create("1234", container.getUuid() + "/s3", "img.jpg").runInExistingTx(tx);
-            S3BinaryGraphField fieldA = container.createS3Binary("fieldA", s3binary);
+            S3HibBinaryField fieldA = container.createS3Binary("fieldA", s3binary);
 
             // graph empty - rest empty
             assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new S3BinaryFieldImpl()));
@@ -248,11 +247,5 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
                 assertEquals("The html of the field was not updated.", "someFile.txt", field.getFileName());
             });
         }
-    }
-
-    private FramedTransactionalGraph getGraph(Tx tx) {
-        GraphDBTx graphTx = (GraphDBTx) tx;
-
-        return graphTx.getGraph();
     }
 }

@@ -1,9 +1,5 @@
 package com.gentics.mesh.dagger.module;
 
-import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
-import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandlerImpl;
-import com.gentics.mesh.storage.S3BinaryStorage;
-import com.gentics.mesh.storage.s3.S3BinaryStorageImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -50,21 +46,19 @@ import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.context.ContextDataRegistry;
-import com.gentics.mesh.core.context.impl.GraphContextDataRegistryImpl;
-import com.gentics.mesh.core.data.PersistenceClassMap;
-import com.gentics.mesh.core.data.PersistenceClassMapImpl;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
+import com.gentics.mesh.core.context.impl.ContextDataRegistryImpl;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
-import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.db.CommonTxData;
+import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
+import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -86,10 +80,10 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
+import com.gentics.mesh.liveness.LivenessManagerImpl;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.MetricsServiceImpl;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
-import com.gentics.mesh.liveness.LivenessManagerImpl;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
@@ -130,6 +124,8 @@ import com.gentics.mesh.security.SecurityUtilsImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
+import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.storage.s3.S3BinaryStorageImpl;
 
 import dagger.Binds;
 import dagger.Module;
@@ -140,10 +136,13 @@ import dagger.Module;
 @Module
 public abstract class CommonBindModule {
 	@Binds
-	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
+	abstract TxData txData(CommonTxData e);
 
 	@Binds
-	abstract WebRootService bindWebrootService(WebRootServiceImpl e);
+	abstract ContextDataRegistry contextDataRegistry(ContextDataRegistryImpl e);
+
+	@Binds
+	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
 
 	@Binds
 	abstract MeshOAuthService bindOAuthHandler(MeshOAuth2ServiceImpl e);
@@ -188,9 +187,6 @@ public abstract class CommonBindModule {
 	abstract S3BinaryStorage bindS3BinaryStorage(S3BinaryStorageImpl e);
 
 	@Binds
-	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);
-
-	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
 
 	@Binds
@@ -213,9 +209,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
-
-	@Binds
-	abstract ContextDataRegistry contextDataRegistry(GraphContextDataRegistryImpl e);
 
 	@Binds
 	abstract RoleIndexHandler roleIndexHandler(RoleIndexHandlerImpl e);
@@ -249,9 +242,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract NodeMigration nodeMigration(NodeMigrationImpl e);
-
-	@Binds
-	abstract PermissionProperties permissionProperties(PermissionPropertiesImpl e);
 
 	@Binds
 	abstract LocalBinaryStorage localBinaryStorage(LocalBinaryStorageImpl e);

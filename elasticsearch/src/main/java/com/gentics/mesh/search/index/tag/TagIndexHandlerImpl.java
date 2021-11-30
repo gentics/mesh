@@ -16,7 +16,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -66,8 +65,8 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
-	public Class<Tag> getElementClass() {
-		return Tag.class;
+	public Class<HibTag> getElementClass() {
+		return HibTag.class;
 	}
 
 	@Override
@@ -89,12 +88,12 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Tag.composeDocumentId(entry.getElementUuid());
+		return HibTag.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Tag.composeIndexName(entry.getContext().getProjectUuid());
+		return HibTag.composeIndexName(entry.getContext().getProjectUuid());
 	}
 
 	@Override
@@ -128,7 +127,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	 * @return
 	 */
 	public IndexInfo getIndex(String projectUuid) {
-		return new IndexInfo(Tag.composeIndexName(projectUuid), null, getMappingProvider().getMapping(), "tag");
+		return new IndexInfo(HibTag.composeIndexName(projectUuid), null, getMappingProvider().getMapping(), "tag");
 	}
 
 	@Override
@@ -137,7 +136,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 			return boot.projectDao().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
-					return diffAndSync(Tag.composeIndexName(uuid), uuid, indexPattern);
+					return diffAndSync(HibTag.composeIndexName(uuid), uuid, indexPattern);
 				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}
@@ -148,7 +147,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 			Set<String> activeIndices = new HashSet<>();
 			ProjectDao projectDao = tx.projectDao();
 			for (HibProject project : projectDao.findAll()) {
-				activeIndices.add(Tag.composeIndexName(project.getUuid()));
+				activeIndices.add(HibTag.composeIndexName(project.getUuid()));
 			}
 			return indices.stream()
 				.filter(i -> i.startsWith(getType() + "-"))
@@ -162,7 +161,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 		return db.tx(tx -> {
 			HibProject project = tx.getProject(ac);
 			if (project != null) {
-				return Collections.singleton(Tag.composeIndexName(project.getUuid()));
+				return Collections.singleton(HibTag.composeIndexName(project.getUuid()));
 			} else {
 				return getIndices().keySet();
 			}

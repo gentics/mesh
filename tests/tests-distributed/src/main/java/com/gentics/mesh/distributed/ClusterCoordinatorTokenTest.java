@@ -1,6 +1,7 @@
 package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.distributed.AbstractClusterTest.createDefaultMeshContainer;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
@@ -40,7 +41,7 @@ public class ClusterCoordinatorTokenTest {
 	private MeshRestClient serverAClient;
 	private MeshRestClient serverBClient;
 
-	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverA = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -51,7 +52,7 @@ public class ClusterCoordinatorTokenTest {
 		.waitForStartup()
 		.withClearFolders();
 
-	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverB = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())

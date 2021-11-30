@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
 import java.util.Arrays;
@@ -13,7 +12,6 @@ import java.util.Collection;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;

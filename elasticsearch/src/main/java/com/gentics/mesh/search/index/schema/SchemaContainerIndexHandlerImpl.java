@@ -14,7 +14,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -55,17 +54,17 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Schema.composeDocumentId(entry.getElementUuid());
+		return HibSchema.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Schema.composeIndexName();
+		return HibSchema.composeIndexName();
 	}
 
 	@Override
-	public Class<Schema> getElementClass() {
-		return Schema.class;
+	public Class<HibSchema> getElementClass() {
+		return HibSchema.class;
 	}
 
 	@Override
@@ -87,22 +86,22 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Schema.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibSchema.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Schema.composeIndexName());
+		return filterIndicesByType(indices, HibSchema.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Schema.composeIndexName());
+		return Collections.singleton(HibSchema.composeIndexName());
 	}
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = Schema.composeIndexName();
+		String indexName = HibSchema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "schema");
 		return Collections.singletonMap(indexName, info);
 	}

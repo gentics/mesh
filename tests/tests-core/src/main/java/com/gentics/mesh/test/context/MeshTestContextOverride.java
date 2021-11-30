@@ -1,24 +1,21 @@
 package com.gentics.mesh.test.context;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.util.SearchWaitUtil;
-import com.gentics.mesh.test.DaggerMeshTestComponent;
-
 
 public class MeshTestContextOverride extends MeshTestContext {
 
 	private SearchWaitUtil waitUtil;
 
 	@Override
-	public MeshComponent createMeshComponent(Mesh mesh, MeshOptions options, MeshTestSetting settings) {
-		return DaggerMeshTestComponent.builder()
+	public MeshComponent createMeshComponent(MeshOptions options, MeshTestSetting settings) {
+		return getMeshDaggerBuilder()
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())
-			.mesh(mesh)
-			.waitUtil(this.getWaitUtil())
+			.searchWaitUtilSupplier(this::getWaitUtil)
+			.mesh(getMesh())
 			.build();
 	}
 

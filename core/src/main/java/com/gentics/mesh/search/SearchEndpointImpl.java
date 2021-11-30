@@ -199,7 +199,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
-	private <T extends HibCoreElement, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
+	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse,
 		boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();

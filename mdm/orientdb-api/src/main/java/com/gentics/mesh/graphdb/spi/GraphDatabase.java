@@ -4,7 +4,6 @@ import java.util.Iterator;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -72,14 +71,6 @@ public interface GraphDatabase extends Database {
 	default <T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Object fieldValue) {
 		return getVerticesTraversal(classOfVertex, new String[] { fieldName }, new Object[] { fieldValue });
 	}
-
-	/**
-	 * Locate all vertices for the given type.
-	 * 
-	 * @param classOfVertex
-	 * @return
-	 */
-	<T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex);
 
 	/**
 	 * Get the underlying raw transaction.

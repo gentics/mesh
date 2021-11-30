@@ -9,6 +9,8 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -16,7 +18,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -42,8 +43,8 @@ import io.reactivex.Completable;
 public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJob, Job> implements JobDaoWrapper {
 
 	@Inject
-	public JobDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
+	public JobDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	@Override
@@ -105,28 +106,18 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 
 	@Override
-	public String getAPIPath(HibJob job, InternalActionContext ac) {
-		return toGraph(job).getAPIPath(ac);
-	}
-
-	@Override
-	public String getETag(HibJob job, InternalActionContext ac) {
-		return toGraph(job).getETag(ac);
-	}
-
-	@Override
 	public boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().meshRoot().getJobRoot().update(toGraph(job), ac, batch);
+		return toGraph(job).update(ac, batch);
 	}
 
 	@Override
 	public HibJob create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return boot.get().meshRoot().getJobRoot().create(ac, batch, uuid);
+		throw new NotImplementedException("Jobs cannot be created using REST");
 	}
 
 	@Override
 	public void delete(HibJob job, BulkActionContext bac) {
-		boot.get().meshRoot().getJobRoot().delete(toGraph(job), bac);
+		toGraph(job).delete(bac);
 	}
 
 	@Override

@@ -1,10 +1,8 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -18,7 +16,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -27,13 +24,8 @@ import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.data.dao.util.CommonDaoHelper;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 
 import dagger.Lazy;
 
@@ -43,62 +35,9 @@ import dagger.Lazy;
 @Singleton
 public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, HibRole, Role> implements RoleDaoWrapper {
 
-	private final CommonDaoHelper commonDaoHelper;
-
 	@Inject
-	public RoleDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions,
-		CommonDaoHelper commonDaoHelper) {
-		super(boot, permissions);
-		this.commonDaoHelper = commonDaoHelper;
-	}
-
-	@Override
-	public RoleResponse transformToRestSync(HibRole role, InternalActionContext ac, int level, String... languageTags) {
-		Role graphRole = toGraph(role);
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		RoleResponse restRole = new RoleResponse();
-
-		if (fields.has("name")) {
-			restRole.setName(role.getName());
-		}
-
-		if (fields.has("groups")) {
-			setGroups(role, ac, restRole);
-		}
-		graphRole.fillCommonRestFields(ac, fields, restRole);
-
-		setRolePermissions(graphRole, ac, restRole);
-		return restRole;
-	}
-
-	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
-		Role graphRole = toGraph(role);
-		for (HibGroup group : graphRole.getGroups()) {
-			restRole.getGroups().add(group.transformToReference());
-		}
-	}
-
-	@Override
-	public Set<InternalPermission> getPermissions(HibRole role, HibBaseElement element) {
-		Set<InternalPermission> permissions = new HashSet<>();
-		InternalPermission[] possiblePermissions = element.hasPublishPermissions()
-			? InternalPermission.values()
-			: InternalPermission.basicPermissions();
-
-		for (InternalPermission permission : possiblePermissions) {
-			if (hasPermission(role, permission, element)) {
-				permissions.add(permission);
-			}
-		}
-		return permissions;
-	}
-
-	@Override
-	public boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement vertex) {
-		Set<String> allowedUuids = getRoleUuidsForPerm(vertex, permission);
-		return allowedUuids != null && allowedUuids.contains(role.getUuid());
+	public RoleDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	@Override
@@ -134,23 +73,6 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
-	public boolean update(HibRole role, InternalActionContext ac, EventQueueBatch batch) {
-		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
-		if (shouldUpdate(requestModel.getName(), role.getName())) {
-			// Check for conflict
-			HibRole roleWithSameName = findByName(requestModel.getName());
-			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(role.getUuid())) {
-				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
-			}
-
-			role.setName(requestModel.getName());
-			batch.add(role.onUpdated());
-			return true;
-		}
-		return false;
-	}
-
-	@Override
 	public HibRole findByUuid(String uuid) {
 		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
 		return roleRoot.findByUuid(uuid);
@@ -173,21 +95,6 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	public Result<? extends HibGroup> getGroups(HibRole role) {
 		Role graphRole = toGraph(role);
 		return graphRole.getGroups();
-	}
-
-	@Override
-	public HibRole create(String name, HibUser creator, String uuid) {
-		RoleRoot roleRoot = boot.get().meshRoot().getRoleRoot();
-
-		Role role = roleRoot.create();
-		if (uuid != null) {
-			role.setUuid(uuid);
-		}
-		role.setName(name);
-		role.setCreated(creator);
-		role.generateBucketId();
-		addRole(role);
-		return role;
 	}
 
 	@Override
@@ -225,28 +132,10 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
-	public String getAPIPath(HibRole role, InternalActionContext ac) {
-		return commonDaoHelper.getRootLevelAPIPath(ac, role);
-	}
-
-	@Override
-	public String getETag(HibRole role, InternalActionContext ac) {
-		Role graphRole = toGraph(role);
-		return graphRole.getETag(ac);
-	}
-
-	@Override
-	public void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive,
-		Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		Role graphRole = toGraph(role);
-		MeshVertex graphElement = (MeshVertex) element;
-		graphElement.applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
-	@Override
 	public Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission) {
-		return ((MeshVertex) element).getRoleUuidsForPerm(permission);
+		return (element instanceof MeshVertex) 
+				? ((MeshVertex) element).getRoleUuidsForPerm(permission)
+				: Collections.emptySet();
 	}
 
 	@Override

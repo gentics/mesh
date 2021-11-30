@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistryImpl;
-import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibMeshVersion;
@@ -158,9 +157,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Inject
 	public MasterElector coordinatorMasterElector;
-
-	@Inject
-	public ChangelogSystem changelogSystem;
 
 	@Inject
 	public DaoCollection daoCollection;

@@ -26,7 +26,7 @@ public class NodeRejectionClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverA = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -36,7 +36,7 @@ public class NodeRejectionClusterTest extends AbstractClusterTest {
 		.withFilesystem()
 		.withExtraOpts("-Dmesh.internal.version=0.10.0 -Dmesh.internal.dbrev=EFG");
 
-	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverB = createDefaultMeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())

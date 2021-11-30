@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -55,8 +54,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
 
 	@Inject
-	public TagFamilyDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
-		super(boot, permissions);
+	public TagFamilyDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
+		super(boot);
 	}
 
 	@Override
@@ -114,7 +113,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 		graphTagFamily.fillCommonRestFields(ac, fields, restTagFamily);
 
 		if (fields.has("perms")) {
-			setRolePermissions(graphTagFamily, ac, restTagFamily);
+			Tx.get().roleDao().setRolePermissions(graphTagFamily, ac, restTagFamily);
 		}
 
 		return restTagFamily;
@@ -204,16 +203,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public String getETag(HibTagFamily tagfamily, InternalActionContext ac) {
-		return toGraph(tagfamily).getETag(ac);
-	}
-
-	@Override
-	public String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac) {
-		return toGraph(tagFamily).getAPIPath(ac);
-	}
-
-	@Override
 	public void removeTag(HibTagFamily tagFamily, HibTag tag) {
 		TagFamily graphTagFamily = toGraph(tagFamily);
 		graphTagFamily.removeTag(toGraph(tag));
@@ -243,7 +232,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public long computeCount(HibProject project) {
+	public long count(HibProject project) {
 		Project graphProject = toGraph(project);
 		return graphProject.getTagFamilyRoot().computeCount();
 	}
@@ -293,12 +282,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 
 	@Override
 	public void delete(HibProject root, HibTagFamily element, BulkActionContext bac) {
-		toGraph(root).getTagFamilyRoot().delete(toGraph(element), bac);
-	}
-
-	@Override
-	public boolean update(HibProject root, HibTagFamily element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(root).getTagFamilyRoot().update(toGraph(element), ac, batch);
+		toGraph(element).delete(bac);
 	}
 
 	@Override
@@ -317,4 +301,9 @@ public class TagFamilyDaoWrapperImpl extends AbstractCoreDaoWrapper<TagFamilyRes
 		return boot.get().meshRoot().getTagFamilyRoot();
 	}
 
+	@Override
+	public void onRootDeleted(HibProject root, BulkActionContext bac) {
+		TagFamilyDaoWrapper.super.onRootDeleted(root, bac);
+		toGraph(root).getTagFamilyRoot().delete(bac);
+	}
 }

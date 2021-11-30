@@ -16,7 +16,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -32,10 +31,10 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -89,9 +88,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNull(tagFamily.getDescription());
 			tagFamily.setDescription("description");
 			assertEquals("description", tagFamily.getDescription());
-			assertEquals(0, tagDao.computeCount(tagFamily));
+			assertEquals(0, tagDao.count(tagFamily));
 			assertNotNull(tagDao.create(tagFamily, GERMAN_NAME, project(), user()));
-			assertEquals(1, tagDao.computeCount(tagFamily));
+			assertEquals(1, tagDao.count(tagFamily));
 		}
 	}
 
@@ -342,11 +341,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			HibTagFamily basicTagFamily = tagFamily("basic");
-			long beforeCount = tagDao.computeCount(basicTagFamily);
+			long beforeCount = tagDao.count(basicTagFamily);
 			HibTag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
 			tagFamilyDao.addTag(basicTagFamily, noPermTag);
 			assertNotNull(noPermTag.getUuid());
-			assertEquals(beforeCount + 1, tagDao.computeCount(basicTagFamily));
+			assertEquals(beforeCount + 1, tagDao.count(basicTagFamily));
 
 			Page<? extends HibTag> tagfamilyTagpage = tagDao.findAll(basicTagFamily, mockActionContext(), new PagingParametersImpl(1, 20L));
 			assertPage(tagfamilyTagpage, beforeCount);
@@ -376,19 +375,19 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			// TODO move into OrientDB tests when available.
-			TagRoot root = ((OrientDBBootstrapInitializer) boot()).meshRoot().getTagRoot();
-			assertEquals(tags().size(), root.computeCount());
+			HibTagFamily tagFamily = tagFamily("colors");
+			TagDao tagDao = tx.<CommonTx>unwrap().tagDao();
+			long tagsSize = tagDao.count(tagFamily);
 			HibTag tag = tag("red");
-			root.removeTag(tag);
-			assertEquals(tags().size() - 1, root.computeCount());
-			root.removeTag(tag);
-			assertEquals(tags().size() - 1, root.computeCount());
-			root.addTag(tag);
-			assertEquals(tags().size(), root.computeCount());
-			root.addTag(tag);
-			assertEquals(tags().size(), root.computeCount());
-			root.delete(createBulkContext());
+			tagDao.removeItem(tagFamily, tag);
+			assertEquals(tagsSize - 1, tagDao.count(tagFamily));
+			tagDao.removeItem(tagFamily, tag);
+			assertEquals(tagsSize - 1, tagDao.count(tagFamily));
+			tagDao.addItem(tagFamily, tag);
+			assertEquals(tagsSize, tagDao.count(tagFamily));
+			tagDao.addItem(tagFamily, tag);
+			assertEquals(tagsSize, tagDao.count(tagFamily));
+			tagDao.onRootDeleted(tagFamily, createBulkContext());
 		}
 	}
 
@@ -429,7 +428,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull("The folder could not be found.", loadedTag);
 			String name = loadedTag.getName();
 			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-			assertEquals(10, tagDao.computeCount(tagFamily));
+			assertEquals(10, tagDao.count(tagFamily));
 			latch.countDown();
 			HibTag projectTag = tagDao.findByUuid(tagFamily, uuid);
 			assertNotNull("The tag should also be assigned to the project tag root", projectTag);

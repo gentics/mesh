@@ -17,6 +17,7 @@ import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
@@ -224,8 +225,15 @@ public interface EventHelper extends BaseHelper {
 		waitForEvent(MeshEvent.PLUGIN_REGISTERED, 20_000);
 	}
 
-	default JobListResponse waitForJob(Runnable action) {
+	default JobListResponse waitForJob(Supplier<?> action) {
 		return waitForJobs(action, COMPLETED, 1);
+	}
+
+	default JobListResponse waitForJob(Runnable action) {
+		return waitForJobs(() -> {
+			action.run();
+			return null;
+		}, COMPLETED, 1);
 	}
 
 	/**
@@ -259,6 +267,13 @@ public interface EventHelper extends BaseHelper {
 		}
 	}
 
+	default JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
+		return waitForJobs(() -> {
+			action.run();
+			return null;
+		}, status, expectedJobs);
+	}
+
 	/**
 	 * Execute the action and check that the jobs are executed and yields the given status.
 	 *
@@ -270,7 +285,7 @@ public interface EventHelper extends BaseHelper {
 	 *            Amount of expected jobs
 	 * @return Migration status
 	 */
-	default JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
+	default JobListResponse waitForJobs(Supplier<?> action, JobStatus status, int expectedJobs) {
 
 		// Load a status just before the action
 		JobListResponse before = runAsAdmin(() -> {
@@ -278,7 +293,13 @@ public interface EventHelper extends BaseHelper {
 		});
 
 		// Invoke the action
-		action.run();
+		Object actionResponse = action.get();
+
+		if (actionResponse != null && actionResponse instanceof GenericMessageResponse) {
+			if ("Migration was not invoked. No changes were detected.".equals(((GenericMessageResponse) actionResponse).getMessage())) {
+				return null;
+			}
+		}
 
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 30;

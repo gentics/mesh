@@ -30,15 +30,15 @@ import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.dao.PersistingProjectDao;
 import com.gentics.mesh.core.data.dao.PersistingRoleDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
@@ -48,17 +48,14 @@ import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.S3BinaryDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.AbstractTx;
+import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.madl.tp3.mock.Element;
@@ -100,7 +97,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	private final Database db;
 	private final BootstrapInitializer boot;
-	private final TxData txData;
+	private final CommonTxData txData;
 	private final ContextDataRegistry contextDataRegistry;
 	private final OrientDBDaoCollection daos;
 	private final CacheCollection caches;
@@ -114,9 +111,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
 		OrientDBDaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
 		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
-		ContextDataRegistry contextDataRegistry, NodeIndexHandler nodeIndexHandler,
-		WebRootLinkReplacer webRootLinkReplacer, ServerSchemaStorage serverSchemaStorage,
-		Binaries binaries, SchemaComparator schemaComparator, MicroschemaComparator microschemaComparator, S3Binaries s3binaries) {
+		ContextDataRegistry contextDataRegistry, S3Binaries s3binaries, Binaries binaries, CommonTxData txData) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -133,8 +128,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new TxDataImpl(options, boot, permissionRoots, nodeIndexHandler,
-				webRootLinkReplacer, serverSchemaStorage, schemaComparator, microschemaComparator);
+		this.txData = txData;
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
 		this.caches = caches;
@@ -218,7 +212,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public TxData data() {
+	public CommonTxData data() {
 		return txData;
 	}
 
@@ -345,12 +339,12 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public NodeDao nodeDao() {
+	public PersistingNodeDao nodeDao() {
 		return daos.nodeDao();
 	}
 
 	@Override
-	public ContentDao contentDao() {
+	public PersistingContentDao contentDao() {
 		return daos.contentDao();
 	}
 
@@ -372,5 +366,10 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public PasswordEncoder passwordEncoder() {
 		return security.passwordEncoder();
+	}
+
+	@Override
+	public EventQueueBatch createBatch() {
+		return txData.mesh().batchProvider().get();
 	}
 }

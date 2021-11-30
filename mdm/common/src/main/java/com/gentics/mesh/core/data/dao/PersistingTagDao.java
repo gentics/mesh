@@ -11,7 +11,9 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * A persisting extension to {@link TagDao}
@@ -19,7 +21,7 @@ import com.gentics.mesh.core.db.Tx;
  * @author plyhun
  *
  */
-public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
+public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, ElementResolvingRootDao<HibTagFamily, HibTag> {
 
 	@Override
 	default HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
@@ -67,4 +69,12 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
 				});
 	}
 
+	@Override
+	default boolean update(HibTagFamily tagFamily, HibTag tag, InternalActionContext ac, EventQueueBatch batch) {
+		// Don't update the item, if it does not belong to the requested root.
+		if (!tagFamily.getUuid().equals(tag.getProject().getUuid())) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", tag.getUuid());
+		}
+		return update(tag, ac, batch);
+	}
 }

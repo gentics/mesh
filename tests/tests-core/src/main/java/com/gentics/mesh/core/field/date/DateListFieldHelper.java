@@ -5,7 +5,6 @@ import static com.gentics.mesh.util.DateUtils.toISO8601;
 
 import java.util.Date;
 
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;

@@ -13,15 +13,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
@@ -29,11 +23,8 @@ import com.gentics.mesh.core.data.dao.RootDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -102,14 +93,14 @@ public class MeshEntities {
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
-		schema = new SimpleMeshEntity<>(schemaTransformer, Schema.TYPE_INFO, byHibElementUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, Microschema.TYPE_INFO, byHibElementUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
-		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
-		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byHibElementUuid(uuid -> boot.groupDao().findByUuid(uuid)));
-		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byHibElementUuid(uuid -> boot.roleDao().findByUuid(uuid)));
-		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byHibElementUuid(uuid -> boot.projectDao().findByUuid(uuid)));
-		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TagFamily.TYPE_INFO, this::toTagFamily);
-		tag = new SimpleMeshEntity<>(tagTransformer, Tag.TYPE_INFO, this::toTag);
+		schema = new SimpleMeshEntity<>(schemaTransformer, HibSchema.TYPE_INFO, byHibElementUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, HibMicroschema.TYPE_INFO, byHibElementUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
+		user = new SimpleMeshEntity<>(userTransformer, HibUser.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
+		group = new SimpleMeshEntity<>(groupTransformer, HibGroup.TYPE_INFO, byHibElementUuid(uuid -> boot.groupDao().findByUuid(uuid)));
+		role = new SimpleMeshEntity<>(roleTransformer, HibRole.TYPE_INFO, byHibElementUuid(uuid -> boot.roleDao().findByUuid(uuid)));
+		project = new SimpleMeshEntity<>(projectTransformer, HibProject.TYPE_INFO, byHibElementUuid(uuid -> boot.projectDao().findByUuid(uuid)));
+		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, HibTagFamily.TYPE_INFO, this::toTagFamily);
+		tag = new SimpleMeshEntity<>(tagTransformer, HibTag.TYPE_INFO, this::toTag);
 		nodeContent = new NodeMeshEntity(nodeTransformer, this::toNodeContent);
 
 		entities = Stream.of(schema, microschema, user, group, role, project, tagFamily, tag, nodeContent)
@@ -284,7 +275,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibGroup element) {
-		return helper.createDocumentRequest(Group.composeIndexName(), element.getUuid(), group.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibGroup.composeIndexName(), element.getUuid(), group.transform(element), complianceMode);
 	}
 
 	/**
@@ -302,7 +293,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibTagFamily element, String projectUuid) {
-		return helper.createDocumentRequest(TagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibTagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element), complianceMode);
 	}
 
 	/**
@@ -311,7 +302,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibTag element, String projectUuid) {
-		return helper.createDocumentRequest(Tag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibTag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element), complianceMode);
 	}
 
 	/**

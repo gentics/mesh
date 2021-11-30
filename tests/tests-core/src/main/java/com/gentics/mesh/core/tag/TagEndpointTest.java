@@ -37,8 +37,6 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
@@ -245,8 +243,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(projectUuid()), Tag.composeDocumentId(tag2.getUuid()));
-		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid()), TagFamily.composeDocumentId(parentTagFamilyUuid));
+		assertThat(trackingSearchProvider()).hasStore(HibTag.composeIndexName(projectUuid()), HibTag.composeDocumentId(tag2.getUuid()));
+		assertThat(trackingSearchProvider()).hasStore(HibTagFamily.composeIndexName(projectUuid()), HibTagFamily.composeDocumentId(parentTagFamilyUuid));
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
@@ -263,7 +261,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 						schemaContainerVersionUuid, type), ContentDao.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
-			assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
+			assertThat(trackingSearchProvider()).hasStore(HibTagFamily.composeIndexName(projectUuid), HibTagFamily.composeDocumentId(parentTagFamily
 				.getUuid()));
 			assertThat(trackingSearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0, 0);
 
@@ -376,7 +374,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(tagUuid));
+			assertThat(trackingSearchProvider()).hasDelete(HibTag.composeIndexName(projectUuid), HibTag.composeDocumentId(tagUuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (HibNode node : nodes) {
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
@@ -454,8 +452,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));
-		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamilyUuid));
+		assertThat(trackingSearchProvider()).hasStore(HibTag.composeIndexName(projectUuid), HibTag.composeDocumentId(response.getUuid()));
+		assertThat(trackingSearchProvider()).hasStore(HibTagFamily.composeIndexName(projectUuid), HibTagFamily.composeDocumentId(parentTagFamilyUuid));
 		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		try (Tx tx = tx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", tx.tagDao().findByUuid(response.getUuid()));

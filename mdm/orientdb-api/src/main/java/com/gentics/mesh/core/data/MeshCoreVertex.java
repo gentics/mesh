@@ -11,7 +11,7 @@ import com.gentics.mesh.event.EventQueueBatch;
  * @param <R>
  *            Rest model class of the core vertex
  */
-public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, TransformableElement<R>, HasPermissions, HibCoreElement<R> {
+public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, TransformableElement<R>, HibCoreElement<R> {
 
 	/**
 	 * Update the vertex using the action context information.
@@ -20,6 +20,7 @@ public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, Transfo
 	 * @param batch
 	 *            Batch to which entries will be added in order to update the search index.
 	 * @return true if the element was updated. Otherwise false
+	 * @deprecated move to DAO or rename
 	 */
 	boolean update(InternalActionContext ac, EventQueueBatch batch);
 

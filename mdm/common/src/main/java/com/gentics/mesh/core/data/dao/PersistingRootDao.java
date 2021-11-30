@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
 
@@ -13,7 +14,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
  * @param <R> root entity type
  * @param <L> managed(leaf) entity type
  */
-public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> {
+public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends RootDao<R, L>, ElementResolvingRootDao<R, L> {
 
 	/**
 	 * Created a persisted entity within the given root. 
@@ -40,4 +41,9 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	 * @param entity
 	 */
 	void deletePersisted(R root, L entity);
+
+	@Override
+	default void onRootDeleted(R root, BulkActionContext bac) {
+		findAll(root).forEach(entity -> delete(root, entity, bac));
+	}
 }

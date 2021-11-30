@@ -28,21 +28,14 @@ import java.util.List;
 
 import org.mockito.Mockito;
 
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
@@ -56,16 +49,12 @@ import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -91,21 +80,20 @@ public final class TestMocks {
 
 	}
 
-	public static Project mockProject(HibUser user) {
-		Project project = mock(Project.class);
+	public static HibProject mockProject(HibUser user) {
+		HibProject project = mock(HibProject.class);
 		when(project.getUuid()).thenReturn(PROJECT_DEMO2_UUID);
 		when(project.getName()).thenReturn("dummyProject");
 		when(project.getCreator()).thenReturn(user);
 		when(project.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(project.getEditor()).thenReturn(user);
 		when(project.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
-		when(project.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(project.getElementVersion()).thenReturn(UUID_1);
 		return project;
 	}
 
-	public static Language mockLanguage(String code) {
-		Language language = mock(Language.class);
+	public static HibLanguage mockLanguage(String code) {
+		HibLanguage language = mock(HibLanguage.class);
 		when(language.getUuid()).thenReturn(LANGUAGE_UUID);
 		when(language.getLanguageTag()).thenReturn("de");
 		when(language.getElementVersion()).thenReturn(UUID_2);
@@ -113,15 +101,15 @@ public final class TestMocks {
 	}
 
 	public static HibNode mockNodeBasic(String schemaType, HibUser user) {
-		Node node = mock(Node.class);
+		HibNode node = mock(HibNode.class);
 		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
 		HibSchema schemaContainer = mockSchemaContainer(schemaType, user);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		return node;
 	}
 
-	public static Micronode mockMicronode(String microschemaName, HibUser user) {
-		Micronode micronode = mock(Micronode.class);
+	public static HibMicronode mockMicronode(String microschemaName, HibUser user) {
+		HibMicronode micronode = mock(HibMicronode.class);
 		when(micronode.getUuid()).thenReturn(UUID_1);
 		HibMicroschema microschemaContainer = mockMicroschemaContainer(microschemaName, user);
 		HibMicroschemaVersion latestVersion = microschemaContainer.getLatestVersion();
@@ -144,14 +132,13 @@ public final class TestMocks {
 	}
 
 	public static HibRole mockRole(String roleName, HibUser creator) {
-		Role role = mock(Role.class);
+		HibRole role = mock(HibRole.class);
 		when(role.getCreator()).thenReturn(creator);
 		when(role.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(role.getEditor()).thenReturn(creator);
 		when(role.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(role.getName()).thenReturn(roleName);
 		when(role.getUuid()).thenReturn(ROLE_CLIENT_UUID);
-		when(role.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(role.getElementVersion()).thenReturn(UUID_4);
 		return role;
 	}
@@ -174,7 +161,7 @@ public final class TestMocks {
 	}
 
 	public static HibUser mockUser(String username, String firstname, String lastname, HibUser creator) {
-		User user = mock(User.class);
+		HibUser user = mock(HibUser.class);
 		when(user.getUsername()).thenReturn(username);
 		when(user.getFirstname()).thenReturn(firstname);
 		when(user.getLastname()).thenReturn(lastname);
@@ -186,7 +173,6 @@ public final class TestMocks {
 			when(user.getCreator()).thenReturn(creator);
 			when(user.getEditor()).thenReturn(creator);
 		}
-		when(user.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(user.getElementVersion()).thenReturn(UUID_1);
 		return user;
 	}
@@ -201,7 +187,7 @@ public final class TestMocks {
 	}
 
 	public static HibTagFamily mockTagFamily(String name, HibUser user, HibProject project) {
-		TagFamily tagFamily = mock(TagFamily.class);
+		HibTagFamily tagFamily = mock(HibTagFamily.class);
 		when(tagFamily.getCreator()).thenReturn(user);
 		when(tagFamily.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(tagFamily.getEditor()).thenReturn(user);
@@ -209,13 +195,12 @@ public final class TestMocks {
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(TAGFAMILY_FUELS_UUID);
 		when(tagFamily.getProject()).thenReturn(project);
-		when(tagFamily.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(tagFamily.getElementVersion()).thenReturn(UUID_2);
 		return tagFamily;
 	}
 
 	public static HibTag mockTag(String name, HibUser user, HibTagFamily tagFamily, HibProject project) {
-		Tag tag = mock(Tag.class);
+		HibTag tag = mock(HibTag.class);
 		when(tag.getCreator()).thenReturn(user);
 		when(tag.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(tag.getEditor()).thenReturn(user);
@@ -224,7 +209,6 @@ public final class TestMocks {
 		when(tag.getUuid()).thenReturn(TAG_BLUE_UUID);
 		when(tag.getTagFamily()).thenReturn(tagFamily);
 		when(tag.getProject()).thenReturn(project);
-		when(tag.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(tag.getElementVersion()).thenReturn(UUID_3);
 		return tag;
 	}
@@ -234,7 +218,7 @@ public final class TestMocks {
 	}
 
 	public static HibSchema mockSchemaContainer(String name, HibUser user) {
-		HibSchema container = mock(Schema.class);
+		HibSchema container = mock(HibSchema.class);
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(SCHEMA_VEHICLE_UUID);
 		HibSchemaVersion latestVersion = mock(HibSchemaVersion.class);
@@ -251,10 +235,10 @@ public final class TestMocks {
 	}
 
 	public static HibMicroschema mockMicroschemaContainer(String name, HibUser user) {
-		HibMicroschema schema = mock(Microschema.class);
+		HibMicroschema schema = mock(HibMicroschema.class);
 		when(schema.getName()).thenReturn(name);
 		when(schema.getUuid()).thenReturn(MICROSCHEMA_UUID);
-		MicroschemaVersion latestVersion = mock(MicroschemaVersion.class);
+		HibMicroschemaVersion latestVersion = mock(HibMicroschemaVersion.class);
 		when(latestVersion.getSchema()).thenReturn(mockGeolocationMicroschema());
 
 		when(schema.getLatestVersion()).thenReturn(latestVersion);
@@ -304,8 +288,8 @@ public final class TestMocks {
 		return microschema;
 	}
 
-	public static HibNode mockNode(NodeDaoWrapper nodeDao, ContentDao contentDao, TagDao tagDao, HibNode parent, HibProject project, HibUser user, String languageTag, HibTag tagA, HibTag tagB) {
-		Node node = mock(Node.class);
+	public static HibNode mockNode(NodeDao nodeDao, ContentDao contentDao, TagDao tagDao, HibNode parent, HibProject project, HibUser user, String languageTag, HibTag tagA, HibTag tagB) {
+		HibNode node = mock(HibNode.class);
 
 		when(node.getProject()).thenReturn(project);
 		when(nodeDao.getParentNode(same(node), Mockito.any())).thenReturn(parent);
@@ -319,9 +303,7 @@ public final class TestMocks {
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
-		when(node.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
-		when(node.getRolesWithPerm(InternalPermission.READ_PUBLISHED_PERM)).thenReturn(createEmptyTraversal());
-
+		
 		HibNodeFieldContainer container = mockContainer(languageTag, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 		when(contentDao.getNode(container)).thenReturn(node);

@@ -15,14 +15,10 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -113,7 +109,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibMicronodeFieldList list = container.createMicronodeFieldList("dummyList");
 			assertNotNull(list);
 		}
@@ -123,7 +119,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibMicronodeFieldList testField = container.createMicronodeFieldList("testField");
 
 			HibMicronode micronode = testField.createMicronode();
@@ -136,8 +132,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			micronode.createString("firstName").setString("Mickey");
 			micronode.createString("lastName").setString("Mouse");
 
-			NodeGraphFieldContainerImpl otherContainer = ((GraphDBTx) tx).getGraph()
-					.addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getMicronodeList("testField")).as("cloned field")
@@ -149,7 +144,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibMicronodeFieldList fieldA = container.createMicronodeFieldList("fieldA");
 			HibMicronodeFieldList fieldB = container.createMicronodeFieldList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -185,10 +180,10 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainerImpl container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 			HibMicronodeFieldList fieldA = container.createMicronodeFieldList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
-			assertFalse(fieldA.equals((GraphField) null));
+			assertFalse(fieldA.equals((HibMicronodeFieldList) null));
 		}
 	}
 
@@ -196,7 +191,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = ((GraphDBTx) tx).getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			HibNodeFieldContainer container = contentDao(tx).createContainer();
 
 			// rest null - graph null
 			HibMicronodeFieldList fieldA = container.createMicronodeFieldList(MICRONODE_LIST);

@@ -1,8 +1,42 @@
 package com.gentics.mesh.image;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static java.util.Objects.nonNull;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.imgscalr.Scalr;
+import org.imgscalr.Scalr.Mode;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
@@ -15,40 +49,13 @@ import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.storage.S3BinaryStorage;
 import com.gentics.mesh.util.NumberUtils;
 import com.twelvemonkeys.image.ResampleOp;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.WorkerExecutor;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.imgscalr.Scalr;
-import org.imgscalr.Scalr.Mode;
-
-import javax.imageio.*;
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static java.util.Objects.nonNull;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -303,7 +310,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		parameters.validate();
 		parameters.validateLimits(options);
 
-		BinaryDaoWrapper binaryDao = (BinaryDaoWrapper) boot.binaryDao();
+		BinaryDao binaryDao = boot.binaryDao();
 		Supplier<InputStream> stream = binaryDao.openBlockingStream(binary);
 
 		return getCacheFilePath(binary.getSHA512Sum(), parameters)

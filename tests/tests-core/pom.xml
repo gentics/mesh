@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-tests</artifactId>
-		<version>1.7.21-SNAPSHOT</version>
+		<version>1.8.0-alpha1</version>
 	</parent>
 
 	<dependencies>
@@ -41,10 +41,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>tests-mesh-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-orientdb</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
