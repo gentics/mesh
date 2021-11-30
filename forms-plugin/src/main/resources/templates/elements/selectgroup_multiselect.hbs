@@ -1,5 +1,5 @@
 <div>
-	<select name="{{ name }}" {{#if mandatory}}required="required"{{/if}} multiple>
+	<select name="{{ name }}[]" {{#if mandatory}}required="required"{{/if}} multiple>
 {{#each options }}
 		<option value="{{ key }}" {{#equals key data.value}}selected="selected"{{/equals}}>{{{ value }}}</option>
 {{/each}}
