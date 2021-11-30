@@ -23,7 +23,7 @@ All fixes and changes in LTS releases will be released the next minor release. C
 icon:check[] OrientDB: The included OrientDB version has been downgraded to version `3.1.11`.
 
 CAUTION: OrientDB version `3.1.15`, which was included in Mesh 1.6.23 has some serious bugs, therefore, Mesh 1.6.23 has been unreleased and the OrientDB Version
-hasa been changed back to `3.1.11`.
+has been changed back to `3.1.11`.
 
 icon:check[] Search: When the ElasticSearch instance is not available, getting version information from the endpoint `/api/v1` failed with an internal
 server error. This has been fixed, calling the endpoint `/api/v1` will not fail anymore, but will not contain the ElasticSearch version.
