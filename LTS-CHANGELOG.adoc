@@ -35,6 +35,8 @@ icon:check[] Java Rest Client: If requests to mesh fail with I/O errors (includi
 
 icon:check[] Server: Liveness-Check script `live.sh` will now fail if the `mesh.live` file has not been changed since 20s (previously 60s)
 
+icon:plus[] Docker-Image: The base image has been changed from JRE to JDK to include more tools for analyzing (e.g. creating heap-dumps). The base image has been updated to a newer JDK minor version (`11.0.12`)
+
 [[v1.6.23]]
 == 1.6.23 (11.11.2021 - Unreleased)
 
