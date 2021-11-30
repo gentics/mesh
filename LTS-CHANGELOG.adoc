@@ -17,10 +17,6 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
-[[v.1.6.25]]
-== 1.6.25 (TBD)
-icon:plus[] Docker-Image: The base image has been changed from JRE to JDK to include more tools for analyzing (e.g. creating heap-dumps). The base image has been updated to a newer JDK minor version (`11.0.12`)
-
 [[v1.6.24]]
 == 1.6.24 (TBD)
 
@@ -31,6 +27,8 @@ icon:check[] Rest: When a project with name "project" was deleted, calls to the 
 This has been fixed now.
 
 icon:check[] Java Rest Client: If requests to mesh fail with I/O errors (including timeouts), the thrown exception will now also contain the request method and URL.
+
+icon:plus[] Docker-Image: The base image has been changed from JRE to JDK to include more tools for analyzing (e.g. creating heap-dumps). The base image has been updated to a newer JDK minor version (`11.0.12`)
 
 [[v1.6.23]]
 == 1.6.23 (11.11.2021)
