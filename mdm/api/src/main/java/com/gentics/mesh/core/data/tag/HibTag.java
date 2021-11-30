@@ -34,20 +34,6 @@ public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableEle
 	}
 
 	/**
-	 * Return the tag name.
-	 * 
-	 * @return
-	 */
-	String getName();
-
-	/**
-	 * Set the name.
-	 * 
-	 * @param name
-	 */
-	void setName(String name);
-
-	/**
 	 * Return the tag family of the tag.
 	 * 
 	 * @return
@@ -65,22 +51,6 @@ public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableEle
 	 * Delete the tag.
 	 */
 	void deleteElement();
-
-	/**
-	 * Transform the tag to a reference.
-	 * 
-	 * @return
-	 */
-	TagReference transformToReference();
-
-	/**
-	 * Return the current element version.
-	 * 
-	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {

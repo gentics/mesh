@@ -85,11 +85,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
-		return toGraph(node).getFieldContainer(languageTag, branch, type);
-	}
-
-	@Override
 	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag) {
 		return toGraph(node).getFieldContainer(languageTag);
 	}
@@ -111,21 +106,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node) {
-		return toGraph(node).getDraftFieldContainers();
-	}
-
-	@Override
-	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
-		return toGraph(node).getFieldContainers(branchUuid, type);
-	}
-
-	@Override
-	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
-		return toGraph(node).getFieldContainers(type);
-	}
-
-	@Override
 	public long getFieldContainerCount(HibNode node) {
 		return toGraph(node).getFieldContainerCount();
 	}
@@ -136,24 +116,8 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
-		boolean failForLastContainer) {
-		toGraph(node).deleteLanguageContainer(ac, branch, languageTag, bac, failForLastContainer);
-	}
-
-	@Override
 	public String getPathSegment(HibNode node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
 		return toGraph(node).getPathSegment(branchUuid, type, anyLanguage, languageTag);
-	}
-
-	@Override
-	public void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
-		toGraph(node).deleteFromBranch(ac, branch, bac, ignoreChecks);
-	}
-
-	@Override
-	public HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
-		return toGraph(node).publish(ac, languageTag, branch, user);
 	}
 
 	@Override
@@ -590,5 +554,21 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public Class<? extends HibMicronode> getMicronodePersistenceClass() {
 		return MicronodeImpl.class;
+	}
+
+	@Override
+	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch,
+			ContainerType type) {
+		return toGraph(node).getFieldContainer(languageTag, branch, type);
+	}
+
+	@Override
+	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
+		return toGraph(node).getFieldContainers(branchUuid, type);
+	}
+
+	@Override
+	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
+		return toGraph(node).getFieldContainers(type);
 	}
 }

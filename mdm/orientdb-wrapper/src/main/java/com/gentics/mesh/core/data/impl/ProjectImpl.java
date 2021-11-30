@@ -9,10 +9,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -27,7 +23,6 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
@@ -51,17 +46,11 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
-import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
-import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.field.FieldType;
 
@@ -185,19 +174,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		boolean permissionChanged = false;
-		if (recursive) {
-			permissionChanged = getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-			permissionChanged = getBranchRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-			permissionChanged = getBaseNode().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-		}
-		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-		return permissionChanged;
-	}
-
-	@Override
 	public HibBranch getInitialBranch() {
 		return getBranchRoot().getInitialBranch();
 	}
@@ -243,38 +219,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", getName());
 		}
 		return event;
-	}
-
-	@Override
-	public ProjectSchemaEventModel onSchemaAssignEvent(HibSchema schema, Assignment assigned) {
-		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
-		switch (assigned) {
-		case ASSIGNED:
-			model.setEvent(PROJECT_SCHEMA_ASSIGNED);
-			break;
-		case UNASSIGNED:
-			model.setEvent(PROJECT_SCHEMA_UNASSIGNED);
-			break;
-		}
-		model.setProject(transformToReference());
-		model.setSchema(schema.transformToReference());
-		return model;
-	}
-
-	@Override
-	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibMicroschema microschema, Assignment assigned) {
-		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
-		switch (assigned) {
-		case ASSIGNED:
-			model.setEvent(PROJECT_MICROSCHEMA_ASSIGNED);
-			break;
-		case UNASSIGNED:
-			model.setEvent(PROJECT_MICROSCHEMA_UNASSIGNED);
-			break;
-		}
-		model.setProject(transformToReference());
-		model.setMicroschema(microschema.transformToReference());
-		return model;
 	}
 
 	@Override

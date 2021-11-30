@@ -210,18 +210,6 @@ public interface ContentDao {
 	}
 
 	/**
-	 * Delete the node from the given branch. This will also delete children from the branch.
-	 *
-	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
-	 *
-	 * @param ac
-	 * @param branch
-	 * @param bac
-	 * @param ignoreChecks
-	 */
-	void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
-
-	/**
 	 * Return the mount of elements.
 	 * 
 	 * @return

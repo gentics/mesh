@@ -9,6 +9,7 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Iterator;
@@ -19,7 +20,9 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -245,12 +248,35 @@ public interface PersistingSchemaDao
 	default Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user,
 			ContainerType type) {
 		UserDao userDao = Tx.get().userDao();
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDao contentDao = Tx.get().contentDao();
+
 		return new TraversalResult<>(getNodes(version.getSchemaContainer()).stream()
-			.filter(node -> node.getAvailableLanguageNames().stream()
-					.map(lang -> node.getFieldContainer(lang, branchUuid, type))
+			.filter(node -> nodeDao.getAvailableLanguageNames(node).stream()
+					.map(lang -> contentDao.getFieldContainer(node, lang, branchUuid, type))
 					.anyMatch(container -> container != null)
 				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
 	}
+
+	/**
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
+
+	/**
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @param bucket
+	 *            Bucket to limit the selection by
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
 
 	/**
 	 * Returns events for assignment on the schema action.
@@ -367,6 +393,10 @@ public interface PersistingSchemaDao
 
 	@Override
 	default boolean update(HibProject project, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
+		// Don't update the item, if it does not belong to the requested branch.
+		if (project.getSchemas().stream().noneMatch(schema -> element.getUuid().equals(schema.getUuid()))) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", element.getUuid());
+		}
 		return update(element, ac, batch);
 	}
 

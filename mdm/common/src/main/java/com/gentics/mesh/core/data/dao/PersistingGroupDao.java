@@ -184,4 +184,20 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		Tx.get().roleDao().setRolePermissions(group, ac, restGroup);
 		return restGroup;
 	}
+
+	@Override
+	default void removeUser(HibGroup group, HibUser user) {
+		removeUser(user, group);
+		Tx.get().permissionCache().clear();
+	}
+
+	void removeUser(HibUser user, HibGroup group);
+
+	@Override
+	default void removeRole(HibGroup group, HibRole role) {
+		removeRole(role, group);
+		Tx.get().permissionCache().clear();
+	}
+
+	void removeRole(HibRole role, HibGroup group);
 }

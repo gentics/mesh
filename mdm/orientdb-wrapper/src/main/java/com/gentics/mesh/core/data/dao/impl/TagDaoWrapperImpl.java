@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -206,11 +207,12 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 		}
 		bac.add(tag.onDeleted());
 
+		NodeDao nodeDao = Tx.get().nodeDao();
 		// For node which have been previously tagged we need to fire the untagged event.
 		Project graphProject = toGraph(tag.getProject());
 		for (Branch branch : graphProject.getBranchRoot().findAll()) {
 			for (HibNode node : getNodes(tag, branch)) {
-				bac.add(toGraph(node).onTagged(tag, branch, UNASSIGNED));
+				bac.add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
 			}
 		}
 		tag.deleteElement();
@@ -367,11 +369,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	@Override
 	public void delete(HibTagFamily root, HibTag element, BulkActionContext bac) {
 		toGraph(element).delete(bac);
-	}
-
-	@Override
-	public boolean update(HibTagFamily root, HibTag element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(element).update(ac, batch);
 	}
 
 	@Override

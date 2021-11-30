@@ -1,11 +1,16 @@
 package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,9 +29,12 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.NameConflictException;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -38,13 +46,6 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject> {
-
-	/**
-	 * Return the tagFamily permission root for the project. This method will create a root when no one could be found.
-	 * 
-	 * @return
-	 */
-	HibBaseElement getTagFamilyPermissionRoot(HibProject project);
 
 	/**
 	 * Return the schema container permission root for the project.
@@ -61,13 +62,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	HibBaseElement getMicroschemaContainerPermissionRoot(HibProject project);
 
 	/**
-	 * Return the branch permission root of the project. Internally this method will create the root when it has not yet been created.
-	 * 
-	 * @return Branch root element
-	 */
-	HibBaseElement getBranchPermissionRoot(HibProject project);
-
-	/**
 	 * Return the node permission root of the project. Internally this method will create the root when it has not yet been created.
 	 * 
 	 * @return Node root element
@@ -77,6 +71,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	@Override
 	default HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
 		HibProject project = findByName(projectName);
+		if (project == null) {
+			throw error(NOT_FOUND, "object_not_found_for_name", projectName);
+		}
 		return checkPerms(project, project.getUuid(), ac, perm, true);
 	}
 
@@ -96,7 +93,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 			restProject.setName(project.getName());
 		}
 		if (fields.has("rootNode")) {
-			restProject.setRootNode(project.getBaseNode().transformToReference(ac));
+			restProject.setRootNode(Tx.get().nodeDao().transformToReference(project.getBaseNode(), ac));
 		}
 
 		project.fillCommonRestFields(ac, fields, restProject);
@@ -159,13 +156,14 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	default HibNode createBaseNode(HibProject project, HibUser creator, HibSchemaVersion schemaVersion) {
 		HibNode baseNode = project.getBaseNode();
 		CommonTx ctx = CommonTx.get();
+		ContentDao contentDao = ctx.contentDao();
 		if (baseNode == null) {
 			baseNode = ctx.create(CommonTx.get().nodeDao().getPersistenceClass(project));
 			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
 			baseNode.setProject(project);
 			baseNode.setCreated(creator);
 			HibLanguage language = ctx.languageDao().findByLanguageTag(ctx.data().options().getDefaultLanguage());
-			baseNode.createFieldContainer(language.getLanguageTag(), project.getLatestBranch(), creator);
+			contentDao.createFieldContainer(baseNode, language.getLanguageTag(), project.getLatestBranch(), creator);
 			project.setBaseNode(baseNode);
 		}
 		return baseNode;
@@ -225,7 +223,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
-		project.getBaseNode().getDraftFieldContainers().forEach(c -> {
+		Tx.get().contentDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
 			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
 
@@ -307,5 +305,37 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		deletePersisted(project);
 
 		bac.process(true);
+	}
+
+	@Override
+	default ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assigned) {
+		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
+		switch (assigned) {
+			case ASSIGNED:
+				model.setEvent(PROJECT_SCHEMA_ASSIGNED);
+				break;
+			case UNASSIGNED:
+				model.setEvent(PROJECT_SCHEMA_UNASSIGNED);
+				break;
+		}
+		model.setProject(project.transformToReference());
+		model.setSchema(schema.transformToReference());
+		return model;
+	}
+
+	@Override
+	default ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibProject project, HibMicroschema microschema, Assignment assigned) {
+		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
+		switch (assigned) {
+			case ASSIGNED:
+				model.setEvent(PROJECT_MICROSCHEMA_ASSIGNED);
+				break;
+			case UNASSIGNED:
+				model.setEvent(PROJECT_MICROSCHEMA_UNASSIGNED);
+				break;
+		}
+		model.setProject(project.transformToReference());
+		model.setMicroschema(microschema.transformToReference());
+		return model;
 	}
 }

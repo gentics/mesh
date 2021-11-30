@@ -17,6 +17,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -99,19 +100,19 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 			} else {
 				String nestedRootNode = stack.pop();
 				switch (nestedRootNode) {
-				case BranchRoot.TYPE:
+				case PermissionRoots.BRANCHES:
 					BranchRoot branchRoot = project.getBranchRoot();
 					return branchRoot.resolveToElement(stack);
-				case TagFamilyRoot.TYPE:
+				case PermissionRoots.TAG_FAMILIES:
 					TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 					return tagFamilyRoot.resolveToElement(stack);
-				case SchemaRoot.TYPE:
+				case PermissionRoots.SCHEMAS:
 					SchemaRoot schemaRoot = project.getSchemaContainerRoot();
 					return schemaRoot.resolveToElement(stack);
-				case MicroschemaRoot.TYPE:
+				case PermissionRoots.MICROSCHEMAS:
 					MicroschemaRoot microschemaRoot = project.getMicroschemaContainerRoot();
 					return microschemaRoot.resolveToElement(stack);
-				case NodeRoot.TYPE:
+				case PermissionRoots.NODES:
 					NodeRoot nodeRoot = project.getNodeRoot();
 					return nodeRoot.resolveToElement(stack);
 				default:

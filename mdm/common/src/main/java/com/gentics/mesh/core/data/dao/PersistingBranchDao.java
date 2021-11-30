@@ -299,15 +299,14 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		Tx.get().roleDao().setRolePermissions(branch, ac, restBranch);
 		return restBranch;
 	}
-	
+
 	@Override
 	default boolean update(HibProject project, HibBranch branch, InternalActionContext ac, EventQueueBatch batch) {
 		// Don't update the branch, if it does not belong to the requested project.
-		return project.getUuid().equals(branch.getProject().getUuid()) ? update(branch, ac, batch) : false;
-	}
+		if (!project.getUuid().equals(branch.getProject().getUuid())) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", branch.getUuid());
+		}
 
-	@Override
-	default boolean update(HibBranch branch, InternalActionContext ac, EventQueueBatch batch) {
 		BranchUpdateRequest requestModel = ac.fromJson(BranchUpdateRequest.class);
 		boolean modified = false;
 

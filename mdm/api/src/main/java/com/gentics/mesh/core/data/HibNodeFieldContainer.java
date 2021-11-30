@@ -39,7 +39,9 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 * 
 	 * @return
 	 */
-	boolean isValid();
+	default boolean isValid() {
+		return true;
+	}
 
 	/**
 	 * Return the index name for the given parameters.

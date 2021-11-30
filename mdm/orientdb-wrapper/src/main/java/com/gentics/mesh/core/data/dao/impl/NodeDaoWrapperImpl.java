@@ -25,17 +25,10 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.PublishStatusModel;
-import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
@@ -102,11 +95,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return toGraph(project).getNodeRoot().create(ac, batch, uuid);
-	}
-
-	@Override
 	public Result<? extends HibNode> getChildren(HibNode node) {
 		return toGraph(node).getChildren();
 	}
@@ -132,14 +120,14 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
-		ContainerType type, PagingParameters pagingParameter) {
-		return toGraph(node).getChildren(ac, languageTags, branchUuid, type, pagingParameter);
+	public void removeParent(HibNode node, String branchUuid) {
+		toGraph(node).removeParent(branchUuid);
 	}
 
 	@Override
-	public List<String> getAvailableLanguageNames(HibNode node) {
-		return toGraph(node).getAvailableLanguageNames();
+	public Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
+		ContainerType type, PagingParameters pagingParameter) {
+		return toGraph(node).getChildren(ac, languageTags, branchUuid, type, pagingParameter);
 	}
 
 	@Override
@@ -148,38 +136,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void moveTo(HibNode sourceNode, InternalActionContext ac, HibNode targetNode, EventQueueBatch batch) {
-		toGraph(sourceNode).moveTo(ac, toGraph(targetNode), batch);
-	}
-
-	@Override
-	public NavigationResponse transformToNavigation(HibNode node, InternalActionContext ac) {
-		return toGraph(node).transformToNavigation(ac);
-	}
-
-	@Override
-	public PublishStatusResponse transformToPublishStatus(HibNode node, InternalActionContext ac) {
-		return toGraph(node).transformToPublishStatus(ac);
-	}
-
-	@Override
-	public void publish(HibNode node, InternalActionContext ac, BulkActionContext bac) {
-		toGraph(node).publish(ac, bac);
-	}
-
-	@Override
-	public void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac) {
-		toGraph(node).takeOffline(ac, bac);
-	}
-
-	@Override
-	public PublishStatusModel transformToPublishStatus(HibNode node, InternalActionContext ac, String languageTag) {
-		return toGraph(node).transformToPublishStatus(ac, languageTag);
-	}
-
-	@Override
-	public void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag) {
-		toGraph(node).publish(ac, bac, languageTag);
+	public void removePublishedEdges(HibNode node, String branchUuid, BulkActionContext bac) {
+		toGraph(node).removePublishedEdges(branchUuid, bac);
 	}
 
 	@Override
@@ -188,13 +146,13 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
-		toGraph(node).takeOffline(ac, bac, branch, languageTag);
+	public void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch) {
+		toGraph(node).assertPublishConsistency(ac, branch);
 	}
 
 	@Override
-	public String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
-		return toGraph(node).getPath(ac, branchUuid, type, languageTag);
+	public void removePublishedEdge(HibNode node, String languageTag, String branchUuid) {
+		toGraph(node).removePublishedEdge(languageTag, branchUuid);
 	}
 
 	@Override
@@ -203,13 +161,18 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void delete(HibNode node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
-		toGraph(node).delete(bac, ignoreChecks, recursive);
+	public void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID) {
+		toGraph(node).removeInitialFieldContainerEdge(initial, branchUUID);
 	}
 
 	@Override
-	public Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getBreadcrumbNodes(ac);
+	public void addReferenceUpdates(HibNode node, BulkActionContext bac) {
+		toGraph(node).addReferenceUpdates(bac);
+	}
+
+	@Override
+	public void removeElement(HibNode node) {
+		toGraph(node).removeElement();
 	}
 
 	@Override
@@ -220,28 +183,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public boolean isVisibleInBranch(HibNode node, String branchUuid) {
 		return toGraph(node).isVisibleInBranch(branchUuid);
-	}
-
-	@Override
-	public NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac) {
-		return toGraph(node).transformToVersionList(ac);
-	}
-
-	@Override
-	public boolean update(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(node).update(ac, batch);
-		// return ac.getProject().getNodeRoot().update(element, ac, batch);
-	}
-
-	@Override
-	public String getAPIPath(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getAPIPath(ac);
-	}
-
-	@Override
-	public Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
-		Node graphNode = toGraph(node);
-		return graphNode.updateTags(ac, batch);
 	}
 
 	@Override
@@ -279,17 +220,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getNodeRoot().globalCount();
-	}
-
-	@Override
-	public void delete(HibProject root, HibNode element, BulkActionContext bac) {
-		//delete(element, bac, false, true);
-		throw new IllegalStateException("Use explicit deletion method with check/recursive flags");
-	}
-
-	@Override
-	public boolean update(HibProject root, HibNode element, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(element).update(ac, batch);
 	}
 
 	@Override

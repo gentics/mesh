@@ -37,21 +37,4 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 	protected <T> boolean shouldUpdate(T restValue, T graphValue) {
 		return restValue != null && !restValue.equals(graphValue);
 	}
-
-	@Override
-	public MeshElementEventModel createEvent(MeshEvent event) {
-		MeshElementEventModel model = new MeshElementEventModelImpl();
-		model.setEvent(event);
-		fillEventInfo(model);
-		return model;
-	}
-
-	@Override
-	public void fillEventInfo(MeshElementEventModel model) {
-		if (this instanceof NamedElement) {
-			model.setName(((NamedElement) this).getName());
-		}
-		model.setOrigin(options().getNodeName());
-		model.setUuid(getUuid());
-	}
 }

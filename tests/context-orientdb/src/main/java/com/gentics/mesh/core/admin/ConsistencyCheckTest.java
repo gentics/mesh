@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.gentics.mesh.core.data.node.Node;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
@@ -57,7 +58,7 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 		assertEquals(ConsistencyRating.CONSISTENT, response.getResult());
 
 		tx(() -> {
-			content().removeElement();
+			((Node) content()).removeElement();
 		});
 		response = call(() -> client().checkConsistency());
 		assertEquals(INCONSISTENT, response.getResult());

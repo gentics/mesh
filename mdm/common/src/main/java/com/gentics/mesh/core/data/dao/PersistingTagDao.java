@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * A persisting extension to {@link TagDao}
@@ -68,4 +69,12 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, E
 				});
 	}
 
+	@Override
+	default boolean update(HibTagFamily tagFamily, HibTag tag, InternalActionContext ac, EventQueueBatch batch) {
+		// Don't update the item, if it does not belong to the requested root.
+		if (!tagFamily.getUuid().equals(tag.getProject().getUuid())) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", tag.getUuid());
+		}
+		return update(tag, ac, batch);
+	}
 }

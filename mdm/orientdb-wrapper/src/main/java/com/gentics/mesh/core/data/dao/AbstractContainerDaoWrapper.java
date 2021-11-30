@@ -8,7 +8,7 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.root.ContainerRootVertex;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
@@ -103,13 +103,5 @@ public abstract class AbstractContainerDaoWrapper<
 		return vertex;
 	}
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public SCV createPersistedVersion(SC container) {
-		SCV version = (SCV) getRoot().createVersion();
-		version.setSchemaContainer(container);
-		return version;
-	}
-
-	protected abstract ContainerRootVertex<R, RM, D, DV> getRoot();
+	protected abstract RootVertex<D> getRoot();
 }

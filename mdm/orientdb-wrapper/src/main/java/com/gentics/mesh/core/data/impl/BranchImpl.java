@@ -434,7 +434,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	@Override
 	@Deprecated
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		return GraphDBTx.getGraphTx().branchDao().update(this, ac, batch);
+		return GraphDBTx.getGraphTx().branchDao().update(this.getProject(), this, ac, batch);
 	}
 
 	@Override

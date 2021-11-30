@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRootImpl;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
@@ -103,18 +104,22 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public ChangelogRoot getChangelogRoot() {
 		if (changelogRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				ChangelogRoot foundChangelogRoot = out(HAS_CHANGELOG_ROOT).nextOrDefaultExplicit(ChangelogRootImpl.class, null);
-				if (foundChangelogRoot == null) {
-					changelogRoot = getGraph().addFramedVertex(ChangelogRootImpl.class);
-					linkOut(changelogRoot, HAS_CHANGELOG_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Created changelog root {" + changelogRoot.getUuid() + "}");
+			db().tx(() -> {
+				synchronized (MeshRootImpl.class) {
+					if (changelogRoot == null) {
+						ChangelogRoot foundChangelogRoot = out(HAS_CHANGELOG_ROOT).nextOrDefaultExplicit(ChangelogRootImpl.class, null);
+						if (foundChangelogRoot == null) {
+							changelogRoot = getGraph().addFramedVertex(ChangelogRootImpl.class);
+							linkOut(changelogRoot, HAS_CHANGELOG_ROOT);
+							if (log.isInfoEnabled()) {
+								log.info("Created changelog root {" + changelogRoot.getUuid() + "}");
+							}
+						} else {
+							changelogRoot = foundChangelogRoot;
+						}
 					}
-				} else {
-					changelogRoot = foundChangelogRoot;
 				}
-			}
+			});
 		}
 		return changelogRoot;
 	}
@@ -363,17 +368,17 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			return project;
 		} else {
 			switch (rootNodeSegment) {
-			case ProjectRoot.TYPE:
+			case PermissionRoots.PROJECTS:
 				return root.getProjectRoot().resolveToElement(stack);
-			case UserRoot.TYPE:
+			case PermissionRoots.USERS:
 				return root.getUserRoot().resolveToElement(stack);
-			case GroupRoot.TYPE:
+			case PermissionRoots.GROUPS:
 				return root.getGroupRoot().resolveToElement(stack);
-			case RoleRoot.TYPE:
+			case PermissionRoots.ROLES:
 				return root.getRoleRoot().resolveToElement(stack);
-			case MicroschemaRoot.TYPE:
+			case PermissionRoots.MICROSCHEMAS:
 				return root.getMicroschemaContainerRoot().resolveToElement(stack);
-			case SchemaRoot.TYPE:
+			case PermissionRoots.SCHEMAS:
 				return root.getSchemaContainerRoot().resolveToElement(stack);
 			default:
 				// TOOO i18n

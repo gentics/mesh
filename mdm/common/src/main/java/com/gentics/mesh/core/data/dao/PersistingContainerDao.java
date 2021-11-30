@@ -46,13 +46,6 @@ public interface PersistingContainerDao<
 	Class<? extends SCV> getVersionPersistenceClass();
 
 	/**
-	 * Create new persisted version entity for the container entity.
-	 * 
-	 * @return
-	 */
-	SCV createPersistedVersion(SC container);
-
-	/**
 	 * Create the corresponding persisted instance of the schema change operation for the given schema version.
 	 * 
 	 * @param version
@@ -60,6 +53,17 @@ public interface PersistingContainerDao<
 	 * @return
 	 */
 	HibSchemaChange<?> createPersistedChange(SCV version, SchemaChangeOperation schemaChangeOperation);
+
+	/**
+	 * Create new persisted version entity for the container entity.
+	 * 
+	 * @return
+	 */
+	default SCV createPersistedVersion(SC container) {
+		SCV version = (SCV) CommonTx.get().create(getVersionPersistenceClass());
+		version.setSchemaContainer(container);
+		return version;
+	}
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })

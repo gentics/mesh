@@ -1,43 +1,31 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
+import com.gentics.mesh.core.data.HibCoreElement;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -46,17 +34,13 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -206,128 +190,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		getElement().remove();
 	}
 
-	/**
-	 * Create a new node using the specified schema container.
-	 * 
-	 * @param ac
-	 * @param schemaVersion
-	 * @param batch
-	 * @param uuid
-	 * @return
-	 */
-	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, HibSchemaVersion schemaVersion, EventQueueBatch batch,
-		String uuid) {
-		Tx tx = Tx.get();
-		HibProject project = tx.getProject(ac);
-		HibUser requestUser = ac.getUser();
-		BootstrapInitializer boot = mesh().boot();
-		UserDao userRoot = boot.userDao();
-		NodeDao nodeDao = boot.nodeDao();
-
-		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
-		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
-			throw error(BAD_REQUEST, "node_missing_parentnode_field");
-		}
-		if (isEmpty(requestModel.getLanguage())) {
-			throw error(BAD_REQUEST, "node_no_languagecode_specified");
-		}
-
-		// Load the parent node in order to create the node
-		HibNode parentNode = nodeDao.loadObjectByUuid(project, ac, requestModel.getParentNode().getUuid(),
-			CREATE_PERM);
-		HibBranch branch = tx.getBranch(ac);
-		// BUG: Don't use the latest version. Use the version which is linked to the
-		// branch!
-		HibNode node = nodeDao.create(parentNode, requestUser, schemaVersion, project, branch, uuid);
-
-		// Add initial permissions to the created node
-		userRoot.inheritRolePermissions(requestUser, parentNode, node);
-
-		// Create the language specific graph field container for the node
-		HibLanguage language = Tx.get().languageDao().findByLanguageTag(requestModel.getLanguage());
-		if (language == null) {
-			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
-		}
-		HibNodeFieldContainer container = toGraph(node).createFieldContainer(language.getLanguageTag(), branch, requestUser);
-		container.updateFieldsFromRest(ac, requestModel.getFields());
-
-		batch.add(node.onCreated());
-		batch.add(container.onCreated(branch.getUuid(), DRAFT));
-
-		// Check for webroot input data consistency (PUT on webroot)
-		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");
-		if (webrootSegment != null) {
-			String current = container.getSegmentFieldValue();
-			if (!webrootSegment.equals(current)) {
-				throw error(BAD_REQUEST, "webroot_error_segment_field_mismatch", webrootSegment, current);
-			}
-		}
-
-		if (requestModel.getTags() != null) {
-			node.updateTags(ac, batch, requestModel.getTags());
-		}
-
-		return toGraph(node);
-	}
-
 	@Override
+	@Deprecated
+	/**
+	 * use {@link NodeDao#create(HibCoreElement, InternalActionContext, EventQueueBatch, String)} )}
+	 */
 	public Node create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		Tx tx = Tx.get();
-		HibBranch branch = tx.getBranch(ac);
-		UserDao userDao = tx.userDao();
-		SchemaDao schemaDao = tx.schemaDao();
-
-		// Override any given version parameter. Creation is always scoped to drafts
-		ac.getVersioningParameters().setVersion("draft");
-
-		HibProject project = tx.getProject(ac);
-		HibUser requestUser = ac.getUser();
-
-		String body = ac.getBodyAsString();
-
-		// 1. Extract the schema information from the given JSON
-		SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
-		boolean missingSchemaInfo = schemaInfo.getSchema() == null
-			|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid())
-				&& StringUtils.isEmpty(schemaInfo.getSchema().getName()));
-		if (missingSchemaInfo) {
-			throw error(BAD_REQUEST, "error_schema_parameter_missing");
-		}
-
-		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
-			// 2. Use schema reference by uuid first
-			HibSchema schemaByUuid = schemaDao.loadObjectByUuid(project, ac, schemaInfo.getSchema().getUuid(), READ_PERM);
-			HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
-			if (schemaVersion == null) {
-				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
-			}
-			return createNode(ac, schemaVersion, batch, uuid);
-		}
-
-		// 3. Or just schema reference by name
-		if (!isEmpty(schemaInfo.getSchema().getName())) {
-			HibSchema schemaByName = schemaDao.findByName(project, schemaInfo.getSchema().getName());
-			if (schemaByName != null) {
-				String schemaName = schemaByName.getName();
-				String schemaUuid = schemaByName.getUuid();
-				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
-					HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
-					if (schemaVersion == null) {
-						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
-							project.getName());
-					}
-					return createNode(ac, schemaVersion, batch, uuid);
-				} else {
-					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName, READ_PERM.getRestPerm().getName());
-				}
-
-			} else {
-				throw error(NOT_FOUND, "schema_not_found", schemaInfo.getSchema().getName());
-			}
-		} else {
-			throw error(BAD_REQUEST, "error_schema_parameter_missing");
-		}
+		return (Node) Tx.get().nodeDao().create(getProject(), ac, batch, uuid);
 	}
 
 	@Override

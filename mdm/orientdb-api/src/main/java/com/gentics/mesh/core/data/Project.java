@@ -64,24 +64,6 @@ public interface Project extends MeshCoreVertex<ProjectResponse>, ReferenceableE
 	BranchRoot getBranchRoot();
 
 	/**
-	 * Create a project schema assignment event.
-	 * 
-	 * @param schema
-	 * @param assigned
-	 * @return
-	 */
-	ProjectSchemaEventModel onSchemaAssignEvent(HibSchema schema, Assignment assigned);
-
-	/**
-	 * Create a project microschema assignment event.
-	 * 
-	 * @param microschema
-	 * @param assigned
-	 * @return
-	 */
-	ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibMicroschema microschema, Assignment assigned);
-
-	/**
 	 * Find all nodes that belong to the project.
 	 * 
 	 * @return

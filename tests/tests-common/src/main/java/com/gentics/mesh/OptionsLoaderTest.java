@@ -28,6 +28,11 @@ import com.gentics.mesh.test.MeshOptionsTypeAwareContext;
 
 public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOptionsTypeAwareContext<T> {
 
+	@SuppressWarnings("unchecked")
+	protected Class<T> getMeshOptionsClass() {
+		return (Class<T>) getOptions().getClass();
+	}
+	
 	@Rule
 	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
@@ -37,7 +42,7 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 		if (confFile.exists()) {
 			confFile.delete();
 		}
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass());
 		assertNotNull(options);
 		assertTrue("The file should have been created.", confFile.exists());
 		assertNotNull("A keystore password should have been generated.", options.getAuthenticationOptions().getKeystorePassword());
@@ -62,7 +67,7 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_MAPPING_MODE_ENV, "STRICT");
 		environmentVariables.set(ImageManipulatorOptions.MESH_IMAGE_CACHE_DIRECTORY_ENV, "data" + File.separator +"binaryImageCache");
 
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass());
 		assertEquals(8100, options.getHttpServerOptions().getPort());
 		assertEquals("ru", options.getDefaultLanguage());
 		assertFalse(options.isUpdateCheckEnabled());
@@ -83,14 +88,14 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 	@Test
 	public void testApplyEnvsNull() throws Exception {
 		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass());
 		assertNull(options.getSearchOptions().getUrl());
 	}
 
 	@Test
 	public void testTrustedCertListOneItemEnv() {
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "abc");
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass());
 		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
 		assertEquals("The path list should contain oneentries", 1, list.size());
 		assertEquals("abc", list.get(0));
@@ -99,7 +104,7 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 	@Test
 	public void testTrustedCertListEnv() {
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "abc,efg");
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass());
 		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
 		assertEquals("The path list should contain two entries", 2, list.size());
 		assertEquals("abc", list.get(0));
@@ -109,14 +114,14 @@ public abstract class OptionsLoaderTest<T extends MeshOptions> implements MeshOp
 	@Test
 	public void testEmptyTrustedCertListEnv() {
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "");
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass());
 		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
 		assertEquals("The path list should contain two entries", 0, list.size());
 	}
 
 	@Test
 	public void testApplyArgs() {
-		MeshOptions options = OptionsLoader.createOrloadOptions("-nodeName", "theNodeName", "-clusterName", "theClusterName");
+		MeshOptions options = OptionsLoader.createOrloadOptions(getMeshOptionsClass(), "-nodeName", "theNodeName", "-clusterName", "theClusterName");
 		assertEquals("The node name should have been specified.", "theNodeName", options.getNodeName());
 		assertEquals("The cluster name should have been specified.", "theClusterName", options.getClusterOptions().getClusterName());
 		assertTrue("We specified the clusterName thus clustering should automatically be enabled.", options.getClusterOptions().isEnabled());

@@ -30,8 +30,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public interface ProjectRoot extends RootVertex<Project>, TransformableElementRoot<Project, ProjectResponse> {
 
-	public static final String TYPE = "projects";
-
 	/**
 	 * Remove the project from the aggregation vertex.
 	 * 

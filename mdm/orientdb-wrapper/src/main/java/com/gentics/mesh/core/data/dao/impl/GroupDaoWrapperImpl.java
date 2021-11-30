@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -40,12 +39,9 @@ import dagger.Lazy;
 @Singleton
 public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, HibGroup, Group> implements GroupDaoWrapper {
 
-	private Lazy<PermissionCache> permissionCache;
-
 	@Inject
-	public GroupDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<PermissionCache> permissionCache) {
+	public GroupDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot) {
 		super(boot);
-		this.permissionCache = permissionCache;
 	}
 
 	@Override
@@ -62,7 +58,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public void removeUser(HibGroup group, HibUser user) {
+	public void removeUser(HibUser user, HibGroup group) {
 		PersistingUserDao userDao = CommonTx.get().userDao();
 		Group graphGroup = toGraph(group);
 		User graphUser = toGraph(user);
@@ -71,7 +67,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 
 		// The user does no longer belong to the group so lets update the shortcut edges
 		userDao.updateShortcutEdges(user);
-		permissionCache.get().clear();
 	}
 
 	@Override
@@ -101,7 +96,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public void removeRole(HibGroup group, HibRole role) {
+	public void removeRole(HibRole role, HibGroup group) {
 		PersistingUserDao userDao = CommonTx.get().userDao();
 		Role graphRole = toGraph(role);
 		Group graphGroup = toGraph(group);
@@ -111,7 +106,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 		for (HibUser user : getUsers(group)) {
 			userDao.updateShortcutEdges(user);
 		}
-		permissionCache.get().clear();
 	}
 
 	@Override
@@ -157,12 +151,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	public Result<? extends HibGroup> findAll() {
 		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findAll();
-	}
-
-	@Override
-	public long count() {
-		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
-		return groupRoot.globalCount();
 	}
 
 	@Override

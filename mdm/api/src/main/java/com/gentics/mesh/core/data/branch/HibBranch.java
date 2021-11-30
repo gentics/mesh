@@ -17,6 +17,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.page.Page;
@@ -62,32 +63,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
 	}
-
-	/**
-	 * Return the branch name.
-	 * 
-	 * @return
-	 */
-	String getName();
-
-	/**
-	 * Set branch name.
-	 * 
-	 * @param string
-	 */
-	void setName(String string);
-
-	/**
-	 * Return the creator of the branch.
-	 */
-	HibUser getCreator();
-
-	/**
-	 * Return the project.
-	 * 
-	 * @return
-	 */
-	HibProject getProject();
 
 	/**
 	 * Get whether the branch is active.
@@ -277,6 +252,13 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	Result<? extends HibMicroschemaVersion> findAllMicroschemaVersions();
 
 	/**
+	 * Get an iterable of all latest microschema container versions.
+	 * 
+	 * @return Iterable
+	 */
+	Result<? extends HibBranchMicroschemaVersion> findAllLatestMicroschemaVersionEdges();
+
+	/**
 	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
 	 * is queued and will soon contain containers due to an executed node migration.
 	 * 
@@ -285,7 +267,7 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	Result<? extends HibSchemaVersion> findActiveSchemaVersions();
 
 	/**
-	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
+	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link HibNodeFieldContainer}'s or one
 	 * which is queued and will soon contain containers due to an executed node migration.
 	 *
 	 * @return Iterable
@@ -366,20 +348,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	 * @return
 	 */
 	HibTag findTagByUuid(String uuid);
-
-	/**
-	 * Transform the branch into a reference.
-	 * 
-	 * @return
-	 */
-	BranchReference transformToReference();
-
-	/**
-	 * Get an iterable of all latest microschema container versions.
-	 * 
-	 * @return Iterable
-	 */
-	Result<? extends HibBranchMicroschemaVersion> findAllLatestMicroschemaVersionEdges();
 
 	/**
 	 * Get an iterable of all latest schema container versions.

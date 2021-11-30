@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -31,6 +32,20 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @return Created base node
 	 */
 	HibNode createBaseNode(HibProject project, HibUser creator, HibSchemaVersion schemaVersion);
+
+	/**
+	 * Return the tagFamily permission root for the project. This method will create a root when no one could be found.
+	 *
+	 * @return
+	 */
+	HibBaseElement getTagFamilyPermissionRoot(HibProject project);
+
+	/**
+	 * Return the branch permission root of the project. Internally this method will create the root when it has not yet been created.
+	 *
+	 * @return Branch root element
+	 */
+	HibBaseElement getBranchPermissionRoot(HibProject project);
 
 	/**
 	 * Find the project by name.

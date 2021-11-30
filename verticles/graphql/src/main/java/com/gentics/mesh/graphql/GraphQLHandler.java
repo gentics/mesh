@@ -15,9 +15,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.GraphQLOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.metric.MetricsService;

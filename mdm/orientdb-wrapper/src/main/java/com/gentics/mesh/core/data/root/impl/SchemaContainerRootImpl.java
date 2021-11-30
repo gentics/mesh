@@ -73,11 +73,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 		bac.inc();
 	}
 
-	@Override
-	public SchemaVersion createVersion() {
-		return getGraph().addFramedVertex(getSchemaVersionPersistenceClass());
-	}
-
 	/**
 	 * Get the project
 	 *

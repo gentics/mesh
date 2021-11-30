@@ -74,18 +74,6 @@ public class ProjectDaoWrapperImpl extends AbstractCoreDaoWrapper<ProjectRespons
 	}
 
 	@Override
-	public ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment) {
-		Project graphProject = toGraph(project);
-		return graphProject.onSchemaAssignEvent(schema, assignment);
-	}
-
-	@Override
-	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibProject project, HibMicroschema microschema, Assignment assignment) {
-		Project graphProject = toGraph(project);
-		return graphProject.onMicroschemaAssignEvent(microschema, assignment);
-	}
-
-	@Override
 	public String getSubETag(HibProject project, InternalActionContext ac) {
 		return boot.get().meshRoot().getProjectRoot().getSubETag(toGraph(project), ac);
 	}

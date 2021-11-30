@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.tag;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -8,8 +9,10 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class OrientDBTagTest extends AbstractMeshTest {
 
 	@Test

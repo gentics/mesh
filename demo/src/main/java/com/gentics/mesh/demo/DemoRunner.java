@@ -13,6 +13,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
@@ -48,7 +49,7 @@ public class DemoRunner {
 		// Extract dump file on first time startup to speedup startup
 		setupDemo();
 
-		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+		MeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader(vertx -> {

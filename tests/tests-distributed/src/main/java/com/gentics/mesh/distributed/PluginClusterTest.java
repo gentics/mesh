@@ -42,7 +42,7 @@ public class PluginClusterTest extends AbstractClusterTest {
 	private static final Logger log = LoggerFactory.getLogger(PluginClusterTest.class);
 
 	@ClassRule
-	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
+	public static MeshContainer serverA = createDefaultMeshContainer()
 		.withClusterName(clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())

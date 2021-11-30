@@ -17,10 +17,10 @@ import com.gentics.mesh.shared.SharedKeys;
  * @see ContextDataRegistry
  */
 @Singleton
-public class GraphContextDataRegistryImpl implements ContextDataRegistry {
+public class ContextDataRegistryImpl implements ContextDataRegistry {
 
 	@Inject
-	public GraphContextDataRegistryImpl() {
+	public ContextDataRegistryImpl() {
 
 	}
 

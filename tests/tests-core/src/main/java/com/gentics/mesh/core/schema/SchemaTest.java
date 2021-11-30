@@ -58,7 +58,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testGetContentFromSchemaVersion() {
 		Bucket bucket = new Bucket(0, Integer.MAX_VALUE / 2, 0, 1);
 		HibNodeFieldContainer content = tx(tx -> {
-			return content().getLatestDraftFieldContainer("en");
+			return tx.contentDao().getLatestDraftFieldContainer(content(), "en");
 		});
 		HibSchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());
 

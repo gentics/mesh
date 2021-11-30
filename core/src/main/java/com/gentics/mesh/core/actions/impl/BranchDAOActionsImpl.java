@@ -70,7 +70,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	@Override
 	public boolean update(Tx tx, HibBranch branch, InternalActionContext ac, EventQueueBatch batch) {
 		BranchDao branchDao = tx.branchDao();
-		return branchDao.update(branch, ac, batch);
+		return branchDao.update(tx.getProject(ac), branch, ac, batch);
 	}
 
 	@Override
