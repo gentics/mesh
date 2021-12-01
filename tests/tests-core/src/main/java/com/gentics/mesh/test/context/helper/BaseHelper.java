@@ -164,8 +164,10 @@ public interface BaseHelper {
 	}
 
 	private void modifyUser(Consumer<HibUser> modifier) {
-		HibUser user = tx(() -> CommonTx.get().userDao().findByUuid(user().getUuid()));
-		modifier.accept(user);
-		tx(() -> CommonTx.get().userDao().mergeIntoPersisted(user));
+		tx(() -> {
+			HibUser user = CommonTx.get().userDao().findByUuid(user().getUuid());
+			modifier.accept(user);
+			CommonTx.get().userDao().mergeIntoPersisted(user);
+		});
 	}
 }
