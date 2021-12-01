@@ -1023,7 +1023,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		addReferenceUpdates(node, bac);
 
 		bac.add(onDeleted(node, null, null, null));
-		removeElement(node);
+		deletePersisted(node.getProject(), node);
 		bac.process();
 	}
 

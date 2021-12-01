@@ -179,6 +179,7 @@ public interface PersistingContainerDao<
 		for (HibJob job : version.referencedJobsViaTo()) {
 			ctx.jobDao().delete(job, bac);
 		}
+		beforeVersionDeleteFromDatabase(version);
 		// Delete version
 		ctx.delete(version, version.getClass());
 	}
@@ -199,4 +200,6 @@ public interface PersistingContainerDao<
 				}
 			}));
 	}
+
+	default void beforeVersionDeleteFromDatabase(SCV version) {}
 }
