@@ -336,7 +336,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	public static ImageFromDockerfile prepareDockerImage(MeshOptions options, boolean enableClustering) {
 		ImageFromDockerfile dockerImage = new ImageFromDockerfile("mesh-local", true);
 		try {
-			File projectRoot = new File("..");
+			File projectRoot = new File("../..");
 
 			// Locate all class folders
 			List<Path> classFolders = Files.walk(projectRoot.toPath())
@@ -348,14 +348,14 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			String classPathArg = "";
 			for (Path path : classFolders) {
 				// Prepare the class path argument
-				classPathArg += ":" + path.toFile().getPath().replaceAll("\\.\\.\\/", "bin/");
+				classPathArg += ":" + path.toFile().getPath().replaceAll("\\.\\.\\/\\.\\.\\/", "bin/");
 				List<Path> classPaths = Files.walk(path).collect(Collectors.toList());
 				for (Path classPath : classPaths) {
 					if (classPath.toFile().isFile()) {
 						File classFile = classPath.toFile();
 						assertTrue("Could not find class file {" + classFile + "}", classFile.exists());
 						String filePath = classPath.toFile().getPath();
-						String dockerPath = filePath.replaceAll("\\.\\.\\/", "bin/");
+						String dockerPath = filePath.replaceAll("\\.\\.\\/\\.\\.\\/", "bin/");
 						dockerImage.withFileFromFile(dockerPath, classFile);
 					}
 				}
