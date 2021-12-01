@@ -124,7 +124,7 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public String getVersion() {
+	public String getVersion(boolean failIfNotAvailable) {
 		return "1.0";
 	}
 
