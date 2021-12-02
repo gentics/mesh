@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.dao;
 import java.util.Iterator;
 
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
-import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 

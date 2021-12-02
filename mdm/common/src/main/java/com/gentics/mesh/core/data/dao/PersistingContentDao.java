@@ -49,14 +49,14 @@ public interface PersistingContentDao extends ContentDao {
 	void migrateContainerOntoBranch(HibNodeFieldContainer container, HibBranch newBranch, 
 			HibNode node, EventQueueBatch batch, ContainerType containerType, boolean setInitial);
 
-	// Those are stubs. They will be replaced during ContentDao implementation.
-
 	/**
 	 * Get the final type of the micronode entity.
 	 * 
 	 * @return
 	 */
 	Class<? extends HibMicronode> getMicronodePersistenceClass();
+
+	// Those are stubs. They will be replaced during ContentDao implementation.
 
 	@Deprecated
 	HibNodeFieldContainer createContainer();

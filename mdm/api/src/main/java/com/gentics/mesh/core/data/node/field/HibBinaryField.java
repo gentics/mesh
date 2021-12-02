@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.util.UniquenessUtil;
 
-public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, HibElement {
+public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, HibElement, HibDisplayField {
 
 	/**
 	 * Return the binary filename.

@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.util;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -372,16 +371,6 @@ public final class HibClassConverter {
 	 */
 	public static Node toGraph(HibNode node) {
 		return checkAndCast(node, Node.class);
-	}
-
-	/**
-	 * Convert the content to a graph element.
-	 * 
-	 * @param content
-	 * @return
-	 */
-	public static NodeGraphFieldContainer toGraph(HibContent content) {
-		return checkAndCast(content, NodeGraphFieldContainer.class);
 	}
 
 	/**

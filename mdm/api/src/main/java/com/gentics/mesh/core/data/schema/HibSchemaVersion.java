@@ -128,7 +128,7 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 		FieldsSet fields = generic.getFields();
 
 		// Load the schema and add/overwrite some properties
-		// Use getSchema to utilise the schema storage
+		// Use getSchema to utilize the schema storage
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
 		HibSchema container = getSchemaContainer();
 		container.fillCommonRestFields(ac, fields, restSchema);

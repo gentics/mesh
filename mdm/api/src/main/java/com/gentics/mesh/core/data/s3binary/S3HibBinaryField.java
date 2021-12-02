@@ -7,6 +7,7 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.node.field.HibBasicField;
+import com.gentics.mesh.core.data.node.field.HibDisplayField;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -16,7 +17,7 @@ import com.gentics.mesh.util.UniquenessUtil;
 /**
  * MDM interface for the s3binary field information.
  */
-public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>, HibElement {
+public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>, HibElement, HibDisplayField {
 
 	/**
 	 * Return the referenced s3binary entity.
