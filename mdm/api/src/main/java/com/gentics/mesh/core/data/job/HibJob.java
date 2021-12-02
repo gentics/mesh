@@ -21,6 +21,7 @@ import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.util.DateUtils;
 
 import io.reactivex.Completable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Domain model for job.
@@ -47,6 +48,11 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 
 	String WARNING_PROPERTY_KEY = "warnings";
 
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
+
 	/**
 	 * Set the current node name.
 	 */
@@ -65,9 +71,11 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	/**
 	 * Mark the error as failed and store the exception information.
 	 * 
-	 * @param ex
+	 * @param e
 	 */
-	void markAsFailed(Exception ex);
+	default void markAsFailed(Exception e) {
+		setError(e);
+	}
 
 	/**
 	 * Return the branch of the job.
@@ -128,14 +136,22 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	/**
 	 * Removes the error information from the job and thus it can be processed again.
 	 */
-	void resetJob();
+	default void resetJob() {
+		setStartTimestamp(null);
+		setStopTimestamp(null);
+		setErrorDetail(null);
+		setErrorMessage(null);
+		setStatus(JobStatus.QUEUED);
+	}
 
 	/**
 	 * Check whether the job has failed.
-	 * 
+	 *
 	 * @return
 	 */
-	boolean hasFailed();
+	default boolean hasFailed() {
+		return getErrorMessage() != null || getErrorDetail() != null;
+	}
 
 	/**
 	 * The max length before detail error messages will be truncated
@@ -215,7 +231,10 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	 * 
 	 * @param e
 	 */
-	void setError(Throwable e);
+	default void setError(Throwable e) {
+		setErrorDetail(ExceptionUtils.getStackTrace(e));
+		setErrorMessage(e.getMessage());
+	}
 
 	/**
 	 * Return the start date of the job.

@@ -47,11 +47,6 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse> implem
 	}
 
 	@Override
-	public TypeInfo getTypeInfo() {
-		return TYPE_INFO;
-	}
-
-	@Override
 	public JobWarningList getWarnings() {
 		String json = property(WARNING_PROPERTY_KEY);
 		if (json == null) {
