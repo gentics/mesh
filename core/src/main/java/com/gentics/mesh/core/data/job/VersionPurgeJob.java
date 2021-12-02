@@ -19,32 +19,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public interface VersionPurgeJob extends JobCore {
+public interface VersionPurgeJob extends JobCore, HibVersionPurgeJob {
 
 	static final Logger log = LoggerFactory.getLogger(VersionPurgeJob.class);
-
-	HibProject getProject();
-
-	/**
-	 * Set the project reference for the job.
-	 * 
-	 * @param project
-	 */
-	void setProject(HibProject project);
-
-	/**
-	 * Return the max age setting for the purge operation.
-	 * 
-	 * @return
-	 */
-	Optional<ZonedDateTime> getMaxAge();
-
-	/***
-	 * Set the max age setting for the purge operation.
-	 * 
-	 * @param time
-	 */
-	void setMaxAge(ZonedDateTime time);
 
 	@Override
 	default Completable processTask(Database db) {
