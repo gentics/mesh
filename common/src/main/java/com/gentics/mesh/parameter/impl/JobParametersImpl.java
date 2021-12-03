@@ -33,18 +33,26 @@ public class JobParametersImpl extends AbstractParameters implements JobParamete
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
-		QueryParameter statusParam = new QueryParameter();
-		statusParam.setDescription("Parameter for filtering jobs by their status. Multiple stati can be given separated by commas.");
-		statusParam.setType(ParamType.STRING);
-		statusParam.setDefaultValue("");
-		parameters.put(STATUS_PARAMETER_KEY, statusParam);
-
-		QueryParameter typeParam = new QueryParameter();
-		typeParam.setDescription(
-			"Parameter for filtering jobs by their type. Multiple types can be given separated by commas.");
-		typeParam.setType(ParamType.STRING);
-		typeParam.setDefaultValue("");
-		parameters.put(TYPE_PARAMETER_KEY, typeParam);
+		parameters.put(STATUS_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by their status. Multiple values can be given separated by commas."));
+		parameters.put(TYPE_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by their type. Multiple values can be given separated by commas."));
+		parameters.put(BRANCH_NAME_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by the branch name. Multiple values can be given separated by commas."));
+		parameters.put(BRANCH_UUID_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by the branch uuid. Multiple values can be given separated by commas."));
+		parameters.put(SCHEMA_NAME_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by the schema name. Multiple values can be given separated by commas."));
+		parameters.put(SCHEMA_UUID_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by the schema uuid. Multiple values can be given separated by commas."));
+		parameters.put(MICROSCHEMA_NAME_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by the microschema name. Multiple values can be given separated by commas."));
+		parameters.put(MICROSCHEMA_UUID_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by the microschema uuid. Multiple values can be given separated by commas."));
+		parameters.put(FROM_VERSION_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by the 'from' version. Multiple values can be given separated by commas."));
+		parameters.put(TO_VERSION_PARAMETER_KEY, createQueryParameter(
+				"Parameter for filtering jobs by the 'to' version. Multiple values can be given separated by commas."));
 
 		return parameters;
 	}
@@ -54,4 +62,16 @@ public class JobParametersImpl extends AbstractParameters implements JobParamete
 		return "Job List query Parameters";
 	}
 
+	/**
+	 * Create a query parameter of type {@link ParamType#STRING} and empty default value
+	 * @param description parameter description
+	 * @return query parameter
+	 */
+	protected QueryParameter createQueryParameter(String description) {
+		QueryParameter param = new QueryParameter();
+		param.setDescription(description);
+		param.setType(ParamType.STRING);
+		param.setDefaultValue("");
+		return param;
+	}
 }

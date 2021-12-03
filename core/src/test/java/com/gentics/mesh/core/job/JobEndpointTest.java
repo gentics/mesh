@@ -94,6 +94,8 @@ public class JobEndpointTest extends AbstractMeshTest {
 			boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 		});
 
+		String branchName = tx(() -> initialBranch().getName());
+
 		JobResponse branchMigrationJob = new JobResponse();
 		branchMigrationJob.setType(JobType.branch);
 		branchMigrationJob.setStatus(JobStatus.QUEUED);
@@ -114,14 +116,17 @@ public class JobEndpointTest extends AbstractMeshTest {
 				Pair.of(p -> p.setType(JobType.branch), Arrays.asList(branchMigrationJob)),
 				Pair.of(p -> p.setType(JobType.branch, JobType.schema), Arrays.asList(branchMigrationJob, schemaMigrationJob)),
 				Pair.of(p -> p.setType(JobType.branch).setStatus(JobStatus.COMPLETED), Collections.emptyList()),
-				Pair.of(p -> p.setType(JobType.branch).setStatus(JobStatus.QUEUED), Arrays.asList(branchMigrationJob))
+				Pair.of(p -> p.setType(JobType.branch).setStatus(JobStatus.QUEUED), Arrays.asList(branchMigrationJob)),
+				Pair.of(p -> p.setBranchName("doesnotexist"), Collections.emptyList()),
+				Pair.of(p -> p.setBranchName(branchName), Arrays.asList(branchMigrationJob, schemaMigrationJob)),
+				Pair.of(p -> p.setSchemaName("folder2"), Arrays.asList(schemaMigrationJob))
 			);
 
 		for (Pair<Consumer<JobParameters>, List<JobResponse>> test : tests) {
 			JobParametersImpl parameters = new JobParametersImpl();
 			test.getLeft().accept(parameters);
 			String description = null;
-			if (parameters.getStatus().isEmpty() && parameters.getType().isEmpty()) {
+			if (parameters.isEmpty()) {
 				description = "Unfiltered job list";
 			} else {
 				description = "Job List filtered for";
@@ -130,6 +135,30 @@ public class JobEndpointTest extends AbstractMeshTest {
 				}
 				if (!parameters.getType().isEmpty()) {
 					description += " type=" + parameters.getType();
+				}
+				if (!parameters.getBranchName().isEmpty()) {
+					description += " branchName=" + parameters.getBranchName();
+				}
+				if (!parameters.getBranchUuid().isEmpty()) {
+					description += " branchUuid=" + parameters.getBranchUuid();
+				}
+				if (!parameters.getSchemaName().isEmpty()) {
+					description += " schemaName=" + parameters.getSchemaName();
+				}
+				if (!parameters.getSchemaUuid().isEmpty()) {
+					description += " schemaUuid=" + parameters.getSchemaUuid();
+				}
+				if (!parameters.getMicroschemaName().isEmpty()) {
+					description += " microschemaName=" + parameters.getMicroschemaName();
+				}
+				if (!parameters.getMicroschemaUuid().isEmpty()) {
+					description += " microschemaUuid=" + parameters.getMicroschemaUuid();
+				}
+				if (!parameters.getFromVersion().isEmpty()) {
+					description += " fromVersion=" + parameters.getFromVersion();
+				}
+				if (!parameters.getToVersion().isEmpty()) {
+					description += " toVersion=" + parameters.getToVersion();
 				}
 			}
 			jobList = adminCall(() -> client().findJobs(parameters));
