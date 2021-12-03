@@ -11,10 +11,10 @@ import javax.management.ObjectName;
 
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobType;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -30,18 +30,15 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private HibBranchVersionAssignment versionEdge;
 
-	private HibJob job;
-
 	private long completionCount = 0;
 
 	private JobStatus status;
 
-	public MigrationStatusHandlerImpl(HibJob job, JobType type) {
-		this.job = job;
-	}
+	public MigrationStatusHandlerImpl()
+	{}
 
 	@Override
-	public MigrationStatusHandler commit() {
+	public MigrationStatusHandler commit(HibJob job) {
 		// Load the status if it has not yet been set or loaded.
 		if (status == null) {
 			status = job.getStatus();
@@ -52,6 +49,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		job.setCompletionCount(completionCount);
 		job.setStatus(status);
 
+		CommonTx.get().jobDao().mergeIntoPersisted(job);
 		Tx.get().commit();
 		return this;
 
@@ -83,11 +81,11 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	 * <li>Update the job and potential version edge</li>
 	 * </ul>
 	 */
-	public MigrationStatusHandler done() {
+	public MigrationStatusHandler done(HibJob job) {
 		setStatus(COMPLETED);
 		log.info("Migration completed without errors.");
 		job.setStopTimestamp();
-		commit();
+		commit(job);
 		return this;
 	}
 
@@ -102,13 +100,13 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	 * @param error
 	 * @param failureMessage
 	 */
-	public MigrationStatusHandler error(Throwable error, String failureMessage) {
+	public MigrationStatusHandler error(HibJob job, Throwable error, String failureMessage) {
 		setStatus(FAILED);
 		log.error("Error handling migration", error);
 
 		job.setStopTimestamp();
 		job.setError(error);
-		commit();
+		commit(job);
 		return this;
 	}
 
@@ -131,5 +129,4 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	public void incCompleted() {
 		completionCount++;
 	}
-
 }

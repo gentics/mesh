@@ -20,25 +20,4 @@ public interface JobCore extends HibJob {
 	default HibUser getCreator() {
 		return CommonTx.get().data().mesh().userProperties().getCreator(this);
 	}
-
-	@Override
-	default Completable process() {
-		Database db = CommonTx.get().data().mesh().database();
-		return Completable.defer(() -> {
-
-			db.tx(() -> {
-				log.info("Processing job {" + getUuid() + "}");
-				setStartTimestamp();
-				setStatus(STARTING);
-				setNodeName();
-			});
-
-			return processTask(db);
-		});
-	}
-
-	/**
-	 * Actual implementation of the task, executed by a job.
-	 */
-	Completable processTask(Database db);
 }

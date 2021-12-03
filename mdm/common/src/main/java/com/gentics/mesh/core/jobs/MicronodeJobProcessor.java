@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -76,11 +75,12 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 	}
 
 	private MicronodeMigrationContext prepareContext(HibJob job) {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(job, JobType.microschema);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl();
 		try {
 			return db.tx(tx -> {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
+				context.setJobUUID(job.getUuid());
 
 				tx.createBatch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 
@@ -118,12 +118,12 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 				cause.setUuid(job.getUuid());
 				context.setCause(cause);
 
-				context.getStatus().commit();
+				context.getStatus().commit(job);
 				return context;
 			});
 		} catch (Exception e) {
 			db.tx(() -> {
-				status.error(e, "Error while preparing micronode migration.");
+				status.error(job, e, "Error while preparing micronode migration.");
 			});
 			throw e;
 		}
@@ -143,11 +143,11 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 							JobWarningList warnings = new JobWarningList();
 							job.setWarnings(warnings);
 							finalizeMigration(job, context);
-							context.getStatus().done();
+							context.getStatus().done(job);
 						});
 					}).doOnError(err -> {
 						db.tx(tx -> {
-							context.getStatus().error(err, "Error in micronode migration.");
+							context.getStatus().error(job, err, "Error in micronode migration.");
 							tx.createBatch().add(createEvent(job, tx, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 						});
 					});

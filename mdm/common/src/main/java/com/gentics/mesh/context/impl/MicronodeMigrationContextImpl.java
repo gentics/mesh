@@ -23,6 +23,8 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 
 	private MicroschemaMigrationCause cause;
 
+	private String jobUUID;
+
 	@Override
 	public MigrationStatusHandler getStatus() {
 		return status;
@@ -69,10 +71,20 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 	}
 
 	@Override
+	public String getJobUUID() {
+		return jobUUID;
+	}
+
+	public void setJobUUID(String jobUUID) {
+		this.jobUUID = jobUUID;
+	}
+
+	@Override
 	public void validate() {
 		Objects.requireNonNull(fromVersion, "The from microschema version reference is missing in the context.");
 		Objects.requireNonNull(toVersion, "The target microschema version reference is missing in the context.");
 		Objects.requireNonNull(branch, "The branch reference is missing in the context.");
+		Objects.requireNonNull(jobUUID, "The jobUUID is missing in the context.");
 	}
 
 }

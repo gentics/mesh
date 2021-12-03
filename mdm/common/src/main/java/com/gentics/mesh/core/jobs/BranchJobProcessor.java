@@ -13,6 +13,8 @@ import javax.inject.Inject;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
@@ -24,7 +26,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobType;
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -32,11 +33,13 @@ import io.vertx.core.logging.LoggerFactory;
 public class BranchJobProcessor implements SingleJobProcessor {
 	public static final Logger log = LoggerFactory.getLogger(BranchJobProcessor.class);
 
-	private Database db;
+	private final Database db;
+	private final JobDao jobDao;
 
 	@Inject
-	public BranchJobProcessor(Database db) {
+	public BranchJobProcessor(Database db, JobDao jobDao) {
 		this.db = db;
+		this.jobDao = jobDao;
 	}
 
 	/**
@@ -62,12 +65,13 @@ public class BranchJobProcessor implements SingleJobProcessor {
 	}
 
 	private BranchMigrationContext prepareContext(HibJob job) {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(job, JobType.branch);
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl();
 		log.debug("Preparing branch migration job");
 		try {
 			return db.tx(tx -> {
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 				context.setStatus(status);
+				context.setJobUUID(job.getUuid());
 
 				tx.createBatch().add(createEvent(job, BRANCH_MIGRATION_START, STARTING)).dispatch();
 
@@ -96,12 +100,12 @@ public class BranchJobProcessor implements SingleJobProcessor {
 				cause.setUuid(job.getUuid());
 				context.setCause(cause);
 
-				context.getStatus().commit();
+				context.getStatus().commit(job);
 				return context;
 			});
 		} catch (Exception e) {
 			db.tx(() -> {
-				status.error(e, "Error while preparing branch migration.");
+				status.error(jobDao.findByUuid(job.getUuid()), e, "Error while preparing branch migration.");
 			});
 			throw e;
 		}
@@ -114,17 +118,18 @@ public class BranchJobProcessor implements SingleJobProcessor {
 		});
 		return Completable.defer(() -> {
 			BranchMigrationContext context = prepareContext(job);
-
 			return handler.migrateBranch(context)
 					.doOnComplete(() -> {
 						db.tx(() -> {
-							finalizeMigration(job, context);
-							context.getStatus().done();
+							HibJob latest = jobDao.findByUuid(job.getUuid());
+							finalizeMigration(latest, context);
+							context.getStatus().done(latest);
 						});
 					}).doOnError(err -> {
 						db.tx(tx -> {
-							context.getStatus().error(err, "Error in branch migration.");
-							tx.createBatch().add(createEvent(job, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+							HibJob latest = jobDao.findByUuid(job.getUuid());
+							context.getStatus().error(latest, err, "Error in branch migration.");
+							tx.createBatch().add(createEvent(latest, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 						});
 					});
 		});
@@ -133,9 +138,11 @@ public class BranchJobProcessor implements SingleJobProcessor {
 	private void finalizeMigration(HibJob job, BranchMigrationContext context) {
 		// Mark branch as active & migrated
 		db.tx(() -> {
-			HibBranch branch = context.getNewBranch();
+			PersistingBranchDao persistingBranchDao = CommonTx.get().branchDao();
+			HibBranch branch = job.getBranch();
 			branch.setActive(true);
 			branch.setMigrated(true);
+			persistingBranchDao.mergeIntoPersisted(branch.getProject(), branch);
 		});
 		db.tx(tx -> {
 			tx.createBatch().add(createEvent(job, BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();

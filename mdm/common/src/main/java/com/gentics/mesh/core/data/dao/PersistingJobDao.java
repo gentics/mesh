@@ -87,6 +87,6 @@ public interface PersistingJobDao extends JobDao, PersistingDaoGlobal<HibJob> {
 
 	@Override
 	default boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
-		throw new org.apache.commons.lang.NotImplementedException("Jobs can't be updated");
+		throw new NotImplementedException("Jobs can't be updated");
 	}
 }

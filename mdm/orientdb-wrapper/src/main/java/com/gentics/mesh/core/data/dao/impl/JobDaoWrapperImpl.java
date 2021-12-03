@@ -116,12 +116,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 
 	@Override
-	public Completable process() {
-		JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
-		return jobRoot.process();
-	}
-
-	@Override
 	public long count() {
 		return boot.get().meshRoot().getJobRoot().computeCount();
 	}

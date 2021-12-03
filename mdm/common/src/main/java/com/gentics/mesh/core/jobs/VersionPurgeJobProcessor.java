@@ -7,6 +7,8 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.HibVersionPurgeJob;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -25,6 +27,7 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 	public static final Logger log = LoggerFactory.getLogger(VersionPurgeJobProcessor.class);
 	private Database db;
 
+	@Inject
 	public VersionPurgeJobProcessor(Database db) {
 		this.db = db;
 	}

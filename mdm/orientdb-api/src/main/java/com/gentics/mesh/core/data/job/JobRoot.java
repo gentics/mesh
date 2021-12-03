@@ -77,11 +77,6 @@ public interface JobRoot extends RootVertex<Job> {
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
 
 	/**
-	 * Process all remaining jobs.
-	 */
-	Completable process();
-
-	/**
 	 * Purge all failed jobs from the job root.
 	 */
 	void purgeFailed();

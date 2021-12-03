@@ -122,11 +122,6 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
 
 	/**
-	 * Process the given job
-	 */
-	Completable process(HibJob job);
-
-	/**
 	 * Purge all failed jobs from the job root.
 	 */
 	void purgeFailed();

@@ -54,4 +54,10 @@ public interface NodeMigrationActionContext extends InternalActionContext {
 	 * Validate that all needed information is present in the context.
 	 */
 	void validate();
+
+	/**
+	 * The uuid of the job responsible for the migration
+	 * @return
+	 */
+	String getJobUUID();
 }

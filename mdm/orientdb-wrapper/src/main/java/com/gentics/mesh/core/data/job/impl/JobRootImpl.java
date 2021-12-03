@@ -227,26 +227,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Completable process() {
-		List<Completable> actions = new ArrayList<>();
-		Iterable<? extends Job> it = findAll();
-		for (Job job : it) {
-			try {
-				// Don't execute failed or completed jobs again
-				JobStatus jobStatus = job.getStatus();
-				if (job.hasFailed() || (jobStatus == COMPLETED || jobStatus == FAILED || jobStatus == UNKNOWN)) {
-					continue;
-				}
-				actions.add(job.process());
-			} catch (Exception e) {
-				job.markAsFailed(e);
-				log.error("Error while processing job {" + job.getUuid() + "}");
-			}
-		}
-		return Completable.concat(actions);
-	}
-
-	@Override
 	public void purgeFailed() {
 		log.info("Purging failed jobs..");
 		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);

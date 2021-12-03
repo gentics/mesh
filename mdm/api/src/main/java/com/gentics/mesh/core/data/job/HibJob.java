@@ -48,6 +48,14 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 
 	String WARNING_PROPERTY_KEY = "warnings";
 
+	String ERROR_DETAIL_MAX_LENGTH_MSG = "..." + System.lineSeparator() +
+			"For further details concerning this error please refer to the logs.";
+
+	/**
+	 * The max length before detail error messages will be truncated
+	 */
+	int ERROR_DETAIL_MAX_LENGTH = 50000;
+
 	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
@@ -154,11 +162,6 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	}
 
 	/**
-	 * The max length before detail error messages will be truncated
-	 */
-	int ERROR_DETAIL_MAX_LENGTH = 50000;
-
-	/**
 	 * Set the job type.
 	 * 
 	 * @param type
@@ -222,18 +225,22 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	void setToMicroschemaVersion(HibMicroschemaVersion toVersion);
 
 	/**
-	 * Process the job.
-	 */
-	Completable process();
-
-	/**
 	 * Set the error information using the provided exception.
 	 * 
 	 * @param e
 	 */
 	default void setError(Throwable e) {
-		setErrorDetail(ExceptionUtils.getStackTrace(e));
+		String stackTrace = ExceptionUtils.getStackTrace(e);
+		// truncate the error detail message to the max length for the error detail property
+		setErrorDetail(truncateStackTrace(stackTrace));
 		setErrorMessage(e.getMessage());
+	}
+
+	private String truncateStackTrace(String info) {
+		if (info != null && info.length() > ERROR_DETAIL_MAX_LENGTH) {
+			return info.substring(0, ERROR_DETAIL_MAX_LENGTH - ERROR_DETAIL_MAX_LENGTH_MSG.length()) + ERROR_DETAIL_MAX_LENGTH_MSG;
+		}
+		return info;
 	}
 
 	/**

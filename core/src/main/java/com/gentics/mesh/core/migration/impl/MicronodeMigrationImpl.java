@@ -21,8 +21,10 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
@@ -83,8 +85,10 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 					ac.setBranch(branch);
 
 					if (status != null) {
+						JobDao jobDao = Tx.get().jobDao();
+						HibJob job = jobDao.findByUuid(context.getJobUUID());
 						status.setStatus(RUNNING);
-						status.commit();
+						status.commit(job);
 					}
 				});
 			} catch (Exception e) {
@@ -102,8 +106,10 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			if (fieldContainersResult.isEmpty()) {
 				if (status != null) {
 					db.tx(() -> {
+						JobDao jobDao = Tx.get().jobDao();
+						HibJob job = jobDao.findByUuid(context.getJobUUID());
 						status.setStatus(COMPLETED);
-						status.commit();
+						status.commit(job);
 					});
 				}
 				return Completable.complete();

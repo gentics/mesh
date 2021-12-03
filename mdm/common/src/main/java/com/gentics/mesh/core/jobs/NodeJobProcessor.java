@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import io.reactivex.Completable;
@@ -66,11 +65,12 @@ public class NodeJobProcessor implements SingleJobProcessor {
 	}
 
 	private NodeMigrationActionContextImpl prepareContext(HibJob job) {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(job, JobType.schema);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl();
 		try {
 			return db.tx(tx -> {
 				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 				context.setStatus(status);
+				context.setJobUUID(job.getUuid());
 
 				tx.createBatch().add(createEvent(job, tx, SCHEMA_MIGRATION_START, STARTING)).dispatch();
 
@@ -119,12 +119,12 @@ public class NodeJobProcessor implements SingleJobProcessor {
 				cause.setUuid(job.getUuid());
 				context.setCause(cause);
 
-				context.getStatus().commit();
+				context.getStatus().commit(job);
 				return context;
 			});
 		} catch (Exception e) {
 			db.tx(() -> {
-				status.error(e, "Error while preparing node migration.");
+				status.error(job, e, "Error while preparing node migration.");
 			});
 			throw e;
 		}
@@ -150,11 +150,11 @@ public class NodeJobProcessor implements SingleJobProcessor {
 							}
 							job.setWarnings(warnings);
 							finalizeMigration(job, context);
-							context.getStatus().done();
+							context.getStatus().done(job);
 						});
 					}).doOnError(err -> {
 						db.tx(tx -> {
-							context.getStatus().error(err, "Error in node migration.");
+							context.getStatus().error(job, err, "Error in node migration.");
 							tx.createBatch().add(createEvent(job, tx, SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
 						});
 					});

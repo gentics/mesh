@@ -30,4 +30,10 @@ public interface MicronodeMigrationContext {
 	 */
 	void validate();
 
+	/**
+	 * The uuid of the job responsible for the migration
+	 * @return
+	 */
+	String getJobUUID();
+
 }

@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.gentics.mesh.core.db.CommonTx;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -196,6 +197,8 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		triggerAndWaitForJob(jobUuid, FAILED);
 
+		grantAdmin();
+
 		JobResponse jobResonse = call(() -> client().findJobByUuid(jobUuid));
 		assertNotNull(jobResonse.getErrorMessage());
 
@@ -203,13 +206,16 @@ public class JobEndpointTest extends AbstractMeshTest {
 		tx(tx -> {
 			BranchDao branchDao = tx.branchDao();
 			HibBranch branch = branchDao.create(project(), "testBranch", user(), null, true, initialBranch(), createBatch());
-			job.setBranch(branch);
+			HibJob toUpdate = boot().jobDao().findByUuid(job.getUuid());
+			toUpdate.setBranch(branch);
+			CommonTx.get().jobDao().mergeIntoPersisted(toUpdate);
 		});
 
 		waitForJob(() -> {
 			call(() -> client().processJob(jobUuid));
 		}, jobUuid, COMPLETED);
 
+		grantAdmin();
 		jobResonse = call(() -> client().findJobByUuid(jobUuid));
 		assertNull(jobResonse.getErrorMessage());
 		assertEquals("After process the job must be 'completed'", COMPLETED, jobResonse.getStatus());

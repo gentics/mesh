@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.field;
 
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
@@ -20,17 +21,17 @@ public class DummyMigrationStatus implements MigrationStatusHandler {
 	}
 
 	@Override
-	public MigrationStatusHandler commit() {
+	public MigrationStatusHandler commit(HibJob job) {
 		return this;
 	}
 
 	@Override
-	public MigrationStatusHandler done() {
+	public MigrationStatusHandler done(HibJob job) {
 		return this;
 	}
 
 	@Override
-	public MigrationStatusHandler error(Throwable error, String string) {
+	public MigrationStatusHandler error(HibJob job, Throwable error, String string) {
 		return this;
 	}
 
