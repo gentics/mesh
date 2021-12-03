@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -63,7 +64,9 @@ public class JobEndpointTest extends AbstractMeshTest {
 		});
 
 		jobList = adminCall(() -> client().findJobs());
-		JobResponse job = jobList.getData().get(1);
+		Optional<JobResponse> optionalSchemaMigrationJob = jobList.getData().stream().filter(job -> job.getType() == JobType.schema).findFirst();
+		assertThat(optionalSchemaMigrationJob).as("Schema migration job").isPresent();
+		JobResponse job = optionalSchemaMigrationJob.get();
 		assertThat(job.getProperties()).doesNotContainKey("microschemaUuid");
 		assertThat(job.getProperties()).doesNotContainKey("microschemaName");
 		assertThat(job.getProperties()).containsKey("schemaName");
