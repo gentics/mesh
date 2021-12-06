@@ -49,17 +49,19 @@ public class JobEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateSchema(uuid, schema));
 		});
 
-		tx((tx) -> {
-			boot().jobDao().enqueueBranchMigration(user(), initialBranch());
-		});
-
 		jobList = adminCall(() -> client().findJobs());
-		JobResponse job = jobList.getData().get(1);
+		JobResponse job = jobList.getData().get(0);
 		assertThat(job.getProperties()).doesNotContainKey("microschemaUuid");
 		assertThat(job.getProperties()).doesNotContainKey("microschemaName");
 		assertThat(job.getProperties()).containsKey("schemaName");
 		assertThat(job.getProperties()).containsKey("schemaUuid");
-		assertThat(jobList.getData()).hasSize(2);
+		assertThat(adminCall(() -> client().findJobs()).getData()).hasSize(1);
+
+		tx((tx) -> {
+			boot().jobDao().enqueueBranchMigration(user(), initialBranch());
+		});
+
+		assertThat(adminCall(() -> client().findJobs()).getData()).hasSize(2);
 	}
 
 	@Test
@@ -91,16 +93,14 @@ public class JobEndpointTest extends AbstractMeshTest {
 			return job.getUuid();
 		});
 
-		grantAdmin();
-
 		waitForJob(() -> {
-			GenericMessageResponse msg = call(() -> client().invokeJobProcessing());
+			GenericMessageResponse msg = adminCall(() -> client().invokeJobProcessing());
 			assertThat(msg).matches("job_processing_invoked");
 		}, jobUuid, FAILED);
 
-		call(() -> client().invokeJobProcessing());
+		adminCall(() -> client().invokeJobProcessing());
 		TestUtils.sleep(5_000);
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertEquals("No other migration should have been executed.", 1, status.getMetainfo().getTotalCount());
 		assertEquals(jobUuid, status.getData().get(0).getUuid());
 
@@ -172,10 +172,9 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().resetJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
-		grantAdmin();
-
 		triggerAndWaitForJob(jobUuid, FAILED);
 
+		grantAdmin();
 		JobResponse jobResonse = call(() -> client().findJobByUuid(jobUuid));
 		assertNotNull(jobResonse.getErrorMessage());
 

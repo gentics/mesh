@@ -38,12 +38,6 @@ public interface BranchMigrationContext {
 	MigrationStatusHandler getStatus();
 
 	/**
-	 * The uuid of the job responsible for the migration
-	 * @return
-	 */
-	String getJobUUID();
-
-	/**
 	 * Validate that all needed information are present in the context.
 	 */
 	void validate();

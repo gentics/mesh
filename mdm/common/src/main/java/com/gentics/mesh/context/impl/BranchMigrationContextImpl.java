@@ -20,8 +20,6 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 
 	private HibBranch oldBranch;
 
-	private String jobUUID;
-
 	public BranchMigrationContextImpl() {
 	}
 
@@ -62,19 +60,9 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 	}
 
 	@Override
-	public String getJobUUID() {
-		return jobUUID;
-	}
-
-	public void setJobUUID(String jobUUID) {
-		this.jobUUID = jobUUID;
-	}
-
-	@Override
 	public void validate() {
 		Objects.requireNonNull(oldBranch, "The old branch reference is missing in the context.");
 		Objects.requireNonNull(newBranch, "The new branch reference is missing in the context.");
-		Objects.requireNonNull(jobUUID, "The job uuid is missing in the context.");
 	}
 
 }

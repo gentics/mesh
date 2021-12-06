@@ -75,12 +75,11 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 	}
 
 	private MicronodeMigrationContext prepareContext(HibJob job) {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl();
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(job.getUuid());
 		try {
 			return db.tx(tx -> {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
-				context.setJobUUID(job.getUuid());
 
 				tx.createBatch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 
@@ -118,12 +117,12 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 				cause.setUuid(job.getUuid());
 				context.setCause(cause);
 
-				context.getStatus().commit(job);
+				context.getStatus().commit();
 				return context;
 			});
 		} catch (Exception e) {
 			db.tx(() -> {
-				status.error(job, e, "Error while preparing micronode migration.");
+				status.error(e, "Error while preparing micronode migration.");
 			});
 			throw e;
 		}
@@ -143,11 +142,11 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 							JobWarningList warnings = new JobWarningList();
 							job.setWarnings(warnings);
 							finalizeMigration(job, context);
-							context.getStatus().done(job);
+							context.getStatus().done();
 						});
 					}).doOnError(err -> {
 						db.tx(tx -> {
-							context.getStatus().error(job, err, "Error in micronode migration.");
+							context.getStatus().error(err, "Error in micronode migration.");
 							tx.createBatch().add(createEvent(job, tx, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 						});
 					});

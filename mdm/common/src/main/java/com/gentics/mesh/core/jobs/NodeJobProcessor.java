@@ -65,12 +65,11 @@ public class NodeJobProcessor implements SingleJobProcessor {
 	}
 
 	private NodeMigrationActionContextImpl prepareContext(HibJob job) {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl();
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(job.getUuid());
 		try {
 			return db.tx(tx -> {
 				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 				context.setStatus(status);
-				context.setJobUUID(job.getUuid());
 
 				tx.createBatch().add(createEvent(job, tx, SCHEMA_MIGRATION_START, STARTING)).dispatch();
 
@@ -103,7 +102,7 @@ public class NodeJobProcessor implements SingleJobProcessor {
 				}
 				context.setProject(project);
 
-				HibBranchSchemaVersion branchVersionAssignment = branch.findBranchSchemaEdge(toContainerVersion);
+				HibBranchSchemaVersion branchVersionAssignment = CommonTx.get().branchDao().findBranchSchemaEdge(branch, toContainerVersion);
 				context.getStatus().setVersionEdge(branchVersionAssignment);
 
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
@@ -119,12 +118,12 @@ public class NodeJobProcessor implements SingleJobProcessor {
 				cause.setUuid(job.getUuid());
 				context.setCause(cause);
 
-				context.getStatus().commit(job);
+				context.getStatus().commit();
 				return context;
 			});
 		} catch (Exception e) {
 			db.tx(() -> {
-				status.error(job, e, "Error while preparing node migration.");
+				status.error(e, "Error while preparing node migration.");
 			});
 			throw e;
 		}
@@ -150,11 +149,11 @@ public class NodeJobProcessor implements SingleJobProcessor {
 							}
 							job.setWarnings(warnings);
 							finalizeMigration(job, context);
-							context.getStatus().done(job);
+							context.getStatus().done();
 						});
 					}).doOnError(err -> {
 						db.tx(tx -> {
-							context.getStatus().error(job, err, "Error in node migration.");
+							context.getStatus().error(err, "Error in node migration.");
 							tx.createBatch().add(createEvent(job, tx, SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
 						});
 					});
@@ -167,7 +166,7 @@ public class NodeJobProcessor implements SingleJobProcessor {
 		db.tx(() -> {
 			HibBranch branch = context.getBranch();
 			HibSchemaVersion fromContainerVersion = context.getFromVersion();
-			HibBranchSchemaVersion assignment = branch.findBranchSchemaEdge(fromContainerVersion);
+			HibBranchSchemaVersion assignment =  CommonTx.get().branchDao().findBranchSchemaEdge(branch, fromContainerVersion);
 			if (assignment != null) {
 				assignment.setActive(false);
 			}

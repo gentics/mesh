@@ -51,8 +51,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private MigrationStatusHandler status;
 
-	private String jobUUID;
-
 	@Override
 	public HibBranch getBranch() {
 		return branch;
@@ -265,19 +263,9 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public String getJobUUID() {
-		return jobUUID;
-	}
-
-	public void setJobUUID(String jobUUID) {
-		this.jobUUID = jobUUID;
-	}
-
-	@Override
 	public void validate() {
 		Objects.requireNonNull(fromContainerVersion, "The source schema reference is missing in the context.");
 		Objects.requireNonNull(toContainerVersion, "The target schema reference is missing in the context.");
-		Objects.requireNonNull(jobUUID, "The job uuid is missing in the context.");
 	}
 
 	@Override

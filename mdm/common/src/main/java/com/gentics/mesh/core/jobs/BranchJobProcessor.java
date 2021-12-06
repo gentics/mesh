@@ -65,13 +65,12 @@ public class BranchJobProcessor implements SingleJobProcessor {
 	}
 
 	private BranchMigrationContext prepareContext(HibJob job) {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl();
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(job.getUuid());
 		log.debug("Preparing branch migration job");
 		try {
 			return db.tx(tx -> {
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 				context.setStatus(status);
-				context.setJobUUID(job.getUuid());
 
 				tx.createBatch().add(createEvent(job, BRANCH_MIGRATION_START, STARTING)).dispatch();
 
@@ -100,12 +99,12 @@ public class BranchJobProcessor implements SingleJobProcessor {
 				cause.setUuid(job.getUuid());
 				context.setCause(cause);
 
-				context.getStatus().commit(job);
+				context.getStatus().commit();
 				return context;
 			});
 		} catch (Exception e) {
 			db.tx(() -> {
-				status.error(jobDao.findByUuid(job.getUuid()), e, "Error while preparing branch migration.");
+				status.error(e, "Error while preparing branch migration.");
 			});
 			throw e;
 		}
@@ -123,12 +122,12 @@ public class BranchJobProcessor implements SingleJobProcessor {
 						db.tx(() -> {
 							HibJob latest = jobDao.findByUuid(job.getUuid());
 							finalizeMigration(latest, context);
-							context.getStatus().done(latest);
+							context.getStatus().done();
 						});
 					}).doOnError(err -> {
 						db.tx(tx -> {
 							HibJob latest = jobDao.findByUuid(job.getUuid());
-							context.getStatus().error(latest, err, "Error in branch migration.");
+							context.getStatus().error(err, "Error in branch migration.");
 							tx.createBatch().add(createEvent(latest, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 						});
 					});

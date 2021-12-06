@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.endpoint.migration;
 
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
-import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
 
@@ -13,30 +12,26 @@ public interface MigrationStatusHandler {
 	/**
 	 * Update the status and store it in the local or cluster wide map.
 	 *
-	 * @param job
-	 *
 	 * @return Fluent API
 	 */
-	MigrationStatusHandler commit(HibJob job);
+	MigrationStatusHandler commit();
 
 	/**
 	 * Update status and inform all the channels.
 	 *
-	 * @param job
 	 * @return Fluent API
 	 */
 
-	MigrationStatusHandler done(HibJob job);
+	MigrationStatusHandler done();
 
 	/**
 	 * Handle the error and inform all channels.
 	 *
-	 * @param job
 	 * @param error
 	 * @param string
 	 * @return Fluent API
 	 */
-	MigrationStatusHandler error(HibJob job, Throwable error, String string);
+	MigrationStatusHandler error(Throwable error, String string);
 
 	/**
 	 * Set the version edge which will store the migration status.

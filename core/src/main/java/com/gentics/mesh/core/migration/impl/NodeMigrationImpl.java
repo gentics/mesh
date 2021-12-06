@@ -84,11 +84,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 				db.tx(() -> {
 					prepareMigration(fromVersion, touchedFields);
 					if (status != null) {
-						JobDao jobDao = Tx.get().jobDao();
-						String jobUUID = context.getJobUUID();
-						HibJob job = jobDao.findByUuid(jobUUID);
 						status.setStatus(RUNNING);
-						status.commit(job);
+						status.commit();
 					}
 				});
 			} catch (Exception e) {
@@ -112,11 +109,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			if (containers.isEmpty()) {
 				if (status != null) {
 					db.tx(() -> {
-						JobDao jobDao = Tx.get().jobDao();
-						String jobUUID = context.getJobUUID();
-						HibJob job = jobDao.findByUuid(jobUUID);
 						status.setStatus(COMPLETED);
-						status.commit(job);
+						status.commit();
 					});
 				}
 				return Completable.complete();

@@ -349,6 +349,10 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		deletePersisted(project, branch);
 	}
 
+	default HibBranchSchemaVersion findBranchSchemaEdge(HibBranch branch, HibSchemaVersion schemaVersion) {
+		return branch.findBranchSchemaEdge(schemaVersion);
+	}
+
 	@Override
 	default HibJob assignSchemaVersion(HibBranch branch, HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch) {
 		JobDao jobDao = Tx.get().jobDao();

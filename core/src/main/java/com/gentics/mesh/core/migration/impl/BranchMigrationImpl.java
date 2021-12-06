@@ -20,12 +20,10 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
@@ -64,9 +62,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 
 			db.tx(() -> {
 				if (status != null) {
-					HibJob job = Tx.get().jobDao().findByUuid(context.getJobUUID());
 					status.setStatus(RUNNING);
-					status.commit(job);
+					status.commit();
 				}
 			});
 
