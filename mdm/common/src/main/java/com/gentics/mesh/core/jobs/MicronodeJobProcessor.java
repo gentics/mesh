@@ -102,7 +102,7 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 				context.setToVersion(toContainerVersion);
 
 				HibMicroschema schemaContainer = fromContainerVersion.getSchemaContainer();
-				HibBranchMicroschemaVersion branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
+				HibBranchMicroschemaVersion branchVersionEdge = Tx.get().branchDao().findBranchMicroschemaEdge(branch, toContainerVersion);
 				context.getStatus().setVersionEdge(branchVersionEdge);
 				if (log.isDebugEnabled()) {
 					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"

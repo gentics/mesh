@@ -102,7 +102,7 @@ public class NodeJobProcessor implements SingleJobProcessor {
 				}
 				context.setProject(project);
 
-				HibBranchSchemaVersion branchVersionAssignment = CommonTx.get().branchDao().findBranchSchemaEdge(branch, toContainerVersion);
+				HibBranchSchemaVersion branchVersionAssignment = Tx.get().branchDao().findBranchSchemaEdge(branch, toContainerVersion);
 				context.getStatus().setVersionEdge(branchVersionAssignment);
 
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
@@ -166,7 +166,7 @@ public class NodeJobProcessor implements SingleJobProcessor {
 		db.tx(() -> {
 			HibBranch branch = context.getBranch();
 			HibSchemaVersion fromContainerVersion = context.getFromVersion();
-			HibBranchSchemaVersion assignment =  CommonTx.get().branchDao().findBranchSchemaEdge(branch, fromContainerVersion);
+			HibBranchSchemaVersion assignment =  Tx.get().branchDao().findBranchSchemaEdge(branch, fromContainerVersion);
 			if (assignment != null) {
 				assignment.setActive(false);
 			}

@@ -210,4 +210,14 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 		// Delete the root itself
 		getRoot(root).delete();
 	}
+
+	@Override
+	public HibBranchSchemaVersion findBranchSchemaEdge(HibBranch branch, HibSchemaVersion schemaVersion) {
+		return toGraph(branch).findBranchSchemaEdge(schemaVersion);
+	}
+
+	@Override
+	public HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibBranch branch, HibMicroschemaVersion microschemaVersion) {
+		return toGraph(branch).findBranchMicroschemaEdge(microschemaVersion);
+	}
 }

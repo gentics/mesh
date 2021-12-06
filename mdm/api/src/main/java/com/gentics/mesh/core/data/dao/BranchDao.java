@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -86,4 +88,23 @@ public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, 
 	 * @return
 	 */
 	HibBranch getLatestBranch(HibProject project);
+
+	/**
+	 * Find the branch schema edge for the given branch and version.
+	 *
+	 * @param branch
+	 * @param schemaVersion
+	 * @return Found edge between branch and version
+	 */
+	HibBranchSchemaVersion findBranchSchemaEdge(HibBranch branch, HibSchemaVersion schemaVersion);
+
+
+	/**
+	 * Find the branch microschema edge for the given branch and version.
+	 *
+	 * @param branch
+	 * @param microschemaVersion
+	 * @return Found edge between branch and version
+	 */
+	HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibBranch branch, HibMicroschemaVersion microschemaVersion);
 }
