@@ -38,7 +38,7 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 		if (frame != null) {
 			String utf8String = frame.getUtf8String();
 			if (utf8String.contains(MeshEvent.STARTUP.address)) {
-				log.info("Startup message seen. Releasing lock");
+				log.info("Startup message seen. Releasing lock.");
 				if (startupAction != null) {
 					startupAction.run();
 				}
@@ -57,6 +57,8 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 	public void await(int timeoutValue, TimeUnit unit) throws InterruptedException {
 		if (!latch.await(timeoutValue, unit)) {
 			throw new UnresponsiveContainerError();
+		} else {
+			log.info("Started up.");
 		}
 	}
 
