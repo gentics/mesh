@@ -14,6 +14,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -49,7 +51,6 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -63,6 +64,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 
 import io.vertx.core.logging.Logger;
@@ -92,17 +94,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type) {
 		return toGraph(node).getFieldContainer(languageTag, branchUuid, type);
-	}
-
-	@Override
-	public HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user) {
-		return toGraph(node).createFieldContainer(languageTag, branch, user);
-	}
-
-	@Override
-	public HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor,
-			HibNodeFieldContainer original, boolean handleDraftEdge) {
-		return toGraph(node).createFieldContainer(languageTag, branch, editor, original, handleDraftEdge);
 	}
 
 	@Override
@@ -510,9 +501,13 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	@Deprecated
-	public HibNodeFieldContainer createContainer() {
-		return GraphDBTx.getGraphTx().getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+	public HibNodeFieldContainer createPersisted(HibSchemaVersion version, String uuid) {
+		NodeGraphFieldContainerImpl container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		if (StringUtils.isNotBlank(uuid)) {
+			container.setUuid(uuid);
+		}
+		container.setSchemaContainerVersion(version);
+		return container;
 	}
 
 	@Override
@@ -570,5 +565,36 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
 		return toGraph(node).getFieldContainers(type);
+	}
+
+	@Override
+	public void connectFieldContainer(HibNode node, HibNodeFieldContainer newContainer, HibBranch branch, String languageTag, boolean handleDraftEdge) {
+		Node graphNode = toGraph(node);
+		NodeGraphFieldContainer graphContainer = toGraph(newContainer);
+		String branchUuid = branch.getUuid();
+
+		if (handleDraftEdge) {
+			EdgeFrame draftEdge = graphNode.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, DRAFT);
+			
+			// remove existing draft edge
+			if (draftEdge != null) {
+				draftEdge.remove();
+				newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
+			}
+
+			// create a new draft edge
+			GraphFieldContainerEdge edge = graphNode.addFramedEdge(HAS_FIELD_CONTAINER, graphContainer, GraphFieldContainerEdgeImpl.class);
+			edge.setLanguageTag(languageTag);
+			edge.setBranchUuid(branchUuid);
+			edge.setType(DRAFT);
+		}
+
+		// if there is no initial edge, create one
+		if (graphNode.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, INITIAL) == null) {
+			GraphFieldContainerEdge initialEdge = graphNode.addFramedEdge(HAS_FIELD_CONTAINER, graphContainer, GraphFieldContainerEdgeImpl.class);
+			initialEdge.setLanguageTag(languageTag);
+			initialEdge.setBranchUuid(branchUuid);
+			initialEdge.setType(INITIAL);
+		}
 	}
 }

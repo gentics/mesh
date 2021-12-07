@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.CoreTestUtils;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
@@ -50,7 +51,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	public void testFieldUpdate() {
 		try (Tx tx = tx()) {
 			// Create field
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibHtmlField htmlField = container.createHTML(HTML_FIELD);
 
 			// Check field key
@@ -112,7 +113,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibHtmlField fieldA = container.createHTML("fieldA");
 			HibHtmlField fieldB = container.createHTML("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -130,7 +131,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibHtmlField fieldA = container.createHTML("htmlField1");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibHtmlField) null));
@@ -141,7 +142,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibHtmlField fieldA = container.createHTML("htmlField1");
 
 			// graph empty - rest empty
@@ -165,11 +166,11 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibHtmlField htmlField = container.createHTML(HTML_FIELD);
 			htmlField.setHtml("<i>HTML</i>");
 
-			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			htmlField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getHtml(HTML_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(htmlField, "parentContainer");

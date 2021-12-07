@@ -288,9 +288,4 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
 	}
-
-	@Override
-	public void generateBucketId() {
-		BucketableElementHelper.generateBucketId(this);
-	}
 }

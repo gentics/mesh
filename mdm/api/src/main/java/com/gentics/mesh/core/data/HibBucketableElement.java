@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.data;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * Domain model extension for elements which can be handled via buckets.
  */
-public interface HibBucketableElement {
+public interface HibBucketableElement extends HibBaseElement {
 
 	/**
 	 * Return the bucketId of the element.
@@ -22,6 +24,8 @@ public interface HibBucketableElement {
 	/**
 	 * Generate a new random bucketId.
 	 */
-	void generateBucketId();
-
+	default void generateBucketId() {
+		int bucketId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+		setBucketId(bucketId);
+	}
 }

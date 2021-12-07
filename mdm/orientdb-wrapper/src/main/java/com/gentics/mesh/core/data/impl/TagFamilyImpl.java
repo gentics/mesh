@@ -237,11 +237,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public void generateBucketId() {
-		BucketableElementHelper.generateBucketId(this);
-	}
-
-	@Override
 	public PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		return getTagFamilyRoot().getRolePermissions(element, ac, roleUuid);
 	}

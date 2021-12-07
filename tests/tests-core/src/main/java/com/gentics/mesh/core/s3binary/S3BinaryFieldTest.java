@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -84,7 +85,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testFieldUpdate() {
         try (Tx tx = tx()) {
-            HibNodeFieldContainer container = contentDao(tx).createContainer();
+            HibNodeFieldContainer container = CoreTestUtils.createContainer();
             S3HibBinary s3binary = tx.s3binaries().create("1234", "1234/s3", "img.jpg").runInExistingTx(tx);
             S3HibBinaryField field = container.createS3Binary(S3_BINARY_FIELD, s3binary);
             field.getS3Binary().setSize(Long.valueOf(220));
@@ -114,7 +115,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testClone() {
         try (Tx tx = tx()) {
-            HibNodeFieldContainer container = contentDao(tx).createContainer();
+            HibNodeFieldContainer container = CoreTestUtils.createContainer();
 
             S3HibBinary s3binary = tx.s3binaries().create("1234","1234/s3","img.jg").runInExistingTx(tx);
             S3HibBinaryField field = container.createS3Binary("s3", s3binary);
@@ -128,7 +129,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
             field.getS3Binary().setImageHeight(133);
             field.getS3Binary().setImageWidth(7);
 
-            HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
+            HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
             field.cloneTo(otherContainer);
 
             S3HibBinaryField clonedField = otherContainer.getS3Binary("s3");
@@ -141,7 +142,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testEquals() {
         try (Tx tx = tx()) {
-            HibNodeFieldContainer container = contentDao(tx).createContainer();
+            HibNodeFieldContainer container = CoreTestUtils.createContainer();
             S3HibBinary s3binary = tx.s3binaries().create("1234","1234/s3","img.jg").runInExistingTx(tx);
             S3HibBinaryField fieldA = container.createS3Binary("fieldA", s3binary);
             S3HibBinaryField fieldB = container.createS3Binary("fieldB", s3binary);
@@ -160,7 +161,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testEqualsNull() {
         try (Tx tx = tx()) {
-            HibNodeFieldContainer container = contentDao(tx).createContainer();
+            HibNodeFieldContainer container = CoreTestUtils.createContainer();
             S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), "/s3", "img.jpg").runInExistingTx(tx);
             S3HibBinaryField fieldA = container.createS3Binary(S3_BINARY_FIELD, s3binary);
             assertFalse(fieldA.equals((Field) null));
@@ -172,7 +173,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Override
     public void testEqualsRestField() {
         try (Tx tx = tx()) {
-            HibNodeFieldContainer container = contentDao(tx).createContainer();
+            HibNodeFieldContainer container = CoreTestUtils.createContainer();
             container.setVersion(new VersionNumber(2, 1));
             S3HibBinary s3binary = tx.s3binaries().create("1234", container.getUuid() + "/s3", "img.jpg").runInExistingTx(tx);
             S3HibBinaryField fieldA = container.createS3Binary("fieldA", s3binary);

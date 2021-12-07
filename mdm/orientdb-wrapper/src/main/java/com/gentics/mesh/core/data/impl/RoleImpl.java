@@ -94,10 +94,4 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse> implements Ro
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
 	}
-
-	@Override
-	public void generateBucketId() {
-		BucketableElementHelper.generateBucketId(this);
-	}
-
 }

@@ -900,9 +900,4 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
 	}
-
-	@Override
-	public void generateBucketId() {
-		BucketableElementHelper.generateBucketId(this);
-	}
 }

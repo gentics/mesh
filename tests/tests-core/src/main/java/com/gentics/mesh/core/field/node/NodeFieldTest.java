@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.util.CoreTestUtils;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
@@ -51,10 +52,10 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 		try (Tx tx = tx()) {
 			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
 
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeField testField = container.createNode("testField", node);
 
-			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
@@ -68,7 +69,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 		try (Tx tx = tx()) {
 			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
 
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeField field = container.createNode("testNodeField", node);
 			assertNotNull(field);
 			assertEquals("testNodeField", field.getFieldKey());
@@ -121,7 +122,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeField fieldA = container.createNode("fieldA", folder("2015"));
 			HibNodeField fieldB = container.createNode("fieldB", folder("2014"));
 			HibNodeField fieldC = container.createNode("fieldC", folder("2015"));
@@ -137,7 +138,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeField fieldA = container.createNode("field1", content());
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibNodeField) null));
@@ -148,7 +149,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeField fieldA = container.createNode("field1", content());
 
 			// graph set - rest set - same value - different type

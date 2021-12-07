@@ -247,17 +247,11 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @param lang
 	 * @return
 	 */
-	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, String code, String lang) {
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang",
-			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, code, lang));
-		Iterator<? extends GraphFieldContainerEdge> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);
-		if (frames.hasNext()) {
-			return frames.next();
-		} else {
-			return null;
-		}
+	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, ContainerType type, String lang) {
+		return GraphDBTx.getGraphTx().getGraph().frameElementExplicit(
+				MeshEdgeImpl.findEdge(nodeId, lang, branchUuid, type), 
+				GraphFieldContainerEdgeImpl.class
+			);
 	}
 
 	/**

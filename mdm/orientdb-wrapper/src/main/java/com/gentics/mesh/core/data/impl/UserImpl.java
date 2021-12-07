@@ -374,10 +374,4 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
 	}
-
-	@Override
-	public void generateBucketId() {
-		BucketableElementHelper.generateBucketId(this);
-	}
-
 }

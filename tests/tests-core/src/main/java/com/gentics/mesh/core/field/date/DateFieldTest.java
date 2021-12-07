@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.DateUtils;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
@@ -53,11 +54,11 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	public void testClone() {
 		try (Tx tx = tx()) {
 			Long nowEpoch = System.currentTimeMillis() / 1000;
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibDateField dateField = container.createDate(DATE_FIELD);
 			dateField.setDate(nowEpoch);
 
-			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			dateField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getDate(DATE_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(dateField, "parentContainer");
@@ -69,7 +70,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			Long nowEpoch = System.currentTimeMillis() / 1000;
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibDateField dateField = container.createDate(DATE_FIELD);
 			assertEquals(DATE_FIELD, dateField.getFieldKey());
 			dateField.setDate(nowEpoch);
@@ -120,7 +121,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			Long date = System.currentTimeMillis();
 			HibDateField fieldA = container.createDate(DATE_FIELD);
 			HibDateField fieldB = container.createDate(DATE_FIELD + "_2");
@@ -134,7 +135,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibDateField fieldA = container.createDate(DATE_FIELD);
 			HibDateField fieldB = container.createDate(DATE_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -145,7 +146,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			Long date = System.currentTimeMillis();
 
 			// rest null - graph null

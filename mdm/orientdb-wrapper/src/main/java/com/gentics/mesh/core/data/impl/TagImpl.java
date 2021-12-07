@@ -154,9 +154,4 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
 	}
-
-	@Override
-	public void generateBucketId() {
-		BucketableElementHelper.generateBucketId(this);
-	}
 }

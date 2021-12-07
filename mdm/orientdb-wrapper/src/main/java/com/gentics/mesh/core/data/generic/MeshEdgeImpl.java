@@ -1,10 +1,15 @@
 package com.gentics.mesh.core.data.generic;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+
+import java.util.Iterator;
+
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.db.AbstractEdgeFrame;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
@@ -106,4 +111,16 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 		return mesh().options();
 	}
 
+	public static Edge findEdge(Object nodeId, String languageTag, String branchUuid, ContainerType type) {
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
+		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
+		GraphDatabase db = mesh.database();
+		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", 
+				db.index().createComposedIndexKey(nodeId, branchUuid, type.getCode(), languageTag)).iterator();
+		if (iterator.hasNext()) {
+			return iterator.next();
+		} else {
+			return null;
+		}
+	}
 }

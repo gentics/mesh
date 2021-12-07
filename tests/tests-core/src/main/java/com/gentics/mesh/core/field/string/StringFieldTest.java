@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.CoreTestUtils;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
@@ -83,11 +84,11 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibStringField testField = container.createString("testField");
 			testField.setString("this is the string");
 
-			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField,
@@ -99,7 +100,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibStringField stringField = container.createString("stringField");
 			assertEquals("stringField", stringField.getFieldKey());
 			stringField.setString("dummyString");
@@ -116,7 +117,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			String testValue = "test123";
 			HibStringField fieldA = container.createString(STRING_FIELD);
 			HibStringField fieldB = container.createString(STRING_FIELD + "_2");
@@ -130,7 +131,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibStringField fieldA = container.createString(STRING_FIELD);
 			HibStringField fieldB = container.createString(STRING_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -141,7 +142,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			String dummyValue = "test123";
 
 			// rest null - graph null

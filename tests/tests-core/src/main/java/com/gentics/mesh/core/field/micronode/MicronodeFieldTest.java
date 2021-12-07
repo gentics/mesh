@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.util.CoreTestUtils;
 
 import io.vertx.core.json.JsonObject;
 
@@ -227,7 +228,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	public void testCreateMicronodeField() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 
 			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			assertNotNull(field);
@@ -255,7 +256,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	public void testMicronodeUpdateFromRest() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 
 			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			HibMicronode micronode = field.getMicronode();
@@ -279,10 +280,10 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 
-			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			field.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getMicronode("testMicronodeField")).as("cloned field").isNotNull();
@@ -296,7 +297,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 
 			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			HibMicronode micronode = field.getMicronode();
@@ -326,7 +327,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibMicronodeField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
 			HibMicronodeField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -344,7 +345,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibMicronodeField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibMicronodeField) null));
@@ -356,7 +357,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			// Create microschema for the micronode
 			HibMicroschemaVersion containerVersion = ctx.microschemaDao().createPersistedVersion(dummyMicroschema);
 			MicroschemaVersionModel microschema = new MicroschemaModelImpl();

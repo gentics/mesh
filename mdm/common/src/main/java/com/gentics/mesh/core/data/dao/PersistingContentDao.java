@@ -7,6 +7,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Objects;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -19,12 +21,14 @@ import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.DeleteParameters;
+import com.gentics.mesh.util.VersionNumber;
 
 public interface PersistingContentDao extends ContentDao {
 
@@ -56,11 +60,28 @@ public interface PersistingContentDao extends ContentDao {
 	 */
 	Class<? extends HibMicronode> getMicronodePersistenceClass();
 
+	/**
+	 * Create a container in the persisted storage, according to the root node.
+	 * 
+	 * @param version mandatory schema version root
+	 * @param uuid a UUID to use. If null, a generated UUID will be used.
+	 * @return
+	 */
+	HibNodeFieldContainer createPersisted(HibSchemaVersion version, String uuid);
+
+	/**
+	 * Connect fresh container to the node.
+	 * 
+	 * @param node
+	 * @param container
+	 * @param branch
+	 * @param languageTag
+	 * @param handleDraftEdge
+	 */
+	void connectFieldContainer(HibNode node, HibNodeFieldContainer container, HibBranch branch, String languageTag, boolean handleDraftEdge);
+
 	// Those are stubs. They will be replaced during ContentDao implementation.
 
-	@Deprecated
-	HibNodeFieldContainer createContainer();
-	
 	@Deprecated
 	HibBooleanField createBoolean(HibNodeFieldContainer container, String name);
 	
@@ -79,6 +100,61 @@ public interface PersistingContentDao extends ContentDao {
 	@Deprecated
 	HibBinaryField createBinary();
 
+	@Override
+	default HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor) {
+		return createFieldContainer(node, languageTag, branch, editor, null, true);
+	}
+
+	@Override
+	default HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
+		boolean handleDraftEdge) {
+		HibNodeFieldContainer previous = null;
+
+		// check whether there is a current draft version
+		if (handleDraftEdge) {
+			previous = getFieldContainer(node, languageTag, branch, DRAFT);
+		}
+
+		// We need create a new container with no reference, if an original is not provided. 
+		// So use the latest version available to use.
+		HibSchemaVersion version = Objects.isNull(original) 
+				? branch.findLatestSchemaVersion(node.getSchemaContainer()) 
+				: original.getSchemaContainerVersion() ;
+
+		// Create the new container
+		HibNodeFieldContainer newContainer = createPersisted(version, null);
+
+		newContainer.generateBucketId();
+		newContainer.setEditor(editor);
+		newContainer.setLastEditedTimestamp();
+		newContainer.setLanguageTag(languageTag);
+		newContainer.setSchemaContainerVersion(version); // TODO mb unneeded
+
+		if (previous != null) {
+			// set the next version number
+			newContainer.setVersion(previous.getVersion().nextDraft());
+			previous.setNextVersion(newContainer);
+		} else {
+			// set the initial version number
+			newContainer.setVersion(new VersionNumber());
+		}
+
+		// clone the original or the previous container
+		if (original != null) {
+			newContainer.clone(original);
+		} else if (previous != null) {
+			newContainer.clone(previous);
+		}
+
+		connectFieldContainer(node, newContainer, branch, languageTag, handleDraftEdge);
+
+		// We need to update the display field property since we created a new
+		// node graph field container.
+		newContainer.updateDisplayFieldValue();
+
+		return newContainer;
+	}
+	
     @Override
 	default Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node) {
 		// FIX ME: We should not rely on specific branches.

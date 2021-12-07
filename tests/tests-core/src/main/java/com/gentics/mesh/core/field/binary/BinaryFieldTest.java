@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.node.TransformationResult;
 import com.gentics.mesh.core.field.AbstractFieldTest;
@@ -40,6 +39,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -127,7 +127,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testFieldUpdate() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = tx.<CommonTx>unwrap().contentDao().createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibBinary binary = tx.binaries().create(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
 				0L).runInExistingTx(tx);
@@ -162,7 +162,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = tx.<CommonTx>unwrap().contentDao().createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 
 			HibBinary binary = tx.binaries().create(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
@@ -178,7 +178,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			field.getBinary().setImageHeight(133);
 			field.getBinary().setImageWidth(7);
 
-			HibNodeFieldContainer otherContainer = tx.<CommonTx>unwrap().contentDao().createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			field.cloneTo(otherContainer);
 
 			HibBinaryField clonedField = otherContainer.getBinary(BINARY_FIELD);
@@ -191,7 +191,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = tx.<CommonTx>unwrap().contentDao().createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 
 			HibBinary binary = tx.binaries().create(UUIDUtil.randomUUID(), 1L).runInExistingTx(tx);
 			HibBinaryField fieldA = container.createBinary("fieldA", binary);
@@ -211,7 +211,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = tx.<CommonTx>unwrap().contentDao().createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibBinary binary = tx.binaries().create(UUIDUtil.randomUUID(), 0L).runInExistingTx(tx);
 			HibBinaryField fieldA = container.createBinary(BINARY_FIELD, binary);
 			assertFalse(fieldA.equals((Field) null));
@@ -223,7 +223,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = tx.<CommonTx>unwrap().contentDao().createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibBinary binary = tx.binaries().create("hashsum", 1L).runInExistingTx(tx);
 			HibBinaryField fieldA = container.createBinary("fieldA", binary);
 

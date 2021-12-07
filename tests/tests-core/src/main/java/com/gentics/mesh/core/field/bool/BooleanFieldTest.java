@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.CoreTestUtils;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
@@ -84,13 +85,13 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibBooleanField trueBooleanField = container.createBoolean("trueBooleanField");
 			trueBooleanField.setBoolean(true);
 			HibBooleanField falseBooleanField = container.createBoolean("falseBooleanField");
 			falseBooleanField.setBoolean(false);
 
-			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			trueBooleanField.cloneTo(otherContainer);
 			falseBooleanField.cloneTo(otherContainer);
 
@@ -105,7 +106,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();;
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();;
 			HibBooleanField booleanField = container.createBoolean(BOOLEAN_FIELD);
 			assertEquals(BOOLEAN_FIELD, booleanField.getFieldKey());
 			booleanField.setBoolean(true);
@@ -129,7 +130,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibBooleanField fieldA = container.createBoolean("fieldA");
 			HibBooleanField fieldB = container.createBoolean("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -147,7 +148,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibBooleanField fieldA = container.createBoolean("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibBooleanField) null));
@@ -158,7 +159,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibBooleanField fieldA = container.createBoolean("fieldA");
 
 			// graph empty - rest empty

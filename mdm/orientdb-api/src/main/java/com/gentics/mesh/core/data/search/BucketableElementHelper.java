@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.search;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 /**
  * Helper class which manages retrival of the bucketId information of the given element.
  * An on-the-fly generation of new bucketIds will be performed if those are missing.
@@ -38,15 +36,4 @@ public final class BucketableElementHelper {
 			e.property(BUCKET_ID_KEY, Long.valueOf(bucketId));
 		}
 	}
-
-	/**
-	 * Generate a new random bucketId.
-	 * 
-	 * @param e
-	 */
-	public static void generateBucketId(BucketableElement e) {
-		int bucketId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
-		e.setBucketId(bucketId);
-	}
-
 }

@@ -68,6 +68,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.URIUtils;
 
 @MeshTestSetting(awsContainer = MINIO, testSize = FULL, startServer = true)
@@ -184,7 +185,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		tx(tx -> {
 			CommonTx ctx = tx.unwrap();
 			PersistingContentDao contentDao = ctx.contentDao();
-			HibNodeFieldContainer bogusContainer = contentDao.createContainer();
+			HibNodeFieldContainer bogusContainer = CoreTestUtils.createContainer();
 			HibStringField bogusField = contentDao.createString(bogusContainer, "name");
 			Path entry = mesh().pathCache().getPath(project(), initialBranch(), ContainerType.DRAFT, path);
 			entry.addSegment(new PathSegmentImpl(bogusContainer, bogusField, "en", "bogus"));

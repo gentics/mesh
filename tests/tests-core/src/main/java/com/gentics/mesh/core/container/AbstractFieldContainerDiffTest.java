@@ -9,38 +9,19 @@ import java.util.List;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.CoreTestUtils;
 
 public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 
 	protected HibNodeFieldContainer createContainer(FieldSchema field) {
-		CommonTx ctx = CommonTx.get();
-		// 1. Setup schema
-		HibSchema schemaContainer = ctx.schemaDao().createPersisted(null);
-		HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schemaContainer);
-		version.setSchemaContainer(schemaContainer);
-
-		SchemaVersionModel schema = createSchema(field);
-		version.setSchema(schema);
-
-		HibNodeFieldContainer container = ctx.contentDao().createContainer();
-		container.setSchemaContainerVersion(version);
-		return container;
+		return CoreTestUtils.createContainer(field);
 	}
 
 	protected SchemaVersionModel createSchema(FieldSchema field) {
-		SchemaVersionModel schema = new SchemaModelImpl();
-		schema.setName("dummySchema");
-		if (field != null) {
-			schema.addField(field);
-		}
-		return schema;
+		return CoreTestUtils.createSchema(field);
 	}
 
 	protected void assertChanges(List<FieldContainerChange> list, FieldChangeTypes expectedType) {

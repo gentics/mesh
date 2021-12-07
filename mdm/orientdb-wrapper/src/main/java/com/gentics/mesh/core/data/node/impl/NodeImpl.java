@@ -38,6 +38,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -50,7 +52,6 @@ import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -96,14 +97,13 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
-import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * @see Node
@@ -298,87 +298,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser editor) {
-		return createFieldContainer(languageTag, branch, editor, null, true);
-	}
-
-	@Override
-	public HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
-		boolean handleDraftEdge) {
-		NodeGraphFieldContainerImpl previous = null;
-		EdgeFrame draftEdge = null;
-		String branchUuid = branch.getUuid();
-
-		// check whether there is a current draft version
-		if (handleDraftEdge) {
-			draftEdge = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, DRAFT);
-			if (draftEdge != null) {
-				previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
-			}
-		}
-
-		// Create the new container
-		NodeGraphFieldContainerImpl newContainer = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		newContainer.generateBucketId();
-		if (original != null) {
-			newContainer.setEditor(editor);
-			newContainer.setLastEditedTimestamp();
-			newContainer.setLanguageTag(languageTag);
-			newContainer.setSchemaContainerVersion(original.getSchemaContainerVersion());
-		} else {
-			newContainer.setEditor(editor);
-			newContainer.setLastEditedTimestamp();
-			newContainer.setLanguageTag(languageTag);
-			// We need create a new container with no reference. So use the latest version available to use.
-			newContainer.setSchemaContainerVersion(branch.findLatestSchemaVersion(getSchemaContainer()));
-		}
-		if (previous != null) {
-			// set the next version number
-			newContainer.setVersion(previous.getVersion().nextDraft());
-			previous.setNextVersion(newContainer);
-		} else {
-			// set the initial version number
-			newContainer.setVersion(new VersionNumber());
-		}
-
-		// clone the original or the previous container
-		if (original != null) {
-			newContainer.clone(original);
-		} else if (previous != null) {
-			newContainer.clone(previous);
-		}
-
-		// remove existing draft edge
-		if (draftEdge != null) {
-			draftEdge.remove();
-			newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
-		}
-		// We need to update the display field property since we created a new
-		// node graph field container.
-		newContainer.updateDisplayFieldValue();
-
-		if (handleDraftEdge) {
-			// create a new draft edge
-			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, newContainer, GraphFieldContainerEdgeImpl.class);
-			edge.setLanguageTag(languageTag);
-			edge.setBranchUuid(branchUuid);
-			edge.setType(DRAFT);
-		}
-
-		// if there is no initial edge, create one
-		if (getGraphFieldContainerEdge(languageTag, branchUuid, INITIAL) == null) {
-			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, newContainer, GraphFieldContainerEdgeImpl.class);
-			initialEdge.setLanguageTag(languageTag);
-			initialEdge.setBranchUuid(branchUuid);
-			initialEdge.setType(INITIAL);
-		}
-
-		return newContainer;
-	}
-
-	@Override
 	public EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type) {
-		return GraphFieldContainerEdgeImpl.findEdge(getId(), branchUuid, type.getCode(), languageTag);
+		return GraphFieldContainerEdgeImpl.findEdge(getId(), branchUuid, type, languageTag);
 	}
 
 	/**
@@ -548,7 +469,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void removePublishedEdge(String languageTag, String branchUuid) {
-		getGraphFieldContainerEdge(languageTag, branchUuid, PUBLISHED).remove();
+		getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED).remove();
 	}
 
 	@Override
@@ -860,10 +781,5 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
-	}
-
-	@Override
-	public void generateBucketId() {
-		BucketableElementHelper.generateBucketId(this);
 	}
 }

@@ -220,22 +220,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	HibNodeFieldContainer getLatestDraftFieldContainer(String languageTag);
 
 	/**
-	 * Like {@link #createFieldContainer(String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not null).
-	 *
-	 * @param languageTag
-	 * @param branch
-	 * @param editor
-	 *            User which will be set as editor
-	 * @param original
-	 *            Container to be used as a source for the new container
-	 * @param handleDraftEdge
-	 *            Whether to move the existing draft edge or create a new draft edge to the new container
-	 * @return Created container
-	 */
-	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
-		boolean handleDraftEdge);
-
-	/**
 	 * Return containers of the given type
 	 *
 	 * @param type
@@ -280,20 +264,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	HibNodeFieldContainer getFieldContainer(String languageTag, String branchUuid, ContainerType type);
-
-	/**
-	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will be
-	 * the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
-	 * container will be a clone of the last draft and will have the next version number.
-	 *
-	 * @param languageTag
-	 * @param branch
-	 *            branch
-	 * @param user
-	 *            user
-	 * @return
-	 */
-	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser user);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
