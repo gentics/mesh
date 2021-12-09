@@ -83,7 +83,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 		// Handle Deletion
 		if (isBinaryFieldSetToNull && graphBinaryField != null) {
-			graphBinaryField.removeField(container);
+			container.removeField(graphBinaryField);
 			return;
 		}
 

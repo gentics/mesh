@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
@@ -48,11 +50,6 @@ import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
-import com.gentics.mesh.core.data.node.field.*;
-import com.gentics.mesh.core.data.node.field.impl.*;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -88,6 +85,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * @return
 	 */
 	abstract protected HibNode getNode();
+
+	@Override
+	public void removeField(String fieldKey, BulkActionContext bac) {
+		toGraph(getField(getSchemaContainerVersion().getSchema().getField(fieldKey))).removeField(this);
+	}
 
 	@Override
 	public StringGraphField createString(String key) {
@@ -280,7 +282,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public HibMicronodeFieldList createMicronodeFieldList(String fieldKey) {
+	public HibMicronodeFieldList createMicronodeList(String fieldKey) {
 		return createList(MicronodeGraphFieldListImpl.class, fieldKey);
 	}
 

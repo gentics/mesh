@@ -123,7 +123,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(vcardListFieldSchema);
 
-		HibMicronodeFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeFieldList("vcardlist");
+		HibMicronodeFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			HibMicronode micronode = vcardListField.createMicronode();
 			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
@@ -132,7 +132,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		}
 
 		// create an empty vcard list field
-		contentDao.getLatestDraftFieldContainer(node, german()).createMicronodeFieldList("vcardlist");
+		contentDao.getLatestDraftFieldContainer(node, german()).createMicronodeList("vcardlist");
 	}
 
 	/**

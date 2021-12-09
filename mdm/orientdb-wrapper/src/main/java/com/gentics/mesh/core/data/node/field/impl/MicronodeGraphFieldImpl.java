@@ -77,7 +77,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
 		if (isMicronodeFieldSetToNull && micronodeGraphField != null) {
-			micronodeGraphField.removeField(container);
+			container.removeField(micronodeGraphField);
 			return;
 		}
 

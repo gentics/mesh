@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -21,16 +26,27 @@ import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.util.VersionNumber;
 
 public interface PersistingContentDao extends ContentDao {
+
+	/**
+	 * Get the node to which this container belongs through the given branch UUID.
+	 *
+	 * @return
+	 */
+	HibNode getParentNode(HibNodeFieldContainer container, String branchUuid);
 
 	/**
 	 * Repair the inconsistency for the given container.
@@ -239,4 +255,75 @@ public interface PersistingContentDao extends ContentDao {
 		Tx.get().nodeDao().setPublished(node, ac, newVersion, branchUuid);
 		return newVersion;
     }
+
+	@Override
+	default NodeMeshEventModel onDeleted(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		return createEvent(NODE_CONTENT_DELETED, container, branchUuid, type);
+	}
+
+	@Override
+	default NodeMeshEventModel onUpdated(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		return createEvent(NODE_UPDATED, container, branchUuid, type);
+	}
+
+	@Override
+	default NodeMeshEventModel onCreated(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		return createEvent(NODE_CONTENT_CREATED, container, branchUuid, type);
+	}
+
+	@Override
+	default NodeMeshEventModel onTakenOffline(HibNodeFieldContainer container, String branchUuid) {
+		return createEvent(NODE_UNPUBLISHED, container, branchUuid, ContainerType.PUBLISHED);
+	}
+
+	@Override
+	default NodeMeshEventModel onPublish(HibNodeFieldContainer container, String branchUuid) {
+		return createEvent(NODE_PUBLISHED, container, branchUuid, ContainerType.PUBLISHED);
+	}
+
+	@Override
+	default VersionInfo transformToVersionInfo(HibNodeFieldContainer container, InternalActionContext ac) {
+		String branchUuid = Tx.get().getBranch(ac).getUuid();
+		VersionInfo info = new VersionInfo();
+		info.setVersion(container.getVersion().getFullVersion());
+		info.setCreated(container.getLastEditedDate());
+		HibUser editor = container.getEditor();
+		if (editor != null) {
+			info.setCreator(editor.transformToReference());
+		}
+		info.setPublished(container.isPublished(branchUuid));
+		info.setDraft(container.isDraft(branchUuid));
+		info.setBranchRoot(container.isInitial());
+		return info;
+	}
+
+	/**
+	 * Create a new node event.
+	 * 
+	 * @param event
+	 *            Type of the event
+	 * @param container 
+	 * @param branchUuid
+	 *            Branch Uuid if known
+	 * @param type
+	 *            Type of the node content if known
+	 * @return Created model
+	 */
+	private NodeMeshEventModel createEvent(MeshEvent event, HibNodeFieldContainer container, String branchUuid, ContainerType type) {
+		NodeMeshEventModel model = new NodeMeshEventModel();
+		model.setEvent(event);
+		HibNode node = getParentNode(container, branchUuid);
+		String nodeUuid = node.getUuid();
+		model.setUuid(nodeUuid);
+		model.setBranchUuid(branchUuid);
+		model.setLanguageTag(container.getLanguageTag());
+		model.setType(type);
+		HibSchemaVersion version = container.getSchemaContainerVersion();
+		if (version != null) {
+			model.setSchema(version.transformToReference());
+		}
+		HibProject project = node.getProject();
+		model.setProject(project.transformToReference());
+		return model;
+	}
 }

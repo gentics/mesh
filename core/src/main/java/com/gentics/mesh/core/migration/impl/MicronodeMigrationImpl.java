@@ -171,9 +171,9 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields);
 
 		// Ensure the search index is updated accordingly
-		sqb.add(migrated.onUpdated(branchUuid, DRAFT));
+		sqb.add(contentDao.onUpdated(migrated, branchUuid, DRAFT));
 		if (publish) {
-			sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
+			sqb.add(contentDao.onUpdated(migrated, branchUuid, PUBLISHED));
 		}
 	}
 
@@ -261,7 +261,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		nodeDao.setPublished(node, ac, migrated, branchUuid);
 
 		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields);
-		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
+		sqb.add(contentDao.onUpdated(migrated, branchUuid, PUBLISHED));
 		return migrated.getVersion();
 
 	}
@@ -298,7 +298,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			HibMicronodeFieldList oldListField = field;
 
 			// clone the field (this will not clone the micronodes)
-			field = container.createMicronodeFieldList(field.getFieldKey());
+			field = container.createMicronodeList(field.getFieldKey());
 
 			// clone every micronode
 			for (HibMicronodeField oldField : oldListField.getList()) {

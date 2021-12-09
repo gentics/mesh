@@ -53,7 +53,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HibHtmlF
 
 		// Handle Deletion
 		if (isHtmlListFieldSetToNull && graphHtmlFieldList != null) {
-			graphHtmlFieldList.removeField(container);
+			container.removeField(graphHtmlFieldList);
 			return;
 		}
 

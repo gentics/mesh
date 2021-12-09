@@ -56,9 +56,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -99,11 +97,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public long getFieldContainerCount(HibNode node) {
 		return toGraph(node).getFieldContainerCount();
-	}
-
-	@Override
-	public HibNodeFieldContainer findVersion(HibNode node, List<String> languageTags, String branchUuid, String version) {
-		return toGraph(node).findVersion(languageTags, branchUuid, version);
 	}
 
 	@Override
@@ -262,36 +255,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public NodeMeshEventModel onDeleted(HibNodeFieldContainer content, String branchUuid, ContainerType type) {
-		return content.onDeleted(branchUuid, type);
-	}
-
-	@Override
-	public NodeMeshEventModel onCreated(HibNodeFieldContainer content, String branchUuid, ContainerType type) {
-		return content.onCreated(branchUuid, type);
-	}
-
-	@Override
-	public NodeMeshEventModel onUpdated(HibNodeFieldContainer content, String branchUuid, ContainerType type) {
-		return content.onUpdated(branchUuid, type);
-	}
-
-	@Override
-	public NodeMeshEventModel onTakenOffline(HibNodeFieldContainer content, String branchUuid) {
-		return content.onTakenOffline(branchUuid);
-	}
-
-	@Override
-	public NodeMeshEventModel onPublish(HibNodeFieldContainer content, String branchUuid) {
-		return content.onPublish(branchUuid);
-	}
-
-	@Override
-	public VersionInfo transformToVersionInfo(HibNodeFieldContainer content, InternalActionContext ac) {
-		return content.transformToVersionInfo(ac);
-	}
-
-	@Override
 	public boolean isPurgeable(HibNodeFieldContainer content) {
 		return content.isPurgeable();
 	}
@@ -430,7 +393,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 			edge.setSegmentInfo(null);
 		}
 		edge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
-		batch.add(container.onUpdated(newBranch.getUuid(), containerType));
+		batch.add(onUpdated(container, newBranch.getUuid(), containerType));
 	}
 
 	private HibNodeFieldContainer findDraft(HibNodeFieldContainer latest) {
@@ -596,5 +559,12 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 			initialEdge.setBranchUuid(branchUuid);
 			initialEdge.setType(INITIAL);
 		}
+	}
+
+	@Override
+	public Node getParentNode(HibNodeFieldContainer container, String branchUuid) {
+		NodeGraphFieldContainer graphContainer = toGraph(container);
+		return graphContainer.inE(HAS_FIELD_CONTAINER).has(
+			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).outV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 }

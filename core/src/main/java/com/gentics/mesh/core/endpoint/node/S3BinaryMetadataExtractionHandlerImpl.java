@@ -291,9 +291,8 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				}
 
 				// Now get rid of the old field
-				if (oldField != null) {
-					oldField.removeField(newDraftVersion);
-				}
+				newDraftVersion.removeField(oldField);
+
 				// If the binary field is the segment field, we need to update the webroot info in the node
 				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 					contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
@@ -303,7 +302,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 					contentDao.purge(latestDraftVersion);
 				}
 
-				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 				batch.add(s3binary.onMetadataExtracted(nodeUuid,s3ObjectKey));
 			});
 			return nodeDao.transformToRestSync(node, ac, 0);

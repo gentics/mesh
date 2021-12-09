@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.node;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Stream;
@@ -271,31 +270,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	long getFieldContainerCount();
-
-	/**
-	 * Iterate the version chain from the back in order to find the given version.
-	 *
-	 * @param languageTag
-	 * @param branchUuid
-	 * @param version
-	 * @return Found version or null when no version could be found.
-	 */
-	default HibNodeFieldContainer findVersion(String languageTag, String branchUuid, String version) {
-		return findVersion(Arrays.asList(languageTag), branchUuid, version);
-	}
-
-	/**
-	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
-	 * is no de version the en version will be selected and returned.
-	 *
-	 * @param languageTags
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param version
-	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
-	 * @return Next matching field container or null when no language matches
-	 */
-	HibNodeFieldContainer findVersion(List<String> languageTags, String branchUuid, String version);
 
 	/**
 	 * Remove all edges to field container with type {@link ContainerType#INITIAL} for the specified branch uuid

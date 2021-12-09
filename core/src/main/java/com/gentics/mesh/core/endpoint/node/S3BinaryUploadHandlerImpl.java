@@ -203,7 +203,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 					contentDao.purge(latestDraftVersion);
 				}
 
-				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 				batch.add(s3HibBinary.onCreated(nodeUuid,s3ObjectKey));
 			});
 			return nodeDao.transformToRestSync(node, ac, 0);

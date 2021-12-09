@@ -7,8 +7,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -64,24 +62,6 @@ public interface HibField {
 	 * @return
 	 */
 	String getFieldKey();
-
-	/**
-	 * Remove this field from the container.
-	 * 
-	 * @param bac
-	 * @param container
-	 *            container
-	 */
-	void removeField(BulkActionContext bac, HibFieldContainer container);
-
-	/**
-	 * Remove the field and use a dummy bulk action context.
-	 * 
-	 * @param container
-	 */
-	default void removeField(HibFieldContainer container) {
-		removeField(new DummyBulkActionContext(), container);
-	}
 
 	/**
 	 * Clone this field into the given container. If the field uses extra vertices for storing the data, they must be reused, not copied

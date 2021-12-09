@@ -74,7 +74,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<Hi
 
 		// Handle Deletion
 		if (isNodeListFieldSetToNull && graphNodeFieldList != null) {
-			graphNodeFieldList.removeField(container);
+			container.removeField(graphNodeFieldList);
 			return;
 		}
 

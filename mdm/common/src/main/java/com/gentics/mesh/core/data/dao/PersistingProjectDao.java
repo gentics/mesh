@@ -174,6 +174,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		HibBaseElement projectPermRoot = CommonTx.get().data().permissionRoots().project();
 		UserDao userDao = CommonTx.get().userDao();
 		SchemaDao schemaDao = CommonTx.get().schemaDao();
+		ContentDao contentDao = CommonTx.get().contentDao();
 
 		// TODO also create a default object schema for the project. Move this
 		// into service class
@@ -224,7 +225,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
 		Tx.get().contentDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
-			batch.add(c.onCreated(branchUuid, DRAFT));
+			batch.add(contentDao.onCreated(c, branchUuid, DRAFT));
 		});
 
 		return project;

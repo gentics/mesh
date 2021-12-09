@@ -11,11 +11,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSCHEMA_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -42,8 +37,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.core.data.node.field.*;
-import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -68,9 +61,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.DisplayField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -79,7 +74,6 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -87,14 +81,11 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NameConflictException;
-import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -219,13 +210,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
 			micronodeField.removeField(bac, this);
 		}
+		ContentDao contentDao = Tx.get().contentDao();
 
 		// Delete the container from all branches and types
 		getBranchTypes().forEach(tuple -> {
 			String branchUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				bac.add(onDeleted(branchUuid, type));
+				bac.add(contentDao.onDeleted(this, branchUuid, type));
 			}
 		});
 
@@ -237,11 +229,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	@SuppressWarnings("unchecked")
 	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
+		ContentDao contentDao = Tx.get().contentDao();
 		String branchUuid = branch.getUuid();
 
-		bac.batch().add(onDeleted(branchUuid, DRAFT));
+		bac.batch().add(contentDao.onDeleted(this, branchUuid, DRAFT));
 		if (isPublished(branchUuid)) {
-			bac.batch().add(onDeleted(branchUuid, PUBLISHED));
+			bac.batch().add(contentDao.onDeleted(this, branchUuid, PUBLISHED));
 		}
 		// Remove the edge between the node and the container that matches the branch
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(e -> e.traversal().has(
@@ -439,11 +432,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			edge.setSegmentInfo(null);
 			return true;
 		}
-	}
-
-	private Node getParentNode(String branchUuid) {
-		return inE(HAS_FIELD_CONTAINER).has(
-			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).outV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	/**
@@ -784,76 +772,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		Path nodePath = new PathImpl();
 		nodePath.addSegment(new PathSegmentImpl(this, null, getLanguageTag(), null));
 		return nodePath;
-	}
-
-	@Override
-	public NodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
-		return createEvent(NODE_CONTENT_DELETED, branchUuid, type);
-	}
-
-	@Override
-	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
-		return createEvent(NODE_UPDATED, branchUuid, type);
-	}
-
-	@Override
-	public NodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
-		return createEvent(NODE_CONTENT_CREATED, branchUuid, type);
-	}
-
-	@Override
-	public NodeMeshEventModel onTakenOffline(String branchUuid) {
-		return createEvent(NODE_UNPUBLISHED, branchUuid, ContainerType.PUBLISHED);
-	}
-
-	@Override
-	public NodeMeshEventModel onPublish(String branchUuid) {
-		return createEvent(NODE_PUBLISHED, branchUuid, ContainerType.PUBLISHED);
-	}
-
-	/**
-	 * Create a new node event.
-	 * 
-	 * @param event
-	 *            Type of the event
-	 * @param branchUuid
-	 *            Branch Uuid if known
-	 * @param type
-	 *            Type of the node content if known
-	 * @return Created model
-	 */
-	private NodeMeshEventModel createEvent(MeshEvent event, String branchUuid, ContainerType type) {
-		NodeMeshEventModel model = new NodeMeshEventModel();
-		model.setEvent(event);
-		Node node = getParentNode(branchUuid);
-		String nodeUuid = node.getUuid();
-		model.setUuid(nodeUuid);
-		model.setBranchUuid(branchUuid);
-		model.setLanguageTag(getLanguageTag());
-		model.setType(type);
-		HibSchemaVersion version = getSchemaContainerVersion();
-		if (version != null) {
-			model.setSchema(version.transformToReference());
-		}
-		HibProject project = node.getProject();
-		model.setProject(project.transformToReference());
-		return model;
-	}
-
-	@Override
-	public VersionInfo transformToVersionInfo(InternalActionContext ac) {
-		String branchUuid = Tx.get().getBranch(ac).getUuid();
-		VersionInfo info = new VersionInfo();
-		info.setVersion(getVersion().getFullVersion());
-		info.setCreated(getLastEditedDate());
-		HibUser editor = getEditor();
-		if (editor != null) {
-			info.setCreator(editor.transformToReference());
-		}
-		info.setPublished(isPublished(branchUuid));
-		info.setDraft(isDraft(branchUuid));
-		info.setBranchRoot(isInitial());
-		return info;
 	}
 
 	@Override

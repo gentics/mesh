@@ -43,7 +43,7 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 
 		// Handle Deletion
 		if (isNumberFieldSetToNull && numberGraphField != null) {
-			numberGraphField.removeField(container);
+			container.removeField(numberGraphField);
 			return;
 		}
 
@@ -79,23 +79,9 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 	}
 
 	@Override
-	public NumberField transformToRest(ActionContext ac) {
-		NumberField restModel = new NumberFieldImpl();
-		restModel.setNumber(getNumber());
-		return restModel;
-	}
-
-	@Override
 	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		setFieldProperty("number", null);
 		setFieldKey(null);
-	}
-
-	@Override
-	public HibField cloneTo(HibFieldContainer container) {
-		HibNumberField clone = container.createNumber(getFieldKey());
-		clone.setNumber(getNumber());
-		return clone;
 	}
 
 	@Override

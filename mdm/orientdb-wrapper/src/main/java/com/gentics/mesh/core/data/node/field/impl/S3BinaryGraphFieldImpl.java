@@ -90,7 +90,7 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 
 		// Handle Deletion
 		if (isS3BinaryFieldSetToNull && graphS3BinaryField != null) {
-			graphS3BinaryField.removeField(container);
+			container.removeField(graphS3BinaryField);
 			return;
 		}
 

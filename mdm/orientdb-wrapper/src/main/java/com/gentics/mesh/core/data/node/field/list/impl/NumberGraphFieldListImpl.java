@@ -55,7 +55,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<HibNum
 
 		// Handle Deletion
 		if (isNumberListFieldSetToNull && graphNumberFieldList != null) {
-			graphNumberFieldList.removeField(container);
+			container.removeField(graphNumberFieldList);
 			return;
 		}
 

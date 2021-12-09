@@ -16,7 +16,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -455,11 +454,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void removePublishedEdges(String branchUuid, BulkActionContext bac) {
 		Result<? extends GraphFieldContainerEdgeImpl> publishEdges = getFieldContainerEdges(branchUuid, PUBLISHED);
+		ContentDao contentDao = Tx.get().contentDao();
 
 		// Remove the published edge for each found container
 		publishEdges.forEach(edge -> {
 			NodeGraphFieldContainer content = edge.getNodeContainer();
-			bac.add(content.onTakenOffline(branchUuid));
+			bac.add(contentDao.onTakenOffline(content, branchUuid));
 			edge.remove();
 			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
 				content.purge(bac);
@@ -504,33 +504,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		edge.setBranchUuid(branchUuid);
 		edge.setType(PUBLISHED);
 		container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
-	}
-
-	@Override
-	public HibNodeFieldContainer findVersion(List<String> languageTags, String branchUuid, String version) {
-		HibNodeFieldContainer fieldContainer = null;
-
-		// TODO refactor the type handling and don't return INITIAL.
-		ContainerType type = forVersion(version);
-
-		for (String languageTag : languageTags) {
-
-			// Don't start the version lookup using the initial version. Instead start at the end of the chain and use the DRAFT version instead.
-			fieldContainer = getFieldContainer(languageTag, branchUuid, type == INITIAL ? DRAFT : type);
-
-			// Traverse the chain downwards and stop once we found our target version or we reached the end.
-			if (fieldContainer != null && type == INITIAL) {
-				while (fieldContainer != null && !version.equals(fieldContainer.getVersion().toString())) {
-					fieldContainer = fieldContainer.getPreviousVersion();
-				}
-			}
-
-			// We found a container for one of the languages
-			if (fieldContainer != null) {
-				break;
-			}
-		}
-		return fieldContainer;
 	}
 
 	@Override

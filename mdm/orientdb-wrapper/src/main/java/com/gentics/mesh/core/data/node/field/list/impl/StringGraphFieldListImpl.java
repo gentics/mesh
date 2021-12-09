@@ -54,7 +54,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<HibStr
 
 		// Handle Deletion
 		if (isStringListFieldSetToNull && graphStringList != null) {
-			graphStringList.removeField(container);
+			container.removeField(graphStringList);
 			return;
 		}
 

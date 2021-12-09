@@ -63,7 +63,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 
 		// Handle Deletion - The field was explicitly set to null and is currently set within the graph thus we must remove it.
 		if (isHtmlFieldSetToNull && htmlGraphField != null) {
-			htmlGraphField.removeField(container);
+			container.removeField(htmlGraphField);
 			return;
 		}
 
@@ -99,26 +99,10 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 	}
 
 	@Override
-	public HtmlField transformToRest(ActionContext ac) {
-		HtmlFieldImpl htmlField = new HtmlFieldImpl();
-		String html = getHTML();
-		// TODO really empty string for unset field value?!
-		htmlField.setHTML(html == null ? "" : html);
-		return htmlField;
-	}
-
-	@Override
 	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		//TODO remove the vertex from the graph if it is no longer be used by other containers 
 		setFieldProperty("html", null);
 		setFieldKey(null);
-	}
-
-	@Override
-	public HibHtmlField cloneTo(HibFieldContainer container) {
-		HibHtmlField clone = container.createHTML(getFieldKey());
-		clone.setHtml(getHTML());
-		return clone;
 	}
 
 	@Override

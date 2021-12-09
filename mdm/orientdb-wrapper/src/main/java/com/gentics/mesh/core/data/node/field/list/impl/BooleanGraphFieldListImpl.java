@@ -54,7 +54,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<HibBo
 
 		// Handle Deletion
 		if (isBooleanListFieldSetToNull && graphBooleanFieldList != null) {
-			graphBooleanFieldList.removeField(container);
+			container.removeField(graphBooleanFieldList);
 			return;
 		}
 

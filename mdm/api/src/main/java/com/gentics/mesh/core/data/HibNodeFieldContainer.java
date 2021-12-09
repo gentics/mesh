@@ -22,9 +22,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
-import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
@@ -343,57 +341,6 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 * @return
 	 */
 	Path getPath(InternalActionContext ac);
-
-	/**
-	 * Create the specific delete event.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	NodeMeshEventModel onDeleted(String branchUuid, ContainerType type);
-
-	/**
-	 * Create the specific create event.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	NodeMeshEventModel onCreated(String branchUuid, ContainerType type);
-
-	/**
-	 * Create the specific update event.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	NodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
-
-	/**
-	 * Create the taken offline event.
-	 *
-	 * @param branchUuid
-	 * @return
-	 */
-	NodeMeshEventModel onTakenOffline(String branchUuid);
-
-	/**
-	 * Create the publish event.
-	 *
-	 * @param branchUuid
-	 * @return
-	 */
-	NodeMeshEventModel onPublish(String branchUuid);
-
-	/**
-	 * Transform the container into a version info object.
-	 *
-	 * @param ac
-	 * @return
-	 */
-	VersionInfo transformToVersionInfo(InternalActionContext ac);
 
 	/**
 	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.

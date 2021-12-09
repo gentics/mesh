@@ -255,9 +255,9 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
 
 		// Ensure the search index is updated accordingly
-		sqb.add(migrated.onUpdated(branchUuid, DRAFT));
+		sqb.add(contentDao.onUpdated(migrated, branchUuid, DRAFT));
 		if (publish) {
-			sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
+			sqb.add(contentDao.onUpdated(migrated, branchUuid, PUBLISHED));
 		}
 	}
 
@@ -300,7 +300,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		nodeDao.setPublished(node, ac, migrated, branchUuid);
 
 		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
-		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
+		sqb.add(contentDao.onUpdated(migrated, branchUuid, PUBLISHED));
 		return migrated.getVersion();
 	}
 

@@ -55,7 +55,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<HibDateF
 
 		// Handle Deletion
 		if (isDateListFieldSetToNull && graphDateFieldList != null) {
-			graphDateFieldList.removeField(container);
+			container.removeField(graphDateFieldList);
 			return;
 		}
 

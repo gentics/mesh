@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 
 import java.util.Arrays;
 import java.util.List;
@@ -339,7 +340,44 @@ public interface ContentDao {
 	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matches
 	 */
-	HibNodeFieldContainer findVersion(HibNode node, List<String> languageTags, String branchUuid, String version);
+
+	/**
+	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
+	 * is no de version the en version will be selected and returned.
+	 *
+	 * @param node
+	 * @param languageTags
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @param version
+	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
+	 * @return Next matching field container or null when no language matches
+	 */
+	default HibNodeFieldContainer findVersion(HibNode node, List<String> languageTags, String branchUuid, String version) {
+		HibNodeFieldContainer fieldContainer = null;
+
+		// TODO refactor the type handling and don't return INITIAL.
+		ContainerType type = forVersion(version);
+
+		for (String languageTag : languageTags) {
+
+			// Don't start the version lookup using the initial version. Instead start at the end of the chain and use the DRAFT version instead.
+			fieldContainer = getFieldContainer(node, languageTag, branchUuid, type == INITIAL ? DRAFT : type);
+
+			// Traverse the chain downwards and stop once we found our target version or we reached the end.
+			if (fieldContainer != null && type == INITIAL) {
+				while (fieldContainer != null && !version.equals(fieldContainer.getVersion().toString())) {
+					fieldContainer = fieldContainer.getPreviousVersion();
+				}
+			}
+
+			// We found a container for one of the languages
+			if (fieldContainer != null) {
+				break;
+			}
+		}
+		return fieldContainer;
+	}
 
 	/**
 	 * Iterate the version chain from the back in order to find the given version.

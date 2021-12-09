@@ -3,7 +3,9 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
@@ -58,6 +60,33 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	List<HibField> getFields();
+
+	/**
+	 * Remove the field from container.
+	 * 
+	 * @param fieldKey
+	 */
+	void removeField(String fieldKey, BulkActionContext bac);
+
+	/**
+	 * Remove the field with the given key and use a dummy bulk action context.
+	 * 
+	 * @param fieldKey
+	 */
+	default void removeField(String fieldKey) {
+		removeField(fieldKey, new DummyBulkActionContext());
+	}
+
+	/**
+	 * Remove the field.
+	 * 
+	 * @param fieldKey
+	 */
+	default void removeField(HibField field) {
+		if (field != null) {
+			removeField(field.getFieldKey());
+		}
+	}
 
 	/**
 	 * Get the schema container version used by this container
@@ -116,29 +145,12 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibStringField getString(String key);
 
 	/**
-	 * Create a new string field.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	HibStringField createString(String key);
-
-	/**
 	 * Return the binary  field for the given key.
 	 * 
 	 * @param key
 	 * @return
 	 */
 	HibBinaryField getBinary(String key);
-
-	/**
-	 * Create a binary field and use the given binary to be referenced by the field.
-	 * 
-	 * @param fieldKey
-	 * @param binary
-	 * @return
-	 */
-	HibBinaryField createBinary(String fieldKey, HibBinary binary);
 
 	/**
 	 * Return the s3 binary  field for the given key.
@@ -149,32 +161,12 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	S3HibBinaryField getS3Binary(String key);
 
 	/**
-	 * Create an s3 binary field and use the given binary to be referenced by the field.
-	 *
-	 * @param fieldKey
-	 * @param binary
-	 * @return
-	 */
-	S3HibBinaryField createS3Binary(String fieldKey, S3HibBinary binary);
-
-	/**
 	 * Return the node field for the given key.
 	 * 
 	 * @param key
 	 * @return
 	 */
 	HibNodeField getNode(String key);
-
-	/**
-	 * Create a new node field.
-	 * 
-	 * @param key
-	 *            Key of the field
-	 * @param node
-	 *            Node to be referenced.
-	 * @return
-	 */
-	HibNodeField createNode(String key, HibNode node);
 
 	/**
 	 * Return the date field.
@@ -185,28 +177,12 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibDateField getDate(String key);
 
 	/**
-	 * Create a new date field.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	HibDateField createDate(String key);
-
-	/**
 	 * Return the number field.
 	 * 
 	 * @param key
 	 * @return
 	 */
 	HibNumberField getNumber(String key);
-
-	/**
-	 * Create the number field.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	HibNumberField createNumber(String key);
 
 	/**
 	 * Return the html field.
@@ -217,28 +193,12 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibHtmlField getHtml(String key);
 
 	/**
-	 * Create a new html field.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	HibHtmlField createHTML(String key);
-
-	/**
 	 * Return the boolean field.
 	 * 
 	 * @param key
 	 * @return
 	 */
 	HibBooleanField getBoolean(String key);
-
-	/**
-	 * Create a new boolean field.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	HibBooleanField createBoolean(String key);
 
 	/**
 	 * Return the micronode field.
@@ -249,29 +209,12 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibMicronodeField getMicronode(String key);
 
 	/**
-	 * Create a new micronode field. This method ensures that only one micronode exists per key.
-	 * 
-	 * @param key
-	 * @param microschemaVersion
-	 * @return
-	 */
-	HibMicronodeField createMicronode(String key, HibMicroschemaVersion microschemaVersion);
-
-	/**
 	 * Return the date list.
 	 * 
 	 * @param fieldKey
 	 * @return
 	 */
 	HibDateFieldList getDateList(String fieldKey);
-
-	/**
-	 * Create a new date list.
-	 * 
-	 * @param fieldKey
-	 * @return
-	 */
-	HibDateFieldList createDateList(String fieldKey);
 
 	/**
 	 * Return html list.
@@ -282,28 +225,12 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibHtmlFieldList getHTMLList(String fieldKey);
 
 	/**
-	 * Create a new html list.
-	 * 
-	 * @param fieldKey
-	 * @return
-	 */
-	HibHtmlFieldList createHTMLList(String fieldKey);
-
-	/**
 	 * Return number list.
 	 * 
 	 * @param fieldKey
 	 * @return
 	 */
 	HibNumberFieldList getNumberList(String fieldKey);
-
-	/**
-	 * Create a new number list.
-	 * 
-	 * @param fieldKey
-	 * @return
-	 */
-	HibNumberFieldList createNumberList(String fieldKey);
 
 	/**
 	 * Return node list.
@@ -314,14 +241,6 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibNodeFieldList getNodeList(String fieldKey);
 
 	/**
-	 * Create a new node list.
-	 * 
-	 * @param fieldKey
-	 * @return
-	 */
-	HibNodeFieldList createNodeList(String fieldKey);
-
-	/**
 	 * Return string list.
 	 * 
 	 * @param fieldKey
@@ -330,28 +249,12 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibStringFieldList getStringList(String fieldKey);
 
 	/**
-	 * Create a new string list.
-	 * 
-	 * @param fieldKey
-	 * @return
-	 */
-	HibStringFieldList createStringList(String fieldKey);
-
-	/**
 	 * Return boolean list.
 	 * 
 	 * @param fieldKey
 	 * @return
 	 */
 	HibBooleanFieldList getBooleanList(String fieldKey);
-
-	/**
-	 * Create a new boolean list.
-	 * 
-	 * @param fieldKey
-	 * @return
-	 */
-	HibBooleanFieldList createBooleanList(String fieldKey);
 
 	/**
 	 * Return node list.
@@ -367,6 +270,131 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @param fieldKey
 	 * @return
 	 */
-	// TODO remove field from method name
-	HibMicronodeFieldList createMicronodeFieldList(String fieldKey);
+	HibMicronodeFieldList createMicronodeList(String fieldKey);
+
+	/**
+	 * Create a new boolean list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HibBooleanFieldList createBooleanList(String fieldKey);
+
+	/**
+	 * Create a new string list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HibStringFieldList createStringList(String fieldKey);
+
+	/**
+	 * Create a new node list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HibNodeFieldList createNodeList(String fieldKey);
+
+	/**
+	 * Create a new number list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HibNumberFieldList createNumberList(String fieldKey);
+
+	/**
+	 * Create a new html list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HibHtmlFieldList createHTMLList(String fieldKey);
+
+	/**
+	 * Create a new date list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HibDateFieldList createDateList(String fieldKey);
+
+	/**
+	 * Create a new micronode field. This method ensures that only one micronode exists per key.
+	 * 
+	 * @param key
+	 * @param microschemaVersion
+	 * @return
+	 */
+	HibMicronodeField createMicronode(String key, HibMicroschemaVersion microschemaVersion);
+
+	/**
+	 * Create a new boolean field.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	HibBooleanField createBoolean(String key);
+
+	/**
+	 * Create a new html field.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	HibHtmlField createHTML(String key);
+
+	/**
+	 * Create the number field.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	HibNumberField createNumber(String key);
+
+	/**
+	 * Create a new date field.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	HibDateField createDate(String key);
+
+	/**
+	 * Create a new node field.
+	 * 
+	 * @param key
+	 *            Key of the field
+	 * @param node
+	 *            Node to be referenced.
+	 * @return
+	 */
+	HibNodeField createNode(String key, HibNode node);
+
+	/**
+	 * Create an s3 binary field and use the given binary to be referenced by the field.
+	 *
+	 * @param fieldKey
+	 * @param binary
+	 * @return
+	 */
+	S3HibBinaryField createS3Binary(String fieldKey, S3HibBinary binary);
+
+	/**
+	 * Create a binary field and use the given binary to be referenced by the field.
+	 * 
+	 * @param fieldKey
+	 * @param binary
+	 * @return
+	 */
+	HibBinaryField createBinary(String fieldKey, HibBinary binary);
+
+	/**
+	 * Create a new string field.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	HibStringField createString(String key);
 }

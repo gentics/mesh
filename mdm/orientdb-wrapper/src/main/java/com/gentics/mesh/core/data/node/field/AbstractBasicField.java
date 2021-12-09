@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.node.field;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 /**
@@ -59,14 +58,6 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	public <E> E getFieldProperty(String key) {
 		return parentContainer.getProperty(fieldKey + "-" + key);
 	}
-
-	/**
-	 * Transform the field into the rest response model.
-	 * 
-	 * @param ac
-	 *            Action context
-	 */
-	abstract public T transformToRest(ActionContext ac);
 
 	@Override
 	public void validate() {

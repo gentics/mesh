@@ -802,7 +802,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// TODO check whether all required fields are filled, if not -> unable to publish
 		HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, draftVersion.getLanguageTag(), branch, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
-		bac.add(publishedContainer.onPublish(branchUuid));
+		bac.add(contentDao.onPublish(publishedContainer, branchUuid));
 	}
 
 	@Override
@@ -814,9 +814,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	default NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
-		Tx.get().contentDao().getFieldContainers(node, Tx.get().getBranch(ac), DRAFT).forEach(c -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		contentDao.getFieldContainers(node, Tx.get().getBranch(ac), DRAFT).forEach(c -> {
 			versions.put(c.getLanguageTag(), c.versions().stream()
-					.map(v -> v.transformToVersionInfo(ac))
+					.map(v -> contentDao.transformToVersionInfo(v, ac))
 					.collect(Collectors.toList()));
 		});
 
@@ -835,6 +836,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	@Override
 	default void publish(HibNode node, InternalActionContext ac, BulkActionContext bac) {
 		Tx tx = Tx.get();
+		ContentDao contentDao = Tx.get().contentDao();
 		HibBranch branch = tx.getBranch(ac, node.getProject());
 		String branchUuid = branch.getUuid();
 
@@ -844,7 +846,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> {
 			HibNodeFieldContainer newVersion = tx.contentDao().publish(node, ac, c.getLanguageTag(), branch, ac.getUser());
-			bac.add(newVersion.onPublish(branchUuid));
+			bac.add(contentDao.onPublish(newVersion, branchUuid));
 		});
 		assertPublishConsistency(node, ac, branch);
 
@@ -935,7 +937,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		HibProject project = tx.getProject(ac);
 		HibUser requestUser = ac.getUser();
 		UserDao userRoot = tx.userDao();
-		
+
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
 			throw error(BAD_REQUEST, "node_missing_parentnode_field");
@@ -965,7 +967,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		container.updateFieldsFromRest(ac, requestModel.getFields());
 
 		batch.add(node.onCreated());
-		batch.add(container.onCreated(branch.getUuid(), DRAFT));
+		batch.add(contentDao.onCreated(container, branch.getUuid(), DRAFT));
 
 		// Check for webroot input data consistency (PUT on webroot)
 		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");
@@ -1103,7 +1105,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (published == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
-		bac.add(published.onTakenOffline(branchUuid));
+		bac.add(contentDao.onTakenOffline(published, branchUuid));
 
 		// Remove the "published" edge
 		removePublishedEdge(node, languageTag, branchUuid);
@@ -1292,7 +1294,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
-			batch.add(latestDraftVersion.onCreated(branch.getUuid(), DRAFT));
+			batch.add(contentDao.onCreated(latestDraftVersion, branch.getUuid(), DRAFT));
 			return true;
 		} else {
 			String version = requestModel.getVersion();
@@ -1368,7 +1370,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				}
 
 				latestDraftVersion = newDraftVersion;
-				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 				return true;
 			}
 		}

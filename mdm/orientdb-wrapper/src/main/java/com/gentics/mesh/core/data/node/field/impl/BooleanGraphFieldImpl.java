@@ -10,8 +10,6 @@ import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
@@ -44,7 +42,7 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 
 		// Handle deletion
 		if (isBooleanFieldSetToNull && booleanGraphField != null) {
-			booleanGraphField.removeField(container);
+			container.removeField(booleanGraphField);
 			return;
 		}
 
@@ -88,23 +86,9 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	}
 
 	@Override
-	public BooleanField transformToRest(ActionContext ac) {
-		BooleanFieldImpl restModel = new BooleanFieldImpl();
-		restModel.setValue(getBoolean());
-		return restModel;
-	}
-
-	@Override
 	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		setFieldProperty("boolean", null);
 		setFieldKey(null);
-	}
-
-	@Override
-	public HibBooleanField cloneTo(HibFieldContainer container) {
-		HibBooleanField clone = container.createBoolean(getFieldKey());
-		clone.setBoolean(getBoolean());
-		return clone;
 	}
 
 	@Override

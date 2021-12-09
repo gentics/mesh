@@ -72,7 +72,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 		// Handle Deletion
 		if (isMicronodeListFieldSetToNull && micronodeGraphFieldList != null) {
-			micronodeGraphFieldList.removeField(container);
+			container.removeField(micronodeGraphFieldList);
 			return;
 		}
 
@@ -84,7 +84,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		// Always create a new list.
 		// This will effectively unlink the old list and create a new one.
 		// Otherwise the list which is linked to old versions would be updated.
-		micronodeGraphFieldList = container.createMicronodeFieldList(fieldKey);
+		micronodeGraphFieldList = container.createMicronodeList(fieldKey);
 
 		// Handle Update
 		// TODO instead this method should also return an observable

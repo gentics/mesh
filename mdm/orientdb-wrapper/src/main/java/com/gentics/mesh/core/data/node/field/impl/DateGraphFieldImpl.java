@@ -46,7 +46,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 
 		// Handle Deletion - The field was explicitly set to null and is currently set in the graph so we can remove the field from the given container
 		if (isDateFieldSetToNull && dateGraphField != null) {
-			dateGraphField.removeField(container);
+			container.removeField(dateGraphField);
 			return;
 		}
 
@@ -91,23 +91,9 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 	}
 
 	@Override
-	public DateField transformToRest(ActionContext ac) {
-		DateField dateField = new DateFieldImpl();
-		dateField.setDate(toISO8601(getDate()));
-		return dateField;
-	}
-
-	@Override
 	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		setFieldProperty("date", null);
 		setFieldKey(null);
-	}
-
-	@Override
-	public HibField cloneTo(HibFieldContainer container) {
-		HibDateField clone = container.createDate(getFieldKey());
-		clone.setDate(getDate());
-		return clone;
 	}
 
 	@Override

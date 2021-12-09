@@ -419,7 +419,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 				contentDao.purge(latestDraftVersion);
 			}
 
-			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
+			batch.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
 			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}
@@ -482,7 +482,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 				contentDao.purge(latestDraftVersion);
 			}
 
-			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
+			batch.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
 			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}

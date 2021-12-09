@@ -31,7 +31,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 	private final DataProvider FILL = (container, name) -> {
-		HibMicronodeFieldList field = container.createMicronodeFieldList(name);
+		HibMicronodeFieldList field = container.createMicronodeList(name);
 
 		HibMicronode micronode = field.createMicronode();
 		micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());

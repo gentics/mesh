@@ -87,7 +87,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
 		if (graphNodeField != null && isNodeFieldSetToNull) {
-			graphNodeField.removeField(container);
+			container.removeField(graphNodeField);
 			return;
 		}
 

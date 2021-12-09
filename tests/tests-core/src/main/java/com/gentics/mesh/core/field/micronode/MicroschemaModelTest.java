@@ -296,13 +296,13 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 
 			HibNodeFieldContainer containerWithBoth = boot().contentDao().getFieldContainer(folder("2015"), "en");
 			containerWithBoth.createMicronode("single", vcard);
-			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
+			containerWithBoth.createMicronodeList("list").createMicronode().setSchemaContainerVersion(vcard);
 
 			HibNodeFieldContainer containerWithField = boot().contentDao().getFieldContainer(folder("news"), "en");
 			containerWithField.createMicronode("single", vcard);
 
 			HibNodeFieldContainer containerWithList = boot().contentDao().getFieldContainer(folder("products"), "en");
-			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
+			containerWithList.createMicronodeList("list").createMicronode().setSchemaContainerVersion(vcard);
 
 			HibNodeFieldContainer containerWithOtherVersion = boot().contentDao().getFieldContainer(folder("deals"), "en");
 			containerWithOtherVersion.createMicronode("single", newVCard);

@@ -71,7 +71,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 
 		// Handle Deletion
 		if (isStringFieldSetToNull && graphStringField != null) {
-			graphStringField.removeField(container);
+			container.removeField(graphStringField);
 			return;
 		}
 
@@ -116,29 +116,9 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	}
 
 	@Override
-	public String getDisplayName() {
-		return getString();
-	}
-
-	@Override
-	public StringField transformToRest(ActionContext ac) {
-		StringFieldImpl stringField = new StringFieldImpl();
-		String text = getString();
-		stringField.setString(text == null ? "" : text);
-		return stringField;
-	}
-
-	@Override
 	public void removeField(BulkActionContext bac, HibFieldContainer container) {
 		setFieldProperty("string", null);
 		setFieldKey(null);
-	}
-
-	@Override
-	public HibStringField cloneTo(HibFieldContainer container) {
-		HibStringField clone = container.createString(getFieldKey());
-		clone.setString(getString());
-		return clone;
 	}
 
 	@Override

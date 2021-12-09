@@ -1093,7 +1093,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			HibNodeFieldContainer newContainer = contentDao.createFieldContainer(firstNode, en, branch, user(),
 				oldContainer,
 				true);
-			firstMicronodeListField = newContainer.createMicronodeFieldList(micronodeFieldName);
+			firstMicronodeListField = newContainer.createMicronodeList(micronodeFieldName);
 			HibMicronode micronode = firstMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
 			micronode.createString(oldFieldName).setString("first content");
@@ -1104,7 +1104,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			secondMicronodeListField = contentDao.createFieldContainer(secondNode, en, branch2, user(),
 				oldContainer2,
 				true)
-				.createMicronodeFieldList(micronodeFieldName);
+				.createMicronodeList(micronodeFieldName);
 
 			micronode = secondMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
@@ -1232,7 +1232,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				true);
 
 			firstMicronodeListField = newContainer
-				.createMicronodeFieldList(micronodeFieldName);
+				.createMicronodeList(micronodeFieldName);
 			HibMicronode micronode = firstMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
 			micronode.createString(oldFieldName).setString("first content");
