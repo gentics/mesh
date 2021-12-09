@@ -5,8 +5,15 @@ import java.util.Optional;
 
 import com.gentics.mesh.core.data.project.HibProject;
 
+/**
+ * Extension of {@link HibJob} for version purge jobs.
+ */
 public interface HibVersionPurgeJob extends HibJob {
 
+	/**
+	 * Get the project reference of the job.
+	 * @return
+	 */
 	HibProject getProject();
 
 	/**
