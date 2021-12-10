@@ -12,6 +12,8 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.event.EventQueueBatch;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * A persisting extension to {@link JobDao}
@@ -76,5 +78,15 @@ public interface PersistingJobDao extends JobDao, PersistingDaoGlobal<HibJob> {
 			props.put("toVersion", toMicroschema.getVersion());
 		}
 		return response;
+	}
+
+	@Override
+	default HibJob create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		throw new NotImplementedException("Jobs cannot be created using REST");
+	}
+
+	@Override
+	default boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
+		throw new NotImplementedException("Jobs can't be updated");
 	}
 }

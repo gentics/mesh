@@ -1,9 +1,12 @@
 package com.gentics.mesh.test.context.helper;
 
+import java.util.function.Consumer;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
@@ -48,11 +51,11 @@ public interface BaseHelper {
 	}
 
 	default void grantAdmin() {
-		tx(() -> user().setAdmin(true));
+		modifyUser((user) -> user.setAdmin(true));
 	}
 
 	default void revokeAdmin() {
-		tx(() -> user().setAdmin(false));
+		modifyUser((user) -> user.setAdmin(false));
 	}
 
 	/**
@@ -160,4 +163,11 @@ public interface BaseHelper {
 		return getTestContext().getTrackingSearchProvider();
 	}
 
+	private void modifyUser(Consumer<HibUser> modifier) {
+		tx(() -> {
+			HibUser user = CommonTx.get().userDao().findByUuid(user().getUuid());
+			modifier.accept(user);
+			CommonTx.get().userDao().mergeIntoPersisted(user);
+		});
+	}
 }

@@ -284,12 +284,12 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		nodeDao.onRootDeleted(project, bac);
 
 		// Unassign the schemas from the container
-		for (HibSchema container : project.getSchemas()) {
+		for (HibSchema container : project.getSchemas().list()) {
 			schemaDao.unassign(container, project, bac.batch());
 		}
 
 		// Unassign the microschemas from the container
-		for (HibMicroschema container : project.getMicroschemas()) {
+		for (HibMicroschema container : project.getMicroschemas().list()) {
 			microschemaDao.unassign(container, project, bac.batch());
 		}
 

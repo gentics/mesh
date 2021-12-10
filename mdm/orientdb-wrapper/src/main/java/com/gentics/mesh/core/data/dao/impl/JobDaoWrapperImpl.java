@@ -106,16 +106,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 
 	@Override
-	public boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(job).update(ac, batch);
-	}
-
-	@Override
-	public HibJob create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new NotImplementedException("Jobs cannot be created using REST");
-	}
-
-	@Override
 	public void delete(HibJob job, BulkActionContext bac) {
 		toGraph(job).delete(bac);
 	}
@@ -123,12 +113,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	@Override
 	public void clear() {
 		boot.get().meshRoot().getJobRoot().clear();
-	}
-
-	@Override
-	public Completable process() {
-		JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
-		return jobRoot.process();
 	}
 
 	@Override

@@ -119,7 +119,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Assert that the index was created and that no job was scheduled. We need no job since no migration is required
 		HibBranchSchemaVersion assignment1;
 		try (Tx tx = tx()) {
-			assignment1 = initialBranch().findBranchSchemaEdge(tx.schemaDao().findByName("dummy").getLatestVersion());
+			assignment1 = tx.branchDao().findBranchSchemaEdge(initialBranch(), tx.schemaDao().findByName("dummy").getLatestVersion());
 			assertEquals(COMPLETED, assignment1.getMigrationStatus());
 			assertNull(assignment1.getJobUuid());
 			assertTrue("The assignment should be active.", assignment1.isActive());
@@ -159,7 +159,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = schemaDao.findByName("dummy").getLatestVersion();
 			versionBUuid = versionB.getUuid();
 			assertNotEquals(versionUuid, versionBUuid);
-			assignment2 = initialBranch().findBranchSchemaEdge(schemaDao.findByName("dummy").getLatestVersion());
+			assignment2 = tx.branchDao().findBranchSchemaEdge(initialBranch(), tx.schemaDao().findByName("dummy").getLatestVersion());
 			assertNotNull(assignment2.getJobUuid());
 			assertEquals("The migration should be queued", QUEUED, assignment2.getMigrationStatus());
 			assertTrue("The assignment should be active.", assignment2.isActive());
@@ -228,7 +228,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 					initialBranchUuid()).hasNext());
 			assertNotEquals("A new latest version should have been created.", versionBUuid, versionCUuid);
 
-			edge3 = initialBranch().findBranchSchemaEdge(schemaDao.findByName("dummy").getLatestVersion());
+			edge3 = tx.branchDao().findBranchSchemaEdge(initialBranch(), schemaDao.findByName("dummy").getLatestVersion());
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(QUEUED, edge3.getMigrationStatus());
 			assertFalse("The previous assignment should be inactive.", assignment1.isActive());

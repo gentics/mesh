@@ -1,11 +1,8 @@
 package com.gentics.mesh.core.endpoint.migration;
 
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
-import com.gentics.mesh.core.rest.error.Errors;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * Interface for migration status of node, branch and micronode migrations.
@@ -14,14 +11,14 @@ public interface MigrationStatusHandler {
 
 	/**
 	 * Update the status and store it in the local or cluster wide map.
-	 * 
+	 *
 	 * @return Fluent API
 	 */
 	MigrationStatusHandler commit();
 
 	/**
 	 * Update status and inform all the channels.
-	 * 
+	 *
 	 * @return Fluent API
 	 */
 
@@ -29,7 +26,7 @@ public interface MigrationStatusHandler {
 
 	/**
 	 * Handle the error and inform all channels.
-	 * 
+	 *
 	 * @param error
 	 * @param string
 	 * @return Fluent API
@@ -61,11 +58,4 @@ public interface MigrationStatusHandler {
 	 * Increment the completion counter.
 	 */
 	void incCompleted();
-
-	default Exception fail(HttpResponseStatus status, String message) {
-		GenericRestException ex = Errors.error(status, message);
-		error(ex, message);
-		throw ex;
-	}
-
 }

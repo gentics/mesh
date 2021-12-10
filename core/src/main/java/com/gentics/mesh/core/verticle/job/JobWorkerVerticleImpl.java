@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.jobs.JobProcessor;
 import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import dagger.Lazy;
@@ -32,13 +33,14 @@ public class JobWorkerVerticleImpl extends AbstractJobVerticle implements JobWor
 	public static final String TO_VERSION_UUID_HEADER = "toVersion";
 
 	private Lazy<BootstrapInitializer> boot;
-
+	private JobProcessor jobProcessor;
 	private Database db;
 
 	@Inject
-	public JobWorkerVerticleImpl(Database db, Lazy<BootstrapInitializer> boot) {
+	public JobWorkerVerticleImpl(Database db, Lazy<BootstrapInitializer> boot, JobProcessor jobProcessor) {
 		this.db = db;
 		this.boot = boot;
+		this.jobProcessor = jobProcessor;
 	}
 
 	@Override
@@ -54,7 +56,7 @@ public class JobWorkerVerticleImpl extends AbstractJobVerticle implements JobWor
 	@Override
 	public Completable executeJob(Message<Object> message) {
 		return Completable.defer(() -> db.tx(tx -> {
-			return tx.jobDao().process();
+			return jobProcessor.process();
 		}));
 	}
 

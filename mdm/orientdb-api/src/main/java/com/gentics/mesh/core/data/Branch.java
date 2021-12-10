@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.root.BranchRoot;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 
@@ -44,4 +48,20 @@ public interface Branch
 	 * @return branch root to which the branch belongs
 	 */
 	BranchRoot getRoot();
+
+	/**
+	 * Find the branch schema edge for the given version.
+	 *
+	 * @param schemaVersion
+	 * @return Found edge between branch and version
+	 */
+	HibBranchSchemaVersion findBranchSchemaEdge(HibSchemaVersion schemaVersion);
+
+	/**
+	 * Find the branch microschema edge for the given version.
+	 *
+	 * @param microschemaVersion
+	 * @return Found edge between branch and version
+	 */
+	HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion);
 }
