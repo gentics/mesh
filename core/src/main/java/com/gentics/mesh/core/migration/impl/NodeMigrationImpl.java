@@ -244,13 +244,13 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
-			migrated.setVersion(container.getVersion().nextPublished());
+			contentDao.setVersion(migrated, container.getVersion().nextPublished());
 			nodeDao.setPublished(node, ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
 			}
-			migrated.setVersion(nextDraftVersion);
+			contentDao.setVersion(migrated, nextDraftVersion);
 		}
 
 		// Pass the new version through the migration scripts and update the version
@@ -298,7 +298,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		HibNodeFieldContainer migrated = contentDao.createFieldContainer(node, content.getLanguageTag(), branch, content.getEditor(),
 			content, true);
 
-		migrated.setVersion(content.getVersion().nextPublished());
+		contentDao.setVersion(migrated, content.getVersion().nextPublished());
 		nodeDao.setPublished(node, ac, migrated, branchUuid);
 
 		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);

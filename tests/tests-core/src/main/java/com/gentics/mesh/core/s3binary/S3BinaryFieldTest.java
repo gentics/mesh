@@ -174,7 +174,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     public void testEqualsRestField() {
         try (Tx tx = tx()) {
             HibNodeFieldContainer container = CoreTestUtils.createContainer();
-            container.setVersion(new VersionNumber(2, 1));
+            tx.contentDao().setVersion(container, new VersionNumber(2, 1));
             S3HibBinary s3binary = tx.s3binaries().create("1234", container.getUuid() + "/s3", "img.jpg").runInExistingTx(tx);
             S3HibBinaryField fieldA = container.createS3Binary("fieldA", s3binary);
 

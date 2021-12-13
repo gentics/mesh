@@ -135,7 +135,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			boolean isDuplicate = !seenVersions.add(currentVersion);
 			if (isDuplicate) {
 				currentVersion = generateUniqueVersion(seenVersions, currentVersion);
-				currentContainer.setVersion(currentVersion);
+				contentDao.setVersion(currentContainer, currentVersion);
 				seenVersions.add(currentVersion);
 				mutated = true;
 			}

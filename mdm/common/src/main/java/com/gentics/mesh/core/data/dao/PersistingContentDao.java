@@ -125,6 +125,7 @@ public interface PersistingContentDao extends ContentDao {
 	default HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
 		boolean handleDraftEdge) {
 		HibNodeFieldContainer previous = null;
+		ContentDao contentDao = Tx.get().contentDao();
 
 		// check whether there is a current draft version
 		if (handleDraftEdge) {
@@ -148,11 +149,11 @@ public interface PersistingContentDao extends ContentDao {
 
 		if (previous != null) {
 			// set the next version number
-			newContainer.setVersion(previous.getVersion().nextDraft());
+			contentDao.setVersion(newContainer, previous.getVersion().nextDraft());
 			previous.setNextVersion(newContainer);
 		} else {
 			// set the initial version number
-			newContainer.setVersion(new VersionNumber());
+			contentDao.setVersion(newContainer, new VersionNumber());
 		}
 
 		// clone the original or the previous container
@@ -250,7 +251,7 @@ public interface PersistingContentDao extends ContentDao {
 
 		// create published version
 		HibNodeFieldContainer newVersion = createFieldContainer(node, languageTag, branch, user);
-		newVersion.setVersion(newVersion.getVersion().nextPublished());
+		Tx.get().contentDao().setVersion(newVersion, newVersion.getVersion().nextPublished());
 
 		Tx.get().nodeDao().setPublished(node, ac, newVersion, branchUuid);
 		return newVersion;
