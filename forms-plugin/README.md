@@ -33,6 +33,7 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 | `reCaptcha` | object | Recaptcha settings | |
 | `proxyOptions` | object | Proxy settings, if http proxy is required for accessing the recaptcha verification URL (https://www.google.com/recaptcha/api/siteverify) | |
 | `fileUpload` | object | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element | |
+| `custom` | object | Custom configurations you can use in your extensions and handlebars template | |
 
 ## Example File
 ```yml
@@ -92,6 +93,10 @@ fileUpload:
         - ".*\\.txt"
         - ".*\\.ods"
         - ".*\\.odt"
+custom:
+  test: "test"
+  testobject:
+    testfield: "another test field"
 ```
 
 # Form properties
