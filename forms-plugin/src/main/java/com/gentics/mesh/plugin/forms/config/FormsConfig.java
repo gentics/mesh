@@ -1,9 +1,9 @@
 package com.gentics.mesh.plugin.forms.config;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.plugin.forms.export.ExportFormat;
+
+import java.util.Map;
 
 /**
  * Configuration POJO
@@ -31,6 +31,8 @@ public class FormsConfig {
 	private String templatesPath = "plugins/forms/templates";
 
 	private Map<String, String> elements;
+
+	private Map<String, Object> custom;
 
 	@JsonProperty("mail")
 	private MailOptions mailOptions = new MailOptions();
@@ -141,5 +143,13 @@ public class FormsConfig {
 
 	public void setValidateElements(boolean validateElements) {
 		this.validateElements = validateElements;
+	}
+
+	public Map<String, Object> getCustom() {
+		return custom;
+	}
+
+	public void setCustom(Map<String, Object> custom) {
+		this.custom = custom;
 	}
 }
