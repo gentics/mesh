@@ -571,7 +571,7 @@ public class TestDataProvider {
 			HibNodeFieldContainer germanContainer = contentDao.createFieldContainer(folderNode, german,
 				branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
-			germanContainer.createString("teaser").setString(germanName);
+//			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
 			contentCount++;
