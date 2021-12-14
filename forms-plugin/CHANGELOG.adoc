@@ -10,13 +10,13 @@
 
 = Mesh Forms Plugin
 
-[[v1.6.17]]
-== 1.6.17 (TBD)
+[[v1.6.16]]
+== 1.6.16 (TBD)
 
 icon:plus[] Configuration: Allows that custom configurations can be added and accessed via handlebars template.
 
-[[v1.6.16]]
-== 1.6.16 (2021-11-25)
+[[v1.6.15]]
+== 1.6.15 (2021-11-25)
 
 icon:plus[] Rendering: Adds the path prefix of the projects default branch to the render context via the key `pathPrefix`. This is mainly intended for creating the forms action URL in the handlebars templates.
 
