@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.plugin.forms.export.ExportFormat;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,7 +33,7 @@ public class FormsConfig {
 
 	private Map<String, String> elements;
 
-	private Map<String, Object> custom;
+	private Map<String, Object> custom = new HashMap<>();
 
 	@JsonProperty("mail")
 	private MailOptions mailOptions = new MailOptions();
@@ -146,6 +147,9 @@ public class FormsConfig {
 	}
 
 	public Map<String, Object> getCustom() {
+		if (custom == null) {
+			custom = new HashMap<>();
+		}
 		return custom;
 	}
 
