@@ -19,23 +19,22 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 
 # Configuration
 ## Fields
-| Key | Type           | Description | Default value |
-|-----|----------------|-------------|---------------|
-| `templatesPath` | string         | base path to the templates | `plugins/forms/templates` |
-| `elements` | map of strings | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class | |
-| `mail` | object         | Mail settings | |
-| `fromAddress` | string         | Address to use as `from` when sending mails | |
-| `adminMailTemplate` | string         | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **
-without** extension `.hbs`. | |
-| `adminMailSubject` | string         | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form | |
-| `userMailTemplate` | string         | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **
-without** extension `.hbs`. | |
-| `userMailSubject` | string         | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form | |
-| `defaultExportFormat` | string         | Default export format. Currently, only `CSV` is supported | CSV |
-| `reCaptcha` | object         | Recaptcha settings | |
-| `proxyOptions` | object         | Proxy settings, if http proxy is required for accessing the recaptcha verification URL (https://www.google.com/recaptcha/api/siteverify) | |
-| `fileUpload` | object         | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element | |
-| `custom` | Map of objects | Custom configurations you can use in your extensions and handlebars template | |
+| Key                   | Type           | Description                                                                                                                              | Default value             |
+|-----------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
+| `templatesPath`       | string         | base path to the templates                                                                                                               | `plugins/forms/templates` |
+| `elements`            | map of strings | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class                              |                           |
+| `mail`                | object         | Mail settings                                                                                                                            |                           |
+| `fromAddress`         | string         | Address to use as `from` when sending mails                                                                                              |                           |
+| `adminMailTemplate`   | string         | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.       |                           |
+| `adminMailSubject`    | string         | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                             |                           |
+| `userMailTemplate`    | string         | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.        |                           |
+| `userMailSubject`     | string         | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                              |                           |
+| `defaultExportFormat` | string         | Default export format. Currently, only `CSV` is supported                                                                                | CSV                       |
+| `reCaptcha`           | object         | Recaptcha settings                                                                                                                       |                           |
+| `friendlyCaptcha`     | object         | FriendlyRecaptcha settings                                                                                                               |                           |
+| `proxyOptions`        | object         | Proxy settings, if http proxy is required for accessing the recaptcha verification URL (https://www.google.com/recaptcha/api/siteverify) |                           |
+| `fileUpload`          | object         | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element                               |                           |
+| `custom`              | Map of objects | Custom configurations you can use in your extensions and handlebars template                                                             |                           |
 
 ## Example File
 ```yml
@@ -60,6 +59,9 @@ userMailTemplate: "useremail"
 userMailSubject: "Herzlichen Dank"
 defaultExportFormat: CSV
 reCaptcha:
+  siteKey: "your-site-key"
+  secretKey: "your-secret-key"
+friendlyCaptcha:
   siteKey: "your-site-key"
   secretKey: "your-secret-key"
 proxyOptions:
@@ -226,6 +228,19 @@ Server-side validation will check whether mandatory fields have been filled by t
 | `time` | Accepts times entered in format HH:mm |
 | `email` | Accepts email addresses |
 | `datepicker` | Accepts dates entered in format dd.MM.yyyy |
+
+# Friendly Captcha options
+
+These are the options available for the FriendlyCaptcha Implementation 
+
+| Key                   | Type     | Description                                                                                                                             | Default value |
+|-----------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------|---|
+| `siteKey`             | string   | Key from the FriendlyCaptcha                                                                                                            | empty | 
+| `secretKey`           | string   | Secret from FriendlyCaptcha                                                                                                             | empty |  
+| `solutionKey`         | string   | Key for the field containing the hash of the verification                                                                               | frc-captcha-solution  | 
+| `verificationUrl`     | string   | Url against which the captcha is verified                                                                                               | https://api.friendlycaptcha.com/api/v1/siteverify | 
+| `acceptOnErrorStatus` | boolean  | Activates recommended behaviour as [mentioned here](https://docs.friendlycaptcha.com/#/verification_api?id=verification-best-practices) | false |
+
 
 # Form rendering
 
