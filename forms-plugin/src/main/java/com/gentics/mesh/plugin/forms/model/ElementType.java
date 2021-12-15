@@ -25,6 +25,8 @@ public enum ElementType {
 
 	recaptcha(ReCaptchaElement.class), // OK
 
+	friendlycaptcha(FriendlyCaptchaElement.class),
+
 	file(FileElement.class), // OK
 
 	conditionalcontainer(ConditionalContainerElement.class);

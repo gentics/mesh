@@ -25,6 +25,8 @@ public class FormsConfig {
 
 	private ReCaptchaOptions reCaptcha;
 
+	private FriendlyCaptchaOptions friendlyCaptcha;
+
 	private FileUploadOptions fileUpload;
 
 	private ProxyOptions proxyOptions;
@@ -80,6 +82,10 @@ public class FormsConfig {
 		this.userMailSubject = userMailSubject;
 	}
 
+	public void setDefaultExportFormat(ExportFormat defaultExportFormat) {
+		this.defaultExportFormat = defaultExportFormat;
+	}
+
 	public ExportFormat getDefaultExportFormat() {
 		return defaultExportFormat;
 	}
@@ -88,12 +94,16 @@ public class FormsConfig {
 		return reCaptcha;
 	}
 
-	public void setDefaultExportFormat(ExportFormat defaultExportFormat) {
-		this.defaultExportFormat = defaultExportFormat;
-	}
-
 	public void setReCaptcha(ReCaptchaOptions reCaptcha) {
 		this.reCaptcha = reCaptcha;
+	}
+
+	public FriendlyCaptchaOptions getFriendlyCaptcha() {
+		return friendlyCaptcha;
+	}
+
+	public void setFriendlyCaptcha(FriendlyCaptchaOptions friendlyCaptcha) {
+		this.friendlyCaptcha = friendlyCaptcha;
 	}
 
 	public FileUploadOptions getFileUpload() {
