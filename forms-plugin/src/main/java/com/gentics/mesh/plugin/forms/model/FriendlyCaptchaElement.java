@@ -92,8 +92,8 @@ public class FriendlyCaptchaElement extends FormElement {
 		if (StringUtils.isBlank(captchaSolution)) {
 			log.debug("Solution is empty");
 			return false;
-			// Fetching means the Form has been submitted although the check was not finished
 		} else if(fastFailerSolutions.contains(captchaSolution)) {
+			// Values that are per definition false and so we don't need to ask the endpoint
 			log.debug("Solution is a fast failer!");
 			return false;
 		} else {
