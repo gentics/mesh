@@ -8,6 +8,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import org.apache.commons.lang3.RandomUtils;
 
 /**
  * Utils for core tests.
@@ -23,15 +24,13 @@ public final class CoreTestUtils {
 	public static HibNodeFieldContainer createContainer() {
 		return createContainer(FieldUtil.createStringFieldSchema("dummy"));
 	}
-	
+
 	public static HibNodeFieldContainer createContainer(FieldSchema field) {
 		CommonTx ctx = CommonTx.get();
 		// 1. Setup schema
-		HibSchema schemaContainer = ctx.schemaDao().createPersisted(null);
-		HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schemaContainer);
-		version.setSchemaContainer(schemaContainer);
-
 		SchemaVersionModel schema = createSchema(field);
+		HibSchema schemaContainer = ctx.schemaDao().create(schema, null, null, false);
+		HibSchemaVersion version = schemaContainer.getLatestVersion();
 		version.setSchema(schema);
 
 		HibNodeFieldContainer container = ctx.contentDao().createPersisted(version, null);
@@ -41,7 +40,7 @@ public final class CoreTestUtils {
 
 	public static SchemaVersionModel createSchema(FieldSchema field) {
 		SchemaVersionModel schema = new SchemaModelImpl();
-		schema.setName("dummySchema");
+		schema.setName(new String(RandomUtils.nextBytes(20)));
 		if (field != null) {
 			schema.addField(field);
 		}
