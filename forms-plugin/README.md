@@ -267,7 +267,7 @@ For extending the forms-plugin, a new maven project must be created, that uses t
   <properties>
     <mesh.version>0.31.4</mesh.version>
     <vertx.version>3.5.4</vertx.version>
-    <forms.plugin.version>3.1</forms.plugin.version>
+    <forms.plugin.version>1.6.16</forms.plugin.version>
   </properties>
 
   <dependencies>
@@ -297,10 +297,10 @@ For extending the forms-plugin, a new maven project must be created, that uses t
     </dependency>
 
     <dependency>
-      <groupId>com.gentics.mesh.plugin</groupId>
-      <artifactId>mesh-forms-plugin</artifactId>
-      <version>${forms.plugin.version}</version>
-    </dependency>
+         <groupId>com.gentics.mesh.plugin.commercial</groupId>
+         <artifactId>mesh-forms-plugin</artifactId>
+         <version>${forms.plugin.version}</version>
+     </dependency>
   </dependencies>
 
   <build>
@@ -330,6 +330,30 @@ For extending the forms-plugin, a new maven project must be created, that uses t
       </plugin>
     </plugins>
   </build>
+  <repositories>
+        <repository>
+            <id>maven.gentics.com</id>
+            <name>Gentics Maven Repository</name>
+            <url>https://maven.gentics.com/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>gtx-commercial</id>
+            <name>Gentics Maven Commercial Repository</name>
+            <url>https://repo.apa-it.at/artifactory/gtx-maven-releases-commerical/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
 ```
 
