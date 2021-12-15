@@ -3,6 +3,7 @@ projects:
 
 elements:
   custom: com.gentics.mesh.plugin.forms.CustomElement
+  customconfig: com.gentics.mesh.plugin.forms.CustomConfigElement
   not-validated: com.gentics.mesh.plugin.forms.model.CustomNotValidated
 
 validateElements: true
@@ -46,3 +47,7 @@ fileUpload:
         - ".*\\.txt"
         - ".*\\.ods"
         - ".*\\.odt"
+custom:
+  test: "test"
+  testobject:
+    testfield: "another test field"
