@@ -463,6 +463,38 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(renderResponse.body().string()).as("Rendered form").isEqualTo(fromFile("custom.html"));
 	}
 
+	/**
+	 * Test using the custom element
+	 * @throws IOException
+	 */
+	@Test
+	public void testCustomConfigElement() throws IOException {
+		String uuid = createForm("customconfig.json");
+
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("customconfig1", "someValue")
+				.build();
+
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
+		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		NodeResponse dataNode = dataNodes.getData().get(0);
+		assertThat(dataNode.getFields()).as("Data Node Fields").isNotNull();
+		assertThat(dataNode.getFields().getStringField("customconfig1")).as("Data Node Field").isNotNull();
+		assertThat(dataNode.getFields().getStringField("customconfig1").getString()).as("Data Node Field").isEqualTo("custom someValue");
+		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+
+		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid)).header("Accept", "text/html").get().build();
+		Response renderResponse = client().newCall(renderRequest).execute();
+		assertThat(renderResponse.isSuccessful()).as(String.format("Response success %d (%s)", renderResponse.code(), renderResponse.message())).isTrue();
+
+		assertThat(renderResponse.body().string()).as("Rendered form").isEqualTo(fromFile("customconfig.html"));
+	}
+
 	@Test
 	public void testPostDataWithoutPublish() throws Exception {
 		String uuid = createForm(inputFieldForm);

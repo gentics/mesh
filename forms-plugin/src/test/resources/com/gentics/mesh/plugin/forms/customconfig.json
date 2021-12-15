@@ -1,0 +1,11 @@
+{
+	"name": "Form with Custom Configuration Field",
+	"elements": [
+    {
+      "type": "customconfig",
+      "name": "customconfig1",
+      "label": "Text",
+      "elements": []
+    }
+	]
+}
