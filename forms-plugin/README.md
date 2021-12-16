@@ -231,8 +231,8 @@ Server-side validation will check whether mandatory fields have been filled by t
 
 # Friendly Captcha
 
-The default implementation of friendlyCaptcha supports all available options. Important information out of 
-friendlyCaptcha which should be provided by the customer are: `siteKey`, `secretKey` and `Endpoint for the puzzle`
+The default implementation of friendlyCaptcha supports all available options. Mandatory settings are `siteKey`, 
+`secretKey` and `Endpoint for the puzzle`
 
 ## Configuration Options
 These are the options available for the FriendlyCaptcha Implementation 
@@ -242,12 +242,12 @@ These are the options available for the FriendlyCaptcha Implementation
 | `siteKey`             | string   | Key from the FriendlyCaptcha                                                                                                            | empty | 
 | `secretKey`           | string   | Secret from FriendlyCaptcha                                                                                                             | empty |  
 | `solutionKey`         | string   | Key for the field containing the hash of the verification                                                                               | frc-captcha-solution  | 
-| `verificationUrl`     | string   | Url against which the captcha is verified                                                                                               | https://api.friendlycaptcha.com/api/v1/siteverify | 
+| `verificationUrl`     | string   | URL against which the captcha is verified                                                                                                | https://api.friendlycaptcha.com/api/v1/siteverify | 
 | `acceptOnErrorStatus` | boolean  | Activates recommended behaviour as [mentioned here](https://docs.friendlycaptcha.com/#/verification_api?id=verification-best-practices) | false |
 
 ## Configuration inside of the CMS
 
-When you've got the minimum information from the cusomter you can use the following json part to add the element to the
+When you've got the minimum information from the customer you can use the following JSON part to add the element to the
 form generator inside of the cms:
 
 ```json

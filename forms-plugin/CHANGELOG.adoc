@@ -14,7 +14,7 @@
 == 1.6.16 (TBD)
 
 icon:plus[] Configuration: Allows that custom configurations can be added and accessed via handlebars template.
-icon:plus[] Elemens: Adding Friendly Captcha Element providing Captcha via Friendly Captcha
+icon:plus[] Elements: Adds link:https://friendlycaptcha.com/[Friendly Captcha] form element
 
 [[v1.6.15]]
 == 1.6.15 (2021-11-25)

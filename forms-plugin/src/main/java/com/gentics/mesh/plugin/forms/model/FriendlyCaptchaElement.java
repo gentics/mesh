@@ -33,6 +33,8 @@ import java.util.Set;
 
 /**
  * Captcha Element. Implementation uses FriendlyCaptcha
+ *
+ * @TODO: Uses the same code as the ReCaptcha Element, we should rewrite this to use a utility class
  */
 public class FriendlyCaptchaElement extends FormElement {
 	/**
