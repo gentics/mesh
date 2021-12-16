@@ -229,8 +229,12 @@ Server-side validation will check whether mandatory fields have been filled by t
 | `email` | Accepts email addresses |
 | `datepicker` | Accepts dates entered in format dd.MM.yyyy |
 
-# Friendly Captcha options
+# Friendly Captcha
 
+The default implementation of friendlyCaptcha supports all available options. Important information out of 
+friendlyCaptcha which should be provided by the customer are: `siteKey`, `secretKey` and `Endpoint for the puzzle`
+
+## Configuration Options
 These are the options available for the FriendlyCaptcha Implementation 
 
 | Key                   | Type     | Description                                                                                                                             | Default value |
@@ -241,6 +245,146 @@ These are the options available for the FriendlyCaptcha Implementation
 | `verificationUrl`     | string   | Url against which the captcha is verified                                                                                               | https://api.friendlycaptcha.com/api/v1/siteverify | 
 | `acceptOnErrorStatus` | boolean  | Activates recommended behaviour as [mentioned here](https://docs.friendlycaptcha.com/#/verification_api?id=verification-best-practices) | false |
 
+## Configuration inside of the CMS
+
+When you've got the minimum information from the cusomter you can use the following json part to add the element to the
+form generator inside of the cms:
+
+```json
+{
+  "type": "friendlycaptcha",
+  "type_label_i18n_ui": {
+    "en": "Friendly Captcha",
+    "de": "Friendly Captcha"
+  },
+  "description_i18n_ui": {
+    "en": "Friendly Captcha spam protection.",
+    "de": "Friendly Captcha Spamschutz."
+  },
+  "is_container": false,
+  "properties": [
+    {
+      "name": "start",
+      "type": "SELECT",
+      "label_i18n_ui": {
+        "en": "Captcha Start",
+        "de": "Start des Captchas"
+      },
+      "description_i18n_ui": {
+        "en": "Defines when the widget should be started.",
+        "de": "Bestimmt wann das Captcha starten soll."
+      },
+      "options": [
+        {
+          "key": "auto",
+          "value_i18n_ui": {
+            "en": "After page load",
+            "de": "Nach dem laden der Seite"
+          }
+        },
+        {
+          "key": "focus",
+          "value_i18n_ui": {
+            "en": "When a formular input is selected",
+            "de": "Wenn ein Formularfeld ausgewählt wird"
+          }
+        },
+        {
+          "key": "none",
+          "value_i18n_ui": {
+            "en": "When a user starts it manually",
+            "de": "Der Benutzer muss es selber starten"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lang",
+      "type": "SELECT",
+      "label_i18n_ui": {
+        "en": "Language",
+        "de": "Sprache"
+      },
+      "description_i18n_ui": {
+        "en": "Language used inside of the Captcha.",
+        "de": "Sprache innerhalb des Captchas"
+      },
+      "options": [
+        {
+          "key": "de",
+          "value_i18n_ui": {
+            "en": "German",
+            "de": "Deutsch"
+          }
+        },
+        {
+          "key": "en",
+          "value_i18n_ui": {
+            "en": "English",
+            "de": "Englisch"
+          }
+        },
+        {
+          "key": "fr",
+          "value_i18n_ui": {
+            "en": "French",
+            "de": "Französisch"
+          }
+        },
+        {
+          "key": "it",
+          "value_i18n_ui": {
+            "en": "Italian",
+            "de": "Italienisch"
+          }
+        },
+        {
+          "key": "nl",
+          "value_i18n_ui": {
+            "en": "Dutch",
+            "de": "Niederländisch"
+          }
+        },
+        {
+          "key": "pt",
+          "value_i18n_ui": {
+            "en": "Portuguese",
+            "de": "Niederländisch"
+          }
+        },
+        {
+          "key": "es",
+          "value_i18n_ui": {
+            "en": "Spanish",
+            "de": "Niederländisch"
+          }
+        },
+        {
+          "key": "ca",
+          "value_i18n_ui": {
+            "en": "Catalan",
+            "de": "Katalanisch"
+          }
+        },
+        {
+          "key": "da",
+          "value_i18n_ui": {
+            "en": "Danish",
+            "de": "Dänisch"
+          }
+        },
+        {
+          "key": "ja",
+          "value_i18n_ui": {
+            "en": "Japanese",
+            "de": "Japanisch"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
 
 # Form rendering
 
