@@ -279,21 +279,21 @@ form generator inside of the cms:
           "key": "auto",
           "value_i18n_ui": {
             "en": "After page load",
-            "de": "Nach dem laden der Seite"
+            "de": "Nach Seitenaufbau"
           }
         },
         {
           "key": "focus",
           "value_i18n_ui": {
-            "en": "When a formular input is selected",
-            "de": "Wenn ein Formularfeld ausgewählt wird"
+            "en": "Focus on the form",
+            "de": "Fokus auf das Formular"
           }
         },
         {
           "key": "none",
           "value_i18n_ui": {
-            "en": "When a user starts it manually",
-            "de": "Der Benutzer muss es selber starten"
+            "en": "Started by the user",
+            "de": "Vom User gestartet"
           }
         }
       ]
