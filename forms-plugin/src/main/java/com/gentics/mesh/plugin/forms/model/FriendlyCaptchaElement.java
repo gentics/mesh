@@ -156,6 +156,7 @@ public class FriendlyCaptchaElement extends FormElement {
 						// With this configuration the recommendation from  here: https://docs.friendlycaptcha.com/#/verification_api?id=verification-best-practices
 						// can be activated
 						log.debug("AcceptOnErrorActive therefor this request is considered correct");
+						log.error("Unexpected response status: %d of verification request", status);
 						return true;
 					} else {
 						throw new ClientProtocolException(String.format("Unexpected response status: %d of verification request", status));
