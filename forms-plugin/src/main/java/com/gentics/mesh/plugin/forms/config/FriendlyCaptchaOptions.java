@@ -61,7 +61,7 @@ public class FriendlyCaptchaOptions {
 		return acceptOnErrorStatus;
 	}
 
-	public void setAcceptOnErrorStatus(Boolean acceptOnErrorStatus) {
+	public void setAcceptOnErrorStatus(boolean acceptOnErrorStatus) {
 		this.acceptOnErrorStatus = acceptOnErrorStatus;
 	}
 }
