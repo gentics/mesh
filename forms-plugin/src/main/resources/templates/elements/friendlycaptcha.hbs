@@ -1,14 +1,27 @@
 {{! General Documentation for the Widget: https://docs.friendlycaptcha.com/#/widget_api !}}
 <div class="frc-captcha" {{!
-     !}}data-sitekey="{{ options.friendlyCaptcha.siteKey }}" {{!
+    !}}data-sitekey="{{ options.friendlyCaptcha.siteKey }}" {{!
 
-     EU Endpoint:
-     data-puzzle-endpoint="https://eu-api.friendlycaptcha.eu/api/v1/puzzle"
-     USA Endpoint:
-     data-puzzle-endpoint="https://api.friendlycaptcha.com/api/v1/puzzle"
+    Endpoint needs to be activated by the customer in the friendlycaptcha configuration. So they should
+    you which one to use
 
-     see https://docs.friendlycaptcha.com/#/widget_api?id=data-start-attribute for available options
-     !}}data-start="auto" {{!
+    Puzzle EU Endpoint:
+    data-puzzle-endpoint="https://eu-api.friendlycaptcha.eu/api/v1/puzzle"
+    Puzzle Worldwide Endpoint:
+    data-puzzle-endpoint="https://api.friendlycaptcha.com/api/v1/puzzle"
+
+    !}}{{#if start}}{{!
+        !}}data-start="{{ start }}"{{!
+    !}}{{else}}{{!
+        Use a sensible default for you cusomter here
+        !}}data-start="auto"{{!
+    !}}{{/if}}{{!
+    !}}{{#if lang}}{{!
+        !}} data-lang="{{ lang }}"{{!
+    !}}{{else}}{{!
+        Use a sensible default for you customer here
+        !}} data-lang="de"{{!
+    !}}{{/if}}{{!
 !}}></div>
 <script type="module" src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.0/widget.module.min.js" async defer></script>
 <script nomodule src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.0/widget.min.js" async defer></script>
