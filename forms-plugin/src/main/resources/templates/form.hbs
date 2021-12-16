@@ -13,6 +13,7 @@
 		{{/unless}}
 		{{!-- loop through all form fields and render their template - type == templatename --}}
 		{{#each elements}}
+		        {{> error }}
 			{{> (formsElementTemplate type) }}
 		{{/each}}
 		{{#unless multipage }}
