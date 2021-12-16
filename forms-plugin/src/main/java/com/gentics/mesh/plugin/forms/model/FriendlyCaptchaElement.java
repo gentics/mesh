@@ -34,19 +34,9 @@ import java.util.Set;
 /**
  * Captcha Element. Implementation uses FriendlyCaptcha
  *
- * @TODO: Uses the same code as the ReCaptcha Element, we should rewrite this to use a utility class
+ * @TODO: Uses the same code as the ReCaptcha Element, we should rewrite this to use a utility class or an abstract class
  */
 public class FriendlyCaptchaElement extends FormElement {
-	/**
-	 * URL for verification
-	 */
-	public final static String VERIFICATION_URL = "https://api.friendlycaptcha.com/api/v1/siteverify";
-
-	/**
-	 * Key of the posted captcha solution
-	 */
-	public final static String SOLUTION_KEY = "frc-captcha-solution";
-
 	protected final static String TITLE_KEY = "error.validation.captcha.title";
 
 	protected final static String MESSAGE_KEY = "error.validation.captcha";

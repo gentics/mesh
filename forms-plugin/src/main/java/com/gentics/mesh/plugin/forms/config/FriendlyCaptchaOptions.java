@@ -10,9 +10,9 @@ public class FriendlyCaptchaOptions {
 
 	private String secretKey;
 
-	private String solutionKey = FriendlyCaptchaElement.SOLUTION_KEY;
+	private String solutionKey = "frc-captcha-solution";
 
-	private String verificationUrl = FriendlyCaptchaElement.VERIFICATION_URL;
+	private String verificationUrl = "https://api.friendlycaptcha.com/api/v1/siteverify";
 
 	private Boolean acceptOnErrorStatus = false;
 
