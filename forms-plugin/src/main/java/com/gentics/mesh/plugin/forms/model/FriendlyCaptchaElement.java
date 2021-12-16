@@ -10,7 +10,6 @@ import io.vertx.ext.web.FileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -142,7 +141,7 @@ public class FriendlyCaptchaElement extends FormElement {
 						} else {
 							throw new ClientProtocolException("Verification request did not return entity");
 						}
-					} else if(this.getConfiguration().getFriendlyCaptcha().getAcceptOnErrorStatus()) {
+					} else if(this.getConfiguration().getFriendlyCaptcha().isAcceptOnErrorStatus()) {
 						// With this configuration the recommendation from  here: https://docs.friendlycaptcha.com/#/verification_api?id=verification-best-practices
 						// can be activated
 						log.debug("AcceptOnErrorActive therefor this request is considered correct");

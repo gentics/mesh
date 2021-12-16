@@ -57,7 +57,7 @@ public class FriendlyCaptchaOptions {
 		this.solutionKey = solutionKey;
 	}
 
-	public Boolean getAcceptOnErrorStatus() {
+	public boolean isAcceptOnErrorStatus() {
 		return acceptOnErrorStatus;
 	}
 
