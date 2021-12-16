@@ -1,18 +1,21 @@
 package com.gentics.mesh.plugin.forms.config;
 
-import com.gentics.mesh.plugin.forms.model.FriendlyCaptchaElement;
-
 /**
  * FriendlyCaptcha Options
  */
 public class FriendlyCaptchaOptions {
+
+	private final String DEFAULT_SOLUTION_KEY = "frc-captcha-solution";
+
+	private final String DEFAULT_VERIFICATION_URL = "https://api.friendlycaptcha.com/api/v1/siteverify";
+
 	private String siteKey;
 
 	private String secretKey;
 
-	private String solutionKey = "frc-captcha-solution";
+	private String solutionKey = DEFAULT_SOLUTION_KEY;
 
-	private String verificationUrl = "https://api.friendlycaptcha.com/api/v1/siteverify";
+	private String verificationUrl = DEFAULT_VERIFICATION_URL;
 
 	private boolean acceptOnErrorStatus = false;
 
@@ -33,6 +36,9 @@ public class FriendlyCaptchaOptions {
 	}
 
 	public String getVerificationUrl() {
+		if(verificationUrl == null || verificationUrl.isEmpty()) {
+			verificationUrl = DEFAULT_VERIFICATION_URL;
+		}
 		return verificationUrl;
 	}
 
@@ -41,6 +47,9 @@ public class FriendlyCaptchaOptions {
 	}
 
 	public String getSolutionKey() {
+		if(solutionKey == null || solutionKey.isEmpty()) {
+			solutionKey = DEFAULT_SOLUTION_KEY;
+		}
 		return solutionKey;
 	}
 
