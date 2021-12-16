@@ -14,7 +14,7 @@ public class FriendlyCaptchaOptions {
 
 	private String verificationUrl = "https://api.friendlycaptcha.com/api/v1/siteverify";
 
-	private Boolean acceptOnErrorStatus = false;
+	private boolean acceptOnErrorStatus = false;
 
 	public String getSiteKey() {
 		return siteKey;
