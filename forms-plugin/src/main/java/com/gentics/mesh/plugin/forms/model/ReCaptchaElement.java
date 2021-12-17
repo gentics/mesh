@@ -36,7 +36,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 
 /**
- * ReCaptcha Element. Implementation uses ReCaptcha
+ * Captcha Element. Implementation uses ReCaptcha
  */
 public class ReCaptchaElement extends FormElement {
 	/**

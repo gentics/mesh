@@ -19,23 +19,22 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 
 # Configuration
 ## Fields
-| Key | Type           | Description | Default value |
-|-----|----------------|-------------|---------------|
-| `templatesPath` | string         | base path to the templates | `plugins/forms/templates` |
-| `elements` | map of strings | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class | |
-| `mail` | object         | Mail settings | |
-| `fromAddress` | string         | Address to use as `from` when sending mails | |
-| `adminMailTemplate` | string         | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **
-without** extension `.hbs`. | |
-| `adminMailSubject` | string         | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form | |
-| `userMailTemplate` | string         | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **
-without** extension `.hbs`. | |
-| `userMailSubject` | string         | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form | |
-| `defaultExportFormat` | string         | Default export format. Currently, only `CSV` is supported | CSV |
-| `reCaptcha` | object         | Recaptcha settings | |
-| `proxyOptions` | object         | Proxy settings, if http proxy is required for accessing the recaptcha verification URL (https://www.google.com/recaptcha/api/siteverify) | |
-| `fileUpload` | object         | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element | |
-| `custom` | Map of objects | Custom configurations you can use in your extensions and handlebars template | |
+| Key                   | Type           | Description                                                                                                                        | Default value             |
+|-----------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
+| `templatesPath`       | string         | base path to the templates                                                                                                         | `plugins/forms/templates` |
+| `elements`            | map of strings | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class                        |                           |
+| `mail`                | object         | Mail settings                                                                                                                      |                           |
+| `fromAddress`         | string         | Address to use as `from` when sending mails                                                                                        |                           |
+| `adminMailTemplate`   | string         | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`. |                           |
+| `adminMailSubject`    | string         | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                       |                           |
+| `userMailTemplate`    | string         | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.  |                           |
+| `userMailSubject`     | string         | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                        |                           |
+| `defaultExportFormat` | string         | Default export format. Currently, only `CSV` is supported                                                                          | CSV                       |
+| `reCaptcha`           | object         | Recaptcha settings                                                                                                                 |                           |
+| `friendlyCaptcha`     | object         | FriendlyRecaptcha settings                                                                                                         |                           |
+| `proxyOptions`        | object         | Proxy settings, if http proxy is required for accessing the recaptcha/friendlycaptcha verification URL                             |                           |
+| `fileUpload`          | object         | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element                         |                           |
+| `custom`              | Map of objects | Custom configurations you can use in your extensions and handlebars template                                                       |                           |
 
 ## Example File
 ```yml
@@ -60,6 +59,9 @@ userMailTemplate: "useremail"
 userMailSubject: "Herzlichen Dank"
 defaultExportFormat: CSV
 reCaptcha:
+  siteKey: "your-site-key"
+  secretKey: "your-secret-key"
+friendlyCaptcha:
   siteKey: "your-site-key"
   secretKey: "your-secret-key"
 proxyOptions:
@@ -226,6 +228,167 @@ Server-side validation will check whether mandatory fields have been filled by t
 | `time` | Accepts times entered in format HH:mm |
 | `email` | Accepts email addresses |
 | `datepicker` | Accepts dates entered in format dd.MM.yyyy |
+
+# Friendly Captcha
+
+Mandatory settings for the friendlyCaptcha to work are `siteKey` and `secretKey`
+
+## Configuration Options
+These are the options available for the FriendlyCaptcha Implementation 
+
+| Key                   | Type     | Description                                                                                                                             | Default value |
+|-----------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------|---|
+| `siteKey`             | string   | Key from the FriendlyCaptcha                                                                                                            | empty | 
+| `secretKey`           | string   | Secret from FriendlyCaptcha                                                                                                             | empty |  
+| `solutionKey`         | string   | Key for the field containing the hash of the verification                                                                               | frc-captcha-solution  | 
+| `verificationUrl`     | string   | URL against which the captcha is verified                                                                                                | https://api.friendlycaptcha.com/api/v1/siteverify | 
+| `acceptOnErrorStatus` | boolean  | Activates recommended behaviour as [mentioned here](https://docs.friendlycaptcha.com/#/verification_api?id=verification-best-practices) | false |
+
+## Endpoint
+The endpoint for the EU which is [mentioned here](https://docs.friendlycaptcha.com/#/eu_endpoint) must be activated and
+the Worldwide one can be deactivated, so check that before using Friendlycaptcha.
+
+## Configuration inside of the CMS
+FriendlyCaptcha provides configurable behaviour for the Widget on a website. 
+
+Use this example configuration for the Gentics CMS form-editor.json [here](https://gentics.com/Content.Node/guides/feature_forms.html#configuration)
+to allow editors to set the start and lang attribute when adding a FriendlyCaptcha Element to the form
+
+```json
+{
+  "type": "friendlycaptcha",
+  "type_label_i18n_ui": {
+    "en": "Friendly Captcha",
+    "de": "Friendly Captcha"
+  },
+  "description_i18n_ui": {
+    "en": "Friendly Captcha spam protection.",
+    "de": "Friendly Captcha Spamschutz."
+  },
+  "is_container": false,
+  "properties": [
+    {
+      "name": "start",
+      "type": "SELECT",
+      "label_i18n_ui": {
+        "en": "Captcha Start",
+        "de": "Start des Captchas"
+      },
+      "description_i18n_ui": {
+        "en": "Defines when the widget should be started.",
+        "de": "Bestimmt wann das Captcha starten soll."
+      },
+      "options": [
+        {
+          "key": "auto",
+          "value_i18n_ui": {
+            "en": "After page load",
+            "de": "Nach Seitenaufbau"
+          }
+        },
+        {
+          "key": "focus",
+          "value_i18n_ui": {
+            "en": "Focus on the form",
+            "de": "Fokus auf das Formular"
+          }
+        },
+        {
+          "key": "none",
+          "value_i18n_ui": {
+            "en": "Started by the user",
+            "de": "Vom User gestartet"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lang",
+      "type": "SELECT",
+      "label_i18n_ui": {
+        "en": "Language",
+        "de": "Sprache"
+      },
+      "description_i18n_ui": {
+        "en": "Language used inside of the Captcha.",
+        "de": "Sprache innerhalb des Captchas"
+      },
+      "options": [
+        {
+          "key": "de",
+          "value_i18n_ui": {
+            "en": "German",
+            "de": "Deutsch"
+          }
+        },
+        {
+          "key": "en",
+          "value_i18n_ui": {
+            "en": "English",
+            "de": "Englisch"
+          }
+        },
+        {
+          "key": "fr",
+          "value_i18n_ui": {
+            "en": "French",
+            "de": "Französisch"
+          }
+        },
+        {
+          "key": "it",
+          "value_i18n_ui": {
+            "en": "Italian",
+            "de": "Italienisch"
+          }
+        },
+        {
+          "key": "nl",
+          "value_i18n_ui": {
+            "en": "Dutch",
+            "de": "Niederländisch"
+          }
+        },
+        {
+          "key": "pt",
+          "value_i18n_ui": {
+            "en": "Portuguese",
+            "de": "Niederländisch"
+          }
+        },
+        {
+          "key": "es",
+          "value_i18n_ui": {
+            "en": "Spanish",
+            "de": "Niederländisch"
+          }
+        },
+        {
+          "key": "ca",
+          "value_i18n_ui": {
+            "en": "Catalan",
+            "de": "Katalanisch"
+          }
+        },
+        {
+          "key": "da",
+          "value_i18n_ui": {
+            "en": "Danish",
+            "de": "Dänisch"
+          }
+        },
+        {
+          "key": "ja",
+          "value_i18n_ui": {
+            "en": "Japanese",
+            "de": "Japanisch"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
 
 # Form rendering
 
