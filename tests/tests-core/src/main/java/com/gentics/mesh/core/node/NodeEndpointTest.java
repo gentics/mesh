@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.user.HibUser;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -1559,10 +1560,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeDao nodeDao = tx.nodeDao();
 			RoleDao roleDao = tx.roleDao();
 			// Create node with nl language
-			HibNode parentNode = folder("products");
+			HibProject project = tx.projectDao().findByUuid(project().getUuid());
+			HibNode parentNode = nodeDao.findByUuid(project, folder("products").getUuid());
 			HibLanguage languageNl = tx.languageDao().findByLanguageTag("nl");
-			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
-			node = nodeDao.create(parentNode, user(), version, project());
+			HibSchemaVersion version = tx.schemaDao().findByUuid(schemaContainer("content").getUuid()).getLatestVersion();
+			HibUser user = tx.userDao().findByUuid(user().getUuid());
+			node = nodeDao.create(parentNode, user, version, project);
 			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");

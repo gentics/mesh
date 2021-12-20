@@ -464,7 +464,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public HibNodeFieldContainer createPersisted(HibSchemaVersion version, String uuid) {
+	public HibNodeFieldContainer createPersisted(String nodeuuid, HibSchemaVersion version, String uuid) {
 		NodeGraphFieldContainerImpl container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		if (StringUtils.isNotBlank(uuid)) {
 			container.setUuid(uuid);

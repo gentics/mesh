@@ -78,12 +78,13 @@ public interface PersistingContentDao extends ContentDao {
 
 	/**
 	 * Create a container in the persisted storage, according to the root node.
-	 * 
+	 *
+	 * @param nodeUUID the node of this graph field container
 	 * @param version mandatory schema version root
 	 * @param uuid a UUID to use. If null, a generated UUID will be used.
 	 * @return
 	 */
-	HibNodeFieldContainer createPersisted(HibSchemaVersion version, String uuid);
+	HibNodeFieldContainer createPersisted(String nodeUUID, HibSchemaVersion version, String uuid);
 
 	/**
 	 * Connect fresh container to the node.
@@ -139,7 +140,7 @@ public interface PersistingContentDao extends ContentDao {
 				: original.getSchemaContainerVersion() ;
 
 		// Create the new container
-		HibNodeFieldContainer newContainer = createPersisted(version, null);
+		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null);
 
 		newContainer.generateBucketId();
 		newContainer.setEditor(editor);

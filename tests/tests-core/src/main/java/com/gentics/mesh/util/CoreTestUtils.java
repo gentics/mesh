@@ -1,5 +1,7 @@
 package com.gentics.mesh.util;
 
+import java.util.UUID;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -33,7 +35,7 @@ public final class CoreTestUtils {
 		HibSchemaVersion version = schemaContainer.getLatestVersion();
 		version.setSchema(schema);
 
-		HibNodeFieldContainer container = ctx.contentDao().createPersisted(version, null);
+		HibNodeFieldContainer container = ctx.contentDao().createPersisted(UUID.randomUUID().toString(), version, null);
 		container.setSchemaContainerVersion(version);
 		return container;
 	}
