@@ -8,6 +8,8 @@ import static org.junit.Assert.fail;
 
 import java.util.function.Consumer;
 
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -50,21 +52,23 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 	protected Tuple<HibNode, HibNodeFieldContainer> createNode(boolean isRequiredField, String segmentField) {
 		NodeDao nodeDao = Tx.get().nodeDao();
+		BranchDao branchDao = Tx.get().branchDao();
 
-		HibSchema container = CommonTx.get().schemaDao().createPersisted(null);;
-		HibSchemaVersion version = createSchemaVersion(Tx.get(), container);
 		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
+		HibSchema container = CommonTx.get().schemaDao().create(schema, null, null, false);;
+		HibSchemaVersion version = container.getLatestVersion();
 		schema.addField(createFieldSchema(isRequiredField));
 		if (segmentField != null) {
 			schema.setSegmentField(segmentField);
 		}
 		version.setSchema(schema);
 		HibNode node = nodeDao.create(project(), user(), version);
-		nodeDao.setParentNode(node, initialBranchUuid(), project().getBaseNode());
+		HibBranch branch = branchDao.findByUuid(initialBranch().getProject(), initialBranch().getUuid());
+		nodeDao.setParentNode(node, branch.getUuid(), nodeDao.findByUuidGlobal(project().getBaseNode().getUuid()));
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		Tx.get().branchDao().assignSchemaVersion(initialBranch(), user(), version, batch);
-		HibNodeFieldContainer nodeContainer = boot().contentDao().createFieldContainer(node, english(), initialBranch(), user());
+		Tx.get().branchDao().assignSchemaVersion(branch, user(), version, batch);
+		HibNodeFieldContainer nodeContainer = boot().contentDao().createFieldContainer(node, english(), branch, user());
 
 		return Tuple.tuple(node, nodeContainer);
 	}
@@ -191,7 +195,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 * Update a node container using a field map which contains the provided field.
 	 * 
 	 * @param ac
-	 * @param node
+	 * @param container
 	 *            Node to be used for update
 	 * @param fieldKey
 	 *            Field key to be used when adding field to update model
