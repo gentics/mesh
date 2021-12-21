@@ -10,6 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.math.BigDecimal;
+import java.util.Comparator;
+
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -57,8 +60,9 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getNumber("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField,
-					"parentContainer");
+			assertThat(otherContainer.getNumber("testField")).as("cloned field").isNotNull()
+					.usingComparatorForFields(Comparator.comparing((Number a) -> new BigDecimal(a.toString())), "value")
+					.isEqualToIgnoringGivenFields(testField, "parentContainer");
 		}
 	}
 
@@ -70,7 +74,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			HibNumberField numberField = container.createNumber("numberField");
 			assertEquals("numberField", numberField.getFieldKey());
 			numberField.setNumber(42);
-			assertEquals(42, numberField.getNumber());
+			assertEquals(42, numberField.getNumber().intValue());
 			HibStringField bogusField1 = container.getString("bogus");
 			assertNull(bogusField1);
 			HibNumberField reloadedNumberField = container.getNumber("numberField");
@@ -215,7 +219,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			}, (container) -> {
 				HibNumberField field = container.getNumber(NUMBER_FIELD);
 				assertNotNull("The graph field {" + NUMBER_FIELD + "} could not be found.", field);
-				assertEquals("The html of the field was not updated.", 42L, field.getNumber());
+				assertEquals("The html of the field was not updated.", 42L, field.getNumber().longValue());
 			});
 		}
 	}

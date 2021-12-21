@@ -30,58 +30,6 @@ import com.gentics.mesh.util.CompareUtils;
 public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<HibStringField, StringFieldListImpl, String>
 	implements StringGraphFieldList {
 
-	public static FieldTransformer<StringFieldListImpl> STRING_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-		parentNode) -> {
-		HibStringFieldList stringFieldList = container.getStringList(fieldKey);
-		if (stringFieldList == null) {
-			return null;
-		} else {
-			return stringFieldList.transformToRest(ac, fieldKey, languageTags, level);
-		}
-	};
-
-	public static FieldUpdater STRING_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibStringFieldList graphStringList = container.getStringList(fieldKey);
-		StringFieldListImpl stringList = fieldMap.getStringFieldList(fieldKey);
-		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && (stringList == null || stringList.getItems() == null);
-		HibField.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNull = stringList == null;
-
-		// Skip this check for no migrations
-		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphStringList, restIsNull, fieldSchema, fieldKey, schema);
-		}
-
-		// Handle Deletion
-		if (isStringListFieldSetToNull && graphStringList != null) {
-			container.removeField(graphStringList);
-			return;
-		}
-
-		// Rest model is empty or null - Abort
-		if (restIsNull) {
-			return;
-		}
-
-		// Always create a new list.
-		// This will effectively unlink the old list and create a new one.
-		// Otherwise the list which is linked to old versions would be updated.
-		graphStringList = container.createStringList(fieldKey);
-
-		// Handle Update
-		graphStringList.removeAll();
-		for (String item : stringList.getItems()) {
-			if (item == null) {
-				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
-			}
-			graphStringList.createString(item);
-		}
-	};
-
-	public static FieldGetter STRING_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getStringList(fieldSchema.getName());
-	};
-
 	/**
 	 * Initialize the vertex type and index.
 	 * 

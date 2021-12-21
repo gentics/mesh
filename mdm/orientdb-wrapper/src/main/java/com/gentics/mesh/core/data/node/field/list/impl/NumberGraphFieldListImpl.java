@@ -30,60 +30,6 @@ import com.gentics.mesh.util.CompareUtils;
 public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<HibNumberField, NumberFieldListImpl, Number>
 	implements NumberGraphFieldList {
 
-	public static FieldTransformer<NumberFieldListImpl> NUMBER_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-		parentNode) -> {
-		HibNumberFieldList numberFieldList = container.getNumberList(fieldKey);
-		if (numberFieldList == null) {
-			return null;
-		} else {
-			return numberFieldList.transformToRest(ac, fieldKey, languageTags, level);
-		}
-	};
-
-	public static FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		NumberFieldListImpl numberList = fieldMap.getNumberFieldList(fieldKey);
-
-		HibNumberFieldList graphNumberFieldList = container.getNumberList(fieldKey);
-		boolean isNumberListFieldSetToNull = fieldMap.hasField(fieldKey) && numberList == null;
-		HibField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNull = numberList == null;
-
-		// Skip this check for no migrations
-		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphNumberFieldList, restIsNull, fieldSchema, fieldKey, schema);
-		}
-
-		// Handle Deletion
-		if (isNumberListFieldSetToNull && graphNumberFieldList != null) {
-			container.removeField(graphNumberFieldList);
-			return;
-		}
-
-		// Rest model is null - Abort
-		if (restIsNull) {
-			return;
-		}
-
-		// Always create a new list.
-		// This will effectively unlink the old list and create a new one.
-		// Otherwise the list which is linked to old versions would be updated.
-		graphNumberFieldList = container.createNumberList(fieldKey);
-
-		// Handle Update
-		graphNumberFieldList.removeAll();
-		for (Number item : numberList.getItems()) {
-			if (item == null) {
-				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
-			}
-			graphNumberFieldList.createNumber(item);
-		}
-
-	};
-
-	public static FieldGetter NUMBER_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getNumberList(fieldSchema.getName());
-	};
-
 	/**
 	 * Initialize the vertex type and index.
 	 * 

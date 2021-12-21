@@ -1,9 +1,6 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,17 +9,12 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformer;
-import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.util.CompareUtils;
 
@@ -30,59 +22,6 @@ import com.gentics.mesh.util.CompareUtils;
  * @see DateGraphFieldList
  */
 public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<HibDateField, DateFieldListImpl, Long> implements DateGraphFieldList {
-
-	public static FieldTransformer<DateFieldListImpl> DATE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-		parentNode) -> {
-		HibDateFieldList dateFieldList = container.getDateList(fieldKey);
-		if (dateFieldList == null) {
-			return null;
-		} else {
-			return dateFieldList.transformToRest(ac, fieldKey, languageTags, level);
-		}
-	};
-
-	public static FieldUpdater DATE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibDateFieldList graphDateFieldList = container.getDateList(fieldKey);
-		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
-		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
-		HibField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNull = dateList == null;
-
-		// Skip this check for no migrations
-		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
-		}
-
-		// Handle Deletion
-		if (isDateListFieldSetToNull && graphDateFieldList != null) {
-			container.removeField(graphDateFieldList);
-			return;
-		}
-
-		// Rest model is empty or null - Abort
-		if (restIsNull) {
-			return;
-		}
-
-		// Always create a new list.
-		// This will effectively unlink the old list and create a new one.
-		// Otherwise the list which is linked to old versions would be updated.
-		graphDateFieldList = container.createDateList(fieldKey);
-
-		// Handle Update
-		graphDateFieldList.removeAll();
-		for (String item : dateList.getItems()) {
-			if (item == null) {
-				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
-			}
-			graphDateFieldList.createDate(fromISO8601(item));
-		}
-
-	};
-
-	public static FieldGetter DATE_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getDateList(fieldSchema.getName());
-	};
 
 	/**
 	 * Initialize the vertex type and index.

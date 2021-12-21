@@ -397,4 +397,11 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	HibStringField createString(String key);
+
+	/**
+	 * Delete the field edge with the given key from the container.
+	 *
+	 * @param key
+	 */
+	void deleteFieldEdge(String key);
 }

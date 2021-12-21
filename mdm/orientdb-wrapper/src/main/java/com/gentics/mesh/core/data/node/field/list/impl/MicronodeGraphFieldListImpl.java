@@ -15,17 +15,12 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformer;
-import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
@@ -38,7 +33,6 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.util.CompareUtils;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
@@ -47,53 +41,6 @@ import io.reactivex.Single;
  */
 public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<HibMicronodeField, MicronodeFieldList, HibMicronode>
 	implements MicronodeGraphFieldList {
-
-	public static FieldTransformer<MicronodeFieldList> MICRONODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-		parentNode) -> {
-		HibMicronodeFieldList graphMicroschemaField = container.getMicronodeList(fieldKey);
-		if (graphMicroschemaField == null) {
-			return null;
-		} else {
-			return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags, level);
-		}
-	};
-
-	public static FieldUpdater MICRONODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibMicronodeFieldList micronodeGraphFieldList = container.getMicronodeList(fieldKey);
-		MicronodeFieldList micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
-		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
-		HibField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
-		boolean restIsNull = micronodeList == null;
-
-		// Skip this check for no migrations
-		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNull, fieldSchema, fieldKey, schema);
-		}
-
-		// Handle Deletion
-		if (isMicronodeListFieldSetToNull && micronodeGraphFieldList != null) {
-			container.removeField(micronodeGraphFieldList);
-			return;
-		}
-
-		// Rest model is empty or null - Abort
-		if (restIsNull) {
-			return;
-		}
-
-		// Always create a new list.
-		// This will effectively unlink the old list and create a new one.
-		// Otherwise the list which is linked to old versions would be updated.
-		micronodeGraphFieldList = container.createMicronodeList(fieldKey);
-
-		// Handle Update
-		// TODO instead this method should also return an observable
-		micronodeGraphFieldList.update(ac, micronodeList).blockingGet();
-	};
-
-	public static FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
-		return container.getMicronodeList(fieldSchema.getName());
-	};
 
 	/**
 	 * Initialize the vertex type and index.

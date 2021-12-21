@@ -2,9 +2,6 @@ package com.gentics.mesh.core.data.node.field.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,22 +22,14 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformer;
-import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
-import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -61,116 +50,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 	}
-
-	public static FieldTransformer<BinaryField> BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
-		HibBinaryField graphBinaryField = container.getBinary(fieldKey);
-		if (graphBinaryField == null) {
-			return null;
-		} else {
-			return graphBinaryField.transformToRest(ac);
-		}
-	};
-
-	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibBinaryField graphBinaryField = container.getBinary(fieldKey);
-		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
-		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
-
-		HibField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
-
-		boolean restIsNull = binaryField == null;
-		// The required check for binary fields is not enabled since binary fields can only be created using the field api
-
-		// Handle Deletion
-		if (isBinaryFieldSetToNull && graphBinaryField != null) {
-			container.removeField(graphBinaryField);
-			return;
-		}
-
-		// Rest model is empty or null - Abort
-		if (restIsNull) {
-			return;
-		}
-
-		// The binary field does not yet exist but the update request already contains some binary field info. We can use this info to create a new binary
-		// field. We locate the binary vertex by using the given hashsum. This case usually happens during schema migrations in which the binary graph field is
-		// in fact initially being removed from the container.
-		String hash = binaryField.getSha512sum();
-		if (graphBinaryField == null && hash != null) {
-			HibBinary binary = GraphDBTx.getGraphTx().binaries().findByHash(hash).runInExistingTx(Tx.get());
-			if (binary != null) {
-				graphBinaryField = container.createBinary(fieldKey, binary);
-			} else {
-				log.debug("Could not find binary for hash {" + hash + "}");
-			}
-		}
-
-		// Otherwise we can't update the binaryfield
-		if (graphBinaryField == null && binaryField.hasValues()) {
-			throw error(BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", fieldKey);
-		}
-
-		// Handle Update - Dominant Color
-		if (binaryField.getDominantColor() != null) {
-			graphBinaryField.setImageDominantColor(binaryField.getDominantColor());
-		}
-
-		// Handle Update - Focal point
-		FocalPoint newFocalPoint = binaryField.getFocalPoint();
-		if (newFocalPoint != null) {
-			HibBinary binary = graphBinaryField.getBinary();
-			Point imageSize = binary.getImageSize();
-			if (imageSize != null) {
-				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
-					throw error(BAD_REQUEST, "field_binary_error_image_focalpoint_out_of_bounds", fieldKey, newFocalPoint.toString(),
-						imageSize.toString());
-				}
-			}
-			graphBinaryField.setImageFocalPoint(newFocalPoint);
-		}
-
-		// Handle Update - Filename
-		if (binaryField.getFileName() != null) {
-			if (isEmpty(binaryField.getFileName())) {
-				throw error(BAD_REQUEST, "field_binary_error_emptyfilename", fieldKey);
-			} else {
-				graphBinaryField.setFileName(binaryField.getFileName());
-			}
-		}
-
-		// Handle Update - MimeType
-		if (binaryField.getMimeType() != null) {
-			if (isEmpty(binaryField.getMimeType())) {
-				throw error(BAD_REQUEST, "field_binary_error_emptymimetype", fieldKey);
-			}
-			graphBinaryField.setMimeType(binaryField.getMimeType());
-		}
-
-		// Handle Update - Metadata
-		BinaryMetadata metaData = binaryField.getMetadata();
-		if (metaData != null) {
-			graphBinaryField.clearMetadata();
-			for (Entry<String, String> entry : metaData.getMap().entrySet()) {
-				graphBinaryField.setMetadata(entry.getKey(), entry.getValue());
-			}
-			Location loc = metaData.getLocation();
-			if (loc != null) {
-				graphBinaryField.setLocation(loc);
-			}
-		}
-
-		// Handle Update - Plain text
-		String text = binaryField.getPlainText();
-		if (text != null) {
-			graphBinaryField.setPlainText(text);
-		}
-
-		// Don't update image width, height, SHA checksum - those are immutable
-	};
-
-	public static FieldGetter BINARY_GETTER = (container, fieldSchema) -> {
-		return container.getBinary(fieldSchema.getName());
-	};
 
 	@Override
 	public BinaryField transformToRest(ActionContext ac) {
