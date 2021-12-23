@@ -398,19 +398,6 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public List<HibField> getFields() {
-		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
-		List<HibField> fields = new ArrayList<>();
-		for (FieldSchema fieldSchema : schema.getFields()) {
-			HibField field = getField(fieldSchema);
-			if (field != null) {
-				fields.add(field);
-			}
-		}
-		return fields;
-	}
-
-	@Override
 	public void deleteFieldEdge(String key) {
 		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 		if (traversal.hasNext()) {

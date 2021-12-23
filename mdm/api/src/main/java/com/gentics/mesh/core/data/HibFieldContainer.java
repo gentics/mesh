@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
 public interface HibFieldContainer extends HibBasicFieldContainer {
 
@@ -54,12 +56,17 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 */
 	HibField getField(FieldSchema fieldSchema);
 
-	/**
-	 * Get all fields, that are present in this container
-	 *
-	 * @return
-	 */
-	List<HibField> getFields();
+	default List<HibField> getFields() {
+		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
+		List<HibField> fields = new ArrayList<>();
+		for (FieldSchema fieldSchema : schema.getFields()) {
+			HibField field = getField(fieldSchema);
+			if (field != null) {
+				fields.add(field);
+			}
+		}
+		return fields;
+	}
 
 	/**
 	 * Remove the field from container.
