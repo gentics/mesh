@@ -21,11 +21,10 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Database;
@@ -285,6 +284,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		HibNodeFieldContainer content, HibSchemaVersion fromVersion, HibSchemaVersion toVersion,
 		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
 		NodeDao nodeDao = Tx.get().nodeDao();
+		BranchDao branchDao = Tx.get().branchDao();
 		ContentDao contentDao = Tx.get().contentDao();
 
 		String languageTag = content.getLanguageTag();
@@ -295,7 +295,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 		NodeResponse restModel = nodeDao.transformToRestSync(node, ac, 0, languageTag);
 
-		HibNodeFieldContainer migrated = contentDao.createFieldContainer(node, content.getLanguageTag(), branch, content.getEditor(),
+		HibBranch branchForUpdate = branchDao.findByUuid(branch.getProject(), branch.getUuid());
+		HibNodeFieldContainer migrated = contentDao.createFieldContainer(node, content.getLanguageTag(), branchForUpdate, content.getEditor(),
 			content, true);
 
 		contentDao.setVersion(migrated, content.getVersion().nextPublished());

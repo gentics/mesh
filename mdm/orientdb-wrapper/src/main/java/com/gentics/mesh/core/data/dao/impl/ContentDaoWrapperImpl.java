@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -95,13 +96,13 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public long getFieldContainerCount(HibNode node) {
-		return toGraph(node).getFieldContainerCount();
+	public Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type) {
+		return toGraph(node).getFieldContainerEdges(branchUuid, type);
 	}
 
 	@Override
-	public String getPathSegment(HibNode node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
-		return toGraph(node).getPathSegment(branchUuid, type, anyLanguage, languageTag);
+	public long getFieldContainerCount(HibNode node) {
+		return toGraph(node).getFieldContainerCount();
 	}
 
 	@Override
@@ -132,11 +133,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNode getNode(HibNodeFieldContainer content) {
 		return content.getNode();
-	}
-
-	@Override
-	public void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n) {
-		content.updateWebrootPathInfo(ac, branchUuid, conflictI18n);
 	}
 
 	@Override
@@ -230,18 +226,8 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public String getSegmentFieldValue(HibNodeFieldContainer content) {
-		return content.getSegmentFieldValue();
-	}
-
-	@Override
 	public void postfixSegmentFieldValue(HibNodeFieldContainer content) {
 		content.postfixSegmentFieldValue();
-	}
-
-	@Override
-	public Stream<String> getUrlFieldValues(HibNodeFieldContainer content) {
-		return content.getUrlFieldValues();
 	}
 
 	@Override
@@ -252,6 +238,16 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public Iterator<GraphFieldContainerEdge> getContainerEdge(HibNodeFieldContainer content, ContainerType type, String branchUuid) {
 		return toGraph(content).getContainerEdge(type, branchUuid);
+	}
+
+	@Override
+	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootPath(HibNodeFieldContainer content, String segmentInfo, String branchUuid, ContainerType type, HibNodeFieldContainerEdge edge) {
+		return toGraph(content).getConflictingEdgeOfWebrootPath(segmentInfo, branchUuid, type, toGraph(edge));
+	}
+
+	@Override
+	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type) {
+		return toGraph(content).getConflictingEdgeOfWebrootField(toGraph(edge), urlFieldValue, branchUuid, type);
 	}
 
 	@Override
@@ -392,7 +388,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 		} else {
 			edge.setSegmentInfo(null);
 		}
-		edge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
+		edge.setUrlFieldInfo(getUrlFieldValues(container).collect(Collectors.toSet()));
 		batch.add(onUpdated(container, newBranch.getUuid(), containerType));
 	}
 
@@ -542,7 +538,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 			// remove existing draft edge
 			if (draftEdge != null) {
 				draftEdge.remove();
-				newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
+				updateWebrootPathInfo(newContainer, branchUuid, "node_conflicting_segmentfield_update");
 			}
 
 			// create a new draft edge

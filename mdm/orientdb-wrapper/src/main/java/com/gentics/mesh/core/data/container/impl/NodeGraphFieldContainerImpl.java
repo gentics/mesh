@@ -14,7 +14,6 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static com.gentics.mesh.madl.field.FieldType.LONG;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.IndexType.NOTUNIQUE;
@@ -22,55 +21,41 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static java.util.Objects.nonNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.diff.FieldChangeTypes;
-import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.DisplayField;
-import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -82,13 +67,9 @@ import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.error.NameConflictException;
-import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.path.Path;
@@ -99,11 +80,7 @@ import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
-import com.google.common.base.Equivalence;
-import com.google.common.collect.MapDifference;
-import com.google.common.collect.Maps;
 import com.syncleus.ferma.traversals.EdgeTraversal;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -249,189 +226,23 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		super.updateFieldsFromRest(ac, restFields);
 		String branchUuid = Tx.get().getBranch(ac).getUuid();
 
-		updateWebrootPathInfo(ac, branchUuid, "node_conflicting_segmentfield_update");
+		Tx.get().contentDao().updateWebrootPathInfo(this, ac, branchUuid, "node_conflicting_segmentfield_update");
 		updateDisplayFieldValue();
 	}
 
 	@Override
-	public Stream<String> getUrlFieldValues() {
-		SchemaVersionModel schema = getSchemaContainerVersion().getSchema();
+	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootPath(String segmentInfo, String branchUuid, ContainerType type, GraphFieldContainerEdge edge) {
+		Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
+		// check for uniqueness of webroot path
 
-		List<String> urlFields = schema.getUrlFields();
-		if (urlFields == null) {
-			return Stream.empty();
-		}
-		return urlFields.stream().flatMap(urlField -> {
-			FieldSchema fieldSchema = schema.getField(urlField);
-			HibField field = getField(fieldSchema);
-			if (field instanceof StringGraphFieldImpl) {
-				StringGraphFieldImpl stringField = (StringGraphFieldImpl) field;
-				String value = stringField.getString();
-				if (StringUtils.isBlank(value)) {
-					return Stream.empty();
-				} else {
-					return Stream.of(value);
-				}
-			}
-			if (field instanceof StringGraphFieldListImpl) {
-				StringGraphFieldListImpl stringListField = (StringGraphFieldListImpl) field;
-				return stringListField.getList().stream()
-					.flatMap(listField -> Optional.ofNullable(listField)
-						.map(HibStringField::getString)
-						.filter(StringUtils::isNotBlank)
-						.stream());
-			}
-
-			return Stream.empty();
-		});
-	}
-
-	/**
-	 * Update the webroot url field index and also assert that the new values would not cause a conflict with the existing data.
-	 * 
-	 * @param edge
-	 * @param branchUuid
-	 * @param urlFieldValues
-	 * @param type
-	 */
-	private void updateWebrootUrlFieldsInfo(GraphFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues, ContainerType type) {
-		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
-			// Individually check each url
-			for (String urlFieldValue : urlFieldValues) {
-				Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(db(), urlFieldValue, branchUuid, type);
-				GraphFieldContainerEdge conflictingEdge = mesh().database().index().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, key);
-				if (conflictingEdge != null) {
-					NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
-					Node conflictingNode = conflictingEdge.getNode();
-					if (log.isDebugEnabled()) {
-						log.debug(
-							"Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid());
-					}
-					// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
-					// determine
-					// which path caused the conflict.
-					Set<String> fromConflictingContainer = conflictingContainer.getUrlFieldValues().collect(Collectors.toSet());
-					@SuppressWarnings("unchecked")
-					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
-					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
-
-					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
-						"node_conflicting_urlfield_update", paths, conflictingContainer.getNode().getUuid(),
-						conflictingContainer.getLanguageTag());
-				}
-			}
-			edge.setUrlFieldInfo(urlFieldValues);
-		} else {
-			edge.setUrlFieldInfo(null);
-		}
-
+		return db().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
 	}
 
 	@Override
-	public void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n) {
-		Set<String> urlFieldValues = getUrlFieldValues().collect(Collectors.toSet());
-		Iterator<? extends GraphFieldContainerEdge> it = getContainerEdge(DRAFT, branchUuid);
-		if (it.hasNext()) {
-			GraphFieldContainerEdge draftEdge = it.next();
-			updateWebrootPathInfo(ac, draftEdge, branchUuid, conflictI18n, DRAFT);
-			updateWebrootUrlFieldsInfo(draftEdge, branchUuid, urlFieldValues, DRAFT);
-		}
-		it = getContainerEdge(PUBLISHED, branchUuid);
-		if (it.hasNext()) {
-			GraphFieldContainerEdge publishEdge = it.next();
-			updateWebrootPathInfo(ac, publishEdge, branchUuid, conflictI18n, PUBLISHED);
-			updateWebrootUrlFieldsInfo(publishEdge, branchUuid, urlFieldValues, PUBLISHED);
-		}
-	}
+	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(GraphFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type) {
+		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(db(), urlFieldValue, branchUuid, type);
 
-	/**
-	 * Update the webroot path info (checking for uniqueness before)
-	 *
-	 * @param ac
-	 * @param edge
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param conflictI18n
-	 *            i18n for the message in case of conflict
-	 * @param type
-	 *            edge type
-	 */
-	protected void updateWebrootPathInfo(InternalActionContext ac, GraphFieldContainerEdge edge, String branchUuid, String conflictI18n,
-		ContainerType type) {
-		final int MAX_NUMBER = 255;
-		NodeImpl node = getNode();
-		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
-		String languageTag = getLanguageTag();
-
-		// Handle node migration conflicts automagically
-		if (ac instanceof NodeMigrationActionContextImpl) {
-			NodeMigrationActionContextImpl nmac = (NodeMigrationActionContextImpl) ac;
-			ConflictWarning info = null;
-			for (int i = 0; i < MAX_NUMBER; i++) {
-				try {
-					if (updateWebrootPathInfo(node, edge, languageTag, branchUuid, segmentFieldName, conflictI18n, type)) {
-						break;
-					}
-				} catch (NameConflictException e) {
-					// Only throw the exception if we tried multiple renames
-					if (i >= MAX_NUMBER - 1) {
-						throw e;
-					} else {
-						// Generate some information about the found conflict
-						info = new ConflictWarning();
-						info.setNodeUuid(node.getUuid());
-						info.setBranchUuid(branchUuid);
-						info.setType(type.name());
-						info.setLanguageTag(languageTag);
-						info.setFieldName(segmentFieldName);
-						node.postfixPathSegment(branchUuid, type, languageTag);
-					}
-				}
-			}
-			// We encountered a conflict which was resolved. Lets add that info to the context
-			if (info != null) {
-				nmac.addConflictInfo(info);
-			}
-		} else {
-			updateWebrootPathInfo(node, edge, languageTag, branchUuid, segmentFieldName, conflictI18n, type);
-		}
-
-	}
-
-	private boolean updateWebrootPathInfo(Node node, GraphFieldContainerEdge edge, String languageTag, String branchUuid, String segmentFieldName,
-		String conflictI18n,
-		ContainerType type) {
-		NodeDao nodeDao = Tx.get().nodeDao();
-		ContentDao contentDao = Tx.get().contentDao();
-
-		// Determine the webroot path of the container parent node
-		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag());
-
-		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
-		// specific index for (drafts or published nodes)
-		if (segment != null) {
-			HibNode parentNode = nodeDao.getParentNode(node, branchUuid);
-			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
-			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-			// check for uniqueness of webroot path
-			GraphFieldContainerEdge conflictingEdge = db().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
-			if (conflictingEdge != null) {
-				Node conflictingNode = conflictingEdge.getNode();
-				NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
-				if (log.isDebugEnabled()) {
-					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid()
-						+ "}");
-				}
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
-					conflictI18n, segmentFieldName, segment);
-			} else {
-				edge.setSegmentInfo(segmentInfo);
-				return true;
-			}
-		} else {
-			edge.setSegmentInfo(null);
-			return true;
-		}
+		return  mesh().database().index().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, key);
 	}
 
 	/**
@@ -609,34 +420,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void setEditor(HibUser user) {
 		mesh().userProperties().setEditor(this, user);
-	}
-
-	@Override
-	public String getSegmentFieldValue() {
-		String segmentFieldKey = getSchemaContainerVersion().getSchema().getSegmentField();
-		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
-		if (segmentFieldKey == null) {
-			return null;
-		}
-
-		// 2. Try to load the path segment using the string field
-		StringGraphField stringField = getString(segmentFieldKey);
-		if (stringField != null) {
-			return stringField.getString();
-		}
-
-		// 3. Try to load the path segment using the binary field or the s3 binary since the string field could not be found
-		if (stringField == null) {
-			S3BinaryGraphField s3binaryField = getS3Binary(segmentFieldKey);
-			if (nonNull(s3binaryField)) {
-				return s3binaryField.getS3Binary().getFileName();
-			}
-			BinaryGraphField binary = getBinary(segmentFieldKey);
-			if (nonNull(binary)) {
-				return binary.getFileName();
-			}
-		}
-		return null;
 	}
 
 	@Override

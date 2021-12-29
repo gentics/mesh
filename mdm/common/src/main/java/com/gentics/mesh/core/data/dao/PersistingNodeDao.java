@@ -601,12 +601,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		// Update published graph field containers
 		contentDao.getFieldContainers(sourceNode, branchUuid, PUBLISHED).stream().forEach(container -> {
-			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
+			contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_move");
 		});
 
 		// Update draft graph field containers
 		contentDao.getFieldContainers(sourceNode, branchUuid, DRAFT).stream().forEach(container -> {
-			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
+			contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_move");
 		});
 		batch.add(onNodeMoved(sourceNode, branchUuid, targetNode));
 		assertPublishConsistency(sourceNode, ac, branch);
@@ -972,7 +972,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// Check for webroot input data consistency (PUT on webroot)
 		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");
 		if (webrootSegment != null) {
-			String current = container.getSegmentFieldValue();
+			String current = contentDao.getSegmentFieldValue(container);
 			if (!webrootSegment.equals(current)) {
 				throw error(BAD_REQUEST, "webroot_error_segment_field_mismatch", webrootSegment, current);
 			}
@@ -1203,7 +1203,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		ContentDao contentDao = Tx.get().contentDao();
 		return Stream.of(languages)
 				.flatMap(language -> Stream.ofNullable(contentDao.getFieldContainer(node, language, branchUuid, type)))
-				.flatMap(HibNodeFieldContainer::getUrlFieldValues)
+				.flatMap(contentDao::getUrlFieldValues)
 				.findFirst()
 				.orElse(null);
 	}

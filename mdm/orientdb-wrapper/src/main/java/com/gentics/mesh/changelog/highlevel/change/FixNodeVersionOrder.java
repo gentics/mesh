@@ -202,7 +202,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		newEdge.setBranchUuid(branchUuid);
 		newEdge.setLanguageTag(languageTag);
 		newEdge.setType(type);
-		to.updateWebrootPathInfo(context, branchUuid, "node_conflicting_segmentfield_update");
+		Tx.get().contentDao().updateWebrootPathInfo(to, context, branchUuid, "node_conflicting_segmentfield_update");
 		return newEdge;
 	}
 

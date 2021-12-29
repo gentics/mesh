@@ -2,12 +2,14 @@ package com.gentics.mesh.core.data.util;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -403,6 +405,16 @@ public final class HibClassConverter {
 	 */
 	public static SchemaChange<?> toGraph(HibSchemaChange<?> change) {
 		return checkAndCast(change, SchemaChange.class);
+	}
+
+	/**
+	 * Convert the container edge to a graph element.
+	 *
+	 * @param change
+	 * @return
+	 */
+	public static GraphFieldContainerEdge toGraph(HibNodeFieldContainerEdge change) {
+		return checkAndCast(change, GraphFieldContainerEdge.class);
 	}
 
 	/**

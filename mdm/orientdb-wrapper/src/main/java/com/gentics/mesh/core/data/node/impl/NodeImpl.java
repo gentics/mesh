@@ -37,6 +37,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -151,58 +152,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public String getPathSegment(String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
-
-		// Check whether this node is the base node.
-		if (getParentNode(branchUuid) == null) {
-			return "";
-		}
-
-		// Find the first matching container and fallback to other listed languages
-		HibNodeFieldContainer container = null;
-		for (String tag : languageTag) {
-			if ((container = getFieldContainer(tag, branchUuid, type)) != null) {
-				break;
-			}
-		}
-
-		if (container == null && anyLanguage) {
-			Result<? extends GraphFieldContainerEdgeImpl> traversal = getFieldContainerEdges(branchUuid, type);
-
-			if (traversal.hasNext()) {
-				container = traversal.next().getNodeContainer();
-			}
-		}
-
-		if (container != null) {
-			return container.getSegmentFieldValue();
-		}
-		return null;
-	}
-
-	/**
-	 * Postfix the path segment for the container that matches the given parameters. This operation is not needed for basenodes (since segment must be / for
-	 * those anyway).
-	 * 
-	 * @param branchUuid
-	 * @param type
-	 * @param languageTag
-	 */
-	public void postfixPathSegment(String branchUuid, ContainerType type, String languageTag) {
-
-		// Check whether this node is the base node.
-		if (getParentNode(branchUuid) == null) {
-			return;
-		}
-
-		// Find the first matching container and fallback to other listed languages
-		HibNodeFieldContainer container = getFieldContainer(languageTag, branchUuid, type);
-		if (container != null) {
-			container.postfixSegmentFieldValue();
-		}
-	}
-
-	@Override
 	public void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
 
 		String branchUuid = branch.getUuid();
@@ -301,14 +250,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return GraphFieldContainerEdgeImpl.findEdge(getId(), branchUuid, type, languageTag);
 	}
 
-	/**
-	 * Get all graph field edges.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	protected Result<? extends GraphFieldContainerEdgeImpl> getFieldContainerEdges(String branchUuid, ContainerType type) {
+	@Override
+	public Result<? extends HibNodeFieldContainerEdge> getFieldContainerEdges(String branchUuid, ContainerType type) {
 		return GraphFieldContainerEdgeImpl.findEdges(getId(), branchUuid, type);
 	}
 
@@ -453,14 +396,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void removePublishedEdges(String branchUuid, BulkActionContext bac) {
-		Result<? extends GraphFieldContainerEdgeImpl> publishEdges = getFieldContainerEdges(branchUuid, PUBLISHED);
+		Result<? extends HibNodeFieldContainerEdge> publishEdges = getFieldContainerEdges(branchUuid, PUBLISHED);
 		ContentDao contentDao = Tx.get().contentDao();
 
 		// Remove the published edge for each found container
 		publishEdges.forEach(edge -> {
-			NodeGraphFieldContainer content = edge.getNodeContainer();
+			NodeGraphFieldContainer content = toGraph(edge.getNodeContainer());
 			bac.add(contentDao.onTakenOffline(content, branchUuid));
-			edge.remove();
+			toGraph(edge).remove();
 			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
 				content.purge(bac);
 			}
@@ -476,6 +419,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid) {
 		String languageTag = container.getLanguageTag();
 		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
+		ContentDao contentDao = Tx.get().contentDao();
 
 		// Remove an existing published edge
 		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
@@ -484,7 +428,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// check the published edge again
 			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 			currentPublished.remove();
-			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
+			contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish");
 			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
 				oldPublishedContainer.purge();
 			}
@@ -503,7 +447,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		edge.setLanguageTag(languageTag);
 		edge.setBranchUuid(branchUuid);
 		edge.setType(PUBLISHED);
-		container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
+		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish");
 	}
 
 	@Override
@@ -666,7 +610,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(this, segment);
+		String segmentInfo = Tx.get().contentDao().composeSegmentInfo(this, segment);
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
 		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
 			.iterator();

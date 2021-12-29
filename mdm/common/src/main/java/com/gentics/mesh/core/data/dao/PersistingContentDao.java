@@ -9,14 +9,26 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.util.Objects.nonNull;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -26,20 +38,32 @@ import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.util.VersionNumber;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public interface PersistingContentDao extends ContentDao {
+
+	Logger log = LoggerFactory.getLogger(PersistingContentDao.class);
 
 	/**
 	 * Get the node to which this container belongs through the given branch UUID.
@@ -328,4 +352,280 @@ public interface PersistingContentDao extends ContentDao {
 		model.setProject(project.transformToReference());
 		return model;
 	}
+
+	@Override
+	default void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n) {
+		Set<String> urlFieldValues = getUrlFieldValues(content).collect(Collectors.toSet());
+		Iterator<? extends HibNodeFieldContainerEdge> it = getContainerEdge(content, DRAFT, branchUuid);
+		if (it.hasNext()) {
+			HibNodeFieldContainerEdge draftEdge = it.next();
+			updateWebrootPathInfo(content, ac, draftEdge, branchUuid, conflictI18n, DRAFT);
+			updateWebrootUrlFieldsInfo(content, draftEdge, branchUuid, urlFieldValues, DRAFT);
+		}
+		it = getContainerEdge(content, PUBLISHED, branchUuid);
+		if (it.hasNext()) {
+			HibNodeFieldContainerEdge publishEdge = it.next();
+			updateWebrootPathInfo(content, ac, publishEdge, branchUuid, conflictI18n, PUBLISHED);
+			updateWebrootUrlFieldsInfo(content, publishEdge, branchUuid, urlFieldValues, PUBLISHED);
+		}
+	}
+
+	/**
+	 * Update the webroot path info (checking for uniqueness before)
+	 *
+	 * @param content
+	 * @param ac
+	 * @param edge
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @param conflictI18n
+	 *            i18n for the message in case of conflict
+	 * @param type
+	 *            edge type
+	 */
+	private void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, HibNodeFieldContainerEdge edge, String branchUuid, String conflictI18n,
+										 ContainerType type) {
+		final int MAX_NUMBER = 255;
+		HibNode node = getNode(content);
+		String segmentFieldName = getSchemaContainerVersion(content).getSchema().getSegmentField();
+		String languageTag = getLanguageTag(content);
+
+		// Handle node migration conflicts automagically
+		if (ac instanceof NodeMigrationActionContextImpl) {
+			NodeMigrationActionContextImpl nmac = (NodeMigrationActionContextImpl) ac;
+			ConflictWarning info = null;
+			for (int i = 0; i < MAX_NUMBER; i++) {
+				try {
+					if (updateWebrootPathInfo(content, node, edge, branchUuid, segmentFieldName, conflictI18n, type)) {
+						break;
+					}
+				} catch (NameConflictException e) {
+					// Only throw the exception if we tried multiple renames
+					if (i >= MAX_NUMBER - 1) {
+						throw e;
+					} else {
+						// Generate some information about the found conflict
+						info = new ConflictWarning();
+						info.setNodeUuid(node.getUuid());
+						info.setBranchUuid(branchUuid);
+						info.setType(type.name());
+						info.setLanguageTag(languageTag);
+						info.setFieldName(segmentFieldName);
+						postfixPathSegment(node, branchUuid, type, languageTag);
+					}
+				}
+			}
+			// We encountered a conflict which was resolved. Lets add that info to the context
+			if (info != null) {
+				nmac.addConflictInfo(info);
+			}
+		} else {
+			updateWebrootPathInfo(content, node, edge, branchUuid, segmentFieldName, conflictI18n, type);
+		}
+	}
+
+	/**
+	 * Postfix the path segment for the container that matches the given parameters. This operation is not needed for basenodes (since segment must be / for
+	 * those anyway).
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @param languageTag
+	 */
+	default void postfixPathSegment(HibNode node, String branchUuid, ContainerType type, String languageTag) {
+		NodeDao nodeDao = Tx.get().nodeDao();
+		// Check whether this node is the base node.
+		if (nodeDao.getParentNode(node, branchUuid) == null) {
+			return;
+		}
+
+		// Find the first matching container and fallback to other listed languages
+		HibNodeFieldContainer container = getFieldContainer(node, languageTag, branchUuid, type);
+		if (container != null) {
+			container.postfixSegmentFieldValue();
+		}
+	}
+
+	/**
+	 * update the webroot path, returning whether the operation succeeded
+	 *
+	 * @param content
+	 * @param node
+	 * @param edge
+	 * @param branchUuid
+	 * @param segmentFieldName
+	 * @param conflictI18n
+	 * @param type
+	 * @return
+	 */
+	private boolean updateWebrootPathInfo(HibNodeFieldContainer content, HibNode node, HibNodeFieldContainerEdge edge, String branchUuid, String segmentFieldName,
+										  String conflictI18n,
+										  ContainerType type) {
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDao contentDao = Tx.get().contentDao();
+
+		// Determine the webroot path of the container parent node
+		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag(content));
+
+		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
+		// specific index for (drafts or published nodes)
+		if (segment != null) {
+			HibNode parentNode = nodeDao.getParentNode(node, branchUuid);
+			String segmentInfo = composeSegmentInfo(parentNode, segment);
+			// check for uniqueness of webroot path
+			HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootPath(content, segmentInfo, branchUuid, type, edge);
+			if (conflictingEdge != null) {
+				HibNode conflictingNode = conflictingEdge.getNode();
+				HibNodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
+				if (log.isDebugEnabled()) {
+					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid()
+							+ "}");
+				}
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
+						conflictI18n, segmentFieldName, segment);
+			} else {
+				edge.setSegmentInfo(segmentInfo);
+				return true;
+			}
+		} else {
+			edge.setSegmentInfo(null);
+			return true;
+		}
+	}
+
+	@Override
+	default String composeSegmentInfo(HibNode parentNode, String segment) {
+		return parentNode == null ? "" : parentNode.getUuid() + segment;
+	}
+
+	/**
+	 * Update the webroot url field index and also assert that the new values would not cause a conflict with the existing data.
+	 *
+	 * @param content
+	 * @param edge
+	 * @param branchUuid
+	 * @param urlFieldValues
+	 * @param type
+	 */
+	private void updateWebrootUrlFieldsInfo(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues, ContainerType type) {
+		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
+			// Individually check each url
+			for (String urlFieldValue : urlFieldValues) {
+				HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootField(content, edge, urlFieldValue, branchUuid, type);
+				if (conflictingEdge != null) {
+					HibNodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
+					HibNode conflictingNode = conflictingEdge.getNode();
+					if (log.isDebugEnabled()) {
+						log.debug(
+								"Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid());
+					}
+					// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
+					// determine
+					// which path caused the conflict.
+					Set<String> fromConflictingContainer = getUrlFieldValues(conflictingContainer).collect(Collectors.toSet());
+					@SuppressWarnings("unchecked")
+					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
+					String paths = String.join(",", conflictingValues);
+
+					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
+							"node_conflicting_urlfield_update", paths, conflictingContainer.getNode().getUuid(),
+							conflictingContainer.getLanguageTag());
+				}
+			}
+			edge.setUrlFieldInfo(urlFieldValues);
+		} else {
+			edge.setUrlFieldInfo(null);
+		}
+	}
+
+	@Override
+	default Stream<String> getUrlFieldValues(HibNodeFieldContainer content) {
+		SchemaVersionModel schema = content.getSchemaContainerVersion().getSchema();
+
+		List<String> urlFields = schema.getUrlFields();
+		if (urlFields == null) {
+			return Stream.empty();
+		}
+		return urlFields.stream().flatMap(urlField -> {
+			FieldSchema fieldSchema = schema.getField(urlField);
+			HibField field = content.getField(fieldSchema);
+			if (field instanceof HibStringField) {
+				HibStringField stringField = (HibStringField) field;
+				String value = stringField.getString();
+				if (StringUtils.isBlank(value)) {
+					return Stream.empty();
+				} else {
+					return Stream.of(value);
+				}
+			}
+			if (field instanceof HibStringFieldList) {
+				HibStringFieldList stringListField = (HibStringFieldList) field;
+				return stringListField.getList().stream()
+						.flatMap(listField -> Optional.ofNullable(listField)
+								.map(HibStringField::getString)
+								.filter(StringUtils::isNotBlank)
+								.stream());
+			}
+
+			return Stream.empty();
+		});
+	}
+
+	@Override
+	default String getPathSegment(HibNode node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
+		// Check whether this node is the base node.
+		if (node.getParentNode(branchUuid) == null) {
+			return "";
+		}
+
+		// Find the first matching container and fallback to other listed languages
+		HibNodeFieldContainer container = null;
+		for (String tag : languageTag) {
+			if ((container = getFieldContainer(node, tag, branchUuid, type)) != null) {
+				break;
+			}
+		}
+
+		if (container == null && anyLanguage) {
+			Result<? extends HibNodeFieldContainerEdge> traversal = getFieldEdges(node, branchUuid, type);
+
+			if (traversal.hasNext()) {
+				container = traversal.next().getNodeContainer();
+			}
+		}
+
+		if (container != null) {
+			return getSegmentFieldValue(container);
+		}
+		return null;
+
+	}
+
+	default String getSegmentFieldValue(HibNodeFieldContainer content) {
+		String segmentFieldKey = getSchemaContainerVersion(content).getSchema().getSegmentField();
+		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
+		if (segmentFieldKey == null) {
+			return null;
+		}
+
+		// 2. Try to load the path segment using the string field
+		HibStringField stringField = content.getString(segmentFieldKey);
+		if (stringField != null) {
+			return stringField.getString();
+		}
+
+		// 3. Try to load the path segment using the binary field or the s3 binary since the string field could not be found
+		if (stringField == null) {
+			S3HibBinaryField s3binaryField = content.getS3Binary(segmentFieldKey);
+			if (nonNull(s3binaryField)) {
+				return s3binaryField.getS3Binary().getFileName();
+			}
+			HibBinaryField binary = content.getBinary(segmentFieldKey);
+			if (nonNull(binary)) {
+				return binary.getFileName();
+			}
+		}
+		return null;
+	}
 }
+

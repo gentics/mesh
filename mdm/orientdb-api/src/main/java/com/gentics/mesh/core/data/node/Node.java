@@ -8,6 +8,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.ProjectElement;
@@ -41,6 +42,15 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	default boolean hasPublishPermissions() {
 		return true;
 	}
+
+	/**
+	 * Get all graph field edges.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainerEdge> getFieldContainerEdges(String branchUuid, ContainerType type);
 
 	Result<HibNode> getChildren();
 
@@ -163,43 +173,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
-
-	/**
-	 * Return the path segment value of this node preferable in the given language.
-	 *
-	 * If more than one language is given, the path will lead to the first available language
-	 * of the node.
-	 *
-	 * When no language matches and <code>anyLanguage</code> is <code>true</code> the results language
-	 * is nondeterministic.
-	 *
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param anyLanguage
-	 *            whether to return the path segment value of this node in any language, when none in <code>langaugeTag</code> match
-	 * @param languageTag
-	 *
-	 * @return
-	 */
-	String getPathSegment(String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag);
-
-	/**
-	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
-	 * of the node.
-	 *
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param languageTag
-	 *
-	 * @return
-	 */
-	default String getPathSegment(String branchUuid, ContainerType type, String... languageTag) {
-		return getPathSegment(branchUuid, type, false, languageTag);
-	}
 
 	/**
 	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)

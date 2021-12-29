@@ -83,7 +83,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 					if (node != null) {
 						node = nodeDao.getParentNode(node, branchUuid);
 					}
-					String newInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(node, segment);
+					String newInfo = contentDao.composeSegmentInfo(node, segment);
 					edge.setSegmentInfo(newInfo);
 				} else {
 					edge.setSegmentInfo(null);

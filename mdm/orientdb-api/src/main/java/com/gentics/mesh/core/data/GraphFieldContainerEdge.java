@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
  * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to branches and are either of type "Initial, Draft or
  * Published"
  */
-public interface GraphFieldContainerEdge extends MeshEdge {
+public interface GraphFieldContainerEdge extends MeshEdge, HibNodeFieldContainerEdge {
 
 	// Webroot index
 
@@ -95,24 +95,11 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	BasicFieldContainer getContainer();
 
 	/**
-	 * Return the referenced content.
-	 * 
-	 * @return
-	 */
-	NodeGraphFieldContainer getNodeContainer();
-
-	/**
-	 * Return the node from which this edge originates.
-	 * 
-	 * @return
-	 */
-	Node getNode();
-
-	/**
 	 * Set the webroot segment info for the edge.
 	 * 
 	 * @param segmentInfo
 	 */
+	@Override
 	default void setSegmentInfo(String segmentInfo) {
 		property(WEBROOT_PROPERTY_KEY, segmentInfo);
 	}
@@ -131,6 +118,7 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	 * 
 	 * @param urlFieldInfo
 	 */
+	@Override
 	default void setUrlFieldInfo(Set<String> urlFieldInfo) {
 		property(WEBROOT_URLFIELD_PROPERTY_KEY, urlFieldInfo);
 	}

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -15,6 +16,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -861,4 +863,54 @@ public interface ContentDao {
 	 * @param languageTag
 	 */
 	void setLanguageTag(HibNodeFieldContainer content, String languageTag);
+
+	/**
+	 * Return an iterator over the edges for the given type and branch.
+	 * @param type
+	 * @param branchUuid
+	 * @return
+	 */
+	Iterator<? extends HibNodeFieldContainerEdge> getContainerEdge(HibNodeFieldContainer container, ContainerType type, String branchUuid);
+
+	/**
+	 * Retrieve a conflicting edge for the given segment info, branch uuid and type, or null if there's no conflicting
+	 * edge
+	 *
+	 * @param content
+	 * @param segmentInfo
+	 * @param branchUuid
+	 * @param type
+	 * @param edge
+	 * @return
+	 */
+	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootPath(HibNodeFieldContainer content, String segmentInfo, String branchUuid, ContainerType type, HibNodeFieldContainerEdge edge);
+
+	/**
+	 * 	Retrieve a conflicting edge for the given urlFieldValue, branch uuid and type, or null if there's no conflicting
+	 * 	edge
+	 * @param content
+	 * @param edge
+	 * @param urlFieldValue
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type);
+
+	/**
+	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
+	 *
+	 * @param parentNode
+	 * @param segment
+	 */
+	String composeSegmentInfo(HibNode parentNode, String segment);
+
+	/**
+	 * Return the field edges for the given node, branch and container type
+	 * @param node
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type);
 }

@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
@@ -90,7 +91,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @param segment
 	 */
 	public void setSegmentInfo(HibNode parentNode, String segment) {
-		setSegmentInfo(composeSegmentInfo(parentNode, segment));
+		setSegmentInfo(Tx.get().contentDao().composeSegmentInfo(parentNode, segment));
 	}
 
 	/**
@@ -107,18 +108,6 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static Object composeWebrootIndexKey(GraphDatabase db, String segmentInfo, String branchUuid, ContainerType type) {
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
-	}
-
-	/**
-	 * Generate the composed value for the segment info. The value is used in an unique index and thus needs to be composed to create a unique segment value per
-	 * level of the node tree structure.
-	 * 
-	 * @param parentNode
-	 * @param segment
-	 * @return
-	 */
-	public static String composeSegmentInfo(HibNode parentNode, String segment) {
-		return parentNode == null ? "" : parentNode.getUuid() + segment;
 	}
 
 	/**

@@ -111,29 +111,6 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	HibNode getNode();
 
 	/**
-	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
-	 * {@link Errors#conflict(String, String, String, String...)} if one found.
-	 * 
-	 * @param ac
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param conflictI18n
-	 *            key of the message in case of conflicts
-	 */
-	void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n);
-
-	/**
-	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
-	 * {@link Errors#conflict(String, String, String, String...)} if one found.
-	 * 
-	 * @param branchUuid
-	 * @param conflictI18n
-	 */
-	default void updateWebrootPathInfo(String branchUuid, String conflictI18n) {
-		updateWebrootPathInfo(null, branchUuid, conflictI18n);
-	}
-
-	/**
 	 * Get the Version Number or null if no version set.
 	 * 
 	 * @return Version Number
@@ -405,23 +382,9 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	void updateDisplayFieldValue();
 
 	/**
-	 * Returns the segment field value of this container.
-	 * 
-	 * @return Determined segment field value or null if no segment field was specified or yet set
-	 */
-	String getSegmentFieldValue();
-
-	/**
 	 * Update the current segment field and increment any found postfix number.
 	 */
 	void postfixSegmentFieldValue();
-
-	/**
-	 * Return the URL field values for the container. The order of fields returned is the same order defined in the schema.
-	 * 
-	 * @return
-	 */
-	Stream<String> getUrlFieldValues();
 
 	/**
 	 * Traverse to the base node and build up the path to this container.
