@@ -87,14 +87,6 @@ public interface PersistingContentDao extends ContentDao {
 	HibNode getParentNode(HibNodeFieldContainer container, String branchUuid);
 
 	/**
-	 * Repair the inconsistency for the given container.
-	 * 
-	 * @param container
-	 * @return
-	 */
-	boolean repair(HibNodeFieldContainer container);
-
-	/**
 	 * Migrate field container of a node onto the new branch.
 	 * 
 	 * @param container container to migrate
