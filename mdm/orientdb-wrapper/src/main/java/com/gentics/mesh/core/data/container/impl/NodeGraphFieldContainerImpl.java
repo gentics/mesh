@@ -461,19 +461,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void purge(BulkActionContext bac) {
-		if (log.isDebugEnabled()) {
-			log.debug("Purging container {" + getUuid() + "} for version {" + getVersion() + "}");
-		}
-		// Link the previous to the next to isolate the old container
-		NodeGraphFieldContainer beforePrev = getPreviousVersion();
-		for (HibNodeFieldContainer afterPrev : getNextVersions()) {
-			beforePrev.setNextVersion(afterPrev);
-		}
-		delete(bac, false);
-	}
-
-	@Override
 	public Result<HibNodeFieldContainer> versions() {
 		return new TraversalResult<>(StreamUtil.untilNull(() -> this, HibNodeFieldContainer::getPreviousVersion));
 	}

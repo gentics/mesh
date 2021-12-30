@@ -232,16 +232,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public boolean isAutoPurgeEnabled(HibNodeFieldContainer content) {
-		return content.isAutoPurgeEnabled();
-	}
-
-	@Override
-	public void purge(HibNodeFieldContainer content, BulkActionContext bac) {
-		content.purge(bac);
-	}
-
-	@Override
 	public Result<HibNodeFieldContainer> versions(HibNodeFieldContainer content) {
 		return content.versions();
 	}

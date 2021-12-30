@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -306,18 +307,10 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	boolean isAutoPurgeEnabled();
 
 	/**
-	 * Purge the container from the version history and ensure that the links between versions are consistent.
-	 *
-	 * @param bac
-	 *            Action context for the deletion process
-	 */
-	void purge(BulkActionContext bac);
-
-	/**
 	 * Purge the container from the version without the use of a Bulk Action Context.
 	 */
 	default void purge() {
-		purge(new DummyBulkActionContext());
+		Tx.get().contentDao().purge(this, new DummyBulkActionContext());
 	}
 
 	/**

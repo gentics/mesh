@@ -405,7 +405,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			bac.add(contentDao.onTakenOffline(content, branchUuid));
 			toGraph(edge).remove();
 			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
-				content.purge(bac);
+				contentDao.purge(content, bac);
 			}
 		});
 	}
