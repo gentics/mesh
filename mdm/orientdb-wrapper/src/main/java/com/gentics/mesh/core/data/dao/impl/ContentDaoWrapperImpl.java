@@ -191,16 +191,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public List<FieldContainerChange> compareTo(HibNodeFieldContainer content, HibNodeFieldContainer container) {
-		return content.compareTo(container);
-	}
-
-	@Override
-	public List<FieldContainerChange> compareTo(HibNodeFieldContainer content, FieldMap fieldMap) {
-		return content.compareTo(fieldMap);
-	}
-
-	@Override
 	public HibSchemaVersion getSchemaContainerVersion(HibNodeFieldContainer content) {
 		return content.getSchemaContainerVersion();
 	}

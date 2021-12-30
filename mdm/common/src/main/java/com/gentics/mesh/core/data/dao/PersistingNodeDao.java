@@ -1320,8 +1320,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 			// TODO handle simplified case in which baseContainerVersion and
 			// latestDraftVersion are equal
-			List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
-			List<FieldContainerChange> requestVersionDiff = latestDraftVersion.compareTo(requestModel.getFields());
+			List<FieldContainerChange> baseVersionDiff = contentDao.compareTo(baseVersionContainer, latestDraftVersion);
+			List<FieldContainerChange> requestVersionDiff = contentDao.compareTo(latestDraftVersion, requestModel.getFields());
 
 			// Compare both sets of change sets
 			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());

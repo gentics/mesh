@@ -27,7 +27,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
+			List<FieldContainerChange> list = Tx.get().contentDao().compareTo(containerA, dummyMap);
 			assertNoDiff(list);
 		}
 	}
@@ -39,7 +39,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
+			List<FieldContainerChange> list = Tx.get().contentDao().compareTo(containerA, dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
 	}
@@ -52,7 +52,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", null);
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
+			List<FieldContainerChange> list = Tx.get().contentDao().compareTo(containerA, dummyMap);
 			assertNoDiff(list);
 		}
 	}
@@ -65,7 +65,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
+			List<FieldContainerChange> list = Tx.get().contentDao().compareTo(containerA, dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
 	}
@@ -78,7 +78,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			containerA.createString("dummy").setString("someValue2");
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", null);
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
+			List<FieldContainerChange> list = Tx.get().contentDao().compareTo(containerA, dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
 	}
@@ -91,7 +91,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", null);
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
+			List<FieldContainerChange> list = Tx.get().contentDao().compareTo(containerA, dummyMap);
 			// The field existed in both objects but the null value fieldmap update is still an update of the existing field.
 			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
@@ -105,7 +105,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			FieldMap dummyMap = new FieldMapImpl();
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
+			List<FieldContainerChange> list = Tx.get().contentDao().compareTo(containerA, dummyMap);
 			// The field exists in both but the change was an update 
 			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
@@ -125,7 +125,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 			dummyMap.put("dummy", FieldUtil.createHtmlField("someValue"));
 
 			// Compare both
-			List<FieldContainerChange> list = containerA.compareTo(dummyMap);
+			List<FieldContainerChange> list = Tx.get().contentDao().compareTo(containerA, dummyMap);
 			assertChanges(list, FieldChangeTypes.UPDATED);
 		}
 	}

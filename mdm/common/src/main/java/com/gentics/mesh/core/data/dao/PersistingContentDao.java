@@ -14,9 +14,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.util.Objects.nonNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +32,8 @@ import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.diff.FieldChangeTypes;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
@@ -49,13 +53,20 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.DeleteParameters;
+import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
+import com.google.common.base.Equivalence;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.collections.CollectionUtils;
@@ -442,7 +453,7 @@ public interface PersistingContentDao extends ContentDao {
 		// Find the first matching container and fallback to other listed languages
 		HibNodeFieldContainer container = getFieldContainer(node, languageTag, branchUuid, type);
 		if (container != null) {
-			container.postfixSegmentFieldValue();
+			postfixSegmentFieldValue(container);
 		}
 	}
 
@@ -626,6 +637,129 @@ public interface PersistingContentDao extends ContentDao {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	default void postfixSegmentFieldValue(HibNodeFieldContainer content) {
+		String segmentFieldKey = getSchemaContainerVersion(content).getSchema().getSegmentField();
+		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
+		if (segmentFieldKey == null) {
+			return;
+		}
+
+		// 2. Try to load the path segment using the string field
+		HibStringField stringField = content.getString(segmentFieldKey);
+		if (stringField != null) {
+			String oldValue = stringField.getString();
+			if (oldValue != null) {
+				stringField.setString(UniquenessUtil.suggestNewName(oldValue));
+			}
+		}
+
+		// 3. Try to load the path segment using the binary field since the string field could not be found
+		if (stringField == null) {
+			HibBinaryField binaryField = content.getBinary(segmentFieldKey);
+			if (binaryField != null) {
+				binaryField.postfixFileName();
+			}
+		}
+	}
+
+	@Override
+	default List<FieldContainerChange> compareTo(HibNodeFieldContainer content, HibNodeFieldContainer container) {
+		List<FieldContainerChange> changes = new ArrayList<>();
+
+		SchemaModel schemaA = getSchemaContainerVersion(content).getSchema();
+		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
+		SchemaModel schemaB = container.getSchemaContainerVersion().getSchema();
+		Map<String, FieldSchema> fieldMapB = schemaB.getFieldsAsMap();
+		// Generate a structural diff first. This way it is easy to determine
+		// which fields have been added or removed.
+		MapDifference<String, FieldSchema> diff = Maps.difference(fieldMapA, fieldMapB, new Equivalence<FieldSchema>() {
+
+			@Override
+			protected boolean doEquivalent(FieldSchema a, FieldSchema b) {
+				return a.getName().equals(b.getName());
+			}
+
+			@Override
+			protected int doHash(FieldSchema t) {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+		});
+
+		// Handle fields which exist only in A - They have been removed in B
+		for (FieldSchema field : diff.entriesOnlyOnLeft().values()) {
+			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.REMOVED));
+		}
+
+		// Handle fields which don't exist in A - They have been added in B
+		for (FieldSchema field : diff.entriesOnlyOnRight().values()) {
+			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.ADDED));
+		}
+
+		// Handle fields which are common in both schemas
+		for (String fieldName : diff.entriesInCommon().keySet()) {
+			FieldSchema fieldSchemaA = fieldMapA.get(fieldName);
+			FieldSchema fieldSchemaB = fieldMapB.get(fieldName);
+			// Check whether the field type is different in between both schemas
+			if (fieldSchemaA.getType().equals(fieldSchemaB.getType())) {
+				// Check content
+				HibField fieldA = content.getField(fieldSchemaA);
+				HibField fieldB = container.getField(fieldSchemaB);
+				// Handle null cases. The field may not have been created yet.
+				if (fieldA != null && fieldB == null) {
+					// Field only exists in A
+					changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				} else if (fieldA == null && fieldB != null) {
+					// Field only exists in B
+					changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				} else if (fieldA != null && fieldB != null) {
+					changes.addAll(fieldA.compareTo(fieldB));
+				} else {
+					// Both fields are equal if those fields are both null
+				}
+			} else {
+				// The field type has changed
+				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+			}
+
+		}
+		return changes;
+	}
+
+	@Override
+	default List<FieldContainerChange> compareTo(HibNodeFieldContainer content, FieldMap fieldMap) {
+		List<FieldContainerChange> changes = new ArrayList<>();
+
+		SchemaModel schemaA = getSchemaContainerVersion(content).getSchema();
+		Map<String, FieldSchema> fieldSchemaMap = schemaA.getFieldsAsMap();
+
+		// Handle all fields
+		for (String fieldName : fieldSchemaMap.keySet()) {
+			FieldSchema fieldSchema = fieldSchemaMap.get(fieldName);
+			// Check content
+			HibField fieldA = content.getField(fieldSchema);
+			Field fieldB = fieldMap.getField(fieldName, fieldSchema);
+			// Handle null cases. The field may not have been created yet.
+			if (fieldA != null && fieldB == null && fieldMap.hasField(fieldName)) {
+				// Field only exists in A
+				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+			} else if (fieldA == null && fieldB != null) {
+				// Field only exists in B
+				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+			} else if (fieldA != null && fieldB != null) {
+				// Field exists in A and B and the fields are not equal to each
+				// other.
+				changes.addAll(fieldA.compareTo(fieldB));
+			} else {
+				// Both fields are equal if those fields are both null
+			}
+
+		}
+		return changes;
 	}
 }
 
