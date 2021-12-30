@@ -62,6 +62,9 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.DeleteParameters;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.impl.PathImpl;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
@@ -760,6 +763,13 @@ public interface PersistingContentDao extends ContentDao {
 
 		}
 		return changes;
+	}
+
+	@Override
+	default Path getPath(HibNodeFieldContainer content, InternalActionContext ac) {
+		Path nodePath = new PathImpl();
+		nodePath.addSegment(new PathSegmentImpl(content, null, getLanguageTag(content), null));
+		return nodePath;
 	}
 }
 

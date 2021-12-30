@@ -292,14 +292,6 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	void postfixSegmentFieldValue();
 
 	/**
-	 * Traverse to the base node and build up the path to this container.
-	 * 
-	 * @param ac
-	 * @return
-	 */
-	Path getPath(InternalActionContext ac);
-
-	/**
 	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
 	 *
 	 * @return

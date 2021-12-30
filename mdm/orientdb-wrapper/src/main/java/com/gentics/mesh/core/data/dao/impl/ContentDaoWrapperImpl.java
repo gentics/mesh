@@ -221,11 +221,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Path getPath(HibNodeFieldContainer content, InternalActionContext ac) {
-		return content.getPath(ac);
-	}
-
-	@Override
 	public Iterator<GraphFieldContainerEdge> getContainerEdge(HibNodeFieldContainer content, ContainerType type, String branchUuid) {
 		return toGraph(content).getContainerEdge(type, branchUuid);
 	}

@@ -448,18 +448,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 	}
 
-	/**
-	 * Return the path of the content.
-	 * 
-	 * @param ac
-	 * @return Created node path
-	 */
-	public com.gentics.mesh.path.Path getPath(InternalActionContext ac) {
-		Path nodePath = new PathImpl();
-		nodePath.addSegment(new PathSegmentImpl(this, null, getLanguageTag(), null));
-		return nodePath;
-	}
-
 	@Override
 	public boolean isPurgeable() {
 		// The container is purgeable if no edge (publish, draft, initial) exists to its node.
