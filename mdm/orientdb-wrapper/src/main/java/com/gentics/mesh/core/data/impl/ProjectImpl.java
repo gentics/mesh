@@ -15,9 +15,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Optional;
-import java.util.Set;
-
-import javax.naming.InvalidNameException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -34,8 +31,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -48,7 +43,6 @@ import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -207,18 +201,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
-	}
-
-	@Override
-	public MeshElementEventModel onCreated() {
-		MeshElementEventModel event = super.onCreated();
-		try {
-			mesh().routerStorageRegistry().addProject(getName());
-		} catch (InvalidNameException e) {
-			log.error("Failed to register project {" + getName() + "}");
-			throw error(BAD_REQUEST, "project_error_name_already_reserved", getName());
-		}
-		return event;
 	}
 
 	@Override
