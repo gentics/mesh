@@ -37,7 +37,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -47,6 +46,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -77,6 +77,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -97,7 +98,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
-import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
@@ -152,45 +152,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
-
-		String branchUuid = branch.getUuid();
-		// Check whether the node got a published version and thus is published
-
-		boolean isPublished = hasPublishedContent(branchUuid);
-
-		// A published node must have also a published parent node.
-		if (isPublished) {
-			NodeImpl parentNode = getParentNode(branchUuid);
-
-			// Only assert consistency of parent nodes which are not project
-			// base nodes.
-			if (parentNode != null && (!parentNode.getUuid().equals(getProject().getBaseNode().getUuid()))) {
-
-				// Check whether the parent node has a published field container
-				// for the given branch and language
-				if (!parentNode.hasPublishedContent(branchUuid)) {
-					log.error("Could not find published field container for node {" + parentNode.getUuid() + "} in branch {" + branchUuid + "}");
-					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
-				}
-			}
-		}
-
-		// A draft node can't have any published child nodes.
-		if (!isPublished) {
-
-			for (HibNode node : getChildren(branchUuid)) {
-				NodeImpl impl = (NodeImpl) node;
-				if (impl.hasPublishedContent(branchUuid)) {
-					log.error("Found published field container for node {" + node.getUuid() + "} in branch {" + branchUuid + "}. Node is child of {"
-						+ getUuid() + "}");
-					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid());
-				}
-			}
-		}
-	}
-
-	@Override
 	public Result<HibTag> getTags(HibBranch branch) {
 		return new TraversalResult<>(TagEdgeImpl.getTagTraversal(this, branch).frameExplicit(TagImpl.class));
 	}
@@ -198,10 +159,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public boolean hasTag(HibTag tag, HibBranch branch) {
 		return TagEdgeImpl.hasTag(this, tag, branch);
-	}
-
-	private boolean hasPublishedContent(String branchUuid) {
-		return GraphFieldContainerEdgeImpl.matchesBranchAndType(getId(), branchUuid, PUBLISHED);
 	}
 
 	@Override
@@ -246,7 +203,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type) {
+	public GraphFieldContainerEdge getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type) {
 		return GraphFieldContainerEdgeImpl.findEdge(getId(), branchUuid, type, languageTag);
 	}
 
@@ -351,17 +308,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		property(PROJECT_KEY_PROPERTY, project.getUuid());
 	}
 
-	@Override
-	public HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
-		return create(creator, schemaVersion, project, project.getLatestBranch(), null);
-	}
-
 	/**
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
 	public HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
-		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
+		if (!isBaseNode() && !CommonTx.get().nodeDao().isVisibleInBranch(this, branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 				branch.getName(), getUuid()));
 			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
@@ -392,62 +344,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				languageTags));
 		}
 		return listItem;
-	}
-
-	@Override
-	public void removePublishedEdges(String branchUuid, BulkActionContext bac) {
-		Result<? extends HibNodeFieldContainerEdge> publishEdges = getFieldContainerEdges(branchUuid, PUBLISHED);
-		ContentDao contentDao = Tx.get().contentDao();
-
-		// Remove the published edge for each found container
-		publishEdges.forEach(edge -> {
-			NodeGraphFieldContainer content = toGraph(edge.getNodeContainer());
-			bac.add(contentDao.onTakenOffline(content, branchUuid));
-			toGraph(edge).remove();
-			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
-				content.purge(bac);
-			}
-		});
-	}
-
-	@Override
-	public void removePublishedEdge(String languageTag, String branchUuid) {
-		getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED).remove();
-	}
-
-	@Override
-	public void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid) {
-		String languageTag = container.getLanguageTag();
-		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
-		ContentDao contentDao = Tx.get().contentDao();
-
-		// Remove an existing published edge
-		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
-		if (currentPublished != null) {
-			// We need to remove the edge first since updateWebrootPathInfo will
-			// check the published edge again
-			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
-			currentPublished.remove();
-			contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish");
-			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
-				oldPublishedContainer.purge();
-			}
-		}
-
-		if (ac.isPurgeAllowed()) {
-			// Check whether a previous draft can be purged.
-			HibNodeFieldContainer prev = container.getPreviousVersion();
-			if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
-				prev.purge();
-			}
-		}
-
-		// create new published edge
-		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
-		edge.setLanguageTag(languageTag);
-		edge.setBranchUuid(branchUuid);
-		edge.setType(PUBLISHED);
-		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish");
 	}
 
 	@Override
@@ -544,12 +440,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		return Tx.get().nodeDao().update(this.getProject(), this, ac, batch);
-	}
-
-	@Override
-	public void removeInitialFieldContainerEdge(HibNodeFieldContainer initial, String branchUUID) {
-		toGraph(initial).inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUUID)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).removeAll();
 	}
 
 	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
@@ -678,11 +568,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public boolean isBaseNode() {
 		return inE(HAS_ROOT_NODE).hasNext();
-	}
-
-	@Override
-	public boolean isVisibleInBranch(String branchUuid) {
-		return GraphFieldContainerEdgeImpl.matchesBranchAndType(getId(), branchUuid, ContainerType.DRAFT);
 	}
 
 	@Override

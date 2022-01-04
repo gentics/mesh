@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
@@ -80,11 +79,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
-		return toGraph(parentNode).create(creator, schemaVersion, project);
-	}
-
-	@Override
 	public HibNode create(HibProject project, HibUser user, HibSchemaVersion version) {
 		return toGraph(project).getNodeRoot().create(user, version, project);
 	}
@@ -136,33 +130,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void removePublishedEdges(HibNode node, String branchUuid, BulkActionContext bac) {
-		toGraph(node).removePublishedEdges(branchUuid, bac);
-	}
-
-	@Override
-	public void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid) {
-		toGraph(node).setPublished(ac, container, branchUuid);
-	}
-
-	@Override
-	public void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch) {
-		toGraph(node).assertPublishConsistency(ac, branch);
-	}
-
-	@Override
-	public void removePublishedEdge(HibNode node, String languageTag, String branchUuid) {
-		toGraph(node).removePublishedEdge(languageTag, branchUuid);
-	}
-
-	@Override
 	public Path resolvePath(HibNode baseNode, String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack) {
 		return toGraph(baseNode).resolvePath(branchUuid, type, nodePath, pathStack);
-	}
-
-	@Override
-	public void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID) {
-		toGraph(node).removeInitialFieldContainerEdge(initial, branchUUID);
 	}
 
 	@Override
@@ -178,11 +147,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public boolean isBaseNode(HibNode node) {
 		return toGraph(node).isBaseNode();
-	}
-
-	@Override
-	public boolean isVisibleInBranch(HibNode node, String branchUuid) {
-		return toGraph(node).isVisibleInBranch(branchUuid);
 	}
 
 	@Override

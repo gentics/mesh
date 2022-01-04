@@ -273,13 +273,22 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	boolean isBaseNode(HibNode node);
 
 	/**
-	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
+	 * Check whether the node is visible in the given branch (that means has at least one DRAFT field container in the branch)
 	 *
 	 * @param branchUuid
 	 *            branch uuid
 	 * @return true if the node is visible in the branch
 	 */
 	boolean isVisibleInBranch(HibNode node, String branchUuid);
+
+	/**
+	 * Check if the node has a content with status = published within the given branch
+	 * 
+	 * @param node
+	 * @param branchUuid
+	 * @return
+	 */
+	boolean hasPublishedContent(HibNode node, String branchUuid);
 
 	/**
 	 * Transform the node information to a version list response.
@@ -339,7 +348,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	long globalCount();
 
 	/**
-	 * Set the graph field container to be the (only) published for the given branch.
+	 * Set the field container to be the (only) published for the given branch.
 	 *
 	 * @param ac
 	 * @param container

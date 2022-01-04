@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -56,9 +58,9 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
@@ -398,5 +400,30 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 		NodeGraphFieldContainer graphContainer = toGraph(container);
 		return graphContainer.inE(HAS_FIELD_CONTAINER).has(
 			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).outV().nextOrDefaultExplicit(NodeImpl.class, null);
+	}
+
+	@Override
+	public HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container,
+			HibBranch branch, String languageTag, ContainerType initial) {
+		GraphFieldContainerEdge edge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
+		edge.setLanguageTag(languageTag);
+		edge.setBranchUuid(branch.getUuid());
+		edge.setType(initial);
+		return edge;
+	}
+
+	@Override
+	public void removeEdge(HibNodeFieldContainerEdge edge) {
+		toGraph(edge).remove();
+	}
+
+	@Override
+	public GraphFieldContainerEdge getEdge(HibNode node, String languageTag, String branchUuid, ContainerType type) {
+		return toGraph(node).getGraphFieldContainerEdgeFrame(languageTag, branchUuid, type);
+	}
+
+	@Override
+	public HibNodeFieldContainer getFieldContainerOfEdge(HibNodeFieldContainerEdge edge) {
+		return toGraph(edge).inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 	}
 }
