@@ -81,7 +81,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			assertNotNull(projectTagFamily);
 
 			assertNotNull(tagFamilyDao.create(project(), "bogus", user()));
-			assertEquals(3, ctx.count(tagFamilyDao.getPersistenceClass()));
+			assertEquals(3, ctx.count(tagFamilyDao.getPersistenceClass(project())));
 			assertEquals(3, tx.tagFamilyDao().count());
 		}
 	}

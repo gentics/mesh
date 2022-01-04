@@ -52,13 +52,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, Referencea
 	TagFamilyRoot getTagFamilyRoot();
 
 	/**
-	 * Set the project to which the tag family should be assigned.
-	 * 
-	 * @param project
-	 */
-	void setProject(Project project);
-
-	/**
 	 * Create a new tag using the information from the action context.
 	 * 
 	 * @param ac
@@ -66,22 +59,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, Referencea
 	 * @return
 	 */
 	Tag create(InternalActionContext ac, EventQueueBatch batch);
-
-	/**
-	 * Add the given tag to the aggregation vertex.
-	 * 
-	 * @param tag
-	 *            Tag to be added
-	 */
-	void addTag(Tag tag);
-
-	/**
-	 * Remove the tag from the aggregation vertex.
-	 * 
-	 * @param tag
-	 *            Tag to be removed
-	 */
-	void removeTag(Tag tag);
 
 	/**
 	 * @deprecated Remove after PersistingTag/FamilyDao approached.

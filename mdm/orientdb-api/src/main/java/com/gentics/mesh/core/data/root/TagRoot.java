@@ -70,12 +70,4 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @return Result
 	 */
 	Result<? extends Node> getNodes(Tag tag, HibBranch branch);
-
-	// Move these to DAO
-	@Deprecated
-	HibTag create(String name, HibProject project, HibTagFamily tagFamily, HibUser creator);
-
-	@Deprecated
-	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
-
 }
