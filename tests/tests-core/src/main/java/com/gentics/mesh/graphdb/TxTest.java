@@ -181,7 +181,7 @@ public class TxTest extends AbstractMeshTest {
 									}
 								}
 								// Load used elements
-								HibTagFamily reloadedTagFamily = ctx.load(tagFamily.getId(), ctx.tagFamilyDao().getPersistenceClass());
+								HibTagFamily reloadedTagFamily = ctx.load(tagFamily.getId(), ctx.tagFamilyDao().getPersistenceClass(project()));
 								HibNode reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
 								HibUser reloadedUser = ctx.load(user.getId(), ctx.userDao().getPersistenceClass());
 								HibProject reloadedProject = ctx.load(project.getId(), ctx.projectDao().getPersistenceClass());
