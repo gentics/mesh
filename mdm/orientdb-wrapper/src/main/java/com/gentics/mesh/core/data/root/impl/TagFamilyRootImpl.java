@@ -55,6 +55,11 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
+	public void addTagFamily(TagFamily tagFamily) {
+		addItem(tagFamily);
+	}
+
+	@Override
 	public long globalCount() {
 		return db().count(TagFamilyImpl.class);
 	}

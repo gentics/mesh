@@ -16,4 +16,5 @@ public interface TagFamilyRoot extends RootVertex<TagFamily>, TransformableEleme
 	 */
 	Project getProject();
 
+	void addTagFamily(TagFamily tagFamily);
 }
