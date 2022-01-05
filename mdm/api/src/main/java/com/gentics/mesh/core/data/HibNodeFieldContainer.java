@@ -306,21 +306,6 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	boolean isAutoPurgeEnabled();
 
 	/**
-	 * Purge the container from the version history and ensure that the links between versions are consistent.
-	 *
-	 * @param bac
-	 *            Action context for the deletion process
-	 */
-	void purge(BulkActionContext bac);
-
-	/**
-	 * Purge the container from the version without the use of a Bulk Action Context.
-	 */
-	default void purge() {
-		purge(new DummyBulkActionContext());
-	}
-
-	/**
 	 * Return all versions.
 	 *
 	 * @return

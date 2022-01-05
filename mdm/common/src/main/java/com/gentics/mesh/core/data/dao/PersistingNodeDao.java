@@ -1367,7 +1367,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 				// Purge the old draft
 				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-					latestDraftVersion.purge();
+					contentDao.purge(latestDraftVersion);
 				}
 
 				latestDraftVersion = newDraftVersion;
@@ -1651,7 +1651,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			bac.add(contentDao.onTakenOffline(content, branchUuid));
 			contentDao.removeEdge(edge);
 			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
-				content.purge(bac);
+				contentDao.purge(content, bac);
 			}
 		});
 	}
@@ -1669,7 +1669,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			contentDao.removeEdge(edge);
 			contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish");
 			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
-				oldPublishedContainer.purge();
+				contentDao.purge(oldPublishedContainer);
 			}
 		}
 
@@ -1677,7 +1677,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			// Check whether a previous draft can be purged.
 			HibNodeFieldContainer prev = container.getPreviousVersion();
 			if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
-				prev.purge();
+				contentDao.purge(prev);
 			}
 		}
 

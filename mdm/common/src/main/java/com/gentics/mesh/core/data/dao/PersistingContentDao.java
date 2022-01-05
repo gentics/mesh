@@ -802,5 +802,24 @@ public interface PersistingContentDao extends ContentDao {
 			removeEdge(published);	
 		}
 	}
+
+	@Override
+	default boolean isAutoPurgeEnabled(HibNodeFieldContainer content) {
+		HibSchemaVersion schema = getSchemaContainerVersion(content);
+		return schema.isAutoPurgeEnabled();
+	}
+
+	@Override
+	default void purge(HibNodeFieldContainer content, BulkActionContext bac) {
+		if (log.isDebugEnabled()) {
+			log.debug("Purging container {" + content.getUuid() + "} for version {" + getVersion(content) + "}");
+		}
+		// Link the previous to the next to isolate the old container
+		HibNodeFieldContainer beforePrev = getPreviousVersion(content);
+		for (HibNodeFieldContainer afterPrev : getNextVersions(content)) {
+			beforePrev.setNextVersion(afterPrev);
+		}
+		delete(content, bac, false);
+	}
 }
 
