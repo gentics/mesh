@@ -43,6 +43,18 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 	}
 
 	@Override
+	public HibTagFamily create(HibProject project, String name, HibUser user, String uuid) {
+		HibTagFamily hibTagFamily = TagFamilyDaoWrapper.super.create(project, name, user, uuid);
+		// add to global root
+		TagFamilyRoot root = boot.get().meshRoot().getTagFamilyRoot();
+		if (root != null && !root.equals(getRoot(project))) {
+			root.addTagFamily(toGraph(hibTagFamily));
+		}
+
+		return hibTagFamily;
+	}
+
+	@Override
 	public long count() {
 		return boot.get().meshRoot().getTagFamilyRoot().globalCount();
 	}
