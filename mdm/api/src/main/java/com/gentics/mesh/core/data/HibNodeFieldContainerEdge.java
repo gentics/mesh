@@ -3,7 +3,15 @@ package com.gentics.mesh.core.data;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.rest.common.ContainerType;
 
+/**
+ * An edge entity, which connects a {@link HibNode} with the {@link HibNodeFieldContainer} 
+ * based on the language tag, branch and {@link ContainerType}.
+ * 
+ * @author plyhun
+ *
+ */
 public interface HibNodeFieldContainerEdge {
 
 	/**
@@ -34,4 +42,39 @@ public interface HibNodeFieldContainerEdge {
 	 */
 	HibNode getNode();
 
+	/**
+	 * Get the language tag
+	 * 
+	 * @return language tag
+	 */
+	String getLanguageTag();
+
+	/**
+	 * Set the language tag.
+	 * 
+	 * @param languageTag
+	 */
+	void setLanguageTag(String languageTag);
+
+	/**
+	 * Get the edge type
+	 * 
+	 * @return edge type
+	 */
+	ContainerType getType();
+
+	/**
+	 * Set the edge type
+	 * 
+	 * @param type
+	 *            edge type
+	 */
+	void setType(ContainerType type);
+
+	/**
+	 * Get the branch Uuid
+	 * 
+	 * @return branch Uuid
+	 */
+	String getBranchUuid();
 }

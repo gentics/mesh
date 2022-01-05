@@ -25,6 +25,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -70,10 +73,9 @@ import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public interface PersistingContentDao extends ContentDao {
 
@@ -94,7 +96,8 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param node container owning node
 	 * @param batch event queue for the notifications
 	 * @param container type
-	 * @param setInitial is this branch initial for the project?
+	 * @param setInitial @Override
+	is this branch initial for the project?
 	 */
 	void migrateContainerOntoBranch(HibNodeFieldContainer container, HibBranch newBranch, 
 			HibNode node, EventQueueBatch batch, ContainerType containerType, boolean setInitial);
@@ -127,6 +130,16 @@ public interface PersistingContentDao extends ContentDao {
 	 */
 	void connectFieldContainer(HibNode node, HibNodeFieldContainer container, HibBranch branch, String languageTag, boolean handleDraftEdge);
 
+
+	HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container, HibBranch branch,
+			String languageTag, ContainerType initial);
+
+	void removeEdge(HibNodeFieldContainerEdge edge);
+
+	HibNodeFieldContainerEdge getEdge(HibNode node, String languageTag, String branchUuid, ContainerType type);
+
+	HibNodeFieldContainer getFieldContainerOfEdge(HibNodeFieldContainerEdge edge);
+
 	// Those are stubs. They will be replaced during ContentDao implementation.
 
 	@Deprecated
@@ -146,6 +159,11 @@ public interface PersistingContentDao extends ContentDao {
 	
 	@Deprecated
 	HibBinaryField createBinary();
+
+	default HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container, String branchUUID, String languageTag, ContainerType initial) {
+		HibBranch branch = Tx.get().branchDao().findByUuid(node.getProject(), branchUUID);
+		return createContainerEdge(node, container, branch, languageTag, initial);
+	}
 
 	@Override
 	default HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor) {
@@ -762,6 +780,27 @@ public interface PersistingContentDao extends ContentDao {
 		Path nodePath = new PathImpl();
 		nodePath.addSegment(new PathSegmentImpl(content, null, getLanguageTag(content), null));
 		return nodePath;
+	}
+
+	@Override
+	default void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch, BulkActionContext bac) {
+		String branchUuid = branch.getUuid();
+
+		bac.batch().add(onDeleted(content, branchUuid, DRAFT));
+		if (isPublished(content, branchUuid)) {
+			bac.batch().add(onDeleted(content, branchUuid, PUBLISHED));
+		}
+
+		HibNode node = getNode(content);
+		HibNodeFieldContainerEdge draft = getEdge(node, content.getLanguageTag(), branch.getUuid(), DRAFT);
+		if (draft != null) {
+			removeEdge(draft);	
+		}
+
+		HibNodeFieldContainerEdge published = getEdge(node, content.getLanguageTag(), branch.getUuid(), PUBLISHED);
+		if (published != null) {
+			removeEdge(published);	
+		}
 	}
 }
 

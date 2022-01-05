@@ -4,9 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.Set;
 
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.common.ContainerType;
-
 /**
  * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to branches and are either of type "Initial, Draft or
  * Published"
@@ -36,50 +33,6 @@ public interface GraphFieldContainerEdge extends MeshEdge, HibNodeFieldContainer
 	String EDGE_TYPE_KEY = "edgeType";
 
 	/**
-	 * Get the language tag
-	 * 
-	 * @return language tag
-	 */
-	String getLanguageTag();
-
-	/**
-	 * Set the language tag.
-	 * 
-	 * @param languageTag
-	 */
-	void setLanguageTag(String languageTag);
-
-	/**
-	 * Get the edge type
-	 * 
-	 * @return edge type
-	 */
-	ContainerType getType();
-
-	/**
-	 * Set the edge type
-	 * 
-	 * @param type
-	 *            edge type
-	 */
-	void setType(ContainerType type);
-
-	/**
-	 * Get the branch Uuid
-	 * 
-	 * @return branch Uuid
-	 */
-	String getBranchUuid();
-
-	/**
-	 * Set the branch Uuid
-	 * 
-	 * @param uuid
-	 *            branch Uuid
-	 */
-	void setBranchUuid(String uuid);
-
-	/**
 	 * Reset the webroot properties.
 	 */
 	default void defaultClearDraftPaths() {
@@ -93,6 +46,14 @@ public interface GraphFieldContainerEdge extends MeshEdge, HibNodeFieldContainer
 	 * @return
 	 */
 	BasicFieldContainer getContainer();
+
+	/**
+	 * Set the branch Uuid
+	 * 
+	 * @param uuid
+	 *            branch Uuid
+	 */
+	void setBranchUuid(String uuid);
 
 	/**
 	 * Set the webroot segment info for the edge.

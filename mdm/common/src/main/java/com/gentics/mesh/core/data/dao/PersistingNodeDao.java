@@ -41,6 +41,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -1570,5 +1571,119 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		return model;
+	}
+
+	@Override
+	default void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID) {
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
+		HibNodeFieldContainerEdge edge = contentDao.getEdge(node, initial.getLanguageTag(), branchUUID, INITIAL);
+		// TODO we should not delete the actual content, should we?
+		//contentDao.getFieldContainerOfEdge(edge);
+		contentDao.removeEdge(edge);
+	}
+
+	@Override
+	default HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
+		return create(parentNode, creator, schemaVersion, project, project.getLatestBranch(), null);
+	}
+
+	@Override
+	default void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch) {
+
+		String branchUuid = branch.getUuid();
+		// Check whether the node got a published version and thus is published
+
+		boolean isPublished = hasPublishedContent(node, branchUuid);
+
+		// A published node must have also a published parent node.
+		if (isPublished) {
+			HibNode parentNode = node.getParentNode(branchUuid);
+
+			// Only assert consistency of parent nodes which are not project
+			// base nodes.
+			if (parentNode != null && (!parentNode.getUuid().equals(node.getProject().getBaseNode().getUuid()))) {
+
+				// Check whether the parent node has a published field container
+				// for the given branch and language
+				if (!hasPublishedContent(parentNode, branchUuid)) {
+					log.error("Could not find published field container for node {" + parentNode.getUuid() + "} in branch {" + branchUuid + "}");
+					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
+				}
+			}
+		}
+
+		// A draft node can't have any published child nodes.
+		if (!isPublished) {
+			for (HibNode child : getChildren(node, branchUuid)) {
+				if (hasPublishedContent(child, branchUuid)) {
+					log.error("Found published field container for node {" + node.getUuid() + "} in branch {" + branchUuid + "}. Node is child of {"
+						+ node.getUuid() + "}");
+					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid());
+				}
+			}
+		}
+	}
+
+	@Override
+	default boolean isVisibleInBranch(HibNode node, String branchUuid) {
+		return CommonTx.get().contentDao().getFieldEdges(node, branchUuid, DRAFT).hasNext();
+	}
+
+	@Override
+	default boolean hasPublishedContent(HibNode node, String branchUuid) {
+		return CommonTx.get().contentDao().getFieldEdges(node, branchUuid, PUBLISHED).hasNext();
+	}
+
+	@Override
+	default void removePublishedEdge(HibNode node, String languageTag, String branchUuid) {
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
+		contentDao.removeEdge(contentDao.getEdge(node, languageTag, branchUuid, PUBLISHED));
+	}
+
+	@Override
+	default void removePublishedEdges(HibNode node, String branchUuid, BulkActionContext bac) {
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
+		Result<? extends HibNodeFieldContainerEdge> publishEdges = contentDao.getFieldEdges(node, branchUuid, PUBLISHED);
+
+		// Remove the published edge for each found container
+		publishEdges.forEach(edge -> {
+			HibNodeFieldContainer content = edge.getNodeContainer();
+			bac.add(contentDao.onTakenOffline(content, branchUuid));
+			contentDao.removeEdge(edge);
+			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
+				content.purge(bac);
+			}
+		});
+	}
+
+	@Override
+	default void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid) {
+		String languageTag = container.getLanguageTag();
+		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
+
+		// Remove an existing published edge
+		HibNodeFieldContainerEdge edge = contentDao.getEdge(node, languageTag, branchUuid, PUBLISHED);
+		if (edge != null) {
+			HibNodeFieldContainer oldPublishedContainer = contentDao.getFieldContainerOfEdge(edge);
+			contentDao.removeEdge(edge);
+			contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish");
+			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
+				oldPublishedContainer.purge();
+			}
+		}
+
+		if (ac.isPurgeAllowed()) {
+			// Check whether a previous draft can be purged.
+			HibNodeFieldContainer prev = container.getPreviousVersion();
+			if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
+				prev.purge();
+			}
+		}
+
+		// create new published edge
+		contentDao.createContainerEdge(node, container, branchUuid, languageTag, PUBLISHED);
+
+		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish");
 	}
 }

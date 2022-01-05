@@ -12,6 +12,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import javax.naming.InvalidNameException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -217,6 +219,14 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		userDao.inheritRolePermissions(creator, project, getMicroschemaContainerPermissionRoot(project));
 		userDao.inheritRolePermissions(creator, project, getNodePermissionRoot(project));
 		userDao.inheritRolePermissions(creator, project, initialBranch);
+
+		// Register the project route
+		try {
+			CommonTx.get().data().mesh().routerStorageRegistry().addProject(project.getName());
+		} catch (InvalidNameException e) {
+			log.error("Failed to register project {" + project.getName() + "}");
+			throw error(BAD_REQUEST, "project_error_name_already_reserved", project.getName());
+		}
 
 		// Store the project and the branch in the index
 		batch.add(project.onCreated());

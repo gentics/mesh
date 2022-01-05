@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
-import com.syncleus.ferma.EdgeFrame;
 
 /**
  * The Node Domain Model interface.
@@ -78,7 +78,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 *            edge type
 	 * @return existing edge or null
 	 */
-	EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
+	GraphFieldContainerEdge getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -89,8 +89,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return Page which contains the result
 	 */
 	Page<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch);
-
-	void assertPublishConsistency(InternalActionContext ac, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.
@@ -105,16 +103,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * Remove the element.
 	 */
 	void removeElement();
-
-	/**
-	 * Create a child node in this node in the latest branch of the project.
-	 *
-	 * @param creator
-	 * @param schemaVersion
-	 * @param project
-	 * @return
-	 */
-	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project);
 
 	/**
 	 * Adds reference update events to the context for all draft and published contents that reference this node.
@@ -153,15 +141,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 */
 	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
 
-
-	/**
-	 * Remove published edges for each container found
-	 *
-	 * @param branchUuid
-	 * @param bac
-	 */
-	void removePublishedEdges(String branchUuid, BulkActionContext bac);
-
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
 	 *
@@ -173,15 +152,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
-
-	/**
-	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
-	 *
-	 * @param branchUuid
-	 *            branch uuid
-	 * @return true if the node is visible in the branch
-	 */
-	boolean isVisibleInBranch(String branchUuid);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
@@ -243,28 +213,4 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	long getFieldContainerCount();
-
-	/**
-	 * Remove all edges to field container with type {@link ContainerType#INITIAL} for the specified branch uuid
-	 * @param initial
-	 * @param branchUUID
-	 */
-	void removeInitialFieldContainerEdge(HibNodeFieldContainer initial, String branchUUID);
-
-	/**
-	 * Remove the published edge for the given language tag and branch UUID
-	 *
-	 * @param languageTag
-	 * @param branchUuid
-	 */
-    void removePublishedEdge(String languageTag, String branchUuid);
-
-    /**
-	 * Set the graph field container to be the (only) published for the given branch.
-	 *
-	 * @param ac
-	 * @param container
-	 * @param branchUuid
-	 */
-	void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
 }
