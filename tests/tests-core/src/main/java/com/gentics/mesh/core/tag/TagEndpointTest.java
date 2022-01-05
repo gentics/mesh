@@ -367,7 +367,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagDao tagDao = tx.tagDao();
 			return tagDao.getNodes(tag, project().getLatestBranch()).list();
 		});
-		tx(() -> call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid)));
+		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
 
 		awaitEvents();
 		waitForSearchIdleEvent();
