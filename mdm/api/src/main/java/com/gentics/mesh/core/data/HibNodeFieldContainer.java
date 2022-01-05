@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -304,6 +305,13 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 * @return
 	 */
 	boolean isAutoPurgeEnabled();
+
+	/**
+	 * Purge the container from the version without the use of a Bulk Action Context.
+	 */
+	default void purge() {
+		Tx.get().contentDao().purge(this, new DummyBulkActionContext());
+	}
 
 	/**
 	 * Return all versions.
