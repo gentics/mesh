@@ -1672,7 +1672,6 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				oldPublishedContainer.purge();
 			}
 		}
-
 		if (ac.isPurgeAllowed()) {
 			// Check whether a previous draft can be purged.
 			HibNodeFieldContainer prev = container.getPreviousVersion();
@@ -1680,10 +1679,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				prev.purge();
 			}
 		}
-
 		// create new published edge
 		contentDao.createContainerEdge(node, container, branchUuid, languageTag, PUBLISHED);
-
 		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish");
 	}
 }

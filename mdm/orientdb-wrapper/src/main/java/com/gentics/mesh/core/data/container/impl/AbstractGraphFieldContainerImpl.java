@@ -7,16 +7,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -59,19 +50,16 @@ import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListIm
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 /**
@@ -402,83 +390,6 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 		if (traversal.hasNext()) {
 			traversal.next().remove();
-		}
-	}
-
-	@Override
-	public Iterable<? extends HibNode> getReferencedNodes() {
-		// Get all fields and group them by type
-		Map<String, List<FieldSchema>> affectedFields = getSchemaContainerVersion().getSchema().getFields().stream()
-			.filter(this::isNodeReferenceType)
-			.collect(Collectors.groupingBy(FieldSchema::getType));
-
-		Function<FieldTypes, List<FieldSchema>> getFields = type -> Optional.ofNullable(affectedFields.get(type.toString()))
-			.orElse(Collections.emptyList());
-
-		Stream<Stream<HibNode>> nodeStream = Stream.of(
-			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
-			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
-			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
-		);
-		return nodeStream.flatMap(Function.identity())::iterator;
-	}
-
-	/**
-	 * Checks if a field can have a node reference.
-	 */
-	private boolean isNodeReferenceType(FieldSchema schema) {
-		String type = schema.getType();
-		return type.equals(FieldTypes.NODE.toString()) || type.equals(FieldTypes.LIST.toString()) || type.equals(FieldTypes.MICRONODE.toString());
-	}
-
-	/**
-	 * Gets the node from a node field.
-	 * 
-	 * @param field
-	 *            The node field to get the node from
-	 * @return Gets the node as a stream or an empty stream if the node field is not set
-	 */
-	private Stream<HibNode> getNodeFromNodeField(FieldSchema field) {
-		return Optional.ofNullable(getNode(field.getName()))
-			.map(NodeGraphField::getNode)
-			.map(Stream::of)
-			.orElseGet(Stream::empty);
-	}
-
-	/**
-	 * Gets the nodes that are referenced by a micronode in the given field. This includes all node fields and node list fields in the micronode.
-	 */
-	private Stream<? extends HibNode> getNodesFromMicronode(FieldSchema field) {
-		return Optional.ofNullable(getMicronode(field.getName()))
-			.map(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false))
-			.orElseGet(Stream::empty);
-	}
-
-	/**
-	 * Gets the nodes that are referenced by a list field. In case of a node list, all nodes in that list are returned. In case of a micronode list, all nodes
-	 * referenced by all node fields and node list fields in all microschemas are returned. Otherwise an empty stream is returned.
-	 */
-	private Stream<? extends HibNode> getNodesFromList(FieldSchema field) {
-		ListFieldSchema list;
-		if (field instanceof ListFieldSchema) {
-			list = (ListFieldSchema) field;
-		} else {
-			throw new InvalidParameterException("Invalid field type");
-		}
-
-		String type = list.getListType();
-		if (type.equals(FieldTypes.NODE.toString())) {
-			return Optional.ofNullable(getNodeList(list.getName()))
-				.map(listField -> listField.getList().stream())
-				.orElseGet(Stream::empty)
-				.map(HibNodeField::getNode);
-		} else if (type.equals(FieldTypes.MICRONODE.toString())) {
-			return Optional.ofNullable(getMicronodeList(list.getName()))
-				.map(listField -> listField.getList().stream())
-				.orElseGet(Stream::empty)
-				.flatMap(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false));
-		} else {
-			return Stream.empty();
 		}
 	}
 

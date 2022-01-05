@@ -163,7 +163,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Result<HibNodeFieldContainer> getFieldContainers(String branchUuid, ContainerType type) {
-		Result<GraphFieldContainerEdgeImpl> it = GraphFieldContainerEdgeImpl.findEdges(this.getId(), branchUuid, type);
+		Result<GraphFieldContainerEdgeImpl> it = getFieldContainerEdges(branchUuid, type);
 		Iterator<NodeGraphFieldContainer> it2 = it.stream().map(e -> e.getNodeContainer()).iterator();
 		return new TraversalResult<>(it2);
 	}
@@ -208,7 +208,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Result<? extends HibNodeFieldContainerEdge> getFieldContainerEdges(String branchUuid, ContainerType type) {
+	public Result<GraphFieldContainerEdgeImpl> getFieldContainerEdges(String branchUuid, ContainerType type) {
 		return GraphFieldContainerEdgeImpl.findEdges(getId(), branchUuid, type);
 	}
 

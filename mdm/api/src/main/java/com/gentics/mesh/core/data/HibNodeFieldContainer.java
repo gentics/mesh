@@ -4,9 +4,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -15,8 +13,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.diff.FieldChangeTypes;
-import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -24,17 +20,9 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.error.Errors;
-import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
-import com.google.common.base.Equivalence;
-import com.google.common.collect.MapDifference;
-import com.google.common.collect.Maps;
 
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
@@ -253,6 +241,9 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 */
 	Set<String> getBranches(ContainerType type);
 
+	/**
+	 * Get the version of the schema of this container.
+	 */
 	HibSchemaVersion getSchemaContainerVersion();
 
 	/**
@@ -326,4 +317,14 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 * @return
 	 */
 	Result<HibNodeFieldContainer> versions();
+
+	@Override
+	default Stream<HibNodeFieldContainer> getContents() {
+		return Stream.of(this);
+	}
+
+	@Override
+	default ReferenceType getReferenceType() {
+		return ReferenceType.FIELD;
+	}
 }

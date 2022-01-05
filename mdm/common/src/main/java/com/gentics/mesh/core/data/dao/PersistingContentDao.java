@@ -40,10 +40,6 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.node.field.HibBooleanField;
-import com.gentics.mesh.core.data.node.field.HibDateField;
-import com.gentics.mesh.core.data.node.field.HibHtmlField;
-import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -130,35 +126,44 @@ public interface PersistingContentDao extends ContentDao {
 	 */
 	void connectFieldContainer(HibNode node, HibNodeFieldContainer container, HibBranch branch, String languageTag, boolean handleDraftEdge);
 
-
+	/**
+	 * Create an edge connection between the container and its node, based on the given edge properties.
+	 * 
+	 * @param node
+	 * @param container
+	 * @param branch
+	 * @param languageTag
+	 * @param initial
+	 * @return
+	 */
 	HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container, HibBranch branch,
 			String languageTag, ContainerType initial);
 
+	/**
+	 * Remove the connection edge.
+	 * 
+	 * @param edge
+	 */
 	void removeEdge(HibNodeFieldContainerEdge edge);
 
+	/**
+	 * Find the node edge with the given parameters: language, branch, type
+	 * 
+	 * @param node
+	 * @param languageTag
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
 	HibNodeFieldContainerEdge getEdge(HibNode node, String languageTag, String branchUuid, ContainerType type);
 
+	/**
+	 * Get the content container the edge is pointing to
+	 * 
+	 * @param edge
+	 * @return
+	 */
 	HibNodeFieldContainer getFieldContainerOfEdge(HibNodeFieldContainerEdge edge);
-
-	// Those are stubs. They will be replaced during ContentDao implementation.
-
-	@Deprecated
-	HibBooleanField createBoolean(HibNodeFieldContainer container, String name);
-	
-	@Deprecated
-	HibStringField createString(HibNodeFieldContainer container, String name);
-
-	@Deprecated
-	HibNumberField createNumber(HibNodeFieldContainer container, String name);
-	
-	@Deprecated
-	HibDateField createDate(HibNodeFieldContainer container, String name);
-	
-	@Deprecated
-	HibHtmlField createHtml(HibNodeFieldContainer container, String name);
-	
-	@Deprecated
-	HibBinaryField createBinary();
 
 	default HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container, String branchUUID, String languageTag, ContainerType initial) {
 		HibBranch branch = Tx.get().branchDao().findByUuid(node.getProject(), branchUUID);

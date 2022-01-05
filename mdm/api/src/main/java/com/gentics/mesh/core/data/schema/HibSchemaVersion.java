@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -39,31 +38,6 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
 	}
-
-	/**
-	 * Get container entity bound to this version.
-	 */
-	HibSchema getSchemaContainer();
-
-	/**
-	 * Bind container entity to this version.
-	 */
-	void setSchemaContainer(HibSchema container);
-
-	/**
-	 * Return the element version of the schema. Please note that this is not the schema version. The element version instead reflects the update history of the
-	 * element.
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
-	/**
-	 * Return jobs which reference the schema version.
-	 * 
-	 * @return
-	 */
-	Iterable<? extends HibJob> referencedJobsViaTo();
 
 	/**
 	 * Returns all nodes that the user has read permissions for.

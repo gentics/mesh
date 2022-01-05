@@ -1,8 +1,18 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -28,10 +38,14 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
 public interface HibFieldContainer extends HibBasicFieldContainer {
 
@@ -56,6 +70,17 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 */
 	HibField getField(FieldSchema fieldSchema);
 
+	/**
+	 * Get the type of this field container, that is used in the referencing content.
+	 * 
+	 * @return
+	 */
+	ReferenceType getReferenceType();
+	/**
+	 * List the fields of this container
+	 * 
+	 * @return
+	 */
 	default List<HibField> getFields() {
 		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
 		List<HibField> fields = new ArrayList<>();
@@ -119,12 +144,40 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * <li>Micronode list fields with node fields or node list fields</li>
 	 * </ul>
 	 */
-	Iterable<? extends HibNode> getReferencedNodes();
+	default Iterable<? extends HibNode> getReferencedNodes() {
+		// Get all fields and group them by type
+		Map<String, List<FieldSchema>> affectedFields = getSchemaContainerVersion().getSchema().getFields().stream()
+			.filter(this::isNodeReferenceType)
+			.collect(Collectors.groupingBy(FieldSchema::getType));
+
+		Function<FieldTypes, List<FieldSchema>> getFields = type -> Optional.ofNullable(affectedFields.get(type.toString()))
+			.orElse(Collections.emptyList());
+
+		Stream<Stream<HibNode>> nodeStream = Stream.of(
+			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
+			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
+			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
+		);
+		return nodeStream.flatMap(Function.identity())::iterator;
+	}
 
 	/**
 	 * Validate consistency of this container. This will check whether all mandatory fields have been filled
 	 */
-	void validate();
+	default void validate() {
+		FieldSchemaContainerVersion schema = getSchemaContainerVersion().getSchema();
+		Map<String, HibField> fieldsMap = getFields().stream().collect(Collectors.toMap(HibField::getFieldKey, Function.identity()));
+
+		schema.getFields().stream().forEach(fieldSchema -> {
+			HibField field = fieldsMap.get(fieldSchema.getName());
+			if (fieldSchema.isRequired() && field == null) {
+				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), schema.getName());
+			}
+			if (field != null) {
+				field.validate();
+			}
+		});
+	}
 
 	/**
 	 * Use the given map of rest fields to set the data from the map to this container.
@@ -135,8 +188,9 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields);
 
 	/**
-	 * Gets the NodeGraphFieldContainers connected to this FieldContainer. For NodeGraphFieldContainers this is simply the same object. For Micronodes this is
-	 * will return all contents that use this micronode.
+	 * Gets the HibNodeFieldContainers connected to this FieldContainer. 
+	 * For HibNodeFieldContainers this is simply the same object. 
+	 * For Micronodes this will return all contents that use this micronode.
 	 * 
 	 * @return
 	 */
@@ -411,4 +465,63 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @param key
 	 */
 	void deleteFieldEdge(String key);
+
+	/**
+	 * Checks if a field can have a node reference.
+	 */
+	private boolean isNodeReferenceType(FieldSchema schema) {
+		String type = schema.getType();
+		return type.equals(FieldTypes.NODE.toString()) || type.equals(FieldTypes.LIST.toString()) || type.equals(FieldTypes.MICRONODE.toString());
+	}
+
+	/**
+	 * Gets the node from a node field.
+	 * 
+	 * @param field
+	 *            The node field to get the node from
+	 * @return Gets the node as a stream or an empty stream if the node field is not set
+	 */
+	private Stream<HibNode> getNodeFromNodeField(FieldSchema field) {
+		return Optional.ofNullable(getNode(field.getName()))
+			.map(HibNodeField::getNode)
+			.map(Stream::of)
+			.orElseGet(Stream::empty);
+	}
+
+	/**
+	 * Gets the nodes that are referenced by a micronode in the given field. This includes all node fields and node list fields in the micronode.
+	 */
+	private Stream<? extends HibNode> getNodesFromMicronode(FieldSchema field) {
+		return Optional.ofNullable(getMicronode(field.getName()))
+			.map(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false))
+			.orElseGet(Stream::empty);
+	}
+
+	/**
+	 * Gets the nodes that are referenced by a list field. In case of a node list, all nodes in that list are returned. In case of a micronode list, all nodes
+	 * referenced by all node fields and node list fields in all microschemas are returned. Otherwise an empty stream is returned.
+	 */
+	private Stream<? extends HibNode> getNodesFromList(FieldSchema field) {
+		ListFieldSchema list;
+		if (field instanceof ListFieldSchema) {
+			list = (ListFieldSchema) field;
+		} else {
+			throw new InvalidParameterException("Invalid field type");
+		}
+
+		String type = list.getListType();
+		if (type.equals(FieldTypes.NODE.toString())) {
+			return Optional.ofNullable(getNodeList(list.getName()))
+				.map(listField -> listField.getList().stream())
+				.orElseGet(Stream::empty)
+				.map(HibNodeField::getNode);
+		} else if (type.equals(FieldTypes.MICRONODE.toString())) {
+			return Optional.ofNullable(getMicronodeList(list.getName()))
+				.map(listField -> listField.getList().stream())
+				.orElseGet(Stream::empty)
+				.flatMap(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false));
+		} else {
+			return Stream.empty();
+		}
+	}
 }

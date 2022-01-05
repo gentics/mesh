@@ -19,15 +19,12 @@ import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.IndexType.NOTUNIQUE;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -72,15 +69,13 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.impl.PathImpl;
-import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.traversals.EdgeTraversal;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -362,22 +357,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void validate() {
-		SchemaModel schema = getSchemaContainerVersion().getSchema();
-		Map<String, HibField> fieldsMap = getFields().stream().collect(Collectors.toMap(HibField::getFieldKey, Function.identity()));
-
-		schema.getFields().stream().forEach(fieldSchema -> {
-			HibField field = fieldsMap.get(fieldSchema.getName());
-			if (fieldSchema.isRequired() && field == null) {
-				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), schema.getName());
-			}
-			if (field != null) {
-				field.validate();
-			}
-		});
-	}
-
-	@Override
 	public List<HibMicronodeField> getMicronodeFields(HibMicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		return new TraversalResult<>(outE(HAS_FIELD)
@@ -476,11 +455,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public Result<HibNodeFieldContainer> versions() {
 		return new TraversalResult<>(StreamUtil.untilNull(() -> this, HibNodeFieldContainer::getPreviousVersion));
-	}
-
-	@Override
-	public Stream<NodeGraphFieldContainer> getContents() {
-		return Stream.of(this);
 	}
 
 	@Override
