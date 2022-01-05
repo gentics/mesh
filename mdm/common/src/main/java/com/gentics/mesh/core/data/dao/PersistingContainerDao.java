@@ -201,6 +201,9 @@ public interface PersistingContainerDao<
 			}));
 	}
 
-	@Override
+	/**
+	 * Method called before version is deleted
+	 * @param version
+	 */
 	default void beforeVersionDeletedFromDatabase(SCV version) {}
 }
