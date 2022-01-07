@@ -60,8 +60,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			CommonTx ctx = tx.unwrap();
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
-			version.setSchema(schemaModel);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> v.setSchema(schemaModel));
 			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
 			assertEquals("No changes were specified. No modification should happen.", schemaModel, updatedSchema);
@@ -76,15 +75,15 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			// 1. Create schema
 			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+				NumberFieldSchema numberField = new NumberFieldSchemaImpl();
+				numberField.setName("testField");
+				numberField.setRequired(true);
+				numberField.setLabel("originalLabel");
+				schemaModel.addField(numberField);
 
-			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
-			numberField.setName("testField");
-			numberField.setRequired(true);
-			numberField.setLabel("originalLabel");
-			schemaModel.addField(numberField);
-
-			version.setSchema(schemaModel);
+				v.setSchema(schemaModel);
+			});
 
 			HibFieldTypeChange fieldTypeChange = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			fieldTypeChange.setFieldName("testField");
@@ -109,16 +108,16 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			// 1. Create schema
 			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+				StringFieldSchema stringField = new StringFieldSchemaImpl();
+				stringField.setAllowedValues("blub");
+				stringField.setName("stringField");
+				stringField.setRequired(true);
+				stringField.setLabel("originalLabel");
+				schemaModel.addField(stringField);
 
-			StringFieldSchema stringField = new StringFieldSchemaImpl();
-			stringField.setAllowedValues("blub");
-			stringField.setName("stringField");
-			stringField.setRequired(true);
-			stringField.setLabel("originalLabel");
-			schemaModel.addField(stringField);
-
-			version.setSchema(schemaModel);
+				v.setSchema(schemaModel);
+			});
 
 			HibUpdateFieldChange stringFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			stringFieldUpdate.setFieldName("stringField");
@@ -142,59 +141,59 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			// 1. Create schema
 			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+				BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
+				binaryField.setName("binaryField");
+				binaryField.setAllowedMimeTypes("oldTypes");
+				binaryField.setRequired(true);
+				schemaModel.addField(binaryField);
 
-			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
-			binaryField.setName("binaryField");
-			binaryField.setAllowedMimeTypes("oldTypes");
-			binaryField.setRequired(true);
-			schemaModel.addField(binaryField);
+				StringFieldSchema stringField = new StringFieldSchemaImpl();
+				stringField.setAllowedValues("blub");
+				stringField.setName("stringField");
+				stringField.setRequired(true);
+				schemaModel.addField(stringField);
 
-			StringFieldSchema stringField = new StringFieldSchemaImpl();
-			stringField.setAllowedValues("blub");
-			stringField.setName("stringField");
-			stringField.setRequired(true);
-			schemaModel.addField(stringField);
+				NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
+				nodeField.setAllowedSchemas("blub");
+				nodeField.setName("nodeField");
+				nodeField.setRequired(true);
+				schemaModel.addField(nodeField);
 
-			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
-			nodeField.setAllowedSchemas("blub");
-			nodeField.setName("nodeField");
-			nodeField.setRequired(true);
-			schemaModel.addField(nodeField);
+				MicronodeFieldSchema micronodeField = new MicronodeFieldSchemaImpl();
+				micronodeField.setAllowedMicroSchemas("blub");
+				micronodeField.setName("micronodeField");
+				micronodeField.setRequired(true);
+				schemaModel.addField(micronodeField);
 
-			MicronodeFieldSchema micronodeField = new MicronodeFieldSchemaImpl();
-			micronodeField.setAllowedMicroSchemas("blub");
-			micronodeField.setName("micronodeField");
-			micronodeField.setRequired(true);
-			schemaModel.addField(micronodeField);
+				NumberFieldSchema numberField = new NumberFieldSchemaImpl();
+				numberField.setName("numberField");
+				numberField.setRequired(true);
+				schemaModel.addField(numberField);
 
-			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
-			numberField.setName("numberField");
-			numberField.setRequired(true);
-			schemaModel.addField(numberField);
+				HtmlFieldSchema htmlField = new HtmlFieldSchemaImpl();
+				htmlField.setName("htmlField");
+				htmlField.setRequired(true);
+				schemaModel.addField(htmlField);
 
-			HtmlFieldSchema htmlField = new HtmlFieldSchemaImpl();
-			htmlField.setName("htmlField");
-			htmlField.setRequired(true);
-			schemaModel.addField(htmlField);
+				BooleanFieldSchema booleanField = new BooleanFieldSchemaImpl();
+				booleanField.setName("booleanField");
+				booleanField.setRequired(true);
+				schemaModel.addField(booleanField);
 
-			BooleanFieldSchema booleanField = new BooleanFieldSchemaImpl();
-			booleanField.setName("booleanField");
-			booleanField.setRequired(true);
-			schemaModel.addField(booleanField);
+				DateFieldSchema dateField = new DateFieldSchemaImpl();
+				dateField.setName("dateField");
+				dateField.setRequired(true);
+				schemaModel.addField(dateField);
 
-			DateFieldSchema dateField = new DateFieldSchemaImpl();
-			dateField.setName("dateField");
-			dateField.setRequired(true);
-			schemaModel.addField(dateField);
+				ListFieldSchema listField = new ListFieldSchemaImpl();
+				listField.setName("listField");
+				listField.setListType("micronode");
+				listField.setRequired(true);
+				schemaModel.addField(listField);
 
-			ListFieldSchema listField = new ListFieldSchemaImpl();
-			listField.setName("listField");
-			listField.setListType("micronode");
-			listField.setRequired(true);
-			schemaModel.addField(listField);
-
-			version.setSchema(schemaModel);
+				v.setSchema(schemaModel);
+			});
 
 			// 2. Create schema field update change
 			HibUpdateFieldChange binaryFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);

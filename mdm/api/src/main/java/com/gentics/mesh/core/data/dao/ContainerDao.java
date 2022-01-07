@@ -49,12 +49,6 @@ public interface ContainerDao<
 	Result<? extends HibBranch> getBranches(SCV version);
 
 	/**
-	 * Method called before version is deleted
-	 * @param version
-	 */
-	void beforeVersionDeletedFromDatabase(SCV version);
-
-	/**
 	 * Delete the schema version, notifying context if necessary.
 	 * 
 	 * @param version
