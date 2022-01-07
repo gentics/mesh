@@ -211,13 +211,14 @@ public interface PersistingSchemaDao
 		}
 
 		HibSchema container = createPersisted(uuid);
-		HibSchemaVersion version = container.getLatestVersion();
-
-		// set the initial version
-		schema.setVersion("1.0");
-		version.setSchema(schema);
-		version.setName(schema.getName());
-		version.setSchemaContainer(container);
+		HibSchemaVersion version = createPersistedVersion(container, v -> {
+			// set the initial version
+			schema.setVersion("1.0");
+			v.setSchema(schema);
+			v.setName(schema.getName());
+			v.setSchemaContainer(container);			
+		});
+		container.setLatestVersion(version);
 		container.setCreated(creator);
 		container.setName(schema.getName());
 		container.generateBucketId();
