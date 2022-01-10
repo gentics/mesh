@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.6.17]]
+== 1.6.17 (TBD)
+
+icon:check[] Forms: Fixes `pathPrefix` value while rendering multipage forms. The value was only supplied on the first page of a form.
+
 [[v1.6.16]]
 == 1.6.16 (2021-12-17)
 

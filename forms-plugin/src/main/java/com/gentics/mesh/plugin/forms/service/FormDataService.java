@@ -129,7 +129,7 @@ public class FormDataService {
 
 	/**
 	 * Update already posted data
-	 * 
+	 *
 	 * @param ctx
 	 *            Request context
 	 * @return single of the post data response
@@ -150,7 +150,7 @@ public class FormDataService {
 
 	/**
 	 * Load the form data by uuid
-	 * 
+	 *
 	 * @param projectName
 	 *            project name
 	 * @param formUuid
@@ -198,7 +198,7 @@ public class FormDataService {
 
 	/**
 	 * Searches the data nodes of the specified form and sends the results to the meshClient.
-	 * 
+	 *
 	 * @param projectName
 	 *            project name
 	 * @param formUuid
@@ -246,7 +246,7 @@ public class FormDataService {
 
 	/**
 	 * Gets the binary field for the specified form data node and sends it to the meshClient.
-	 * 
+	 *
 	 * @param formUuid
 	 *            the UUID of the form node
 	 * @param formDataUuid
@@ -282,7 +282,7 @@ public class FormDataService {
 
 	/**
 	 * Render the form with data
-	 * 
+	 *
 	 * @param projectName
 	 *            project name
 	 * @param formUuid
@@ -295,52 +295,58 @@ public class FormDataService {
 	 * @return single buffer of rendered form
 	 */
 	public Single<Buffer> render(String projectName, String formUuid, String formDataUuid, RoutingContext rc, String...lang) {
-		return Single.zip(statusService.languageFallback(projectName, lang).flatMap(langFallback -> formService.loadAsAdmin(projectName, formUuid, true, langFallback)),
+		return statusService.getPathPrefixOfDefaultBranch(projectName)
+			.flatMap(pathPrefix -> Single.zip(
+				statusService.languageFallback(projectName, lang)
+					.flatMap(langFallback -> formService.loadAsAdmin(projectName, formUuid, true, langFallback)),
 				load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
-			(formNode, formDataNode) -> {
-				JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
+				(formNode, formDataNode) -> {
+					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 
-				formService.removeInactiveElements(formJson);
+					formService.removeInactiveElements(formJson);
 
-				// add id
-				formJson.put("id", formUuid);
-				// add property "multipage"
-				formJson.put("multipage", formService.isMultipage(formJson));
-				// add options
-				formJson.put("options", JsonObject.mapFrom(configuration));
+					// add id
+					formJson.put("id", formUuid);
+					// add property "multipage"
+					formJson.put("multipage", formService.isMultipage(formJson));
+					// add options
+					formJson.put("options", JsonObject.mapFrom(configuration));
+					// add path prefix
+					formJson.put("pathPrefix", pathPrefix);
 
-				return RxUtil.fromNullable(formDataNode)
-					.flatMapSingleElement(fdn -> formService.toForm(formNode)
-					.map(form -> {
-						// only fill in data, if form is not published
-						if (!isFormDataPublished(fdn)) {
-							JsonObject formDataJson = form.getFormDataJson(fdn);
-							formJson.put("dataid", formDataUuid);
-							mergeData(formJson, formDataJson);
-						}
+					return RxUtil.fromNullable(formDataNode)
+						.flatMapSingleElement(fdn -> formService.toForm(formNode)
+							.map(form -> {
+								// only fill in data, if form is not published
+								if (!isFormDataPublished(fdn)) {
+									JsonObject formDataJson = form.getFormDataJson(fdn);
+									formJson.put("dataid", formDataUuid);
+									mergeData(formJson, formDataJson);
+								}
 
-						if (!form.isCompleted(fdn)) {
-							// get completed formpages
-							Set<String> completed = form.flattened().filter(elem -> elem instanceof FormpageElement)
-								.filter(elem -> elem.isCompleted(fdn))
-								.map(FormElement::getName).collect(Collectors.toSet());
-							return completed;
-						}
-						return Collections.<String>emptySet();
-					})).toSingle(Collections.emptySet())
-				.flatMap(completed -> {
-					formService.markFormpages(formJson, completed);
+								if (!form.isCompleted(fdn)) {
+									// get completed formpages
+									Set<String> completed = form.flattened().filter(elem -> elem instanceof FormpageElement)
+										.filter(elem -> elem.isCompleted(fdn))
+										.map(FormElement::getName).collect(Collectors.toSet());
+									return completed;
+								}
+								return Collections.<String>emptySet();
+							})).toSingle(Collections.emptySet())
+						.flatMap(completed -> {
+							formService.markFormpages(formJson, completed);
 
-					rc.put("form", formJson);
+							rc.put("form", formJson);
 
-					return templateEngine.rxRender(rc.data(), "form");
-				});
-			}).flatMap(s -> s);
+							return templateEngine.rxRender(rc.data(), "form");
+						});
+				}))
+				.flatMap(s -> s);
 	}
 
 	/**
 	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
-	 * 
+	 *
 	 * @param ctx
 	 * @return single redirect URL
 	 */
@@ -378,7 +384,7 @@ public class FormDataService {
 
 	/**
 	 * Save the form data to mesh
-	 * 
+	 *
 	 * @param projectName
 	 *            project name
 	 * @param formNode
@@ -510,7 +516,7 @@ public class FormDataService {
 
 	/**
 	 * Get the path from the given URL
-	 * 
+	 *
 	 * @param url
 	 *            URL
 	 * @return path
@@ -529,7 +535,7 @@ public class FormDataService {
 
 	/**
 	 * Check whether the node is a form data node (parent node uses the form schema)
-	 * 
+	 *
 	 * @param node
 	 *            node to check
 	 * @return true for form data nodes
@@ -540,10 +546,10 @@ public class FormDataService {
 
 	/**
 	 * Loads the specified form and creates a GraphQLRequest with a query to find the form data nodes (and the page) indicated by the HTTP query string.
-	 * 
+	 *
 	 * @param formUuid
 	 *            the UUID of the form
-	 * 
+	 *
 	 * @return a GraphQLRequest
 	 * @throws IOException
 	 *             if loading the ElasticSearch or GraphQL query fails
@@ -571,7 +577,7 @@ public class FormDataService {
 
 	/**
 	 * Creates an ElasticSearch query to find data nodes for the specified form with the search string (if any) that is contained in the HTTP query string.
-	 * 
+	 *
 	 * @param formUuid
 	 *            the UUID of the form
 	 * @param userQuery
@@ -597,7 +603,7 @@ public class FormDataService {
 
 	/**
 	 * Find the json object representing the element with given name
-	 * 
+	 *
 	 * @param form
 	 *            form to search
 	 * @param name
@@ -624,7 +630,7 @@ public class FormDataService {
 
 	/**
 	 * Merge the form data into the form
-	 * 
+	 *
 	 * @param form
 	 *            form
 	 * @param formData
