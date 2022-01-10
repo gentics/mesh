@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
@@ -45,4 +46,10 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	default boolean isValid() {
 		return getElement() != null;
 	}
+
+	/**
+	 * Return a result of all the edges of this container
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainerEdge> getEdges();
 }

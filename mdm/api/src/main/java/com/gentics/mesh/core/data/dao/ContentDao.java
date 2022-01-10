@@ -913,4 +913,11 @@ public interface ContentDao {
 	 * @return
 	 */
 	Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type);
+
+	/**
+	 * Get all the edges for the given content
+	 * @param content
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainerEdge> getEdges(HibNodeFieldContainer content);
 }

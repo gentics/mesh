@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
@@ -38,6 +39,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -1765,4 +1767,60 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return null;
 	}
 
+	@Override
+	default void addReferenceUpdates(HibNode node, BulkActionContext bac) {
+		Set<String> handledNodeUuids = new HashSet<>();
+		ContentDao contentDao = Tx.get().contentDao();
+
+		contentDao.getInboundReferences(node)
+				.flatMap(HibNodeField::getReferencingContents)
+				.forEach(nodeContainer -> {
+					for (HibNodeFieldContainerEdge edge : contentDao.getEdges(nodeContainer)) {
+						ContainerType type = edge.getType();
+						// Only handle published or draft contents
+						if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
+							HibNode parent = edge.getNode();
+							String uuid = node.getUuid();
+							String languageTag = nodeContainer.getLanguageTag();
+							String branchUuid = edge.getBranchUuid();
+							String key = uuid + languageTag + branchUuid + type.getCode();
+							if (!handledNodeUuids.contains(key)) {
+								bac.add(onReferenceUpdated(node, node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+								handledNodeUuids.add(key);
+							}
+						}
+					}
+				});
+	}
+
+	/**
+	 * Create a new referenced element update event model.
+	 *
+	 * @param node
+	 * 			the node to add to the reference update event
+	 * @param uuid
+	 *            Uuid of the referenced node
+	 * @param schema
+	 *            Schema of the referenced node
+	 * @param branchUuid
+	 *            Branch of the referenced node
+	 * @param type
+	 *            Type of the content that was updated (if known)
+	 * @param languageTag
+	 *            Language of the content that was updated (if known)
+	 * @return
+	 */
+	private NodeMeshEventModel onReferenceUpdated(HibNode node, String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
+		event.setEvent(NODE_REFERENCE_UPDATED);
+		event.setUuid(uuid);
+		event.setLanguageTag(languageTag);
+		event.setType(type);
+		event.setBranchUuid(branchUuid);
+		event.setProject(node.getProject().transformToReference());
+		if (schema != null) {
+			event.setSchema(schema.transformToReference());
+		}
+		return event;
+	}
 }

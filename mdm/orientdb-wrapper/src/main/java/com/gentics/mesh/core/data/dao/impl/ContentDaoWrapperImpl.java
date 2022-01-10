@@ -104,6 +104,11 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
+	public Result<? extends HibNodeFieldContainerEdge> getEdges(HibNodeFieldContainer content) {
+		return toGraph(content).getEdges();
+	}
+
+	@Override
 	public void delete(HibNodeFieldContainer content, BulkActionContext bac) {
 		content.delete(bac);
 	}

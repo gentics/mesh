@@ -113,13 +113,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 */
 	void removeElement();
 
-	/**
-	 * Adds reference update events to the context for all draft and published contents that reference this node.
-	 *
-	 * @param bac
-	 */
-	void addReferenceUpdates(BulkActionContext bac);
-
 	void removeParent(String branchUuid);
 
 	/**

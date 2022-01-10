@@ -59,8 +59,6 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
@@ -68,7 +66,6 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -86,16 +83,12 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
-import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
@@ -352,31 +345,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void addReferenceUpdates(BulkActionContext bac) {
-		Set<String> handledNodeUuids = new HashSet<>();
-
-		getInboundReferences()
-			.flatMap(HibNodeField::getReferencingContents)
-			.forEach(nodeContainer -> {
-				for (GraphFieldContainerEdgeImpl edge : toGraph(nodeContainer).inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class)) {
-					ContainerType type = edge.getType();
-					// Only handle published or draft contents
-					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-						HibNode node = nodeContainer.getNode();
-						String uuid = node.getUuid();
-						String languageTag = nodeContainer.getLanguageTag();
-						String branchUuid = edge.getBranchUuid();
-						String key = uuid + languageTag + branchUuid + type.getCode();
-						if (!handledNodeUuids.contains(key)) {
-							bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
-							handledNodeUuids.add(key);
-						}
-					}
-				}
-			});
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		Tx.get().nodeDao().delete(this, bac, false, true);
 	}
@@ -464,35 +432,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		model.setProject(getProject().transformToReference());
 		fillEventInfo(model);
 		return model;
-	}
-
-	/**
-	 * Create a new referenced element update event model.
-	 * 
-	 * @param uuid
-	 *            Uuid of the referenced node
-	 * @param schema
-	 *            Schema of the referenced node
-	 * @param branchUuid
-	 *            Branch of the referenced node
-	 * @param type
-	 *            Type of the content that was updated (if known)
-	 * @param languageTag
-	 *            Language of the content that was updated (if known)
-	 * @return
-	 */
-	private NodeMeshEventModel onReferenceUpdated(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(NODE_REFERENCE_UPDATED);
-		event.setUuid(uuid);
-		event.setLanguageTag(languageTag);
-		event.setType(type);
-		event.setBranchUuid(branchUuid);
-		event.setProject(getProject().transformToReference());
-		if (schema != null) {
-			event.setSchema(schema.transformToReference());
-		}
-		return event;
 	}
 
 	@Override

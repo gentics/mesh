@@ -136,11 +136,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public void addReferenceUpdates(HibNode node, BulkActionContext bac) {
-		toGraph(node).addReferenceUpdates(bac);
-	}
-
-	@Override
 	public void removeElement(HibNode node) {
 		toGraph(node).removeElement();
 	}
