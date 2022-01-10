@@ -66,16 +66,6 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	Iterable<? extends HibJob> referencedJobsViaTo();
 
 	/**
-	 * Returns all nodes that the user has read permissions for.
-	 *
-	 * @param branchUuid Branch uuid
-	 * @param user User to check permissions for
-	 * @param type Container type
-	 * @return
-	 */
-	Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type);
-
-	/**
 	 * Check the autopurge flag of the version.
 	 * 
 	 * @return

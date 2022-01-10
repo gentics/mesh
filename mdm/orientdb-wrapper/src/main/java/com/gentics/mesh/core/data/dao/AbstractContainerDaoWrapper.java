@@ -58,7 +58,7 @@ public abstract class AbstractContainerDaoWrapper<
 	}
 
 	@Override
-	public void deleteChange(HibSchemaChange<?> change, BulkActionContext bac) {
+	public void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bac) {
 		toGraph(change).delete(bac);
 	}
 
