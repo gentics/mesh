@@ -7,7 +7,7 @@
     <parent>
         <artifactId>mesh-export-plugin-base</artifactId>
         <groupId>com.gentics.mesh.plugin.commercial</groupId>
-        <version>1.6.17</version>
+        <version>1.6.18-SNAPSHOT</version>
     </parent>
 
     <artifactId>mesh-export-plugin-extension-api</artifactId>
