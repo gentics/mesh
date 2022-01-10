@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
@@ -130,8 +131,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Path resolvePath(HibNode baseNode, String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack) {
-		return toGraph(baseNode).resolvePath(branchUuid, type, nodePath, pathStack);
+	public Iterator<? extends HibNodeFieldContainerEdge> getEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type) {
+		return toGraph(node).getEdges(segmentInfo, branchUuid, type);
 	}
 
 	@Override

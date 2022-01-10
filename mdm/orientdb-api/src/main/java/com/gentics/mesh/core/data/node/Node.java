@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -100,6 +100,15 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	boolean hasTag(HibTag tag, HibBranch branch);
 
 	/**
+	 * Get edges for the given segment info, branch uuid and container type
+	 * @param segmentInfo
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Iterator<? extends GraphFieldContainerEdge> getEdges(String segmentInfo, String branchUuid, ContainerType type);
+
+	/**
 	 * Remove the element.
 	 */
 	void removeElement();
@@ -140,18 +149,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
-
-	/**
-	 * Resolve the given path and return the path object that contains the resolved nodes.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 *            edge type
-	 * @param nodePath
-	 * @param pathStack
-	 * @return
-	 */
-	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.

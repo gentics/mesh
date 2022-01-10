@@ -24,7 +24,6 @@ import static com.gentics.mesh.madl.field.FieldType.STRING_SET;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.HashSet;
@@ -32,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -442,79 +440,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Tx.get().nodeDao().update(this.getProject(), this, ac, batch);
 	}
 
-	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
-		// Check the different language versions
-		for (HibNodeFieldContainer container : Tx.get().contentDao().getFieldContainers(this, branchUuid, type)) {
-			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
-			String segmentFieldName = schema.getSegmentField();
-			// First check whether a string field exists for the given name
-			HibStringField field = container.getString(segmentFieldName);
-			if (field != null) {
-				String fieldValue = field.getString();
-				if (segment.equals(fieldValue)) {
-					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
-				}
-			}
-
-			// No luck yet - lets check whether a binary field matches the
-			// segmentField
-			HibBinaryField binaryField = container.getBinary(segmentFieldName);
-			if (binaryField == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-						+ "}");
-				}
-			} else {
-				String binaryFilename = binaryField.getFileName();
-				if (segment.equals(binaryFilename)) {
-					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
-				}
-			}
-			// No luck yet - lets check whether a S3 binary field matches the segmentField
-			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
-			if (s3Binary == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-							+ "}");
-				}
-			} else {
-				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
-				if (segment.equals(s3binaryFilename)) {
-					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
-				}
-			}
-
-		}
-		return null;
-	}
-
 	@Override
-	public Path resolvePath(String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
-		if (pathStack.isEmpty()) {
-			return path;
-		}
-		String segment = pathStack.pop();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Resolving for path segment {" + segment + "}");
-		}
-
+	public Iterator<? extends GraphFieldContainerEdge> getEdges(String segmentInfo, String branchUuid, ContainerType type) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		String segmentInfo = Tx.get().contentDao().composeSegmentInfo(this, segment);
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
-			.iterator();
-		if (edges.hasNext()) {
-			GraphFieldContainerEdge edge = edges.next();
-			NodeImpl childNode = (NodeImpl) edge.getNode();
-			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
-			if (pathSegment != null) {
-				path.addSegment(pathSegment);
-				return childNode.resolvePath(branchUuid, type, path, pathStack);
-			}
-		}
-		return path;
-
+		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
 	}
 
 	@Override

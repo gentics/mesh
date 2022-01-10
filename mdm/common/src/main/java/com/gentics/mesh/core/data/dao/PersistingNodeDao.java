@@ -31,10 +31,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -1686,4 +1693,76 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish");
 	}
+
+	@Override
+	default Path resolvePath(HibNode baseNode, String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
+		if (pathStack.isEmpty()) {
+			return path;
+		}
+		String segment = pathStack.pop();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Resolving for path segment {" + segment + "}");
+		}
+
+		String segmentInfo = Tx.get().contentDao().composeSegmentInfo(baseNode, segment);
+		Iterator<? extends HibNodeFieldContainerEdge> edges = getEdges(baseNode, segmentInfo, branchUuid, type);
+		if (edges.hasNext()) {
+			HibNodeFieldContainerEdge edge = edges.next();
+			HibNode childNode = edge.getNode();
+			PathSegment pathSegment = getSegment(childNode, branchUuid, type, segment);
+			if (pathSegment != null) {
+				path.addSegment(pathSegment);
+				return resolvePath(childNode, branchUuid, type, path, pathStack);
+			}
+		}
+		return path;
+	}
+
+	private PathSegment getSegment(HibNode node, String branchUuid, ContainerType type, String segment) {
+		// Check the different language versions
+		for (HibNodeFieldContainer container : Tx.get().contentDao().getFieldContainers(node, branchUuid, type)) {
+			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
+			String segmentFieldName = schema.getSegmentField();
+			// First check whether a string field exists for the given name
+			HibStringField field = container.getString(segmentFieldName);
+			if (field != null) {
+				String fieldValue = field.getString();
+				if (segment.equals(fieldValue)) {
+					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
+				}
+			}
+
+			// No luck yet - lets check whether a binary field matches the
+			// segmentField
+			HibBinaryField binaryField = container.getBinary(segmentFieldName);
+			if (binaryField == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String binaryFilename = binaryField.getFileName();
+				if (segment.equals(binaryFilename)) {
+					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
+				}
+			}
+			// No luck yet - lets check whether a S3 binary field matches the segmentField
+			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
+			if (s3Binary == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
+				if (segment.equals(s3binaryFilename)) {
+					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
+				}
+			}
+
+		}
+		return null;
+	}
+
 }
