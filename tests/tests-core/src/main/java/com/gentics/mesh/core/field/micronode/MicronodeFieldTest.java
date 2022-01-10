@@ -358,15 +358,17 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
 			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			// Create microschema for the micronode
-			HibMicroschemaVersion containerVersion = ctx.microschemaDao().createPersistedVersion(dummyMicroschema);
+
 			MicroschemaVersionModel microschema = new MicroschemaModelImpl();
 			microschema.setVersion("1.0");
 			microschema.addField(FieldUtil.createStringFieldSchema("string"));
 			microschema.addField(FieldUtil.createDateFieldSchema("date"));
 
-			// rest null - graph null
-			containerVersion.setSchema(microschema);
+			// Create microschema for the micronode
+			HibMicroschemaVersion containerVersion = ctx.microschemaDao().createPersistedVersion(dummyMicroschema, v -> {
+				// rest null - graph null
+				v.setSchema(microschema);
+			});
 			HibMicronodeField fieldA = container.createMicronode(MICRONODE_FIELD, containerVersion);
 			MicronodeResponse restField = new MicronodeResponse();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));

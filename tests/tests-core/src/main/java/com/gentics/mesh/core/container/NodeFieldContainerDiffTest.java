@@ -99,13 +99,14 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 
 			// Create microschema vcard
 			HibMicroschema schemaContainer = createMicroschema(tx);
-			HibMicroschemaVersion version = createMicroschemaVersion(tx, schemaContainer);
-			schemaContainer.setLatestVersion(version);
-			MicroschemaVersionModel microschema = new MicroschemaModelImpl();
-			microschema.setName("vcard");
-			microschema.getFields().add(FieldUtil.createStringFieldSchema("firstName"));
-			microschema.getFields().add(FieldUtil.createStringFieldSchema("lastName"));
-			version.setSchema(microschema);
+			HibMicroschemaVersion version = createMicroschemaVersion(tx, schemaContainer, v -> {
+				schemaContainer.setLatestVersion(v);
+				MicroschemaVersionModel microschema = new MicroschemaModelImpl();
+				microschema.setName("vcard");
+				microschema.getFields().add(FieldUtil.createStringFieldSchema("firstName"));
+				microschema.getFields().add(FieldUtil.createStringFieldSchema("lastName"));
+				v.setSchema(microschema);
+			});
 
 			HibMicronodeField micronodeA = containerA.createMicronode("micronodeField", version);
 			micronodeA.getMicronode().createString("firstName").setString("firstnameValue");

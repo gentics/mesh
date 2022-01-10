@@ -30,7 +30,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
 			HibMicroschema microschema = microschemaDao.createPersisted(null);
-			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema);
+			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema, v -> {});
 			HibUpdateMicroschemaChange change = (HibUpdateMicroschemaChange) microschemaDao.createPersistedChange(version, SchemaChangeOperation.UPDATEMICROSCHEMA);
 			change.setDescription("test");
 			assertEquals("test", change.getDescription());
@@ -43,7 +43,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
 			HibMicroschema microschema = microschemaDao.createPersisted(null);
-			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema);
+			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema, v -> {});
 			
 			MicroschemaModelImpl schema = new MicroschemaModelImpl();
 
@@ -71,7 +71,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
 			HibMicroschema microschema = microschemaDao.createPersisted(null);
-			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema);
+			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema, v -> {});
 			
 			SchemaChangeModel model = SchemaChangeModel.createUpdateMicroschemaChange();
 			model.setProperty(SchemaChangeModel.NAME_KEY, "someName");
@@ -88,7 +88,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
 			HibMicroschema microschema = microschemaDao.createPersisted(null);
-			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema);
+			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema, v -> {});
 			HibUpdateMicroschemaChange change = (HibUpdateMicroschemaChange) microschemaDao.createPersistedChange(version, SchemaChangeOperation.UPDATEMICROSCHEMA);
 			change.setName("vcard");
 
