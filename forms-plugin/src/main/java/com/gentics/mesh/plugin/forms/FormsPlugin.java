@@ -123,6 +123,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			.configuration(configuration)
 			.vertx(vertx())
 			.storageDir(getStorageDir())
+			.manifest(getManifest())
 			.build();
 	}
 

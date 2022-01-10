@@ -20,13 +20,15 @@ public class PostDataHandler extends AbstractFormsHandler {
 
 	@Override
 	public Completable handle(PluginContext context) {
-		return formDataService.create(new FormDataSaveContext(context, true)).doOnSuccess(response -> {
-			String redirectUrl = response.getRedirectUrl();
-			if (redirectUrl != null && !"".equals(redirectUrl)) {
-				context.response().setStatusCode(303).putHeader("Location", redirectUrl).end();
-			} else {
-				context.response().setStatusCode(205).end();
-			}
-		}).ignoreElement();
+		return formDataService.create(new FormDataSaveContext(context, true))
+			.doOnSuccess(response -> {
+				String redirectUrl = response.getRedirectUrl();
+				if (redirectUrl != null && !"".equals(redirectUrl)) {
+					context.response().setStatusCode(303).putHeader("Location", redirectUrl).end();
+				} else {
+					context.response().setStatusCode(205).end();
+				}
+			})
+			.ignoreElement();
 	}
 }

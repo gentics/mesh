@@ -1,0 +1,75 @@
+{
+	"name": "Full poll",
+	"type": "POLL",
+	"elements": [
+		{
+			"type": "checkbox",
+			"name": "checkbox1",
+			"label": "Checkbox element"
+		},
+		{
+			"type": "selectgroup",
+			"name": "radiobuttons1",
+			"select_type": "radiobuttons",
+			"label": "Radio buttons element",
+			"listelements": [
+				{
+					"label": "Option which is never selected",
+					"value": "r_X"
+				},
+				{
+					"label": "Radio button option 1",
+					"value": "r_1"
+				},
+				{
+					"label": "Radio button option 2",
+					"value": "r_2"
+				},
+				{
+					"label": "Radio button option 3",
+					"value": "r_3"
+				}
+			]
+		},
+		{
+			"type": "selectgroup",
+			"name": "singleselect1",
+			"select_type": "singleselect",
+			"label": "Single-select element",
+			"listelements": [
+				{
+					"label": "Single-select option 1",
+					"value": "s_1"
+				},
+				{
+					"label": "Single-select option 2",
+					"value": "s_2"
+				},
+				{
+					"label": "Single-select option 3",
+					"value": "s_3"
+				}
+			]
+		},
+		{
+			"type": "selectgroup",
+			"name": "multiselect1",
+			"select_type": "multiselect",
+			"label": "Multi-select element",
+			"listelements": [
+				{
+					"label": "Multi-select option 1",
+					"value": "m_1"
+				},
+				{
+					"label": "Multi-select option 2",
+					"value": "m_2"
+				},
+				{
+					"label": "Multi-select option 3",
+					"value": "m_3"
+				}
+			]
+		}
+	]
+}

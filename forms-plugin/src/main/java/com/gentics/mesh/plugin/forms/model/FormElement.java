@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.forms.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -30,6 +31,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 
+import javax.ws.rs.core.Link;
+
 /**
  * Abstract form element
  */
@@ -39,6 +42,8 @@ public abstract class FormElement {
 	private String name;
 
 	private String label;
+
+	private String type;
 
 	private boolean active = true;
 
@@ -84,6 +89,22 @@ public abstract class FormElement {
 	 */
 	public void setLabel(String label) {
 		this.label = label;
+	}
+
+	/**
+	 * Element type
+	 * @return type
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * Set the element type
+	 * @param type type
+	 */
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	/**
@@ -299,6 +320,36 @@ public abstract class FormElement {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Add poll data from the given form data node to the specfied results
+	 * object.
+	 *
+	 * <p>
+	 *     The base implementation will add the type and the label of the form
+	 *     element, and make sure a {@code values} field exists which is a map
+	 *     from form values to the number of votes for that value. It will also
+	 *     initialise the {@total} field to 0 if it is not already present.
+	 * </p>
+	 *
+	 * @param results The {@code JsonObject} to gather results into
+	 * @param formData The form data node to get values from
+	 */
+	public void addPollData(JsonObject results, FieldContainer formData) {
+		if (!results.containsKey("type")) {
+			results.put("type", getType());
+		}
+
+		if (!results.containsKey("label")) {
+			results.put("label", getLabel());
+		}
+
+		if (!results.containsKey("values")) {
+			results.put("values", new JsonObject(new LinkedHashMap<>()));
+		}
+
+		results.put("total", results.getInteger("total", 0) + 1);
 	}
 
 	/**

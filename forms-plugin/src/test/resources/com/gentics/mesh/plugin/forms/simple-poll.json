@@ -1,0 +1,11 @@
+{
+	"name": "Simple poll",
+	"type": "POLL",
+	"elements": [
+		{
+			"type": "checkbox",
+			"name": "checkbox1",
+			"label": "Checkbox element"
+		}
+	]
+}

@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.plugin.forms.export.ExportFormat;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +42,9 @@ public class FormsConfig {
 	private MailOptions mailOptions = new MailOptions();
 
 	private boolean validateElements = false;
+
+	@JsonProperty("poll")
+	private PollOptions pollOptions = new PollOptions();
 
 	public String getFromAddress() {
 		return fromAddress;
@@ -165,5 +169,20 @@ public class FormsConfig {
 
 	public void setCustom(Map<String, Object> custom) {
 		this.custom = custom;
+	}
+
+	@Nonnull
+	public PollOptions getPollOptions() {
+		if (pollOptions == null) {
+			pollOptions = new PollOptions();
+		}
+
+		return pollOptions;
+	}
+
+	public FormsConfig setPollOptions(PollOptions pollOptions) {
+		this.pollOptions = pollOptions;
+
+		return this;
 	}
 }

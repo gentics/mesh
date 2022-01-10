@@ -1,25 +1,5 @@
 package com.gentics.mesh.plugin.forms.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -34,6 +14,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.forms.FormsError;
@@ -43,9 +24,11 @@ import com.gentics.mesh.plugin.forms.context.FormDataSaveContext;
 import com.gentics.mesh.plugin.forms.export.Exporter;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
+import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.FormpageElement;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -53,7 +36,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
-
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -67,13 +49,37 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Singleton
 public class FormDataService {
 	/**
 	 * Name of the cookie, the user will get when a form is partially filled (the cookie value is the uuid of the form data node)
 	 */
-	public final static String COOKIE_NAME = "forms-data";
+	public final static String COOKIE_NAME_DATA = "forms-data";
+
+	public final static String COOKIE_NAME_VOTED = "forms-voted";
+
+	public final static String COOKIE_VOTED_SEPARATOR = ":";
 
 	private static final Logger log = LoggerFactory.getLogger(FormDataService.class);
 
@@ -97,9 +103,11 @@ public class FormDataService {
 
 	private final StatusService statusService;
 
+	private final String pluginId;
+
 	@Inject
 	public FormDataService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient, Vertx vertx, FormsConfig configuration, ObjectMapper objectMapper,
-						   FormService formService, PagingService pagingService, MailService mailService, HandlebarsTemplateEngine templateEngine, StatusService statusService) {
+						   FormService formService, PagingService pagingService, MailService mailService, HandlebarsTemplateEngine templateEngine, StatusService statusService, PluginManifest manifest) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.vertx = vertx;
@@ -110,6 +118,7 @@ public class FormDataService {
 		this.mailService = mailService;
 		this.templateEngine = templateEngine;
 		this.statusService = statusService;
+		this.pluginId = manifest.getId();
 	}
 
 	/**
@@ -161,7 +170,7 @@ public class FormDataService {
 	 */
 	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid) {
 		return adminClient.findNodeByUuid(projectName, formDataUuid).toSingle().flatMap(formDataNode -> {
-			if (isFormDataNode(formDataNode) && formUuid.equals(formDataNode.getParentNode().getUuid())) {
+			if (FormUtil.isFormDataNode(formDataNode) && formUuid.equals(formDataNode.getParentNode().getUuid())) {
 				return Single.just(formDataNode);
 			} else {
 				String message = String.format("Object with uuid \"%s\" could not be found.", formDataUuid);
@@ -360,7 +369,7 @@ public class FormDataService {
 				} else {
 					// set the data cookie
 					if (ctx.handleCookies()) {
-						Cookie cookie = Cookie.cookie(COOKIE_NAME, savedFileUploads.getUuid());
+						Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, savedFileUploads.getUuid());
 						cookie.setPath(getPath(ctx.getReferer()));
 						cookie.setHttpOnly(true);
 						ctx.getContext().addCookie(cookie);
@@ -490,14 +499,20 @@ public class FormDataService {
 			// send mails to admin and user
 			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
 
+			boolean isPoll = ctx.getForm().getType() == FormType.POLL;
+
 			// remove the data cookie
 			if (ctx.handleCookies()) {
-				meshContext.removeCookie(COOKIE_NAME);
-				Cookie cookie = Cookie.cookie(COOKIE_NAME, "");
+				meshContext.removeCookie(COOKIE_NAME_DATA);
+				Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
 				cookie.setPath(getPath(ctx.getReferer()));
 				cookie.setHttpOnly(true);
 				cookie.setMaxAge(0);
 				meshContext.addCookie(cookie);
+
+				if (isPoll) {
+					addPollCookie(ctx);
+				}
 			}
 
 			PostDataResponse response = new PostDataResponse();
@@ -506,12 +521,58 @@ public class FormDataService {
 			response.setFinished(true);
 			if (form.getSuccessurl() != null) {
 				response.setRedirectUrl(form.getSuccessurl());
+			} else if (isPoll) {
+				response.setRedirectUrl(ctx.getReferer());
 			} else {
 				response.setRedirectUrl("");
 			}
 
 			return response;
 		});
+	}
+
+	/**
+	 * Add or update the {@link #COOKIE_NAME_VOTED forms-voted} cookie to
+	 * include the UUID of the form for which data was saved.
+	 *
+	 * <p>
+	 *     The form UUIDs in the resulting cookie are delimited by a colon
+	 *     ({@code :}).
+	 * </p>
+	 *
+	 * @param ctx The current form data save context
+	 */
+	private void addPollCookie(FormDataSaveContext ctx) {
+		PluginContext pc = ctx.getContext();
+		String formUuid = ctx.getFormUuid();
+		String votedPolls = Optional.ofNullable(pc.getCookie(COOKIE_NAME_VOTED))
+			.map(Cookie::getValue)
+			.filter(StringUtils::isNotBlank)
+			.map(old -> {
+				String[] uuids = old.split(COOKIE_VOTED_SEPARATOR);
+				// Initialise the set big enough to avoid resizing (0.75 is the default load factor).
+				Set<String> voted = new HashSet<>((int) (uuids.length / .75f) + 1);
+
+				// Make sure every UUID is present only once by putting them in a set, ...
+				for (String uuid : uuids) {
+					voted.add(uuid);
+				}
+
+				voted.add(formUuid);
+
+				// ... and that there are no empty "fields" in the cookie value.
+				voted.removeIf(StringUtils::isBlank);
+
+				return String.join(COOKIE_VOTED_SEPARATOR, voted);
+			})
+			.orElse(formUuid);
+
+		Cookie cookie = Cookie.cookie(COOKIE_NAME_VOTED, votedPolls)
+			.setPath(getPath(ctx.getReferer()))
+			.setHttpOnly(true)
+			.setMaxAge(Integer.MAX_VALUE);
+
+		pc.addCookie(cookie);
 	}
 
 	/**
@@ -531,17 +592,6 @@ public class FormDataService {
 		}
 
 		return url;
-	}
-
-	/**
-	 * Check whether the node is a form data node (parent node uses the form schema)
-	 *
-	 * @param node
-	 *            node to check
-	 * @return true for form data nodes
-	 */
-	private boolean isFormDataNode(NodeResponse node) {
-		return SchemaService.SCHEMA_NAME.equals(node.getParentNode().getSchema().getName());
 	}
 
 	/**
@@ -602,33 +652,6 @@ public class FormDataService {
 	}
 
 	/**
-	 * Find the json object representing the element with given name
-	 *
-	 * @param form
-	 *            form to search
-	 * @param name
-	 *            element name
-	 * @return json object or null if not found
-	 */
-	private JsonObject findElement(JsonObject form, String name) {
-		JsonArray elements = form.getJsonArray("elements");
-		if (elements != null) {
-			for (int i = 0; i < elements.size(); i++) {
-				JsonObject element = elements.getJsonObject(i);
-				if (name.equals(element.getString("name"))) {
-					return element;
-				} else {
-					JsonObject subElement = findElement(element, name);
-					if (subElement != null) {
-						return subElement;
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * Merge the form data into the form
 	 *
 	 * @param form
@@ -638,7 +661,7 @@ public class FormDataService {
 	 */
 	private void mergeData(JsonObject form, JsonObject formData) {
 		for (String elementName : formData.fieldNames()) {
-			JsonObject element = findElement(form, elementName);
+			JsonObject element = formService.findElement(form, elementName);
 			if (element != null) {
 				element.put("data", formData.getJsonObject(elementName));
 			}

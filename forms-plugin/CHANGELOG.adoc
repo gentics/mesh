@@ -11,8 +11,9 @@
 = Mesh Forms Plugin
 
 [[v1.6.17]]
-== 1.6.17 (TBD)
+== 1.6.17 (2022-01-10)
 
+icon:plus[] Forms: Adds new form type `POLL`, which alters how forms are rendered. When a POLL form is rendered, and the `forms-voted` cookie contains the UUID of the rendered form, the results of the poll will be rendered instead.
 icon:check[] Forms: Fixes `pathPrefix` value while rendering multipage forms. The value was only supplied on the first page of a form.
 
 [[v1.6.16]]

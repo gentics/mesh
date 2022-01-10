@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,13 +41,99 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testRender() throws IOException {
-		String uuid = createForm("inputfield.json");
+		doTestSimpleRender("inputfield", false);
+	}
 
-		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid)).header("Accept", "text/html").get().build();
-		Response response = client().newCall(renderRequest).execute();
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+	@Test
+	public void testRenderPoll() throws IOException {
+		doTestSimpleRender("simple-poll", false);
+	}
 
-		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("inputfield.html"));
+	@Test
+	public void testRenderPollResults() throws IOException {
+		String uuid = createForm("poll-results" + ".json");
+
+		submitMultiple(uuid,
+			true,
+			Arrays.asList(
+				new String[] {
+					"checkbox1", "1",
+					"radiobuttons1", "r_1",
+					"singleselect1", "s_1",
+					"multiselect1", "m_1", "multiselect1", "m_2", "multiselect1", "m_3" },
+				new String[] {
+					"checkbox1", "1",
+					"radiobuttons1", "r_1",
+					"singleselect1", "s_1",
+					"multiselect1", "m_1", "multiselect1", "m_2" },
+				new String[] {
+					"radiobuttons1", "r_1",
+					"singleselect1", "s_2",
+					"multiselect1", "m_2", "multiselect1", "m_3" },
+				new String[] {
+					"radiobuttons1", "r_2",
+					"singleselect1", "s_2",
+					"multiselect1", "m_2" },
+				new String[] {
+					"radiobuttons1", "r_1",
+					"singleselect1", "s_2",
+					"multiselect1", "m_1",
+					"multiselect1", "m_3" },
+				new String[] {
+					"radiobuttons1", "r_2",
+					"singleselect1", "s_3",
+					"multiselect1", "m_3" },
+				new String[] {
+					"radiobuttons1", "r_3",
+					"singleselect1", "s_3",
+					"multiselect1", "m_3" }));
+
+		Request.Builder builder = new Request.Builder()
+			.url(projectUrl("/forms/" + uuid))
+			.get()
+			.header("Accept", "text/html");
+
+		builder.header("Cookie", FormDataService.COOKIE_NAME_VOTED + "=" + uuid);
+
+		Response response = client().newCall(builder.build()).execute();
+
+		assertThat(response.isSuccessful())
+			.as(String.format("Render response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+		assertThat(response.body().string())
+			.as("Rendered result")
+			.isEqualTo(fromFile("poll-results" + ".html"));
+	}
+
+	@Test
+	public void testRenderPollUnpublished() throws IOException {
+		String uuid = createForm("poll-results" + ".json");
+		ResponseWithCookies rs = submit(uuid, false, true, false,
+			"checkbox1", "1",
+			"radiobuttons1", "r_1",
+			"singleselect1", "s_1",
+			"multiselect1", "m_1", "multiselect1", "m_2", "multiselect1", "m_3");
+
+		rs = submit(uuid, true, true, false,
+			"radiobuttons1", "r_2",
+			"singleselect1", "s_1",
+			"multiselect1", "m_1", "multiselect1", "m_2", "multiselect1", "m_3");
+
+		Request.Builder builder = new Request.Builder()
+			.url(projectUrl("/forms/" + uuid))
+			.get()
+			.header("Accept", "text/html");
+
+		builder.header("Cookie", FormDataService.COOKIE_NAME_VOTED + "=" + uuid);
+
+		Response response = client().newCall(builder.build()).execute();
+
+		assertThat(response.isSuccessful())
+			.as(String.format("Render response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+		assertThat(response.body().string())
+			.as("Rendered result")
+			.isEqualTo(fromFile("poll-results-not-published" + ".html"));
 	}
 
 	/**
@@ -216,12 +304,24 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testRenderMultipage() throws IOException {
-		String uuid = createForm("multipage.json");
+		doTestSimpleRender("multipage", false);
+	}
 
-		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid)).header("Accept", "text/html").get().build();
-		Response response = client().newCall(renderRequest).execute();
+	private void doTestSimpleRender(String testName, boolean addVotedCookie) throws IOException {
+		String uuid = createForm(testName + ".json");
+
+		Request.Builder builder = new Request.Builder()
+			.url(projectUrl("/forms/" + uuid))
+			.get()
+			.header("Accept", "text/html");
+
+		if (addVotedCookie) {
+			builder.header("Cookie", FormDataService.COOKIE_NAME_VOTED + "=" + uuid);
+		}
+
+		Response response = client().newCall(builder.build()).execute();
+
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-
-		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("multipage.html"));
+		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile(testName + ".html"));
 	}
 }

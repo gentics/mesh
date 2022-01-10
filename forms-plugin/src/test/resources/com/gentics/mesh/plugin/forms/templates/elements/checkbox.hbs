@@ -1,12 +1,10 @@
-<div data-mdc-auto-init="Checkbox" class="element-checkbox mdc-checkbox floating-label" element-name="{{ name }}">
-	<div class="content form-group">
-		<input type="checkbox" class="filled-in mdc-checkbox__native-control" id="{{ name }}" name="{{ name }}" placeholdername="" value="1"
-			{{#if mandatory}}required="required"{{/if}}
-			{{#equals value data.value}}checked="checked"{{/equals}}>
-		<div class="mdc-checkbox__background mdc-checkbox__background">
-			<svg class="mdc-checkbox__checkmark mdc-checkbox__checkmark">
-				<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#check"></use></svg>
-		</div>
-		<label for="{{ name }}" class="mdc-checkbox__label">{{{ label }}}</label>
-	</div>
-</div>
+Checkbox
+	name: {{ name }}
+	label: {{ label }}
+	type: {{ type  }}
+	inputType: {{formsInputType this}}
+	minVal: {{ minVal }}
+	maxVal: {{ maxVal }}
+	maxCharCount: {{ maxCharCount }}
+	value: {{#if data.value }}{{ data.value }}{{else}}{{ value }}{{/if}}
+	properties.textkey: {{ properties.textkey }}

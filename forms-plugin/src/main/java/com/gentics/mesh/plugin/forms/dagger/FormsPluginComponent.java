@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
@@ -123,6 +124,9 @@ public interface FormsPluginComponent {
 
 		@BindsInstance
 		Builder storageDir(@StorageDir File storageDir);
+
+		@BindsInstance
+		Builder manifest(PluginManifest manifest);
 
 		FormsPluginComponent build();
 	}

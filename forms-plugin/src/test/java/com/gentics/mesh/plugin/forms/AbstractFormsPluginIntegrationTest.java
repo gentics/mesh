@@ -13,7 +13,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
+import com.google.common.net.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import okhttp3.Cookie;
+import okhttp3.MultipartBody;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -441,5 +447,69 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 				() -> server.client().put(String.format("/%s/plugins/forms/languages", URIUtils.encodeSegment(project)),
 						new LanguagesModel().setLanguages(languages), LanguagesModel.class));
 		return response.getLanguages();
+	}
+
+	protected void submitMultiple(String formUuid, boolean expectRedirect, List<String[]> data) throws IOException {
+		for (String[] vote : data) {
+			ResponseWithCookies rs = submit(formUuid, true, expectRedirect, false, vote);
+
+			if (expectRedirect) {
+				assertThat(rs.response.isRedirect())
+					.as(String.format("Response is redirect %d (%s)", rs.response.code(), rs.response.message()))
+					.isTrue();
+			} else {
+				assertThat(rs.response.isSuccessful())
+					.as("Submit response success %d (%s)", rs.response.code(), rs.response.message())
+					.isTrue();
+			}
+		}
+	}
+
+	protected ResponseWithCookies submit(String formUuid, String ...data) throws IOException {
+		return submit(formUuid, true, false, data);
+	}
+
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, String ...data) throws IOException {
+		return submit(formUuid, publish, expectRedirect, false, data);
+	}
+
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, String ...data) throws IOException {
+		MultipartBody.Builder body = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM);
+
+		for (int ii = cookie ? 1 : 0; ii < data.length; ii++) {
+			String field = data[ii++];
+			String value = ii < data.length ? data[ii] : "";
+
+			body.addFormDataPart(field, value);
+		}
+
+		String publishParam = publish ? "" : "?publish=false";
+		Request.Builder requestBuilder = new Request.Builder()
+			.url(projectUrl("/forms/" + formUuid + "/data" + publishParam))
+			.header("Referer", "ref");
+
+		if (cookie) {
+			requestBuilder.header(HttpHeaders.COOKIE, data[0]);
+		}
+
+		Request postRequest = requestBuilder.post(body.build()).build();
+		Response response = client().newCall(postRequest).execute();
+
+		if (expectRedirect) {
+			assertThat(response.isRedirect())
+				.as(String.format("Response is redirect %d (%s)", response.code(), response.message()))
+				.isTrue();
+		} else {
+			assertThat(response.isSuccessful())
+				.as(String.format("Response success %d (%s)", response.code(), response.message()))
+				.isTrue();
+
+			assertThat(response.code())
+				.as("Response code")
+				.isEqualTo(HttpResponseStatus.RESET_CONTENT.code());
+		}
+
+		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
 	}
 }

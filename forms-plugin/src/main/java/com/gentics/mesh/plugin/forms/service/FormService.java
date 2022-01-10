@@ -1,25 +1,11 @@
 package com.gentics.mesh.plugin.forms.service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.io.IOUtils;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.NumberField;
@@ -32,9 +18,11 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
@@ -44,25 +32,142 @@ import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.Form;
+import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.response.RenderResponse;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Emitter;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.functions.BiConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
+import io.vertx.reactivex.core.file.FileSystem;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class FormService {
+
+	/**
+	 * Wrapper for paged form data for use as a state in {@link Flowable#generate(Callable, BiConsumer)}.
+	 */
+	private static class AvailableFormData {
+
+		/** The last loaded batch. */
+		private final Deque<NodeResponse> availableData = new ArrayDeque<>(CHILDREN_BATCH_SIZE);
+		/** The number of pages. When this is &lt; 0, no batch has been loaded yet. */
+		private long pageCount = -1;
+		/** The next page to load. */
+		private long nextPage = 1;
+
+		/**
+		 * Whether a request to load the next page is needed.
+		 *
+		 * <p>
+		 *     This returns true, when no request was sent yet (i.e. {@link #pageCount}
+		 *     is less than zero), or there is no more data available and we
+		 *     still have not loaded the last page yet.
+		 * </p>
+		 * @return
+		 */
+		public boolean needUpdate() {
+			return pageCount == -1 || (nextPage <= pageCount && availableData.isEmpty());
+		}
+
+		/**
+		 * Update the state with the information from the given response.
+		 *
+		 * @param response The last batch of loaded form data nodes.
+		 */
+		public void update(NodeListResponse response) {
+			if (!availableData.isEmpty()) {
+				log.warn("Available form data state was updated while there was still data available");
+			}
+
+			availableData.addAll(response.getData());
+
+			PagingMetaInfo metaInfo = response.getMetainfo();
+
+			pageCount = metaInfo.getPageCount();
+			nextPage = metaInfo.getCurrentPage() + 1;
+		}
+
+		/**
+		 * Get the index of the next page to load.
+		 * @return The index of the next page to load
+		 */
+		public long nextPage() {
+			return nextPage;
+		}
+
+		/**
+		 * Emit the next event.
+		 *
+		 * <p>
+		 *     When there is still data available, it will call the emitters
+		 *     {@link Emitter#onNext(Object) onNext()} method}, otherwise it
+		 *     will call {@link Emitter#onComplete() onComplete()}.
+		 * </p>
+		 *
+		 * @param emitter The emitter to use
+		 */
+		public void next(Emitter<NodeResponse> emitter) {
+			NodeResponse next = null;
+
+			while (!availableData.isEmpty() && !FormUtil.isFormDataNode(next)) {
+				next = availableData.poll();
+			}
+
+			if (next == null) {
+				emitter.onComplete();
+			} else {
+				emitter.onNext(next);
+			}
+		}
+	}
+
 	private static final Logger log = LoggerFactory.getLogger(FormService.class);
+
+	public static final String FIELD_FORM_TYPE = "type";
+
+	private static final int CHILDREN_BATCH_SIZE = 100;
+
+	private static final String PARAM_TEMPLATE_CONTEXT = "templateContext";
+	private final String PARAM_SHOW_RESULTS = "showResults";
+
+	private final FileSystem fileSystem;
 
 	private final MeshRestClient adminClient;
 
@@ -81,8 +186,17 @@ public class FormService {
 	private final StatusService statusService;
 
 	@Inject
-	public FormService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient, ObjectMapper objectMapper, SchemaService schemaService, PagingService pagingService,
-					   HandlebarsTemplateEngine templateEngine, FormsConfig configuration, StatusService statusService) {
+	public FormService(
+			Vertx rxVertx,
+			@AdminClient MeshRestClient adminClient,
+			@UserClient @Nullable MeshRestClient userClient,
+			ObjectMapper objectMapper,
+			SchemaService schemaService,
+			PagingService pagingService,
+			HandlebarsTemplateEngine templateEngine,
+			FormsConfig configuration,
+			StatusService statusService) {
+		this.fileSystem = rxVertx.fileSystem();
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.objectMapper = objectMapper;
@@ -327,6 +441,8 @@ public class FormService {
 				new FormsError(HttpResponseStatus.BAD_REQUEST.code(), error.get().getMessage()));
 		}
 
+		ensureFormType(formData);
+
 		return statusService.getRootNode(projectName, userClient).flatMap(rootNode -> {
 			String language = formData.getString("language", "en");
 			NodeParameters languageParameter = new NodeParametersImpl().setLanguages(language);
@@ -371,6 +487,41 @@ public class FormService {
 								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
 					});
 		});
+	}
+
+	/**
+	 * Make sure the  given form specification contains a valid form type.
+	 *
+	 * <p>
+	 *     Currently only two types are supported:
+	 *     <ol>
+	 *         <li>
+	 *             <em>GENERIC</em>: A generic form with no special restrictions
+	 *             or behavior.
+	 *         </li>
+	 *         <li>
+	 *             <em>POLL</em>: Only selection fields, read only text and
+	 *             recaptchas are allowed. Requests to render the form will
+	 *             instead render the results, if a cookie indicates that the
+	 *             user already voted in the poll.
+	 *         </li>
+	 *     </ol>
+	 * </p>
+	 *
+	 * @param formData The posted form
+	 * @return The posted form with added or corrected form type field
+	 */
+	private JsonObject ensureFormType(JsonObject formData) {
+		String rawType = formData.getString(FIELD_FORM_TYPE);
+
+		try {
+			FormType.valueOf(rawType);
+		} catch (Exception e) {
+			log.warn("Missing or invalid form type <{}> for form \"{}\"", rawType, formData.getString("name"));
+			formData.put(FIELD_FORM_TYPE, FormType.GENERIC.name());
+		}
+
+		return formData;
 	}
 
 	/**
@@ -429,37 +580,42 @@ public class FormService {
 	public Single<Buffer> render(String projectName, String uuid, RoutingContext rc, String...lang) {
 		return statusService.languageFallback(projectName, lang)
 			.flatMap(langFallback -> statusService.getPathPrefixOfDefaultBranch(projectName)
-				.flatMap(pathPrefix -> loadAsAdmin(projectName, uuid, true, langFallback)
-					.flatMap(formNode -> {
-						JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
+				.flatMap(pathPrefix ->loadAsAdmin(projectName, uuid, true, langFallback)
+				.flatMap(formNode -> {
+					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 
-						removeInactiveElements(formJson);
 
-						// add id
-						formJson.put("id", uuid);
-						// add property "multipage"
-						formJson.put("multipage", isMultipage(formJson));
-						// add options
-						formJson.put("options", JsonObject.mapFrom(configuration));
-						// add path prefix
-						formJson.put("pathPrefix", pathPrefix);
-						markFormpages(formJson, Collections.emptySet());
+					if (FormType.POLL.name().equals(formJson.getString("type"))) {
+						boolean showResults = !rc.queryParam(PARAM_SHOW_RESULTS).isEmpty()
+							|| Stream.of(rc.getCookie(FormDataService.COOKIE_NAME_VOTED))
+								.filter(Objects::nonNull)
+								.map(c -> c.getValue().split(FormDataService.COOKIE_VOTED_SEPARATOR))
+								.flatMap(Arrays::stream)
+								.anyMatch(formNode.getUuid()::equals);
 
-						rc.put("form", formJson);
+						if (showResults) {
+							String templateContext = rc.queryParam(PARAM_TEMPLATE_CONTEXT).stream()
+								.filter(StringUtils::isNotBlank)
+								.findFirst()
+								.orElse("");
 
-						return templateEngine.rxRender(rc.data(), "form");
-					})));
+							return renderPollResults(rc, projectName, formNode);
+						}
+					}
+
+					return renderForm(uuid, formJson, pathPrefix, rc);
+				})));
 	}
 
 	/**
-	 * Render a preview for the given formJson
-	 * @param projectName project name
+	 * Render the form for the given {@code formJson}.
+	 *
 	 * @param uuid form uuid
 	 * @param formJson form JSON to render
 	 * @param rc routing context
 	 * @return single buffer
 	 */
-	public Single<Buffer> renderPreview(String projectName, String uuid, JsonObject formJson, RoutingContext rc) {
+	public Single<Buffer> renderForm(String uuid, JsonObject formJson, String pathPrefix, RoutingContext rc) {
 		removeInactiveElements(formJson);
 
 		// add id
@@ -468,11 +624,14 @@ public class FormService {
 		formJson.put("multipage", isMultipage(formJson));
 		// add options
 		formJson.put("options", JsonObject.mapFrom(configuration));
+		// add path prefix
+		formJson.put("pathPrefix", pathPrefix);
+
 		markFormpages(formJson, Collections.emptySet());
 
 		rc.put("form", formJson);
 
-		return templateEngine.rxRender(rc.data(), "form");
+		return renderTemplate(rc, formJson, "form");
 	}
 
 	/**
@@ -496,7 +655,8 @@ public class FormService {
 
 		rc.put("form", formJson);
 
-		return templateEngine.rxRender(rc.data(), "form").map(buffer -> new RenderResponse().setHtml(buffer.toString()));
+		return renderTemplate(rc, formJson, "form")
+			.map(buffer -> new RenderResponse().setHtml(buffer.toString()));
 	}
 
 	/**
@@ -671,5 +831,145 @@ public class FormService {
 		log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
 		SchemaUpdateRequest updateRequest = getSchema(formNode, new SchemaUpdateRequest());
 		return  userClient.updateSchema(schema.getUuid(), updateRequest).toSingle();
+	}
+
+	/**
+	 * Render the results for the specified poll form.
+	 *
+	 * @param rc The current routing context
+	 * @param projectName The project name
+	 * @param formNode The form node for which results should be rendered
+	 * @return A {@code Single} containing the rendered result as a {@code Buffer}
+	 */
+	private Single<Buffer> renderPollResults(RoutingContext rc, String projectName, NodeResponse formNode) {
+		String formRaw = formNode.getFields().getStringField("json").getString();
+
+		return getPollResults(projectName, formRaw, formNode.getUuid())
+			.flatMap(rs -> {
+				JsonObject formJson = new JsonObject(formRaw);
+				JsonObject poll = new JsonObject()
+					.put("id", formNode.getUuid())
+					.put("options", JsonObject.mapFrom(configuration))
+					.put("result", rs);
+
+				rc.put("poll", poll);
+
+				return renderTemplate(rc, formJson, configuration.getPollOptions().getResultTemplate());
+			});
+	}
+
+	/**
+	 * Load the results for the specified poll form.
+	 *
+	 * @param projectName The project name
+	 * @param formRaw The JSON definition of the poll form
+	 * @param formUuid The UUID of the form node
+	 * @return A {@code Single} containing the results in a JSON array
+	 */
+	private Single<JsonArray> getPollResults(String projectName, String formRaw, String formUuid) {
+		JsonObject results = new JsonObject();
+		Form form;
+
+		try {
+			form = toForm(formRaw, formUuid);
+		} catch (IOException e) {
+			return Single.error(e);
+		}
+
+		return loadFormData(projectName, formUuid)
+			.doOnNext(formData -> form.gatherPollResults(results, formData))
+			.ignoreElements()
+			.andThen(Single.just(results))
+			.map(rs -> rs.stream()
+				.filter(entry -> entry.getValue() instanceof JsonObject)
+				.map(entry -> ((JsonObject) entry.getValue()).put("name", entry.getKey()))
+				.collect(Collector.of(JsonArray::new, (a, o) -> a.add(o), (u, v) -> u.addAll(v))));
+	}
+
+	/**
+	 * Load the next batch of children for the given form UUID.
+	 *
+	 * @param project The project name
+	 * @param parentUuid The UUID of the parent node (a form)
+	 * @return A {@code Flowable} containing data nodes for the given parent
+	 */
+	private Flowable<NodeResponse> loadFormData(String project, String parentUuid) {
+		VersioningParameters published = new VersioningParametersImpl().published();
+		PagingParameters paging = new PagingParametersImpl().setPerPage((long) CHILDREN_BATCH_SIZE);
+
+		return statusService.getLanguages(project, adminClient)
+			.map(availableLanguages -> availableLanguages.getLanguages() != null ? availableLanguages.getLanguages().toArray(new String[0]) : new String[] { "en" })
+			.map(availableLanguages -> new NodeParametersImpl().setLanguages(availableLanguages))
+			.toFlowable()
+			.flatMap(lang -> Flowable.generate(AvailableFormData::new, (state, emitter) -> {
+				if (state.needUpdate()) {
+					NodeListResponse nextBatch = adminClient.findNodeChildren(project, parentUuid, paging.setPage(state.nextPage()), published, lang).toSingle()
+						.doOnSubscribe(ignored -> log.info("Loading next batch of form data nodes (max: {})", CHILDREN_BATCH_SIZE))
+						// TODO: Find a way to only load the next batch, once it is needed without blocking.
+						.blockingGet();
+
+					state.update(nextBatch);
+				}
+
+				state.next(emitter);
+			}));
+	}
+
+	/**
+	 * Find the json object representing the element with given name
+	 *
+	 * @param form
+	 *            form to search
+	 * @param name
+	 *            element name
+	 * @return json object or null if not found
+	 */
+	public JsonObject findElement(JsonObject form, String name) {
+		if (StringUtils.isBlank(name) || !form.containsKey("elements")) {
+			return null;
+		}
+
+		JsonArray elements = form.getJsonArray("elements");
+
+		for (int i = 0; i < elements.size(); i++) {
+			JsonObject element = elements.getJsonObject(i);
+
+			if (name.equals(element.getString("name"))) {
+				return element;
+			}
+
+			JsonObject subElement = findElement(element, name);
+
+			if (subElement != null) {
+				return subElement;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Render the given template with the given context.
+	 *
+	 * @param rc The current routing context
+	 * @param form The form that is rendered (or for which results should be rendered)
+	 * @param templateName The name of the template to be rendered (may contain path segments)
+	 * @return A {@code Single} containing the rendered template
+	 */
+	private Single<Buffer> renderTemplate(RoutingContext rc, JsonObject form, String templateName) {
+		String basePath = configuration.getTemplatesPath();
+		// Observables cannot handle null values, so we filter those first using Java streams.
+		List<String> validContexts = Stream.of(
+				rc.queryParam(PARAM_TEMPLATE_CONTEXT).stream().filter(StringUtils::isNotBlank).findFirst().orElse(null),
+				form.getString(PARAM_TEMPLATE_CONTEXT))
+			.filter(StringUtils::isNotBlank)
+			.collect(Collectors.toList());
+
+		return Observable.fromIterable(validContexts)
+			.map(ctx -> String.format("%s/%s/%s.hbs", basePath, ctx, templateName))
+			.flatMap(path -> fileSystem.rxExists(path)
+				.flatMapObservable(exists -> exists ? Observable.just(path) : Observable.empty()))
+			.first(String.format("%s/%s.hbs", basePath, templateName))
+			.flatMap(template -> templateEngine.rxRender(rc.data(), StringUtils.removeEnd(template, ".hbs")));
 	}
 }

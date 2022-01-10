@@ -1,8 +1,10 @@
 package com.gentics.mesh.plugin.forms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
@@ -57,5 +59,18 @@ public class ValueListElement extends FormElement {
 		}
 
 		return Optional.empty();
+	}
+
+	@Override
+	public void addPollData(JsonObject results, FieldContainer formData) {
+		super.addPollData(results, formData);
+
+		JsonObject values = results.getJsonObject("values");
+
+		if (values.isEmpty() && listElements != null) {
+			// Prepare the values, to enforce element order, as they are defined
+			// in the form.
+			listElements.forEach(e -> values.put(e.getValue(), 0));
+		}
 	}
 }

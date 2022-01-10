@@ -28,7 +28,7 @@ public class RenderFormPreviewHandler extends AbstractFormsHandler {
 		String uuid = context.pathParam("formUuid");
 		JsonObject formData = context.getBodyAsJson();
 
-		return formService.renderPreview(projectName, uuid, formData, context).doOnEvent((buffer, t) -> {
+		return formService.renderForm(uuid, formData, null, context).doOnEvent((buffer, t) -> {
 			if (buffer != null) {
 				context.response().putHeader(CONTENT_TYPE, String.format("%s; charset=UTF-8", DEFAULT_CONTENT_TYPE)).end(buffer.toString());
 			}

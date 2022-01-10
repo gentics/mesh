@@ -123,7 +123,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 
 	/**
 	 * Test posting data to a form
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -133,7 +133,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 
 	/**
 	 * Test posting data to a form
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -158,7 +158,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream()
-			.filter(c -> FormDataService.COOKIE_NAME.equals(c.name()))
+			.filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 			.findFirst();
 
 		assertThat(cookie).as("Cookie").isPresent();
@@ -190,7 +190,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
-		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME.equals(c.name()))
+		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 				.findFirst();
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
@@ -381,7 +381,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME.equals(c.name()))
+		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 				.findFirst();
 		assertThat(cookie).as("Cookie").isPresent();
 		String formDataUuid = cookie.get().value();
@@ -786,7 +786,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 				.post(body)
 				.build();
 		Response response = client().newCall(postRequest).execute();
-		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME.equals(c.name()))
+		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 				.findFirst();
 
 		return Pair.of(response, cookie);

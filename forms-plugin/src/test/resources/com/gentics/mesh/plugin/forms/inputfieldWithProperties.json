@@ -1,4 +1,5 @@
 {
+	"type": "GENERIC",
 	"name": "Form with Textfield",
 	"elements": [
 		{

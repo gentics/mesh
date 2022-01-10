@@ -1,14 +1,17 @@
 package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.gentics.mesh.plugin.forms.model.FormType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,22 +60,24 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testCreateForm() throws IOException {
-		String uuid = createForm("create.json", permission, true);
+		String inputFilename = "create.json";
+		JsonObject expectedJson = JsonUtil.readValue(fromFile(inputFilename), JsonObject.class);
 
-		if (permission) {
-			NodeResponse nodeResponse = server.client().findNodeByUuid(PROJECT_NAME, uuid).blockingGet();
+		assertCreatedForm(inputFilename, expectedJson);
+	}
 
-			assertThat(nodeResponse.getProject().getName()).as("NodeResponse Project").isEqualTo(PROJECT_NAME);
-			assertThat(nodeResponse.getFields().getStringField("name").getString()).as("NodeResponse name").isEqualTo("Created Form");
-			JsonObject loadedJson = JsonUtil.readValue(nodeResponse.getFields().getStringField("json").getString(), JsonObject.class);
-			JsonObject expectedJson = JsonUtil.readValue(fromFile("create.json"), JsonObject.class);
-			assertThat(loadedJson).as("NodeResponse json").isEqualTo(expectedJson);
+	@Test
+	public void testCreateFormNoType() throws IOException {
+		String inputFilename = "create_no_type.json";
+		JsonObject expectedJson = JsonUtil.readValue(fromFile(inputFilename), JsonObject.class);
 
-			Optional<NodeResponse> optionalNode = loadNode(nodeResponse.getUuid());
-			assertThat(optionalNode).as("Form Node").isPresent();
-			assertThat(optionalNode.get().getParentNode().getSchema().getName()).as("Parent schema").isEqualTo(SchemaService.PLUGIN_SCHEMA_NAME);
-			assertThat(loadSchema(SchemaService.getSchemaName(nodeResponse.getUuid()))).as("Form Schema").isPresent();
-		}
+		assertThat(expectedJson.getMap().keySet())
+			.as("Form fields")
+			.doesNotContain("type");
+
+		expectedJson.put("type", FormType.GENERIC.name());
+
+		assertCreatedForm(inputFilename, expectedJson);
 	}
 
 	/**
@@ -212,6 +217,24 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 			assertThat(loadSchema(SchemaService.getSchemaName(uuid))).as("Form Schema").isEmpty();
 		} else {
 			assertForbidden(response);
+		}
+	}
+
+	private void assertCreatedForm(String inputFilename, JsonObject expectedJson) throws IOException {
+		String uuid = createForm(inputFilename, permission, true);
+
+		if (permission) {
+			NodeResponse nodeResponse = server.client().findNodeByUuid(PROJECT_NAME, uuid).blockingGet();
+
+			assertThat(nodeResponse.getProject().getName()).as("NodeResponse Project").isEqualTo(PROJECT_NAME);
+			assertThat(nodeResponse.getFields().getStringField("name").getString()).as("NodeResponse name").isEqualTo(expectedJson.getString("name"));
+			JsonObject loadedJson = JsonUtil.readValue(nodeResponse.getFields().getStringField("json").getString(), JsonObject.class);
+			assertThat(loadedJson).as("NodeResponse json").isEqualTo(expectedJson);
+
+			Optional<NodeResponse> optionalNode = loadNode(nodeResponse.getUuid());
+			assertThat(optionalNode).as("Form Node").isPresent();
+			assertThat(optionalNode.get().getParentNode().getSchema().getName()).as("Parent schema").isEqualTo(SchemaService.PLUGIN_SCHEMA_NAME);
+			assertThat(loadSchema(SchemaService.getSchemaName(nodeResponse.getUuid()))).as("Form Schema").isPresent();
 		}
 	}
 }

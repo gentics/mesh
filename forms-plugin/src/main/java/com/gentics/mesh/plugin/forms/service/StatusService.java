@@ -153,15 +153,32 @@ public class StatusService {
 
 	/**
 	 * Get the languages for the given project
+	 *
+	 * <p>
+	 *     Convenience method for {@link #getLanguages(String, MeshRestClient)}
+	 *     which uses the {@code userClient}.
+	 * </p>
+	 *
 	 * @param projectName project name
 	 * @return single languages
 	 */
 	public Single<LanguagesModel> getLanguages(String projectName) {
-		return getRootNode(projectName, userClient).flatMap(response -> {
-					FieldMap fields = response.getFields();
-					return Single.just(new LanguagesModel().setLanguages(
-							fields.hasField("languages") ? fields.getStringFieldList("languages").getItems() : null));
-				});
+		return getLanguages(projectName, userClient);
+	}
+
+	/**
+	 * Get the languages for the given project, using the given Mesh REST client.
+	 *
+	 * @param projectName The project name
+	 * @param client The Mesh REST client to use
+	 * @return A {@code Single} containing the available form languages for the project
+	 */
+	public Single<LanguagesModel> getLanguages(String projectName, MeshRestClient client) {
+		return getRootNode(projectName, client).flatMap(response -> {
+			FieldMap fields = response.getFields();
+			return Single.just(new LanguagesModel().setLanguages(
+				fields.hasField("languages") ? fields.getStringFieldList("languages").getItems() : null));
+		});
 	}
 
 	/**

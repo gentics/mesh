@@ -7,7 +7,9 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +35,8 @@ public class Form {
 	private String uuid;
 
 	private String name;
+
+	private FormType type;
 
 	private String email;
 
@@ -66,6 +70,29 @@ public class Form {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * Get the form type.
+	 *
+	 * @return The form type
+	 */
+	@Nonnull
+	public FormType getType() {
+		if (type == null) {
+			type = FormType.GENERIC;
+		}
+
+		return type;
+	}
+
+	/**
+	 * Set the form type.
+	 *
+	 * @param type The form type
+	 */
+	public void setType(FormType type) {
+		this.type = type;
 	}
 
 	/**
@@ -256,6 +283,30 @@ public class Form {
 			}
 		});
 		return object;
+	}
+
+	/**
+	 * Collect the poll results from the given form data into the specified
+	 * results object.
+	 *
+	 * @param results The {@code JsonObject} to gather the results into
+	 * @param formData The form data node containing
+	 * @return
+	 */
+	public JsonObject gatherPollResults(JsonObject results, FieldContainer formData) {
+		flattened().forEach(elem -> {
+			String name = elem.getName();
+
+			if (StringUtils.isNotBlank(name)) {
+				if (!results.containsKey(name)) {
+					results.put(name, new JsonObject());
+				}
+
+				elem.addPollData(results.getJsonObject(name), formData);
+			}
+		});
+
+		return results;
 	}
 
 	/**
