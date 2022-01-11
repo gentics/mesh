@@ -76,12 +76,12 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public void removeField(String fieldKey, BulkActionContext bac) {
-		toGraph(getField(getSchemaContainerVersion().getSchema().getField(fieldKey))).removeField(this);
+		toGraph(getField(fieldKey)).removeField(bac, this);
 	}
 
 	@Override
 	public StringGraphField createString(String key) {
-		// TODO check whether the key is already occupied
+		// TODO implement the check if the key exists in the schema. 
 		StringGraphFieldImpl field = new StringGraphFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;

@@ -850,8 +850,10 @@ public interface PersistingContentDao extends ContentDao {
 		}
 		// Link the previous to the next to isolate the old container
 		HibNodeFieldContainer beforePrev = content.getPreviousVersion();
-		for (HibNodeFieldContainer afterPrev : content.getNextVersions()) {
-			beforePrev.setNextVersion(afterPrev);
+		if (beforePrev != null) {
+			for (HibNodeFieldContainer afterPrev : content.getNextVersions()) {
+				beforePrev.setNextVersion(afterPrev);
+			}
 		}
 		delete(content, bac, false);
 	}

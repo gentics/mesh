@@ -94,6 +94,30 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	}
 
 	/**
+	 * Get a schema of the given field key. Returns null, if no key exists.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	default FieldSchema getFieldSchema(String fieldKey) {
+		return getSchemaContainerVersion().getSchema().getField(fieldKey);
+	}
+	/**
+	 * Get the field of the given field key. Returns null, if no key exists.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	default HibField getField(String fieldKey) {
+		FieldSchema schema = getSchemaContainerVersion().getSchema().getField(fieldKey);
+		if (schema != null) {
+			return getField(schema);
+		} else {
+			return null;
+		}
+	}
+
+	/**
 	 * Remove the field from container.
 	 * 
 	 * @param fieldKey
