@@ -118,7 +118,7 @@ public class OkHttpWebsocket implements MeshWebsocket {
 	}
 
 	private void startPings() {
-		pingInterval = Observable.interval(config.getWebsocketReconnectInterval().toMillis(), TimeUnit.MILLISECONDS)
+		pingInterval = Observable.interval(config.getWebsocketPingInterval().toMillis(), TimeUnit.MILLISECONDS)
 			.subscribe(ignore -> send(eventbusMessage(EventbusMessageType.PING)));
 	}
 
