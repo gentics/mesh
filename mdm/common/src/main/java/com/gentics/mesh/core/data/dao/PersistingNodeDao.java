@@ -262,7 +262,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 			// Additionally check whether the read published permission could grant read
 			// perm for published nodes
-			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
+			boolean isPublished = contentDao.isPublished(fieldContainer, branch.getUuid());
 			if (isPublished && userDao.hasPermission(requestUser, element, READ_PUBLISHED_PERM)) {
 				return element;
 				// The container could be a draft. Check whether READ perm is granted.
@@ -379,7 +379,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			// We should change this behaviour and update the client implementations.
 			// throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		} else {
-			SchemaModel schema = fieldContainer.getSchemaContainerVersion().getSchema();
+			SchemaModel schema = contentDao.getSchemaContainerVersion(fieldContainer).getSchema();
 			if (fieldsSet.has("container")) {
 				restNode.setContainer(schema.getContainer());
 			}
@@ -402,7 +402,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 			// Schema reference
 			if (fieldsSet.has("schema")) {
-				restNode.setSchema(fieldContainer.getSchemaContainerVersion().transformToReference());
+				restNode.setSchema(contentDao.getSchemaContainerVersion(fieldContainer).transformToReference());
 			}
 
 			// Version reference
@@ -796,7 +796,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		// If the located draft version was already published we are done
-		if (draftVersion.isPublished(branchUuid)) {
+		if (contentDao.isPublished(draftVersion, branchUuid)) {
 			return;
 		}
 
@@ -817,7 +817,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
 		ContentDao contentDao = Tx.get().contentDao();
 		contentDao.getFieldContainers(node, Tx.get().getBranch(ac), DRAFT).forEach(c -> {
-			versions.put(c.getLanguageTag(), c.versions().stream()
+			versions.put(c.getLanguageTag(), contentDao.versions(c).stream()
 					.map(v -> contentDao.transformToVersionInfo(v, ac))
 					.collect(Collectors.toList()));
 		});
@@ -841,8 +841,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		HibBranch branch = tx.getBranch(ac, node.getProject());
 		String branchUuid = branch.getUuid();
 
-		List<HibNodeFieldContainer> unpublishedContainers = tx.contentDao().getFieldContainers(node, branch, ContainerType.DRAFT).stream().filter(c -> !c
-				.isPublished(branchUuid)).collect(Collectors.toList());
+		List<HibNodeFieldContainer> unpublishedContainers = contentDao
+				.getFieldContainers(node, branch, ContainerType.DRAFT).stream().filter(
+						c -> !contentDao.isPublished(c, branchUuid)).collect(Collectors.toList());
 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> {
@@ -1014,10 +1015,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				bac.process();
 			}
 		}
-
+		ContentDao contentDao = Tx.get().contentDao();
 		// Delete all initial containers (which will delete all containers)
-		for (HibNodeFieldContainer container : Tx.get().contentDao().getFieldContainers(node, INITIAL)) {
-			container.delete(bac);
+		for (HibNodeFieldContainer container : contentDao.getFieldContainers(node, INITIAL)) {
+			contentDao.delete(container, bac);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node {" + node.getUuid() + "} vertex.");
@@ -1305,7 +1306,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
-			HibSchemaVersion schemaVersion = latestDraftVersion.getSchemaContainerVersion();
+			HibSchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(latestDraftVersion);
 			if (!latestDraftVersion.getSchemaContainerVersion().equals(branch.findLatestSchemaVersion(schemaVersion
 					.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
@@ -1366,8 +1367,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
 				// Purge the old draft
-				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-					latestDraftVersion.purge();
+				if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled( newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
+					contentDao.purge(latestDraftVersion);
 				}
 
 				latestDraftVersion = newDraftVersion;
@@ -1435,7 +1436,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// fields version
 		if (container != null) {
 			keyBuilder.append("-");
-			keyBuilder.append(container.getETag(ac));
+			keyBuilder.append(contentDao.getETag(container, ac));
 		}
 
 		/**
@@ -1650,17 +1651,17 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			HibNodeFieldContainer content = edge.getNodeContainer();
 			bac.add(contentDao.onTakenOffline(content, branchUuid));
 			contentDao.removeEdge(edge);
-			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
-				content.purge(bac);
+			if (contentDao.isAutoPurgeEnabled(content) && contentDao.isPurgeable(content)) {
+				contentDao.purge(content, bac);
 			}
 		});
 	}
 
 	@Override
 	default void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid) {
-		String languageTag = container.getLanguageTag();
-		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
 		PersistingContentDao contentDao = CommonTx.get().contentDao();
+		String languageTag = container.getLanguageTag();
+		boolean isAutoPurgeEnabled = contentDao.isAutoPurgeEnabled(container);
 
 		// Remove an existing published edge
 		HibNodeFieldContainerEdge edge = contentDao.getEdge(node, languageTag, branchUuid, PUBLISHED);
@@ -1668,15 +1669,15 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			HibNodeFieldContainer oldPublishedContainer = contentDao.getFieldContainerOfEdge(edge);
 			contentDao.removeEdge(edge);
 			contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish");
-			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
-				oldPublishedContainer.purge();
+			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && contentDao.isPurgeable(oldPublishedContainer)) {
+				contentDao.purge(oldPublishedContainer);
 			}
 		}
 		if (ac.isPurgeAllowed()) {
 			// Check whether a previous draft can be purged.
 			HibNodeFieldContainer prev = container.getPreviousVersion();
-			if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
-				prev.purge();
+			if (isAutoPurgeEnabled && prev != null && contentDao.isPurgeable(prev)) {
+				contentDao.purge(prev);
 			}
 		}
 		// create new published edge

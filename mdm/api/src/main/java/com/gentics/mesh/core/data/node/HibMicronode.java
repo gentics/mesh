@@ -47,8 +47,6 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 	 */
 	void clone(HibMicronode micronode);
 
-	HibMicroschemaVersion getSchemaContainerVersion();
-
 	/**
 	 * Compare the micronode and return a list of changes which identify the changes.
 	 * 
@@ -73,6 +71,9 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 	default ReferenceType getReferenceType() {
 		return ReferenceType.MICRONODE;
 	}
+
+	@Override
+	HibMicroschemaVersion getSchemaContainerVersion();
 
 	default MicronodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		NodeParametersImpl parameters = new NodeParametersImpl(ac);

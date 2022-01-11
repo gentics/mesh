@@ -571,7 +571,7 @@ public class TestDataProvider {
 			HibNodeFieldContainer germanContainer = contentDao.createFieldContainer(folderNode, german,
 				branch, userInfo.getUser());
 			germanContainer.createString("slug").setString(germanName);
-			germanContainer.updateDisplayFieldValue();
+			contentDao.updateDisplayFieldValue(germanContainer);
 			contentCount++;
 			contentDao.publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
@@ -580,7 +580,7 @@ public class TestDataProvider {
 				branch, userInfo.getUser());
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
-			englishContainer.updateDisplayFieldValue();
+			contentDao.updateDisplayFieldValue(englishContainer);
 			contentCount++;
 			contentDao.publish(folderNode, ac, getEnglish(), branch, getUserInfo().getUser());
 		}
@@ -635,7 +635,7 @@ public class TestDataProvider {
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
-			englishContainer.updateDisplayFieldValue();
+			contentDao.updateDisplayFieldValue(englishContainer);
 			contentCount++;
 			contentDao.publish(node, ac, getEnglish(), branch, getUserInfo().getUser());
 		}
@@ -647,7 +647,7 @@ public class TestDataProvider {
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
-			germanContainer.updateDisplayFieldValue();
+			contentDao.updateDisplayFieldValue(germanContainer);
 			contentCount++;
 			contentDao.publish(node, ac, getGerman(), branch, getUserInfo().getUser());
 		}

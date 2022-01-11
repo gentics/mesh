@@ -99,12 +99,13 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 	public void testReadOne() {
 		String path = "/News/2015/News_2015.en.html";
 		try (Tx tx = tx()) {
+			ContentDao contentDao = tx.contentDao();
 			HibNode node = content("news_2015");
 			// Inject the reference node field
-			SchemaVersionModel schema = boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema();
+			SchemaVersionModel schema = contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
-			boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().setSchema(schema);
-			boot().contentDao().getFieldContainer(node, "en").createNode("reference", folder("2015"));
+			contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).setSchema(schema);
+			contentDao.getFieldContainer(node, "en").createNode("reference", folder("2015"));
 			tx.success();
 		}
 

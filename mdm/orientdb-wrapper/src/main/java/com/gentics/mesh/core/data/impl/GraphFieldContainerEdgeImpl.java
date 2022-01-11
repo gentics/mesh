@@ -19,11 +19,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
-import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
@@ -82,16 +80,6 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		fields.put(WEBROOT_URLFIELD_PROPERTY_KEY, STRING_SET);
 		index.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_URLFIELD_INDEX_POSTFIX_NAME, fields, true);
 
-	}
-
-	/**
-	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
-	 * 
-	 * @param parentNode
-	 * @param segment
-	 */
-	public void setSegmentInfo(HibNode parentNode, String segment) {
-		setSegmentInfo(Tx.get().contentDao().composeSegmentInfo(parentNode, segment));
 	}
 
 	/**

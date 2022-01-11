@@ -2,20 +2,16 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -39,13 +35,9 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.EdgeFrame;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -93,17 +85,17 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public void delete(HibNodeFieldContainer content, BulkActionContext bac) {
-		content.delete(bac);
+		toGraph(content).delete(bac);
 	}
 
 	@Override
 	public void delete(HibNodeFieldContainer content, BulkActionContext bac, boolean deleteNext) {
-		content.delete(bac, deleteNext);
+		toGraph(content).delete(bac, deleteNext);
 	}
 
 	@Override
 	public void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch, BulkActionContext bac) {
-		content.deleteFromBranch(branch, bac);
+		toGraph(content).deleteFromBranch(branch, bac);
 	}
 
 	@Override
@@ -158,47 +150,47 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public boolean isType(HibNodeFieldContainer content, ContainerType type) {
-		return content.isType(type);
+		return toGraph(content).isType(type);
 	}
 
 	@Override
 	public boolean isType(HibNodeFieldContainer content, ContainerType type, String branchUuid) {
-		return content.isType(type, branchUuid);
+		return toGraph(content).isType(type, branchUuid);
 	}
 
 	@Override
 	public Set<String> getBranches(HibNodeFieldContainer content, ContainerType type) {
-		return content.getBranches(type);
+		return toGraph(content).getBranches(type);
 	}
 
 	@Override
 	public HibSchemaVersion getSchemaContainerVersion(HibNodeFieldContainer content) {
-		return content.getSchemaContainerVersion();
+		return toGraph(content).getSchemaContainerVersion();
 	}
 
 	@Override
 	public List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content, HibMicroschemaVersion version) {
-		return content.getMicronodeFields(version);
+		return toGraph(content).getMicronodeFields(version);
 	}
 
 	@Override
 	public Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content, HibMicroschemaVersion version) {
-		return content.getMicronodeListFields(version);
+		return toGraph(content).getMicronodeListFields(version);
 	}
 
 	@Override
 	public String getETag(HibNodeFieldContainer content, InternalActionContext ac) {
-		return content.getETag(ac);
+		return toGraph(content).getETag(ac);
 	}
 
 	@Override
 	public void updateDisplayFieldValue(HibNodeFieldContainer content) {
-		content.updateDisplayFieldValue();
+		toGraph(content).updateDisplayFieldValue();
 	}
 
 	@Override
 	public void postfixSegmentFieldValue(HibNodeFieldContainer content) {
-		content.postfixSegmentFieldValue();
+		toGraph(content).postfixSegmentFieldValue();
 	}
 
 	@Override
@@ -218,22 +210,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public boolean isPurgeable(HibNodeFieldContainer content) {
-		return content.isPurgeable();
-	}
-
-	@Override
-	public boolean isAutoPurgeEnabled(HibNodeFieldContainer content) {
-		return content.isAutoPurgeEnabled();
-	}
-
-	@Override
-	public void purge(HibNodeFieldContainer content, BulkActionContext bac) {
-		content.purge(bac);
-	}
-
-	@Override
-	public Result<HibNodeFieldContainer> versions(HibNodeFieldContainer content) {
-		return content.versions();
+		return toGraph(content).isPurgeable();
 	}
 
 	@Override
@@ -249,40 +226,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public long globalCount() {
 		return HibClassConverter.toGraph(db).count(NodeGraphFieldContainer.class);
-	}
-
-	@Override
-	public void migrateContainerOntoBranch(HibNodeFieldContainer hibContainer, HibBranch newBranch, HibNode node, EventQueueBatch batch, ContainerType containerType, boolean setInitial) {
-		NodeGraphFieldContainer container = toGraph(hibContainer);
-		if (setInitial) {
-			setInitial(node, container, newBranch);
-		}
-		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
-		BootstrapInitializer boot = mesh.boot();
-		GraphFieldContainerEdgeImpl edge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
-		edge.setLanguageTag(container.getLanguageTag());
-		edge.setType(containerType);
-		edge.setBranchUuid(newBranch.getUuid());
-		String value = getSegmentFieldValue(container);
-		HibNode parent = boot.nodeDao().getParentNode(node, newBranch.getUuid());
-		if (value != null) {
-			edge.setSegmentInfo(parent, value);
-		} else {
-			edge.setSegmentInfo(null);
-		}
-		edge.setUrlFieldInfo(getUrlFieldValues(container).collect(Collectors.toSet()));
-		batch.add(onUpdated(container, newBranch.getUuid(), containerType));
-	}
-
-	/**
-	 * Create a new initial edge between node and container for the given branch.
-	 */
-	private void setInitial(HibNode node, NodeGraphFieldContainer container, HibBranch branch) {
-		GraphFieldContainerEdgeImpl initialEdge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, container,
-			GraphFieldContainerEdgeImpl.class);
-		initialEdge.setLanguageTag(container.getLanguageTag());
-		initialEdge.setBranchUuid(branch.getUuid());
-		initialEdge.setType(INITIAL);
 	}
 
 	@Override
@@ -317,37 +260,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public void connectFieldContainer(HibNode node, HibNodeFieldContainer newContainer, HibBranch branch, String languageTag, boolean handleDraftEdge) {
-		Node graphNode = toGraph(node);
-		NodeGraphFieldContainer graphContainer = toGraph(newContainer);
-		String branchUuid = branch.getUuid();
-
-		if (handleDraftEdge) {
-			EdgeFrame draftEdge = graphNode.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, DRAFT);
-			
-			// remove existing draft edge
-			if (draftEdge != null) {
-				draftEdge.remove();
-				updateWebrootPathInfo(newContainer, branchUuid, "node_conflicting_segmentfield_update");
-			}
-
-			// create a new draft edge
-			GraphFieldContainerEdge edge = graphNode.addFramedEdge(HAS_FIELD_CONTAINER, graphContainer, GraphFieldContainerEdgeImpl.class);
-			edge.setLanguageTag(languageTag);
-			edge.setBranchUuid(branchUuid);
-			edge.setType(DRAFT);
-		}
-
-		// if there is no initial edge, create one
-		if (graphNode.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, INITIAL) == null) {
-			GraphFieldContainerEdge initialEdge = graphNode.addFramedEdge(HAS_FIELD_CONTAINER, graphContainer, GraphFieldContainerEdgeImpl.class);
-			initialEdge.setLanguageTag(languageTag);
-			initialEdge.setBranchUuid(branchUuid);
-			initialEdge.setType(INITIAL);
-		}
-	}
-
-	@Override
 	public Node getParentNode(HibNodeFieldContainer container, String branchUuid) {
 		NodeGraphFieldContainer graphContainer = toGraph(container);
 		return graphContainer.inE(HAS_FIELD_CONTAINER).has(
@@ -356,11 +268,11 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container,
-			HibBranch branch, String languageTag, ContainerType initial) {
+			HibBranch branch, String languageTag, ContainerType type) {
 		GraphFieldContainerEdge edge = toGraph(node).addFramedEdge(HAS_FIELD_CONTAINER, toGraph(container), GraphFieldContainerEdgeImpl.class);
 		edge.setLanguageTag(languageTag);
 		edge.setBranchUuid(branch.getUuid());
-		edge.setType(initial);
+		edge.setType(type);
 		return edge;
 	}
 

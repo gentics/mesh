@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
@@ -146,11 +147,12 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 		HibNode node = content();
 
 		try (Tx tx = tx()) {
+			ContentDao contentDao = tx.contentDao();
 			// Inject the reference node field
-			SchemaVersionModel schema = boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema();
+			SchemaVersionModel schema = contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
-			boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().setSchema(schema);
-			boot().contentDao().getFieldContainer(node, "en").createNode("reference", folder("2015"));
+			contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).setSchema(schema);
+			contentDao.getFieldContainer(node, "en").createNode("reference", folder("2015"));
 			tx.success();
 		}
 

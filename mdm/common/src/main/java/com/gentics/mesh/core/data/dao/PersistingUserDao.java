@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -277,7 +276,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		if (hasPermission(user, node, READ_PERM)) {
 			return true;
 		}
-		boolean published = container.isPublished(branchUuid);
+		boolean published = contentDao.isPublished(container, branchUuid);
 		if (published && hasPermission(user, node, READ_PUBLISHED_PERM)) {
 			return true;
 		}
