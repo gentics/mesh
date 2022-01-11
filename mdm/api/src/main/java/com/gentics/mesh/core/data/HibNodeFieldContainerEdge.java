@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 
 /**
@@ -77,4 +78,14 @@ public interface HibNodeFieldContainerEdge {
 	 * @return branch Uuid
 	 */
 	String getBranchUuid();
+
+	/**
+	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
+	 * 
+	 * @param parentNode
+	 * @param segment
+	 */
+	default void setSegmentInfo(HibNode parentNode, String segment) {
+		setSegmentInfo(Tx.get().contentDao().composeSegmentInfo(parentNode, segment));
+	}
 }

@@ -24,7 +24,6 @@ import static com.gentics.mesh.madl.field.FieldType.STRING_SET;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.HashSet;
@@ -46,7 +45,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -443,9 +441,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
+		ContentDao contentDao = Tx.get().contentDao();
 		// Check the different language versions
-		for (HibNodeFieldContainer container : Tx.get().contentDao().getFieldContainers(this, branchUuid, type)) {
-			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
+		for (HibNodeFieldContainer container : contentDao.getFieldContainers(this, branchUuid, type)) {
+			SchemaModel schema = contentDao.getSchemaContainerVersion(container).getSchema();
 			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name
 			HibStringField field = container.getString(segmentFieldName);

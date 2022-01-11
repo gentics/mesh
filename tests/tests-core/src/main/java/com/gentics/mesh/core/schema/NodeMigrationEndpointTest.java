@@ -491,10 +491,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 
 		int nFieldContainers = tx(tx -> {
-			
+			ContentDao contentDao = tx.contentDao();
 			HibSchemaVersion schemaVersion = node.getSchemaContainer().getLatestVersion();
 			return Long.valueOf(tx.<CommonTx>unwrap().schemaDao().getFieldContainers(schemaVersion, initialBranchUuid())
-				.filter(c -> c.isPublished() || c.isPublished())
+				.filter(contentDao::isPublished)
 				.count()).intValue();
 		});
 

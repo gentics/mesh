@@ -305,7 +305,7 @@ public final class TestMocks {
 		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
 		
 		HibNodeFieldContainer container = mockContainer(languageTag, user);
-		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
+		when(contentDao.getSchemaContainerVersion(container)).thenReturn(latestVersion);
 		when(contentDao.getNode(container)).thenReturn(node);
 		when(container.getNode()).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);

@@ -1935,7 +1935,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibNode node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
-		assertTrue("The node is expected to be published", tx(() -> boot().contentDao().getFieldContainer(node, "en").isPublished()));
+		assertTrue("The node is expected to be published", tx(tx -> {
+			return tx.contentDao().isPublished(tx.contentDao().getFieldContainer(node, "en"));
+		}));
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)

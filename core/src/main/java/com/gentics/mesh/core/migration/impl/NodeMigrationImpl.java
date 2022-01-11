@@ -231,7 +231,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		// Check whether the same container is also used as a published version within the given branch.
 		// A migration is always scoped to a specific branch.
 		// We need to ensure that the migrated container is also published.
-		boolean publish = container.isPublished(branchUuid);
+		boolean publish = contentDao.isPublished(container, branchUuid);
 
 		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
 		ac.getGenericParameters().setFields("fields");

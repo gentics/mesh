@@ -26,8 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -42,7 +40,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.DisplayField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
@@ -69,8 +66,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -160,11 +155,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void delete(BulkActionContext bac, boolean deleteNext) {
+		ContentDao contentDao = Tx.get().contentDao();
 
 		if (deleteNext) {
 			// Recursively delete all versions of the container
 			for (HibNodeFieldContainer next : getNextVersions()) {
-				next.delete(bac);
+				contentDao.delete(next, bac);
 			}
 		}
 
@@ -182,8 +178,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
 			micronodeField.removeField(bac, this);
 		}
-		ContentDao contentDao = Tx.get().contentDao();
-
+		
 		// Delete the container from all branches and types
 		getBranchTypes().forEach(tuple -> {
 			String branchUuid = tuple.v1();
@@ -199,20 +194,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
 		ContentDao contentDao = Tx.get().contentDao();
 		String branchUuid = branch.getUuid();
 
 		bac.batch().add(contentDao.onDeleted(this, branchUuid, DRAFT));
-		if (isPublished(branchUuid)) {
+		if (contentDao.isPublished(this, branchUuid)) {
 			bac.batch().add(contentDao.onDeleted(this, branchUuid, PUBLISHED));
 		}
 		// Remove the edge between the node and the container that matches the branch
-		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(e -> e.traversal().has(
-			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
-			e -> e.traversal().has(
-				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
+		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(
+				e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
+				e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
 			.removeAll();
 	}
 
@@ -380,18 +373,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
-		Stream<String> referencedUuids = StreamSupport.stream(getReferencedNodes().spliterator(), false)
-			.map(HibNode::getUuid);
-
-		int hashcode = Stream.concat(Stream.of(getUuid()), referencedUuids)
-			.collect(Collectors.toSet())
-			.hashCode();
-
-		return ETag.hash(hashcode);
-	}
-
-	@Override
 	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
 	}
@@ -431,30 +412,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public boolean isPurgeable() {
 		// The container is purgeable if no edge (publish, draft, initial) exists to its node.
 		return !inE(HAS_FIELD_CONTAINER).hasNext();
-	}
-
-	@Override
-	public boolean isAutoPurgeEnabled() {
-		HibSchemaVersion schema = getSchemaContainerVersion();
-		return schema.isAutoPurgeEnabled();
-	}
-
-	@Override
-	public void purge(BulkActionContext bac) {
-		if (log.isDebugEnabled()) {
-			log.debug("Purging container {" + getUuid() + "} for version {" + getVersion() + "}");
-		}
-		// Link the previous to the next to isolate the old container
-		NodeGraphFieldContainer beforePrev = getPreviousVersion();
-		for (HibNodeFieldContainer afterPrev : getNextVersions()) {
-			beforePrev.setNextVersion(afterPrev);
-		}
-		delete(bac, false);
-	}
-
-	@Override
-	public Result<HibNodeFieldContainer> versions() {
-		return new TraversalResult<>(StreamUtil.untilNull(() -> this, HibNodeFieldContainer::getPreviousVersion));
 	}
 
 	@Override

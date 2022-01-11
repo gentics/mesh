@@ -127,7 +127,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		}
 
 		// GFC must either have a next GFC, or must be the draft GFC for a Node
-		if (!contentDao.hasNextVersion(container) && !container.isDraft()) {
+		if (!contentDao.hasNextVersion(container) && !contentDao.isDraft(container)) {
 			String nodeInfo = "unknown";
 			try {
 				HibNode node = contentDao.getNode(container);
