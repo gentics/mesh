@@ -124,9 +124,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNotNull("The token code issue timestamp should be set.", tx(response::getCreated));
 
 		// 2. Fake an old issue timestamp
-		HibUser user = tx(() -> boot().userDao().findByUuid(uuid));
-		user.setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60);
-		tx(() -> CommonTx.get().userDao().mergeIntoPersisted(user));
+		tx(tx -> {
+			HibUser user1 = boot().userDao().findByUuid(uuid);
+			user1.setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60);
+			return tx.<CommonTx>unwrap().userDao().mergeIntoPersisted(user1);
+		});
 
 		// 2. Logout the current client user
 		client().logout().blockingGet();

@@ -36,7 +36,9 @@ public class SchemaChangeTest extends AbstractMeshTest {
 			PersistingSchemaDao schemaDao = ctx.schemaDao();
 			HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 
-			HibSchemaVersion versionA = container.getLatestVersion();
+			HibSchemaVersion versionA = createSchemaVersion(ctx, container, v -> {
+				container.setLatestVersion(v);
+			});
 			HibSchemaVersion versionB = createSchemaVersion(ctx, container, v -> {});
 			HibSchemaVersion versionC = createSchemaVersion(ctx, container, v -> {});
 
@@ -71,7 +73,9 @@ public class SchemaChangeTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			CommonTx ctx = (CommonTx) tx;
 			HibMicroschema container = createMicroschema(ctx);
-			HibMicroschemaVersion versionA = container.getLatestVersion();
+			HibMicroschemaVersion versionA = createMicroschemaVersion(ctx, container, v -> {
+				container.setLatestVersion(v);
+			});
 			HibMicroschemaVersion versionB = createMicroschemaVersion(ctx, container, v -> {});
 			container.setLatestVersion(versionB);
 			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB,
@@ -85,7 +89,9 @@ public class SchemaChangeTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			CommonTx ctx = (CommonTx) tx;
 			HibSchema container = createSchema(ctx);
-			HibSchemaVersion versionA = container.getLatestVersion();
+			HibSchemaVersion versionA = createSchemaVersion(ctx, container, v -> {
+				container.setLatestVersion(v);
+			});
 			HibSchemaVersion versionB = createSchemaVersion(ctx, container, v -> {});
 			container.setLatestVersion(versionA);
 			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB, 
