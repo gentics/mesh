@@ -64,22 +64,20 @@ public class CsvHandler implements Handler<PluginContext> {
 		String projectName = rc.projectName();
 		log.debug("Received Request on project '" + projectName + "'!");
 
-		rc.response().setChunked(true);
-		AtomicBoolean wroteHeader = new AtomicBoolean(false);
-
 		CsvRequest request = rc.get(DecodeValidateHandler.CONTEXT_PROPERTY_NAME);
 		request.setProjectName(projectName);
+
+		// Write the CSV Header directly, to start the response directly which should prevent
+		// that a proxy is terminating it for loading too long.
+		rc.response().setChunked(true);
+		rc.response().putHeader(CONTENT_TYPE_KEY, CONTENT_TYPE_VALUE);
+		rc.response().write("\ufeff"); // UTF-8 BOM Header
+		rc.response().write(this.createCsvHeader(request));
 
 		Disposable subscription = this.mapping.getConfigValues(projectName)
 			.doOnSuccess(request::setConfigValues)
 			.flatMapObservable(config -> this.streamDataRows(rc, request))
 			.subscribe(str -> {
-				if (!wroteHeader.get()) {
-					rc.response().putHeader(CONTENT_TYPE_KEY, CONTENT_TYPE_VALUE);
-					rc.response().write("\ufeff"); // UTF-8 BOM Header
-					rc.response().write(this.createCsvHeader(request));
-					wroteHeader.set(true);
-				}
 				rc.response().write(str);
 			}, (err) -> {
 				if (err instanceof IllegalStateException && rc.response().closed()) {
