@@ -21,7 +21,7 @@
 		<graphql.version>10.0</graphql.version>
 		<pf4j.version>3.1.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
-		<spring.security.version>4.2.16.RELEASE</spring.security.version>
+		<spring.security.version>4.2.17.RELEASE</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
 		<orientdb.version>3.1.11</orientdb.version>
