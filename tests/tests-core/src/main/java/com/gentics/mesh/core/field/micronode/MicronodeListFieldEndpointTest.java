@@ -585,7 +585,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
-			TraversalResult<? extends HibMicronode> s = new TraversalResult<>(ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass()));
+			TraversalResult<? extends HibMicronode> s = new TraversalResult<>(ctx.contentDao().findAllMicronodes());
 			Set<? extends HibMicronode> unboundMicronodes = s.stream()
 				.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();

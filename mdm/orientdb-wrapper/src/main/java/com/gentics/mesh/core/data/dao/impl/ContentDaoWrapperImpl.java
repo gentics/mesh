@@ -32,11 +32,10 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.util.HibClassConverter;
-import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.logging.Logger;
@@ -46,10 +45,10 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(ContentDaoWrapperImpl.class);
 
-	private final Database db;
+	private final OrientDBDatabase db;
 
 	@Inject
-	public ContentDaoWrapperImpl(Database db) {
+	public ContentDaoWrapperImpl(OrientDBDatabase db) {
 		this.db = db;
 	}
 
@@ -225,7 +224,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public long globalCount() {
-		return HibClassConverter.toGraph(db).count(NodeGraphFieldContainer.class);
+		return db.count(NodeGraphFieldContainer.class);
 	}
 
 	@Override
@@ -236,11 +235,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 		}
 		container.setSchemaContainerVersion(version);
 		return container;
-	}
-
-	@Override
-	public Class<? extends HibMicronode> getMicronodePersistenceClass() {
-		return MicronodeImpl.class;
 	}
 
 	@Override
@@ -289,5 +283,10 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNodeFieldContainer getFieldContainerOfEdge(HibNodeFieldContainerEdge edge) {
 		return toGraph(edge).inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+	}
+
+	@Override
+	public Iterable<? extends HibMicronode> findAllMicronodes() {
+		return GraphDBTx.getGraphTx().getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class);
 	}
 }

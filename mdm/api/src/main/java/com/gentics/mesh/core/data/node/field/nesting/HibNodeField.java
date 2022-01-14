@@ -56,7 +56,7 @@ public interface HibNodeField extends HibListableField {
 	Optional<String> getMicronodeFieldName();
 
 	/**
-	 * Get an origin that this node field is referenced from.
+	 * Get the type of an origin that this node field is referenced from.
 	 * @return
 	 */
 	ReferenceType getReferenceType();

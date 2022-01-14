@@ -115,11 +115,11 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	/**
-	 * Get the final type of the micronode entity.
+	 * Find all micronodes. Used by the indexing engine and tests.
 	 * 
 	 * @return
 	 */
-	Class<? extends HibMicronode> getMicronodePersistenceClass();
+	Iterable<? extends HibMicronode> findAllMicronodes();
 
 	/**
 	 * Create a container in the persisted storage, according to the root node.

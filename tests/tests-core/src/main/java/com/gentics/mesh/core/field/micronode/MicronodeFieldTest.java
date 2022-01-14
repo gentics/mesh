@@ -13,8 +13,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -303,11 +301,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			HibMicronode micronode = field.getMicronode();
 			String originalUuid = micronode.getUuid();
 
-			Iterator<? extends HibMicronode> existingMicronodes = ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass());
-			while (existingMicronodes.hasNext()) {
-				HibMicronode foundMicronode = existingMicronodes.next();
-				assertEquals(micronode.getUuid(), foundMicronode.getUuid());
-			}
+			Iterable<? extends HibMicronode> existingMicronodes = ctx.contentDao().findAllMicronodes();
+			existingMicronodes.forEach(foundMicronode -> assertEquals(micronode.getUuid(), foundMicronode.getUuid()));
 
 			// update by recreation
 			HibMicronodeField updatedField = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
@@ -315,11 +310,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 			assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));
 
-			existingMicronodes = ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass());
-			while (existingMicronodes.hasNext()) {
-				HibMicronode foundMicronode = existingMicronodes.next();
-				assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
-			}
+			existingMicronodes = ctx.contentDao().findAllMicronodes();
+			existingMicronodes.forEach(foundMicronode -> assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid()));
 		}
 	}
 
