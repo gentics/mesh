@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -119,7 +119,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 			switch (listFieldSchema.getListType()) {
-			case MicronodeGraphFieldList.TYPE:
+			case HibMicronodeFieldList.TYPE:
 				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
 				return super.getRestField(ac, fieldKey, fieldSchema, languageTags, level);
@@ -141,7 +141,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 			switch (listFieldSchema.getListType()) {
-			case MicronodeGraphFieldList.TYPE:
+			case HibMicronodeFieldList.TYPE:
 				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
 				super.updateField(ac, fieldMap, key, fieldSchema, schema);

@@ -9,6 +9,9 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import io.reactivex.Single;
 
 public interface HibMicronodeFieldList extends HibMicroschemaListableField, HibListField<HibMicronodeField, MicronodeFieldList, HibMicronode> {
+
+	String TYPE = "micronode";
+
 	/**
 	 * Create a new empty micronode and add it to the list.
 	 * 
