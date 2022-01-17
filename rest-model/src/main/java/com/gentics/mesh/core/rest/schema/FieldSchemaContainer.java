@@ -64,7 +64,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @return
 	 */
 	default FieldSchema getField(String fieldName) {
-		return (FieldSchema) getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
+		return getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
 	}
 
 	/**
@@ -75,7 +75,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @return
 	 */
 	default <T> T getField(String fieldName, Class<T> classOfT) {
-		return (T) getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
+		return classOfT.cast(getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null));
 	}
 
 	/**

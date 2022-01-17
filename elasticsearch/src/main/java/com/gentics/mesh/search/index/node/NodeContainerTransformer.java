@@ -541,9 +541,9 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 
 		String language = container.getLanguageTag();
 		document.put("language", language);
-		addSchema(document, container.getSchemaContainerVersion());
+		addSchema(document, contentDao.getSchemaContainerVersion(container));
 
-		addFields(document, "fields", container, container.getSchemaContainerVersion().getSchema().getFields());
+		addFields(document, "fields", container, contentDao.getSchemaContainerVersion(container).getSchema().getFields());
 		if (log.isTraceEnabled()) {
 			String json = document.toString();
 			log.trace("Search index json:");
@@ -552,7 +552,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 
 		// Add display field value
 		JsonObject displayField = new JsonObject();
-		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
+		displayField.put("key", contentDao.getSchemaContainerVersion(container).getSchema().getDisplayField());
 		displayField.put("value", contentDao.getDisplayFieldValue(container));
 		document.put("displayField", displayField);
 		document.put("branchUuid", branchUuid);

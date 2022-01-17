@@ -96,12 +96,5 @@ public abstract class AbstractContainerDaoWrapper<
 		return toGraph(version).getBranches();
 	}
 
-	@Override
-	public SC createPersisted(String uuid) {
-		SC vertex = super.createPersisted(uuid);
-		vertex.setLatestVersion(createPersistedVersion(vertex));
-		return vertex;
-	}
-
 	protected abstract RootVertex<D> getRoot();
 }

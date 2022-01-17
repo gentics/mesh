@@ -319,7 +319,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
 			return schemaDao.getFieldContainers(version, branchUuid, bucket)
-				.filter(c -> c.isType(type, branchUuid))
+				.filter(c -> contentDao.isType(c, type, branchUuid))
 				.map(HibNodeFieldContainer.class::cast)
 				.collect(Collectors.groupingBy(content -> {
 					String languageTag = content.getLanguageTag();
@@ -659,7 +659,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return
 	 */
 	public Observable<BulkEntry> moveForBulk(MoveDocumentEntry entry) {
-		ContentDao contentDao = boot.contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getBranchUuid();
@@ -685,7 +685,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return
 	 */
 	private Completable deleteContainer(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDao contentDao = boot.contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		String projectUuid = contentDao.getNode(container).getProject().getUuid();
 		return searchProvider.deleteDocument(contentDao.getIndexName(container, projectUuid, branchUuid, type), contentDao.getDocumentId(container));
 	}
@@ -699,10 +699,10 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return Single with affected index name
 	 */
 	public Single<String> storeContainer(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDao contentDao = boot.contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = contentDao.getNode(container).getProject().getUuid();
-		String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, contentDao.getSchemaContainerVersion(container).getUuid(), type);
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
 		}
@@ -720,7 +720,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @return Single with the bulk entry
 	 */
 	public Single<IndexBulkEntry> storeContainerForBulk(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDao contentDao = boot.contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = contentDao.getNode(container).getProject().getUuid();
 		String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);

@@ -42,10 +42,10 @@ public class NodeReferenceIn {
 		return contentDao.getInboundReferences(content.getNode())
 			.flatMap(ref -> ref.getReferencingContents()
 				.filter(container -> {
-					if (type == DRAFT && container.isDraft(branchUuid)) {
+					if (type == DRAFT && contentDao.isDraft(container, branchUuid)) {
 						return true;
 					}
-					if (type == PUBLISHED && container.isPublished(branchUuid)) {
+					if (type == PUBLISHED && contentDao.isPublished(container, branchUuid)) {
 						return true;
 					}
 					return false;

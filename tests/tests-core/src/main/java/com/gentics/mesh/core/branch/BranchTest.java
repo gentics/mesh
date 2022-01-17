@@ -264,11 +264,15 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			List<HibSchemaVersion> versions = schemaDao.findAll(project).stream().filter(v -> !v.getName().equals("content"))
 				.map(HibSchema::getLatestVersion).collect(Collectors.toList());
 
-			HibSchemaVersion newVersion = schemaDao.createPersistedVersion(schemaContainer("content"));
-			newVersion.setVersion("4.0");
-			newVersion.setName("content");
+			HibSchema schema = schemaContainer("content");
+
+			HibSchemaVersion newVersion = schemaDao.createPersistedVersion(schema, v -> {
+				v.setVersion("4.0");
+				v.setName("content");
+				v.setSchemaContainer(schema);
+			});
+
 			versions.add(newVersion);
-			newVersion.setSchemaContainer(schemaContainer("content"));
 			branchDao.connectToSchemaVersion(branch, newVersion);
 
 			List<HibSchemaVersion> found = new ArrayList<>();

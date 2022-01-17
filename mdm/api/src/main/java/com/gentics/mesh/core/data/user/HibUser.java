@@ -298,15 +298,6 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibReferenceableE
 	HibUser setReferencedNode(HibNode node);
 
 	/**
-	 * Return the current element version.
-	 * 
-	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
-	/**
 	 * Transform the user to a {@link MeshAuthUser} which implements the {@link User} interface and is thus usable in Vert.x Auth API code.
 	 * 
 	 * @return
