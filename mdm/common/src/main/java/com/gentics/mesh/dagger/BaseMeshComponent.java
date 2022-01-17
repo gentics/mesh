@@ -43,9 +43,9 @@ import com.gentics.mesh.search.index.schema.SchemaIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
-import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.LocalBinaryStorage;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import io.vertx.core.Vertx;
 

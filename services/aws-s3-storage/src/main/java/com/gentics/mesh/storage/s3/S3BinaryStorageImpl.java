@@ -1,4 +1,4 @@
-package com.gentics.mesh.storage.s3;
+package com.gentics.mesh.core.data.storage.s3;
 
 import static java.util.Objects.isNull;
 
@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import hu.akarnokd.rxjava2.interop.CompletableInterop;
 import hu.akarnokd.rxjava2.interop.FlowableInterop;

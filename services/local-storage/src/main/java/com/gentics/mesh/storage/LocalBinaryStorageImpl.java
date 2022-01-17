@@ -1,4 +1,4 @@
-package com.gentics.mesh.storage;
+package com.gentics.mesh.core.data.storage;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;

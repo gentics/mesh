@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.storage.LocalBinaryStorageImpl;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorageImpl;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;

@@ -121,11 +121,11 @@ import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 import com.gentics.mesh.security.SecurityUtils;
 import com.gentics.mesh.security.SecurityUtilsImpl;
-import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.LocalBinaryStorage;
-import com.gentics.mesh.storage.LocalBinaryStorageImpl;
-import com.gentics.mesh.storage.S3BinaryStorage;
-import com.gentics.mesh.storage.s3.S3BinaryStorageImpl;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorageImpl;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
 
 import dagger.Binds;
 import dagger.Module;

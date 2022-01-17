@@ -3,6 +3,7 @@ package com.gentics.mesh.core.db;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.Vertx;
@@ -46,4 +47,9 @@ public interface TxData {
 	 * @return
 	 */
 	ServerSchemaStorage serverSchemaStorage();
+
+	/**
+	 * Binary storage.
+	 */
+	BinaryStorage binaryStorage();
 }

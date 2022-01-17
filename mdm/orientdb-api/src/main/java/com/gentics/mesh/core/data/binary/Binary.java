@@ -23,20 +23,6 @@ public interface Binary extends MeshVertex, HibBinary {
 	String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
 	/**
-	 * Return the binary data stream.
-	 * 
-	 * @return
-	 */
-	Flowable<Buffer> getStream();
-
-	/**
-	 * Return the data as base 64 encoded string in the same thread, blocking.
-	 *
-	 * @return
-	 */
-	String getBase64ContentSync();
-
-	/**
 	 * Find all binary fields which make use of this binary.
 	 * 
 	 * @return
@@ -122,21 +108,6 @@ public interface Binary extends MeshVertex, HibBinary {
 	default HibBinary setImageWidth(Integer width) {
 		property(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
 		return this;
-	}
-
-	/**
-	 * Return the image size.
-	 * 
-	 * @return
-	 */
-	default Point getImageSize() {
-		Integer x = getImageHeight();
-		Integer y = getImageWidth();
-		if (x == null || y == null) {
-			return null;
-		} else {
-			return new Point(x, y);
-		}
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.gentics.mesh.storage.s3;
+package com.gentics.mesh.core.data.storage.s3;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
 import com.gentics.mesh.test.docker.AWSContainer;
 

@@ -52,31 +52,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public BinaryField transformToRest(ActionContext ac) {
-		BinaryField restModel = new BinaryFieldImpl();
-		restModel.setFileName(getFileName());
-		restModel.setMimeType(getMimeType());
-
-		HibBinary binary = getBinary();
-		if (binary != null) {
-			restModel.setBinaryUuid(binary.getUuid());
-			restModel.setFileSize(binary.getSize());
-			restModel.setSha512sum(binary.getSHA512Sum());
-			restModel.setWidth(binary.getImageWidth());
-			restModel.setHeight(binary.getImageHeight());
-		}
-
-		restModel.setFocalPoint(getImageFocalPoint());
-		restModel.setDominantColor(getImageDominantColor());
-
-		BinaryMetadata metaData = getMetadata();
-		restModel.setMetadata(metaData);
-
-		restModel.setPlainText(getPlainText());
-		return restModel;
-	}
-
-	@Override
 	public HibBinaryField copyTo(HibBinaryField target) {
 		for (String key : getPropertyKeys()) {
 			// Don't copy the uuid
@@ -97,11 +72,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	@Override
 	public String getFieldKey() {
 		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
-	}
-
-	@Override
-	public boolean hasProcessableImage() {
-		return NodeUtil.isProcessableImage(getMimeType());
 	}
 
 	@Override
@@ -230,26 +200,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
         }
         return metadata;
     }
-
-	@Override
-	public BinaryMetadata getMetadata() {
-		BinaryMetadata metaData = new BinaryMetadata();
-		for (Entry<String, String> entry : getMetadataProperties().entrySet()) {
-			metaData.add(entry.getKey(), entry.getValue());
-		}
-
-		// Now set the GPS information
-		Double lat = getLocationLatitude();
-		Double lon = getLocationLongitude();
-		if (lat != null && lon != null) {
-			metaData.setLocation(lon, lat);
-		}
-		Integer alt = getLocationAltitude();
-		if (alt != null && metaData.getLocation() != null) {
-			metaData.getLocation().setAlt(alt);
-		}
-		return metaData;
-	}
 
 	@Override
     public void setMetadata(String key, String value) {
