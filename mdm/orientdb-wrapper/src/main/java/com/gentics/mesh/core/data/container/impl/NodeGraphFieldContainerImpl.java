@@ -423,4 +423,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
 	}
+
+	@Override
+	public Result<? extends HibNodeFieldContainerEdge> getEdges() {
+		return inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
+	}
 }

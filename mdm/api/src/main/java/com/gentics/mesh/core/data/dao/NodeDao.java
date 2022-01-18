@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -9,6 +10,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
@@ -473,4 +475,15 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	NodeReference transformToReference(HibNode node, InternalActionContext ac);
+
+	/**
+	 * Get the edges for the given segment info, branch uuid and container type
+	 *
+	 * @param baseNode
+	 * @param segmentInfo
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Iterator<? extends HibNodeFieldContainerEdge> getEdges(HibNode baseNode, String segmentInfo, String branchUuid, ContainerType type);
 }

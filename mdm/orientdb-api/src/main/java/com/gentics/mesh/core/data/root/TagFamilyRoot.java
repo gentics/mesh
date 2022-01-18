@@ -11,7 +11,7 @@ public interface TagFamilyRoot extends RootVertex<TagFamily>, TransformableEleme
 
 	/**
 	 * Return the project which is the root element of this tagfamily.
-	 * 
+	 *
 	 * @return
 	 */
 	Project getProject();

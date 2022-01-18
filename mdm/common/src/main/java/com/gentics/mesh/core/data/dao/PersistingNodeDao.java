@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
@@ -31,10 +32,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -1683,5 +1692,133 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// create new published edge
 		contentDao.createContainerEdge(node, container, branchUuid, languageTag, PUBLISHED);
 		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish");
+	}
+
+	@Override
+	default Path resolvePath(HibNode baseNode, String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
+		if (pathStack.isEmpty()) {
+			return path;
+		}
+		String segment = pathStack.pop();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Resolving for path segment {" + segment + "}");
+		}
+
+		String segmentInfo = Tx.get().contentDao().composeSegmentInfo(baseNode, segment);
+		Iterator<? extends HibNodeFieldContainerEdge> edges = getEdges(baseNode, segmentInfo, branchUuid, type);
+		if (edges.hasNext()) {
+			HibNodeFieldContainerEdge edge = edges.next();
+			HibNode childNode = edge.getNode();
+			PathSegment pathSegment = getSegment(childNode, branchUuid, type, segment);
+			if (pathSegment != null) {
+				path.addSegment(pathSegment);
+				return resolvePath(childNode, branchUuid, type, path, pathStack);
+			}
+		}
+		return path;
+	}
+
+	private PathSegment getSegment(HibNode node, String branchUuid, ContainerType type, String segment) {
+		// Check the different language versions
+		for (HibNodeFieldContainer container : Tx.get().contentDao().getFieldContainers(node, branchUuid, type)) {
+			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
+			String segmentFieldName = schema.getSegmentField();
+			// First check whether a string field exists for the given name
+			HibStringField field = container.getString(segmentFieldName);
+			if (field != null) {
+				String fieldValue = field.getString();
+				if (segment.equals(fieldValue)) {
+					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
+				}
+			}
+
+			// No luck yet - lets check whether a binary field matches the
+			// segmentField
+			HibBinaryField binaryField = container.getBinary(segmentFieldName);
+			if (binaryField == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String binaryFilename = binaryField.getFileName();
+				if (segment.equals(binaryFilename)) {
+					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
+				}
+			}
+			// No luck yet - lets check whether a S3 binary field matches the segmentField
+			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
+			if (s3Binary == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
+				if (segment.equals(s3binaryFilename)) {
+					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
+				}
+			}
+
+		}
+		return null;
+	}
+
+	@Override
+	default void addReferenceUpdates(HibNode node, BulkActionContext bac) {
+		Set<String> handledNodeUuids = new HashSet<>();
+		ContentDao contentDao = Tx.get().contentDao();
+
+		contentDao.getInboundReferences(node)
+				.flatMap(HibNodeField::getReferencingContents)
+				.forEach(nodeContainer -> {
+					for (HibNodeFieldContainerEdge edge : contentDao.getEdges(nodeContainer)) {
+						ContainerType type = edge.getType();
+						// Only handle published or draft contents
+						if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
+							HibNode parent = edge.getNode();
+							String uuid = node.getUuid();
+							String languageTag = nodeContainer.getLanguageTag();
+							String branchUuid = edge.getBranchUuid();
+							String key = uuid + languageTag + branchUuid + type.getCode();
+							if (!handledNodeUuids.contains(key)) {
+								bac.add(onReferenceUpdated(node, node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+								handledNodeUuids.add(key);
+							}
+						}
+					}
+				});
+	}
+
+	/**
+	 * Create a new referenced element update event model.
+	 *
+	 * @param node
+	 * 			the node to add to the reference update event
+	 * @param uuid
+	 *            Uuid of the referenced node
+	 * @param schema
+	 *            Schema of the referenced node
+	 * @param branchUuid
+	 *            Branch of the referenced node
+	 * @param type
+	 *            Type of the content that was updated (if known)
+	 * @param languageTag
+	 *            Language of the content that was updated (if known)
+	 * @return
+	 */
+	private NodeMeshEventModel onReferenceUpdated(HibNode node, String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
+		event.setEvent(NODE_REFERENCE_UPDATED);
+		event.setUuid(uuid);
+		event.setLanguageTag(languageTag);
+		event.setType(type);
+		event.setBranchUuid(branchUuid);
+		event.setProject(node.getProject().transformToReference());
+		if (schema != null) {
+			event.setSchema(schema.transformToReference());
+		}
+		return event;
 	}
 }

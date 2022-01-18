@@ -4,6 +4,9 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -36,4 +39,14 @@ public interface SchemaVersion
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainer> getFieldContainers(String branchUuid, Bucket bucket);
+
+	/**
+	 * Returns all nodes that the user has read permissions for.
+	 *
+	 * @param branchUuid Branch uuid
+	 * @param user User to check permissions for
+	 * @param type Container type
+	 * @return
+	 */
+	Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type);
 }

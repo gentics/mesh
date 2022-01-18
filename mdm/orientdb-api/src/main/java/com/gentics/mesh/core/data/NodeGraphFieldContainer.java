@@ -145,4 +145,10 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	default boolean isValid() {
 		return getElement() != null;
 	}
+
+	/**
+	 * Return a result of all the edges of this container
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainerEdge> getEdges();
 }
