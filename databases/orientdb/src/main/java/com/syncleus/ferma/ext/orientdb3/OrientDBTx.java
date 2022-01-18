@@ -3,14 +3,10 @@ package com.syncleus.ferma.ext.orientdb3;
 import static com.gentics.mesh.core.graph.GraphAttribute.MESH_COMPONENT;
 import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
 
-import java.util.function.Function;
-
 import javax.inject.Inject;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.gentics.madl.traversal.RawTraversalResult;
-import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.PermissionCache;
@@ -58,9 +54,6 @@ import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
-import com.gentics.mesh.madl.tp3.mock.Element;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
@@ -169,35 +162,6 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 				Tx.setActive(null);
 			}
 		}
-	}
-
-	@Override
-	public <T extends RawTraversalResult<?>> T traversal(Function<GraphTraversalSource, GraphTraversal<?, ?>> traverser) {
-		return (T) new RawTraversalResultImpl(traverser.apply(rawTraverse()), typeResolver);
-	}
-
-	@Override
-	public GraphTraversalSource rawTraverse() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public <T> T createVertex(Class<T> clazzOfR) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public <E extends Element> E getElement(Object id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int txId() {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	@Override

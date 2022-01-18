@@ -190,12 +190,12 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 		// The purge operation was suppressed before. We need to invoke it now
 		// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.
-		if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && contentDao.isPurgeable(oldPublished)) {
+		if (oldPublished != null && !oldPublished.equals(container) && contentDao.isAutoPurgeEnabled(oldPublished) && contentDao.isPurgeable(oldPublished)) {
 			log.debug("Removing old published container {" + oldPublished.getUuid() + "}");
 			contentDao.purge(oldPublished);
 		}
 		// Now we can purge the draft container (which may also be the published container)
-		if (container.isAutoPurgeEnabled() && contentDao.isPurgeable(container)) {
+		if (contentDao.isAutoPurgeEnabled(container) && contentDao.isPurgeable(container)) {
 			log.debug("Removing source container {" + container.getUuid() + "}");
 			contentDao.purge(container);
 		}

@@ -113,6 +113,11 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 */
 	void removeElement();
 
+	/**
+	 * Unparent a node from the given branch.
+	 * 
+	 * @param branchUuid
+	 */
 	void removeParent(String branchUuid);
 
 	/**

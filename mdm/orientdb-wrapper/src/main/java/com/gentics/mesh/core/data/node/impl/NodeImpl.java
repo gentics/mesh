@@ -44,7 +44,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -154,7 +153,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Result<HibNodeFieldContainer> getFieldContainers(String branchUuid, ContainerType type) {
-		Result<GraphFieldContainerEdgeImpl> it = GraphFieldContainerEdgeImpl.findEdges(this.getId(), branchUuid, type);
+		Result<GraphFieldContainerEdgeImpl> it = getFieldContainerEdges(branchUuid, type);
 		Iterator<NodeGraphFieldContainer> it2 = it.stream().map(e -> e.getNodeContainer()).iterator();
 		return new TraversalResult<>(it2);
 	}
@@ -199,7 +198,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Result<? extends HibNodeFieldContainerEdge> getFieldContainerEdges(String branchUuid, ContainerType type) {
+	public Result<GraphFieldContainerEdgeImpl> getFieldContainerEdges(String branchUuid, ContainerType type) {
 		return GraphFieldContainerEdgeImpl.findEdges(getId(), branchUuid, type);
 	}
 
@@ -406,6 +405,53 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		return Tx.get().nodeDao().update(this.getProject(), this, ac, batch);
+	}
+
+	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
+		ContentDao contentDao = Tx.get().contentDao();
+		// Check the different language versions
+		for (HibNodeFieldContainer container : contentDao.getFieldContainers(this, branchUuid, type)) {
+			SchemaModel schema = contentDao.getSchemaContainerVersion(container).getSchema();
+			String segmentFieldName = schema.getSegmentField();
+			// First check whether a string field exists for the given name
+			HibStringField field = container.getString(segmentFieldName);
+			if (field != null) {
+				String fieldValue = field.getString();
+				if (segment.equals(fieldValue)) {
+					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
+				}
+			}
+
+			// No luck yet - lets check whether a binary field matches the
+			// segmentField
+			HibBinaryField binaryField = container.getBinary(segmentFieldName);
+			if (binaryField == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+						+ "}");
+				}
+			} else {
+				String binaryFilename = binaryField.getFileName();
+				if (segment.equals(binaryFilename)) {
+					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
+				}
+			}
+			// No luck yet - lets check whether a S3 binary field matches the segmentField
+			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
+			if (s3Binary == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
+				if (segment.equals(s3binaryFilename)) {
+					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
+				}
+			}
+
+		}
+		return null;
 	}
 
 	@Override

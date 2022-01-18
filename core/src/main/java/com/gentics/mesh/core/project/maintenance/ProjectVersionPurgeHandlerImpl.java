@@ -89,7 +89,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 		boolean isNewerThanMaxAge = maxAge != null && !isOlderThanMaxAge(version, maxAge);
 		boolean isInTimeFrame = maxAge == null || isOlderThanMaxAge(version, maxAge);
 
-		if (isInTimeFrame && version.isPurgeable()) {
+		if (isInTimeFrame && contentDao.isPurgeable(version)) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
 			contentDao.delete(version, bac, false);

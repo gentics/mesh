@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -32,17 +33,6 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 	HibNodeFieldContainer getContainer();
 
 	/**
-	 * Get all nodes that are in any way referenced by this node. This includes the following cases:
-	 * <ul>
-	 * <li>Node fields</li>
-	 * <li>Node list fields</li>
-	 * <li>Micronode fields with node fields or node list fields</li>
-	 * <li>Micronode list fields with node fields or node list fields</li>
-	 * </ul>
-	 */
-	Iterable<? extends HibNode> getReferencedNodes();
-
-	/**
 	 * Get the container of this micronode which can either be referenced via a micronode list or a directly to the container.
 	 *
 	 * @return container
@@ -56,8 +46,6 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 	 *            micronode
 	 */
 	void clone(HibMicronode micronode);
-
-	HibMicroschemaVersion getSchemaContainerVersion();
 
 	/**
 	 * Compare the micronode and return a list of changes which identify the changes.
@@ -79,8 +67,15 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 		return null;
 	}
 
-	default MicronodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	@Override
+	default ReferenceType getReferenceType() {
+		return ReferenceType.MICRONODE;
+	}
 
+	@Override
+	HibMicroschemaVersion getSchemaContainerVersion();
+
+	default MicronodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		NodeParametersImpl parameters = new NodeParametersImpl(ac);
 		MicronodeResponse restMicronode = new MicronodeResponse();
 		HibMicroschemaVersion microschemaContainer = getSchemaContainerVersion();

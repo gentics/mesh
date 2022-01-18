@@ -34,7 +34,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			CommonTx ctx = tx.unwrap();
 			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
 
 			HibFieldTypeChange change = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			change.setFieldName("name");
@@ -54,12 +54,13 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			schemaModel.setName("testschema");
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
-
-			StringFieldSchema stringField = new StringFieldSchemaImpl();
-			stringField.setName("stringField");
-			stringField.setRequired(true);
-			schemaModel.addField(stringField);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+				StringFieldSchema stringField = new StringFieldSchemaImpl();
+				stringField.setName("stringField");
+				stringField.setRequired(true);
+				schemaModel.addField(stringField);
+				v.setSchema(schemaModel);
+			});
 
 			HibFieldTypeChange fieldTypeUpdate = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			fieldTypeUpdate.setFieldName("stringField");
@@ -67,7 +68,6 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 
 			// 3. Apply the changes
 			version.setNextChange(fieldTypeUpdate);
-			version.setSchema(schemaModel);
 
 			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
@@ -86,13 +86,14 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			schemaModel.setName("testschema");
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
-
-			StringFieldSchema stringField = new StringFieldSchemaImpl();
-			stringField.setName("stringField");
-			stringField.setRequired(true);
-			stringField.setLabel("test123");
-			schemaModel.addField(stringField);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+				StringFieldSchema stringField = new StringFieldSchemaImpl();
+				stringField.setName("stringField");
+				stringField.setRequired(true);
+				stringField.setLabel("test123");
+				schemaModel.addField(stringField);
+				v.setSchema(schemaModel);
+			});
 
 			HibFieldTypeChange fieldTypeUpdate = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			fieldTypeUpdate.setFieldName("stringField");
@@ -100,7 +101,6 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			fieldTypeUpdate.setListType("html");
 
 			version.setNextChange(fieldTypeUpdate);
-			version.setSchema(schemaModel);
 
 			// 3. Apply the changes
 			SchemaModel updatedSchema = mutator.apply(version);
@@ -123,7 +123,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			schemaModel.setName("testschema");
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
 
 			SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
 			model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
@@ -147,7 +147,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			schemaModel.setName("testschema");
 			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema);
+			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
 
 			HibFieldTypeChange change = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			change.setFieldName("test");

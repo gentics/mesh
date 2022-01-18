@@ -511,20 +511,20 @@ public class RestUpdaters {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
 
-		HibNodeField graphNodeField = container.getNode(fieldKey);
+		HibNodeField nodeFieldReference = container.getNode(fieldKey);
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
-		HibField.failOnDeletionOfRequiredField(graphNodeField, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
+		HibField.failOnDeletionOfRequiredField(nodeFieldReference, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = nodeField == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphNodeField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			HibField.failOnMissingRequiredField(nodeFieldReference, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
-		if (graphNodeField != null && isNodeFieldSetToNull) {
-			container.removeField(graphNodeField);
+		if (nodeFieldReference != null && isNodeFieldSetToNull) {
+			container.removeField(nodeFieldReference);
 			return;
 		}
 
@@ -561,15 +561,12 @@ public class RestUpdaters {
 						+ "} is not allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
 				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
 			}
-
-			if (graphNodeField == null) {
-				container.createNode(fieldKey, node);
-			} else {
+			if (nodeFieldReference != null) {
 				// We can't update the graphNodeField since it is in fact an edge.
 				// We need to delete it and create a new one.
-				container.deleteFieldEdge(fieldKey);
-				container.createNode(fieldKey, node);
+				container.deleteFieldEdge(fieldKey);				
 			}
+			container.createNode(fieldKey, node);
 		}
 	};
 

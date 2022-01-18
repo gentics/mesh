@@ -40,16 +40,13 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.node.field.HibBooleanField;
-import com.gentics.mesh.core.data.node.field.HibDateField;
-import com.gentics.mesh.core.data.node.field.HibHtmlField;
-import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -63,11 +60,13 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.impl.PathImpl;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
@@ -99,8 +98,21 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param setInitial @Override
 	is this branch initial for the project?
 	 */
-	void migrateContainerOntoBranch(HibNodeFieldContainer container, HibBranch newBranch, 
-			HibNode node, EventQueueBatch batch, ContainerType containerType, boolean setInitial);
+	default void migrateContainerOntoBranch(HibNodeFieldContainer container, HibBranch newBranch, HibNode node, EventQueueBatch batch, ContainerType containerType, boolean setInitial) {
+		if (setInitial) {
+			createContainerEdge(node, container, newBranch, container.getLanguageTag(), INITIAL);
+		}
+		HibNodeFieldContainerEdge edge = createContainerEdge(node, container, newBranch, container.getLanguageTag(), containerType);
+		String value = getSegmentFieldValue(container);
+		HibNode parent = CommonTx.get().nodeDao().getParentNode(node, newBranch.getUuid());
+		if (value != null) {
+			edge.setSegmentInfo(parent, value);
+		} else {
+			edge.setSegmentInfo(null);
+		}
+		edge.setUrlFieldInfo(getUrlFieldValues(container).collect(Collectors.toSet()));
+		batch.add(onUpdated(container, newBranch.getUuid(), containerType));
+	}
 
 	/**
 	 * Get the final type of the micronode entity.
@@ -128,37 +140,65 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param languageTag
 	 * @param handleDraftEdge
 	 */
-	void connectFieldContainer(HibNode node, HibNodeFieldContainer container, HibBranch branch, String languageTag, boolean handleDraftEdge);
+	default void connectFieldContainer(HibNode node, HibNodeFieldContainer newContainer, HibBranch branch, String languageTag, boolean handleDraftEdge) {
+		String branchUuid = branch.getUuid();
 
+		if (handleDraftEdge) {
+			HibNodeFieldContainerEdge draftEdge = getEdge(node, languageTag, branchUuid, DRAFT);
 
+			// remove existing draft edge
+			if (draftEdge != null) {
+				removeEdge(draftEdge);
+				updateWebrootPathInfo(newContainer, branchUuid, "node_conflicting_segmentfield_update");
+			}
+			// create a new draft edge
+			createContainerEdge(node, newContainer, branchUuid, languageTag, DRAFT);
+		}
+
+		// if there is no initial edge, create one
+		if (getEdge(node, languageTag, branchUuid, INITIAL) == null) {
+			createContainerEdge(node, newContainer, branchUuid, languageTag, INITIAL);
+		}
+	}
+
+	/**
+	 * Create an edge connection between the container and its node, based on the given edge properties.
+	 *
+	 * @param node
+	 * @param container
+	 * @param branch
+	 * @param languageTag
+	 * @param initial
+	 * @return
+	 */
 	HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container, HibBranch branch,
 			String languageTag, ContainerType initial);
 
+	/**
+	 * Remove the connection edge.
+	 *
+	 * @param edge
+	 */
 	void removeEdge(HibNodeFieldContainerEdge edge);
 
+	/**
+	 * Find the node edge with the given parameters: language, branch, type
+	 *
+	 * @param node
+	 * @param languageTag
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
 	HibNodeFieldContainerEdge getEdge(HibNode node, String languageTag, String branchUuid, ContainerType type);
 
+	/**
+	 * Get the content container the edge is pointing to
+	 *
+	 * @param edge
+	 * @return
+	 */
 	HibNodeFieldContainer getFieldContainerOfEdge(HibNodeFieldContainerEdge edge);
-
-	// Those are stubs. They will be replaced during ContentDao implementation.
-
-	@Deprecated
-	HibBooleanField createBoolean(HibNodeFieldContainer container, String name);
-	
-	@Deprecated
-	HibStringField createString(HibNodeFieldContainer container, String name);
-
-	@Deprecated
-	HibNumberField createNumber(HibNodeFieldContainer container, String name);
-	
-	@Deprecated
-	HibDateField createDate(HibNodeFieldContainer container, String name);
-	
-	@Deprecated
-	HibHtmlField createHtml(HibNodeFieldContainer container, String name);
-	
-	@Deprecated
-	HibBinaryField createBinary();
 
 	default HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container, String branchUUID, String languageTag, ContainerType initial) {
 		HibBranch branch = Tx.get().branchDao().findByUuid(node.getProject(), branchUUID);
@@ -185,7 +225,7 @@ public interface PersistingContentDao extends ContentDao {
 		// So use the latest version available to use.
 		HibSchemaVersion version = Objects.isNull(original) 
 				? branch.findLatestSchemaVersion(node.getSchemaContainer()) 
-				: original.getSchemaContainerVersion() ;
+				: getSchemaContainerVersion(original) ;
 
 		// Create the new container
 		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null);
@@ -216,7 +256,7 @@ public interface PersistingContentDao extends ContentDao {
 
 		// We need to update the display field property since we created a new
 		// node graph field container.
-		newContainer.updateDisplayFieldValue();
+		updateDisplayFieldValue(newContainer);
 
 		return newContainer;
 	}
@@ -248,15 +288,15 @@ public interface PersistingContentDao extends ContentDao {
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", languageTag);
 		}
-		container.deleteFromBranch(branch, bac);
+		deleteFromBranch(container, branch, bac);
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
 		// starting with the old draft, delete all GFC that have no next and are not draft (for other branches)
 		HibNodeFieldContainer dangling = container;
-		while (dangling != null && !dangling.isDraft() && !dangling.hasNextVersion()) {
+		while (dangling != null && !isDraft(dangling) && !dangling.hasNextVersion()) {
 			HibNodeFieldContainer toDelete = dangling;
 			dangling = toDelete.getPreviousVersion();
-			toDelete.delete(bac);
+			delete(toDelete, bac);
 		}
 
 		HibNodeFieldContainer initial = getFieldContainer(node, languageTag, branch, INITIAL);
@@ -266,13 +306,13 @@ public interface PersistingContentDao extends ContentDao {
 
 			// starting with the old initial, delete all GFC that have no previous and are not initial (for other branches)
 			dangling = initial;
-			while (dangling != null && !dangling.isInitial() && !dangling.hasPreviousVersion()) {
+			while (dangling != null && !isInitial(dangling) && !dangling.hasPreviousVersion()) {
 				HibNodeFieldContainer toDelete = dangling;
 				// since the GFC "toDelete" was only used by this branch, it can not have more than one "next" GFC
 				// (multiple "next" would have to belong to different branches, and for every branch, there would have to be
 				// an INITIAL, which would have to be either this GFC or a previous)
 				dangling = getNextVersions(toDelete).iterator().next();
-				toDelete.delete(bac, false);
+				delete(toDelete, bac, false);
 			}
 		}
 
@@ -341,9 +381,9 @@ public interface PersistingContentDao extends ContentDao {
 		if (editor != null) {
 			info.setCreator(editor.transformToReference());
 		}
-		info.setPublished(container.isPublished(branchUuid));
-		info.setDraft(container.isDraft(branchUuid));
-		info.setBranchRoot(container.isInitial());
+		info.setPublished(isPublished(container, branchUuid));
+		info.setDraft(isDraft(container, branchUuid));
+		info.setBranchRoot(isInitial(container));
 		return info;
 	}
 
@@ -368,7 +408,7 @@ public interface PersistingContentDao extends ContentDao {
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(container.getLanguageTag());
 		model.setType(type);
-		HibSchemaVersion version = container.getSchemaContainerVersion();
+		HibSchemaVersion version = getSchemaContainerVersion(container);
 		if (version != null) {
 			model.setSchema(version.transformToReference());
 		}
@@ -564,7 +604,7 @@ public interface PersistingContentDao extends ContentDao {
 
 	@Override
 	default Stream<String> getUrlFieldValues(HibNodeFieldContainer content) {
-		SchemaVersionModel schema = content.getSchemaContainerVersion().getSchema();
+		SchemaVersionModel schema = getSchemaContainerVersion(content).getSchema();
 
 		List<String> urlFields = schema.getUrlFields();
 		if (urlFields == null) {
@@ -684,7 +724,7 @@ public interface PersistingContentDao extends ContentDao {
 
 		SchemaModel schemaA = getSchemaContainerVersion(content).getSchema();
 		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
-		SchemaModel schemaB = container.getSchemaContainerVersion().getSchema();
+		SchemaModel schemaB = getSchemaContainerVersion(container).getSchema();
 		Map<String, FieldSchema> fieldMapB = schemaB.getFieldsAsMap();
 		// Generate a structural diff first. This way it is easy to determine
 		// which fields have been added or removed.
@@ -804,22 +844,34 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
+	default void purge(HibNodeFieldContainer content, BulkActionContext bac) {
+		if (log.isDebugEnabled()) {
+			log.debug("Purging container {" + content.getUuid() + "} for version {" + content.getVersion() + "}");
+		}
+		// Link the previous to the next to isolate the old container
+		HibNodeFieldContainer beforePrev = content.getPreviousVersion();
+		if (beforePrev != null) {
+			for (HibNodeFieldContainer afterPrev : content.getNextVersions()) {
+				beforePrev.setNextVersion(afterPrev);
+			}
+		}
+		delete(content, bac, false);
+	}
+
+	@Override
 	default boolean isAutoPurgeEnabled(HibNodeFieldContainer content) {
 		HibSchemaVersion schema = getSchemaContainerVersion(content);
 		return schema.isAutoPurgeEnabled();
 	}
 
 	@Override
-	default void purge(HibNodeFieldContainer content, BulkActionContext bac) {
-		if (log.isDebugEnabled()) {
-			log.debug("Purging container {" + content.getUuid() + "} for version {" + getVersion(content) + "}");
-		}
-		// Link the previous to the next to isolate the old container
-		HibNodeFieldContainer beforePrev = getPreviousVersion(content);
-		for (HibNodeFieldContainer afterPrev : getNextVersions(content)) {
-			beforePrev.setNextVersion(afterPrev);
-		}
-		delete(content, bac, false);
+	default String getETag(HibNodeFieldContainer content, InternalActionContext ac) {
+		return content.getETag(ac);
+	}
+
+	@Override
+	default Result<HibNodeFieldContainer> versions(HibNodeFieldContainer content) {
+		return new TraversalResult<>(StreamUtil.untilNull(() -> content, HibNodeFieldContainer::getPreviousVersion));
 	}
 }
 

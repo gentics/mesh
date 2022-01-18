@@ -1,41 +1,19 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.diff.FieldChangeTypes;
-import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.error.Errors;
-import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.path.Path;
+import com.gentics.mesh.core.rest.common.ReferenceType;
+import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionNumber;
-import com.google.common.base.Equivalence;
-import com.google.common.collect.MapDifference;
-import com.google.common.collect.Maps;
 
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
@@ -71,31 +49,6 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	default String getDocumentId() {
 		return ContentDao.composeDocumentId(getNode().getUuid(), getLanguageTag());
 	}
-
-	/**
-	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
-	 * well.
-	 * 
-	 * @param bac
-	 */
-	void delete(BulkActionContext bac);
-
-	/**
-	 * Delete the field container. This will also delete linked elements like lists.
-	 * 
-	 * @param bac
-	 * @param deleteNext
-	 *            true to also delete all "next" containers, false to only delete this container
-	 */
-	void delete(BulkActionContext bac, boolean deleteNext);
-
-	/**
-	 * "Delete" the field container from the branch. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
-	 *
-	 * @param branch
-	 * @param bac
-	 */
-	void deleteFromBranch(HibBranch branch, BulkActionContext bac);
 
 	/**
 	 * Return the display field value for this container.
@@ -168,111 +121,8 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 */
 	void clone(HibNodeFieldContainer container);
 
-	/**
-	 * Check whether this field container is the initial version for any branch.
-	 * 
-	 * @return true if it is the initial, false if not
-	 */
-	default boolean isInitial() {
-		return isType(INITIAL);
-	}
-
-	/**
-	 * Check whether this field container is the draft version for any branch.
-	 * 
-	 * @return true if it is the draft, false if not
-	 */
-	default boolean isDraft() {
-		return isType(DRAFT);
-	}
-
-	/**
-	 * Check whether this field container is the published version for any branch.
-	 * 
-	 * @return true if it is published, false if not
-	 */
-	default boolean isPublished() {
-		return isType(PUBLISHED);
-	}
-
-	/**
-	 * Check whether this field container has the given type for any branch.
-	 * 
-	 * @param type
-	 * @return true if it matches the type, false if not
-	 */
-	boolean isType(ContainerType type);
-
-	/**
-	 * Check whether this field container is the initial version for the given branch.
-	 * 
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @return true if it is the initial, false if not
-	 */
-	default boolean isInitial(String branchUuid) {
-		return isType(INITIAL, branchUuid);
-	}
-
-	/**
-	 * Check whether this field container is the draft version for the given branch.
-	 * 
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @return true if it is the draft, false if not
-	 */
-	default boolean isDraft(String branchUuid) {
-		return isType(DRAFT, branchUuid);
-	}
-
-	/**
-	 * Check whether this field container is the published version for the given branch.
-	 * 
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @return true if it is published, false if not
-	 */
-	default boolean isPublished(String branchUuid) {
-		return isType(PUBLISHED, branchUuid);
-	}
-
-	/**
-	 * Check whether this field container has the given type in the given branch.
-	 * 
-	 * @param type
-	 * @param branchUuid
-	 * @return true if it matches the type, false if not
-	 */
-	boolean isType(ContainerType type, String branchUuid);
-
-	/**
-	 * Get the branch Uuids for which this container is the container of given type.
-	 * 
-	 * @param type
-	 *            type
-	 * @return set of branch Uuids (may be empty, but never null)
-	 */
-	Set<String> getBranches(ContainerType type);
-
+	@Override
 	HibSchemaVersion getSchemaContainerVersion();
-
-	/**
-	 * Get all micronode fields that have a micronode using the given microschema container version.
-	 * 
-	 * @param version
-	 *            microschema container version
-	 * @return list of micronode fields
-	 */
-	List<HibMicronodeField> getMicronodeFields(HibMicroschemaVersion version);
-
-	/**
-	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
-	 * 
-	 * @param version
-	 *            microschema container version
-	 * @return list of micronode list fields
-	 */
-	Result<HibMicronodeFieldList> getMicronodeListFields(HibMicroschemaVersion version);
 
 	/**
 	 * Return the ETag for the field container.
@@ -280,43 +130,24 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 * @param ac
 	 * @return Generated entity tag
 	 */
-	String getETag(InternalActionContext ac);
+	default String getETag(InternalActionContext ac) {
+		Stream<String> referencedUuids = StreamSupport.stream(getReferencedNodes().spliterator(), false)
+			.map(HibNode::getUuid);
 
-	/**
-	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
-	 */
-	void updateDisplayFieldValue();
+		int hashcode = Stream.concat(Stream.of(getUuid()), referencedUuids)
+			.collect(Collectors.toSet())
+			.hashCode();
 
-	/**
-	 * Update the current segment field and increment any found postfix number.
-	 */
-	void postfixSegmentFieldValue();
-
-	/**
-	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
-	 *
-	 * @return
-	 */
-	boolean isPurgeable();
-
-	/**
-	 * Check whether auto purge is enabled globally or for the schema of the container.
-	 *
-	 * @return
-	 */
-	boolean isAutoPurgeEnabled();
-
-	/**
-	 * Purge the container from the version without the use of a Bulk Action Context.
-	 */
-	default void purge() {
-		Tx.get().contentDao().purge(this, new DummyBulkActionContext());
+		return ETag.hash(hashcode);
 	}
 
-	/**
-	 * Return all versions.
-	 *
-	 * @return
-	 */
-	Result<HibNodeFieldContainer> versions();
+	@Override
+	default Stream<HibNodeFieldContainer> getContents() {
+		return Stream.of(this);
+	}
+
+	@Override
+	default ReferenceType getReferenceType() {
+		return ReferenceType.FIELD;
+	}
 }
