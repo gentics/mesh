@@ -21,6 +21,7 @@ import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.util.DateUtils;
 
 import io.reactivex.Completable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Domain model for job.
@@ -47,6 +48,19 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 
 	String WARNING_PROPERTY_KEY = "warnings";
 
+	String ERROR_DETAIL_MAX_LENGTH_MSG = "..." + System.lineSeparator() +
+			"For further details concerning this error please refer to the logs.";
+
+	/**
+	 * The max length before detail error messages will be truncated
+	 */
+	int ERROR_DETAIL_MAX_LENGTH = 50000;
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
+
 	/**
 	 * Set the current node name.
 	 */
@@ -65,9 +79,11 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	/**
 	 * Mark the error as failed and store the exception information.
 	 * 
-	 * @param ex
+	 * @param e
 	 */
-	void markAsFailed(Exception ex);
+	default void markAsFailed(Exception e) {
+		setError(e);
+	}
 
 	/**
 	 * Return the branch of the job.
@@ -128,19 +144,22 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	/**
 	 * Removes the error information from the job and thus it can be processed again.
 	 */
-	void resetJob();
+	default void resetJob() {
+		setStartTimestamp(null);
+		setStopTimestamp(null);
+		setErrorDetail(null);
+		setErrorMessage(null);
+		setStatus(JobStatus.QUEUED);
+	}
 
 	/**
 	 * Check whether the job has failed.
-	 * 
+	 *
 	 * @return
 	 */
-	boolean hasFailed();
-
-	/**
-	 * The max length before detail error messages will be truncated
-	 */
-	int ERROR_DETAIL_MAX_LENGTH = 50000;
+	default boolean hasFailed() {
+		return getErrorMessage() != null || getErrorDetail() != null;
+	}
 
 	/**
 	 * Set the job type.
@@ -206,16 +225,23 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	void setToMicroschemaVersion(HibMicroschemaVersion toVersion);
 
 	/**
-	 * Process the job.
-	 */
-	Completable process();
-
-	/**
 	 * Set the error information using the provided exception.
 	 * 
 	 * @param e
 	 */
-	void setError(Throwable e);
+	default void setError(Throwable e) {
+		String stackTrace = ExceptionUtils.getStackTrace(e);
+		// truncate the error detail message to the max length for the error detail property
+		setErrorDetail(truncateStackTrace(stackTrace));
+		setErrorMessage(e.getMessage());
+	}
+
+	private String truncateStackTrace(String info) {
+		if (info != null && info.length() > ERROR_DETAIL_MAX_LENGTH) {
+			return info.substring(0, ERROR_DETAIL_MAX_LENGTH - ERROR_DETAIL_MAX_LENGTH_MSG.length()) + ERROR_DETAIL_MAX_LENGTH_MSG;
+		}
+		return info;
+	}
 
 	/**
 	 * Return the start date of the job.

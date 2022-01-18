@@ -3,12 +3,12 @@ package com.gentics.mesh.core.data.job.impl;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.job.MicronodeMigrationJob;
+import com.gentics.mesh.core.data.job.JobCore;
 
 /**
  * Implementation of the micronode migration job.
  */
-public class MicronodeMigrationJobImpl extends JobImpl implements MicronodeMigrationJob {
+public class MicronodeMigrationJobImpl extends JobImpl implements JobCore {
 
 	/**
 	 * Initialize the vertex type and index.

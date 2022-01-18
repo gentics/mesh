@@ -609,7 +609,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			call(() -> client().updateSchema(uuid, request));
 		}, COMPLETED, 1);
 
-		String jobUuid = tx(() -> schemaContainer("content").getLatestVersion().referencedJobsViaTo().iterator().next().getUuid());
+		String jobUuid = tx(() -> boot().schemaDao().findByUuid(uuid).getLatestVersion().referencedJobsViaTo().iterator().next().getUuid());
 
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
@@ -620,10 +620,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(schemaDao.getNodes(reloaded)).isNotEmpty();
 			BulkActionContext context = createBulkContext();
-			for (HibNode node : schemaDao.getNodes(getSchemaContainer())) {
+			for (HibNode node : schemaDao.getNodes(schemaDao.findByUuid(getSchemaContainer().getUuid())).list()) {
 				nodeDao.delete(node, context, false, true);
 			}
-			assertThat(schemaDao.getNodes(reloaded)).isEmpty();
+			assertThat(schemaDao.getNodes(schemaDao.findByUuid(uuid))).isEmpty();
 			tx.success();
 		}
 

@@ -2,10 +2,6 @@ package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_TIMEOUT_COUNT;
-import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_WAITING_TIME;
-import static com.gentics.mesh.metric.SimpleMetric.TX_RETRY;
-import static com.gentics.mesh.metric.SimpleMetric.TX_TIME;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -20,7 +16,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -87,7 +82,6 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
 import dagger.Lazy;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -107,12 +101,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OrientStorage txProvider;
 
-	private MetricsService metrics;
-
-	private Timer txTimer;
-
-	private Counter txRetryCounter;
-
 	private OrientDBIndexHandler indexHandler;
 
 	private OrientDBTypeHandler typeHandler;
@@ -123,38 +111,25 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private Thread txCleanupThread;
 
-	private Timer topologyLockTimer;
-
-	private Counter topologyLockTimeoutCounter;
-
-	private Mesh mesh;
-
 	private WriteLock writeLock;
 
 	private final TransactionComponent.Factory txFactory;
 
 	@Inject
-	public OrientDBDatabase(OrientDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
-		OrientDBTypeHandler typeHandler,
-		OrientDBIndexHandler indexHandler,
-		OrientDBClusterManagerImpl clusterManager,
-		TxCleanupTask txCleanupTask,
-		Lazy<PermissionRoots> permissionRoots, Mesh mesh, WriteLock writeLock,
-		TransactionComponent.Factory txFactory) {
-		super(vertx);
+	public OrientDBDatabase(
+			OrientDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, 
+			Lazy<DaoCollection> daos, MetricsService metrics,
+			OrientDBTypeHandler typeHandler, OrientDBIndexHandler indexHandler,
+			OrientDBClusterManagerImpl clusterManager, TxCleanupTask txCleanupTask,
+			Lazy<PermissionRoots> permissionRoots, WriteLock writeLock,
+			TransactionComponent.Factory txFactory, Mesh mesh
+	) {
+		super(vertx, mesh, metrics);
 		this.options = options;
-		this.metrics = metrics;
-		if (metrics != null) {
-			txTimer = metrics.timer(TX_TIME);
-			txRetryCounter = metrics.counter(TX_RETRY);
-			topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
-			topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
-		}
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
 		this.clusterManager = clusterManager;
 		this.txCleanUpTask = txCleanupTask;
-		this.mesh = mesh;
 		this.writeLock = writeLock;
 		this.txFactory = txFactory;
 	}
@@ -507,17 +482,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 		}
 		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded", cause);
-	}
-
-	private void checkStatus() {
-		MeshStatus status = mesh.getStatus();
-		switch (status) {
-		case READY:
-		case STARTING:
-			return;
-		default:
-			throw new RuntimeException("Mesh is not ready. Current status " + status.name() + ". Aborting transaction.");
-		}
 	}
 
 	@Override

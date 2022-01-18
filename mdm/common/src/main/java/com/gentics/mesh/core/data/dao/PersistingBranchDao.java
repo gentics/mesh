@@ -188,7 +188,6 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 
 	/**
 	 * Assigns schemas and microschemas to the new branch, which will cause a node migration if there is a newer schema version.
-	 * @param branchDao 
 	 *
 	 * @param creator
 	 *            The creator of the branch
@@ -352,7 +351,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	@Override
 	default HibJob assignSchemaVersion(HibBranch branch, HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch) {
 		JobDao jobDao = Tx.get().jobDao();
-		HibBranchSchemaVersion edge = branch.findBranchSchemaEdge(schemaVersion);
+		HibBranchSchemaVersion edge = findBranchSchemaEdge(branch, schemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
@@ -376,7 +375,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	@Override
 	default HibJob assignMicroschemaVersion(HibBranch branch, HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch) {
 		JobDao jobDao = Tx.get().jobDao();
-		HibBranchMicroschemaVersion edge = branch.findBranchMicroschemaEdge(microschemaVersion);
+		HibBranchMicroschemaVersion edge = findBranchMicroschemaEdge(branch, microschemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {

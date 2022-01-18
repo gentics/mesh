@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.job;
+package com.gentics.mesh.core.jobs;
 
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_FINISHED;
@@ -9,10 +9,13 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -26,31 +29,43 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
-
 import io.reactivex.Completable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
-public interface MicronodeMigrationJob extends JobCore {
+/**
+ * This class is responsible for starting a micronode migration from a job
+ */
+public class MicronodeJobProcessor implements SingleJobProcessor {
+
+	public static final Logger log = LoggerFactory.getLogger(MicronodeJobProcessor.class);
+	private Database db;
+
+	@Inject
+	public MicronodeJobProcessor(Database db) {
+		this.db = db;
+	}
 
 	/**
 	 * Create a new migration event model object.
-	 * 
+	 *
+	 * @param job
 	 * @param event
 	 * @param status
 	 * @return
 	 */
-	default MicroschemaMigrationMeshEventModel createEvent(Tx tx, MeshEvent event, JobStatus status) {
+	private MicroschemaMigrationMeshEventModel createEvent(HibJob job, Tx tx, MeshEvent event, JobStatus status) {
 		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
 		model.setEvent(event);
 
-		HibMicroschemaVersion toVersion = getToMicroschemaVersion();
+		HibMicroschemaVersion toVersion = job.getToMicroschemaVersion();
 		model.setToVersion(toVersion.transformToReference());
 
-		HibMicroschemaVersion fromVersion = getFromMicroschemaVersion();
+		HibMicroschemaVersion fromVersion = job.getFromMicroschemaVersion();
 		model.setFromVersion(fromVersion.transformToReference());
 
-		HibBranch branch = getBranch();
+		HibBranch branch = job.getBranch();
 		if (branch != null) {
 			HibProject project = branch.getProject();
 			model.setProject(project.transformToReference());
@@ -62,39 +77,39 @@ public interface MicronodeMigrationJob extends JobCore {
 		return model;
 	}
 
-	private MicronodeMigrationContext prepareContext(Database db) {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, JobType.microschema);
+	private MicronodeMigrationContext prepareContext(HibJob job) {
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(job.getUuid());
 		try {
 			return db.tx(tx -> {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
 
-				tx.createBatch().add(createEvent(tx, MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
+				tx.createBatch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 
-				HibBranch branch = getBranch();
+				HibBranch branch = job.getBranch();
 				if (branch == null) {
-					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
+					throw error(BAD_REQUEST, "Branch for job {" + job.getUuid() + "} not found");
 				}
 				context.setBranch(branch);
 
-				HibMicroschemaVersion fromContainerVersion = getFromMicroschemaVersion();
+				HibMicroschemaVersion fromContainerVersion = job.getFromMicroschemaVersion();
 				if (fromContainerVersion == null) {
-					throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
+					throw error(BAD_REQUEST, "Source version of microschema for job {" + job.getUuid() + "} could not be found.");
 				}
 				context.setFromVersion(fromContainerVersion);
 
-				HibMicroschemaVersion toContainerVersion = getToMicroschemaVersion();
+				HibMicroschemaVersion toContainerVersion = job.getToMicroschemaVersion();
 				if (toContainerVersion == null) {
-					throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
+					throw error(BAD_REQUEST, "Target version of microschema for job {" + job.getUuid() + "} could not be found.");
 				}
 				context.setToVersion(toContainerVersion);
 
 				HibMicroschema schemaContainer = fromContainerVersion.getSchemaContainer();
-				HibBranchMicroschemaVersion branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
+				HibBranchMicroschemaVersion branchVersionEdge = Tx.get().branchDao().findBranchMicroschemaEdge(branch, toContainerVersion);
 				context.getStatus().setVersionEdge(branchVersionEdge);
 				if (log.isDebugEnabled()) {
 					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
-						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
+							+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
 				}
 
 				MicroschemaMigrationCause cause = new MicroschemaMigrationCause();
@@ -102,7 +117,7 @@ public interface MicronodeMigrationJob extends JobCore {
 				cause.setToVersion(toContainerVersion.transformToReference());
 				cause.setBranch(branch.transformToReference());
 				cause.setOrigin(tx.data().options().getNodeName());
-				cause.setUuid(getUuid());
+				cause.setUuid(job.getUuid());
 				context.setCause(cause);
 
 				context.getStatus().commit();
@@ -118,32 +133,32 @@ public interface MicronodeMigrationJob extends JobCore {
 	}
 
 	@Override
-	default Completable processTask(Database db) {
-		MicronodeMigration handler = db.tx(tx -> { 
+	public Completable process(HibJob job) {
+		MicronodeMigration handler = db.tx(tx -> {
 			return tx.<CommonTx>unwrap().data().mesh().micronodeMigrationHandler();
 		});
 		return Completable.defer(() -> {
-			MicronodeMigrationContext context = prepareContext(db);
+			MicronodeMigrationContext context = prepareContext(job);
 			return handler.migrateMicronodes(context)
-				.doOnComplete(() -> {
-					db.tx(() -> {
-						JobWarningList warnings = new JobWarningList();
-						setWarnings(warnings);
-						finializeMigration(db, context);
-						context.getStatus().done();
+					.doOnComplete(() -> {
+						db.tx(() -> {
+							JobWarningList warnings = new JobWarningList();
+							job.setWarnings(warnings);
+							finalizeMigration(job, context);
+							context.getStatus().done();
+						});
+					}).doOnError(err -> {
+						db.tx(tx -> {
+							context.getStatus().error(err, "Error in micronode migration.");
+							tx.createBatch().add(createEvent(job, tx, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+						});
 					});
-				}).doOnError(err -> {
-					db.tx(tx -> {
-						context.getStatus().error(err, "Error in micronode migration.");
-						tx.createBatch().add(createEvent(tx, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
-					});
-				});
 		});
 	}
 
-	private void finializeMigration(Database db, MicronodeMigrationContext context) {
+	private void finalizeMigration(HibJob job, MicronodeMigrationContext context) {
 		db.tx(tx -> {
-			tx.createBatch().add(createEvent(tx, MICROSCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
+			tx.createBatch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
 }

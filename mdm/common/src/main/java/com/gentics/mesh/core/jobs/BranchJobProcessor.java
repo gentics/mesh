@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.job;
+package com.gentics.mesh.core.jobs;
 
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_START;
@@ -8,9 +8,14 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -21,24 +26,37 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobType;
-
 import io.reactivex.Completable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
-public interface BranchMigrationJob extends JobCore {
+/**
+ * This class is responsible for starting a branch migration from a job
+ */
+public class BranchJobProcessor implements SingleJobProcessor {
+	public static final Logger log = LoggerFactory.getLogger(BranchJobProcessor.class);
+
+	private final Database db;
+	private final JobDao jobDao;
+
+	@Inject
+	public BranchJobProcessor(Database db, JobDao jobDao) {
+		this.db = db;
+		this.jobDao = jobDao;
+	}
 
 	/**
 	 * Create a new branch migration event.
-	 * 
+	 *
 	 * @param event
 	 * @param status
 	 * @return
 	 */
-	default BranchMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {
+	private BranchMigrationMeshEventModel createEvent(HibJob job, MeshEvent event, JobStatus status) {
 		BranchMigrationMeshEventModel model = new BranchMigrationMeshEventModel();
 		model.setEvent(event);
 
-		HibBranch newBranch = getBranch();
+		HibBranch newBranch = job.getBranch();
 		model.setBranch(newBranch.transformToReference());
 
 		HibProject project = newBranch.getProject();
@@ -49,19 +67,19 @@ public interface BranchMigrationJob extends JobCore {
 		return model;
 	}
 
-	private BranchMigrationContext prepareContext(Database db) {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, JobType.branch);
+	private BranchMigrationContext prepareContext(HibJob job) {
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(job.getUuid());
 		log.debug("Preparing branch migration job");
 		try {
 			return db.tx(tx -> {
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 				context.setStatus(status);
 
-				tx.createBatch().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
+				tx.createBatch().add(createEvent(job, BRANCH_MIGRATION_START, STARTING)).dispatch();
 
-				HibBranch newBranch = getBranch();
+				HibBranch newBranch = job.getBranch();
 				if (newBranch == null) {
-					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
+					throw error(BAD_REQUEST, "Branch for job {" + job.getUuid() + "} cannot be found.");
 				}
 				if (newBranch.isMigrated()) {
 					throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
@@ -74,14 +92,14 @@ public interface BranchMigrationJob extends JobCore {
 				}
 				if (!oldBranch.isMigrated()) {
 					throw error(BAD_REQUEST, "Cannot migrate nodes to branch {" + newBranch.getName() + "}, because previous branch {"
-						+ oldBranch.getName() + "} is not fully migrated yet.");
+							+ oldBranch.getName() + "} is not fully migrated yet.");
 				}
 				context.setOldBranch(oldBranch);
 
 				BranchMigrationCause cause = new BranchMigrationCause();
 				cause.setProject(newBranch.getProject().transformToReference());
 				cause.setOrigin(tx.data().options().getNodeName());
-				cause.setUuid(getUuid());
+				cause.setUuid(job.getUuid());
 				context.setCause(cause);
 
 				context.getStatus().commit();
@@ -95,39 +113,41 @@ public interface BranchMigrationJob extends JobCore {
 		}
 	}
 
-	default Completable processTask(Database db) {
-		BranchMigration handler = db.tx(tx -> { 
-			return tx.<CommonTx>unwrap().data().mesh().branchMigrationHandler(); 
+	@Override
+	public Completable process(HibJob job) {
+		BranchMigration handler = db.tx(tx -> {
+			return tx.<CommonTx>unwrap().data().mesh().branchMigrationHandler();
 		});
 		return Completable.defer(() -> {
-			BranchMigrationContext context = prepareContext(db);
-
+			BranchMigrationContext context = prepareContext(job);
 			return handler.migrateBranch(context)
-				.doOnComplete(() -> {
-					db.tx(() -> {
-						finalizeMigration(db, context);
-						context.getStatus().done();
+					.doOnComplete(() -> {
+						db.tx(() -> {
+							HibJob latest = jobDao.findByUuid(job.getUuid());
+							finalizeMigration(latest, context);
+							context.getStatus().done();
+						});
+					}).doOnError(err -> {
+						db.tx(tx -> {
+							HibJob latest = jobDao.findByUuid(job.getUuid());
+							context.getStatus().error(err, "Error in branch migration.");
+							tx.createBatch().add(createEvent(latest, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+						});
 					});
-				}).doOnError(err -> {
-					db.tx(tx -> {
-						context.getStatus().error(err, "Error in branch migration.");
-						tx.createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
-					});
-				});
-
 		});
-
 	}
 
-	private void finalizeMigration(Database db, BranchMigrationContext context) {
+	private void finalizeMigration(HibJob job, BranchMigrationContext context) {
 		// Mark branch as active & migrated
 		db.tx(() -> {
-			HibBranch branch = context.getNewBranch();
+			PersistingBranchDao persistingBranchDao = CommonTx.get().branchDao();
+			HibBranch branch = job.getBranch();
 			branch.setActive(true);
 			branch.setMigrated(true);
+			persistingBranchDao.mergeIntoPersisted(branch.getProject(), branch);
 		});
 		db.tx(tx -> {
-			tx.createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();
+			tx.createBatch().add(createEvent(job, BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
 }

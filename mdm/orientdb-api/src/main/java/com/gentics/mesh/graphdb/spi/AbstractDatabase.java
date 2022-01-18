@@ -5,9 +5,12 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.CommonDatabase;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.ETag;
 
 import dagger.Lazy;
@@ -18,7 +21,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Abstract class for graph database implementations.
  */
-public abstract class AbstractDatabase implements GraphDatabase {
+public abstract class AbstractDatabase extends CommonDatabase implements GraphDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
@@ -28,7 +31,8 @@ public abstract class AbstractDatabase implements GraphDatabase {
 
 	private final Lazy<Vertx> vertx;
 
-	public AbstractDatabase(Lazy<Vertx> vertx) {
+	public AbstractDatabase(Lazy<Vertx> vertx, Mesh mesh, MetricsService metrics) {
+		super(mesh, metrics);
 		this.vertx = vertx;
 	}
 

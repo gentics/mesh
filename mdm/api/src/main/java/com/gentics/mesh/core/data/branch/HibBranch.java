@@ -370,22 +370,6 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	 */
 	Result<? extends HibBranchMicroschemaVersion> findAllMicroschemaVersionEdges();
 
-	/**
-	 * Find the branch schema edge for the given version.
-	 * 
-	 * @param schemaVersion
-	 * @return Found edge between branch and version
-	 */
-	HibBranchSchemaVersion findBranchSchemaEdge(HibSchemaVersion schemaVersion);
-
-	/**
-	 * Find the branch microschema edge for the given version.
-	 * 
-	 * @param microschemaVersion
-	 * @return Found edge between branch and version
-	 */
-	HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion);
-
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();

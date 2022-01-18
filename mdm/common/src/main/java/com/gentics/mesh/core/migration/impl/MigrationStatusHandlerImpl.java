@@ -10,11 +10,13 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
+import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobType;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -30,18 +32,22 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private HibBranchVersionAssignment versionEdge;
 
-	private HibJob job;
-
 	private long completionCount = 0;
 
 	private JobStatus status;
+	private final String jobUUID;
 
-	public MigrationStatusHandlerImpl(HibJob job, JobType type) {
-		this.job = job;
+	public MigrationStatusHandlerImpl(String jobUUID) {
+		this.jobUUID = jobUUID;
 	}
 
 	@Override
 	public MigrationStatusHandler commit() {
+		HibJob job = getJob();
+		return commit(job);
+	}
+
+	private MigrationStatusHandler commit(HibJob job) {
 		// Load the status if it has not yet been set or loaded.
 		if (status == null) {
 			status = job.getStatus();
@@ -52,9 +58,10 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		job.setCompletionCount(completionCount);
 		job.setStatus(status);
 
-		Tx.get().commit();
+		CommonTx.get().jobDao().mergeIntoPersisted(job);
+		Database db = CommonTx.get().data().mesh().database();
+		db.tx().commit();
 		return this;
-
 	}
 
 	private ObjectName startJMX() throws MalformedObjectNameException {
@@ -84,10 +91,11 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	 * </ul>
 	 */
 	public MigrationStatusHandler done() {
+		HibJob job = getJob();
 		setStatus(COMPLETED);
 		log.info("Migration completed without errors.");
 		job.setStopTimestamp();
-		commit();
+		commit(job);
 		return this;
 	}
 
@@ -103,12 +111,13 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	 * @param failureMessage
 	 */
 	public MigrationStatusHandler error(Throwable error, String failureMessage) {
+		HibJob job = getJob();
 		setStatus(FAILED);
 		log.error("Error handling migration", error);
 
 		job.setStopTimestamp();
 		job.setError(error);
-		commit();
+		commit(job);
 		return this;
 	}
 
@@ -132,4 +141,9 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		completionCount++;
 	}
 
+	private HibJob getJob() {
+		Database db = CommonTx.get().data().mesh().database();
+		JobDao jobDao = Tx.get().jobDao();
+		return db.tx(() -> jobDao.findByUuid(jobUUID));
+	}
 }
