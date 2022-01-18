@@ -34,6 +34,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * This class is responsible for starting a micronode migration from a job
+ */
 public class MicronodeJobProcessor implements SingleJobProcessor {
 
 	public static final Logger log = LoggerFactory.getLogger(MicronodeJobProcessor.class);

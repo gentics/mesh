@@ -25,6 +25,9 @@ import io.reactivex.CompletableSource;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * This class is responsible for fetching all jobs and running them
+ */
 @Singleton
 public class JobProcessorImpl implements JobProcessor {
 
