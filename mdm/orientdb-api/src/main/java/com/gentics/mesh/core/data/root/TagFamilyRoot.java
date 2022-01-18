@@ -16,5 +16,10 @@ public interface TagFamilyRoot extends RootVertex<TagFamily>, TransformableEleme
 	 */
 	Project getProject();
 
+	/**
+	 * Add the tag family to the aggregation node.
+	 *
+	 * @param tagFamily
+	 */
 	void addTagFamily(TagFamily tagFamily);
 }
