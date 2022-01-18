@@ -13,6 +13,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.db.Tx;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -189,9 +193,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Test
 	@Ignore("Currently fails due to https://github.com/gentics/mesh/issues/606")
 	public void testTagSync() throws Exception {
+		TagDao tagDao = Tx.get().tagDao();
 		// Assert insert
 		tx(tx -> {
-			TagDao tagDao = tx.tagDao();
 			for (int i = 0; i < 400; i++) {
 				tagDao.create(tagFamily("colors"), "tag_" + i, project(), user());
 			}
@@ -211,7 +215,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			HibTagFamily tagFamily = tagFamily("colors");
-			boot().tagDao().findByName(tagFamily, "tag_3").deleteElement();
+			HibTag tag = tagDao.findByName(tagFamily, "tag_3");
+			tx.<CommonTx>unwrap().tagDao().deletePersisted(tag);
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 0, 1);
@@ -241,7 +246,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			boot().tagFamilyDao().findByName(project(), "tagfamily_3").deleteElement();
+			PersistingTagFamilyDao tagFamilyDao = Tx.get().<CommonTx>unwrap().tagFamilyDao();
+			HibTagFamily tagfamily_3 = tagFamilyDao.findByName(project(), "tagfamily_3");
+			tagFamilyDao.deletePersisted(project(), tagfamily_3);
 		});
 		syncIndex();
 		assertMetrics("tagfamily", 0, 0, 1);
