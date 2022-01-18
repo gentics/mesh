@@ -14,7 +14,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
@@ -26,7 +25,6 @@ import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +32,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -91,9 +87,9 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * @see Node
@@ -405,53 +401,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		return Tx.get().nodeDao().update(this.getProject(), this, ac, batch);
-	}
-
-	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
-		ContentDao contentDao = Tx.get().contentDao();
-		// Check the different language versions
-		for (HibNodeFieldContainer container : contentDao.getFieldContainers(this, branchUuid, type)) {
-			SchemaModel schema = contentDao.getSchemaContainerVersion(container).getSchema();
-			String segmentFieldName = schema.getSegmentField();
-			// First check whether a string field exists for the given name
-			HibStringField field = container.getString(segmentFieldName);
-			if (field != null) {
-				String fieldValue = field.getString();
-				if (segment.equals(fieldValue)) {
-					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
-				}
-			}
-
-			// No luck yet - lets check whether a binary field matches the
-			// segmentField
-			HibBinaryField binaryField = container.getBinary(segmentFieldName);
-			if (binaryField == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-						+ "}");
-				}
-			} else {
-				String binaryFilename = binaryField.getFileName();
-				if (segment.equals(binaryFilename)) {
-					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
-				}
-			}
-			// No luck yet - lets check whether a S3 binary field matches the segmentField
-			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
-			if (s3Binary == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-							+ "}");
-				}
-			} else {
-				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
-				if (segment.equals(s3binaryFilename)) {
-					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
-				}
-			}
-
-		}
-		return null;
 	}
 
 	@Override
