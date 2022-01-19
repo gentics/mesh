@@ -1702,7 +1702,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			log.debug("Resolving for path segment {" + segment + "}");
 		}
 
-		String segmentInfo = Tx.get().contentDao().composeSegmentInfo(node, segment);
+		String segmentInfo = contentDao.composeSegmentInfo(node, segment);
 		Iterator<? extends HibNodeFieldContainerEdge> edges = getWebrootEdges(node, segmentInfo, branchUuid, type);
 		if (edges.hasNext()) {
 			HibNodeFieldContainerEdge edge = edges.next();
@@ -1728,47 +1728,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 					ContainerType type = edge.getType();
 					// Only handle published or draft contents
 					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-						HibNode node = nodeContainer.getNode();
-						String uuid = node.getUuid();
+						HibNode referencedNode = nodeContainer.getNode();
+						String uuid = referencedNode.getUuid();
 						String languageTag = nodeContainer.getLanguageTag();
 						String branchUuid = edge.getBranchUuid();
 						String key = uuid + languageTag + branchUuid + type.getCode();
 						if (!handledNodeUuids.contains(key)) {
-							bac.add(onReferenceUpdated(updatedNode, node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+							bac.add(onReferenceUpdated(updatedNode, referencedNode.getUuid(), referencedNode.getSchemaContainer(), branchUuid, type, languageTag));
 							handledNodeUuids.add(key);
 						}
 					}
 				});
 			});
-	}
-
-	/**
-	 * Create a new referenced element update event model.
-	 * 
-	 * @param uuid
-	 *            Uuid of the referenced node
-	 * @param schema
-	 *            Schema of the referenced node
-	 * @param branchUuid
-	 *            Branch of the referenced node
-	 * @param type
-	 *            Type of the content that was updated (if known)
-	 * @param languageTag
-	 *            Language of the content that was updated (if known)
-	 * @return
-	 */
-	private NodeMeshEventModel onReferenceUpdated(HibNode baseNode, String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(NODE_REFERENCE_UPDATED);
-		event.setUuid(uuid);
-		event.setLanguageTag(languageTag);
-		event.setType(type);
-		event.setBranchUuid(branchUuid);
-		event.setProject(baseNode.getProject().transformToReference());
-		if (schema != null) {
-			event.setSchema(schema.transformToReference());
-		}
-		return event;
 	}
 
 	/**
@@ -1781,4 +1752,35 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type);
+
+	/**
+	 * Create a new referenced element update event model.
+	 *
+	 * @param node
+	 * 			the node to add to the reference update event
+	 * @param uuid
+	 *            Uuid of the referenced node
+	 * @param schema
+	 *            Schema of the referenced node
+	 * @param branchUuid
+	 *            Branch of the referenced node
+	 * @param type
+	 *            Type of the content that was updated (if known)
+	 * @param languageTag
+	 *            Language of the content that was updated (if known)
+	 * @return
+	 */
+	private NodeMeshEventModel onReferenceUpdated(HibNode node, String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
+		event.setEvent(NODE_REFERENCE_UPDATED);
+		event.setUuid(uuid);
+		event.setLanguageTag(languageTag);
+		event.setType(type);
+		event.setBranchUuid(branchUuid);
+		event.setProject(node.getProject().transformToReference());
+		if (schema != null) {
+			event.setSchema(schema.transformToReference());
+		}
+		return event;
+	}
 }

@@ -34,6 +34,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * This class is responsible for starting a node migration from a job
+ */
 public class NodeJobProcessor implements SingleJobProcessor {
 
 	public static final Logger log = LoggerFactory.getLogger(NodeJobProcessor.class);

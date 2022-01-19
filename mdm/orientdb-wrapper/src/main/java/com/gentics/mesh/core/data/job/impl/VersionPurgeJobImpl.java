@@ -11,14 +11,15 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.job.VersionPurgeJob;
+import com.gentics.mesh.core.data.job.HibVersionPurgeJob;
+import com.gentics.mesh.core.data.job.JobCore;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.util.DateUtils;
 
 /**
  * Graph entity for version purge jobs.
  */
-public class VersionPurgeJobImpl extends JobImpl implements VersionPurgeJob {
+public class VersionPurgeJobImpl extends JobImpl implements JobCore, HibVersionPurgeJob {
 
 	private static final String MAX_AGE_PROPERTY = "maxAge";
 

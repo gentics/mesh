@@ -198,7 +198,7 @@ public interface PersistingContentDao extends ContentDao {
 
 		if (handleDraftEdge) {
 			HibNodeFieldContainerEdge draftEdge = getEdge(node, languageTag, branchUuid, DRAFT);
-			
+
 			// remove existing draft edge
 			if (draftEdge != null) {
 				removeEdge(draftEdge);
@@ -216,7 +216,7 @@ public interface PersistingContentDao extends ContentDao {
 
 	/**
 	 * Create an edge connection between the container and its node, based on the given edge properties.
-	 * 
+	 *
 	 * @param node
 	 * @param container
 	 * @param branch
@@ -229,14 +229,14 @@ public interface PersistingContentDao extends ContentDao {
 
 	/**
 	 * Remove the connection edge.
-	 * 
+	 *
 	 * @param edge
 	 */
 	void removeEdge(HibNodeFieldContainerEdge edge);
 
 	/**
 	 * Find the node edge with the given parameters: language, branch, type
-	 * 
+	 *
 	 * @param node
 	 * @param languageTag
 	 * @param branchUuid
@@ -247,7 +247,7 @@ public interface PersistingContentDao extends ContentDao {
 
 	/**
 	 * Get the content container the edge is pointing to
-	 * 
+	 *
 	 * @param edge
 	 * @return
 	 */

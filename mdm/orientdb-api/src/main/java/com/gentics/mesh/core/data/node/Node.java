@@ -98,6 +98,15 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	boolean hasTag(HibTag tag, HibBranch branch);
 
 	/**
+	 * Get edges for the given webroot segment info, branch uuid and container type
+	 * @param segmentInfo
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type);
+
+	/**
 	 * Remove the element.
 	 */
 	void removeElement();
@@ -197,6 +206,4 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	long getFieldContainerCount();
-
-	Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type);
 }

@@ -43,6 +43,16 @@ public interface TagFamilyDao extends DaoGlobal<HibTagFamily>, DaoTransformable<
 	HibTagFamily create(HibProject project, String name, HibUser user);
 
 	/**
+	 * Create the tag family
+	 * @param project Project for the tag family
+	 * @param name Name of the tag family
+	 * @param user Creator of the tag family
+	 * @param uuid uuid of the tag family
+	 * @return
+	 */
+	HibTagFamily create(HibProject project, String name, HibUser user, String uuid);
+
+	/**
 	 * Return a page of tags.
 	 * 
 	 * @param tagFamily

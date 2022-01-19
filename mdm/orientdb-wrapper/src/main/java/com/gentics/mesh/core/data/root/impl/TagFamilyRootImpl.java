@@ -18,8 +18,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.user.HibUser;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -54,34 +52,6 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	@Override
 	public Project getProject() {
 		return in(HAS_TAGFAMILY_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
-	}
-
-	@Override
-	public TagFamily create(String name, HibUser creator, String uuid) {
-		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
-		if (uuid != null) {
-			tagFamily.setUuid(uuid);
-		}
-		tagFamily.setName(name);
-		addTagFamily(tagFamily);
-		tagFamily.setCreated(creator);
-
-		// Add tag family to project
-		tagFamily.setProject(getProject());
-
-		// Add created tag family to tag family root
-		TagFamilyRoot root = mesh().boot().meshRoot().getTagFamilyRoot();
-		if (root != null && !root.equals(this)) {
-			root.addTagFamily(tagFamily);
-		}
-		tagFamily.generateBucketId();
-
-		return tagFamily;
-	}
-
-	@Override
-	public void removeTagFamily(TagFamily tagFamily) {
-		removeItem(tagFamily);
 	}
 
 	@Override

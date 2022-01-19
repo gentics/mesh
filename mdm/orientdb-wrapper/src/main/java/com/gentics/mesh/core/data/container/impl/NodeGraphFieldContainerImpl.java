@@ -178,7 +178,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		for (MicronodeGraphField micronodeField : outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).frameExplicit(MicronodeGraphFieldImpl.class)) {
 			micronodeField.removeField(bac, this);
 		}
-		
+
 		// Delete the container from all branches and types
 		getBranchTypes().forEach(tuple -> {
 			String branchUuid = tuple.v1();
@@ -422,5 +422,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
+	}
+
+	@Override
+	public Result<? extends HibNodeFieldContainerEdge> getEdges() {
+		return inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
 	}
 }

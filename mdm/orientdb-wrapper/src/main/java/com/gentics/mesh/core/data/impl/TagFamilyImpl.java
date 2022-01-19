@@ -4,9 +4,8 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
-
-import java.util.Set;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -22,19 +21,16 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
-import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
-import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -63,11 +59,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
-	}
-
-	@Override
-	public TagFamilyReference transformToReference() {
-		return new TagFamilyReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override
@@ -101,8 +92,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public void setProject(Project project) {
-		setUniqueLinkOutTo(project, ASSIGNED_TO_PROJECT);
+	public void setProject(HibProject project) {
+		setUniqueLinkOutTo(toGraph(project), ASSIGNED_TO_PROJECT);
 	}
 
 	@Override
@@ -118,13 +109,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
-		return HibClassConverter.toGraph(mesh().boot().tagDao().create(this, ac, batch));
+		return toGraph(mesh().boot().tagDao().create(this, ac, batch));
 	}
 
 	@Override
 	@Deprecated
 	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return HibClassConverter.toGraph(mesh().boot().tagDao().create(this, ac, batch, uuid));
+		return toGraph(mesh().boot().tagDao().create(this, ac, batch, uuid));
 	}
 
 	@Override
@@ -137,19 +128,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 		return tagFamilyDao.update(this, ac, batch);
-	}
-
-	@Override
-	public boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		boolean permissionChanged = false;
-		if (recursive) {
-			for (Tag tag : findAll()) {
-				permissionChanged = tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-			}
-		}
-		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-		return permissionChanged;
 	}
 
 	@Override
@@ -180,27 +158,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
-	public void addTag(Tag tag) {
-		addItem(tag);
+	public void addTag(HibTag tag) {
+		addItem(toGraph(tag));
 	}
 
 	@Override
-	public void removeTag(Tag tag) {
-		removeItem(tag);
-	}
-
-	@Override
-	public TagFamilyMeshEventModel createEvent(MeshEvent type) {
-		TagFamilyMeshEventModel event = new TagFamilyMeshEventModel();
-		event.setEvent(type);
-		fillEventInfo(event);
-
-		// .project
-		Project project = getProject();
-		ProjectReference reference = project.transformToReference();
-		event.setProject(reference);
-
-		return event;
+	public void removeTag(HibTag tag) {
+		removeItem(toGraph(tag));
 	}
 
 	@Override
@@ -217,13 +181,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 			.has(TagImpl.TAG_VALUE_KEY, name)
 			.back()
 			.nextOrDefaultExplicit(TagImpl.class, null);
-	}
-
-	/**
-	 * Delete the graph element.
-	 */
-	public void deleteElement() {
-		getElement().remove();
 	}
 
 	@Override
@@ -249,5 +206,10 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public Tag create() {
 		throw new IllegalStateException("Use TagRoot to create Tag instance, then addTag.");
+	}
+
+	@Override
+	public Result<? extends HibTag> findAllTags() {
+		return findAll();
 	}
 }

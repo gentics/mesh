@@ -13,10 +13,7 @@ import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.job.BranchMigrationJob;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.job.MicronodeMigrationJob;
-import com.gentics.mesh.core.data.job.NodeMigrationJob;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.CommonTx;
@@ -119,9 +116,9 @@ public class JobTest extends AbstractMeshTest {
 			dao.enqueueBranchMigration(user(), latestBranch());
 
 			List<? extends HibJob> list = dao.findAll().list();
-			assertThat(list.get(0)).isInstanceOf(NodeMigrationJob.class);
-			assertThat(list.get(1)).isInstanceOf(MicronodeMigrationJob.class);
-			assertThat(list.get(2)).isInstanceOf(BranchMigrationJob.class);
+			assertThat(list.get(0).getType()).isEqualTo(JobType.schema);
+			assertThat(list.get(1).getType()).isEqualTo(JobType.microschema);
+			assertThat(list.get(2).getType()).isEqualTo(JobType.branch);
 			assertThat(list.size()).isEqualTo(3);
 		}
 	}

@@ -7,15 +7,12 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -27,6 +24,8 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
@@ -76,6 +75,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 			MicroschemaVersionModel schemaModel = microschemaVersion.getSchema();
 			schemaModel.setDescription("");
 			microschemaVersion.setJson(schemaModel.toJson());
+			CommonTx.get().microschemaDao().mergeIntoPersisted(microschema);
 		});
 
 		// Diff the schema with no description in the JSON

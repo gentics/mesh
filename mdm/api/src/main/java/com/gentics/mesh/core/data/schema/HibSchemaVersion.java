@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -40,14 +41,21 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	}
 
 	/**
-	 * Returns all nodes that the user has read permissions for.
-	 *
-	 * @param branchUuid Branch uuid
-	 * @param user User to check permissions for
-	 * @param type Container type
+	 * Get container entity bound to this version.
+	 */
+	HibSchema getSchemaContainer();
+
+	/**
+	 * Bind container entity to this version.
+	 */
+	void setSchemaContainer(HibSchema container);
+
+	/**
+	 * Return jobs which reference the schema version.
+	 * 
 	 * @return
 	 */
-	Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type);
+	Iterable<? extends HibJob> referencedJobsViaTo();
 
 	/**
 	 * Check the autopurge flag of the version.

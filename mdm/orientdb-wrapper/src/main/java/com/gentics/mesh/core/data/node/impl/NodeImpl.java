@@ -449,8 +449,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-		Iterator<? extends HibNodeFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
-			.iterator();
-		return edges;
+		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
 	}
 }
