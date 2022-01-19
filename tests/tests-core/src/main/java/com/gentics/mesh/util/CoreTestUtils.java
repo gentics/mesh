@@ -32,8 +32,9 @@ public final class CoreTestUtils {
 		// 1. Setup schema
 		SchemaVersionModel schema = createSchema(field);
 		HibSchema schemaContainer = ctx.schemaDao().create(schema, null, null, false);
-		HibSchemaVersion version = schemaContainer.getLatestVersion();
-		version.setSchema(schema);
+		HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schemaContainer, v -> {
+			v.setSchema(schema);
+		});		
 
 		HibNodeFieldContainer container = ctx.contentDao().createPersisted(UUID.randomUUID().toString(), version, null);
 		container.setSchemaContainerVersion(version);

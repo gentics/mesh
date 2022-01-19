@@ -119,7 +119,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * 
 	 * @return
 	 */
-	Iterable<? extends HibMicronode> findAllMicronodes();
+	Stream<? extends HibMicronode> findAllMicronodes();
 
 	/**
 	 * Create a container in the persisted storage, according to the root node.

@@ -36,6 +36,7 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.logging.Logger;
@@ -286,7 +287,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Iterable<? extends HibMicronode> findAllMicronodes() {
-		return GraphDBTx.getGraphTx().getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class);
+	public Stream<? extends HibMicronode> findAllMicronodes() {
+		return StreamUtil.toStream(GraphDBTx.getGraphTx().getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class));
 	}
 }

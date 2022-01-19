@@ -395,12 +395,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public void delete(BulkActionContext bac) {
-
 		// Lists
 		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
 			field.removeField(bac, this);
 		}
-
 	}
-
 }

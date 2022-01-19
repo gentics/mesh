@@ -13,6 +13,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -301,7 +303,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			HibMicronode micronode = field.getMicronode();
 			String originalUuid = micronode.getUuid();
 
-			Iterable<? extends HibMicronode> existingMicronodes = ctx.contentDao().findAllMicronodes();
+			Stream<? extends HibMicronode> existingMicronodes = ctx.contentDao().findAllMicronodes();
 			existingMicronodes.forEach(foundMicronode -> assertEquals(micronode.getUuid(), foundMicronode.getUuid()));
 
 			// update by recreation
