@@ -22,6 +22,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * This class is responsible for starting a version purge from a job
+ */
 public class VersionPurgeJobProcessor implements SingleJobProcessor {
 
 	public static final Logger log = LoggerFactory.getLogger(VersionPurgeJobProcessor.class);

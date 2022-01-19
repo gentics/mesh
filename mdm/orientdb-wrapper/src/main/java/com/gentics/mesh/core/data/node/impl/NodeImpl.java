@@ -14,7 +14,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
@@ -26,17 +25,13 @@ import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -59,8 +54,6 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
@@ -68,7 +61,6 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -86,22 +78,18 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
-import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * @see Node
@@ -352,31 +340,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void addReferenceUpdates(BulkActionContext bac) {
-		Set<String> handledNodeUuids = new HashSet<>();
-
-		getInboundReferences()
-			.flatMap(HibNodeField::getReferencingContents)
-			.forEach(nodeContainer -> {
-				for (GraphFieldContainerEdgeImpl edge : toGraph(nodeContainer).inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class)) {
-					ContainerType type = edge.getType();
-					// Only handle published or draft contents
-					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-						HibNode node = nodeContainer.getNode();
-						String uuid = node.getUuid();
-						String languageTag = nodeContainer.getLanguageTag();
-						String branchUuid = edge.getBranchUuid();
-						String key = uuid + languageTag + branchUuid + type.getCode();
-						if (!handledNodeUuids.contains(key)) {
-							bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
-							handledNodeUuids.add(key);
-						}
-					}
-				}
-			});
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		Tx.get().nodeDao().delete(this, bac, false, true);
 	}
@@ -440,80 +403,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Tx.get().nodeDao().update(this.getProject(), this, ac, batch);
 	}
 
-	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
-		ContentDao contentDao = Tx.get().contentDao();
-		// Check the different language versions
-		for (HibNodeFieldContainer container : contentDao.getFieldContainers(this, branchUuid, type)) {
-			SchemaModel schema = contentDao.getSchemaContainerVersion(container).getSchema();
-			String segmentFieldName = schema.getSegmentField();
-			// First check whether a string field exists for the given name
-			HibStringField field = container.getString(segmentFieldName);
-			if (field != null) {
-				String fieldValue = field.getString();
-				if (segment.equals(fieldValue)) {
-					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
-				}
-			}
-
-			// No luck yet - lets check whether a binary field matches the
-			// segmentField
-			HibBinaryField binaryField = container.getBinary(segmentFieldName);
-			if (binaryField == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-						+ "}");
-				}
-			} else {
-				String binaryFilename = binaryField.getFileName();
-				if (segment.equals(binaryFilename)) {
-					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
-				}
-			}
-			// No luck yet - lets check whether a S3 binary field matches the segmentField
-			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
-			if (s3Binary == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-							+ "}");
-				}
-			} else {
-				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
-				if (segment.equals(s3binaryFilename)) {
-					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
-				}
-			}
-
-		}
-		return null;
-	}
-
 	@Override
-	public Path resolvePath(String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
-		if (pathStack.isEmpty()) {
-			return path;
-		}
-		String segment = pathStack.pop();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Resolving for path segment {" + segment + "}");
-		}
-
+	public Iterator<? extends GraphFieldContainerEdge> getEdges(String segmentInfo, String branchUuid, ContainerType type) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		String segmentInfo = Tx.get().contentDao().composeSegmentInfo(this, segment);
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-		Iterator<? extends GraphFieldContainerEdge> edges = graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
-			.iterator();
-		if (edges.hasNext()) {
-			GraphFieldContainerEdge edge = edges.next();
-			NodeImpl childNode = (NodeImpl) edge.getNode();
-			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
-			if (pathSegment != null) {
-				path.addSegment(pathSegment);
-				return childNode.resolvePath(branchUuid, type, path, pathStack);
-			}
-		}
-		return path;
-
+		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
 	}
 
 	@Override
@@ -533,35 +427,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		model.setProject(getProject().transformToReference());
 		fillEventInfo(model);
 		return model;
-	}
-
-	/**
-	 * Create a new referenced element update event model.
-	 * 
-	 * @param uuid
-	 *            Uuid of the referenced node
-	 * @param schema
-	 *            Schema of the referenced node
-	 * @param branchUuid
-	 *            Branch of the referenced node
-	 * @param type
-	 *            Type of the content that was updated (if known)
-	 * @param languageTag
-	 *            Language of the content that was updated (if known)
-	 * @return
-	 */
-	private NodeMeshEventModel onReferenceUpdated(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
-		NodeMeshEventModel event = new NodeMeshEventModel();
-		event.setEvent(NODE_REFERENCE_UPDATED);
-		event.setUuid(uuid);
-		event.setLanguageTag(languageTag);
-		event.setType(type);
-		event.setBranchUuid(branchUuid);
-		event.setProject(getProject().transformToReference());
-		if (schema != null) {
-			event.setSchema(schema.transformToReference());
-		}
-		return event;
 	}
 
 	@Override

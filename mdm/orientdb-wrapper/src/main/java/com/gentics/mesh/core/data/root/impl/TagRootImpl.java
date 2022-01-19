@@ -28,10 +28,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -40,7 +38,6 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -107,26 +104,6 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		// Now delete the tag root element
 		getElement().remove();
 		bac.process();
-	}
-
-	@Override
-	public HibTag create(String name, HibProject project, HibTagFamily tagFamily, HibUser creator) {
-		Tag tag = getGraph().addFramedVertex(TagImpl.class);
-		tag.setName(name);
-		tag.setCreated(creator);
-		tag.setProject(project);
-		addTag(tag);
-
-		// Add to global list of tags
-		TagRoot globalTagRoot = mesh().boot().meshRoot().getTagRoot();
-		if (this != globalTagRoot) {
-			globalTagRoot.addTag(tag);
-		}
-
-		// Set the tag family for the tag
-		tag.setTagFamily(tagFamily);
-		tag.generateBucketId();
-		return tag;
 	}
 
 	@Override
@@ -199,27 +176,4 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);
 		return traversal.outV().back();
 	}
-
-	@Override
-	public HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid) {
-		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
-		if (uuid != null) {
-			tag.setUuid(uuid);
-		}
-		tag.setName(name);
-		tag.setCreated(creator);
-		tag.setProject(project);
-		tag.generateBucketId();
-
-		// Add the tag to the global tag root
-		mesh().boot().meshRoot().getTagRoot().addTag(tag);
-		// And to the tag family
-		toGraph(tagFamily).addTag(tag);
-
-		// Set the tag family for the tag
-		tag.setTagFamily(tagFamily);
-		return tag;
-
-	}
-
 }

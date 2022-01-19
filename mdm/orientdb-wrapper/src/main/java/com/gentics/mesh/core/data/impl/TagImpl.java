@@ -18,15 +18,9 @@ import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
-import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
-import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.core.rest.tag.TagFamilyReference;
-import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -57,11 +51,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	@Override
 	public void setName(String name) {
 		property(TAG_VALUE_KEY, name);
-	}
-
-	@Override
-	public TagReference transformToReference() {
-		return new TagReference().setName(getName()).setUuid(getUuid()).setTagFamily(getTagFamily().getName());
 	}
 
 	@Override
@@ -115,34 +104,11 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	}
 
 	@Override
-	public TagMeshEventModel createEvent(MeshEvent type) {
-		TagMeshEventModel event = new TagMeshEventModel();
-		event.setEvent(type);
-		fillEventInfo(event);
-
-		// .project
-		HibProject project = getProject();
-		ProjectReference reference = project.transformToReference();
-		event.setProject(reference);
-
-		// .tagFamily
-		HibTagFamily tagFamily = getTagFamily();
-		TagFamilyReference tagFamilyReference = tagFamily.transformToReference();
-		event.setTagFamily(tagFamilyReference);
-		return event;
-	}
-
-	@Override
 	public TagPermissionChangedEventModel onPermissionChanged(HibRole role) {
 		TagPermissionChangedEventModel model = new TagPermissionChangedEventModel();
 		fillPermissionChanged(model, role);
 		model.setTagFamily(getTagFamily().transformToReference());
 		return model;
-	}
-
-	@Override
-	public void deleteElement() {
-		getElement().remove();
 	}
 
 	@Override
