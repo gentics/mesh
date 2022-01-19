@@ -20,9 +20,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -258,26 +256,6 @@ public interface PersistingSchemaDao
 					.anyMatch(container -> container != null)
 				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
 	}
-
-	/**
-	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
-	 * 
-	 * @param version
-	 * @param branchUuid
-	 * @return
-	 */
-	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
-
-	/**
-	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
-	 * 
-	 * @param version
-	 * @param branchUuid
-	 * @param bucket
-	 *            Bucket to limit the selection by
-	 * @return
-	 */
-	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
 
 	/**
 	 * Returns events for assignment on the schema action.

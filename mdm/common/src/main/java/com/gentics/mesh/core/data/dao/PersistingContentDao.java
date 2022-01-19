@@ -64,6 +64,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathImpl;
 import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.StreamUtil;
@@ -112,6 +113,58 @@ public interface PersistingContentDao extends ContentDao {
 		}
 		edge.setUrlFieldInfo(getUrlFieldValues(container).collect(Collectors.toSet()));
 		batch.add(onUpdated(container, newBranch.getUuid(), containerType));
+	}
+
+	/**
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @param segment
+	 * @return
+	 */
+	default PathSegment getSegment(HibNode node, String branchUuid, ContainerType type, String segment) {
+		// Check the different language versions
+		for (HibNodeFieldContainer container : getFieldContainers(node, branchUuid, type)) {
+			SchemaModel schema = getSchemaContainerVersion(container).getSchema();
+			String segmentFieldName = schema.getSegmentField();
+			// First check whether a string field exists for the given name
+			HibStringField field = container.getString(segmentFieldName);
+			if (field != null) {
+				String fieldValue = field.getString();
+				if (segment.equals(fieldValue)) {
+					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
+				}
+			}
+
+			// No luck yet - lets check whether a binary field matches the
+			// segmentField
+			HibBinaryField binaryField = container.getBinary(segmentFieldName);
+			if (binaryField == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+						+ "}");
+				}
+			} else {
+				String binaryFilename = binaryField.getFileName();
+				if (segment.equals(binaryFilename)) {
+					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
+				}
+			}
+			// No luck yet - lets check whether a S3 binary field matches the segmentField
+			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
+			if (s3Binary == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
+				if (segment.equals(s3binaryFilename)) {
+					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -420,13 +473,13 @@ public interface PersistingContentDao extends ContentDao {
 	@Override
 	default void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n) {
 		Set<String> urlFieldValues = getUrlFieldValues(content).collect(Collectors.toSet());
-		Iterator<? extends HibNodeFieldContainerEdge> it = getContainerEdge(content, DRAFT, branchUuid);
+		Iterator<? extends HibNodeFieldContainerEdge> it = getContainerEdges(content, DRAFT, branchUuid);
 		if (it.hasNext()) {
 			HibNodeFieldContainerEdge draftEdge = it.next();
 			updateWebrootPathInfo(content, ac, draftEdge, branchUuid, conflictI18n, DRAFT);
 			updateWebrootUrlFieldsInfo(content, draftEdge, branchUuid, urlFieldValues, DRAFT);
 		}
-		it = getContainerEdge(content, PUBLISHED, branchUuid);
+		it = getContainerEdges(content, PUBLISHED, branchUuid);
 		if (it.hasNext()) {
 			HibNodeFieldContainerEdge publishEdge = it.next();
 			updateWebrootPathInfo(content, ac, publishEdge, branchUuid, conflictI18n, PUBLISHED);

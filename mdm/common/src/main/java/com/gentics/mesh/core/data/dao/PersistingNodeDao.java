@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
@@ -31,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,6 +47,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -95,6 +98,8 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
@@ -1684,4 +1689,96 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		contentDao.createContainerEdge(node, container, branchUuid, languageTag, PUBLISHED);
 		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish");
 	}
+
+	@Override
+	default Path resolvePath(HibNode node, String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
+		if (pathStack.isEmpty()) {
+			return path;
+		}
+		String segment = pathStack.pop();
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Resolving for path segment {" + segment + "}");
+		}
+
+		String segmentInfo = Tx.get().contentDao().composeSegmentInfo(node, segment);
+		Iterator<? extends HibNodeFieldContainerEdge> edges = getWebrootEdges(node, segmentInfo, branchUuid, type);
+		if (edges.hasNext()) {
+			HibNodeFieldContainerEdge edge = edges.next();
+			HibNode childNode = edge.getNode();
+			PathSegment pathSegment = contentDao.getSegment(childNode, branchUuid, type, segment);
+			if (pathSegment != null) {
+				path.addSegment(pathSegment);
+				return resolvePath(childNode, branchUuid, type, path, pathStack);
+			}
+		}
+		return path;
+	}
+
+	@Override
+	default void addReferenceUpdates(HibNode updatedNode, BulkActionContext bac) {
+		Set<String> handledNodeUuids = new HashSet<>();
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
+
+		getInboundReferences(updatedNode)
+			.flatMap(HibNodeField::getReferencingContents)
+			.forEach(nodeContainer -> {
+				contentDao.getContainerEdges(nodeContainer).forEach(edge -> {
+					ContainerType type = edge.getType();
+					// Only handle published or draft contents
+					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
+						HibNode node = nodeContainer.getNode();
+						String uuid = node.getUuid();
+						String languageTag = nodeContainer.getLanguageTag();
+						String branchUuid = edge.getBranchUuid();
+						String key = uuid + languageTag + branchUuid + type.getCode();
+						if (!handledNodeUuids.contains(key)) {
+							bac.add(onReferenceUpdated(updatedNode, node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+							handledNodeUuids.add(key);
+						}
+					}
+				});
+			});
+	}
+
+	/**
+	 * Create a new referenced element update event model.
+	 * 
+	 * @param uuid
+	 *            Uuid of the referenced node
+	 * @param schema
+	 *            Schema of the referenced node
+	 * @param branchUuid
+	 *            Branch of the referenced node
+	 * @param type
+	 *            Type of the content that was updated (if known)
+	 * @param languageTag
+	 *            Language of the content that was updated (if known)
+	 * @return
+	 */
+	private NodeMeshEventModel onReferenceUpdated(HibNode baseNode, String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
+		event.setEvent(NODE_REFERENCE_UPDATED);
+		event.setUuid(uuid);
+		event.setLanguageTag(languageTag);
+		event.setType(type);
+		event.setBranchUuid(branchUuid);
+		event.setProject(baseNode.getProject().transformToReference());
+		if (schema != null) {
+			event.setSchema(schema.transformToReference());
+		}
+		return event;
+	}
+
+	/**
+	 * Get the edges for the given node, that satisfy the webroot lookup data.
+	 * 
+	 * @param node
+	 * @param segmentInfo
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type);
 }

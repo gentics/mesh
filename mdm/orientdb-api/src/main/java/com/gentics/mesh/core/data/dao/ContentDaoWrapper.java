@@ -18,5 +18,5 @@ public interface ContentDaoWrapper extends PersistingContentDao {
 	 * @param branchUuid
 	 * @return
 	 */
-	Iterator<GraphFieldContainerEdge> getContainerEdge(HibNodeFieldContainer content, ContainerType type, String branchUuid);
+	Iterator<GraphFieldContainerEdge> getContainerEdges(HibNodeFieldContainer content, ContainerType type, String branchUuid);
 }

@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -11,14 +11,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.path.Path;
 
 import dagger.Lazy;
 
@@ -130,16 +130,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Path resolvePath(HibNode baseNode, String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack) {
-		return toGraph(baseNode).resolvePath(branchUuid, type, nodePath, pathStack);
-	}
-
-	@Override
-	public void addReferenceUpdates(HibNode node, BulkActionContext bac) {
-		toGraph(node).addReferenceUpdates(bac);
-	}
-
-	@Override
 	public void removeElement(HibNode node) {
 		toGraph(node).removeElement();
 	}
@@ -204,5 +194,15 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public Stream<? extends HibNode> findAllGlobal() {
 		return boot.get().meshRoot().findAllNodes().stream();
+	}
+
+	@Override
+	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type) {
+		return toGraph(node).getWebrootEdges(segmentInfo, branchUuid, type);
+	}
+
+	@Override
+	public Stream<HibNodeField> getInboundReferences(HibNode node) {
+		return toGraph(node).getInboundReferences();
 	}
 }

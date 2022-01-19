@@ -1,10 +1,9 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -25,7 +24,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.path.Path;
 
 /**
  * The Node Domain Model interface.
@@ -105,13 +103,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	void removeElement();
 
 	/**
-	 * Adds reference update events to the context for all draft and published contents that reference this node.
-	 *
-	 * @param bac
-	 */
-	void addReferenceUpdates(BulkActionContext bac);
-
-	/**
 	 * Unparent a node from the given branch.
 	 * 
 	 * @param branchUuid
@@ -145,19 +136,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
-
-	/**
-	 * Resolve the given path and return the path object that contains the resolved nodes.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 *            edge type
-	 * @param nodePath
-	 * @param pathStack
-	 * @return
-	 */
-	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
-
+	
 	/**
 	 * Return the draft field container for the given language in the latest branch.
 	 *
@@ -218,4 +197,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	long getFieldContainerCount();
+
+	Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type);
 }

@@ -32,6 +32,7 @@ public abstract class AbstractWebRootService implements WebRootService {
 		this.pathStore = pathStore;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
 		Tx tx = Tx.get();

@@ -870,7 +870,15 @@ public interface ContentDao {
 	 * @param branchUuid
 	 * @return
 	 */
-	Iterator<? extends HibNodeFieldContainerEdge> getContainerEdge(HibNodeFieldContainer container, ContainerType type, String branchUuid);
+	Iterator<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container, ContainerType type, String branchUuid);
+
+	/**
+	 * Return a stream of all the edges of a container.
+	 * @param type
+	 * @param branchUuid
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container);
 
 	/**
 	 * Retrieve a conflicting edge for the given segment info, branch uuid and type, or null if there's no conflicting

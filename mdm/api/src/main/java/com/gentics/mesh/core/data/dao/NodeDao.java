@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -236,8 +237,9 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
 
 	/**
-	 * Resolve the given path and return the path object that contains the resolved nodes.
+	 * Resolve the given path for the base node and return the path object that contains the resolved nodes.
 	 *
+	 * @param baseNode
 	 * @param branchUuid
 	 * @param type
 	 *            edge type
@@ -411,6 +413,12 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param bac
 	 */
 	void addReferenceUpdates(HibNode node, BulkActionContext bac);
+
+	/**
+	 * Gets all HibNodeFields that reference the node.
+	 * @return
+	 */
+	Stream<HibNodeField> getInboundReferences(HibNode node);
 
 	/**
 	 * Delete the given element

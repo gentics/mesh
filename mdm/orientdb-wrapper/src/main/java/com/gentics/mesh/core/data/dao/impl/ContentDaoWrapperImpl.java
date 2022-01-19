@@ -39,12 +39,7 @@ import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionNumber;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
-
-	private static final Logger log = LoggerFactory.getLogger(ContentDaoWrapperImpl.class);
 
 	private final OrientDBDatabase db;
 
@@ -194,7 +189,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Iterator<GraphFieldContainerEdge> getContainerEdge(HibNodeFieldContainer content, ContainerType type, String branchUuid) {
+	public Iterator<GraphFieldContainerEdge> getContainerEdges(HibNodeFieldContainer content, ContainerType type, String branchUuid) {
 		return toGraph(content).getContainerEdge(type, branchUuid);
 	}
 
@@ -289,5 +284,10 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public Stream<? extends HibMicronode> findAllMicronodes() {
 		return StreamUtil.toStream(GraphDBTx.getGraphTx().getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class));
+	}
+
+	@Override
+	public Stream<? extends GraphFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container) {
+		return toGraph(container).inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class).stream();
 	}
 }
