@@ -124,6 +124,13 @@ public interface HibMicronodeField extends HibListableField {
 
 	}
 
+	/**
+	 * A default method cannot override a method from java.lang.Object.
+	 * This is the common equality check implementation, that has to be reused by the HibMicronodeField implementors.
+	 * 
+	 * @param obj
+	 * @return
+	 */
 	default boolean micronodeFieldEquals(Object obj) {
 		if (obj instanceof HibMicronodeField) {
 			HibMicronode micronodeA = getMicronode();

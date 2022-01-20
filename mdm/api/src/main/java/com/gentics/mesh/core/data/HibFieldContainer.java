@@ -484,7 +484,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibStringField createString(String key);
 
 	/**
-	 * Delete the field edge with the given key from the container.
+	 * Delete the node field edge with the given key from the container.
 	 *
 	 * @param key
 	 */

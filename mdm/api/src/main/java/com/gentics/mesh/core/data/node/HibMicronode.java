@@ -170,6 +170,13 @@ public interface HibMicronode extends HibFieldContainer, HibBaseElement, HibTran
 		return ETag.hash(getUuid());
 	}
 
+	/**
+	 * A default method cannot override a method from java.lang.Object. 
+	 * This is the common equality check implementation, that has to be reused by the HibMicronode implementors.
+	 * 
+	 * @param obj
+	 * @return
+	 */
 	default boolean micronodeEquals(Object obj) {
 		if (obj instanceof HibMicronode) {
 			HibMicronode micronode = getClass().cast(obj);
