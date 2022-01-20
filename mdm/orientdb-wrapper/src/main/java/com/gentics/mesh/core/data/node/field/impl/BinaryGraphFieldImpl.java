@@ -110,10 +110,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public void validate() {
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof BinaryGraphField) {
 			BinaryGraphField binaryField = (BinaryGraphField) obj;

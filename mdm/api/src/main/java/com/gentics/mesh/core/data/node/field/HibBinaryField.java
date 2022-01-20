@@ -256,4 +256,9 @@ public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, Hi
 		restModel.setPlainText(getPlainText());
 		return restModel;
 	}
+
+	@Override
+	default void validate() {
+
+	}
 }
