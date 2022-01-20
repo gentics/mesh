@@ -97,6 +97,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NodeGraphField createNode(String key, HibNode node) {
+		deleteFieldEdge(key);
 		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, toGraph(node), HAS_FIELD, NodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
@@ -386,18 +387,17 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public void deleteFieldEdge(String key) {
-		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
-		if (traversal.hasNext()) {
-			traversal.next().remove();
-		}
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		// Lists
 		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
 			field.removeField(bac, this);
+		}
+	}
+
+	private void deleteFieldEdge(String key) {
+		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		if (traversal.hasNext()) {
+			traversal.next().remove();
 		}
 	}
 }

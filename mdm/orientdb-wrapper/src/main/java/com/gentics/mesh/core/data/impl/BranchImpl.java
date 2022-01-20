@@ -40,7 +40,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -297,8 +296,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public HibBranch unassignMicroschema(HibMicroschema microschema) {
-		Microschema graphMicroschema = toGraph(microschema);
-		unassign(graphMicroschema, HAS_MICROSCHEMA_VERSION);
+		unassign(microschema, HAS_MICROSCHEMA_VERSION);
 		return this;
 	}
 

@@ -364,7 +364,8 @@ public interface PersistingContentDao extends ContentDao {
 				// since the GFC "toDelete" was only used by this branch, it can not have more than one "next" GFC
 				// (multiple "next" would have to belong to different branches, and for every branch, there would have to be
 				// an INITIAL, which would have to be either this GFC or a previous)
-				dangling = getNextVersions(toDelete).iterator().next();
+				Iterator<HibNodeFieldContainer> danglingIterator = getNextVersions(toDelete).iterator();
+				dangling = danglingIterator.hasNext() ? danglingIterator.next() : null;
 				delete(toDelete, bac, false);
 			}
 		}

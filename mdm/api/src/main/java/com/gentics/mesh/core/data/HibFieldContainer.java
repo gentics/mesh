@@ -109,7 +109,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	default HibField getField(String fieldKey) {
-		FieldSchema schema = getSchemaContainerVersion().getSchema().getField(fieldKey);
+		FieldSchema schema = getFieldSchema(fieldKey);
 		if (schema != null) {
 			return getField(schema);
 		} else {
@@ -482,13 +482,6 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	HibStringField createString(String key);
-
-	/**
-	 * Delete the node field edge with the given key from the container.
-	 *
-	 * @param key
-	 */
-	void deleteFieldEdge(String key);
 
 	/**
 	 * Checks if a field can have a node reference.
