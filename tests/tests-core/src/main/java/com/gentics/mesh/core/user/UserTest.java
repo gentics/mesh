@@ -20,6 +20,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.db.CommonTx;
 import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -218,10 +220,11 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			UserDao userDao= tx.userDao();
 			RoleDao roleDao = tx.roleDao();
-			GroupDao groupDao = tx.groupDao();
+			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
 			HibUser extraUser = userDao.create("extraUser", user());
 			groupDao.addUser(group(), extraUser);
+			groupDao.mergeIntoPersisted(group());
 			roleDao.grantPermissions(role(), extraUser, InternalPermission.READ_PERM);
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -469,14 +472,16 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDelete() {
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			HibUser user = user();
+			HibUser user = userDao.findByUuid(user().getUuid());
 
 			String uuid = user.getUuid();
 			assertEquals(1, userDao.getGroups(user).count());
 			assertTrue(user.isEnabled());
 			BulkActionContext bac = createBulkContext();
-			userDao.delete(user, bac);
-			HibUser foundUser = userDao.findByUuid(uuid);
+
+			HibUser userToDelete = userDao.create("username", user);
+			userDao.delete(userToDelete, bac);
+			HibUser foundUser = userDao.findByUuid(userToDelete.getUuid());
 			assertNull(foundUser);
 		}
 	}
