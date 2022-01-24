@@ -11,24 +11,23 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
@@ -48,11 +47,13 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		String extraUserUuid;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			GroupDao groupDao = tx.groupDao();
+			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 			UserDao userDao = tx.userDao();
 
 			HibUser extraUser = userDao.create("extraUser", user());
-			groupDao.addUser(group(), extraUser);
+			HibGroup group = groupDao.findByUuid(group().getUuid());
+			groupDao.addUser(group, extraUser);
+			groupDao.mergeIntoPersisted(group);
 			extraUserUuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			tx.success();
@@ -60,17 +61,31 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 		ListResponse<UserResponse> userList = call(() -> client().findUsersOfGroup(groupUuid(), new PagingParametersImpl()));
 		assertEquals(2, userList.getMetainfo().getTotalCount());
-		assertEquals(2, userList.getData().size());
-		Iterator<UserResponse> userIt = userList.getData().iterator();
-		UserResponse userB = userIt.next();
-		UserResponse userA = userIt.next();
-		Map<String, UserResponse> map = new HashMap<>();
-		map.put(userA.getUuid(), userA);
-		map.put(userB.getUuid(), userB);
-		assertEquals(2, map.size());
-		assertNotNull(map.get(userUuid()));
-		assertNotNull(map.get(extraUserUuid));
 
+		UserResponse expectedTestUser = new UserResponse();
+		expectedTestUser.setUuid(userUuid());
+		expectedTestUser.setUsername(user().getUsername());
+
+		UserResponse expectedExtraUser = new UserResponse();
+		expectedExtraUser.setUuid(extraUserUuid);
+		expectedExtraUser.setUsername("extraUser");
+
+		assertThat(userList.getData()).as("Users of group").usingElementComparatorOnFields("uuid", "username")
+				.containsOnly(expectedTestUser, expectedExtraUser);
+
+		// revoke read permission on the extra user
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
+			HibUser extraUser = userDao.findByUuid(extraUserUuid);
+			roleDao.revokePermissions(role(), extraUser, READ_PERM);
+			tx.success();
+		}
+
+		userList = call(() -> client().findUsersOfGroup(groupUuid(), new PagingParametersImpl()));
+		assertEquals(1, userList.getMetainfo().getTotalCount());
+		assertThat(userList.getData()).as("Users of group").usingElementComparatorOnFields("uuid", "username")
+				.containsOnly(expectedTestUser);
 	}
 
 	@Test
@@ -212,13 +227,16 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		HibUser extraUser = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			GroupDao groupRoot = tx.groupDao();
+			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
 			HibUser user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
 			roleDao.grantPermissions(role(), user, READ_PERM);
-			groupRoot.addUser(group(), user);
+
+			HibGroup group = groupDao.findByUuid(group().getUuid());
+			groupDao.addUser(group, user);
+			groupDao.mergeIntoPersisted(group);
 			return user;
 		});
 		final String extraUserUuid = tx(() -> extraUser.getUuid());
