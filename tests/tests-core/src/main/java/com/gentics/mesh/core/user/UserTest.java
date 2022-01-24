@@ -594,6 +594,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// Add another role to the groups only oldUser is in.
 			grantAdmin();
 
+			oldUser = userDao.findByUuid(oldUser.getUuid());
+			newUser = userDao.findByUuid(newUser.getUuid());
+
 			// The roles have changed for oldUser ...
 			assertNotEquals(hash, userDao.getRolesHash(oldUser));
 			// ... but NOT for newUser.
