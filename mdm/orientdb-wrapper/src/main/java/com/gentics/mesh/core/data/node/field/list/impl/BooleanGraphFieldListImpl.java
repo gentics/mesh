@@ -1,12 +1,8 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
@@ -14,7 +10,6 @@ import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
-import com.gentics.mesh.util.CompareUtils;
 
 /**
  * @see BooleanGraphFieldList
@@ -57,31 +52,5 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<HibBo
 	@Override
 	public void delete(BulkActionContext bac) {
 		getElement().remove();
-	}
-
-	@Override
-	public BooleanFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
-		BooleanFieldListImpl restModel = new BooleanFieldListImpl();
-		for (HibBooleanField item : getList()) {
-			restModel.add(item.getBoolean());
-		}
-		return restModel;
-	}
-
-	@Override
-	public List<Boolean> getValues() {
-		return getList().stream().map(HibBooleanField::getBoolean).collect(Collectors.toList());
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof BooleanFieldListImpl) {
-			BooleanFieldListImpl restField = (BooleanFieldListImpl) obj;
-			List<Boolean> restList = restField.getItems();
-			List<? extends HibBooleanField> graphList = getList();
-			List<Boolean> graphStringList = graphList.stream().map(e -> e.getBoolean()).collect(Collectors.toList());
-			return CompareUtils.equals(restList, graphStringList);
-		}
-		return super.equals(obj);
 	}
 }

@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -57,6 +58,8 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -65,6 +68,8 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.DeleteParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathImpl;
@@ -949,6 +954,20 @@ public interface PersistingContentDao extends ContentDao {
 	@Override
 	default Result<HibNodeFieldContainer> versions(HibNodeFieldContainer content) {
 		return new TraversalResult<>(StreamUtil.untilNull(() -> content, HibNodeFieldContainer::getPreviousVersion));
+	}
+
+	@Override
+	default NodeFieldListItem toListItem(HibNode node, InternalActionContext ac, String[] languageTags) {
+		CommonTx tx = CommonTx.get();
+		// Create the rest field and populate the fields
+		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(node.getUuid());
+		String branchUuid = tx.getBranch(ac, node.getProject()).getUuid();
+		ContainerType type = forVersion(new VersioningParametersImpl(ac).getVersion());
+		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
+			listItem.setUrl(tx.data().mesh().webRootLinkReplacer().resolve(ac, branchUuid, type, node, ac.getNodeParameters().getResolveLinks(),
+				languageTags));
+		}
+		return listItem;
 	}
 }
 

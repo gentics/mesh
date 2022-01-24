@@ -8,6 +8,4 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
  */
 public interface NumberGraphFieldList extends ListGraphField<HibNumberField, NumberFieldListImpl, Number>, HibNumberFieldList {
 
-	String TYPE = "number";
-
 }

@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
@@ -928,4 +929,14 @@ public interface ContentDao {
 	 * @return
 	 */
 	Result<? extends HibNodeFieldContainerEdge> getEdges(HibNodeFieldContainer content);
+
+	/**
+	 * Create a {@link NodeFieldListItem} that contains the reference to the given node.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @param languageTags
+	 * @return
+	 */
+	NodeFieldListItem toListItem(HibNode node, InternalActionContext ac, String[] languageTags);
 }

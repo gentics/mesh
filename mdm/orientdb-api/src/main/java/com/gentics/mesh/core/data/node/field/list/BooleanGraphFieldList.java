@@ -8,6 +8,4 @@ import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
  */
 public interface BooleanGraphFieldList extends ListGraphField<HibBooleanField, BooleanFieldListImpl, Boolean>, HibBooleanFieldList {
 
-	String TYPE = "boolean";
-
 }

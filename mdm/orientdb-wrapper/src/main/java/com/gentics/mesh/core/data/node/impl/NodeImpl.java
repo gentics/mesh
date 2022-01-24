@@ -16,7 +16,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.field.FieldType.STRING_SET;
@@ -79,14 +78,10 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
-import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
@@ -313,26 +308,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
 		// setCreated(creator);
 		return node;
-	}
-
-	/**
-	 * Create a {@link NodeFieldListItem} that contains the reference to this node.
-	 * 
-	 * @param ac
-	 * @param languageTags
-	 * @return
-	 */
-	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
-		Tx tx = GraphDBTx.getGraphTx();
-		// Create the rest field and populate the fields
-		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
-		String branchUuid = tx.getBranch(ac, getProject()).getUuid();
-		ContainerType type = forVersion(new VersioningParametersImpl(ac).getVersion());
-		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-			listItem.setUrl(mesh().webRootLinkReplacer().resolve(ac, branchUuid, type, this, ac.getNodeParameters().getResolveLinks(),
-				languageTags));
-		}
-		return listItem;
 	}
 
 	@Override

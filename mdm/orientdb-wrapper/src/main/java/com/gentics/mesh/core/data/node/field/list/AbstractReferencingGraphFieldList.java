@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
  * @param <U>
  *            Type of element that is referenced
  */
-public abstract class AbstractReferencingGraphFieldList<T extends HibListableField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> {
+public abstract class AbstractReferencingGraphFieldList<T extends HibListableField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> implements HibReferencingListField<T, RM, U> {
 
 	@Override
 	public long getSize() {
@@ -78,6 +78,16 @@ public abstract class AbstractReferencingGraphFieldList<T extends HibListableFie
 		GraphFieldContainer graphContainer = toGraph(container);
 		graphContainer.linkOut(this, HAS_LIST);
 		return graphContainer.getList(getClass(), getFieldKey());
+	}
+
+	@Override
+	public void insertReferenced(int index, U item) {
+		addItem(String.valueOf(index + 1), (MeshVertex) item);
+	}
+
+	@Override
+	public void deleteReferenced(U item) {
+		((MeshVertex) item).delete();
 	}
 
 	/**
