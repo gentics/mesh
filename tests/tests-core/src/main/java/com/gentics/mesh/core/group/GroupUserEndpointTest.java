@@ -59,7 +59,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		ListResponse<UserResponse> userList = call(() -> client().findUsersOfGroup(groupUuid(), new PagingParametersImpl()));
+		ListResponse<UserResponse> userList = call(() -> client().findUsersOfGroup(groupUuid(), new PagingParametersImpl().setPerPage(25L)));
 		assertEquals(2, userList.getMetainfo().getTotalCount());
 
 		UserResponse expectedTestUser = new UserResponse();
@@ -82,7 +82,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		userList = call(() -> client().findUsersOfGroup(groupUuid(), new PagingParametersImpl()));
+		userList = call(() -> client().findUsersOfGroup(groupUuid(), new PagingParametersImpl().setPerPage(25L)));
 		assertEquals(1, userList.getMetainfo().getTotalCount());
 		assertThat(userList.getData()).as("Users of group").usingElementComparatorOnFields("uuid", "username")
 				.containsOnly(expectedTestUser);

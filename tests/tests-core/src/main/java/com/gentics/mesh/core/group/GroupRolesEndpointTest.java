@@ -55,7 +55,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		RoleListResponse roleList = call(() -> client().findRolesForGroup(groupUuid(), new PagingParametersImpl()));
+		RoleListResponse roleList = call(() -> client().findRolesForGroup(groupUuid(), new PagingParametersImpl().setPerPage(25L)));
 		assertThat(roleList.getMetainfo().getTotalCount()).as("Total count").isEqualTo(2);
 
 		RoleResponse expectedTestRole = new RoleResponse();
@@ -77,7 +77,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		roleList = call(() -> client().findRolesForGroup(groupUuid(), new PagingParametersImpl()));
+		roleList = call(() -> client().findRolesForGroup(groupUuid(), new PagingParametersImpl().setPerPage(25L)));
 		assertThat(roleList.getMetainfo().getTotalCount()).as("Total count").isEqualTo(1);
 		assertThat(roleList.getData()).as("Roles of group").usingElementComparatorOnFields("uuid", "name")
 			.containsOnly(expectedTestRole);
