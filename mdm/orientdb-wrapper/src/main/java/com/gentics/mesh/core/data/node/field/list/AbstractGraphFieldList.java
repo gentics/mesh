@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.node.field.list;
 
-import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
@@ -39,7 +38,7 @@ public abstract class AbstractGraphFieldList<T extends HibListableField, RM exte
 	}
 
 	@Override
-	public void validate() {
-		getList().stream().forEach(HibField::validate);
+	public boolean equals(Object obj) {
+		return listEquals(obj);
 	}
 }

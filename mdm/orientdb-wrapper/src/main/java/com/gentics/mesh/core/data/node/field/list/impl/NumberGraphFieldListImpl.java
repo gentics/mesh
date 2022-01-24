@@ -1,28 +1,15 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformer;
-import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
-import com.gentics.mesh.util.CompareUtils;
 
 /**
  * @see NumberGraphFieldList
@@ -65,31 +52,5 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<HibNum
 	@Override
 	public void delete(BulkActionContext context) {
 		getElement().remove();
-	}
-
-	@Override
-	public NumberFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
-		NumberFieldListImpl restModel = new NumberFieldListImpl();
-		for (HibNumberField item : getList()) {
-			restModel.add(item.getNumber());
-		}
-		return restModel;
-	}
-
-	@Override
-	public List<Number> getValues() {
-		return getList().stream().map(HibNumberField::getNumber).collect(Collectors.toList());
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof NumberFieldListImpl) {
-			NumberFieldListImpl restField = (NumberFieldListImpl) obj;
-			List<Number> restList = restField.getItems();
-			List<? extends HibNumberField> graphList = getList();
-			List<Number> graphStringList = graphList.stream().map(e -> e.getNumber()).collect(Collectors.toList());
-			return CompareUtils.equals(restList, graphStringList);
-		}
-		return super.equals(obj);
 	}
 }

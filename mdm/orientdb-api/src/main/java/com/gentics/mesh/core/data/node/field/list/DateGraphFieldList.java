@@ -8,6 +8,4 @@ import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
  */
 public interface DateGraphFieldList extends ListGraphField<HibDateField, DateFieldListImpl, Long>, HibDateFieldList {
 
-	String TYPE = "date";
-
 }

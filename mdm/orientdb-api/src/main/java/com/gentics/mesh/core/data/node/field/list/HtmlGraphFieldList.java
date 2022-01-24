@@ -8,6 +8,4 @@ import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
  */
 public interface HtmlGraphFieldList extends ListGraphField<HibHtmlField, HtmlFieldListImpl, String>, HibHtmlFieldList {
 
-	String TYPE = "html";
-
 }
