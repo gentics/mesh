@@ -37,17 +37,18 @@ public interface HibMicronodeFieldList extends HibMicroschemaListableField, HibR
 	 * 
 	 * @return
 	 */
-	default HibMicronode createMicronode() {
-		return createMicronodeAt(Optional.of((int)getSize()));
+	default HibMicronode createMicronode(HibMicroschemaVersion microschemaContainerVersion) {
+		return createMicronodeAt(Optional.of((int)getSize()), microschemaContainerVersion);
 	}
 
 	/**
 	 * Create a new empty micronode and, if an index is given, insert it into the list.
 	 * 
 	 * @param maybeIndex
+	 * @param microschemaContainerVersion 
 	 * @return
 	 */
-	HibMicronode createMicronodeAt(Optional<Integer> maybeIndex);
+	HibMicronode createMicronodeAt(Optional<Integer> maybeIndex, HibMicroschemaVersion microschemaContainerVersion);
 
 	@Override
 	default MicronodeFieldList transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
@@ -104,8 +105,7 @@ public interface HibMicronodeFieldList extends HibMicroschemaListableField, HibR
 				HibMicronode micronode = existing.get(node.getUuid());
 				// Create a new micronode if none could be found
 				if (micronode == null) {
-					micronode = createMicronodeAt(Optional.empty());
-					micronode.setSchemaContainerVersion(microschemaContainerVersion);
+					micronode = createMicronodeAt(Optional.empty(), microschemaContainerVersion);
 				} else {
 					// Avoid microschema container changes for micronode updates
 					if (!equalsIgnoreCase(micronode.getSchemaContainerVersion().getUuid(), microschemaContainerVersion.getUuid())) {

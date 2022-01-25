@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 
 /**
@@ -40,11 +41,12 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Micronode createMicronodeAt(Optional<Integer> maybeIndex) {
+	public Micronode createMicronodeAt(Optional<Integer> maybeIndex, HibMicroschemaVersion microschemaContainerVersion) {
 		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
 		if (maybeIndex.isPresent()) {
 			addItem(String.valueOf(maybeIndex.get() + 1), micronode);
 		}
+		micronode.setSchemaContainerVersion(microschemaContainerVersion);
 		return micronode;
 	}
 
