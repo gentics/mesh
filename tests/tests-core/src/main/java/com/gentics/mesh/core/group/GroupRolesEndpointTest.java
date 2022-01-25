@@ -10,20 +10,20 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
@@ -42,29 +43,44 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String roleUuid;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			GroupDao groupDao = tx.groupDao();
+			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
 			HibRole extraRole = roleDao.create("extraRole", user());
-			groupDao.addRole(group(), extraRole);
+			HibGroup group = groupDao.findByUuid(group().getUuid());
+			groupDao.addRole(group, extraRole);
+			groupDao.mergeIntoPersisted(group);
 
 			roleUuid = extraRole.getUuid();
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			tx.success();
 		}
 
-		RoleListResponse roleList = call(() -> client().findRolesForGroup(groupUuid()));
-		assertEquals(2, roleList.getMetainfo().getTotalCount());
-		assertEquals(2, roleList.getData().size());
+		RoleListResponse roleList = call(() -> client().findRolesForGroup(groupUuid(), new PagingParametersImpl().setPerPage(25L)));
+		assertThat(roleList.getMetainfo().getTotalCount()).as("Total count").isEqualTo(2);
 
-		Set<String> listedRoleUuids = new HashSet<>();
-		for (RoleResponse role : roleList.getData()) {
-			listedRoleUuids.add(role.getUuid());
-		}
+		RoleResponse expectedTestRole = new RoleResponse();
+		expectedTestRole.setUuid(role().getUuid());
+		expectedTestRole.setName(role().getName());
 
+		RoleResponse expectedExtraRole = new RoleResponse();
+		expectedExtraRole.setUuid(roleUuid);
+		expectedExtraRole.setName("extraRole");
+
+		assertThat(roleList.getData()).as("Roles of group").usingElementComparatorOnFields("uuid", "name")
+				.containsOnly(expectedTestRole, expectedExtraRole);
+
+		// revoke read permission on the extra role
 		try (Tx tx = tx()) {
-			assertTrue(listedRoleUuids.contains(role().getUuid()));
-			assertTrue(listedRoleUuids.contains(roleUuid));
+			RoleDao roleDao = tx.roleDao();
+			HibRole extraRole = roleDao.findByUuid(roleUuid);
+			roleDao.revokePermissions(role(), extraRole, READ_PERM);
+			tx.success();
 		}
+
+		roleList = call(() -> client().findRolesForGroup(groupUuid(), new PagingParametersImpl().setPerPage(25L)));
+		assertThat(roleList.getMetainfo().getTotalCount()).as("Total count").isEqualTo(1);
+		assertThat(roleList.getData()).as("Roles of group").usingElementComparatorOnFields("uuid", "name")
+			.containsOnly(expectedTestRole);
 	}
 
 	@Test
@@ -172,10 +188,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String roleName = "extraRole";
 		String roleUuid = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
-			GroupDao groupDao = tx.groupDao();
+			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
 			HibRole extraRole = roleDao.create(roleName, user());
-			groupDao.addRole(group(), extraRole);
+			HibGroup group = groupDao.findByUuid(group().getUuid());
+			groupDao.addRole(group, extraRole);
+			groupDao.mergeIntoPersisted(group);
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			assertEquals(2, groupDao.getRoles(group()).count());
 			searchProvider().reset();
@@ -234,7 +252,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			assertTrue("Role should be assigned to group.", groupDao.hasRole(group(), extraRole));
+			HibGroup group = groupDao.findByUuid(group().getUuid());
+			assertTrue("Role should be assigned to group.", groupDao.hasRole(group, tx.roleDao().findByUuid(extraRole.getUuid())));
 		}
 	}
 
@@ -273,11 +292,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		HibRole extraRole;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			GroupDao groupDao = tx.groupDao();
+			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
 			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
 			groupDao.addRole(group, extraRole);
+			groupDao.mergeIntoPersisted(group);
 
 			assertNotNull(group.getUuid());
 			assertNotNull(extraRole.getUuid());
@@ -288,14 +308,25 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
+			GroupDao groupDao = tx.groupDao();
+			HibGroup group = groupDao.findByUuid(group().getUuid());
+			GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
+			assertThat(restGroup).matches(group());
+			assertTrue("Role should now be assigned to group.", groupDao.hasRole(group, tx.roleDao().findByUuid(extraRole.getUuid())));
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			call(() -> client().removeRoleFromGroup(groupUuid(), extraRole.getUuid()));
 		}
 
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
+			HibGroup group = groupDao.findByUuid(group().getUuid());
 			GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 			assertThat(restGroup).matches(group());
-			assertFalse("Role should now no longer be assigned to group.", groupDao.hasRole(group(), extraRole));
+			assertFalse("Role should now no longer be assigned to group.", groupDao.hasRole(group, tx.roleDao().findByUuid(extraRole.getUuid())));
+			tx.success();
 		}
 	}
 
