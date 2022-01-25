@@ -39,6 +39,11 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	static final TypeInfo TYPE_INFO = new TypeInfo(ElementType.NODE, NODE_CREATED, NODE_UPDATED, NODE_DELETED);
 
 	@Override
+	default boolean hasPublishPermissions() {
+		return true;
+	}
+
+	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
 	}
