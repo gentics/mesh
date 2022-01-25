@@ -113,6 +113,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	default HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
 		PersistingBranchDao branchDao = CommonTx.get().branchDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
 		
 		HibProject project = createPersisted(uuid);
 		project.setName(name);
@@ -139,7 +140,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		branchDao.assignSchemaVersion(branch, creator, schemaVersion, batch);
 
 		// Assign the provided schema container to the project
-		CommonTx.get().schemaDao().addItem(project, schemaVersion.getSchemaContainer());
+		schemaDao.addItem(project, schemaDao.findByUuid(schemaVersion.getSchemaContainer().getUuid()));
 		createBaseNode(project, creator, schemaVersion);
 
 		project.setCreated(creator);
