@@ -396,15 +396,13 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 			if (withMicroschema) {
 				// micronodeList
 				HibMicronodeFieldList micronodeList = container.createMicronodeList("micronodeList");
-				HibMicronode firstMicronode = micronodeList.createMicronode();
-				firstMicronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+				HibMicronode firstMicronode = micronodeList.createMicronode(microschemaContainer("vcard").getLatestVersion());
 				firstMicronode.createString("firstName").setString("Joe");
 				firstMicronode.createString("lastName").setString("Doe");
 				firstMicronode.createString("address").setString("Somewhere");
 				firstMicronode.createString("postcode").setString("1010");
 
-				HibMicronode secondMicronode = micronodeList.createMicronode();
-				secondMicronode.setSchemaContainerVersion(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
+				HibMicronode secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 				secondMicronode.createString("text").setString("Joe");
 				secondMicronode.createNode("nodeRef", content());
 				HibNodeFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");

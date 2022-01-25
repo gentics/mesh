@@ -304,8 +304,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			// clone every micronode
 			for (HibMicronodeField oldField : oldListField.getList()) {
 				HibMicronode oldMicronode = oldField.getMicronode();
-				HibMicronode newMicronode = field.createMicronode();
-				newMicronode.setSchemaContainerVersion(oldMicronode.getSchemaContainerVersion());
+				HibMicronode newMicronode = field.createMicronode(oldMicronode.getSchemaContainerVersion());
 				newMicronode.clone(oldMicronode);
 
 				// migrate the micronode, if it uses the fromVersion

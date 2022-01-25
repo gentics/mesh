@@ -1096,8 +1096,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				oldContainer,
 				true);
 			firstMicronodeListField = newContainer.createMicronodeList(micronodeFieldName);
-			HibMicronode micronode = firstMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(versionA);
+			HibMicronode micronode = firstMicronodeListField.createMicronode(versionA);
 			micronode.createString(oldFieldName).setString("first content");
 
 			secondNode = folder("news");
@@ -1108,11 +1107,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				true)
 				.createMicronodeList(micronodeFieldName);
 
-			micronode = secondMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(versionA);
+			micronode = secondMicronodeListField.createMicronode(versionA);
 			micronode.createString(oldFieldName).setString("second content");
-			micronode = secondMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(versionA);
+			micronode = secondMicronodeListField.createMicronode(versionA);
 			micronode.createString(oldFieldName).setString("third content");
 			tx.success();
 		}
@@ -1236,13 +1233,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			firstMicronodeListField = newContainer
 				.createMicronodeList(micronodeFieldName);
-			HibMicronode micronode = firstMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(versionA);
+			HibMicronode micronode = firstMicronodeListField.createMicronode(versionA);
 			micronode.createString(oldFieldName).setString("first content");
 
 			// add another micronode from another microschema
-			micronode = firstMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+			micronode = firstMicronodeListField.createMicronode(microschemaContainer("vcard").getLatestVersion());
 			micronode.createString("firstName").setString("Max");
 			tx.success();
 		}
