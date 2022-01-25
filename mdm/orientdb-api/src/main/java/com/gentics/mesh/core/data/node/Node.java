@@ -38,11 +38,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 
 	String BRANCH_UUID_KEY = "branchUuid";
 
-	@Override
-	default boolean hasPublishPermissions() {
-		return true;
-	}
-
 	/**
 	 * Get all graph field edges.
 	 *
