@@ -61,9 +61,9 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		HibProject project = project();
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
+			HibProject project = Tx.get().projectDao().findByUuid(project().getUuid());
 			tx.projectDao().delete(project, bac);
 			assertElement(tx.projectDao(), projectUuid(), false);
 		}

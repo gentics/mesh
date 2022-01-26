@@ -1019,7 +1019,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 		if (recursive) {
 			// No need to check the branch since this delete must affect all branches
-			for (HibNode child : getChildren(node)) {
+			for (HibNode child : getChildren(node).list()) {
 				delete(child, bac, false, true);
 				bac.process();
 			}

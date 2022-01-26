@@ -260,6 +260,8 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 			project.setEditor(ac.getUser());
 			project.setLastEditedTimestamp();
 
+			mergeIntoPersisted(project);
+
 			// Update the project and its nodes in the index
 			batch.add(project.onUpdated());
 			return true;
