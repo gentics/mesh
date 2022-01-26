@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.storage.s3;
+package com.gentics.mesh.storage.s3;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
+import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;

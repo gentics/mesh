@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.storage;
+package com.gentics.mesh.storage;
 
 public class LocalBinaryStorageTest {
 
