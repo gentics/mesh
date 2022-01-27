@@ -22,6 +22,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
 
+icon:check[] Server: Fixed defined Health-Check in docker container and added a startup-grace period of 60s.
+
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
 
