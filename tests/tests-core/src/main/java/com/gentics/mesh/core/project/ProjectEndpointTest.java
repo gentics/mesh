@@ -490,7 +490,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().findNodes(request.getName()));
 
 		try (Tx tx = tx()) {
-			assertEquals(request.getName(), Tx.get().projectDao().findByUuid(projectUuid()).getName());
+			assertEquals(request.getName(), project().getName());
 		}
 
 	}
@@ -551,7 +551,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().findNodes(newName));
 
 		try (Tx tx = tx()) {
-			HibProject project = tx.projectDao().findByUuid(projectUuid());
+			HibProject project = project();
 			assertThat(restProject).matches(project);
 			// All nodes + project + tags and tag families need to be reindex
 			// since the project name is part of the search document.

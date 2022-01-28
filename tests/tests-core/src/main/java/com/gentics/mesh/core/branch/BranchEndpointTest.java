@@ -431,7 +431,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch created = createBranch(request);
 
 		tx(() -> {
-			assertThat(Tx.get().branchDao().findByUuid(created.getProject(), created.getUuid())).as("New Branch").isNotNull().hasPrevious(latest);
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(latest);
 		});
 	}
 
@@ -448,7 +448,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch created = createBranch(request);
 
 		tx(() -> {
-			assertThat(Tx.get().branchDao().findByUuid(created.getProject(), created.getUuid())).as("New Branch").isNotNull().hasPrevious(base);
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
 		});
 	}
 
@@ -465,7 +465,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch created = createBranch(request);
 
 		tx(() -> {
-			assertThat(Tx.get().branchDao().findByUuid(created.getProject(), created.getUuid())).as("New Branch").isNotNull().hasPrevious(base);
+			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
 		});
 	}
 
@@ -872,58 +872,61 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testAssignSchemaVersionViaSchemaUpdate() throws Exception {
-		// create version 1 of a schema
-		SchemaResponse schema = tx(() -> createSchema("schemaname"));
+		try (Tx tx = tx()) {
+			// create version 1 of a schema
+			SchemaResponse schema = createSchema("schemaname");
 
-		// Assign schema to project
-		call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
+			// Assign schema to project
+			call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
 
-		// Generate version 2
-		waitForJobs(() -> {
-			updateSchema(schema.getUuid(), "newschemaname");
-		}, COMPLETED, 1);
+			// Generate version 2
+			waitForJobs(() -> {
+				updateSchema(schema.getUuid(), "newschemaname");
+			}, COMPLETED, 1);
 
-		// Assert that version 2 is assigned to branch
-		BranchInfoSchemaList infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
+			// Assert that version 2 is assigned to branch
+			BranchInfoSchemaList infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 
-		// Generate version 3
-		updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
+			// Generate version 3
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
-		// Assert that version 2 is still assigned to branch
-		infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
+			// Assert that version 2 is still assigned to branch
+			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 
-		// Generate version 3 which should not be auto assigned to the project branch
-		updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false).setBranchNames(
-			INITIAL_BRANCH_NAME));
+			// Generate version 3 which should not be auto assigned to the project branch
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false).setBranchNames(
+				INITIAL_BRANCH_NAME));
 
-		// Assert that version 2 is still assigned to the branch
-		infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
+			// Assert that version 2 is still assigned to the branch
+			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 
-		// Generate version 4
-		waitForJobs(() -> {
-			updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true));
-		}, COMPLETED, 1);
+			// Generate version 4
+			waitForJobs(() -> {
+				updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true));
+			}, COMPLETED, 1);
 
-		// Assert that version 4 is assigned to the branch
-		infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+			// Assert that version 4 is assigned to the branch
+			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 
-		assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("4.0"));
+			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("4.0"));
 
-		// Generate version 5
-		updateSchema(schema.getUuid(), "anothernewschemaname3", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true).setBranchNames(
-			"bla", "bogus", "moped"));
+			// Generate version 5
+			updateSchema(schema.getUuid(), "anothernewschemaname3", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true).setBranchNames(
+				"bla", "bogus", "moped"));
 
-		// Assert that version 4 is still assigned to the branch since non of the names matches the project branch
-		infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("4.0"));
+			// Assert that version 4 is still assigned to the branch since non of the names matches the project branch
+			infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("4.0"));
+
+		}
 	}
 
 	@Test
@@ -1121,76 +1124,89 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testAssignMicroschemaVersion() throws Exception {
-		// create version 1 of a microschema
-		MicroschemaResponse microschema = tx(() -> createMicroschema("microschemaname"));
+		try (Tx tx = tx()) {
+			// create version 1 of a microschema
+			MicroschemaResponse microschema = createMicroschema("microschemaname");
 
-		// assign microschema to project
-		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
+			// assign microschema to project
+			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
 
-		// generate version 2
-		updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
+			// generate version 2
+			updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
-		// generate version 3
-		updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
+			// generate version 3
+			updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
-		// check that version 1 is assigned to branch
-		BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("microschemaname").setUuid(microschema.getUuid()).setVersion(
-				"1.0")));
+			// check that version 1 is assigned to branch
+			BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("microschemaname").setUuid(microschema.getUuid()).setVersion(
+					"1.0")));
 
-		BranchInfoMicroschemaList info = new BranchInfoMicroschemaList();
-		info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
+			BranchInfoMicroschemaList info = new BranchInfoMicroschemaList();
+			info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
 
-		expect(MICROSCHEMA_BRANCH_ASSIGN).match(1, BranchMicroschemaAssignModel.class, event -> {
-			BranchReference branch = event.getBranch();
-			assertNotNull("The branch reference was missing in the assignment event.", branch);
-			assertEquals("Branch name did not match.", PROJECT_NAME, branch.getName());
-			assertEquals("Branch uuid did not match.", initialBranchUuid(), branch.getUuid());
+			expect(MICROSCHEMA_BRANCH_ASSIGN).match(1, BranchMicroschemaAssignModel.class, event -> {
+				BranchReference branch = event.getBranch();
+				assertNotNull("The branch reference was missing in the assignment event.", branch);
+				assertEquals("Branch name did not match.", PROJECT_NAME, branch.getName());
+				assertEquals("Branch uuid did not match.", initialBranchUuid(), branch.getUuid());
 
-			MicroschemaReference schemaRef = event.getSchema();
-			assertEquals("Version did not match.", "2.0", schemaRef.getVersion());
-			assertEquals("Microschema name did not match.", "newmicroschemaname", schemaRef.getName());
-			assertEquals("Microschema uuid did not match.", microschema.getUuid(), schemaRef.getUuid());
-		});
+				MicroschemaReference schemaRef = event.getSchema();
+				assertEquals("Version did not match.", "2.0", schemaRef.getVersion());
+				assertEquals("Microschema name did not match.", "newmicroschemaname", schemaRef.getName());
+				assertEquals("Microschema uuid did not match.", microschema.getUuid(), schemaRef.getUuid());
+			});
 
-		// assign version 2 to the branch
-		waitForJobs(() -> {
-			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), info));
-		}, COMPLETED, 1);
+			// assign version 2 to the branch
+			waitForJobs(() -> {
+				call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), info));
+			}, COMPLETED, 1);
 
-		awaitEvents();
+			awaitEvents();
 
-		// assert
-		list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
-				"2.0")));
+			// assert
+			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
+					"2.0")));
+		}
 	}
 
 	@Test
 	public void testAssignMicroschemaVersionViaMicroschemaUpdate() throws Exception {
-		// create version 1 of a microschema
-		MicroschemaResponse microschema = tx(() -> createMicroschema("microschemaname"));
+		try (Tx tx = tx()) {
+			// create version 1 of a microschema
+			MicroschemaResponse microschema = createMicroschema("microschemaname");
 
-		// assign microschema to project
-		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
+			// assign microschema to project
+			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
 
-		// generate version 2
-		waitForJobs(() -> {
-			updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true));
-		}, COMPLETED, 1);
+			// generate version 2
+			waitForJobs(() -> {
+				updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true));
+			}, COMPLETED, 1);
 
-		// generate version 3
-		waitForJobs(() -> {
-			updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
-		}, COMPLETED, 1);
+			// generate version 3
+			waitForJobs(() -> {
+				updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
+			}, COMPLETED, 1);
 
-		// check that version 3 is assigned to branch
-		BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewmicroschemaname").setUuid(microschema.getUuid())
-				.setVersion("3.0")));
+			// check that version 3 is assigned to branch
+			BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewmicroschemaname").setUuid(microschema.getUuid())
+					.setVersion("3.0")));
+
+			// assign version 2 to the branch
+			// call(() -> getClient().assignBranchMicroschemaVersions(PROJECT_NAME, branchUuid(),
+			// new MicroschemaReferenceList(Arrays.asList(new MicroschemaReference().setUuid(microschema.getUuid()).setVersion(2)))));
+
+			// assert
+			// list = call(() -> getClient().getBranchMicroschemaVersions(PROJECT_NAME, branchUuid()));
+			// assertThat(list).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
+			// .contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
+		}
 	}
 
 	@Test
@@ -1269,63 +1285,64 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testAssignLatestMicroschemaVersion() throws Exception {
-		// create version 1 of a microschema
-		MicroschemaResponse microschema = tx(() -> createMicroschema("microschemaname"));
+		try (Tx tx = tx()) {
+			// create version 1 of a microschema
+			MicroschemaResponse microschema = createMicroschema("microschemaname");
 
-		// Assign microschema to project
-		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
+			// Assign microschema to project
+			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
 
-		// Generate version 2
-		waitForJobs(() -> {
-			updateMicroschema(microschema.getUuid(), "newmicroschemaname");
-		}, COMPLETED, 1);
+			// Generate version 2
+			waitForJobs(() -> {
+				updateMicroschema(microschema.getUuid(), "newmicroschemaname");
+			}, COMPLETED, 1);
 
-		// Assert that version 2 is assigned to branch
-		BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
-				"2.0")));
+			// Assert that version 2 is assigned to branch
+			BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
+					"2.0")));
 
-		// Generate version 3 which should not be auto assigned to the project branch
-		updateMicroschema(microschema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
+			// Generate version 3 which should not be auto assigned to the project branch
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
-		// Assert that version 2 is still assigned to branch
-		list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
-				"2.0")));
+			// Assert that version 2 is still assigned to branch
+			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
+					"2.0")));
 
-		// Generate version 4
-		updateMicroschema(microschema.getUuid(), "anothernewschemaname1", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)
-			.setBranchNames(INITIAL_BRANCH_NAME));
+			// Generate version 4
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname1", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)
+				.setBranchNames(INITIAL_BRANCH_NAME));
 
-		// Assert that version 4 is assigned to the branch
-		list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname1").setUuid(microschema.getUuid())
-				.setVersion("4.0")));
+			// Assert that version 4 is assigned to the branch
+			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname1").setUuid(microschema.getUuid())
+					.setVersion("4.0")));
 
-		// Generate version 5
-		waitForJobs(() -> {
-			updateMicroschema(microschema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true));
-		}, COMPLETED, 1);
+			// Generate version 5
+			waitForJobs(() -> {
+				updateMicroschema(microschema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true));
+			}, COMPLETED, 1);
 
-		// Assert that version 5
-		list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())
-				.setVersion("5.0")));
+			// Assert that version 5
+			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())
+					.setVersion("5.0")));
 
-		// Generate version 6
-		updateMicroschema(microschema.getUuid(), "anothernewschemaname3", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)
-			.setBranchNames("bla", "bogus", "moped"));
+			// Generate version 6
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname3", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(true)
+				.setBranchNames("bla", "bogus", "moped"));
 
-		// Assert that version 4 is still assigned to the branch since non of the names matches the project branch
-		list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
-		assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())
-				.setVersion("5.0")));
-
+			// Assert that version 4 is still assigned to the branch since non of the names matches the project branch
+			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
+				new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid())
+					.setVersion("5.0")));
+		}
 	}
 
 	/**
