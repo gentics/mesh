@@ -1,28 +1,32 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
-import com.gentics.mesh.core.data.node.field.*;
+import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
-import com.gentics.mesh.core.rest.node.field.S3BinaryField;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 /**
  * @see S3BinaryGraphField
@@ -66,11 +70,6 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
 	}
 
-	@Override
-	public String getDisplayName() {
-		return getFileName();
-	}
-
 	/**
 	 * Remove the field from the given container. The attached binary will be be removed if no other container is referencing it. The data will be deleted from
 	 * the binary storage as well.
@@ -104,78 +103,7 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof S3BinaryGraphField) {
-			S3BinaryGraphField s3binaryField = (S3BinaryGraphField) obj;
-			String filenameA = getFileName();
-			String filenameB = s3binaryField.getFileName();
-			boolean filename = Objects.equals(filenameA, filenameB);
-
-			String mimeTypeA = getMimeType();
-			String mimeTypeB = s3binaryField.getMimeType();
-			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
-
-			S3HibBinary s3binaryA = getS3Binary();
-			S3HibBinary s3binaryB = s3binaryField.getS3Binary();
-
-			String s3ObjectKeyA = s3binaryA != null ? s3binaryA.getS3ObjectKey() : null;
-			String s3ObjectKeyB = s3binaryB != null ? s3binaryB.getS3ObjectKey() : null;
-			boolean s3ObjectKey = Objects.equals(s3ObjectKeyA, s3ObjectKeyB);
-			return filename && mimetype && s3ObjectKey;
-		}
-		if (obj instanceof S3BinaryField) {
-			S3BinaryField s3binaryField = (S3BinaryField) obj;
-
-			boolean matchingS3ObjectKey = true;
-			if (s3binaryField.getS3ObjectKey() != null) {
-				String s3ObjectKeyA = getS3ObjectKey();
-				String s3ObjectKeyB = s3binaryField.getS3ObjectKey();
-				matchingS3ObjectKey = Objects.equals(s3ObjectKeyA, s3ObjectKeyB);
-			}
-
-			boolean matchingFilename = true;
-			if (s3binaryField.getFileName() != null) {
-				String filenameA = getFileName();
-				String filenameB = s3binaryField.getFileName();
-				matchingFilename = Objects.equals(filenameA, filenameB);
-			}
-
-			boolean matchingMimetype = true;
-			if (s3binaryField.getMimeType() != null) {
-				String mimeTypeA = getMimeType();
-				String mimeTypeB = s3binaryField.getMimeType();
-				matchingMimetype = Objects.equals(mimeTypeA, mimeTypeB);
-			}
-
-			boolean matchingFocalPoint = true;
-			if (s3binaryField.getFocalPoint() != null) {
-				FocalPoint pointA = getImageFocalPoint();
-				FocalPoint pointB = s3binaryField.getFocalPoint();
-				matchingFocalPoint = Objects.equals(pointA, pointB);
-			}
-
-			boolean matchingDominantColor = true;
-			if (s3binaryField.getDominantColor() != null) {
-				String colorA = getImageDominantColor();
-				String colorB = s3binaryField.getDominantColor();
-				matchingDominantColor = Objects.equals(colorA, colorB);
-			}
-
-			boolean matchingSha512sum = true;
-			if (s3binaryField.getS3ObjectKey() != null) {
-				String hashSumA = getS3Binary() != null ? getS3Binary().getS3ObjectKey() : null;
-				String hashSumB = s3binaryField.getS3ObjectKey();
-				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
-			}
-
-			boolean matchingMetadata = true;
-			if (s3binaryField.getMetadata() != null) {
-				S3BinaryMetadata graphMetadata = getMetadata();
-				S3BinaryMetadata restMetadata = s3binaryField.getMetadata();
-				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
-			}
-			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata && matchingS3ObjectKey;
-		}
-		return false;
+		return s3BinaryFieldEquals(obj);
 	}
 
 	@Override

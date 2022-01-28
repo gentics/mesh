@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -294,5 +295,10 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public Stream<? extends GraphFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container) {
 		return toGraph(container).inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class).stream();
+	}
+
+	@Override
+	public void deleteField(HibDeletableField field) {
+		toGraph(field).remove();
 	}
 }
