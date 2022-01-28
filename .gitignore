@@ -56,3 +56,6 @@ build.sh
 debuginfo.log
 /.run
 /core/debuginfo
+mesh-mdm/config
+/config/
+/data/graphdb/storage/
