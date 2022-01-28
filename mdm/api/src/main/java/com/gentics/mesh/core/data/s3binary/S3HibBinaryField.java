@@ -4,7 +4,7 @@ package com.gentics.mesh.core.data.s3binary;
 import java.util.Map;
 import java.util.Objects;
 
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.node.field.HibBasicField;
 import com.gentics.mesh.core.data.node.field.HibDisplayField;
@@ -20,7 +20,7 @@ import com.gentics.mesh.util.UniquenessUtil;
 /**
  * MDM interface for the s3binary field information.
  */
-public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>, HibElement, HibDisplayField {
+public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>, HibDeletableField, HibDisplayField {
 
 	/**
 	 * Return the referenced s3binary entity.
@@ -278,5 +278,85 @@ public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>
 		if (oldName != null && !oldName.isEmpty()) {
 			setFileName(UniquenessUtil.suggestNewName(oldName));
 		}
+	}
+
+	@Override
+	default String getDisplayName() {
+		return getFileName();
+	}
+
+	default boolean s3BinaryFieldEquals(Object obj) {
+		if (getClass().isInstance(obj)) {
+			S3HibBinaryField s3binaryField = getClass().cast(obj);
+			String filenameA = getFileName();
+			String filenameB = s3binaryField.getFileName();
+			boolean filename = Objects.equals(filenameA, filenameB);
+
+			String mimeTypeA = getMimeType();
+			String mimeTypeB = s3binaryField.getMimeType();
+			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
+
+			S3HibBinary s3binaryA = getS3Binary();
+			S3HibBinary s3binaryB = s3binaryField.getS3Binary();
+
+			String s3ObjectKeyA = s3binaryA != null ? s3binaryA.getS3ObjectKey() : null;
+			String s3ObjectKeyB = s3binaryB != null ? s3binaryB.getS3ObjectKey() : null;
+			boolean s3ObjectKey = Objects.equals(s3ObjectKeyA, s3ObjectKeyB);
+			return filename && mimetype && s3ObjectKey;
+		}
+		if (obj instanceof S3BinaryField) {
+			S3BinaryField s3binaryField = (S3BinaryField) obj;
+
+			boolean matchingS3ObjectKey = true;
+			if (s3binaryField.getS3ObjectKey() != null) {
+				String s3ObjectKeyA = getS3ObjectKey();
+				String s3ObjectKeyB = s3binaryField.getS3ObjectKey();
+				matchingS3ObjectKey = Objects.equals(s3ObjectKeyA, s3ObjectKeyB);
+			}
+
+			boolean matchingFilename = true;
+			if (s3binaryField.getFileName() != null) {
+				String filenameA = getFileName();
+				String filenameB = s3binaryField.getFileName();
+				matchingFilename = Objects.equals(filenameA, filenameB);
+			}
+
+			boolean matchingMimetype = true;
+			if (s3binaryField.getMimeType() != null) {
+				String mimeTypeA = getMimeType();
+				String mimeTypeB = s3binaryField.getMimeType();
+				matchingMimetype = Objects.equals(mimeTypeA, mimeTypeB);
+			}
+
+			boolean matchingFocalPoint = true;
+			if (s3binaryField.getFocalPoint() != null) {
+				FocalPoint pointA = getImageFocalPoint();
+				FocalPoint pointB = s3binaryField.getFocalPoint();
+				matchingFocalPoint = Objects.equals(pointA, pointB);
+			}
+
+			boolean matchingDominantColor = true;
+			if (s3binaryField.getDominantColor() != null) {
+				String colorA = getImageDominantColor();
+				String colorB = s3binaryField.getDominantColor();
+				matchingDominantColor = Objects.equals(colorA, colorB);
+			}
+
+			boolean matchingSha512sum = true;
+			if (s3binaryField.getS3ObjectKey() != null) {
+				String hashSumA = getS3Binary() != null ? getS3Binary().getS3ObjectKey() : null;
+				String hashSumB = s3binaryField.getS3ObjectKey();
+				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
+			}
+
+			boolean matchingMetadata = true;
+			if (s3binaryField.getMetadata() != null) {
+				S3BinaryMetadata graphMetadata = getMetadata();
+				S3BinaryMetadata restMetadata = s3binaryField.getMetadata();
+				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
+			}
+			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata && matchingS3ObjectKey;
+		}
+		return false;
 	}
 }

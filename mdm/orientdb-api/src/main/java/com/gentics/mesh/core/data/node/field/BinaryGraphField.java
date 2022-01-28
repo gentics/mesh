@@ -7,7 +7,6 @@ import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.util.UniquenessUtil;
@@ -15,7 +14,7 @@ import com.gentics.mesh.util.UniquenessUtil;
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
  */
-public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge, DisplayField, HibBinaryField {
+public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge, DisplayField, HibBinaryField, GraphDeletableField {
 
 	String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
 

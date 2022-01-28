@@ -4,6 +4,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.GraphDeletableField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
@@ -74,6 +76,16 @@ import com.syncleus.ferma.ElementFrame;
 public final class HibClassConverter {
 
 	private HibClassConverter() {
+	}
+
+	/**
+	 * Convert the container field to a graph counterpart.
+	 *
+	 * @param f
+	 * @return
+	 */
+	public static GraphDeletableField toGraph(HibDeletableField f) {
+		return checkAndCast(f, GraphDeletableField.class);
 	}
 
 	/**

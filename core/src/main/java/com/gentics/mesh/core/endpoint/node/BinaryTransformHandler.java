@@ -387,7 +387,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
 			if (oldField != null) {
 				oldField.copyTo(field);
-				tx.<CommonTx>unwrap().delete(oldField, oldField.getClass());
+				tx.<CommonTx>unwrap().contentDao().deleteField(oldField);
 			}
 			S3HibBinary currentS3Binary = field.getS3Binary();
 
@@ -457,7 +457,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
 			if (oldField != null) {
 				oldField.copyTo(field);
-				tx.<CommonTx>unwrap().delete(oldField, oldField.getClass());
+				tx.<CommonTx>unwrap().contentDao().deleteField(oldField);
 			}
 			HibBinary currentBinary = field.getBinary();
 			currentBinary.setSize(result.getSize());
