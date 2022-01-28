@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.MimeTypeUtils;

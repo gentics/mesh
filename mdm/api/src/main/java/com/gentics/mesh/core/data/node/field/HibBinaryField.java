@@ -10,6 +10,9 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
+import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.UniquenessUtil;
 
 public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, HibElement, HibDisplayField {
@@ -76,7 +79,9 @@ public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, Hi
 	 * 
 	 * @return
 	 */
-	boolean hasProcessableImage();
+	default boolean hasProcessableImage() {
+		return NodeUtil.isProcessableImage(getMimeType());
+	}
 
 	/**
 	 * Set the binary image dominant color.
@@ -106,20 +111,6 @@ public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, Hi
 	 * @param point
 	 */
 	void setImageFocalPoint(FocalPoint point);
-
-	/**
-	 * Return the uuid of the binary field.
-	 * 
-	 * @return
-	 */
-	String getUuid();
-
-	/**
-	 * Set the uuid of the binary field.
-	 * 
-	 * @param uuid
-	 */
-	void setUuid(String uuid);
 
 	/**
 	 * Return the referenced binary.
@@ -203,14 +194,31 @@ public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, Hi
 	/**
 	 * Clear the metadata properties.
 	 */
-	void clearMetadata();	
+	void clearMetadata();
 
 	/**
 	 * Return the {@link BinaryMetadata} REST model of the field.
-	 * 
+	 *
 	 * @return
 	 */
-	BinaryMetadata getMetadata();
+	default BinaryMetadata getMetadata() {
+		BinaryMetadata metaData = new BinaryMetadata();
+		for (Map.Entry<String, String> entry : getMetadataProperties().entrySet()) {
+			metaData.add(entry.getKey(), entry.getValue());
+		}
+
+		// Now set the GPS information
+		Double lat = getLocationLatitude();
+		Double lon = getLocationLongitude();
+		if (lat != null && lon != null) {
+			metaData.setLocation(lon, lat);
+		}
+		Integer alt = getLocationAltitude();
+		if (alt != null && metaData.getLocation() != null) {
+			metaData.getLocation().setAlt(alt);
+		}
+		return metaData;
+	}
 
 	/**
 	 * Set the plain text content.
@@ -224,4 +232,33 @@ public interface HibBinaryField extends HibField, HibBasicField<BinaryField>, Hi
 	 */
 	String getPlainText();
 
+	@Override
+	default BinaryField transformToRest(ActionContext ac) {
+		BinaryField restModel = new BinaryFieldImpl();
+		restModel.setFileName(getFileName());
+		restModel.setMimeType(getMimeType());
+
+		HibBinary binary = getBinary();
+		if (binary != null) {
+			restModel.setBinaryUuid(binary.getUuid());
+			restModel.setFileSize(binary.getSize());
+			restModel.setSha512sum(binary.getSHA512Sum());
+			restModel.setWidth(binary.getImageWidth());
+			restModel.setHeight(binary.getImageHeight());
+		}
+
+		restModel.setFocalPoint(getImageFocalPoint());
+		restModel.setDominantColor(getImageDominantColor());
+
+		BinaryMetadata metaData = getMetadata();
+		restModel.setMetadata(metaData);
+
+		restModel.setPlainText(getPlainText());
+		return restModel;
+	}
+
+	@Override
+	default void validate() {
+
+	}
 }

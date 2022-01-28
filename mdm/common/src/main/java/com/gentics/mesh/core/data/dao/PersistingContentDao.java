@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -720,28 +721,42 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	default String getSegmentFieldValue(HibNodeFieldContainer content) {
-		String segmentFieldKey = getSchemaContainerVersion(content).getSchema().getSegmentField();
+		SchemaVersionModel schema = getSchemaContainerVersion(content).getSchema();
+		String segmentFieldKey = schema.getSegmentField();
 		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
 		if (segmentFieldKey == null) {
 			return null;
 		}
 
-		// 2. Try to load the path segment using the string field
+		FieldTypes segmentFieldType = FieldTypes.valueByName(schema.getField(segmentFieldKey).getType());
+		if (segmentFieldType == null) {
+			return getStringField(content, segmentFieldKey);
+		}
+
+		switch (segmentFieldType) {
+			case BINARY:
+				HibBinaryField binary = content.getBinary(segmentFieldKey);
+				if (nonNull(binary)) {
+					return binary.getFileName();
+				}
+				break;
+			case S3BINARY:
+				S3HibBinaryField s3binaryField = content.getS3Binary(segmentFieldKey);
+				if (nonNull(s3binaryField)) {
+					return s3binaryField.getS3Binary().getFileName();
+				}
+				break;
+			default:
+				return getStringField(content, segmentFieldKey);
+		}
+
+		return null;
+	}
+
+	private String getStringField(HibNodeFieldContainer content, String segmentFieldKey) {
 		HibStringField stringField = content.getString(segmentFieldKey);
 		if (stringField != null) {
 			return stringField.getString();
-		}
-
-		// 3. Try to load the path segment using the binary field or the s3 binary since the string field could not be found
-		if (stringField == null) {
-			S3HibBinaryField s3binaryField = content.getS3Binary(segmentFieldKey);
-			if (nonNull(s3binaryField)) {
-				return s3binaryField.getS3Binary().getFileName();
-			}
-			HibBinaryField binary = content.getBinary(segmentFieldKey);
-			if (nonNull(binary)) {
-				return binary.getFileName();
-			}
 		}
 		return null;
 	}

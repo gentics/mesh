@@ -11,6 +11,7 @@ import java.util.List;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
@@ -75,8 +76,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	abstract protected HibNode getNode();
 
 	@Override
-	public void removeField(String fieldKey, BulkActionContext bac) {
-		toGraph(getField(fieldKey)).removeField(bac, this);
+	public void removeField(HibField field) {
+		if (field != null) {
+			toGraph(getField(field.getFieldKey())).removeField(new DummyBulkActionContext(), this);
+		}
 	}
 
 	@Override

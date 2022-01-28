@@ -3,7 +3,9 @@ package com.gentics.mesh.core.data.binary;
 import java.io.InputStream;
 
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 
 /**
@@ -68,7 +70,15 @@ public interface HibBinary extends HibBaseElement {
 	 * 
 	 * @return Image size or null when the information could not be determined
 	 */
-	Point getImageSize();
+	default Point getImageSize() {
+		Integer x = getImageHeight();
+		Integer y = getImageWidth();
+		if (x == null || y == null) {
+			return null;
+		} else {
+			return new Point(x, y);
+		}
+	}
 
 	/**
 	 * Set the SHA 512 Checksum
@@ -79,16 +89,13 @@ public interface HibBinary extends HibBaseElement {
 	HibBinary setSHA512Sum(String sha512sum);
 
 	/**
-	 * Set the binary uuid.
-	 * 
-	 * @param uuid
-	 */
-	void setUuid(String uuid);
-
-	/**
 	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)
 	 *
 	 * @return
 	 */
-	Supplier<InputStream> openBlockingStream();
+	default Supplier<InputStream> openBlockingStream() {
+		BinaryStorage storage = Tx.get().data().binaryStorage();
+		String uuid = getUuid();
+		return () -> storage.openBlockingStream(uuid);
+	}
 }

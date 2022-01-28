@@ -6,13 +6,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
+import com.gentics.mesh.core.data.storage.s3.S3BinaryStorageImpl;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
 import com.gentics.mesh.test.docker.AWSContainer;
 

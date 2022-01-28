@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
-import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
@@ -45,25 +45,6 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	public Result<HibBinaryField> findFields() {
 		// TODO inE should not return wildcard generics
 		return (Result<HibBinaryField>) (Result<? extends HibBinaryField>) inE(HAS_FIELD, BinaryGraphFieldImpl.class);
-	}
-
-	@Override
-	public Flowable<Buffer> getStream() {
-		BinaryStorage storage = mesh().binaryStorage();
-		return storage.read(getUuid());
-	}
-
-	@Override
-	public Supplier<InputStream> openBlockingStream() {
-		BinaryStorage storage = mesh().binaryStorage();
-		String uuid = getUuid();
-		return () -> storage.openBlockingStream(uuid);
-	}
-
-	@Override
-	public String getBase64ContentSync() {
-		Buffer buffer = mesh().binaryStorage().readAllSync(getUuid());
-		return BASE64.encodeToString(buffer.getBytes());
 	}
 
 	@Override
