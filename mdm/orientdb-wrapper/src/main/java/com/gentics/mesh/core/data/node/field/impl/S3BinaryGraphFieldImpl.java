@@ -4,7 +4,6 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.*;
@@ -12,15 +11,9 @@ import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
-import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.image.Point;
-import com.gentics.mesh.core.rest.node.field.impl.S3BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
-import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.util.NodeUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -30,9 +23,6 @@ import java.util.stream.Collectors;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see S3BinaryGraphField
@@ -50,27 +40,6 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	 * @param index
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
-	}
-
-	@Override
-	public S3BinaryField transformToRest(ActionContext ac) {
-		S3BinaryField restModel = new S3BinaryFieldImpl();
-
-		S3HibBinary binary = getS3Binary();
-		if (binary != null) {
-			restModel.setS3binaryUuid(binary.getUuid());
-			restModel.setS3ObjectKey(binary.getS3ObjectKey());
-			restModel.setFileName(binary.getFileName());
-			restModel.setFileSize(binary.getSize());
-			restModel.setWidth(binary.getImageWidth());
-			restModel.setHeight(binary.getImageHeight());
-		}
-		S3BinaryMetadata metaData = getMetadata();
-		restModel.setMetadata(metaData);
-		restModel.setMimeType(getMimeType());
-		restModel.setFileSize(getFileSize());
-		restModel.setDominantColor(getImageDominantColor());
-		return restModel;
 	}
 
 	@Override
@@ -95,11 +64,6 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	@Override
 	public String getFieldKey() {
 		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
-	}
-
-	@Override
-	public boolean hasProcessableImage() {
-		return NodeUtil.isProcessableImage(getMimeType());
 	}
 
 	@Override
@@ -136,10 +100,6 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 			field.property(key, value);
 		}
 		return field;
-	}
-
-	@Override
-	public void validate() {
 	}
 
 	@Override

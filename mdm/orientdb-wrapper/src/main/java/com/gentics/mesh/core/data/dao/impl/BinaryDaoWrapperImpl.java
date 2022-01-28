@@ -32,16 +32,6 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	}
 
 	@Override
-	public Flowable<Buffer> getStream(HibBinary binary) {
-		return toGraph(binary).getStream();
-	}
-
-	@Override
-	public String getBase64ContentSync(HibBinary binary) {
-		return toGraph(binary).getBase64ContentSync();
-	}
-
-	@Override
 	public Result<HibBinaryField> findFields(HibBinary binary) {
 		return toGraph(binary).findFields();
 	}

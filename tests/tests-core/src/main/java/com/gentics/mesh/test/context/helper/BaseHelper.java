@@ -23,8 +23,8 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.storage.LocalBinaryStorage;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.MeshTestContext;
 

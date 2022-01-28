@@ -99,13 +99,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	}
 
 	/**
-	 * Check whether the binary data represents an image.
-	 * 
-	 * @return
-	 */
-	boolean hasProcessableImage();
-
-	/**
 	 * Set the binary image dominant color.
 	 * 
 	 * @param dominantColor
@@ -269,13 +262,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 				setMetadata(e.substring(META_DATA_PROPERTY_PREFIX.length()), null);
 			});
 	}
-
-	/**
-	 * Return the {@link BinaryMetadata} REST model of the field.
-	 * 
-	 * @return
-	 */
-	BinaryMetadata getMetadata();
 
 	/**
 	 * Set the plain text content.

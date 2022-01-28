@@ -18,7 +18,7 @@ import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import io.reactivex.Single;
 import io.vertx.ext.web.RoutingContext;
