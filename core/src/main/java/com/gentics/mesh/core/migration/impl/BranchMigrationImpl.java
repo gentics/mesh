@@ -75,7 +75,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 			List<Exception> errorsDetected = new ArrayList<>();
 			// Iterate over all nodes of the project and migrate them to the new branch
 			migrateLoop(nodes, cause, status, (batch, node, errors) -> {
-				migrateNode(node.getUuid(), batch, oldBranch, newBranch, errorsDetected);
+				migrateNode(node, batch, oldBranch, newBranch, errorsDetected);
 			});
 
 			if (!errorsDetected.isEmpty()) {
@@ -101,29 +101,27 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 * Migrate the node from the old branch to the new branch. This will effectively create the edges between the new branch and the node. Additionally also the
 	 * tags will be update to correspond with the new branch structure.
 	 * 
-	 * @param nodeUuid
+	 * @param node
 	 * @param batch
 	 * @param oldBranch
 	 * @param newBranch
 	 * @param errorsDetected
 	 */
-	private void migrateNode(String nodeUuid, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
+	private void migrateNode(HibNode node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
 				NodeDao nodeDao = tx.nodeDao();
 				TagDao tagDao = tx.tagDao();
 				PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
-				HibBranch branchToMigrateTo = tx.branchDao().findByUuid(newBranch.getProject(), newBranch.getUuid());
-				HibNode node = tx.nodeDao().findByUuidGlobal(nodeUuid);
 
 				// Check whether the node already has an initial container and thus was already migrated
-				if (contentDao.getFieldContainers(node, branchToMigrateTo, INITIAL).hasNext()) {
+				if (contentDao.getFieldContainers(node, newBranch, INITIAL).hasNext()) {
 					return;
 				}
 
 				HibNode parent = nodeDao.getParentNode(node, oldBranch.getUuid());
 				if (parent != null) {
-					nodeDao.setParentNode(node, branchToMigrateTo.getUuid(), parent);
+					nodeDao.setParentNode(node, newBranch.getUuid(), parent);
 				}
 
 				Result<HibNodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
@@ -133,21 +131,21 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				drafts.forEach(container -> {
 					// We only need to set the initial edge if there are no published containers.
 					// Otherwise the initial edge will be set using the published container.
-					contentDao.migrateContainerOntoBranch(container, branchToMigrateTo, node, batch, DRAFT, !published.hasNext());
+					contentDao.migrateContainerOntoBranch(container, newBranch, node, batch, DRAFT, !published.hasNext());
 				});
 
 				// 2. Migrate published containers
 				published.forEach(container -> {
 					// Set the initial edge for published containers since the published container may be an older version and created before the draft container was created.
 					// The initial edge should always point to the oldest container of either draft or published.
-					contentDao.migrateContainerOntoBranch(container, branchToMigrateTo, node, batch, PUBLISHED, true);
+					contentDao.migrateContainerOntoBranch(container, newBranch, node, batch, PUBLISHED, true);
 				});
 
 				// Migrate tags
-				tagDao.getTags(node, oldBranch).forEach(tag -> tagDao.addTag(node, tag, branchToMigrateTo));
+				tagDao.getTags(node, oldBranch).forEach(tag -> tagDao.addTag(node, tag, newBranch));
 			});
 		} catch (Exception e1) {
-			log.error("Error while handling node {" + nodeUuid + "} during schema migration.", e1);
+			log.error("Error while handling node {" + node.getUuid() + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
 	}

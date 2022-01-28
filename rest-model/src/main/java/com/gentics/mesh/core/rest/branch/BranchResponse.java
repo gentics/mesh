@@ -139,7 +139,7 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	 * @return
 	 */
 	public String getPathPrefix() {
-		return pathPrefix == null ? "" : pathPrefix;
+		return pathPrefix;
 	}
 
 	/**

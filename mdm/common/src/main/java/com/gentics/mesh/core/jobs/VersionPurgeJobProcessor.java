@@ -9,8 +9,6 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.HibVersionPurgeJob;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -30,13 +28,11 @@ import io.vertx.core.logging.LoggerFactory;
 public class VersionPurgeJobProcessor implements SingleJobProcessor {
 
 	public static final Logger log = LoggerFactory.getLogger(VersionPurgeJobProcessor.class);
-	private final Database db;
-	private final PersistingJobDao jobDao;
+	private Database db;
 
 	@Inject
-	public VersionPurgeJobProcessor(Database db, JobDao jobDao) {
+	public VersionPurgeJobProcessor(Database db) {
 		this.db = db;
-		this.jobDao = (PersistingJobDao) jobDao;
 	}
 
 	@Override
@@ -46,19 +42,16 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 			return tx.<CommonTx>unwrap().data().mesh().projectVersionPurgeHandler();
 		});
 		HibProject project = db.tx(purgeJob::getProject);
-		String projectName = project.getName();
-		String projectUuid = project.getUuid();
 		Optional<ZonedDateTime> maxAge = db.tx(purgeJob::getMaxAge);
 		return handler.purgeVersions(project, maxAge.orElse(null))
 				.doOnComplete(() -> {
 					db.tx(() -> {
 						purgeJob.setStopTimestamp();
 						purgeJob.setStatus(COMPLETED);
-						jobDao.mergeIntoPersisted(purgeJob);
 					});
 					db.tx(tx -> {
-						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + projectName + "} completed.");
-						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, projectName, projectUuid))
+						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} completed.");
+						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, project.getName(), project.getUuid()))
 								.dispatch();
 					});
 				}).doOnError(error -> {
@@ -66,11 +59,10 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 						purgeJob.setStopTimestamp();
 						purgeJob.setStatus(FAILED);
 						purgeJob.setError(error);
-						jobDao.mergeIntoPersisted(purgeJob);
 					});
 					db.tx(tx -> {
-						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + projectName + "} failed.", error);
-						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, projectName, projectUuid))
+						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} failed.", error);
+						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
 								.dispatch();
 					});
 				});
