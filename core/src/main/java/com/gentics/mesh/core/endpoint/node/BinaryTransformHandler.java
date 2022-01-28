@@ -48,7 +48,7 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;

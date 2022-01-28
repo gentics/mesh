@@ -2,7 +2,7 @@ package com.gentics.mesh.dagger.module;
 
 import javax.inject.Singleton;
 
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;

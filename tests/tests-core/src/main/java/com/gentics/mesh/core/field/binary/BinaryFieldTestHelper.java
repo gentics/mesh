@@ -6,7 +6,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
