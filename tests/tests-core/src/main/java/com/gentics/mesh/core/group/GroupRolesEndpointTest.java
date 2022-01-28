@@ -59,12 +59,14 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		assertThat(roleList.getMetainfo().getTotalCount()).as("Total count").isEqualTo(2);
 
 		RoleResponse expectedTestRole = new RoleResponse();
-		expectedTestRole.setUuid(role().getUuid());
-		expectedTestRole.setName(role().getName());
-
 		RoleResponse expectedExtraRole = new RoleResponse();
-		expectedExtraRole.setUuid(roleUuid);
-		expectedExtraRole.setName("extraRole");
+
+		try (Tx tx = tx()) {
+			expectedTestRole.setUuid(role().getUuid());
+			expectedTestRole.setName(role().getName());
+			expectedExtraRole.setUuid(roleUuid);
+			expectedExtraRole.setName("extraRole");
+		}
 
 		assertThat(roleList.getData()).as("Roles of group").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(expectedTestRole, expectedExtraRole);
