@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import java.util.stream.Stream;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -10,7 +8,6 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.S3BinaryDaoWrapper;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.db.Transactional;
 
 import dagger.Lazy;
 
@@ -29,17 +26,7 @@ public class S3BinaryDaoWrapperImpl extends AbstractDaoWrapper<S3HibBinary> impl
 	}
 
 	@Override
-	public Transactional<? extends S3HibBinary> findByS3ObjectKey(String s3ObjectKey) {
-		return s3binaries.findByS3ObjectKey(s3ObjectKey);
-	}
-
-	@Override
-	public Transactional<? extends S3HibBinary> create(String uuid, String objectKey, String fileName) {
-		return s3binaries.create(uuid, objectKey,fileName);
-	}
-
-	@Override
-	public Transactional<Stream<S3HibBinary>> findAll() {
-		return s3binaries.findAll();
+	public S3Binaries getS3HibBinaries() {
+		return s3binaries;
 	}
 }

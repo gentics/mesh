@@ -11,7 +11,10 @@ import com.gentics.mesh.core.data.node.field.HibDisplayField;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.impl.S3BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
+import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.UniquenessUtil;
 
 /**
@@ -31,7 +34,50 @@ public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>
 	 * 
 	 * @return
 	 */
-	S3BinaryMetadata getMetadata();
+	default S3BinaryMetadata getMetadata() {
+		S3BinaryMetadata metaData = new S3BinaryMetadata();
+		for (Map.Entry<String, String> entry : getMetadataProperties().entrySet()) {
+			metaData.add(entry.getKey(), entry.getValue());
+		}
+
+		// Now set the GPS information
+		Double lat = getLocationLatitude();
+		Double lon = getLocationLongitude();
+		if (lat != null && lon != null) {
+			metaData.setLocation(lon, lat);
+		}
+		Integer alt = getLocationAltitude();
+		if (alt != null && metaData.getLocation() != null) {
+			metaData.getLocation().setAlt(alt);
+		}
+		return metaData;
+	}
+
+	@Override
+	default S3BinaryField transformToRest(ActionContext ac) {
+		S3BinaryField restModel = new S3BinaryFieldImpl();
+
+		S3HibBinary binary = getS3Binary();
+		if (binary != null) {
+			restModel.setS3binaryUuid(binary.getUuid());
+			restModel.setS3ObjectKey(binary.getS3ObjectKey());
+			restModel.setFileName(binary.getFileName());
+			restModel.setFileSize(binary.getSize());
+			restModel.setWidth(binary.getImageWidth());
+			restModel.setHeight(binary.getImageHeight());
+		}
+		S3BinaryMetadata metaData = getMetadata();
+		restModel.setMetadata(metaData);
+		restModel.setMimeType(getMimeType());
+		restModel.setFileSize(getFileSize());
+		restModel.setDominantColor(getImageDominantColor());
+		return restModel;
+	}
+
+	@Override
+	default void validate() {
+
+	}
 
 	/**
 	 * Return the filename of the s3binary in this field.
@@ -60,7 +106,9 @@ public interface S3HibBinaryField extends HibField, HibBasicField<S3BinaryField>
 	 *
 	 * @return
 	 */
-	boolean hasProcessableImage();
+	default boolean hasProcessableImage() {
+		return NodeUtil.isProcessableImage(getMimeType());
+	}
 
 	/**
 	 * Set the binary image dominant color.

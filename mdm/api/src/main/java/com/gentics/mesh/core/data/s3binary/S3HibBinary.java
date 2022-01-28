@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.s3binary;
 
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.s3binary.S3BinaryEventModel;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 
@@ -77,13 +78,6 @@ public interface S3HibBinary extends HibBaseElement {
 	Point getImageSize();
 
 	/**
-	 * Set the s3binary uuid.
-	 * 
-	 * @param uuid
-	 */
-	void setUuid(String uuid);
-
-	/**
 	 * Return the s3 object key
 	 *
 	 * @return s3 key or null when the information could not be determined
@@ -120,7 +114,13 @@ public interface S3HibBinary extends HibBaseElement {
 	 * @param s3ObjectKey
 	 * @return
 	 */
-	S3BinaryEventModel onDeleted(String uuid, String s3ObjectKey);
+	default S3BinaryEventModel onDeleted(String uuid, String s3ObjectKey) {
+		S3BinaryEventModel event = new S3BinaryEventModel();
+		event.setEvent(MeshEvent.S3BINARY_DELETED);
+		event.setUuid(uuid);
+		event.setS3ObjectKey(s3ObjectKey);
+		return event;
+	}
 
 	/**
 	 * Create the specific create event.
@@ -129,7 +129,13 @@ public interface S3HibBinary extends HibBaseElement {
 	 * @param s3ObjectKey
 	 * @return
 	 */
-	S3BinaryEventModel onCreated(String uuid, String s3ObjectKey);
+	default S3BinaryEventModel onCreated(String uuid, String s3ObjectKey) {
+		S3BinaryEventModel model = new S3BinaryEventModel();
+		model.setEvent(MeshEvent.S3BINARY_CREATED);
+		model.setUuid(uuid);
+		model.setS3ObjectKey(s3ObjectKey);
+		return model;
+	}
 
 	/**
 	 * Create the specific metadata extraction event.
@@ -138,5 +144,11 @@ public interface S3HibBinary extends HibBaseElement {
 	 * @param s3ObjectKey
 	 * @return
 	 */
-	S3BinaryEventModel onMetadataExtracted(String uuid, String s3ObjectKey);
+	default S3BinaryEventModel onMetadataExtracted(String uuid, String s3ObjectKey) {
+		S3BinaryEventModel model = new S3BinaryEventModel();
+		model.setEvent(MeshEvent.S3BINARY_METADATA_EXTRACTED);
+		model.setUuid(uuid);
+		model.setS3ObjectKey(s3ObjectKey);
+		return model;
+	}
 }

@@ -46,7 +46,7 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.util.NumberUtils;
 import com.twelvemonkeys.image.ResampleOp;
 

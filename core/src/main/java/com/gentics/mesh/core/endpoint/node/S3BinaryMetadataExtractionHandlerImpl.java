@@ -45,7 +45,7 @@ import com.gentics.mesh.core.s3binary.S3BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.util.NodeUtil;
 
 import io.reactivex.Observable;

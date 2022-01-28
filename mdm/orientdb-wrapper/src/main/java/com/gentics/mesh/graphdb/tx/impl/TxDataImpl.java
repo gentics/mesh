@@ -6,6 +6,8 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
@@ -58,5 +60,15 @@ public class TxDataImpl implements CommonTxData {
 	@Override
 	public ServerSchemaStorage serverSchemaStorage() {
 		return mesh().serverSchemaStorage();
+	}
+
+	@Override
+	public BinaryStorage binaryStorage() {
+		return mesh().binaryStorage();
+	}
+
+	@Override
+	public S3BinaryStorage s3BinaryStorage() {
+		return mesh().s3binaryStorage();
 	}
 }
