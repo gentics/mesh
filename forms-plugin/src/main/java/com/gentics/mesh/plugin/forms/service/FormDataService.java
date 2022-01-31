@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
@@ -80,6 +81,8 @@ public class FormDataService {
 	public final static String COOKIE_NAME_VOTED = "forms-voted";
 
 	public final static String COOKIE_VOTED_SEPARATOR = ":";
+
+	public final static String PARAM_PUBLISHED_ONLY = "publishedOnly";
 
 	private static final Logger log = LoggerFactory.getLogger(FormDataService.class);
 
@@ -195,37 +198,44 @@ public class FormDataService {
 	 */
 	public Single<String> export(String projectName, String formUuid, PluginContext context, String...lang) {
 		Exporter exporter = Exporter.create(configuration, userClient, context, formUuid, SchemaService.getSchemaName(formUuid));
+		// Export only published data nodes by default.
+		boolean publishedOnly = Optional.ofNullable(context.queryParams().get(PARAM_PUBLISHED_ONLY))
+			.map(Boolean::parseBoolean)
+			.orElse(true);
 
 		return statusService.languageFallback(projectName, lang)
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
 			.flatMap(formNode -> formService.toForm(formNode))
 			.flatMap(form -> {
 				exporter.setFieldLabels(form.getReportableFields());
-				return exporter.export(form);
+				return exporter.export(form, publishedOnly);
 			});
 	}
 
 	/**
 	 * Searches the data nodes of the specified form and sends the results to the meshClient.
 	 *
-	 * @param projectName
-	 *            project name
-	 * @param formUuid
-	 *            the UUID of the form node
-	 * @param query
-	 *            search query
-	 * @param pagingParams
-	 *            paging parameters
+	 * @param projectName project name
+	 * @param formUuid the UUID of the form node
+	 * @param query search query
+	 * @param pagingParams paging parameters
+	 * @param publishedOnly whether to include only published form data nodes
 	 * @return single search response
 	 */
-	public Single<JsonObject> find(String projectName, String formUuid, String query, JsonObject pagingParams) {
+	public Single<JsonObject> find(String projectName, String formUuid, String query, JsonObject pagingParams, boolean publishedOnly) {
 		try {
 			Single<GraphQLRequest> request = loadFormAndAssembleFindFormGraphQLRequest(projectName, formUuid, query, pagingParams);
+			VersioningParameters params = new VersioningParametersImpl();
 
-			Single<GraphQLResponse> response = request.flatMap(graphQLRequest -> {
-				return userClient.graphql(projectName, graphQLRequest, new VersioningParametersImpl().published())
-						.toSingle();
-			});
+			if (publishedOnly) {
+				params.published();
+			} else {
+				params.draft();
+			}
+
+			Single<GraphQLResponse> response = request
+				.flatMap(graphQLRequest -> userClient.graphql(projectName, graphQLRequest, params)
+				.toSingle());
 
 			return response.flatMap(graphQLResponse -> {
 				JsonObject clientResponse = new JsonObject();

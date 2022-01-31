@@ -10,6 +10,13 @@
 
 = Mesh Forms Plugin
 
+[[v1.6.18]]
+== 1.6.18 (TBD)
+
+icon:plus[] Forms: Add new query parameter `publishedOnly` to the `/forms/ID/data` and `/forms/ID/export` endpoints (must be `true` or `false`) which determines whether the returned list or export should only contain published form data nodes (i.e. completed nodes; this is the default) or draft versions as well.
+
+icon:check[] Forms: Changes the default behavior of the export so that it does _not_ contain unpublished form data (to bring it in sync with the default behavior of the data endpoint).
+
 [[v1.6.17]]
 == 1.6.17 (2022-01-10)
 

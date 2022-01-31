@@ -12,6 +12,7 @@ query ($uuid: String, $perPage: Long = 2147483647, $page: Long = 1) {
       elements {
         uuid
         created
+        version
         fields {
           ... on {{{ schemaName }}} {
           	{{{ fieldNames }}}

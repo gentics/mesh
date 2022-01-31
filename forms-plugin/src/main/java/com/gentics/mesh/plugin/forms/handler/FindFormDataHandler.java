@@ -9,6 +9,8 @@ import com.gentics.mesh.plugin.forms.service.PagingService;
 
 import io.reactivex.Completable;
 
+import java.util.Optional;
+
 @Singleton
 public class FindFormDataHandler extends AbstractFormsHandler {
 	private final PagingService pagingService;
@@ -26,11 +28,17 @@ public class FindFormDataHandler extends AbstractFormsHandler {
 		String projectName = context.project().getString("name");
 		String formUuid = context.pathParam("formUuid");
 		String query = context.request().getParam("q");
+		// Return only published form data nodes by default.
+		boolean publishedOnly = Optional.ofNullable(context.queryParams().get(FormDataService.PARAM_PUBLISHED_ONLY))
+			.map(Boolean::parseBoolean)
+			.orElse(true);
 
-		return formDataService.find(projectName, formUuid, query, pagingService.extractPagingParams(context)).doOnEvent((response, t) -> {
-			if (response != null) {
-				context.response().end(response.encodePrettily());
-			}
-		}).ignoreElement();
+		return formDataService.find(projectName, formUuid, query, pagingService.extractPagingParams(context), publishedOnly)
+			.doOnEvent((response, t) -> {
+				if (response != null) {
+					context.response().end(response.encodePrettily());
+				}
+			})
+			.ignoreElement();
 	}
 }

@@ -1,18 +1,10 @@
 package com.gentics.mesh.plugin.forms.export;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
-
 import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
@@ -21,12 +13,20 @@ import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
-
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract base class for exporting submitted form generator data.
@@ -172,11 +172,11 @@ public abstract class Exporter {
 	 * This method will build the respective GraphQL query and pass the result to {@link #internalExport} which is responsible for creating a response in the
 	 * desired export format.
 	 *
-	 * @param form
-	 *            The form to export
+	 * @param form The form to export
+	 * @param publishedOnly Whether to export only published (i.e. completed) forms or all form data
 	 * @return single export
 	 */
-	public Single<String> export(Form form) {
+	public Single<String> export(Form form, boolean publishedOnly) {
 		Map<String, String> renderCtx = new HashMap<>();
 
 		renderCtx.put("schemaName", schemaName);
@@ -201,9 +201,16 @@ public abstract class Exporter {
 		GraphQLRequest request = new GraphQLRequest()
 			.setQuery(query)
 			.setVariables(new JsonObject().put("uuid", uuid).put("perPage", Integer.MAX_VALUE).put("page", 1));
+		VersioningParameters params = new VersioningParametersImpl();
+
+		if (publishedOnly) {
+			params.published();
+		} else {
+			params.draft();
+		}
 
 		return adminClient
-			.graphql(context.project().getString("name"), request)
+			.graphql(context.project().getString("name"), request, params)
 			.toSingle()
 			.flatMap(graphQlResponse -> internalExport(graphQlResponse));
 	}
@@ -223,7 +230,7 @@ public abstract class Exporter {
 	 *
 	 * @param configuration configuration
 	 * @param adminClient mesh rest client
-	 * @param rc
+	 * @param context
 	 *            The routing context of the export request
 	 * @param uuid
 	 *            The UUID of the form to be exported

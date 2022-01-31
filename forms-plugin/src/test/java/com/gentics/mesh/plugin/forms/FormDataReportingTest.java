@@ -73,7 +73,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testExport() throws IOException {
-		doExportTest(false);
+		doExportTest(false, false);
 	}
 
 	/**
@@ -82,7 +82,25 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testExportReversed() throws IOException {
-		doExportTest(true);
+		doExportTest(true, false);
+	}
+
+	/**
+	 * Test exporting data including non-completed form data.
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportIncludeDraftReversed() throws IOException {
+		doExportTest(true, true);
+	}
+
+	/**
+	 * Test exporting data including non-completed form data.
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportIncludeDraft() throws IOException {
+		doExportTest(false, true);
 	}
 
 	/**
@@ -90,7 +108,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	 * @param reversed true to execute for form with fields in reversed order
 	 * @throws IOException
 	 */
-	protected void doExportTest(boolean reversed) throws IOException {
+	protected void doExportTest(boolean reversed, boolean includeDraft) throws IOException {
 		String uuid = createForm(reversed ? "threefields_reversed.json" : "threefields.json");
 
 		// we collect the expected records (including the header) here as Set, because the actual order in
@@ -103,6 +121,8 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		}
 		records.add(StringUtils.join(headers, ","));
 
+		String postUrl = projectUrl("/forms/" + uuid + "/data");
+
 		for (String value : Arrays.asList("one", "two", "three")) {
 			String value1 = value + " in field 1";
 			String value2 = value + " in field 2";
@@ -113,7 +133,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					.addFormDataPart("input2", value2)
 					.addFormDataPart("input3", value3)
 					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			Request postRequest = new Request.Builder().url(postUrl).post(requestBody).build();
 			client().newCall(postRequest).execute();
 
 			// add the line to the set of expected records
@@ -124,12 +144,45 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			records.add(StringUtils.join(values, ","));
 		}
 
+		// Add a non-complete record.
+		List<String> values = new ArrayList<>(3);
+		MultipartBody.Builder requestBodyBuilder = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM);
+
+		for (int ii = 1; ii <= 3; ii++) {
+			String value = "unpublished in field" + ii;
+
+			requestBodyBuilder.addFormDataPart("input" + ii, value);
+			values.add(value);
+		}
+
+		if (includeDraft) {
+			if (reversed) {
+				Collections.reverse(values);
+			}
+
+			records.add(StringUtils.join(values, ","));
+		}
+
+		Request postRequest = new Request.Builder()
+			.url(postUrl + "?publish=false")
+			.post(requestBodyBuilder.build())
+			.build();
+
+		client().newCall(postRequest).execute();
+
 		if (!online) {
 			setFormOffline(uuid, "en", true, true);
 		}
 
+		StringBuilder exportUrl = new StringBuilder(projectUrl("/forms/" + uuid + "/export"));
+
+		if (includeDraft) {
+			exportUrl.append("?publishedOnly=false");
+		}
+
 		Request exportRequest = new Request.Builder()
-				.url(projectUrl("/forms/" + uuid + "/export"))
+				.url(exportUrl.toString())
 				.headers(auth(permission))
 				.get()
 				.build();
@@ -212,7 +265,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			assertForbidden(exportResponse);
 		}
 	}
-	
+
 	/**
 	 * Test exporting data with a custom title row header delimiter
 	 * @throws IOException
