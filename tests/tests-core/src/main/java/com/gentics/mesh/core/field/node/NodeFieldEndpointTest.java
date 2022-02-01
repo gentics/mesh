@@ -370,19 +370,22 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
-		try (Tx tx = tx()) {
+		HibNode node = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			RoleDao roleDao = tx.roleDao();
 			// Revoke the permission to the referenced node
 			HibNode referencedNode = folder("news");
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
 
-			HibNode node = folder("2015");
+			HibNode node1 = folder("2015");
 
 			// Create test field
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node1, english());
 			container.createNode(FIELD_NAME, referencedNode);
 
+			return node1;
+		});
+		try (Tx tx = tx()) {
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
 				new VersioningParametersImpl().draft()));
 

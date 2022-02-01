@@ -22,7 +22,7 @@ public class TagListResponseAssert extends AbstractAssert<TagListResponseAssert,
 	 */
 	public void containsExactly(String... tagNames) {
 		List<String> tags = actual.getData().stream().map(t -> t.getName()).collect(Collectors.toList());
-		assertThat(tags).containsExactly(tagNames);
+		assertThat(tags).containsExactlyInAnyOrder(tagNames);
 	}
 
 }
