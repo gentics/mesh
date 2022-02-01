@@ -67,6 +67,10 @@ public interface BaseHelper {
 		return data().getProject();
 	}
 
+	default HibProject reloadProject() {
+		return data().reloadProject();
+	}
+
 	default Database db() {
 		return mesh().database();
 	}

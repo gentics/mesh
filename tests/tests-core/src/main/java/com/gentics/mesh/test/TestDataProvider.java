@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -260,8 +261,6 @@ public class TestDataProvider {
 	private void addContents() {
 		TagDao tagDao = Tx.get().tagDao();
 
-		HibSchema contentSchema = schemaContainers.get("content");
-
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
 
@@ -295,7 +294,6 @@ public class TestDataProvider {
 
 	private void addFolderStructure() {
 		TagDao tagDao = Tx.get().tagDao();
-		NodeDao nodeDao = Tx.get().nodeDao();
 
 		HibNode baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
@@ -682,6 +680,11 @@ public class TestDataProvider {
 	}
 
 	public HibProject getProject() {
+		return project;
+	}
+
+	public HibProject reloadProject() {
+		project = CommonTx.get().load(project.getId(), project.getClass());
 		return project;
 	}
 
