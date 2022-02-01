@@ -90,26 +90,26 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
             HibNodeFieldContainer container = CoreTestUtils.createContainer();
             S3HibBinary s3binary = tx.s3binaries().create(UUID.randomUUID().toString(), "1234/s3", "img.jpg").runInExistingTx(tx);
             S3HibBinaryField field = container.createS3Binary(S3_BINARY_FIELD, s3binary);
-            field.getS3Binary().setSize(Long.valueOf(220));
+            field.getBinary().setSize(220);
             assertNotNull(field);
             assertEquals(S3_BINARY_FIELD, field.getFieldKey());
 
             field.setFileName("blume.jpg");
             field.setMimeType("image/jpg");
             field.setImageDominantColor("#22A7F0");
-            field.getS3Binary().setImageHeight(133);
-            field.getS3Binary().setImageWidth(7);
+            field.getBinary().setImageHeight(133);
+            field.getBinary().setImageWidth(7);
 
             S3HibBinaryField loadedField = container.getS3Binary(S3_BINARY_FIELD);
-            S3HibBinary loadedS3Binary = loadedField.getS3Binary();
+            S3HibBinary loadedS3Binary = loadedField.getBinary();
             assertNotNull("The previously created field could not be found.", loadedField);
-            assertEquals(220, loadedS3Binary.getSize().intValue());
+            assertEquals(220, loadedS3Binary.getSize());
 
             assertEquals("blume.jpg", loadedField.getFileName());
             assertEquals("image/jpg", loadedField.getMimeType());
             assertEquals("#22A7F0", loadedField.getImageDominantColor());
-            assertEquals(133, loadedField.getS3Binary().getImageHeight().intValue());
-            assertEquals(7, loadedField.getS3Binary().getImageWidth().intValue());
+            assertEquals(133, loadedField.getBinary().getImageHeight().intValue());
+            assertEquals(7, loadedField.getBinary().getImageWidth().intValue());
         }
     }
 
@@ -121,22 +121,22 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
 
             S3HibBinary s3binary = tx.s3binaries().create(UUID.randomUUID().toString(),"1234/s3","img.jg").runInExistingTx(tx);
             S3HibBinaryField field = container.createS3Binary("s3", s3binary);
-            field.getS3Binary().setSize(Long.valueOf(220));
+            field.getBinary().setSize(220);
             assertNotNull(field);
             assertEquals("s3", field.getFieldKey());
 
             field.setFileName("blume.jpg");
             field.setMimeType("image/jpg");
             field.setImageDominantColor("#22A7F0");
-            field.getS3Binary().setImageHeight(133);
-            field.getS3Binary().setImageWidth(7);
+            field.getBinary().setImageHeight(133);
+            field.getBinary().setImageWidth(7);
 
             HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
             field.cloneTo(otherContainer);
 
             S3HibBinaryField clonedField = otherContainer.getS3Binary("s3");
             assertThat(clonedField).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(field, "outV", "id", "uuid", "element", "contentUuid", "dbUuid");
-            assertThat(clonedField.getS3Binary()).as("referenced binary of cloned field").isNotNull().isEqualToComparingFieldByField(field.getS3Binary());
+            assertThat(clonedField.getBinary()).as("referenced binary of cloned field").isNotNull().isEqualToComparingFieldByField(field.getBinary());
         }
     }
 

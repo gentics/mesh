@@ -155,7 +155,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .s3binaryUuid
 		type.field(newFieldDefinition().name("s3binaryUuid").description("UUID of the s3 binary data.").type(GraphQLString).dataFetcher(fetcher -> {
 			S3HibBinaryField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3HibBinary s3Binary = field.getBinary();
 			return s3Binary == null ? 0 : s3Binary.getUuid();
 		}));
 
@@ -165,21 +165,21 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .width
 		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			S3HibBinaryField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3HibBinary s3Binary = field.getBinary();
 			return s3Binary == null ? 0 : s3Binary.getImageWidth();
 		}));
 
 		// .height
 		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			S3HibBinaryField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3HibBinary s3Binary = field.getBinary();
 			return s3Binary == null ? 0 : s3Binary.getImageHeight();
 		}));
 
 		// .fileSize
 		type.field(newFieldDefinition().name("fileSize").description("Size of the s3 binary data in bytes").type(GraphQLLong).dataFetcher(fetcher -> {
 			S3HibBinaryField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3HibBinary s3Binary = field.getBinary();
 			return s3Binary.getSize();
 		}));
 

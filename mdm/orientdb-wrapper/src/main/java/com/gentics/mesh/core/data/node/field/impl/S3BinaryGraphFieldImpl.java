@@ -76,7 +76,7 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	 */
 	@Override
 	public void removeField(BulkActionContext bac, HibFieldContainer container) {
-		S3Binary graphBinary = toGraph(getS3Binary());
+		S3Binary graphBinary = toGraph(getBinary());
 		remove();
 		// Only get rid of the binary as well if no other fields are using the binary.
 		if (!graphBinary.findFields().hasNext()) {
@@ -87,7 +87,7 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	@Override
 	public GraphField cloneTo(HibFieldContainer container) {
 		GraphFieldContainer graphContainer = toGraph(container);
-		S3BinaryGraphFieldImpl field = graphContainer.getGraph().addFramedEdge(graphContainer, toGraph(getS3Binary()), HAS_FIELD, S3BinaryGraphFieldImpl.class);
+		S3BinaryGraphFieldImpl field = graphContainer.getGraph().addFramedEdge(graphContainer, toGraph(getBinary()), HAS_FIELD, S3BinaryGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
 
 		// Clone all properties except the uuid and the type.
@@ -107,7 +107,7 @@ public class S3BinaryGraphFieldImpl extends MeshEdgeImpl implements S3BinaryGrap
 	}
 
 	@Override
-	public S3HibBinary getS3Binary() {
+	public S3HibBinary getBinary() {
 		return inV().nextOrDefaultExplicit(S3BinaryImpl.class, null);
 	}
 

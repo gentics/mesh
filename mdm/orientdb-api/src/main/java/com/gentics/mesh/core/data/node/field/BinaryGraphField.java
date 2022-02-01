@@ -136,9 +136,10 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * 
 	 * @param point
 	 */
-	default void setImageFocalPoint(FocalPoint point) {
+	default BinaryGraphField setImageFocalPoint(FocalPoint point) {
 		property(BINARY_IMAGE_FOCAL_POINT_X, point.getX());
 		property(BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
+		return this;
 	}
 
 	/**

@@ -104,7 +104,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				return null;
 			} else if (field instanceof S3HibBinaryField) {
 				S3HibBinaryField s3binaryField = (S3HibBinaryField) field;
-				String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+				String s3ObjectKey = s3binaryField.getBinary().getS3ObjectKey();
 				//String version = s3binaryField.getElementVersion();
 
 				// Check the etag

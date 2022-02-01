@@ -776,7 +776,7 @@ public class RestUpdaters {
 		// Handle Update - Focal point
 		FocalPoint newFocalPoint = s3binaryField.getFocalPoint();
 		if (newFocalPoint != null) {
-			S3HibBinary binary = graphS3BinaryField.getS3Binary();
+			S3HibBinary binary = graphS3BinaryField.getBinary();
 			Point imageSize = binary.getImageSize();
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {

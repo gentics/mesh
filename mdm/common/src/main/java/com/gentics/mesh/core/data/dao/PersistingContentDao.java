@@ -172,7 +172,7 @@ public interface PersistingContentDao extends ContentDao {
 							+ "}");
 				}
 			} else {
-				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
+				String s3binaryFilename = s3Binary.getBinary().getFileName();
 				if (segment.equals(s3binaryFilename)) {
 					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
 				}
@@ -756,7 +756,7 @@ public interface PersistingContentDao extends ContentDao {
 			case S3BINARY:
 				S3HibBinaryField s3binaryField = content.getS3Binary(segmentFieldKey);
 				if (nonNull(s3binaryField)) {
-					return s3binaryField.getS3Binary().getFileName();
+					return s3binaryField.getBinary().getFileName();
 				}
 				break;
 			default:

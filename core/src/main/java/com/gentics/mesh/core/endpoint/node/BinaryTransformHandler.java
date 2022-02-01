@@ -212,7 +212,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (!parameters.hasFocalPoint() && focalPoint != null) {
 				parameters.setFocalPoint(focalPoint);
 			}
-			return field.getS3Binary();
+			return field.getBinary();
 		});
 
 		parameters.validate();
@@ -389,7 +389,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 				oldField.copyTo(field);
 				tx.<CommonTx>unwrap().contentDao().deleteField(oldField);
 			}
-			S3HibBinary currentS3Binary = field.getS3Binary();
+			S3HibBinary currentS3Binary = field.getBinary();
 
 			// TODO should we rename the image, if the extension is wrong?
 			if (nonNull(result)) {

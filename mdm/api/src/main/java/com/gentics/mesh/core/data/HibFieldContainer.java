@@ -118,11 +118,31 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	}
 
 	/**
+	 * Remove the field from container.
+	 * 
+	 * @param fieldKey
+	 */
+	void removeField(String fieldKey, BulkActionContext bac);
+
+	/**
+	 * Remove the field with the given key and use a dummy bulk action context.
+	 * 
+	 * @param fieldKey
+	 */
+	default void removeField(String fieldKey) {
+		removeField(fieldKey, new DummyBulkActionContext());
+	}
+
+	/**
 	 * Remove the field.
 	 * 
-	 * @param field
+	 * @param fieldKey
 	 */
-	void removeField(HibField field);
+	default void removeField(HibField field) {
+		if (field != null) {
+			removeField(field.getFieldKey());
+		}
+	}
 
 	/**
 	 * Get the schema container version used by this container

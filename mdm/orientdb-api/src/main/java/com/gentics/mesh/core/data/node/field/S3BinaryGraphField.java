@@ -112,14 +112,11 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 		return new FocalPoint(x, y);
 	}
 
-	/**
-	 * Set the image focal point.
-	 * 
-	 * @param point
-	 */
-	default void setImageFocalPoint(FocalPoint point) {
+	@Override
+	default S3BinaryGraphField setImageFocalPoint(FocalPoint point) {
 		property(S3_BINARY_IMAGE_FOCAL_POINT_X, point.getX());
 		property(S3_BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
+		return this;
 	}
 
 	/**

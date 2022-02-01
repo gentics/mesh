@@ -76,10 +76,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	abstract protected HibNode getNode();
 
 	@Override
-	public void removeField(HibField field) {
-		if (field != null) {
-			toGraph(getField(field.getFieldKey())).removeField(new DummyBulkActionContext(), this);
-		}
+	public void removeField(String fieldKey, BulkActionContext bac) {
+		toGraph(getField(fieldKey)).removeField(bac, this);
 	}
 
 	@Override
