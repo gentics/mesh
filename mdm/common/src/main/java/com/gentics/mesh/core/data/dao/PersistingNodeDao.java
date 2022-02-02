@@ -1593,6 +1593,24 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return create(parentNode, creator, schemaVersion, project, project.getLatestBranch(), null);
 	}
 
+	/**
+	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
+	 */
+	@Override
+	default HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
+		if (!parentNode.isBaseNode() && !CommonTx.get().nodeDao().isVisibleInBranch(parentNode, branch.getUuid())) {
+			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
+				branch.getName(), parentNode.getUuid()));
+			throw error(NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
+		}
+
+		HibNode node = create(creator, schemaVersion, project, uuid);
+		node.setParentNode(branch.getUuid(), parentNode);
+		node.setSchemaContainer(schemaVersion.getSchemaContainer());
+		// setCreated(creator);
+		return node;
+	}
+
 	@Override
 	default void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch) {
 
@@ -1782,5 +1800,23 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			event.setSchema(schema.transformToReference());
 		}
 		return event;
+	}
+
+	@Override
+	default HibNode create(HibProject project, HibUser user, HibSchemaVersion version) {
+		return create(user, version, project, null);
+	}
+
+	private HibNode create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {
+		// TODO check whether the mesh node is in fact a folder node.
+		HibNode node = createPersisted(project, uuid);
+		node.setSchemaContainer(version.getSchemaContainer());
+
+		// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
+		node.setCreator(creator);
+		node.setCreationTimestamp();
+		node.generateBucketId();
+
+		return node;
 	}
 }

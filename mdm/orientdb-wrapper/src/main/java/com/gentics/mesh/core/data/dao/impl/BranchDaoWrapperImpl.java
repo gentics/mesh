@@ -220,4 +220,11 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	public HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibBranch branch, HibMicroschemaVersion microschemaVersion) {
 		return toGraph(branch).findBranchMicroschemaEdge(microschemaVersion);
 	}
+
+	@Override
+	public HibBranch createPersisted(HibProject root, String uuid) {
+		HibBranch branch = super.createPersisted(root, uuid);
+		branch.setProject(root);
+		return branch;
+	}
 }

@@ -107,7 +107,6 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		branch.setName(name);
 		branch.setActive(true);
 		branch.setMigrated(false);
-		branch.setProject(project);
 
 		if (baseBranch == null) {
 			// if this is the first branch, make it the initial branch

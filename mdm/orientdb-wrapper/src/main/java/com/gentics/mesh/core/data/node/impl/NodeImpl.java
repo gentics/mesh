@@ -16,13 +16,11 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.field.FieldType.STRING_SET;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Iterator;
 import java.util.List;
@@ -64,12 +62,10 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -290,24 +286,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setProject(HibProject project) {
 		property(PROJECT_KEY_PROPERTY, project.getUuid());
-	}
-
-	/**
-	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
-	 */
-	@Override
-	public HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
-		if (!isBaseNode() && !CommonTx.get().nodeDao().isVisibleInBranch(this, branch.getUuid())) {
-			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
-				branch.getName(), getUuid()));
-			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
-		}
-
-		Node node = toGraph(project).getNodeRoot().create(creator, schemaVersion, project, uuid);
-		node.setParentNode(branch.getUuid(), this);
-		node.setSchemaContainer(schemaVersion.getSchemaContainer());
-		// setCreated(creator);
-		return node;
 	}
 
 	@Override

@@ -15,8 +15,6 @@ import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -128,18 +126,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 */
 	Page<HibNode> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingParameter);
-
-	/**
-	 * Create a child node in this node in the given branch
-	 *
-	 * @param creator
-	 * @param schemaVersion
-	 * @param project
-	 * @param branch
-	 * @param uuid
-	 * @return
-	 */
-	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
 	
 	/**
 	 * Return the draft field container for the given language in the latest branch.

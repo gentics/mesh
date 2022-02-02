@@ -14,7 +14,6 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -24,8 +23,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
@@ -76,16 +73,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public long count(HibProject project) {
 		return toGraph(project).getNodeRoot().computeCount();
-	}
-
-	@Override
-	public HibNode create(HibProject project, HibUser user, HibSchemaVersion version) {
-		return toGraph(project).getNodeRoot().create(user, version, project);
-	}
-
-	@Override
-	public HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
-		return toGraph(parentNode).create(creator, schemaVersion, project, branch, uuid);
 	}
 
 	@Override
@@ -204,5 +191,15 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public Stream<HibNodeField> getInboundReferences(HibNode node) {
 		return toGraph(node).getInboundReferences();
+	}
+
+	@Override
+	public HibNode createPersisted(HibProject root, String uuid) {
+		HibNode node = toGraph(root).getNodeRoot().create();
+		if (uuid != null) {
+			node.setUuid(uuid);
+		}
+		node.setProject(root);
+		return node;
 	}
 }
