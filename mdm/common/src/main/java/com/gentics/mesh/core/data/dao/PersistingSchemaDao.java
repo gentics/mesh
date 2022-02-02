@@ -282,13 +282,22 @@ public interface PersistingSchemaDao
 		ProjectDao projectDao = Tx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
-		batch.add(projectDao.onSchemaAssignEvent(project, schemaContainer, ASSIGNED));
-		addItem(project, schemaContainer);
-
-		// assign the latest schema version to all branches of the project
-		for (HibBranch branch : branchDao.findAll(project)) {
-			branchDao.assignSchemaVersion(branch, user, schemaContainer.getLatestVersion(), batch);
-		}
+		branchDao.findAll(project).stream()
+			.filter(branch -> branch.contains(schemaContainer))
+			.findAny()
+			.ifPresentOrElse(existing -> {
+				throw error(BAD_REQUEST, "schema_conflicting_name", existing.getUuid(),
+						CREATE_PERM.getRestPerm().getName());
+			}, () -> {
+				// Adding new schema
+				batch.add(projectDao.onSchemaAssignEvent(project, schemaContainer, ASSIGNED));
+				addItem(project, schemaContainer);
+	
+				// Assign the latest schema version to all branches of the project
+				for (HibBranch branch : branchDao.findAll(project)) {
+					branchDao.assignSchemaVersion(branch, user, schemaContainer.getLatestVersion(), batch);
+				}
+			});
 	}
 
 	@Override

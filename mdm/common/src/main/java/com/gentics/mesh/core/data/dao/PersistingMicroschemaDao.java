@@ -108,13 +108,22 @@ public interface PersistingMicroschemaDao
 		PersistingProjectDao projectDao = CommonTx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
-		batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
-		addItem(project, microschemaContainer);
+		branchDao.findAll(project).stream()
+				.filter(branch -> branch.contains(microschemaContainer))
+				.findAny()
+				.ifPresentOrElse(existing -> {
+					throw error(BAD_REQUEST, "microschema_conflicting_name", existing.getUuid(),
+							CREATE_PERM.getRestPerm().getName());
+				}, () -> {
+					// Adding new microschema
+					batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
+					addItem(project, microschemaContainer);
 
-		// assign the latest microschema version to all branches of the project
-		for (HibBranch branch : branchDao.findAll(project)) {
-			branchDao.assignMicroschemaVersion(branch, user, microschemaContainer.getLatestVersion(), batch);
-		}
+					// Assign the latest microschema version to all branches of the project
+					for (HibBranch branch : branchDao.findAll(project)) {
+						branchDao.assignMicroschemaVersion(branch, user, microschemaContainer.getLatestVersion(), batch);
+					}
+				});
 	}
 
 	/**

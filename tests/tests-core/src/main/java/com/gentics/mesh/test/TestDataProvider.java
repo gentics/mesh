@@ -395,7 +395,7 @@ public class TestDataProvider {
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
 			getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();
-		schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch);
+		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
 		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
 		schemaDao.assign(getSchemaContainer("binary_content"), project, jobUser, batch);
 		projectUuid = project.getUuid();

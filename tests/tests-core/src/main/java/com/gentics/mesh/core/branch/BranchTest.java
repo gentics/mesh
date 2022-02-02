@@ -457,6 +457,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			microschemaDao.unassign(microschema, project, createBatch());
 
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
+				branch = tx.<CommonTx>unwrap().load(branch.getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschema)
 					.hasNotMicroschemaVersion(microschema.getLatestVersion());
 			}
