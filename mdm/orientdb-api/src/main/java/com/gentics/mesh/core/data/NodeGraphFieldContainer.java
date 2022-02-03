@@ -150,5 +150,5 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	 * Return a result of all the edges of this container
 	 * @return
 	 */
-	Result<? extends HibNodeFieldContainerEdge> getEdges();
+	Result<? extends GraphFieldContainerEdge> getEdges();
 }

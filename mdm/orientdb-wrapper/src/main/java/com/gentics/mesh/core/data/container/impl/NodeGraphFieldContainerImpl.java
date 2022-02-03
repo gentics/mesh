@@ -425,7 +425,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Result<? extends HibNodeFieldContainerEdge> getEdges() {
+	public Result<? extends GraphFieldContainerEdge> getEdges() {
 		return inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
 	}
 }

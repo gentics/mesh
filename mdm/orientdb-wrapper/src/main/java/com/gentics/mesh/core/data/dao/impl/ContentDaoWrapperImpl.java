@@ -80,11 +80,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Result<? extends HibNodeFieldContainerEdge> getEdges(HibNodeFieldContainer content) {
-		return toGraph(content).getEdges();
-	}
-
-	@Override
 	public void delete(HibNodeFieldContainer content, BulkActionContext bac) {
 		toGraph(content).delete(bac);
 	}
@@ -294,7 +289,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public Stream<? extends GraphFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container) {
-		return toGraph(container).inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class).stream();
+		return toGraph(container).getEdges().stream();
 	}
 
 	@Override
