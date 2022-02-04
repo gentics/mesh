@@ -186,10 +186,11 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			NodeDao nodeDao = tx.nodeDao();
-			for (HibNode node : schemaDao.getNodes(getSchemaContainer())) {
+			HibSchema schema = tx.schemaDao().findByUuid(uuid);
+			for (HibNode node : schemaDao.getNodes(schema)) {
 				nodeDao.delete(node, context, false, true);
 			}
-			schemaDao.delete(getSchemaContainer(), context);
+			schemaDao.delete(schema, context);
 			assertNull("The schema should have been deleted", tx.schemaDao().findByUuid(uuid));
 		}
 	}

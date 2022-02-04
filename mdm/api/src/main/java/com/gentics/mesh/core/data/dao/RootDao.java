@@ -295,10 +295,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return
 	 */
 	default boolean contains(R root, L element) {
-		if (findByUuid(root, element.getUuid()) == null) {
-			return false;
-		} else {
-			return true;
-		}
+		return findByUuid(root, element.getUuid()) != null;
 	}
 }

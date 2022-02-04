@@ -607,7 +607,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			throw error(BAD_REQUEST, "node_move_error_same_nodes");
 		}
 
-		sourceNode.setParentNode(branchUuid, targetNode);
+		setParentNode(sourceNode, branchUuid, targetNode);
 
 		// Update published graph field containers
 		contentDao.getFieldContainers(sourceNode, branchUuid, PUBLISHED).stream().forEach(container -> {
