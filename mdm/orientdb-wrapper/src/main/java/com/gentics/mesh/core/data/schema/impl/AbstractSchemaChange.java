@@ -99,21 +99,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public JsonObject getIndexOptions() {
-		Object obj = getRestProperty(ELASTICSEARCH_KEY);
-		if (obj != null) {
-			if (obj instanceof String) {
-				return new JsonObject((String) obj);
-			} else if (obj instanceof JsonObject) {
-				return (JsonObject) obj;
-			} else {
-				throw error(INTERNAL_SERVER_ERROR, "Type was not expected {" + obj.getClass().getName() + "}");
-			}
-		}
-		return null;
-	}
-
-	@Override
 	public void setIndexOptions(JsonObject options) {
 		setRestProperty(ELASTICSEARCH_KEY, options.encode());
 	}
