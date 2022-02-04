@@ -416,20 +416,6 @@ public class HandlerUtilities {
 	}
 
 	/**
-	 * Invoke an event action.
-	 * 
-	 * @param function
-	 */
-	public void eventAction(Consumer<EventQueueBatch> function) {
-		EventQueueBatch b = database.tx(tx -> {
-			EventQueueBatch batch = queueProvider.get();
-			function.accept(batch);
-			return batch;
-		});
-		b.dispatch();
-	}
-
-	/**
 	 * Invoke an event action which returns a result.
 	 *
 	 * @param function
