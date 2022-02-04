@@ -48,24 +48,6 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 		return getActive();
 	}
 
-	//
-	// /**
-	// * Mark the transaction as succeeded. The autoclosable will invoke a commit when completing.
-	// */
-	// void success();
-	//
-	// /**
-	// * Mark the transaction as failed. The autoclosable will invoke a rollback when completing.
-	// */
-	// void failure();
-	//
-	//
-	// /**
-	// * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
-	// */
-	// @Override
-	// void close();
-
 	/**
 	 * Return the latest branch of the project.
 	 *

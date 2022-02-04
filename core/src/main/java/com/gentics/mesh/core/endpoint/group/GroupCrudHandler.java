@@ -73,7 +73,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(roleUuid, "roleUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				GroupDao groupDao = tx.groupDao();
 				RoleDao roleDao = tx.roleDao();
 
@@ -85,12 +85,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 						log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
 					}
 				} else {
-					utils.eventAction(batch -> {
-						groupDao.addRole(group, role);
-						group.setEditor(ac.getUser());
-						group.setLastEditedTimestamp();
-						batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
-					});
+					groupDao.addRole(group, role);
+					group.setEditor(ac.getUser());
+					group.setLastEditedTimestamp();
+					batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
 				}
 				return groupDao.transformToRestSync(group, ac, 0);
 			}, model -> ac.send(model, OK));
@@ -112,7 +110,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(groupUuid, "groupUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				GroupDao groupDao = tx.groupDao();
 				RoleDao roleDao = tx.roleDao();
 
@@ -124,14 +122,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 					return;
 				}
 
-				utils.eventAction(batch -> {
-					groupDao.removeRole(group, role);
-					group.setEditor(ac.getUser());
-					group.setLastEditedTimestamp();
-					batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
-					return batch;
-				});
-
+				groupDao.removeRole(group, role);
+				group.setEditor(ac.getUser());
+				group.setLastEditedTimestamp();
+				batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
 			}, () -> ac.send(NO_CONTENT));
 		}
 	}
@@ -170,7 +164,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(userUuid, "userUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				GroupDao groupDao = tx.groupDao();
 				UserDao userDao = tx.userDao();
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
@@ -178,10 +172,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 
 				// Only add the user if it is not yet assigned
 				if (!groupDao.hasUser(group, user)) {
-					utils.eventAction(batch -> {
-						groupDao.addUser(group, user);
-						batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
-					});
+					groupDao.addUser(group, user);
+					batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
 				}
 				return groupDao.transformToRestSync(group, ac, 0);
 			}, model -> ac.send(model, OK));
@@ -202,7 +194,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(userUuid, "userUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				GroupDao groupDao = tx.groupDao();
 				UserDao userDao = tx.userDao();
 
@@ -214,10 +206,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 					return;
 				}
 
-				utils.eventAction(batch -> {
-					groupDao.removeUser(group, user);
-					batch.add(groupDao.createUserAssignmentEvent(group, user, UNASSIGNED));
-				});
+				groupDao.removeUser(group, user);
+				batch.add(groupDao.createUserAssignmentEvent(group, user, UNASSIGNED));
 			}, () -> ac.send(NO_CONTENT));
 		}
 	}

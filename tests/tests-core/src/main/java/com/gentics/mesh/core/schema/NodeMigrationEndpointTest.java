@@ -10,7 +10,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -178,6 +177,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		try (Tx tx = tx()) {
+			assignment1 = CommonTx.get().load(assignment1.getId(), assignment1.getClass());
+			assignment2 = CommonTx.get().load(assignment2.getId(), assignment2.getClass());
 			assertNotNull(assignment2.getJobUuid());
 			assertEquals(COMPLETED, assignment2.getMigrationStatus());
 			assertTrue("The assignment should be active.", assignment2.isActive());
@@ -247,6 +248,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
+			edge3 = CommonTx.get().load(edge3.getId(), edge3.getClass());
 			PersistingSchemaDao schemaDao = tx.<CommonTx>unwrap().schemaDao();
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(COMPLETED, edge3.getMigrationStatus());
@@ -1340,6 +1342,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
+		versionB.setPreviousVersion(versionA);
 		schemaDao.mergeIntoPersisted(container);
 		return container;
 	}

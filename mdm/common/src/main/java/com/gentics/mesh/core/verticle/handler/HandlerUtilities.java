@@ -29,10 +29,12 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.TxEventAction;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
 import com.gentics.mesh.core.db.TxAction2;
+import com.gentics.mesh.core.db.TxEventAction0;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -183,7 +185,7 @@ public class HandlerUtilities {
 		String uuid, DAOActions<T, RM> actions) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
-			syncTx(ac, tx -> {
+			syncTx(ac, (batch, tx) -> {
 				// 1. Load the element from the root element using the given uuid (if not null)
 				T element = null;
 				if (uuid != null) {
@@ -200,16 +202,12 @@ public class HandlerUtilities {
 				// Check whether we need to update a found element or whether we need to create a new one.
 				if (element != null) {
 					final T updateElement = element;
-					eventAction(batch -> {
-						return actions.update(tx, updateElement, ac, batch);
-					});
+					actions.update(tx, updateElement, ac, batch);
 					RM model = actions.transformToRestSync(tx, updateElement, ac, 0);
 					return model;
 				} else {
-					T createdElement = eventAction(batch -> {
-						created.set(true);
-						return actions.create(tx, ac, batch, uuid);
-					});
+					created.set(true);
+					T createdElement =  actions.create(tx, ac, batch, uuid);
 					RM model = actions.transformToRestSync(tx, createdElement, ac, 0);
 					String path = actions.getAPIPath(tx, ac, createdElement);
 					ac.setLocation(path);
@@ -334,13 +332,54 @@ public class HandlerUtilities {
 	}
 
 	/**
+	 * Perform a transaction-demarcated action, dispatch any event actions and return the result via the provided
+	 * action
+	 * @param ac
+	 * @param handler
+	 * @param action
+	 * @param <RM>
+	 */
+	public <RM> void syncTx(InternalActionContext ac, TxEventAction<RM> handler, Consumer<RM> action) {
+		try {
+			Tuple<EventQueueBatch, RM> tuple = database.tx((tx) -> {
+				EventQueueBatch eventQueueBatch = queueProvider.get();
+				return Tuple.tuple(eventQueueBatch, handler.handle(eventQueueBatch, tx));
+			});
+			tuple.v1().dispatch();
+			action.accept(tuple.v2());
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
+	}
+
+	/**
+	 * Perform a transaction-demarcated action, dispatch any event actions and finally run the provided action.
+	 * @param ac
+	 * @param handler
+	 * @param action
+	 */
+	public void syncTx(InternalActionContext ac, TxEventAction0 handler, Runnable action) {
+		try {
+			EventQueueBatch batch = database.tx((tx) -> {
+				EventQueueBatch eventQueueBatch = queueProvider.get();
+				handler.handle(eventQueueBatch, tx);
+				return eventQueueBatch;
+			});
+			batch.dispatch();
+			action.run();
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
+	}
+
+	/**
 	 * Invoke sync action in a tx.
 	 * 
 	 * @param ac
 	 * @param handler
 	 * @param action
 	 */
-	public <RM extends RestModel> void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
+	public void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
 		try {
 			database.tx(handler);
 			action.run();
@@ -356,7 +395,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 * @param action
 	 */
-	public <RM extends RestModel> void syncTx(InternalActionContext ac, TxAction2 handler, Runnable action) {
+	public void syncTx(InternalActionContext ac, TxAction2 handler, Runnable action) {
 		try {
 			database.tx(handler);
 			action.run();
@@ -377,22 +416,6 @@ public class HandlerUtilities {
 	}
 
 	/**
-	 * Invoke a bulkable action.
-	 * 
-	 * @param function
-	 * @return
-	 */
-	public <T> T bulkableAction(Function<BulkActionContext, T> function) {
-		Tuple<T, BulkActionContext> r = database.tx(tx -> {
-			BulkActionContext bac = bulkProvider.get();
-			T result = function.apply(bac);
-			return Tuple.tuple(result, bac);
-		});
-		r.v2().process(true);
-		return r.v1();
-	}
-
-	/**
 	 * Invoke an event action.
 	 * 
 	 * @param function
@@ -404,16 +427,6 @@ public class HandlerUtilities {
 			return batch;
 		});
 		b.dispatch();
-	}
-
-	/**
-	 * Invoke an event action which returns a result.
-	 * 
-	 * @param function
-	 * @return
-	 */
-	public <T> T eventAction(Function<EventQueueBatch, T> function) {
-		return eventAction((tx, batch) -> function.apply(batch));
 	}
 
 	/**
