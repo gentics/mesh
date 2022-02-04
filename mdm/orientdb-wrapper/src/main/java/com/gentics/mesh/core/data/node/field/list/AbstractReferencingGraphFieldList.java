@@ -29,8 +29,8 @@ import com.gentics.mesh.core.rest.node.field.Field;
 public abstract class AbstractReferencingGraphFieldList<T extends HibListableField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> implements HibReferencingListField<T, RM, U> {
 
 	@Override
-	public long getSize() {
-		return outE(HAS_ITEM).has(getListType()).count();
+	public int getSize() {
+		return (int) outE(HAS_ITEM).has(getListType()).count();
 	}
 
 	protected T addItem(String key, MeshVertex vertex) {

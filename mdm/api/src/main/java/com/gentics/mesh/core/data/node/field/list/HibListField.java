@@ -71,7 +71,7 @@ public interface HibListField<T extends HibListableField, RM extends Field, U> e
 	 * 
 	 * @return
 	 */
-	long getSize();
+	int getSize();
 
 	/**
 	 * Remove all items from the list.

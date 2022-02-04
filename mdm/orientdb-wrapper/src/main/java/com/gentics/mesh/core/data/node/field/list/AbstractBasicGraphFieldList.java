@@ -55,7 +55,7 @@ public abstract class AbstractBasicGraphFieldList<T extends HibListableField, RM
 	}
 
 	@Override
-	public long getSize() {
+	public int getSize() {
 		return getProperties("item").size();
 	}
 

@@ -390,8 +390,8 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 
 			// nodeList
 			HibNodeFieldList nodeList = container.createNodeList("nodeList");
-			nodeList.createNode("0", node2);
-			nodeList.createNode("1", node3);
+			nodeList.createNode(0, node2);
+			nodeList.createNode(1, node3);
 
 			if (withMicroschema) {
 				// micronodeList
@@ -406,8 +406,8 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 				secondMicronode.createString("text").setString("Joe");
 				secondMicronode.createNode("nodeRef", content());
 				HibNodeFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
-				micrnodeNodeList.createNode("0", node2);
-				micrnodeNodeList.createNode("1", node3);
+				micrnodeNodeList.createNode(0, node2);
+				micrnodeNodeList.createNode(1, node3);
 
 				// micronode
 				HibMicronodeField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());

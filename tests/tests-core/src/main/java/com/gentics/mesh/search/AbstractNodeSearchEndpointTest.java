@@ -151,7 +151,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 
 		// create a non-empty list for the english version
 		HibNodeFieldList nodeListField = contentDao.getLatestDraftFieldContainer(node, english()).createNodeList("nodelist");
-		nodeListField.addItem(nodeListField.createNode("testNode", node));
+		nodeListField.addItem(nodeListField.createNode(node));
 
 		// create an empty list for the german version
 		contentDao.getLatestDraftFieldContainer(node, german()).createNodeList("nodelist");

@@ -21,7 +21,18 @@ public interface HibNodeFieldList extends HibMicroschemaListableField, HibListFi
 
 	String TYPE = "node";
 
-	HibNodeField createNode(String key, HibNode node);
+	/**
+	 * Create a node within this node list field, at given index.
+	 * 
+	 * @param key
+	 * @param node
+	 * @return
+	 */
+	HibNodeField createNode(int index, HibNode node);
+
+	default HibNodeField createNode(HibNode node) {
+		return createNode(getSize(), node);
+	}
 
 	@Override
 	default NodeFieldList transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {

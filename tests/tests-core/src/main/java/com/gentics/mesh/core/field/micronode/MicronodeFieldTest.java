@@ -171,8 +171,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			htmlList.createHTML("<i>second</i>");
 
 			HibNodeFieldList nodeList = micronode.createNodeList("listfield-node");
-			nodeList.createNode("0", node);
-			nodeList.createNode("1", newOverview);
+			nodeList.createNode(0, node);
+			nodeList.createNode(1, newOverview);
 
 			HibNumberFieldList numberList = micronode.createNumberList("listfield-number");
 			numberList.createNumber(47);

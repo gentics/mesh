@@ -627,7 +627,7 @@ public class RestUpdaters {
 			if (log.isDebugEnabled()) {
 				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
 			}
-			graphNodeFieldList.addItem(graphNodeFieldList.createNode(String.valueOf(pos), node));
+			graphNodeFieldList.addItem(graphNodeFieldList.createNode(pos, node));
 		}
 
 	};

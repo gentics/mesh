@@ -56,8 +56,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			prepareNode(node, NODE_LIST, "node");
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(NODE_LIST);
-			nodeList.createNode("1", newsNode);
-			nodeList.createNode("2", newsNode);
+			nodeList.createNode(0, newsNode);
+			nodeList.createNode(1, newsNode);
 			tx.success();
 		}
 
@@ -78,7 +78,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			// Add item
 			assertEquals(0, list.getList().size());
-			list.createNode("1", node);
+			list.createNode(0, node);
 			assertEquals(1, list.getList().size());
 
 			// Retrieve item
@@ -94,7 +94,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			// Add another item
 			assertEquals(1, list.getList().size());
-			list.createNode("2", node);
+			list.createNode(1, node);
 			assertEquals(2, list.getList().size());
 
 			// Remove items
@@ -112,9 +112,9 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeFieldList testField = container.createNodeList("testField");
-			testField.createNode("1", node);
-			testField.createNode("2", node);
-			testField.createNode("3", node);
+			testField.createNode(0, node);
+			testField.createNode(1, node);
+			testField.createNode(2, node);
 
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
@@ -131,12 +131,12 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldList fieldA = container.createNodeList("fieldA");
 			HibNodeFieldList fieldB = container.createNodeList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-			fieldA.addItem(fieldA.createNode("testNode", content()));
+			fieldA.addItem(fieldA.createNode(0, content()));
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-			fieldB.addItem(fieldB.createNode("testNode", content()));
+			fieldB.addItem(fieldB.createNode(0, content()));
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 		}
 	}
@@ -166,7 +166,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 			// rest set - graph set - different values
-			fieldA.addItem(fieldA.createNode("1", content()));
+			fieldA.addItem(fieldA.createNode(content()));
 			restField.add(new NodeFieldListItemImpl(UUIDUtil.randomUUID()));
 			assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
 

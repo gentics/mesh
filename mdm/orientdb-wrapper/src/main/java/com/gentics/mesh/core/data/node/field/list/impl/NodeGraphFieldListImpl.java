@@ -29,8 +29,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<Hi
 	}
 
 	@Override
-	public HibNodeField createNode(String key, HibNode node) {
-		return addItem(key, toGraph(node));
+	public HibNodeField createNode(int index, HibNode node) {
+		return addItem(String.valueOf(index), toGraph(node));
 	}
 
 	@Override

@@ -294,7 +294,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
-			nodeList.createNode("1", folder("news"));
+			nodeList.createNode(folder("news"));
 			tx.success();
 		}
 
@@ -319,7 +319,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			// Create node list
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
-			nodeList.createNode("1", referencedNode);
+			nodeList.createNode(referencedNode);
 			tx.success();
 		}
 
@@ -352,7 +352,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
-			nodeList.createNode("1", newsNode);
+			nodeList.createNode(newsNode);
 			tx.success();
 		}
 
