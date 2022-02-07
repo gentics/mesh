@@ -55,6 +55,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -78,7 +79,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	@Override
 	public void removeField(HibField field) {
 		if (field != null) {
-			toGraph(getField(field.getFieldKey())).removeField(new DummyBulkActionContext(), this);
+			toGraph(field).removeField(new DummyBulkActionContext(), this);
 		}
 	}
 
