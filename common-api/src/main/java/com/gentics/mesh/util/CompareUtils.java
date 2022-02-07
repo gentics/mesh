@@ -2,6 +2,9 @@ package com.gentics.mesh.util;
 
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
 /**
  * Utils used for comparing objects.
@@ -25,18 +28,32 @@ public final class CompareUtils {
 	}
 
 	/**
-	 * Returns {@code true} if the numbers lists are equal to each other and {@code false} otherwise. Consequently, if both arguments are {@code null},
-	 * {@code true} is returned and if exactly one argument is {@code null}, {@code false} is returned. Otherwise, equality is determined by using the
-	 * {@link NumberUtils#compare} method by comparing each list item.
+	 * Default lists comparator.
+	 * 
+	 * @param <T>
+	 * @param a
+	 * @param b
+	 * @return
+	 * @see {@link CompareUtils#equals(List, List, Optional)}
+	 */
+	public static <T> boolean equals(List<? extends T> a, List<? extends T> b) {
+		return equals(a, b, Optional.empty());
+	}
+
+	/**
+	 * Returns {@code true} if the lists are equal to each other and {@code false} otherwise. Consequently, if both arguments are {@code null},
+	 * {@code true} is returned and if exactly one argument is {@code null}, {@code false} is returned. Otherwise, equality is determined by using either the
+	 * {@link Objects#equals(Object, Object)} or custom comparator method by comparing each list item.
 	 *
 	 * @param a
-	 *            First number list
+	 *            First list
 	 * @param b
-	 *            Second number list to be compared with {@code a} for equality
+	 *            Second list to be compared with {@code a} for equality
+	 * @param comparator
+	 * 			  Optional custom item comparator
 	 * @return {@code true} if the arguments are equal to each other and {@code false} otherwise
-	 * @see Object#equals(Object)
 	 */
-	public static boolean equals(List<Number> a, List<Number> b) {
+	public static <T> boolean equals(List<? extends T> a, List<? extends T> b, Optional<BiFunction<T, T, Boolean>> comparator) {
 		if (a == null && b == null) {
 			return true;
 		}
@@ -47,16 +64,15 @@ public final class CompareUtils {
 			return false;
 		}
 
-		ListIterator<Number> e1 = a.listIterator();
-		ListIterator<Number> e2 = b.listIterator();
+		ListIterator<? extends T> e1 = a.listIterator();
+		ListIterator<? extends T> e2 = b.listIterator();
 		while (e1.hasNext() && e2.hasNext()) {
-			Number o1 = e1.next();
-			Number o2 = e2.next();
-			if (!(o1 == null ? o2 == null : NumberUtils.compare(o1, o2) == 0))
+			T o1 = e1.next();
+			T o2 = e2.next();
+			if (!(o1 == null ? o2 == null : comparator.orElse(Objects::equals).apply(o1, o2)))
 				return false;
 		}
 		return !(e1.hasNext() || e2.hasNext());
-
 	}
 
 	/**

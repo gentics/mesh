@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.CRE
 import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.FILL;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -134,8 +133,9 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getMicronodeList("testField")).as("cloned field")
-					.isEqualToComparingFieldByField(testField);
+			// We cannot use POJO field comparison anymore, since there may be lazy loaded objects.
+			//assertThat(otherContainer.getMicronodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertTrue(otherContainer.getMicronodeList("testField").equals(testField));
 		}
 	}
 

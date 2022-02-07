@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -8,6 +9,7 @@ import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicroschemaListableField;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.util.CompareUtils;
+import com.gentics.mesh.util.NumberUtils;
 
 public interface HibNumberFieldList extends HibMicroschemaListableField, HibListField<HibNumberField, NumberFieldListImpl, Number> {
 	String TYPE = "number";
@@ -49,7 +51,7 @@ public interface HibNumberFieldList extends HibMicroschemaListableField, HibList
 			List<Number> restList = restField.getItems();
 			List<? extends HibNumberField> graphList = getList();
 			List<Number> graphStringList = graphList.stream().map(e -> e.getNumber()).collect(Collectors.toList());
-			return CompareUtils.equals(restList, graphStringList);
+			return CompareUtils.equals(restList, graphStringList, Optional.of((o1, o2) -> NumberUtils.compare(o1, o2) == 0));
 		}
 		return HibListField.super.listEquals(obj);
 	}

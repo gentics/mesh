@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeFieldCommon;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -108,7 +107,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public boolean equals(Object obj) {
-		return HibNodeFieldCommon.equalsNodeField(this, obj);
+		return nodeFieldEquals(obj);
 	}
 
 	/**
