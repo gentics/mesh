@@ -1777,13 +1777,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 						ContainerType type = edge.getType();
 						// Only handle published or draft contents
 						if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-							HibNode parent = edge.getNode();
-							String uuid = node.getUuid();
+							HibNode referencingNode = edge.getNode();
+							String uuid = referencingNode.getUuid();
 							String languageTag = nodeContainer.getLanguageTag();
 							String branchUuid = edge.getBranchUuid();
 							String key = uuid + languageTag + branchUuid + type.getCode();
 							if (!handledNodeUuids.contains(key)) {
-								bac.add(onReferenceUpdated(node, node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+								bac.add(onReferenceUpdated(referencingNode, referencingNode.getUuid(), referencingNode.getSchemaContainer(), branchUuid, type, languageTag));
 								handledNodeUuids.add(key);
 							}
 						}
