@@ -239,7 +239,7 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATENUMBER, FILL, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
+			assertThat(container.getNumber(name).getNumber().intValue()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
 		});
 	}
 
