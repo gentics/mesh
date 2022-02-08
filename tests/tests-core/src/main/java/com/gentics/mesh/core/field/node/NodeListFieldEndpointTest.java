@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -43,6 +44,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.util.CompareUtils;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
@@ -88,7 +90,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl("bogus"));
 
-			call(() -> createNodeAsync("listField", listField), BAD_REQUEST, "node_list_item_not_found", "bogus");
+			call(() -> createNodeAsync("listField", listField), BAD_REQUEST);
 		}
 	}
 
@@ -139,8 +141,9 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			try (Tx tx = tx()) {
 				ContentDao contentDao = tx.contentDao();
 				HibNodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
+				newValue = getListValues(container::getNodeList, FIELD_NAME);
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getListValues(container::getNodeList, FIELD_NAME));
+				assertTrue("Check old value", CompareUtils.equals(oldValue, newValue));
 				container = newContainerVersion;
 			}
 		}

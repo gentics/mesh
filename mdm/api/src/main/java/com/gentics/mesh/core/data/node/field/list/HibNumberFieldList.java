@@ -53,6 +53,12 @@ public interface HibNumberFieldList extends HibMicroschemaListableField, HibList
 			List<Number> graphStringList = graphList.stream().map(e -> e.getNumber()).collect(Collectors.toList());
 			return CompareUtils.equals(restList, graphStringList, Optional.of((o1, o2) -> NumberUtils.compare(o1, o2) == 0));
 		}
+		if (obj instanceof HibNumberFieldList) {
+			HibNumberFieldList restField = (HibNumberFieldList) obj;
+			List<Number> restList = restField.getValues();
+			List<Number> graphStringList = getValues();
+			return CompareUtils.equals(restList, graphStringList, Optional.of((o1, o2) -> NumberUtils.compare(o1, o2) == 0));
+		}
 		return HibListField.super.listEquals(obj);
 	}
 }

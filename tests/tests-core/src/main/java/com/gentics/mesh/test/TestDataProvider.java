@@ -703,6 +703,14 @@ public class TestDataProvider {
 	}
 
 	@Getter
+	public HibNode reloadContent(String name) {
+		HibNode content = contents.get(name);
+		content = CommonTx.get().load(content.getId(), content.getClass());
+		contents.put(name, content);
+		return content;
+	}
+
+	@Getter
 	public HibNode getContent(String name) {
 		return contents.get(name);
 	}

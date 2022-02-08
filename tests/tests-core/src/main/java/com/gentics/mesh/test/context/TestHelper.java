@@ -7,7 +7,11 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import io.reactivex.Flowable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -87,6 +90,7 @@ import com.gentics.mesh.test.context.helper.EventHelper;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.io.Resources;
 
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -269,6 +273,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 */
 	default HibNode content() {
 		return data().getContent("news overview");
+	}
+
+	default HibNode reloadContent() {
+		return data().reloadContent("news overview");
 	}
 
 	default UserResponse readUser(String uuid) {

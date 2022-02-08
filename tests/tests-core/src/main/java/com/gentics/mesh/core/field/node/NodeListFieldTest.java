@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.field.node.NodeListFieldTestHelper.CREATE_EM
 import static com.gentics.mesh.core.field.node.NodeListFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.node.NodeListFieldTestHelper.FILL;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -108,7 +107,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
+			HibNode node = folder("2015");
 
 			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeFieldList testField = container.createNodeList("testField");
@@ -119,7 +118,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getNodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertTrue(otherContainer.getNodeList("testField").equals(testField));
 		}
 	}
 
@@ -136,7 +135,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-			fieldB.addItem(fieldB.createNode(0, content()));
+			fieldB.addItem(fieldB.createNode(0, reloadContent()));
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 		}
 	}

@@ -10,9 +10,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -61,7 +58,6 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNumber("testField")).as("cloned field").isNotNull()
-					.usingComparatorForFields(Comparator.comparing((Number a) -> new BigDecimal(a.toString())), "value")
 					.isEqualToIgnoringGivenFields(testField, "parentContainer");
 		}
 	}
@@ -113,7 +109,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 			assertNotNull(response);
 			NumberFieldImpl deserializedNumberField = response.getFields().getNumberField("numberField");
-			assertEquals(100.9, deserializedNumberField.getNumber());
+			assertEquals(Double.valueOf(100.9), deserializedNumberField.getNumber().doubleValue(), 0.01);
 		}
 	}
 

@@ -50,7 +50,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
+			HibNode node = folder("2015");
 
 			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeField testField = container.createNode("testField", node);
@@ -59,7 +59,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
-			assertThat(otherContainer.getNode("testField").getNode()).as("cloned target node").isNotNull().isEqualToComparingFieldByField(node);
+			assertTrue(otherContainer.getNode("testField").getNode().getUuid().equals(node.getUuid()));
 		}
 	}
 
@@ -67,7 +67,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
+			HibNode node = folder("2015");
 
 			HibNodeFieldContainer container = CoreTestUtils.createContainer();
 			HibNodeField field = container.createNode("testNodeField", node);

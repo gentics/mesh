@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.CREAT
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.FILLNUMBERS;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -94,7 +93,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getNumberList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertTrue(otherContainer.getNumberList("testField").equals(testField));
 		}
 	}
 

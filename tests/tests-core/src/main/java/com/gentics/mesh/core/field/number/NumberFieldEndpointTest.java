@@ -76,7 +76,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 
 			NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(newValue));
 			NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
-			assertEquals(newValue, field.getNumber());
+			assertEquals(newValue.doubleValue(), field.getNumber().doubleValue(), 0.0);
 
 			try (Tx tx = tx()) {
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
@@ -91,7 +91,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 			double value = 0.123456f;
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(value));
 			Number storedNumber = firstResponse.getFields().getNumberField(FIELD_NAME).getNumber();
-			assertEquals(value, storedNumber);
+			assertEquals(Double.valueOf(value), storedNumber.doubleValue(), 0.0000001);
 		}
 	}
 
@@ -129,7 +129,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 			assertThat(latest.getNumber(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumber(FIELD_NAME)).isNotNull();
 			Number oldValue = latest.getPreviousVersion().getNumber(FIELD_NAME).getNumber();
-			assertThat(oldValue).isEqualTo(42);
+			assertThat(oldValue.doubleValue()).isEqualTo(Double.valueOf(42));
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
@@ -156,7 +156,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, new NumberFieldImpl().setNumber(1.214353));
 			NumberFieldImpl numberField = response.getFields().getNumberField(FIELD_NAME);
-			assertEquals(1.214353, numberField.getNumber());
+			assertEquals(Double.valueOf(1.214353), numberField.getNumber().doubleValue(), 0.00000001);
 		}
 	}
 
@@ -176,7 +176,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 			NodeResponse response = readNode(node);
 			NumberFieldImpl deserializedNumberField = response.getFields().getNumberField(FIELD_NAME);
 			assertNotNull(deserializedNumberField);
-			assertEquals(100.9, deserializedNumberField.getNumber());
+			assertEquals(Double.valueOf(100.9), deserializedNumberField.getNumber().doubleValue(), 0.001);
 		}
 	}
 
