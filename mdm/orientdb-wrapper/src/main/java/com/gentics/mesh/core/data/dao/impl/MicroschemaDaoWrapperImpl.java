@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.dao.AbstractContainerDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -216,5 +217,10 @@ public class MicroschemaDaoWrapperImpl
 	@Override
 	public Class<? extends HibMicroschemaVersion> getVersionPersistenceClass() {
 		return MicroschemaContainerVersionImpl.class;
+	}
+
+	@Override
+	public Result<? extends HibMicronode> findMicronodes(HibMicroschemaVersion version) {
+		return toGraph(version).findMicronodes();
 	}
 }
