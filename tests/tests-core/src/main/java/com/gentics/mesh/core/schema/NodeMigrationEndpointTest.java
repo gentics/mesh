@@ -441,7 +441,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				secondNode.getProject().getLatestBranch(), user);
 			secondEnglishContainer.createString(oldFieldName).setString("second content");
 
-			jobUuid = branchDao.assignSchemaVersion(project().getLatestBranch(), user, versionB, batch).getUuid();
+			HibBranch latestBranch = tx.branchDao().findByUuid(project(), project().getLatestBranch().getUuid());
+			jobUuid = branchDao.assignSchemaVersion(latestBranch, user, versionB, batch).getUuid();
 			tx.success();
 		}
 
@@ -571,15 +572,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
 			// do the schema migration twice
-			jobAUuid = tx.branchDao().assignSchemaVersion(project().getLatestBranch(), user, versionB, batch).getUuid();
+			HibBranch latestBranch = tx.branchDao().findByUuid(project(), project().getLatestBranch().getUuid());
+			jobAUuid = tx.branchDao().assignSchemaVersion(latestBranch, user, versionB, batch).getUuid();
 			tx.success();
 		}
 		Thread.sleep(1000);
 
 		triggerAndWaitForJob(jobAUuid);
+		doSchemaMigration(versionA, versionB);
 		try (Tx tx = tx()) {
-			doSchemaMigration(versionA, versionB);
-
 			// assert that migration worked, but was only performed once
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(boot().contentDao().getFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
@@ -977,7 +978,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// create micronode based on the old schema
 			String english = english();
-			firstNode = folder("2015");
+			firstNode = boot().nodeDao().findByUuidGlobal(folder("2015").getUuid());
 			SchemaVersionModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
 			schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
@@ -1338,6 +1339,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateFieldChange.setRestProperty(SchemaChangeModel.NAME_KEY, newFieldName);
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);
+		versionA.setNextChange(updateFieldChange);
 
 		// Link everything together
 		container.setLatestVersion(versionB);
