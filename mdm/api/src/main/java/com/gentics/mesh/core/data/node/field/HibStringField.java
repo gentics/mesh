@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field;
 
+import java.util.Objects;
+
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -40,5 +42,19 @@ public interface HibStringField extends HibListableField, HibBasicField<StringFi
 		String text = getString();
 		stringField.setString(text == null ? "" : text);
 		return stringField;
+	}
+
+	default boolean stringEquals(Object obj) {
+		if (obj instanceof HibStringField) {
+			String valueA = getString();
+			String valueB = ((HibStringField) obj).getString();
+			return Objects.equals(valueA, valueB);
+		}
+		if (obj instanceof StringField) {
+			String valueA = getString();
+			String valueB = ((StringField) obj).getString();
+			return Objects.equals(valueA, valueB);
+		}
+		return false;
 	}
 }

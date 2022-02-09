@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.bool;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FILL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -96,7 +95,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getBooleanList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertTrue(otherContainer.getBooleanList("testField").equals(testField));
 		}
 	}
 

@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.field.date.DateListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.FILL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -94,7 +93,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getDateList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertTrue(otherContainer.getDateList("testField").equals(testField));
 		}
 	}
 

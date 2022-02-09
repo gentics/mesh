@@ -103,7 +103,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getStringList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertThat(otherContainer.getStringList("testField").equals(testField));
 		}
 	}
 

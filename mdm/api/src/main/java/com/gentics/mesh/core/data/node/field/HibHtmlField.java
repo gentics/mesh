@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.HibFieldContainer;
@@ -38,5 +40,19 @@ public interface HibHtmlField extends HibListableField, HibBasicField<HtmlField>
 		// TODO really empty string for unset field value?!
 		htmlField.setHTML(html == null ? StringUtils.EMPTY : html);
 		return htmlField;
+	}
+
+	default boolean htmlEquals(Object obj) {
+		if (obj instanceof HibHtmlField) {
+			String htmlA = getHTML();
+			String htmlB = ((HibHtmlField) obj).getHTML();
+			return Objects.equals(htmlA, htmlB);
+		}
+		if (obj instanceof HtmlField) {
+			String htmlA = getHTML();
+			String htmlB = ((HtmlField) obj).getHTML();
+			return Objects.equals(htmlA, htmlB);
+		}
+		return false;
 	}
 }

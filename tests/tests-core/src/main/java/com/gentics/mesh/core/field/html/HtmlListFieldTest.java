@@ -106,7 +106,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getHTMLList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertThat(otherContainer.getHTMLList("testField").equals(testField));
 		}
 	}
 
