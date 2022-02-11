@@ -101,14 +101,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	HibNode getParentNode(String branchUuid);
 
 	/**
-	 * Set the parent node of this node.
-	 *
-	 * @param branchUuid
-	 * @param parentNode
-	 */
-	void setParentNode(String branchUuid, HibNode parentNode);
-
-	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
 	 * node's schema. It may be possible that no display name can be returned since new nodes may not have any values.
 	 *

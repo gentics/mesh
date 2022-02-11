@@ -163,11 +163,26 @@ public interface BaseHelper {
 		return getTestContext().getTrackingSearchProvider();
 	}
 
+	/**
+	 * Modify the user making sure that the modification is done inside a transaction.
+	 * Since this method is not always called from a transaction scope, sometimes we need create one ourselves.
+	 * If there is an already existing transaction, we modify the user in the current transaction and commit the transaction
+	 * to make sure that the changes will be visible in different transactions.
+	 * @param modifier
+	 */
 	private void modifyUser(Consumer<HibUser> modifier) {
-		tx(() -> {
+		Runnable modifyAction = () -> {
 			HibUser user = CommonTx.get().userDao().findByUuid(user().getUuid());
 			modifier.accept(user);
 			CommonTx.get().userDao().mergeIntoPersisted(user);
-		});
+		};
+
+		CommonTx tx = CommonTx.get();
+		if (tx != null) {
+			modifyAction.run();
+			tx.commit();
+		} else {
+			tx(modifyAction::run);
+		}
 	}
 }

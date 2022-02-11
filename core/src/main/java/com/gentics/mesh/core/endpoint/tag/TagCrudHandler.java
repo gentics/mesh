@@ -109,20 +109,17 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		try (WriteLock lock = globalLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				TagDao tagDao = tx.tagDao();
-				ResultInfo info = utils.eventAction(batch -> {
-					// TODO use DAOActionContext and load tagFamily by uuid first. Without a parent this is inconsistent.
-					HibTag tag = tagActions.create(tx, ac, batch, null);
-					TagResponse model = tagDao.transformToRestSync(tag, ac, 0);
-					String path = tagDao.getAPIPath(tag, ac);
-					ResultInfo resultInfo = new ResultInfo(model);
-					resultInfo.setProperty("path", path);
-					return resultInfo;
-				});
 
-				String path = info.getProperty("path");
-				ac.setLocation(path);
+				HibTag tag = tagActions.create(tx, ac, batch, null);
+				TagResponse model = tagDao.transformToRestSync(tag, ac, 0);
+				String path = tagDao.getAPIPath(tag, ac);
+				ResultInfo resultInfo = new ResultInfo(model);
+				resultInfo.setProperty("path", path);
+				ResultInfo info = resultInfo;
+
+				ac.setLocation(info.getProperty("path"));
 				return info.getModel();
 			}, model -> ac.send(model, CREATED));
 		}

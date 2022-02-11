@@ -10,7 +10,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -178,6 +177,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		try (Tx tx = tx()) {
+			assignment1 = CommonTx.get().load(assignment1.getId(), assignment1.getClass());
+			assignment2 = CommonTx.get().load(assignment2.getId(), assignment2.getClass());
 			assertNotNull(assignment2.getJobUuid());
 			assertEquals(COMPLETED, assignment2.getMigrationStatus());
 			assertTrue("The assignment should be active.", assignment2.isActive());
@@ -247,6 +248,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
+			edge3 = CommonTx.get().load(edge3.getId(), edge3.getClass());
 			PersistingSchemaDao schemaDao = tx.<CommonTx>unwrap().schemaDao();
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(COMPLETED, edge3.getMigrationStatus());
@@ -439,7 +441,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				secondNode.getProject().getLatestBranch(), user);
 			secondEnglishContainer.createString(oldFieldName).setString("second content");
 
-			jobUuid = branchDao.assignSchemaVersion(project().getLatestBranch(), user, versionB, batch).getUuid();
+			HibBranch latestBranch = tx.branchDao().findByUuid(project(), project().getLatestBranch().getUuid());
+			jobUuid = branchDao.assignSchemaVersion(latestBranch, user, versionB, batch).getUuid();
 			tx.success();
 		}
 
@@ -569,15 +572,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
 			// do the schema migration twice
-			jobAUuid = tx.branchDao().assignSchemaVersion(project().getLatestBranch(), user, versionB, batch).getUuid();
+			HibBranch latestBranch = tx.branchDao().findByUuid(project(), project().getLatestBranch().getUuid());
+			jobAUuid = tx.branchDao().assignSchemaVersion(latestBranch, user, versionB, batch).getUuid();
 			tx.success();
 		}
 		Thread.sleep(1000);
 
 		triggerAndWaitForJob(jobAUuid);
+		doSchemaMigration(versionA, versionB);
 		try (Tx tx = tx()) {
-			doSchemaMigration(versionA, versionB);
-
 			// assert that migration worked, but was only performed once
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(boot().contentDao().getFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
@@ -975,7 +978,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// create micronode based on the old schema
 			String english = english();
-			firstNode = folder("2015");
+			firstNode = boot().nodeDao().findByUuidGlobal(folder("2015").getUuid());
 			SchemaVersionModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
 			schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
@@ -1336,10 +1339,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateFieldChange.setRestProperty(SchemaChangeModel.NAME_KEY, newFieldName);
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);
+		versionA.setNextChange(updateFieldChange);
 
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
+		versionB.setPreviousVersion(versionA);
 		schemaDao.mergeIntoPersisted(container);
 		return container;
 	}

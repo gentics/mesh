@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -25,7 +24,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.path.Path;
 
 /**
  * The Node Domain Model interface.
@@ -203,4 +201,12 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	long getFieldContainerCount();
+
+	/**
+	 * Set the parent node of this node.
+	 *
+	 * @param branchUuid
+	 * @param parentNode
+	 */
+	void setParentNode(String branchUuid, HibNode parentNode);
 }

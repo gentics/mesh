@@ -110,7 +110,7 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 		}
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 
 				if (log.isDebugEnabled()) {
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
@@ -127,34 +127,34 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 				}
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
-				String name = utils.eventAction(batch -> {
-					// Prepare the sets for revoke and grant actions
-					Set<InternalPermission> permissionsToGrant = new HashSet<>();
-					Set<InternalPermission> permissionsToRevoke = new HashSet<>();
 
-					for (InternalPermission permission : InternalPermission.values()) {
-						Boolean permValue = requestModel.getPermissions().getNullable(permission.getRestPerm());
-						if (permValue != null) {
-							if (permValue) {
-								permissionsToGrant.add(permission);
-							} else {
-								permissionsToRevoke.add(permission);
-							}
+				// Prepare the sets for revoke and grant actions
+				Set<InternalPermission> permissionsToGrant = new HashSet<>();
+				Set<InternalPermission> permissionsToRevoke = new HashSet<>();
+
+				for (InternalPermission permission : InternalPermission.values()) {
+					Boolean permValue = requestModel.getPermissions().getNullable(permission.getRestPerm());
+					if (permValue != null) {
+						if (permValue) {
+							permissionsToGrant.add(permission);
+						} else {
+							permissionsToRevoke.add(permission);
 						}
 					}
-					if (log.isDebugEnabled()) {
-						for (InternalPermission p : permissionsToGrant) {
-							log.debug("Granting permission: " + p);
-						}
-						for (InternalPermission p : permissionsToRevoke) {
-							log.debug("Revoking permission: " + p);
-						}
+				}
+				if (log.isDebugEnabled()) {
+					for (InternalPermission p : permissionsToGrant) {
+						log.debug("Granting permission: " + p);
 					}
-					// 3. Apply the permission actions
-					roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
-						permissionsToRevoke);
-					return role.getName();
-				});
+					for (InternalPermission p : permissionsToRevoke) {
+						log.debug("Revoking permission: " + p);
+					}
+				}
+				// 3. Apply the permission actions
+				roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
+					permissionsToRevoke);
+				String name = role.getName();
+
 				if (ac.getSecurityLogger().isInfoEnabled()) {
 					ac.getSecurityLogger().info(String.format("Permission for role {%s} (%s) to {%s} set to %s",
 						role.getName(), roleUuid, pathToElement, requestModel.toJson()));

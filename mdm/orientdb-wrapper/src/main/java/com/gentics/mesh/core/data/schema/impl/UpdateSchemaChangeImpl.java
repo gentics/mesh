@@ -139,16 +139,6 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	}
 
 	@Override
-	public List<String> getURLFields() {
-		Object[] value = getRestProperty(URLFIELDS_KEY);
-		if (value == null) {
-			return null;
-		}
-		String[] stringArray = Arrays.copyOf(value, value.length, String[].class);
-		return Arrays.asList(stringArray);
-	}
-
-	@Override
 	public void setURLFields(String... keys) {
 		setRestProperty(URLFIELDS_KEY, keys);
 	}

@@ -285,12 +285,12 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATESTRING, FILL0, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(0L);
+			assertThat(container.getNumber(name).getNumber().longValue()).as(NEWFIELDVALUE).isEqualTo(0L);
 		});
 
 		changeType(CREATESTRING, FILL1, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1L);
+			assertThat(container.getNumber(name).getNumber().longValue()).as(NEWFIELDVALUE).isEqualTo(1L);
 		});
 
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> {

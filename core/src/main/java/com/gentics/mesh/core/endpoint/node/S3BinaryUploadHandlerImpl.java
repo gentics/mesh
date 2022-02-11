@@ -123,89 +123,87 @@ public class S3BinaryUploadHandlerImpl extends AbstractHandler implements S3Bina
 		String s3ObjectKey = context.getS3ObjectKey();
 		String fileName = context.getFileName();
 
-		return db.singleTxWriteLock(tx -> {
+		return db.singleTxWriteLock((batch, tx) -> {
 			ContentDao contentDao = tx.contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
 			NodeDao nodeDao = tx.nodeDao();
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
-			utils.eventAction(batch -> {
+			// We need to check whether someone else has stored the s3 binary in the meanwhile
+			S3HibBinary s3HibBinary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
+			if (s3HibBinary == null) {
+				s3HibBinary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName).runInExistingTx(tx);
+			}
+			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
 
-				// We need to check whether someone else has stored the s3 binary in the meanwhile
-				S3HibBinary s3HibBinary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
-				if (s3HibBinary == null) {
-					s3HibBinary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName).runInExistingTx(tx);
-				}
-				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
+			// Load the current latest draft
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
-				// Load the current latest draft
-				HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+			if (latestDraftVersion == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
 
-				if (latestDraftVersion == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
+			// Load the base version field container in order to create the diff
+			HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
+			if (baseVersionContainer == null) {
+				throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
+			}
 
-				// Load the base version field container in order to create the diff
-				HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
-				if (baseVersionContainer == null) {
-					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
-				}
+			List<FieldContainerChange> baseVersionDiff = contentDao.compareTo(baseVersionContainer, latestDraftVersion);
+			List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 
-				List<FieldContainerChange> baseVersionDiff = contentDao.compareTo(baseVersionContainer, latestDraftVersion);
-				List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+			// Compare both sets of change sets
+			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains)
+					.collect(Collectors.toList());
 
-				// Compare both sets of change sets
-				List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains)
-						.collect(Collectors.toList());
+			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+			if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
 
-				// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-				if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
-
-					// Check whether a conflict has been detected
-					if (intersect.size() > 0) {
-						NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
-						conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
-						conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
-						for (FieldContainerChange fcc : intersect) {
-							conflictException.addConflict(fcc.getFieldCoordinates());
-						}
-						throw conflictException;
+				// Check whether a conflict has been detected
+				if (intersect.size() > 0) {
+					NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+					conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+					conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+					for (FieldContainerChange fcc : intersect) {
+						conflictException.addConflict(fcc.getFieldCoordinates());
 					}
+					throw conflictException;
 				}
+			}
 
-				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
-				if (fieldSchema == null) {
-					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-				}
-				if (!(fieldSchema instanceof S3BinaryFieldSchema)) {
-					// TODO Add support for other field types
-					throw error(BAD_REQUEST, "error_found_field_is_not_s3_binary", fieldName);
-				}
+			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+			if (fieldSchema == null) {
+				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+			}
+			if (!(fieldSchema instanceof S3BinaryFieldSchema)) {
+				// TODO Add support for other field types
+				throw error(BAD_REQUEST, "error_found_field_is_not_s3_binary", fieldName);
+			}
 
-				// Create a new node version field container to store the upload
-				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
-						latestDraftVersion,
-						true);
-				// Create the new field
-				S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
+			// Create a new node version field container to store the upload
+			HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
+					latestDraftVersion,
+					true);
+			// Create the new field
+			S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
 
-				// Now get rid of the old field
-				// If the s3 binary field is the segment field, we need to update the webroot info in the node
-				if (field.getFieldKey().equals(contentDao.getSchemaContainerVersion(newDraftVersion).getSchema().getSegmentField())) {
-					contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
-				}
+			// Now get rid of the old field
+			// If the s3 binary field is the segment field, we need to update the webroot info in the node
+			if (field.getFieldKey().equals(contentDao.getSchemaContainerVersion(newDraftVersion).getSchema().getSegmentField())) {
+				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
+			}
 
-				if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
-					contentDao.purge(latestDraftVersion);
-				}
+			if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
+				contentDao.purge(latestDraftVersion);
+			}
 
-				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
-				batch.add(s3HibBinary.onCreated(nodeUuid,s3ObjectKey));
-			});
+			batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
+			batch.add(s3HibBinary.onCreated(nodeUuid,s3ObjectKey));
+
 			return nodeDao.transformToRestSync(node, ac, 0);
 		});
 	}

@@ -76,13 +76,24 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	ReferenceType getReferenceType();
+
 	/**
-	 * List the fields of this container
+	 * List the fields of this container for the current schema container version
 	 * 
 	 * @return
 	 */
 	default List<HibField> getFields() {
-		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
+		return getFields(getSchemaContainerVersion());
+	}
+
+	/**
+	 * List the fields of this container for the provided schema container version
+	 * During a migraiton, the container might temporary have fields for an older schema version
+	 * @param schemaContainerVersion
+	 * @return
+	 */
+	default List<HibField> getFields(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> schemaContainerVersion) {
+		FieldSchemaContainer schema = schemaContainerVersion.getSchema();
 		List<HibField> fields = new ArrayList<>();
 		for (FieldSchema fieldSchema : schema.getFields()) {
 			HibField field = getField(fieldSchema);

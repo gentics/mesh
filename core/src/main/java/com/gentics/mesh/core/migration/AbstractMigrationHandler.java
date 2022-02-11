@@ -104,7 +104,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		HibFieldSchemaVersionElement<?,?,?,?,?> newVersion, Set<String> touchedFields) throws Exception {
 
 		// Remove all touched fields (if necessary, they will be readded later)
-		newContainer.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(newContainer::removeField);
+		newContainer.getFields(fromVersion).stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(newContainer::removeField);
 		newContainer.setSchemaContainerVersion(newVersion);
 
 		FieldMap fields = newContent.getFields();

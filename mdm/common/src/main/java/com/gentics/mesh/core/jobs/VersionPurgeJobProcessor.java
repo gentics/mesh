@@ -46,8 +46,6 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 			return tx.<CommonTx>unwrap().data().mesh().projectVersionPurgeHandler();
 		});
 		HibProject project = db.tx(purgeJob::getProject);
-		String projectName = project.getName();
-		String projectUuid = project.getUuid();
 		Optional<ZonedDateTime> maxAge = db.tx(purgeJob::getMaxAge);
 		return handler.purgeVersions(project, maxAge.orElse(null))
 				.doOnComplete(() -> {
@@ -57,8 +55,8 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 						jobDao.mergeIntoPersisted(purgeJob);
 					});
 					db.tx(tx -> {
-						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + projectName + "} completed.");
-						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, projectName, projectUuid))
+						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} completed.");
+						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, project.getName(), project.getUuid()))
 								.dispatch();
 					});
 				}).doOnError(error -> {
@@ -69,8 +67,8 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 						jobDao.mergeIntoPersisted(purgeJob);
 					});
 					db.tx(tx -> {
-						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + projectName + "} failed.", error);
-						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, projectName, projectUuid))
+						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} failed.", error);
+						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
 								.dispatch();
 					});
 				});

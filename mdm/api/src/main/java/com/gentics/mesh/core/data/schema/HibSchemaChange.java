@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.data.schema;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -141,7 +145,19 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	 *
 	 * @return
 	 */
-	JsonObject getIndexOptions();
+	default JsonObject getIndexOptions() {
+		Object obj = getRestProperty(ELASTICSEARCH_KEY);
+		if (obj != null) {
+			if (obj instanceof String) {
+				return new JsonObject((String) obj);
+			} else if (obj instanceof JsonObject) {
+				return (JsonObject) obj;
+			} else {
+				throw error(INTERNAL_SERVER_ERROR, "Type was not expected {" + obj.getClass().getName() + "}");
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Set the index options for the schema / field.

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.db;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,6 +15,8 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.metric.CachingMetric;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
@@ -23,6 +26,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.LazyInitializer;
 
 /**
  * Main description of a graph database.
@@ -383,6 +388,22 @@ public interface Database extends TxFactory {
 
 	default <T> Single<T> singleTxWriteLock(Function<Tx, T> handler) {
 		return maybeTx(handler, true).toSingle();
+	}
+
+	/**
+	 * Executes an event action in a transaction within the worker thread pool.
+	 * @param action
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Single<T> singleTxWriteLock(TxEventAction<T> action) {
+		AtomicReference<EventQueueBatch> lazyBatch = new AtomicReference<>();
+		Function<Tx, T> handler = tx -> {
+			EventQueueBatch batch = tx.createBatch();
+			lazyBatch.set(batch);
+			return action.handle(batch, tx);
+		};
+		return maybeTx(handler, true).toSingle().doOnSuccess((ignored)-> lazyBatch.get().dispatch());
 	}
 
 	/**
