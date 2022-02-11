@@ -275,10 +275,6 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getContent("news overview");
 	}
 
-	default HibNode reloadContent() {
-		return data().reloadContent("news overview");
-	}
-
 	default UserResponse readUser(String uuid) {
 		return call(() -> client().findUserByUuid(uuid));
 	}

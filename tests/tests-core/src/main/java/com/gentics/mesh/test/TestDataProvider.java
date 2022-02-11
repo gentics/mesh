@@ -680,10 +680,6 @@ public class TestDataProvider {
 	}
 
 	public HibProject getProject() {
-		return project;
-	}
-
-	public HibProject reloadProject() {
 		project = CommonTx.get().load(project.getId(), project.getClass());
 		return project;
 	}
@@ -694,16 +690,22 @@ public class TestDataProvider {
 
 	@Getter
 	public HibNode getFolder(String name) {
-		return folders.get(name);
+		HibNode folder = folders.get(name);
+		folder = CommonTx.get().load(folder.getId(), folder.getClass());
+		folders.put(name, folder);
+		return folder;
 	}
 
 	@Getter
 	public HibTagFamily getTagFamily(String key) {
-		return tagFamilies.get(key);
+		HibTagFamily tf = tagFamilies.get(key);
+		tf = CommonTx.get().load(tf.getId(), tf.getClass());
+		tagFamilies.put(key, tf);
+		return tf;
 	}
 
 	@Getter
-	public HibNode reloadContent(String name) {
+	public HibNode getContent(String name) {
 		HibNode content = contents.get(name);
 		content = CommonTx.get().load(content.getId(), content.getClass());
 		contents.put(name, content);
@@ -711,18 +713,19 @@ public class TestDataProvider {
 	}
 
 	@Getter
-	public HibNode getContent(String name) {
-		return contents.get(name);
-	}
-
-	@Getter
 	public HibTag getTag(String name) {
-		return tags.get(name);
+		HibTag tag = tags.get(name);
+		tag = CommonTx.get().load(tag.getId(), tag.getClass());
+		tags.put(name, tag);
+		return tag;
 	}
 
 	@Getter
 	public HibSchema getSchemaContainer(String name) {
-		return schemaContainers.get(name);
+		HibSchema schema = schemaContainers.get(name);
+		schema = CommonTx.get().load(schema.getId(), schema.getClass());
+		schemaContainers.put(name, schema);
+		return schema;
 	}
 
 	public Map<String, HibTag> getTags() {

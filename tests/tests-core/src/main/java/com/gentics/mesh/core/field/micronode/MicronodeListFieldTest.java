@@ -50,9 +50,9 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
+
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, MICRONODE_LIST, "micronode");
 			InternalActionContext ac = mockActionContext("");
@@ -77,6 +77,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
+
 			NodeResponse response = transform(node);
 			assertList(2, "micronodeList", "micronode", response);
 			MicronodeFieldList micronodeRestList = response.getFields().getMicronodeFieldList(MICRONODE_LIST);
@@ -288,7 +290,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 						field.getList().get(1).getMicronode().getString("lastName").getString());
 				assertEquals("The list item of the field was not updated.", "updatedFirstname2",
 						field.getList().get(1).getMicronode().getString("firstName").getString());
-
+				field.removeAll();
 			});
 		}
 	}

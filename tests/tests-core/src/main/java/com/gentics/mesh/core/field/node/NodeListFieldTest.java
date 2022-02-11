@@ -48,8 +48,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			HibNode newsNode = folder("news");
 			prepareNode(node, NODE_LIST, "node");
@@ -61,6 +61,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, NODE_LIST, "node", response);
 		}
@@ -135,7 +136,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-			fieldB.addItem(fieldB.createNode(0, reloadContent()));
+			fieldB.addItem(fieldB.createNode(0, content()));
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 		}
 	}

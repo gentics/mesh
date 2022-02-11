@@ -5,6 +5,8 @@ import java.util.function.Consumer;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -23,8 +25,6 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.MeshTestContext;
 
@@ -65,10 +65,6 @@ public interface BaseHelper {
 	 */
 	default HibProject project() {
 		return data().getProject();
-	}
-
-	default HibProject reloadProject() {
-		return data().reloadProject();
 	}
 
 	default Database db() {
