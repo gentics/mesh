@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.syncleus.ferma.VertexFrame;
 
 /**
@@ -131,19 +130,6 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 		public String getName() {
 			return nameSupplier.get();
-		}
-	}
-
-	@Override
-	public ReferenceType getReferenceType() {
-		VertexFrame framedVertex = outV().next();
-
-		if (framedVertex instanceof ListGraphField) {
-			return ReferenceType.LIST;
-		} else if (framedVertex instanceof MicronodeImpl) {
-			return ReferenceType.MICRONODE;
-		} else {
-			return ReferenceType.FIELD;
 		}
 	}
 }

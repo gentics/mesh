@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
@@ -27,7 +28,7 @@ public interface HibHtmlField extends HibListableField, HibBasicField<HtmlField>
 	String getHTML();
 
 	@Override
-	default HibHtmlField cloneTo(HibFieldContainer container) {
+	default HibField cloneTo(HibFieldContainer container) {
 		HibHtmlField clone = container.createHTML(getFieldKey());
 		clone.setHtml(getHTML());
 		return clone;

@@ -3,11 +3,7 @@ package com.gentics.mesh.core.data.binary;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.result.Result;
-
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 
 /**
  * Vertex which contains the actual information about the binary content that is referenced by an {@link BinaryGraphField}.
@@ -27,7 +23,7 @@ public interface Binary extends MeshVertex, HibBinary {
 	 * 
 	 * @return
 	 */
-	Result<HibBinaryField> findFields();
+	Result<? extends HibBinaryField> findFields();
 
 	/**
 	 * Return the sha512 checksum.

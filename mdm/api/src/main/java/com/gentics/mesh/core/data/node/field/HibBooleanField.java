@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field;
 
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -24,7 +25,7 @@ public interface HibBooleanField extends HibListableField, HibBasicField<Boolean
 	void setBoolean(Boolean bool);
 
 	@Override
-	default HibBooleanField cloneTo(HibFieldContainer container) {
+	default HibField cloneTo(HibFieldContainer container) {
 		HibBooleanField clone = container.createBoolean(getFieldKey());
 		clone.setBoolean(getBoolean());
 		return clone;

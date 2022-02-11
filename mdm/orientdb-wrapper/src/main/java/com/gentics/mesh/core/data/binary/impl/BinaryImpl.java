@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.binary.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
-import java.io.InputStream;
 import java.util.Base64;
 
 import com.gentics.madl.index.IndexHandler;
@@ -13,13 +12,9 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
-import com.gentics.mesh.core.db.Supplier;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
-import com.gentics.mesh.core.data.storage.BinaryStorage;
-
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 
 /**
  * @see Binary
@@ -42,9 +37,8 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public Result<HibBinaryField> findFields() {
-		// TODO inE should not return wildcard generics
-		return (Result<HibBinaryField>) (Result<? extends HibBinaryField>) inE(HAS_FIELD, BinaryGraphFieldImpl.class);
+	public Result<? extends HibBinaryField> findFields() {
+		return inE(HAS_FIELD, BinaryGraphFieldImpl.class);
 	}
 
 	@Override

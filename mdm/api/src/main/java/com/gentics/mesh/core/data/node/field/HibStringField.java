@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field;
 
 import java.util.Objects;
 
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -25,7 +26,7 @@ public interface HibStringField extends HibListableField, HibBasicField<StringFi
 	void setString(String string);
 
 	@Override
-	default HibStringField cloneTo(HibFieldContainer container) {
+	default HibField cloneTo(HibFieldContainer container) {
 		HibStringField clone = container.createString(getFieldKey());
 		clone.setString(getString());
 		return clone;

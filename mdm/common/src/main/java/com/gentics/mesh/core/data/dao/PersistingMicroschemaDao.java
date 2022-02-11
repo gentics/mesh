@@ -121,8 +121,7 @@ public interface PersistingMicroschemaDao
 				.filter(branch -> branch.contains(microschemaContainer))
 				.findAny()
 				.ifPresentOrElse(existing -> {
-					throw error(BAD_REQUEST, "microschema_conflicting_name", existing.getUuid(),
-							CREATE_PERM.getRestPerm().getName());
+					HibMicroschema.log.warn("Microschema { " + microschemaContainer.getName() + " } is already assigned to the project { " + project.getName() + " }");
 				}, () -> {
 					// Adding new microschema
 					batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
