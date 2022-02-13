@@ -16,6 +16,14 @@ import io.vertx.core.json.JsonObject;
  * Formpage element, which is a container for other elements. Stores boolean flag in mesh, which is true, when all nested elements were successfully posted
  */
 public class FormpageElement extends FormElement {
+
+	public FormpageElement() {
+	}
+
+	protected FormpageElement(FormpageElement other, boolean deep) {
+		super(other, deep);
+	}
+
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
 		container.addField(new BooleanFieldSchemaImpl().setName(getName()).setLabel(getName()));
@@ -50,5 +58,10 @@ public class FormpageElement extends FormElement {
 		} else {
 			return field.getValue() == Boolean.TRUE;
 		}
+	}
+
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new FormpageElement(this, deep);
 	}
 }

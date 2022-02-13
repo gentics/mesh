@@ -4,7 +4,7 @@
 			<select class="mdc-select" data-mdc-auto-init="Select"
 				name="{{ name }}" placeholdername="" {{#if mandatory}}required="required"{{/if}}>
 				<option value="">{{ label }}</option>
-{{#each listelements }}
+{{#each options }}
 				<option value="{{ value }}" {{#equals value data.value}}selected="selected"{{/equals}}>{{{ label }}}</option>
 {{/each}}
 			</select>

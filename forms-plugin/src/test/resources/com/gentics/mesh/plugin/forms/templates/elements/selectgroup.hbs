@@ -3,7 +3,7 @@
 	<div class="content form-group">
 		<fieldset class="c-radio-set">
 			<legend class="c-radio-set__legend">{{{ label }}}</legend>
-{{#each listelements }}
+{{#each options }}
 			<div class="mdc-radio" data-mdc-auto-init="Radio">
 				<input type="radio" id="{{ name }}-{{ @index }}" name="{{ name }}"
 					value="{{ value }}" class="mdc-radio__native-control"

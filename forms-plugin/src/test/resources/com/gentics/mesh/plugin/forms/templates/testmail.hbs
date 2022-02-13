@@ -1,7 +1,17 @@
 {{# each data }}
     {{~# if this.isFile ~}}
         {{ baseUrl }}/api/forms/forms/{{ form.uuid }}/data/{{ dataUuid }}/binary/{{ this.name }}
-    {{~ else ~}}
-        {{ value }}
-    {{~/ if ~}}
+    {{~ else }}
+value: {{{formatDate value "MM/dd/yyyy" srcFormat="dd.MM.yyyy"}}}
+valueLabel: {{{valueLabel}}}
+options.length: {{{options.length}}}
+customProperty: {{{customProperty}}}
+moreCustomProperties.no: {{moreCustomProperties.no}}
+moreCustomProperties.yes: {{moreCustomProperties.yes}}
+moreCustomProperties.one: {{moreCustomProperties.one}}
+moreCustomProperties.many: {{moreCustomProperties.many}}
+moreCustomProperties.more.foo: {{moreCustomProperties.more.foo }}
+
+===
+{{/ if ~}}
 {{~/ each ~}}

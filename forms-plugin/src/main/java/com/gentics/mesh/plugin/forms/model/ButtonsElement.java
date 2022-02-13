@@ -11,6 +11,13 @@ import io.vertx.core.MultiMap;
  */
 public class ButtonsElement extends FormElement {
 
+	public ButtonsElement() {
+	}
+
+	protected ButtonsElement(ButtonsElement buttonsElement, boolean deep) {
+		super(buttonsElement, deep);
+	}
+
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
 	}
@@ -23,5 +30,10 @@ public class ButtonsElement extends FormElement {
 	@Override
 	public List<String> getMultiFormData(MultiMap postedData) {
 		return null;
+	}
+
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new ButtonsElement(this, deep);
 	}
 }

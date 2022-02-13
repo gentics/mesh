@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,16 @@ public class FileElement extends FormElement {
 
 	@JsonProperty("allowed_filetypes")
 	private List<String> allowedFiletypes;
+
+	public FileElement() {
+	}
+
+	protected FileElement(FileElement other, boolean deep) {
+		super(other, deep);
+
+		this.maxSizeMB = other.maxSizeMB;;
+		this.allowedFiletypes = cloneField(other.allowedFiletypes, deep);
+	}
 
 	@JsonProperty("max_filesize")
 	public int getMaxSizeMB() {
@@ -122,9 +133,14 @@ public class FileElement extends FormElement {
 		return String.format("%s { fileName }", getName());
 	}
 
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new FileElement(this, deep);
+	}
+
 	/**
 	 * Get the fileupload for this field
-	 * 
+	 *
 	 * @param fileUploads
 	 *            fileuploads
 	 * @return fileupload or null
@@ -135,7 +151,7 @@ public class FileElement extends FormElement {
 
 	/**
 	 * Check whether the file has an allowed content-type
-	 * 
+	 *
 	 * @param fileUpload
 	 *            file upload
 	 * @param allowedTypes
@@ -155,7 +171,7 @@ public class FileElement extends FormElement {
 
 	/**
 	 * Check whether the file has an allowed name
-	 * 
+	 *
 	 * @param fileUpload
 	 *            file upload
 	 * @param allowedTypes
@@ -175,7 +191,7 @@ public class FileElement extends FormElement {
 
 	/**
 	 * Get configured allowed file types or empty map
-	 * 
+	 *
 	 * @return map of configured allowed file types
 	 */
 	protected Map<String, Set<String>> getAllowedTypesConfiguration() {
@@ -195,7 +211,7 @@ public class FileElement extends FormElement {
 
 	/**
 	 * Get configured allowed file names or empty map
-	 * 
+	 *
 	 * @return map of configured allowed file names
 	 */
 	protected Map<String, Set<String>> getAllowedNamesConfiguration() {

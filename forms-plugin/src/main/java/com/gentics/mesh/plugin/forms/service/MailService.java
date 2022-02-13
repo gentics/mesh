@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.plugin.common.service.RenderService;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -36,7 +38,6 @@ import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 
 @Singleton
 public class MailService {
@@ -48,7 +49,7 @@ public class MailService {
 
 	private final FormsConfig configuration;
 
-	private final HandlebarsTemplateEngine templateEngine;
+	private final RenderService renderService;
 
 	private final StatusService statusService;
 
@@ -57,12 +58,12 @@ public class MailService {
 			@AdminClient MeshRestClient adminClient,
 			Vertx vertx,
 			FormsConfig configuration,
-			HandlebarsTemplateEngine templateEngine,
+			RenderService renderService,
 			StatusService statusService) {
 		this.adminClient = adminClient;
 		this.vertx = vertx;
 		this.configuration = configuration;
-		this.templateEngine = templateEngine;
+		this.renderService = renderService;
 		this.statusService = statusService;
 	}
 
@@ -150,13 +151,13 @@ public class MailService {
 
 		statusService.getBaseUrl(projectName).subscribe(baseUrl -> {
 			rc.put("baseUrl", baseUrl);
-			rc.put("form", new JsonObject(JsonUtil.toJson(form)));
-			rc.put("data", form.getReportableFormData(formDataNode));
+			rc.put("form", new JsonObject(form.removeInactiveElements().toJson()));
+			rc.put("data", form.getReportableFormData(formDataNode, FormElement::isActive));
 			rc.put("dataUuid", formDataNode.getUuid());
-			templateEngine.render(rc.data(), template, res -> {
+			renderService.render(rc.data(), template, res -> {
 				if (res.succeeded()) {
 					MailMessage message = new MailMessage().setTo(to).setFrom(from).setSubject(subject).setHtml(res.result().toString());
-					
+
 					Consumer<MailMessage> send = m -> {
 						MailClient client = MailClient.createShared(vertx, convertConfig(configuration.getMailOptions()), "client");
 						client.sendMail(m, sendRes -> {

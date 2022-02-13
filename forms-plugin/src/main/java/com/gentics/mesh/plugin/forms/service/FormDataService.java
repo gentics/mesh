@@ -18,6 +18,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
@@ -49,7 +50,6 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
-import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -102,15 +102,25 @@ public class FormDataService {
 
 	private final MailService mailService;
 
-	private final HandlebarsTemplateEngine templateEngine;
+	private final RenderService renderService;
 
 	private final StatusService statusService;
 
 	private final String pluginId;
 
 	@Inject
-	public FormDataService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient, Vertx vertx, FormsConfig configuration, ObjectMapper objectMapper,
-						   FormService formService, PagingService pagingService, MailService mailService, HandlebarsTemplateEngine templateEngine, StatusService statusService, PluginManifest manifest) {
+	public FormDataService(
+			@AdminClient MeshRestClient adminClient,
+			@UserClient @Nullable MeshRestClient userClient,
+			Vertx vertx,
+			FormsConfig configuration,
+			ObjectMapper objectMapper,
+			FormService formService,
+			PagingService pagingService,
+			MailService mailService,
+			RenderService renderService,
+			StatusService statusService,
+			PluginManifest manifest) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.vertx = vertx;
@@ -119,7 +129,7 @@ public class FormDataService {
 		this.formService = formService;
 		this.pagingService = pagingService;
 		this.mailService = mailService;
-		this.templateEngine = templateEngine;
+		this.renderService = renderService;
 		this.statusService = statusService;
 		this.pluginId = manifest.getId();
 	}
@@ -320,44 +330,40 @@ public class FormDataService {
 					.flatMap(langFallback -> formService.loadAsAdmin(projectName, formUuid, true, langFallback)),
 				load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
 				(formNode, formDataNode) -> {
-					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
-
-					formService.removeInactiveElements(formJson);
-
-					// add id
-					formJson.put("id", formUuid);
-					// add property "multipage"
-					formJson.put("multipage", formService.isMultipage(formJson));
-					// add options
-					formJson.put("options", JsonObject.mapFrom(configuration));
-					// add path prefix
-					formJson.put("pathPrefix", pathPrefix);
+					Form form = formService.toForm(formNode.getFields().getStringField("json").getString(), formNode.getUuid())
+						.removeInactiveElements();
+					JsonObject formJson = form.prepareRenderContext(pathPrefix, configuration);
 
 					return RxUtil.fromNullable(formDataNode)
-						.flatMapSingleElement(fdn -> formService.toForm(formNode)
-							.map(form -> {
-								// only fill in data, if form is not published
-								if (!isFormDataPublished(fdn)) {
-									JsonObject formDataJson = form.getFormDataJson(fdn);
-									formJson.put("dataid", formDataUuid);
-									mergeData(formJson, formDataJson);
-								}
+						.flatMapSingleElement(fdn -> {
+							// only fill in data, if form is not published
+							if (!isFormDataPublished(fdn)) {
+								JsonObject formDataJson = form.getFormDataJson(fdn);
+								formJson.put("dataid", formDataUuid);
+								mergeData(formJson, formDataJson);
+							}
 
-								if (!form.isCompleted(fdn)) {
-									// get completed formpages
-									Set<String> completed = form.flattened().filter(elem -> elem instanceof FormpageElement)
-										.filter(elem -> elem.isCompleted(fdn))
-										.map(FormElement::getName).collect(Collectors.toSet());
-									return completed;
-								}
-								return Collections.<String>emptySet();
-							})).toSingle(Collections.emptySet())
+							Set<String> result;
+
+							if (form.isCompleted(fdn)) {
+								result = Collections.emptySet();
+							} else {
+								// get completed formpages
+								result = form.flattened().filter(elem -> elem instanceof FormpageElement)
+									.filter(elem -> elem.isCompleted(fdn))
+									.map(FormElement::getName)
+									.collect(Collectors.toSet());
+							}
+
+							return Single.just(result);
+						})
+						.toSingle(Collections.emptySet())
 						.flatMap(completed -> {
 							formService.markFormpages(formJson, completed);
 
 							rc.put("form", formJson);
 
-							return templateEngine.rxRender(rc.data(), "form");
+							return renderService.rxRender(rc.data(), "form");
 						});
 				}))
 				.flatMap(s -> s);
@@ -578,7 +584,9 @@ public class FormDataService {
 			.orElse(formUuid);
 
 		Cookie cookie = Cookie.cookie(COOKIE_NAME_VOTED, votedPolls)
-			.setPath(getPath(ctx.getReferer()))
+			// The cookie is needed when rendering the form in a page, as well as when data is submitted to the
+			// /api/forms/forms/ID/data endpoint, so we set the path to /.
+			.setPath("/")
 			.setHttpOnly(true)
 			.setMaxAge(Integer.MAX_VALUE);
 

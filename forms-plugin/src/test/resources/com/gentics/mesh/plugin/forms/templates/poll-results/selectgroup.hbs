@@ -2,7 +2,12 @@
 	label: {{label}}
 	type: {{type}}
 	total: {{total}}
+	element.properties.customProperty: {{element.properties.customProperty}}
 	values:
 {{~#each values}}
+		{{getValueLabel @key}} ({{@key}}): {{@value~}}
+{{/each}}
+	valueLabels:
+{{~#each valueLabels}}
 		{{@key}}: {{@value~}}
 {{/each}}

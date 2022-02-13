@@ -536,3 +536,13 @@ For extending the forms-plugin, a new maven project must be created, that uses t
 ## Custom Elements
 * Custom elements can be implemented by extending class `com.gentics.mesh.plugin.forms.model.FormElement`
 * Mapping for custom element types to classes must be added to `elements` in the configuration file `config.yml`
+
+# Handlebars helpers
+
+The following helpers are available for rendering mail bodies or HTML markup:
+
+* `formsElementTemplate ELEMENT_TYPE`: returns the path to the template partial for the given type (when rendering forms)
+* `pollResultTemplate ELEMENT_TYPE`: returns the path to the template partial for the given type (when rendering poll results)
+* `formsInputType INPUT_ELEMENT`: returns the suggested input type for the given element
+* `formatDate DATE TARGET_FORMAT [SOURCE_FORMAT]`: returns the given date formatted with TARGET_FORMAT. When no SOURCE_FORMAT is specified, the input is assumed to be in the form YYY-MM-DD.
+* `formatTime TIME TARGET_FORMAT [SOURCE_FORMAT]`: same as `formatDate` for a time. When no SOURCE_FORMAT is specified the input is assumed to be in the form HH:mm. Note that both `formatDate` and `formatTime` can be used to format with any pattern parsable by the [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) class. The distinct helpers are just provided with different default source formats for convenience reasons.

@@ -3,31 +3,53 @@
 	"type": "POLL",
 	"elements": [
 		{
+			"type": "sectionheadline",
+			"name": "section_headline",
+			"active": true,
+			"elements": [],
+			"text": "The section headline"
+		},
+		{
+			"type": "text",
+			"name": "description_text",
+			"active": true,
+			"elements": [],
+			"text": "Some description"
+		},
+
+		{
 			"type": "checkbox",
 			"name": "checkbox1",
-			"label": "Checkbox element"
+			"label": "Checkbox element",
+			"customScalarProperty": "Custom Checkbox Property",
+			"customPropertyMap": {
+				"key": "Value"
+			}
 		},
 		{
 			"type": "selectgroup",
 			"name": "radiobuttons1",
 			"select_type": "radiobuttons",
 			"label": "Radio buttons element",
-			"listelements": [
+			"properties": {
+				"customProperty": "Custom Radio Buttons Property"
+			},
+			"options": [
 				{
-					"label": "Option which is never selected",
-					"value": "r_X"
+					"value": "Option which is never selected at the beginning",
+					"key": "r_X"
 				},
 				{
-					"label": "Radio button option 1",
-					"value": "r_1"
+					"value": "Radio button option 1",
+					"key": "r_1"
 				},
 				{
-					"label": "Radio button option 2",
-					"value": "r_2"
+					"value": "Radio button option 2",
+					"key": "r_2"
 				},
 				{
-					"label": "Radio button option 3",
-					"value": "r_3"
+					"value": "Radio button option 3",
+					"key": "r_3"
 				}
 			]
 		},
@@ -36,18 +58,23 @@
 			"name": "singleselect1",
 			"select_type": "singleselect",
 			"label": "Single-select element",
-			"listelements": [
+			"options": [
 				{
-					"label": "Single-select option 1",
-					"value": "s_1"
+					"value": "Single-select option 1",
+					"key": "s_1"
+				},
+
+				{
+					"value": "Option which is never selected in the middle",
+					"key": "s_X"
 				},
 				{
-					"label": "Single-select option 2",
-					"value": "s_2"
+					"value": "Single-select option 2",
+					"key": "s_2"
 				},
 				{
-					"label": "Single-select option 3",
-					"value": "s_3"
+					"value": "Single-select option 3",
+					"key": "s_3"
 				}
 			]
 		},
@@ -56,18 +83,22 @@
 			"name": "multiselect1",
 			"select_type": "multiselect",
 			"label": "Multi-select element",
-			"listelements": [
+			"options": [
 				{
-					"label": "Multi-select option 1",
-					"value": "m_1"
+					"value": "Multi-select option 1",
+					"key": "m_1"
 				},
 				{
-					"label": "Multi-select option 2",
-					"value": "m_2"
+					"value": "Multi-select option 2",
+					"key": "m_2"
 				},
 				{
-					"label": "Multi-select option 3",
-					"value": "m_3"
+					"value": "Multi-select option 3",
+					"key": "m_3"
+				},
+				{
+					"value": "Option which is never selected at the end",
+					"key": "m_X"
 				}
 			]
 		}

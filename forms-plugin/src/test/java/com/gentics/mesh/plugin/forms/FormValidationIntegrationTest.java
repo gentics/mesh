@@ -23,8 +23,9 @@ public class FormValidationIntegrationTest extends AbstractFormsPluginIntegratio
 		return Arrays.asList(
 			new Object[] { "invalid_form_no_list_elements.json", false },
 			new Object[] { "invalid_form_missing_value.json", false },
-			new Object[] { "invalid_form_missing_label.json", false },
-			new Object[] { "invalid_form_not_validated.json", true }
+			new Object[] { "invalid_form_missing_key.json", false },
+			new Object[] { "invalid_form_not_validated.json", true },
+			new Object[] { "selectgroup_legacy_listelements.json", true }
 		);
 	}
 

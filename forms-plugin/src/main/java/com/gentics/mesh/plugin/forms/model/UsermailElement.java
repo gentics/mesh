@@ -1,15 +1,13 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.FileUpload;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Usermail element
@@ -21,6 +19,16 @@ public class UsermailElement extends FormElement {
 
 	@JsonProperty("mailtemplate")
 	private String template;
+
+	public UsermailElement() {
+	}
+
+	protected UsermailElement(UsermailElement other, boolean deep) {
+		super(other, deep);
+
+		this.subject = other.subject;
+		this.template = other.template;
+	}
 
 	@JsonProperty("mailsubject")
 	public String getSubject() {
@@ -48,9 +56,14 @@ public class UsermailElement extends FormElement {
 		if (error == null) {
 			String value = getSingleFormData(postedData);
 			if (StringUtils.isNotBlank(value)) {
-				error = Validator.email.validate(getName(), Arrays.asList(value));
+				error = Validator.email.validate(getName(), Collections.singletonList(value));
 			}
 		}
 		return error;
+	}
+
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new UsermailElement(this, deep);
 	}
 }

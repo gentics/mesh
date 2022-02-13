@@ -19,6 +19,14 @@ import io.vertx.ext.web.FileUpload;
  * Element for mandatory groups
  */
 public class MandatorygroupElement extends FormElement {
+
+	public MandatorygroupElement() {
+	}
+
+	protected MandatorygroupElement(MandatorygroupElement other, boolean deep) {
+		super(other, deep);
+	}
+
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
 	}
@@ -29,6 +37,11 @@ public class MandatorygroupElement extends FormElement {
 
 	@Override
 	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
+	}
+
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new MandatorygroupElement(this, deep);
 	}
 
 	@Override

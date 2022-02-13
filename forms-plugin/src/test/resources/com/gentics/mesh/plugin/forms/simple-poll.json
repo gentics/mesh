@@ -5,7 +5,10 @@
 		{
 			"type": "checkbox",
 			"name": "checkbox1",
-			"label": "Checkbox element"
+			"label": "Checkbox element",
+			"properties": {
+				"textkey": "Custom Checkbox Property"
+			}
 		}
 	]
 }

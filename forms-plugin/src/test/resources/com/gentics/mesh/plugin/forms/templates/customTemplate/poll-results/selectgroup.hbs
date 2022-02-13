@@ -1,0 +1,12 @@
+Custom {{name}}
+	label: {{label}}
+	type: {{type}}
+	total: {{total}}
+	values:
+{{~#each values}}
+		{{@key}}: {{@value~}}
+{{/each}}
+	valueLabels:
+{{~#each valueLabels}}
+		{{@key}}: {{@value~}}
+{{/each}}

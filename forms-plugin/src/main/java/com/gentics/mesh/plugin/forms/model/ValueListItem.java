@@ -3,29 +3,33 @@ package com.gentics.mesh.plugin.forms.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Model for entries of <code>listelements</code> in {@link ValueListElement} types.
+ * Model for entries of {@code options} in {@link ValueListElement} types.
  */
 public class ValueListItem {
 
 	@JsonProperty
-	private String label;
+	private String key;
 
 	@JsonProperty
 	private String value;
 
-	public String getLabel() {
-		return label;
+	public String getKey() {
+		return key;
 	}
 
-	public void setLabel(String label) {
-		this.label = label;
+	public ValueListItem setKey(String key) {
+		this.key = key;
+
+		return this;
 	}
 
 	public String getValue() {
 		return value;
 	}
 
-	public void setValue(String value) {
+	public ValueListItem setValue(String value) {
 		this.value = value;
+
+		return this;
 	}
 }

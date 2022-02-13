@@ -40,6 +40,13 @@ public class FriendlyCaptchaElement extends FormElement {
 
 	protected final static String MESSAGE_KEY = "error.validation.captcha";
 
+	public FriendlyCaptchaElement() {
+	}
+
+	protected FriendlyCaptchaElement(FriendlyCaptchaElement other, boolean deep) {
+		super(other, deep);
+	}
+
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
 	}
@@ -52,6 +59,11 @@ public class FriendlyCaptchaElement extends FormElement {
 	@Override
 	public List<String> getMultiFormData(MultiMap postedData) {
 		return null;
+	}
+
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new FriendlyCaptchaElement(this, deep);
 	}
 
 	@Override

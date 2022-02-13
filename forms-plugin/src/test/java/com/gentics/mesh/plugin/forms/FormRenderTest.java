@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,6 +29,9 @@ import okhttp3.Response;
  * Test cases for rendering forms
  */
 public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
+
+	private static final String CUSTOM_TEMPLATE = "customTemplate";
+
 	@Before
 	public void setup() {
 		super.setup();
@@ -41,17 +45,36 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testRender() throws IOException {
-		doTestSimpleRender("inputfield", false);
+		doTestSimpleRender("inputfield", false, null);
 	}
 
 	@Test
 	public void testRenderPoll() throws IOException {
-		doTestSimpleRender("simple-poll", false);
+		doTestSimpleRender("simple-poll", false, null);
+	}
+
+	@Test
+	public void testRenderTemplateContext() throws IOException {
+		doTestSimpleRender("inputfield", false, CUSTOM_TEMPLATE);
+	}
+
+	@Test
+	public void testRenderEmptyPollTemplateContext() throws IOException {
+		doTestSimpleRender("simple-poll", true, CUSTOM_TEMPLATE);
 	}
 
 	@Test
 	public void testRenderPollResults() throws IOException {
-		String uuid = createForm("poll-results" + ".json");
+		doTestRenderPollResults(null);
+	}
+
+	@Test
+	public void testRenderPollResultsTemplateContext() throws IOException {
+		doTestRenderPollResults(CUSTOM_TEMPLATE);
+	}
+
+	public void doTestRenderPollResults(String templateContext) throws IOException {
+		String uuid = createForm("poll-results.json");
 
 		submitMultiple(uuid,
 			true,
@@ -88,8 +111,16 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 					"singleselect1", "s_3",
 					"multiselect1", "m_3" }));
 
+		StringBuilder url = new StringBuilder(projectUrl("/forms/" + uuid));
+		StringBuilder expectedResultFilename = new StringBuilder("poll-results");
+
+		if (StringUtils.isNotBlank(templateContext)) {
+			url.append("?templateContext=").append(templateContext);
+			expectedResultFilename.append("-").append(templateContext);
+		}
+
 		Request.Builder builder = new Request.Builder()
-			.url(projectUrl("/forms/" + uuid))
+			.url(url.toString())
 			.get()
 			.header("Accept", "text/html");
 
@@ -102,12 +133,12 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 			.isTrue();
 		assertThat(response.body().string())
 			.as("Rendered result")
-			.isEqualTo(fromFile("poll-results" + ".html"));
+			.isEqualTo(fromFile(expectedResultFilename.append(".html").toString()));
 	}
 
 	@Test
 	public void testRenderPollUnpublished() throws IOException {
-		String uuid = createForm("poll-results" + ".json");
+		String uuid = createForm("poll-results.json");
 		ResponseWithCookies rs = submit(uuid, false, true, false,
 			"checkbox1", "1",
 			"radiobuttons1", "r_1",
@@ -133,7 +164,7 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 			.isTrue();
 		assertThat(response.body().string())
 			.as("Rendered result")
-			.isEqualTo(fromFile("poll-results-not-published" + ".html"));
+			.isEqualTo(fromFile("poll-results-not-published.html"));
 	}
 
 	/**
@@ -304,14 +335,20 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testRenderMultipage() throws IOException {
-		doTestSimpleRender("multipage", false);
+		doTestSimpleRender("multipage", false, null);
 	}
 
-	private void doTestSimpleRender(String testName, boolean addVotedCookie) throws IOException {
+	private void doTestSimpleRender(String testName, boolean addVotedCookie, String templateContext) throws IOException {
 		String uuid = createForm(testName + ".json");
 
+		StringBuilder url = new StringBuilder(projectUrl("/forms/" + uuid));
+
+		if (StringUtils.isNotBlank(templateContext)) {
+			url.append("?templateContext=").append(templateContext);
+		}
+
 		Request.Builder builder = new Request.Builder()
-			.url(projectUrl("/forms/" + uuid))
+			.url(url.toString())
 			.get()
 			.header("Accept", "text/html");
 
@@ -322,6 +359,14 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 		Response response = client().newCall(builder.build()).execute();
 
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile(testName + ".html"));
+		StringBuilder expectedResultFilename = new StringBuilder(testName);
+
+		if (StringUtils.isNotBlank(templateContext)) {
+			expectedResultFilename.append("-").append(templateContext);
+		}
+
+		assertThat(response.body().string())
+			.as("Rendered form")
+			.isEqualTo(fromFile(expectedResultFilename.append(".html").toString()));
 	}
 }

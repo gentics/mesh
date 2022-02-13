@@ -53,6 +53,13 @@ public class ReCaptchaElement extends FormElement {
 
 	protected final static String MESSAGE_KEY = "error.validation.captcha";
 
+	public ReCaptchaElement() {
+	}
+
+	protected ReCaptchaElement(ReCaptchaElement other, boolean deep) {
+		super(other, deep);
+	}
+
 	@Override
 	public void addFieldSchema(FieldSchemaContainer container) {
 	}
@@ -65,6 +72,11 @@ public class ReCaptchaElement extends FormElement {
 	@Override
 	public List<String> getMultiFormData(MultiMap postedData) {
 		return null;
+	}
+
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new ReCaptchaElement(this, deep);
 	}
 
 	@Override
@@ -85,7 +97,7 @@ public class ReCaptchaElement extends FormElement {
 
 	/**
 	 * Check validity of the captcha response
-	 * 
+	 *
 	 * @param captchaResponse
 	 *            captcha response
 	 * @return true iff the captcha response is valid

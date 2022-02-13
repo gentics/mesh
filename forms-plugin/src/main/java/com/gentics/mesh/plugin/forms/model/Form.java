@@ -1,13 +1,16 @@
 package com.gentics.mesh.plugin.forms.model;
 
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -18,13 +21,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Form
  */
-public class Form {
+public class Form implements RestModel {
 	/**
 	 * Name of the schema field containing the errors
 	 */
@@ -47,6 +51,33 @@ public class Form {
 	private String successurl;
 
 	private List<FormElement> elements = new ArrayList<>();
+
+	private String templateContext;
+
+	public Form() {
+	}
+
+	/**
+	 * Copy constructor
+	 *
+	 * <p>
+	 *     Note that the copy is shallow, and the list of form elements does
+	 *     <em>not</em> contain copies of this forms elements.
+	 * </p>
+	 *
+	 * @param other The form object to copy
+	 */
+	private Form(Form other) {
+		this.uuid = other.uuid;
+		this.name = other.name;
+		this.type = other.type;
+		this.email = other.email;
+		this.mailsubject = other.mailsubject;
+		this.mailtemp = other.mailtemp;
+		this.successurl = other.successurl;
+		this.elements = other.elements == null ? new ArrayList<>() : new ArrayList<>(other.elements);
+		this.templateContext = other.templateContext;
+	}
 
 	public String getUuid() {
 		return uuid;
@@ -183,6 +214,14 @@ public class Form {
 		this.elements = elements;
 	}
 
+	public String getTemplateContext() {
+		return templateContext;
+	}
+
+	public void setTemplateContext(String templateContext) {
+		this.templateContext = templateContext;
+	}
+
 	/**
 	 * Transform all form elements into schema fields in the container
 	 * @param container container (will be modified)
@@ -315,16 +354,69 @@ public class Form {
 	 * @return form data json
 	 */
 	public JsonArray getReportableFormData(FieldContainer container) {
+		return getReportableFormData(container, ignored -> true);
+	}
+
+	/**
+	 * Get the form data as reportable json object
+	 * @param container form data node
+	 * @param filter additional filter for form elements
+	 * @return form data json
+	 */
+	public JsonArray getReportableFormData(FieldContainer container, Predicate<FormElement> filter) {
 		JsonArray array = new JsonArray();
-		flattened().filter(FormElement::isReportable).forEach(elem -> {
-			JsonObject elemObj = new JsonObject();
-			elemObj.put("name", elem.getName());
-			elemObj.put("label", elem.getLabel());
-			elemObj.put("isFile", elem instanceof FileElement);
-			elem.addFormData(elemObj, container, e -> "value");
-			array.add(elemObj);
-		});
+
+		flattened()
+			.filter(elt -> elt.isReportable() && filter.test(elt))
+			.forEach(elem -> {
+				JsonObject elemObj = new JsonObject(elem.toJson())
+					.put("isFile", elem instanceof FileElement);
+
+				elem.addFormData(elemObj, container, e -> "value");
+
+				array.add(addValueLabels(elem, elemObj));
+			});
+
 		return array;
+	}
+
+	/**
+	 * Add the labels for selected values for the given {@link ValueListElement}
+	 * to the given result object.
+	 *
+	 * <p>
+	 *     The label will be stored in {@code resultObj} under the key
+	 *     {@code valueLabel}.
+	 * </p>
+	 *
+	 * @param elem The form element being processed (this method does nothing for elements other than {@code ValueListElement})
+	 * @param resultObj The JSON object to add the value label to
+	 * @return The modified {@code resultObj}
+	 */
+	private JsonObject addValueLabels(FormElement elem, JsonObject resultObj) {
+		if (!(elem instanceof ValueListElement)) {
+			return resultObj;
+		}
+
+		ValueListElement listElem = (ValueListElement) elem;
+		Map<String, String> valueLabels = listElem.getOptions().stream()
+			.collect(ValueListElement.OPTIONS_MAP_COLLECTOR);
+
+		if (elem.isMultivalue()) {
+			JsonArray values = resultObj.getJsonArray("value");
+			JsonArray labels = values.stream()
+				.sequential()
+				.filter(v -> v instanceof String)
+				.map(Objects::toString)
+				.map(v -> valueLabels.getOrDefault(v, v))
+				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::addAll));
+
+			return resultObj.put("valueLabel", labels);
+		}
+
+		String value = resultObj.getString("value");
+
+		return resultObj.put("valueLabel", valueLabels.getOrDefault(value, value));
 	}
 
 	/**
@@ -359,5 +451,66 @@ public class Form {
 	 */
 	public boolean isMultipage() {
 		return flattened().filter(elem -> elem instanceof FormpageElement).findFirst().isPresent();
+	}
+
+	/**
+	 * Create a copy of this form with only active form elements.
+	 *
+	 * @return A copy of this form with only active form elements
+	 */
+	public Form removeInactiveElements() {
+		Form copy = new Form(this);
+
+		copy.elements = elements.stream()
+			.filter(FormElement::isActive)
+			.map(FormElement::removeInactiveElements)
+			.collect(Collectors.toList());
+
+		return copy;
+	}
+
+	/**
+	 * Prepare a JSON object containing all necessary information about the form
+	 * so that it can be rendered with handlebars.
+	 *
+	 * @param pathPrefix The path prefix for the action URL
+	 * @param configuration The form configuration
+	 * @return A JSON object containing render information of the form
+	 */
+	public JsonObject prepareRenderContext(String pathPrefix, FormsConfig configuration) {
+		return new JsonObject(toJson())
+			// add id
+			.put("id", uuid)
+			// add property "multipage"
+			.put("multipage", isMultipage())
+			// add options
+			.put("options", JsonObject.mapFrom(configuration))
+			// add path prefix
+			.put("pathPrefix", pathPrefix)
+			// add elements map
+			.put("elementMap", elementMap());
+	}
+
+	/**
+	 * Create a mapping from form element names to their respective JSON
+	 * representation.
+	 *
+	 * @return A mapping from form element names to their respective JSON
+	 * 		representation
+	 */
+	private Map<String, Object> elementMap() {
+		return flattened()
+			.map(elt -> {
+				JsonObject json = new JsonObject(elt.toJson());
+				Object name = json.remove("name");
+
+				return Pair.of(name == null ? "" : name.toString(), json);
+			})
+			.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	@Override
+	public String toString() {
+		return toJson();
 	}
 }

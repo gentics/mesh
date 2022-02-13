@@ -1,17 +1,28 @@
 package com.gentics.mesh.plugin.forms.helper;
 
+import com.gentics.mesh.plugin.forms.model.ValueListElement;
 import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.github.jknack.handlebars.Options;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
+import java.util.Objects;
 
 /**
  * Helper for rendering a form (optionally prefilled with input and error messages)
  */
 public class FormHelper {
+
 	public final static String SUBTYPE_PARAMETER_NAME = "subtype";
 	public final static String DEFAULT_SUBTYPE_PARAMETER_NAME = "defaultSubtype";
+	public final static String SRC_FORMAT = "srcFormat";
+
+	private final static Logger log = LoggerFactory.getLogger(FormHelper.class);
 
 	/**
 	 * Create an instance
@@ -20,7 +31,7 @@ public class FormHelper {
 	}
 
 	public CharSequence equals(Object o1, Object o2, Options options) throws IOException {
-		if (o1.equals(o2)) {
+		if (Objects.equals(o1, o2)) {
 			return options.fn();
 		}
 		return options.inverse();
@@ -45,7 +56,18 @@ public class FormHelper {
 	 * @return template name
 	 */
 	public CharSequence pollResultTemplate(Object elementType, Options options) {
-		return elementTemplate(elementType, "poll-results", options);
+		if (elementType instanceof String) {
+			switch ((String) elementType) {
+			case "checkbox":
+			case "selectgroup":
+				return elementTemplate(elementType, "poll-results", options);
+
+			default:
+				return elementTemplate("generic", "poll-results", options);
+			}
+		}
+
+		return "";
 	}
 
 	/**
@@ -111,4 +133,125 @@ public class FormHelper {
 		}
 	}
 
+	/**
+	 * Lookup the label for the given {@code key} from the {@code valueLabels}
+	 * stored in the routing context.
+	 *
+	 * @param key The key to look up
+	 * @param options The Handlebars options
+	 * @return The label for {@code key} if it is present in {@code valueLabels},
+	 * 		or {@code key} if not
+	 */
+	public Object getValueLabel(String key, Options options) {
+		Object o = options.get(ValueListElement.RC_VALUE_LABELS);
+
+		if (o instanceof JsonObject) {
+			return ((JsonObject) o).getString(key, key);
+		}
+
+		return key;
+	}
+
+	/**
+	 * Format given {@code date} with the specified {@code pattern}.
+	 *
+	 * <p>
+	 *     The input date is expected to be an {@link DateTimeFormatter#ISO_DATE}
+	 *     (YYYY-MM-DD), unless the optional parameter {@code srcFormat} is
+	 *     specified).
+	 * </p>
+	 *
+	 * <p>
+	 *     If any of the parsing (date or source pattern) or formatting fails,
+	 *     this helper will just return the input {@code date}.
+	 * </p>
+	 *
+	 * @see #formatDateTime(Object, String, DateTimeFormatter, Options)
+	 * @param date The date to be formatted
+	 * @param pattern The target date format
+	 * @param options Handlebars options
+	 * @return The input {@code date} formatted with {@code pattern}
+	 */
+	public Object formatDate(Object date, String pattern, Options options) {
+		return formatDateTime(date, pattern, DateTimeFormatter.ISO_DATE, options);
+	}
+
+	/**
+	 * Format given {@code time} with the specified {@code pattern}.
+	 *
+	 * <p>
+	 *     The input time is expected to be an {@link DateTimeFormatter#ISO_TIME}
+	 *     (HH:mm[:ss]), unless the optional parameter {@code srcFormat} is
+	 *     specified).
+	 * </p>
+	 *
+	 * <p>
+	 *     If any of the parsing (time or source pattern) or formatting fails,
+	 *     this helper will just return the input {@code time}.
+	 * </p>
+	 *
+	 * @see #formatDateTime(Object, String, DateTimeFormatter, Options)
+	 * @param time The time to be formatted
+	 * @param pattern The target time format
+	 * @param options Handlebars options
+	 * @return The input {@code date} formatted with {@code pattern}
+	 */
+	public Object formatTime(Object time, String pattern, Options options) {
+		return formatDateTime(time, pattern, DateTimeFormatter.ISO_TIME, options);
+	}
+
+	/**
+	 * Format given {@code date} with the specified {@code pattern}.
+	 *
+	 * <p>
+	 *     The input date is expected to be parsable by the specified
+	 *     {@code defaultParser} ({@link DateTimeFormatter#ISO_DATE_TIME}),
+	 *     unless the optional parameter {@code srcFormat} is specified).
+	 * </p>
+	 *
+	 * <p>
+	 *     If any of the parsing (date or source pattern) or formatting fails,
+	 *     this helper will just return the input {@code date}.
+	 * </p>
+	 *
+	 * @param dateTime The date or time to be formatted
+	 * @param pattern The target date format
+	 * @param options Handlebars options
+	 * @return The input {@code date} formatted with {@code pattern}
+	 */
+	private Object formatDateTime(Object dateTime, String pattern, DateTimeFormatter defaultParser, Options options) {
+		if (!(dateTime instanceof String)) {
+			return dateTime;
+		}
+
+		DateTimeFormatter parser = defaultParser == null ? DateTimeFormatter.ISO_DATE_TIME : defaultParser;
+
+		if (options.hash.containsKey(SRC_FORMAT)) {
+			Object fmt = options.hash.get(SRC_FORMAT);
+
+			try {
+				parser = DateTimeFormatter.ofPattern(fmt.toString());
+			} catch (Exception e) {
+				log.error("Illegal source date/time format: {}, using default", fmt);
+			}
+		}
+
+		TemporalAccessor parsedDate;
+
+		try {
+			parsedDate = parser.parse((CharSequence) dateTime);
+		} catch (DateTimeParseException e) {
+			log.error("Could not parse date/time '{}' with pattern '{}', returning original date/time", dateTime, parser);
+
+			return dateTime;
+		}
+
+		try {
+			return DateTimeFormatter.ofPattern(pattern).format(parsedDate);
+		} catch (Exception e) {
+			log.error("Could not format date/time {} with pattern '{}', returning original date/time", parsedDate, pattern);
+		}
+
+		return dateTime;
+	}
 }

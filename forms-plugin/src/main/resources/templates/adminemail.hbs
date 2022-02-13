@@ -12,14 +12,24 @@
       <span style='font-size:10.0pt;font-family:"Tahoma","sans-serif";color:black'>
 {{#if value.length}}
 <ul>
-{{#each value}}
-	<li>{{this}}</li>
-{{/each}}
+	{{#if valueLabel}}
+		{{#each valueLabel}}<li>{{this}}</li>{{/each}}
+	{{else}}
+		{{#each value}}<li>{{this}}</li>{{/each}}
+	{{/if}}
 </ul>
 {{else if this.isFile}}
 <a href="{{baseUrl}}/api/forms/forms/{{form.uuid}}/data/{{dataUuid}}/binary/{{this.name}}" download="{{value}}">{{value}}</a>
 {{else}}
-{{value}}
+	{{#if valueLabel}}
+		{{valueLabel}}
+	{{else}}
+		{{#equals validation "date"}}
+			Formatted date (MM/dd/yyyy): {{formatDate value "MM/dd/yyyy"}}
+		{{else}}
+			Raw value ({{type}}/{{validation}}): {{value}}
+		{{/equals}}
+	{{/if}}
 {{/if}}
       </span>
     </p>

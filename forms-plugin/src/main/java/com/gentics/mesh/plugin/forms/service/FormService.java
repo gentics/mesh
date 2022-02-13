@@ -26,6 +26,7 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
@@ -36,7 +37,6 @@ import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.response.RenderResponse;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
-import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -53,7 +53,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.file.FileSystem;
-import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -179,7 +178,7 @@ public class FormService {
 
 	private final PagingService pagingService;
 
-	private final HandlebarsTemplateEngine templateEngine;
+	private final RenderService renderService;
 
 	private final FormsConfig configuration;
 
@@ -193,7 +192,7 @@ public class FormService {
 			ObjectMapper objectMapper,
 			SchemaService schemaService,
 			PagingService pagingService,
-			HandlebarsTemplateEngine templateEngine,
+			RenderService renderService,
 			FormsConfig configuration,
 			StatusService statusService) {
 		this.fileSystem = rxVertx.fileSystem();
@@ -202,7 +201,7 @@ public class FormService {
 		this.objectMapper = objectMapper;
 		this.schemaService = schemaService;
 		this.pagingService = pagingService;
-		this.templateEngine = templateEngine;
+		this.renderService = renderService;
 		this.configuration = configuration;
 		this.statusService = statusService;
 	}
@@ -581,57 +580,63 @@ public class FormService {
 		return statusService.languageFallback(projectName, lang)
 			.flatMap(langFallback -> statusService.getPathPrefixOfDefaultBranch(projectName)
 				.flatMap(pathPrefix ->loadAsAdmin(projectName, uuid, true, langFallback)
-				.flatMap(formNode -> {
-					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
+					.flatMap(this::toForm)
+					.flatMap(form -> {
+						if (form.getType() == FormType.POLL) {
+							boolean showResults = !rc.queryParam(PARAM_SHOW_RESULTS).isEmpty()
+								|| Stream.of(rc.getCookie(FormDataService.COOKIE_NAME_VOTED))
+									.filter(Objects::nonNull)
+									.map(c -> c.getValue().split(FormDataService.COOKIE_VOTED_SEPARATOR))
+									.flatMap(Arrays::stream)
+									.anyMatch(form.getUuid()::equals);
 
-
-					if (FormType.POLL.name().equals(formJson.getString("type"))) {
-						boolean showResults = !rc.queryParam(PARAM_SHOW_RESULTS).isEmpty()
-							|| Stream.of(rc.getCookie(FormDataService.COOKIE_NAME_VOTED))
-								.filter(Objects::nonNull)
-								.map(c -> c.getValue().split(FormDataService.COOKIE_VOTED_SEPARATOR))
-								.flatMap(Arrays::stream)
-								.anyMatch(formNode.getUuid()::equals);
-
-						if (showResults) {
-							String templateContext = rc.queryParam(PARAM_TEMPLATE_CONTEXT).stream()
-								.filter(StringUtils::isNotBlank)
-								.findFirst()
-								.orElse("");
-
-							return renderPollResults(rc, projectName, formNode);
+							if (showResults) {
+								return renderPollResults(rc, projectName, form);
+							}
 						}
-					}
 
-					return renderForm(uuid, formJson, pathPrefix, rc);
-				})));
+						return renderForm(uuid, form, pathPrefix, rc);
+					})));
 	}
 
 	/**
 	 * Render the form for the given {@code formJson}.
 	 *
 	 * @param uuid form uuid
-	 * @param formJson form JSON to render
+	 * @param formData form to render encoded as JSON
 	 * @param rc routing context
 	 * @return single buffer
 	 */
-	public Single<Buffer> renderForm(String uuid, JsonObject formJson, String pathPrefix, RoutingContext rc) {
-		removeInactiveElements(formJson);
+	public Single<Buffer> renderForm(String uuid, String formData, String pathPrefix, RoutingContext rc) {
+		Form form;
 
-		// add id
-		formJson.put("id", uuid);
-		// add property "multipage"
-		formJson.put("multipage", isMultipage(formJson));
-		// add options
-		formJson.put("options", JsonObject.mapFrom(configuration));
-		// add path prefix
-		formJson.put("pathPrefix", pathPrefix);
+		try {
+			form = toForm(formData, uuid);
+		} catch (IOException e) {
+			log.error("Could not create form instance from form data: {}", e.getMessage());
+
+			return Single.error(e);
+		}
+		return renderForm(uuid, form, pathPrefix, rc);
+	}
+
+	/**
+	 * Render the form for the given {@code formJson}.
+	 *
+	 * @param uuid form uuid
+	 * @param form form to render
+	 * @param rc routing context
+	 * @return single buffer
+	 */
+	public Single<Buffer> renderForm(String uuid, Form form, String pathPrefix, RoutingContext rc) {
+		JsonObject formJson = form.removeInactiveElements()
+			.prepareRenderContext(pathPrefix, configuration);
 
 		markFormpages(formJson, Collections.emptySet());
 
 		rc.put("form", formJson);
 
-		return renderTemplate(rc, formJson, "form");
+		return renderTemplate(rc, form.getTemplateContext(), "form");
 	}
 
 	/**
@@ -643,7 +648,7 @@ public class FormService {
 	 * @return single buffer
 	 */
 	public Single<RenderResponse> renderPreviewAsJson(String projectName, String uuid, JsonObject formJson, RoutingContext rc) {
-		removeInactiveElements(formJson);
+		FormUtil.removeInactiveElements(formJson);
 
 		// add id
 		formJson.put("id", uuid);
@@ -655,7 +660,7 @@ public class FormService {
 
 		rc.put("form", formJson);
 
-		return renderTemplate(rc, formJson, "form")
+		return renderTemplate(rc, formJson.getString(PARAM_TEMPLATE_CONTEXT), "form")
 			.map(buffer -> new RenderResponse().setHtml(buffer.toString()));
 	}
 
@@ -688,17 +693,6 @@ public class FormService {
 					element.put("active", false);
 				}
 			}
-		}
-	}
-
-	/**
-	 * Remove inactive elements from the form
-	 * @param form form, which will be modified
-	 */
-	public void removeInactiveElements(JsonObject form) {
-		JsonArray elements = form.getJsonArray("elements");
-		if (elements != null) {
-			form.put("elements", removeInactiveElements(elements));
 		}
 	}
 
@@ -743,32 +737,12 @@ public class FormService {
 	 * @return The deserialized <code>Form</code> object
 	 * @throws IOException When the object mapper cannot parse the string
 	 */
-	private Form toForm(String formData, String formUuid) throws IOException {
+	public Form toForm(String formData, String formUuid) throws IOException {
 		Form form = objectMapper.readValue(formData, Form.class);
 
 		form.setUuid(formUuid);
 
 		return form;
-	}
-
-	/**
-	 * Remove inactive elements from the elements array
-	 * @param elements elements
-	 * @return cleaned elements array
-	 */
-	private JsonArray removeInactiveElements(JsonArray elements) {
-		JsonArray cleanedElements = new JsonArray();
-		for (int i = 0; i < elements.size(); i++) {
-			JsonObject element = elements.getJsonObject(i);
-			if (ParameterUtil.asBoolean(element.getValue("active"), true)) {
-				cleanedElements.add(element);
-				JsonArray subElements = element.getJsonArray("elements");
-				if (subElements != null) {
-					element.put("elements", removeInactiveElements(subElements));
-				}
-			}
-		}
-		return cleanedElements;
 	}
 
 	/**
@@ -838,23 +812,20 @@ public class FormService {
 	 *
 	 * @param rc The current routing context
 	 * @param projectName The project name
-	 * @param formNode The form node for which results should be rendered
+	 * @param form The form for which results should be rendered
 	 * @return A {@code Single} containing the rendered result as a {@code Buffer}
 	 */
-	private Single<Buffer> renderPollResults(RoutingContext rc, String projectName, NodeResponse formNode) {
-		String formRaw = formNode.getFields().getStringField("json").getString();
-
-		return getPollResults(projectName, formRaw, formNode.getUuid())
+	private Single<Buffer> renderPollResults(RoutingContext rc, String projectName, Form form) {
+		return getPollResults(projectName, form, form.getUuid())
 			.flatMap(rs -> {
-				JsonObject formJson = new JsonObject(formRaw);
 				JsonObject poll = new JsonObject()
-					.put("id", formNode.getUuid())
+					.put("id", form.getUuid())
 					.put("options", JsonObject.mapFrom(configuration))
 					.put("result", rs);
 
 				rc.put("poll", poll);
 
-				return renderTemplate(rc, formJson, configuration.getPollOptions().getResultTemplate());
+				return renderTemplate(rc, form.getTemplateContext(), configuration.getPollOptions().getResultTemplate());
 			});
 	}
 
@@ -862,19 +833,12 @@ public class FormService {
 	 * Load the results for the specified poll form.
 	 *
 	 * @param projectName The project name
-	 * @param formRaw The JSON definition of the poll form
+	 * @param form The poll form
 	 * @param formUuid The UUID of the form node
 	 * @return A {@code Single} containing the results in a JSON array
 	 */
-	private Single<JsonArray> getPollResults(String projectName, String formRaw, String formUuid) {
+	private Single<JsonArray> getPollResults(String projectName, Form form, String formUuid) {
 		JsonObject results = new JsonObject();
-		Form form;
-
-		try {
-			form = toForm(formRaw, formUuid);
-		} catch (IOException e) {
-			return Single.error(e);
-		}
 
 		return loadFormData(projectName, formUuid)
 			.doOnNext(formData -> form.gatherPollResults(results, formData))
@@ -952,24 +916,33 @@ public class FormService {
 	 * Render the given template with the given context.
 	 *
 	 * @param rc The current routing context
-	 * @param form The form that is rendered (or for which results should be rendered)
+	 * @param templateContext The forms template context
 	 * @param templateName The name of the template to be rendered (may contain path segments)
 	 * @return A {@code Single} containing the rendered template
 	 */
-	private Single<Buffer> renderTemplate(RoutingContext rc, JsonObject form, String templateName) {
+	private Single<Buffer> renderTemplate(RoutingContext rc, String templateContext, String templateName) {
 		String basePath = configuration.getTemplatesPath();
 		// Observables cannot handle null values, so we filter those first using Java streams.
 		List<String> validContexts = Stream.of(
 				rc.queryParam(PARAM_TEMPLATE_CONTEXT).stream().filter(StringUtils::isNotBlank).findFirst().orElse(null),
-				form.getString(PARAM_TEMPLATE_CONTEXT))
+				templateContext)
 			.filter(StringUtils::isNotBlank)
 			.collect(Collectors.toList());
 
 		return Observable.fromIterable(validContexts)
 			.map(ctx -> String.format("%s/%s/%s.hbs", basePath, ctx, templateName))
 			.flatMap(path -> fileSystem.rxExists(path)
-				.flatMapObservable(exists -> exists ? Observable.just(path) : Observable.empty()))
+				.flatMapObservable(exists -> {
+					if (exists) {
+						return Observable.just(path);
+					}
+
+					log.debug("Template <{}> not found", path);
+
+					return Observable.empty();
+				}))
 			.first(String.format("%s/%s.hbs", basePath, templateName))
-			.flatMap(template -> templateEngine.rxRender(rc.data(), StringUtils.removeEnd(template, ".hbs")));
+			.doOnSuccess(template -> log.debug("Using template <{}>", template))
+			.flatMap(template -> renderService.rxRender(rc.data(), StringUtils.removeEnd(template, ".hbs")));
 	}
 }

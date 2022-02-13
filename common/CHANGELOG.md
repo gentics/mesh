@@ -10,6 +10,11 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.6.19]]
+== 1.6.19 (TBD)
+
+icon:plus[] Common: Adds the `RenderService` which wraps Handlebars template rendering and makes sure that all template names start with the correct base template bath. The service can be injected automatically in which case the templates have to reside in _STORAGE_DIR/templates/_, or it can be created with an explicit base path.
+
 [[v1.6.14]]
 == 1.6.14 (2021-09-20)
 

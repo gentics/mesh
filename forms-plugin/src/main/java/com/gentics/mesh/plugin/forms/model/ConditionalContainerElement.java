@@ -17,6 +17,16 @@ public class ConditionalContainerElement extends FormElement {
 
 	private String valueToCheck;
 
+	public ConditionalContainerElement() {
+	}
+
+	protected ConditionalContainerElement(ConditionalContainerElement other, boolean deep) {
+		super(other, deep);
+
+		this.elementToCheck = other.elementToCheck;
+		this.valueToCheck = other.valueToCheck;
+	}
+
 	public String getElementToCheck() {
 		return elementToCheck;
 	}
@@ -31,6 +41,11 @@ public class ConditionalContainerElement extends FormElement {
 
 	@Override
 	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
+	}
+
+	@Override
+	protected FormElement clone(boolean deep) {
+		return new ConditionalContainerElement(this, deep);
 	}
 
 	@Override

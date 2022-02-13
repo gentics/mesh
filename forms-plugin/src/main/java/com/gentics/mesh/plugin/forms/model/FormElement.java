@@ -1,20 +1,11 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
-
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
@@ -23,20 +14,31 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.core.Link;
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Abstract form element
  */
-public abstract class FormElement {
+public abstract class FormElement implements RestModel {
 	protected static final Logger log = LoggerFactory.getLogger(FormElement.class);
 
 	private String name;
@@ -53,11 +55,35 @@ public abstract class FormElement {
 
 	private List<FormElement> elements = new ArrayList<>();
 
+	private Map<String, Object> properties = new LinkedHashMap<>();
+
 	@JsonIgnore
 	private FormElement container;
 
 	@JsonIgnore
 	private FormsConfig configuration;
+
+	public FormElement() {
+	}
+
+	/**
+	 * Copy constructor.
+	 *
+	 * @param other The form element ot copy
+	 * @param deep Whether to create a deep copy of the child elements
+	 */
+	protected FormElement(FormElement other, boolean deep) {
+		this.name = other.name;
+		this.label = other.label;
+		this.type = other.type;
+		this.active = other.active;
+		this.mandatory = other.mandatory;
+		this.validation = other.validation;
+		this.elements = cloneField(other.elements, deep);
+		this.properties = cloneField(other.properties, deep);
+		this.container = other.container;
+		this.configuration = other.configuration;
+	}
 
 	/**
 	 * Element name
@@ -179,6 +205,37 @@ public abstract class FormElement {
 	public void setElements(List<FormElement> elements) {
 		this.elements = elements;
 		this.elements.stream().forEach(element -> element.setContainer(this));
+	}
+
+	/**
+	 * Get the map of additional properties.
+	 * @return The map of additional properties
+	 */
+	@JsonAnyGetter
+	public Map<String, Object> getAny() {
+		if (properties == null) {
+			properties = new LinkedHashMap<>();
+		}
+
+		return properties;
+	}
+
+	/**
+	 * Set the specified additional property to the given value.
+	 *
+	 * <p>
+	 *     This will store {@code value} under {@code key} in the
+	 *     {@link #properties} map.
+	 * </p>
+	 *
+	 * @param key The name of the additional property
+	 * @param value The value of the additional property
+	 */
+	@JsonAnySetter
+	public void setProperty(String key, Object value) {
+		if (StringUtils.isNotBlank(key)) {
+			getAny().put(key, value);
+		}
 	}
 
 	/**
@@ -345,6 +402,10 @@ public abstract class FormElement {
 			results.put("label", getLabel());
 		}
 
+		if (!results.containsKey("element")) {
+			results.put("element", new JsonObject(toJson()));
+		}
+
 		if (!results.containsKey("values")) {
 			results.put("values", new JsonObject(new LinkedHashMap<>()));
 		}
@@ -443,5 +504,104 @@ public abstract class FormElement {
 	@JsonIgnore
 	public FormsConfig getConfiguration() {
 		return configuration;
+	}
+
+	/**
+	 * Create a clone of this element which has all inactive child elements
+	 * removed.
+	 *
+	 * @return A clone of this element which has all inactive child elements
+	 * 		removed
+	 */
+	@JsonIgnore
+	public FormElement removeInactiveElements() {
+		FormElement clone = clone(true);
+
+		if (!elements.isEmpty()) {
+			clone.elements = clone.elements.stream()
+				.filter(FormElement::isActive)
+				.map(FormElement::removeInactiveElements)
+				.collect(Collectors.toList());
+		}
+
+		return clone;
+	}
+
+	/**
+	 * Create a shallow clone of this form element.
+	 * @return A shallow clone of this form element.
+	 */
+	protected FormElement clone() {
+		return clone(false);
+	}
+
+	/**
+	 * Create a clone of this form element.
+	 *
+	 * <p>
+	 *     When {@code deep} is true, all fields that are collections will also
+	 *     be cloned, otherwise just the reference to these will be copied.
+	 * </p>
+	 *
+	 * <p>
+	 *     <strong>IMPORTANT:</strong> a deep copy of the form element should
+	 *     be created when the clones collection fields are modified, for example
+	 *     by {@link #removeInactiveElements()}.
+	 * </p>
+	 *
+	 * @param deep Whether to create a deep clone
+	 * @return The cloned form element
+	 */
+	protected abstract FormElement clone(boolean deep);
+
+	/**
+	 * Clone the given list field.
+	 *
+	 * <p>
+	 *     When {@code other} is {@code null} the result is an empty list.
+	 *     Otherwise the result is a reference to {@code other} when
+	 *     {@code deep} is {@code false}, or a new {@link ArrayList} containing
+	 *     all the elements of {@code other}.
+	 * </p>
+	 *
+	 * @param other The list to clone
+	 * @param deep Whether a copy of the list should be created
+	 * @param <T> The type of the list elements
+	 * @return Either a reference to {@code other}, or a new list with the
+	 * 		same elements
+	 */
+	@Nonnull
+	protected <T> List<T> cloneField(List<T> other, boolean deep) {
+		if (other == null) {
+			return new ArrayList<>();
+		}
+
+		return deep ? new ArrayList<>(other) : other;
+	}
+
+	/**
+	 * Clone the given map field.
+	 *
+	 * <p>
+	 *     When {@code other} is {@code null} the result is an empty map.
+	 *     Otherwise the result is a reference to {@code other} when
+	 *     {@code deep} is {@code false}, or a new {@link LinkedHashMap}
+	 *     containing all the elements of {@code other}.
+	 * </p>
+	 *
+	 * @param other The map to clone
+	 * @param deep Whether a copy of the map should be created
+	 * @param <K> The type of the map keys
+	 * @param <V> The type of the map values
+	 * @return Either a reference to {@code other}, or a new map with the
+	 * 		same elements
+	 */
+	@Nonnull
+	protected <K, V> Map<K, V> cloneField(Map<K, V> other, boolean deep) {
+		if (other == null) {
+			return new LinkedHashMap<>();
+		}
+
+		return deep ? new LinkedHashMap<>(other) : other;
 	}
 }

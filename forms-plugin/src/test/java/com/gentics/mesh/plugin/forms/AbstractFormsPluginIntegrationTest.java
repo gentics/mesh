@@ -3,7 +3,9 @@ package com.gentics.mesh.plugin.forms;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -307,7 +309,13 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @throws IOException
 	 */
 	protected String fromFile(String name) throws IOException {
-		return IOUtils.toString(getClass().getResourceAsStream(name), "UTF-8");
+		InputStream contents = getClass().getResourceAsStream(name);
+
+		if (contents == null) {
+			throw new FileNotFoundException("File not found: " + name);
+		}
+
+		return IOUtils.toString(contents, "UTF-8");
 	}
 
 	/**

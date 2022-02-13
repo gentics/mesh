@@ -15,8 +15,8 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.helper.FormHelper;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormElementDeserializer;
+import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.github.jknack.handlebars.io.FileTemplateLoader;
 
 import dagger.Module;
 import dagger.Provides;
@@ -27,7 +27,7 @@ import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 public class FormsPluginModule {
 	/**
 	 * Create the object mapper for deserialization of the form
-	 * @param configuration
+	 * @param configuration The plugin configuration
 	 * @return object mapper
 	 */
 	@Singleton
@@ -42,19 +42,22 @@ public class FormsPluginModule {
 		return objectMapper;
 	}
 
+
 	/**
-	 * Template engine
-	 * @param vertx
-	 * @param configuration
-	 * @return template engine
+	 * Render service
+	 *
+	 * @param vertx The Vert.x instance
+	 * @param config The plugin configuration
+	 * @return The render service
 	 */
 	@Singleton
 	@Provides
-	public HandlebarsTemplateEngine templateEngine(Vertx vertx, FormsConfig configuration) {
-		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine engine = io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine.create(vertx);
-		engine.getHandlebars().with(new FileTemplateLoader(new File(configuration.getTemplatesPath()).getAbsolutePath()));
-		engine.getHandlebars().registerHelpers(new FormHelper());
-		return new HandlebarsTemplateEngine(engine);
+	public RenderService renderService(Vertx vertx, FormsConfig config) {
+		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine.create(vertx);
+
+		delegateEngine.getHandlebars().registerHelpers(new FormHelper());
+
+		return new RenderService(config.getTemplatesPath(), new HandlebarsTemplateEngine(delegateEngine));
 	}
 
 	@Singleton

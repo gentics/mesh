@@ -7,14 +7,25 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.vertx.core.MultiMap;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Element for select groups
  */
 @Reportable
 public class SelectgroupElement extends CombiElement {
+
 	@JsonProperty("additional_element")
 	private boolean additionalElement;
+
+	public SelectgroupElement() {
+	}
+
+	protected SelectgroupElement(SelectgroupElement other, boolean deep) {
+		super(other, deep);
+
+		this.additionalElement = other.additionalElement;
+	}
 
 	/**
 	 * Get the "additional_element" flag
@@ -70,5 +81,10 @@ public class SelectgroupElement extends CombiElement {
 	@Override
 	public boolean isMultivalue() {
 		return Objects.equals("multiselect", getSelectType());
+	}
+
+	@Override
+	public FormElement clone(boolean deep) {
+		return new SelectgroupElement(this, deep);
 	}
 }
