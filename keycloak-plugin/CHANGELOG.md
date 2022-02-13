@@ -10,6 +10,11 @@
 
 = Mesh Keycloak Plugin Changelog
 
+[[v1.6.18]]
+== 1.6.18 (2022-02-01)
+
+icon:plus[] The initialization of the plugin will now fail if no public-keys are provided or can be loaded during startup.
+
 [[v1.6.4]]
 == 1.6.4 (2021-03-18)
 
