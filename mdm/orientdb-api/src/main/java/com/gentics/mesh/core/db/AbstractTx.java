@@ -122,13 +122,13 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 		B entity = getGraph().addFramedVertex(classOfB);
 		if (StringUtils.isNotBlank(uuid)) {
 			entity.setUuid(uuid);
-			persist(entity, classOfB);
+			persist(entity);
 		}
 		return entity;
 	}
 	
 	@Override
-	public <B extends HibElement> B persist(B element, Class<? extends B> classOfB) {
+	public <B extends HibElement> B persist(B element) {
 		/*
 		 * Since OrientDB does not tell apart POJOs and persistent entities, 
 		 * processing the entity updates directly into the persistent state, 
@@ -138,7 +138,7 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	}
 	
 	@Override
-	public <B extends HibElement> void delete(B element, Class<? extends B> classOfB) {
+	public <B extends HibElement> void delete(B element) {
 		((ElementFrame) element).remove();
 	}
 

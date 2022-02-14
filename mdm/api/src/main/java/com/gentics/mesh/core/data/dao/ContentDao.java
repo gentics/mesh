@@ -291,6 +291,24 @@ public interface ContentDao {
 		boolean handleDraftEdge);
 
 	/**
+	 * Like {@link #createFieldContainer(HibNode, String, HibBranch, HibUser)}, but let the new field container be a clone of the given original (if not
+	 * null) and pass the schema version
+	 *
+	 * @param version
+	 * @param languageTag
+	 * @param branch
+	 * @param editor
+	 *            User which will be set as editor
+	 * @param original
+	 *            Container to be used as a source for the new container
+	 * @param handleDraftEdge
+	 *            Whether to move the existing draft edge or create a new draft edge to the new container
+	 * @return Created container
+	 */
+	HibNodeFieldContainer createFieldContainer(HibSchemaVersion version, HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
+											   boolean handleDraftEdge);
+
+	/**
 	 * Return the draft field containers of the node in the latest branch.
 	 *
 	 * @return

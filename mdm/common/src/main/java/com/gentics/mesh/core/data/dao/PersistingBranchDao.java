@@ -127,6 +127,8 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 			assignSchemas(project, creator, baseBranch, branch, false, batch);
 		}
 
+		mergeIntoPersisted(project, branch);
+
 		return branch;
 	}
 

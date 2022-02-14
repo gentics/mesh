@@ -28,18 +28,16 @@ public interface TxEntityPersistenceManager {
 	 * Merge the data from given POJO into the persistent entity.<br>
 	 * 
 	 * @param element
-	 * @param classOfT the persistence class to use
 	 * @return
 	 */
-	<T extends HibElement> T persist(T element, Class<? extends T> classOfT);
+	<T extends HibElement> T persist(T element);
 	
 	/**
 	 * Delete the persistent entity.<br>
 	 * 
 	 * @param element
-	 * @param classOfT the persistence class to use
 	 */
-	<T extends HibElement> void delete(T element, Class<? extends T> classOfT);
+	<T extends HibElement> void delete(T element);
 
 	/**
 	 * Count the entities of a given type in the persistent storage.<br>

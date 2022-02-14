@@ -153,7 +153,7 @@ public interface PersistingContainerDao<
 		if (next != null) {
 			deleteChange(next, bc);
 		}
-		CommonTx.get().delete(change, change.getClass());
+		CommonTx.get().delete(change);
 	}
 
 	@Override
@@ -184,7 +184,7 @@ public interface PersistingContainerDao<
 		}
 		beforeVersionDeletedFromDatabase(version);
 		// Delete version
-		ctx.delete(version, version.getClass());
+		ctx.delete(version);
 	}
 
 	/**

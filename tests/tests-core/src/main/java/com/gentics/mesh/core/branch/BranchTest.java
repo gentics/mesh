@@ -2,7 +2,6 @@ package com.gentics.mesh.core.branch;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +21,6 @@ import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -76,11 +74,10 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibBranch branchTwo = branchDao.create(project(), "Two", user(), batch);
 			HibBranch branchThree = branchDao.create(project(), "Three", user(), batch);
 
-			Page<? extends HibBranch> page = branchDao.findAll(project(), mockActionContext(), new PagingParametersImpl(1, 25L));
-			assertThat(page).isNotNull();
-			List<HibBranch> arrayList = new ArrayList<>();
-			page.iterator().forEachRemaining(r -> arrayList.add(r));
-			assertThat(arrayList).contains(initialBranch, branchOne, branchTwo, branchThree);
+			List<String> branchNames  = branchDao.findAll(project(), mockActionContext(), new PagingParametersImpl(1, 25L))
+					.getWrappedList().stream().map(HibBranch::getName).collect(Collectors.toList());
+			assertThat(branchNames).isNotNull();
+			assertThat(branchNames).contains(initialBranch.getName(), branchOne.getName(), branchTwo.getName(), branchThree.getName());
 		}
 	}
 
@@ -381,7 +378,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			updateSchema(schemaContainer, "newfield");
 			HibSchemaVersion secondVersion = schemaContainer.getLatestVersion();
 
-			HibBranch initialBranch = tx.<CommonTx>unwrap().load(initialBranch().getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
+			HibBranch initialBranch = tx.branchDao().findByUuid(project, initialBranch().getUuid());
 			HibBranch newBranch = createBranch("New Branch");
 
 			assertThat(initialBranch).as(initialBranch.getName()).hasSchema(schemaContainer).hasSchemaVersion(firstVersion)
@@ -484,7 +481,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			updateMicroschema(microschema, "newfield");
 			HibMicroschemaVersion secondVersion = microschema.getLatestVersion();
 
-			HibBranch initialBranch = tx.<CommonTx>unwrap().load(initialBranch().getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
+			HibBranch initialBranch = tx.branchDao().findByUuid(project, initialBranch().getUuid());
 			HibBranch newBranch = createBranch("New Branch");
 
 			assertThat(initialBranch).as(initialBranch.getName()).hasMicroschema(microschema).hasMicroschemaVersion(firstVersion)

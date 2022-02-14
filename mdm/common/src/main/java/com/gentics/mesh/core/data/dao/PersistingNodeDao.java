@@ -603,7 +603,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			throw error(BAD_REQUEST, "node_move_error_same_nodes");
 		}
 
-		sourceNode.setParentNode(branchUuid, targetNode);
+		setParentNode(sourceNode, branchUuid, targetNode);
 
 		// Update published graph field containers
 		contentDao.getFieldContainers(sourceNode, branchUuid, PUBLISHED).stream().forEach(container -> {
@@ -1015,7 +1015,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 		if (recursive) {
 			// No need to check the branch since this delete must affect all branches
-			for (HibNode child : getChildren(node)) {
+			for (HibNode child : getChildren(node).list()) {
 				delete(child, bac, false, true);
 				bac.process();
 			}
@@ -1605,7 +1605,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		HibNode node = create(creator, schemaVersion, project, uuid);
-		node.setParentNode(branch.getUuid(), parentNode);
+		setParentNode(node, branch.getUuid(), parentNode);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
 		// setCreated(creator);
 		return node;
@@ -1746,13 +1746,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 					ContainerType type = edge.getType();
 					// Only handle published or draft contents
 					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-						HibNode referencedNode = nodeContainer.getNode();
-						String uuid = referencedNode.getUuid();
+						HibNode referencingNode = nodeContainer.getNode();
+						String uuid = referencingNode.getUuid();
 						String languageTag = nodeContainer.getLanguageTag();
 						String branchUuid = edge.getBranchUuid();
 						String key = uuid + languageTag + branchUuid + type.getCode();
 						if (!handledNodeUuids.contains(key)) {
-							bac.add(onReferenceUpdated(updatedNode, referencedNode.getUuid(), referencedNode.getSchemaContainer(), branchUuid, type, languageTag));
+							bac.add(onReferenceUpdated(updatedNode, referencingNode.getUuid(), referencingNode.getSchemaContainer(), branchUuid, type, languageTag));
 							handledNodeUuids.add(key);
 						}
 					}

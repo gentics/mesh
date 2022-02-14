@@ -44,6 +44,6 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 
 	@Override
 	default void onRootDeleted(R root, BulkActionContext bac) {
-		findAll(root).forEach(entity -> delete(root, entity, bac));
+		findAll(root).list().forEach(entity -> delete(root, entity, bac));
 	}
 }

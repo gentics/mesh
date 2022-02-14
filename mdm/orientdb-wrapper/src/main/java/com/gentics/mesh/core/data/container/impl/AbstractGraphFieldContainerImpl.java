@@ -9,9 +9,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
@@ -77,7 +78,12 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public void removeField(String fieldKey, BulkActionContext bac) {
-		toGraph(getField(fieldKey)).removeField(bac, this);
+		if (StringUtils.isNotBlank(fieldKey)) {
+			HibField field = getField(fieldKey);
+			if (field != null) {
+				toGraph(field).removeField(bac, this);
+			}
+		}
 	}
 
 	@Override

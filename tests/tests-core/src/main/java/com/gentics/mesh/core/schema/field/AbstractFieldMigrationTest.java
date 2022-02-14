@@ -151,6 +151,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		change.setPreviousContainerVersion(versionA);
 		change.setNextSchemaContainerVersion(versionB);
 		versionA.setNextVersion(versionB);
+		versionA.setNextChange(change);
 
 		// create a node based on the old schema
 		EventQueueBatch batch = createBatch();
@@ -534,6 +535,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		change.setPreviousContainerVersion(versionA);
 		change.setNextSchemaContainerVersion(versionB);
 		versionA.setNextVersion(versionB);
+		versionA.setNextChange(change);
 
 		// create a node based on the old schema
 		EventQueueBatch batch = createBatch();

@@ -187,4 +187,12 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	long getFieldContainerCount();
+
+	/**
+	 * Set the parent node of this node.
+	 *
+	 * @param branchUuid
+	 * @param parentNode
+	 */
+	void setParentNode(String branchUuid, HibNode parentNode);
 }
