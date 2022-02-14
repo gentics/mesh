@@ -177,16 +177,16 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibStringField stringField = container.createString(FIELD_NAME);
 			stringField.setString("someString");
 			tx.success();
 		}
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = readNode(node);
 			StringFieldImpl deserializedStringField = response.getFields().getStringField(FIELD_NAME);
 			assertNotNull(deserializedStringField);

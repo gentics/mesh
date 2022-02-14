@@ -46,8 +46,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, "dateList", "date");
 
@@ -57,8 +57,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			dateList.createDate(2L);
 			tx.success();
 		}
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, "dateList", "date", response);
 		}

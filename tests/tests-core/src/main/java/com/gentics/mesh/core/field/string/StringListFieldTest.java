@@ -45,8 +45,8 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, "stringList", "string");
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -57,6 +57,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, "stringList", "string", response);
 		}

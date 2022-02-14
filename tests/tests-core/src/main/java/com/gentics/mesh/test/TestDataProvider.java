@@ -680,7 +680,9 @@ public class TestDataProvider {
 	}
 
 	public HibProject getProject() {
-		project = CommonTx.get().load(project.getId(), project.getClass());
+		Tx.maybeGet().ifPresent(tx -> {
+			project = tx.<CommonTx>unwrap().load(project.getId(), project.getClass());
+		});
 		return project;
 	}
 
@@ -690,42 +692,52 @@ public class TestDataProvider {
 
 	@Getter
 	public HibNode getFolder(String name) {
-		HibNode folder = folders.get(name);
-		folder = CommonTx.get().load(folder.getId(), folder.getClass());
-		folders.put(name, folder);
-		return folder;
+		Tx.maybeGet().ifPresent(tx -> {
+			HibNode folder = folders.get(name);
+			folder = tx.<CommonTx>unwrap().load(folder.getId(), folder.getClass());
+			folders.put(name, folder);
+		});
+		return folders.get(name);
 	}
 
 	@Getter
 	public HibTagFamily getTagFamily(String key) {
-		HibTagFamily tf = tagFamilies.get(key);
-		tf = CommonTx.get().load(tf.getId(), tf.getClass());
-		tagFamilies.put(key, tf);
-		return tf;
+		Tx.maybeGet().ifPresent(tx -> {
+			HibTagFamily tf = tagFamilies.get(key);
+			tf = tx.<CommonTx>unwrap().load(tf.getId(), tf.getClass());
+			tagFamilies.put(key, tf);
+		});
+		return tagFamilies.get(key);
 	}
 
 	@Getter
 	public HibNode getContent(String name) {
-		HibNode content = contents.get(name);
-		content = CommonTx.get().load(content.getId(), content.getClass());
-		contents.put(name, content);
-		return content;
+		Tx.maybeGet().ifPresent(tx -> {
+			HibNode content = contents.get(name);
+			content = tx.<CommonTx>unwrap().load(content.getId(), content.getClass());
+			contents.put(name, content);
+		});
+		return contents.get(name);
 	}
 
 	@Getter
 	public HibTag getTag(String name) {
-		HibTag tag = tags.get(name);
-		tag = CommonTx.get().load(tag.getId(), tag.getClass());
-		tags.put(name, tag);
-		return tag;
+		Tx.maybeGet().ifPresent(tx -> {
+			HibTag tag = tags.get(name);
+			tag = tx.<CommonTx>unwrap().load(tag.getId(), tag.getClass());
+			tags.put(name, tag);
+		});
+		return tags.get(name);
 	}
 
 	@Getter
 	public HibSchema getSchemaContainer(String name) {
-		HibSchema schema = schemaContainers.get(name);
-		schema = CommonTx.get().load(schema.getId(), schema.getClass());
-		schemaContainers.put(name, schema);
-		return schema;
+		Tx.maybeGet().ifPresent(tx -> {
+			HibSchema schema = schemaContainers.get(name);
+			schema = tx.<CommonTx>unwrap().load(schema.getId(), schema.getClass());
+			schemaContainers.put(name, schema);
+		});
+		return schemaContainers.get(name);
 	}
 
 	public Map<String, HibTag> getTags() {

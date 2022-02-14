@@ -1,14 +1,16 @@
 package com.gentics.mesh.core.db;
 
+import java.util.Optional;
+
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.security.SecurityUtils;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.security.SecurityUtils;
 
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
@@ -31,21 +33,21 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	}
 
 	/**
-	 * @deprecated Use {@link #get()} instead.
-	 * @return
-	 */
-	@Deprecated
-	static Tx getActive() {
-		return Tx.threadLocalGraph.get();
-	}
-
-	/**
 	 * Return the current active transaction. A transaction should be the only place where this threadlocal is updated.
 	 * 
 	 * @return Currently active transaction
 	 */
 	static Tx get() {
-		return getActive();
+		return Tx.threadLocalGraph.get();
+	}
+
+	/**
+	 * An optional wrapper around {@link Tx#get()}.
+	 * 
+	 * @return
+	 */
+	static Optional<Tx> maybeGet() {
+		return Optional.ofNullable(get());
 	}
 
 	/**

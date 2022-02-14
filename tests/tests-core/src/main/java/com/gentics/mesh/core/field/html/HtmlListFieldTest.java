@@ -47,15 +47,15 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		SchemaModel schema;
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			schema = prepareNode(node, "nodeList", "node");
 			tx.success();
 		}
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			ListFieldSchema htmlListFieldSchema = new ListFieldSchemaImpl();
 			htmlListFieldSchema.setName(HTML_LIST);
@@ -68,12 +68,11 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			htmlList.createHTML("some<b>more html</b>");
 			tx.success();
 		}
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, HTML_LIST, "html", response);
 		}
-
 	}
 
 	@Test
