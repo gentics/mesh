@@ -11,7 +11,7 @@
 = Mesh Forms Plugin
 
 [[v1.6.19]]
-== 1.6.19 (TBD)
+== 1.6.19 (2022-02-14)
 
 icon:plus[] Forms: The structure of providing options for a `selectgroup` has changed: the field is now called `options` and the fields of the elements must be `key` (the stored value) and `value` (the human-readable label). The old format of `listelements` with `value` and `label` fields is still allowed (and will be converted accordingly) but deprecated.
 
