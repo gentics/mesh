@@ -744,7 +744,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		});
 		// form-data cookie must be present
 		assertThat(pair.getRight()).as("Cookie").isPresent();
-		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+		assertThat(pair.getRight().get()).as("Cookie").matches(c -> c.value().equals(dataNode.getUuid() + "-page1"), "Cookie contains data node UUID and form page");
 	}
 
 	/**
@@ -784,7 +784,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		});
 		// form-data cookie must be present
 		assertThat(pair.getRight()).as("Cookie").isPresent();
-		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+		assertThat(pair.getRight().get()).as("Cookie").matches(c -> c.value().equals(dataNode.getUuid() + "-page1"), "Cookie contains data node UUID and form page");
 	}
 
 	/**
@@ -824,7 +824,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		});
 		// form-data cookie must be present
 		assertThat(pair.getRight()).as("Cookie").isPresent();
-		assertThat(pair.getRight().get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+		assertThat(pair.getRight().get()).as("Cookie").matches(c -> c.value().equals(dataNode.getUuid() + "-page1"), "Value is not empty");
 	}
 
 	/**

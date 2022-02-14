@@ -52,6 +52,8 @@ public class Form implements RestModel {
 
 	private List<FormElement> elements = new ArrayList<>();
 
+	private String currentPage;
+
 	private String templateContext;
 
 	public Form() {
@@ -76,6 +78,7 @@ public class Form implements RestModel {
 		this.mailtemp = other.mailtemp;
 		this.successurl = other.successurl;
 		this.elements = other.elements == null ? new ArrayList<>() : new ArrayList<>(other.elements);
+		this.currentPage = other.currentPage;
 		this.templateContext = other.templateContext;
 	}
 
@@ -199,6 +202,30 @@ public class Form implements RestModel {
 	}
 
 	/**
+	 * Create the correct value for the {@link com.gentics.mesh.plugin.forms.service.FormDataService#COOKIE_NAME_DATA form data}
+	 * cookie.
+	 *
+	 * <p>
+	 *     The value is the UUID of the respective form data node, and if
+	 *     available the name of the last submitted form page.
+	 * </p>
+	 *
+	 * @param dataNodeUuid The UUID for the processed form data node
+	 * @return The value for the form data cookie
+	 */
+	public String getDataCookie(String dataNodeUuid) {
+		StringBuilder cookieVal = new StringBuilder(dataNodeUuid);
+
+		if (StringUtils.isNotBlank(currentPage)) {
+			cookieVal
+				.append('-')
+				.append(currentPage);
+		}
+
+		return cookieVal.toString();
+	}
+
+	/**
 	 * Get all form elements as flattened stream
 	 * @return stream of all form elements
 	 */
@@ -214,10 +241,18 @@ public class Form implements RestModel {
 		this.elements = elements;
 	}
 
+	/**
+	 * Get the template context.
+	 * @return The template context
+	 */
 	public String getTemplateContext() {
 		return templateContext;
 	}
 
+	/**
+	 * Set the template context.
+	 * @param templateContext The template context
+	 */
 	public void setTemplateContext(String templateContext) {
 		this.templateContext = templateContext;
 	}
@@ -451,6 +486,19 @@ public class Form implements RestModel {
 	 */
 	public boolean isMultipage() {
 		return flattened().filter(elem -> elem instanceof FormpageElement).findFirst().isPresent();
+	}
+
+
+	/**
+	 * Extract the name of the last submitted page if available.
+	 * @param postedData The posted form data
+	 */
+	public void updateFormPage(MultiMap postedData) {
+		flattened()
+			.filter(elt -> elt.isActive() && elt instanceof FormpageElement && "1".equals(elt.getSingleFormData(postedData)))
+			.map(FormElement::getName)
+			.findFirst()
+			.ifPresent(page -> currentPage = page);
 	}
 
 	/**

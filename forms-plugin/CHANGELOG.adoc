@@ -35,6 +35,18 @@ icon:plus[] Forms: Adds custom element properties to render context for renderin
 
 icon:plus[] Forms: Adds type of form (key: `type`) element when rendering form data for e-mails.
 
+icon:plus[] Multipage forms: The new setting `multipageRenderMode` can be used to control which page will be marked as active. The following settings are available:
+
+* `multipageRenderMode: SKIP_COMPLETED` (default): the first page, that is not marked as completed in the respective data node, will be marked as active for rendering
+* `multipageRenderMode: FORCE_NEXT`: the page _after_ the last submitted page will be marked as active for rendering (even if that page is already marked as completed)
+
+icon:plus[] Forms: Adds paging information for rendering the form progress:
+
+* `form.pageCount`: the total number of form pages
+* `form.currentPage.index`: the index of the currently active form page
+* `form.currentPage.name`: the name of the currently active form page
+* `form.currentPage.description`: the index of the currently active form page
+
 icon:check[] Forms Helper: Fixes a possible NullPointerException in the `equals` helper.
 
 icon:check[] Forms: Fixes an issue with the `templateContext` which was not used correctly for rendering.

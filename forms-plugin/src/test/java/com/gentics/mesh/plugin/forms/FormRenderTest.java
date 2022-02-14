@@ -1,29 +1,29 @@
 package com.gentics.mesh.plugin.forms;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
+import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
+import com.gentics.mesh.util.UUIDUtil;
+import io.vertx.core.json.JsonObject;
+import okhttp3.Cookie;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
-import com.gentics.mesh.util.UUIDUtil;
-
-import io.vertx.core.json.JsonObject;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test cases for rendering forms
@@ -221,28 +221,48 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	/**
-	 * Test rendering a multipage-form with data
+	 * Test rendering a multipage-form with data, and default multipage behaviour.
 	 * @throws IOException
 	 */
 	@Test
 	public void testRenderDataMultipage() throws IOException {
+		doTestRenderDataMultipage(MultipageRenderMode.SKIP_COMPLETED);
+	}
+
+	/**
+	 * Test rendering a multipage-form with data, and force next page to be the
+	 * one after the submitted one.
+	 * @throws IOException
+	 */
+	@Test
+	public void testRenderDataMultipageDontSkip() throws IOException {
+		doTestRenderDataMultipage(MultipageRenderMode.FORCE_NEXT);
+	}
+
+	private void doTestRenderDataMultipage(MultipageRenderMode mode) throws IOException {
 		String uuid = createForm("multipage.json");
 
 		// only fill the first page (without error)
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-				.addFormDataPart("page1", "1").addFormDataPart("input1", "someValue").build();
+			.addFormDataPart("page1", "1")
+			.addFormDataPart("input1", "someValue")
+			.build();
 		okio.Buffer buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
 
 		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data"))
-				.header("Referer", "ref").post(requestBody).build();
+			.header("Referer", "ref").post(requestBody).build();
 		Response postDataResponse = client().newCall(postRequest).execute();
 		assertThat(postDataResponse.isRedirect())
-				.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
+			.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
 		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
 		NodeResponse dataNode = dataNodes.getData().get(0);
+
+		// Check the form data cookie has the correct data node UUID and name of the last submitted page.
+		assertThat(getFormdataCookie(postDataResponse))
+			.isEqualTo(dataNode.getUuid() + "-page1");
 
 		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Accept", "text/html").get().build();
 		Response response = client().newCall(renderRequest).execute();
@@ -252,21 +272,94 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 
 		// now post page 2 (incomplete)
 		requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-				.addFormDataPart("page2", "2").build();
+			.addFormDataPart("page2", "1")
+			.build();
 		buffer = new okio.Buffer();
 		requestBody.writeTo(buffer);
 
 		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid()))
-				.header("Referer", "ref").post(requestBody).build();
+			.header("Referer", "ref").post(requestBody).build();
 		postDataResponse = client().newCall(postRequest).execute();
 		assertThat(postDataResponse.isRedirect())
-				.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
+			.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
+		// Check the form data cookie has the correct data node UUID and name of the last submitted page.
+		assertThat(getFormdataCookie(postDataResponse))
+			.isEqualTo(dataNode.getUuid() + "-page2");
 
 		renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Accept", "text/html").get().build();
 		response = client().newCall(renderRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
 		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("multipage_data_page1.html"));
+
+		if (mode == MultipageRenderMode.SKIP_COMPLETED) {
+			return;
+		}
+
+		FormsTestPlugin.instance.configuration.setMultipageRenderMode(MultipageRenderMode.FORCE_NEXT);
+
+		// now post page 2 (now without errors)
+		requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+			.addFormDataPart("page2", "1")
+			.addFormDataPart("input2", "someOtherValue")
+			.build();
+		buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+
+		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid()))
+			.header("Referer", "ref").post(requestBody).build();
+		postDataResponse = client().newCall(postRequest).execute();
+		assertThat(postDataResponse.isRedirect())
+			.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
+
+		String formdataCookie = getFormdataCookie(postDataResponse);
+
+		// Check the form data cookie has the correct data node UUID and name of the last submitted page.
+		assertThat(formdataCookie)
+			.isEqualTo(dataNode.getUuid() + "-page2");
+
+		// Check that the render request marks page3 as active
+		renderRequest = new Request.Builder()
+			.url(projectUrl("/forms/" + uuid + "/data/" + formdataCookie))
+			.header("Accept", "text/html")
+			.get()
+			.build();
+		response = client().newCall(renderRequest).execute();
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("multipage_data_page2.html"));
+
+		// Fake a render render request where we say page1 was submitted last.
+		renderRequest = new Request.Builder()
+			.url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid() + "-page1"))
+			.header("Accept", "text/html")
+			.get()
+			.build();
+		response = client().newCall(renderRequest).execute();
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+		// Make sure page2 is marked as active.
+		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("multipage_data_page3.html"));
+	}
+
+	/**
+	 * Get the value for the {@link FormDataService#COOKIE_NAME_DATA form data}
+	 * cookie.
+	 *
+	 * <p>
+	 *     If the cookie is not found this method will return an empty string.
+	 * </p>
+	 *
+	 * @param response The response to the form data save request
+	 * @return The value of the form data cookie or an empty string if it is missing
+	 */
+	private String getFormdataCookie(Response response) {
+		return Cookie.parseAll(response.request().url(), response.headers()).stream()
+			.filter(c -> c.name().equals(FormDataService.COOKIE_NAME_DATA))
+			.map(Cookie::value)
+			.findFirst()
+			.orElse("");
+
 	}
 
 	/**

@@ -46,6 +46,8 @@ public class FormsConfig {
 	@JsonProperty("poll")
 	private PollOptions pollOptions = new PollOptions();
 
+	private MultipageRenderMode multipageRenderMode = MultipageRenderMode.SKIP_COMPLETED;
+
 	public String getFromAddress() {
 		return fromAddress;
 	}
@@ -184,5 +186,17 @@ public class FormsConfig {
 		this.pollOptions = pollOptions;
 
 		return this;
+	}
+
+	public MultipageRenderMode getMultipageRenderMode() {
+		if (multipageRenderMode == null) {
+			multipageRenderMode = MultipageRenderMode.SKIP_COMPLETED;
+		}
+
+		return multipageRenderMode;
+	}
+
+	public void setMultipageRenderMode(MultipageRenderMode multipageRenderMode) {
+		this.multipageRenderMode = multipageRenderMode;
 	}
 }

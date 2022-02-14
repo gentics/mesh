@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.forms.model;
 import java.util.List;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -17,11 +18,24 @@ import io.vertx.core.json.JsonObject;
  */
 public class FormpageElement extends FormElement {
 
+	@JsonProperty
+	private String description;
+
 	public FormpageElement() {
 	}
 
 	protected FormpageElement(FormpageElement other, boolean deep) {
 		super(other, deep);
+
+		this.description = other.description;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override

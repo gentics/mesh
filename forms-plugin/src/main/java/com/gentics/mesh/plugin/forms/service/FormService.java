@@ -31,6 +31,7 @@ import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.config.MultipageRenderMode;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormType;
@@ -632,7 +633,7 @@ public class FormService {
 		JsonObject formJson = form.removeInactiveElements()
 			.prepareRenderContext(pathPrefix, configuration);
 
-		markFormpages(formJson, Collections.emptySet());
+		markFormpages(formJson, null, Collections.emptySet());
 
 		rc.put("form", formJson);
 
@@ -656,7 +657,7 @@ public class FormService {
 		formJson.put("multipage", isMultipage(formJson));
 		// add options
 		formJson.put("options", JsonObject.mapFrom(configuration));
-		markFormpages(formJson, Collections.emptySet());
+		markFormpages(formJson, null, Collections.emptySet());
 
 		rc.put("form", formJson);
 
@@ -672,27 +673,71 @@ public class FormService {
 	 * @param completed
 	 *            names of completed formpages
 	 */
-	public void markFormpages(JsonObject form, Set<String> completed) {
+	public void markFormpages(JsonObject form, String currentPage, Set<String> completed) {
 		JsonArray elements = form.getJsonArray("elements");
 		if (elements != null) {
 			boolean activePageFound = false;
+			boolean forceActivePage = false;
+			int count = 0;
+		/*
+	{{#if ../form.isMultipage}}
+    <ol class="gtx-form-progress" role="progressbar" aria-valuetext="{{ ../form.currentPage.description }}"
+        aria-valuemin="1" aria-valuenow="{{ ../form.currentPage.index }}" aria-valuemax="{{ ../form.pageCount }}">
+    {{#each ../form.elements}}
+        {{#equals type "formpage" }}
+            <li class="gtx-form-progress__step {{ class }}" id="step_{{ name }}">
+                <a class="c-form-progress__step-link" href="#!" data-formpageid="{{ name }}">{{{ description }}}</a>
+                <div class="c-form-progress__step-description">{{ info }}</div>
+            </li>
+        {{/equals}}
+    {{/each}}
+    </ol>
+{{/if}}
+		 */
+			JsonObject activePage = null;
+
 			for (int i = 0; i < elements.size(); i++) {
 				JsonObject element = elements.getJsonObject(i);
 				if (!"formpage".equals(element.getString("type"))) {
 					continue;
 				}
+
+				count++;
+
 				String name = element.getString("name");
+
 				if (completed.contains(name)) {
 					element.put("class", "is-completed");
-					element.put("active", false);
-				} else if (!activePageFound) {
+					element.put("completed", true);
+
+					if (forceActivePage) {
+						element.put("class", "is-active");
+						element.put("active", true);
+						activePage = new JsonObject()
+							.put("index", count)
+							.put("name", name)
+							.put("description", element.getString("description"));
+					} else {
+						element.put("active", false);
+					}
+				} else if (forceActivePage || activePage == null) {
 					element.put("class", "is-active");
 					element.put("active", true);
-					activePageFound = true;
+					activePage = new JsonObject()
+						.put("index", count)
+						.put("name", name)
+						.put("description", element.getString("description"));
 				} else {
 					element.put("active", false);
 				}
+
+				// When FORCE_NEXT is the multipage render mode and the current page is the one that was submitted,
+				// the next one should be active, event if it is already completed.
+				forceActivePage = configuration.getMultipageRenderMode() == MultipageRenderMode.FORCE_NEXT && name.equals(currentPage);
 			}
+
+			form.put("currentPage", activePage)
+				.put("pageCount", count);
 		}
 	}
 

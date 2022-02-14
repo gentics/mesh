@@ -316,14 +316,27 @@ public class FormDataService {
 	 *            project name
 	 * @param formUuid
 	 *            form UUID
-	 * @param formDataUuid
-	 *            form data UUID
+	 * @param formDataInfo
+	 *            form data UUID and optional form page element name (separated by comma)
 	 * @param rc
 	 *            routing context
 	 * @param lang optional languages
 	 * @return single buffer of rendered form
 	 */
-	public Single<Buffer> render(String projectName, String formUuid, String formDataUuid, RoutingContext rc, String...lang) {
+	public Single<Buffer> render(String projectName, String formUuid, String formDataInfo, RoutingContext rc, String...lang) {
+		String formDataUuid;
+		String currentPage;
+
+		if (StringUtils.isNotEmpty(formDataInfo)) {
+			String[] parts = formDataInfo.split("-");
+
+			formDataUuid = parts[0];
+			currentPage = parts.length > 1 ? parts[1] : null;
+		} else {
+			formDataUuid = formDataInfo;
+			currentPage = null;
+		}
+
 		return statusService.getPathPrefixOfDefaultBranch(projectName)
 			.flatMap(pathPrefix -> Single.zip(
 				statusService.languageFallback(projectName, lang)
@@ -359,7 +372,7 @@ public class FormDataService {
 						})
 						.toSingle(Collections.emptySet())
 						.flatMap(completed -> {
-							formService.markFormpages(formJson, completed);
+							formService.markFormpages(formJson, currentPage, completed);
 
 							rc.put("form", formJson);
 
@@ -385,7 +398,7 @@ public class FormDataService {
 				} else {
 					// set the data cookie
 					if (ctx.handleCookies()) {
-						Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, savedFileUploads.getUuid());
+						Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, ctx.getForm().getDataCookie(savedFileUploads.getUuid()));
 						cookie.setPath(getPath(ctx.getReferer()));
 						cookie.setHttpOnly(true);
 						ctx.getContext().addCookie(cookie);
@@ -443,6 +456,8 @@ public class FormDataService {
 		}
 
 		form.addFields(container, postedData, !errors.isEmpty());
+		form.updateFormPage(postedData);
+
 		if (!errors.isEmpty()) {
 			try {
 				container.getFields().put(Form.ERRORS_FIELD_NAME, new StringFieldImpl().setString(objectMapper.writeValueAsString(errors)));
