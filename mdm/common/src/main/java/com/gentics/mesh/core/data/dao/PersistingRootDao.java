@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.function.BiFunction;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -14,8 +16,16 @@ import com.gentics.mesh.core.rest.common.RestModel;
  * @param <R> root entity type
  * @param <L> managed(leaf) entity type
  */
-public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends RootDao<R, L>, ElementResolvingRootDao<R, L> {
+public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends RootDao<R, L>, ElementResolver<R, L> {
 
+	/**
+	 * Get the persistent leaf entity class upon the root entity.
+	 * 
+	 * @param root
+	 * @return
+	 */
+	Class<? extends L> getPersistenceClass(R root);
+	
 	/**
 	 * Created a persisted entity within the given root. 
 	 * 
@@ -45,5 +55,10 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	@Override
 	default void onRootDeleted(R root, BulkActionContext bac) {
 		findAll(root).list().forEach(entity -> delete(root, entity, bac));
+	}
+
+	@Override
+	default BiFunction<R, String, L> getFinder() {
+		return this::findByUuid;
 	}
 }

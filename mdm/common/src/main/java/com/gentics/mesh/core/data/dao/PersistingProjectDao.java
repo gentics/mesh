@@ -41,6 +41,9 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * A persisting extension to {@link ProjectDao}
  * 
@@ -48,6 +51,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject> {
+	static final Logger log = LoggerFactory.getLogger(ProjectDao.class);
 
 	/**
 	 * Return the schema container permission root for the project.

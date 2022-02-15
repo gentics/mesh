@@ -48,8 +48,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingMicroschemaDao 
 		extends MicroschemaDao, 
-			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>,
-			ElementResolvingRootDao<HibProject, HibMicroschema>{
+			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
 
 	/**
 	 * Find all micronodes belonging to this microschema version

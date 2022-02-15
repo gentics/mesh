@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -38,7 +39,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, ElementResolvingRootDao<HibTagFamily, HibTag> {
+public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
 
 	Logger log = LoggerFactory.getLogger(PersistingTagDao.class);
 

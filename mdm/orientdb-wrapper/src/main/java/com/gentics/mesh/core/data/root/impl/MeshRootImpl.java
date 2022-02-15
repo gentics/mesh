@@ -333,8 +333,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		microschemaRoot = null;
 		languageRoot = null;
 		jobRoot = null;
-		changelogRoot = null;
-		
+		changelogRoot = null;	
 	}
 
 	@Override
@@ -369,17 +368,23 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		} else {
 			switch (rootNodeSegment) {
 			case PermissionRoots.PROJECTS:
-				return root.getProjectRoot().resolveToElement(stack);
+				ProjectRoot projectRoot = root.getProjectRoot();
+				return projectRoot.resolveToElement(projectRoot, null, stack);
 			case PermissionRoots.USERS:
-				return root.getUserRoot().resolveToElement(stack);
+				UserRoot userRoot = root.getUserRoot();
+				return userRoot.resolveToElement(userRoot, null, stack);
 			case PermissionRoots.GROUPS:
-				return root.getGroupRoot().resolveToElement(stack);
+				GroupRoot groupRoot = root.getGroupRoot();
+				return groupRoot.resolveToElement(groupRoot, null, stack);
 			case PermissionRoots.ROLES:
-				return root.getRoleRoot().resolveToElement(stack);
+				RoleRoot roleRoot = root.getRoleRoot();
+				return roleRoot.resolveToElement(roleRoot, null, stack);
 			case PermissionRoots.MICROSCHEMAS:
-				return root.getMicroschemaContainerRoot().resolveToElement(stack);
+				MicroschemaRoot microschemaRoot = root.getMicroschemaContainerRoot();
+				return microschemaRoot.resolveToElement(microschemaRoot, null, stack);
 			case PermissionRoots.SCHEMAS:
-				return root.getSchemaContainerRoot().resolveToElement(stack);
+				SchemaRoot schemaRoot = root.getSchemaContainerRoot();
+				return schemaRoot.resolveToElement(schemaRoot, null, stack);
 			default:
 				// TOOO i18n
 				throw error(NOT_FOUND, "Could not resolve given path. Unknown element {" + rootNodeSegment + "}");

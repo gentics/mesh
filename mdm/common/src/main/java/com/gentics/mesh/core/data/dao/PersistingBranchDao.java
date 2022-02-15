@@ -41,6 +41,9 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * A persisting extension to {@link BranchDao}
  * 
@@ -48,6 +51,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibProject, HibBranch> {
+	static final Logger log = LoggerFactory.getLogger(BranchDao.class);
 
 	/**
 	 * Make a new connection of the branch to the schema version, containing the migration status data.

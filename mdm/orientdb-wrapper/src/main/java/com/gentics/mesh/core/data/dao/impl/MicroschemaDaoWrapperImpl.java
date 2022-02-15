@@ -184,11 +184,6 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	public Class<? extends HibMicroschema> getPersistenceClass(HibProject root) {
-		return toGraph(root).getMicroschemaContainerRoot().getPersistanceClass();
-	}
-
-	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getMicroschemaContainerRoot().globalCount();
 	}

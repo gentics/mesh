@@ -105,7 +105,11 @@ import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
+	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
 
 	@Override
 	default NodeReference transformToReference(HibNode node, InternalActionContext ac) {

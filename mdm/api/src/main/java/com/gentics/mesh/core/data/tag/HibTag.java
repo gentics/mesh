@@ -15,9 +15,11 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -84,6 +86,14 @@ public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableEle
 		TagFamilyReference tagFamilyReference = tagFamily.transformToReference();
 		event.setTagFamily(tagFamilyReference);
 		return event;
+	}
+
+	@Override
+	default TagPermissionChangedEventModel onPermissionChanged(HibRole role) {
+		TagPermissionChangedEventModel model = new TagPermissionChangedEventModel();
+		fillPermissionChanged(model, role);
+		model.setTagFamily(getTagFamily().transformToReference());
+		return model;
 	}
 
 	@Override
