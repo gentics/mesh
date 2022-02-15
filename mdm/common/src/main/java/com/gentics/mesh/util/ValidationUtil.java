@@ -19,6 +19,9 @@ public final class ValidationUtil {
 	 * @param pagingInfo
 	 */
 	public static void validate(PagingParameters pagingInfo) {
+		if (pagingInfo == null) {
+			throw new GenericRestException(BAD_REQUEST, "error_invalid_paging_parameters");
+		}
 		if (pagingInfo.getPage() < 1) {
 			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(pagingInfo.getPage()));
 		}

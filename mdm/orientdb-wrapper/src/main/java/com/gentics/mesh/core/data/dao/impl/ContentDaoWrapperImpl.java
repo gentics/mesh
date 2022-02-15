@@ -180,11 +180,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public void updateDisplayFieldValue(HibNodeFieldContainer content) {
-		toGraph(content).updateDisplayFieldValue();
-	}
-
-	@Override
 	public void postfixSegmentFieldValue(HibNodeFieldContainer content) {
 		toGraph(content).postfixSegmentFieldValue();
 	}
@@ -295,5 +290,10 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public void deleteField(HibDeletableField field) {
 		toGraph(field).remove();
+	}
+
+	@Override
+	public void setDisplayFieldValue(HibNodeFieldContainer container, String value) {
+		toGraph(container).property(NodeGraphFieldContainerImpl.DISPLAY_FIELD_PROPERTY_KEY, value);
 	}
 }

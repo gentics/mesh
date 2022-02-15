@@ -41,7 +41,6 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.DisplayField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
@@ -62,8 +61,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.util.Tuple;
@@ -130,25 +127,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void updateDisplayFieldValue() {
-		// TODO use schema storage instead
-		SchemaModel schema = getSchemaContainerVersion().getSchema();
-		String displayFieldName = schema.getDisplayField();
-		FieldSchema fieldSchema = schema.getField(displayFieldName);
-		// Only update the display field value if the field can be located
-		if (fieldSchema != null) {
-			HibField field = getField(fieldSchema);
-			if (field != null && field instanceof DisplayField) {
-				DisplayField displayField = (DisplayField) field;
-				property(DISPLAY_FIELD_PROPERTY_KEY, displayField.getDisplayName());
-				return;
-			}
-		}
-		// Otherwise reset the value to null
-		property(DISPLAY_FIELD_PROPERTY_KEY, null);
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		delete(bac, true);
 	}
@@ -211,11 +189,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
+		Tx tx = Tx.get();
+		ContentDao contentDao = tx.contentDao();
 		super.updateFieldsFromRest(ac, restFields);
-		String branchUuid = Tx.get().getBranch(ac).getUuid();
+		String branchUuid = tx.getBranch(ac).getUuid();
 
-		Tx.get().contentDao().updateWebrootPathInfo(this, ac, branchUuid, "node_conflicting_segmentfield_update");
-		updateDisplayFieldValue();
+		contentDao.updateWebrootPathInfo(this, ac, branchUuid, "node_conflicting_segmentfield_update");
+		contentDao.updateDisplayFieldValue(this);
 	}
 
 	@Override

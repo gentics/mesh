@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibDisplayField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -506,6 +507,36 @@ public interface PersistingContentDao extends ContentDao {
 			updateWebrootUrlFieldsInfo(content, publishEdge, branchUuid, urlFieldValues, PUBLISHED);
 		}
 	}
+
+	/**
+	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
+	 */
+	@Override
+	default void updateDisplayFieldValue(HibNodeFieldContainer container) {
+		// TODO use schema storage instead
+		SchemaModel schema = container.getSchemaContainerVersion().getSchema();
+		String displayFieldName = schema.getDisplayField();
+		FieldSchema fieldSchema = schema.getField(displayFieldName);
+		// Only update the display field value if the field can be located
+		if (fieldSchema != null) {
+			HibField field = container.getField(fieldSchema);
+			if (field != null && field instanceof HibDisplayField) {
+				HibDisplayField displayField = (HibDisplayField) field;
+				setDisplayFieldValue(container, displayField.getDisplayName());
+				return;
+			}
+		}
+		// Otherwise reset the value to null
+		setDisplayFieldValue(container, null);
+	}
+
+	/**
+	 * Set the container's display field value.
+	 * 
+	 * @param container
+	 * @param value
+	 */
+	void setDisplayFieldValue(HibNodeFieldContainer container, String value);
 
 	/**
 	 * Update the webroot path info (checking for uniqueness before)
