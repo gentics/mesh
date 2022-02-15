@@ -13,14 +13,13 @@ import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -101,14 +100,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	@Override
 	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
-	}
-
-	@Override
-	public TagPermissionChangedEventModel onPermissionChanged(HibRole role) {
-		TagPermissionChangedEventModel model = new TagPermissionChangedEventModel();
-		fillPermissionChanged(model, role);
-		model.setTagFamily(getTagFamily().transformToReference());
-		return model;
 	}
 
 	@Override

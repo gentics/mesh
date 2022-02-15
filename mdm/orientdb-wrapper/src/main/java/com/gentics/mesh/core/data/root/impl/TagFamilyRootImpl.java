@@ -14,10 +14,12 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -79,7 +81,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public HibBaseElement resolveToElement(Stack<String> stack) {
+	public HibBaseElement resolveToElement(HibBaseElement permissionRoot, HibBaseElement root, Stack<String> stack) {
 		if (stack.isEmpty()) {
 			return this;
 		} else {
@@ -89,8 +91,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 				return tagFamily;
 			} else {
 				String nestedRootNode = stack.pop();
-				if ("tags".contentEquals(nestedRootNode)) {
-					return tagFamily.resolveToElement(stack);
+				if (PermissionRoots.TAGS.contentEquals(nestedRootNode)) {
+					return tagFamily.resolveToElement(permissionRoot, tagFamily, stack);
 				} else {
 					// TODO i18n
 					throw error(NOT_FOUND, "Unknown tagFamily element {" + nestedRootNode + "}");

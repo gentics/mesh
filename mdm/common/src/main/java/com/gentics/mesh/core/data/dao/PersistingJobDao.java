@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -13,7 +15,9 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.event.EventQueueBatch;
-import org.apache.commons.lang3.NotImplementedException;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * A persisting extension to {@link JobDao}
@@ -22,6 +26,7 @@ import org.apache.commons.lang3.NotImplementedException;
  *
  */
 public interface PersistingJobDao extends JobDao, PersistingDaoGlobal<HibJob> {
+	static final Logger log = LoggerFactory.getLogger(JobDao.class);
 
 	@Override
 	default JobResponse transformToRestSync(HibJob job, InternalActionContext ac, int level, String... languageTags) {

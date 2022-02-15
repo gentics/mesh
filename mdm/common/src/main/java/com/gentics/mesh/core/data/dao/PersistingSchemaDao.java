@@ -55,8 +55,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingSchemaDao 
 			extends SchemaDao, 
-			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, 
-			ElementResolvingRootDao<HibProject, HibSchema> {
+			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel> {
 
 	/**
 	 * Create the schema.
