@@ -58,11 +58,6 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	boolean isPurgeable();
 
 	/**
-	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
-	 */
-	void updateDisplayFieldValue();
-
-	/**
 	 * Update the current segment field and increment any found postfix number.
 	 */
 	void postfixSegmentFieldValue();
