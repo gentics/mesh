@@ -11,6 +11,7 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -89,6 +90,9 @@ public interface BaseMeshComponent {
 
 	@Getter
 	ProjectNameCache projectNameCache();
+
+	@Getter
+	PageTransformer pageTransformer();
 
 	// Plugin
 	@Getter
