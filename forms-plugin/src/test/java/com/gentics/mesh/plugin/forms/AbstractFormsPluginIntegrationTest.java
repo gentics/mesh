@@ -64,6 +64,9 @@ import okhttp3.Response;
  */
 public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginLocalIntegrationTest {
 
+	public static final String FIELD_RS_DATA_UUID = "dataUuid";
+	public static final String FIELD_RS_CREATED = "created";
+
 	protected final static String PROJECT_NAME = "testproject";
 	protected final static String PROJECT_HOSTNAME = "testhost";
 	protected final static String PROJECT_PATH_PREFIX = "/testprefix";

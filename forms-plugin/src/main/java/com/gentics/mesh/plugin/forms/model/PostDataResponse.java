@@ -5,6 +5,8 @@ import java.util.Map;
 public class PostDataResponse {
 	private String dataUuid;
 
+	private String created;
+
 	private String redirectUrl;
 
 	private boolean finished;
@@ -17,6 +19,14 @@ public class PostDataResponse {
 
 	public void setDataUuid(String dataUuid) {
 		this.dataUuid = dataUuid;
+	}
+
+	public String getCreated() {
+		return created;
+	}
+
+	public void setCreated(String created) {
+		this.created = created;
 	}
 
 	public String getRedirectUrl() {

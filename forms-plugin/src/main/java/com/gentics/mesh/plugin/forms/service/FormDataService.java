@@ -207,19 +207,17 @@ public class FormDataService {
 	 * @return single export data
 	 */
 	public Single<String> export(String projectName, String formUuid, PluginContext context, String...lang) {
-		Exporter exporter = Exporter.create(configuration, userClient, context, formUuid, SchemaService.getSchemaName(formUuid));
 		// Export only published data nodes by default.
 		boolean publishedOnly = Optional.ofNullable(context.queryParams().get(PARAM_PUBLISHED_ONLY))
 			.map(Boolean::parseBoolean)
 			.orElse(true);
 
-		return statusService.languageFallback(projectName, lang)
-			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-			.flatMap(formNode -> formService.toForm(formNode))
-			.flatMap(form -> {
-				exporter.setFieldLabels(form.getReportableFields());
-				return exporter.export(form, publishedOnly);
-			});
+		return statusService.getBaseUrl(projectName)
+			.map(baseUrl -> Exporter.create(configuration, userClient, context, formUuid, SchemaService.getSchemaName(formUuid), configuration.getExportOptions(), baseUrl))
+			.flatMap(exporter -> statusService.languageFallback(projectName, lang)
+				.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
+				.flatMap(formNode -> formService.toForm(formNode))
+				.flatMap(form -> exporter.setFieldLabels(form.getReportableFields()).export(form, publishedOnly)));
 	}
 
 	/**
@@ -406,6 +404,7 @@ public class FormDataService {
 
 					PostDataResponse response = new PostDataResponse();
 					response.setDataUuid(savedFileUploads.getUuid());
+					response.setCreated(savedFileUploads.getCreated());
 					response.setErrors(errors);
 					// TODO Set this to false?
 					response.setFinished(true);
@@ -548,6 +547,7 @@ public class FormDataService {
 
 			PostDataResponse response = new PostDataResponse();
 			response.setDataUuid(savedFileUploads.getUuid());
+			response.setCreated(savedFileUploads.getCreated());
 			response.setErrors(errors);
 			response.setFinished(true);
 			if (form.getSuccessurl() != null) {

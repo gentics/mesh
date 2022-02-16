@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -191,13 +192,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		if (permission) {
 			assertThat(exportResponse.isSuccessful()).as(String.format("Response success %d (%s)", exportResponse.code(), exportResponse.message())).isTrue();
 
-			Set<String> actualRecords = new HashSet<>();
-			try (BufferedReader in = new BufferedReader(new StringReader(exportResponse.body().string()))) {
-				String line = null;
-				while ((line = in.readLine()) != null) {
-					actualRecords.add(line);
-				}
-			}
+			Set<String> actualRecords = getExportRecords(exportResponse.body().string());
 
 			assertThat(actualRecords).as("Exported data").containsOnlyElementsOf(records);
 		} else {
@@ -423,6 +418,43 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		Request findRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?q=two")).get().build();
 		Response response = client().newCall(findRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+	}
+
+	/**
+	 * Test export with binary data
+	 * @throws IOException
+	 */
+	@Test
+	public void testExportBinary() throws IOException {
+		if (!online || !permission) {
+			// Permission and online status is covered by other tests. Here we
+			// are only interested if the binary fields are exported correctly.
+
+			return;
+		}
+
+		String fieldName = "file1";
+		String filename = "filefield.json";
+		String uuid = createForm(filename);
+		RequestBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart(fieldName, filename, requestBodyFromFile(filename))
+			.build();
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).post(requestBody).build();
+		Response postResponse = client().newCall(postRequest).execute();
+		Request exportRequest = new Request.Builder()
+			.url(projectUrl("/forms/" + uuid + "/export"))
+			.headers(auth(permission))
+			.get()
+			.build();
+		Response exportResponse = client().newCall(exportRequest).execute();
+		String dataUuid = new JsonObject(postResponse.body().string()).getString(FIELD_RS_DATA_UUID);
+		List<String> expected = Arrays.asList(
+			String.format("%1$s|||Datei,%1$s|||Datei (filename)", fieldName),
+			String.format("http://%s/api/forms/forms/%s/data/%s/binary/%s,%s", PROJECT_HOSTNAME, uuid, dataUuid, fieldName, filename));
+		Set<String> actual = getExportRecords(exportResponse.body().string());
+
+		assertThat(actual).as("Exported data").containsOnlyElementsOf(expected);
 	}
 
 	/**
@@ -760,5 +792,19 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		} else {
 			assertForbidden(zipDownloadResponse);
 		}
+	}
+
+	private Set<String> getExportRecords(String export) throws IOException {
+		Set<String> records = new HashSet<>();
+
+		try (BufferedReader in = new BufferedReader(new StringReader(export))) {
+			String line;
+
+			while ((line = in.readLine()) != null) {
+				records.add(line);
+			}
+		}
+
+		return records;
 	}
 }

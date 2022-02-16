@@ -10,6 +10,13 @@
 
 = Mesh Forms Plugin
 
+[[v1.6.20]]
+== 1.6.20 (2022-02-16)
+
+icon:plus[] Export: Adds new forms plugin options `export.includeUuid` and `export.includeCreationTimestamp` to specify whether exports should include the respective fields.
+
+icon:plus[] Export: Adds download links for binary fields, and an extra filename field to exports.
+
 [[v1.6.19]]
 == 1.6.19 (2022-02-14)
 

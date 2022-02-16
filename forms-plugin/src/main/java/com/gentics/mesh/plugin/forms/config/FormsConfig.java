@@ -48,6 +48,9 @@ public class FormsConfig {
 
 	private MultipageRenderMode multipageRenderMode = MultipageRenderMode.SKIP_COMPLETED;
 
+	@JsonProperty("export")
+	private ExportOptions exportOptions = new ExportOptions();
+
 	public String getFromAddress() {
 		return fromAddress;
 	}
@@ -198,5 +201,20 @@ public class FormsConfig {
 
 	public void setMultipageRenderMode(MultipageRenderMode multipageRenderMode) {
 		this.multipageRenderMode = multipageRenderMode;
+	}
+
+	@Nonnull
+	public ExportOptions getExportOptions() {
+		if (exportOptions == null) {
+			exportOptions = new ExportOptions();
+		}
+
+		return exportOptions;
+	}
+
+	public FormsConfig setExportOptions(ExportOptions exportOptions) {
+		this.exportOptions = exportOptions;
+
+		return this;
 	}
 }

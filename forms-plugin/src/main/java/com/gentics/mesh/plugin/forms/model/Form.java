@@ -15,6 +15,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -455,7 +456,7 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get the names of the form elements.
+	 * Get the names of the form elements for use in a GraphQL query.
 	 *
 	 * <strong>Note</strong> that elements without a name will <em>not</em> be
 	 * contained in the resulting set.
@@ -468,6 +469,22 @@ public class Form implements RestModel {
 			.map(FormElement::getGraphQLName)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
+	}
+
+	/**
+	 * Get the names of reportable form elements, as well as whether the field
+	 * is a binary or not.
+	 *
+	 * <strong>Note</strong> that elements without a name will <em>not</em> be
+	 * contained in the resulting set.
+	 *
+	 * @return A mapping of reportable field names, to a boolean indicating
+	 * 		if the field is a file element or not
+	 */
+	public Map<String, Boolean> getReportableElementsInfo() {
+		return flattened()
+			.filter(elt -> elt.isReportable() && StringUtils.isNotBlank(elt.getName()))
+			.collect(Collectors.toMap(e -> e.getName(), e -> e instanceof FileElement, (u, v) -> u, LinkedHashMap::new));
 	}
 
 	/**

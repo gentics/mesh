@@ -7,6 +7,7 @@ import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
+import com.gentics.mesh.plugin.forms.config.ExportOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
@@ -25,8 +26,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Abstract base class for exporting submitted form generator data.
@@ -58,8 +63,17 @@ public abstract class Exporter {
 	/** The schema name of the form to be exported. */
 	protected final String schemaName;
 
+	/** The export options. */
+	protected final ExportOptions options;
+
+	/** Base URL for file downloads. */
+	protected final String baseUrl;
+
+	/** The names of binary fields in case they need special treatment. */
+	protected final Set<String> binaryFields = new HashSet<>();
+
 	/** The list of fields making up the columns in the export. */
-	protected List<String> fieldNames = null;
+	protected List<String> fieldNames = new ArrayList<>();
 
 	/**
 	 * Map of field names -> labels
@@ -70,18 +84,19 @@ public abstract class Exporter {
 	 * Default constructor.
 	 *
 	 * @param adminClient mesh rest client
-	 * @param context
-	 *            The routing context of the export request
-	 * @param uuid
-	 *            The UUID of the form to be exported
-	 * @param schemaName
-	 *            The schame name of the form to be exported
+	 * @param context The routing context of the export request
+	 * @param uuid The UUID of the form to be exported
+	 * @param schemaName The schame name of the form to be exported
+	 * @param options The export options
+	 * @param baseUrl The base URL for file downloads
 	 */
-	protected Exporter(MeshRestClient adminClient, PluginContext context, String uuid, String schemaName) {
+	protected Exporter(MeshRestClient adminClient, PluginContext context, String uuid, String schemaName, ExportOptions options, String baseUrl) {
 		this.adminClient = adminClient;
 		this.context = context;
 		this.uuid = uuid;
 		this.schemaName = schemaName;
+		this.options = options;
+		this.baseUrl = baseUrl;
 	}
 
 	/**
@@ -91,8 +106,7 @@ public abstract class Exporter {
 	 *
 	 * The GraphQL response containing the data to export. The interesting data can be extracted to a JSON object by {@link #extractData(GraphQLResponse)}.
 	 *
-	 * @param response
-	 *            The response for the GraphQL query
+	 * @param response The response for the GraphQL query
 	 * @return single export data
 	 */
 	abstract protected Single<String> internalExport(GraphQLResponse response);
@@ -182,8 +196,16 @@ public abstract class Exporter {
 		renderCtx.put("schemaName", schemaName);
 		renderCtx.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
 
-		fieldNames = new ArrayList<>(form.getReportableElementNamesForGraphQL());
-		fieldNames.remove("errors");
+		binaryFields.clear();
+		fieldNames.clear();
+
+		form.getReportableElementsInfo().forEach((name, isBinary) -> {
+			fieldNames.add(name);
+
+			if (isBinary) {
+				binaryFields.add(name);
+			}
+		});
 
 		String query;
 
@@ -218,9 +240,12 @@ public abstract class Exporter {
 	/**
 	 * Set the field labels
 	 * @param fieldLabels field labels
+	 * @return A reference to this exporter for fluent API access
 	 */
-	public void setFieldLabels(Map<String, String> fieldLabels) {
+	public Exporter setFieldLabels(Map<String, String> fieldLabels) {
 		this.fieldLabels = fieldLabels;
+
+		return this;
 	}
 
 	/**
@@ -230,16 +255,15 @@ public abstract class Exporter {
 	 *
 	 * @param configuration configuration
 	 * @param adminClient mesh rest client
-	 * @param context
-	 *            The routing context of the export request
-	 * @param uuid
-	 *            The UUID of the form to be exported
-	 * @param schemaName
-	 *            The schema name of the form to be exported
+	 * @param context The routing context of the export request
+	 * @param uuid The UUID of the form to be exported
+	 * @param schemaName The schema name of the form to be exported
+	 * @param options The export options
+	 * @param baseUrl The base URL for file downloads
 	 *
 	 * @return An <code>Exporter</code> instance for the respective export format.
 	 */
-	public static Exporter create(FormsConfig configuration, MeshRestClient adminClient, PluginContext context, String uuid, String schemaName) {
+	public static Exporter create(FormsConfig configuration, MeshRestClient adminClient, PluginContext context, String uuid, String schemaName, ExportOptions options, String baseUrl) {
 		ExportFormat format = ReflectionUtils.getEnumValue(
 			ExportFormat.class,
 			context.request().getParam(PARAM_FORMAT),
@@ -249,7 +273,7 @@ public abstract class Exporter {
 
 		switch (format) {
 		case CSV:
-			return new CsvExporter(adminClient, context, uuid, schemaName);
+			return new CsvExporter(adminClient, context, uuid, schemaName, options, baseUrl);
 
 		default:
 			log.error("Export format {} is not implemented", format.name());

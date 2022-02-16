@@ -1,42 +1,41 @@
 package com.gentics.mesh.plugin.forms.export;
 
+import com.gentics.mesh.core.rest.graphql.GraphQLError;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.forms.config.ExportOptions;
+import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
+import com.gentics.mesh.rest.client.MeshRestClient;
+import com.google.common.net.HttpHeaders;
+import io.reactivex.Single;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVFormat.Predefined;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.io.output.StringBuilderWriter;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVFormat.Predefined;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.io.output.StringBuilderWriter;
-
-import com.gentics.mesh.core.rest.graphql.GraphQLError;
-import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.plugin.PluginContext;
-import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.google.common.net.HttpHeaders;
-
-import io.reactivex.Single;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * Export form generator data in CSV format.
  *
  * The actual form of the generated CSV file can be specified in the {@link Exporter#PARAM_OPTIONS} query parameter. Supported values are the ones supported by
  * {@link CSVFormat} (specified in {@link Predefined}).
- * 
+ *
  * The headers in the first line of the generated CSV contain a concatenation of the corresponding field name and field label separated by the value specified
  * in the {@link CsvExporter#PARAM_DELIMITER} query parameter. If no value is specified, {@link CsvExporter#DEFAULT_HEADER_DELIMITER} is used.
  */
 public class CsvExporter extends Exporter {
-	
+
 	private static final String PARAM_DELIMITER = "headerDelimiter";
-	
+
 	/**
 	 * Default delimiter to separate field name from field label.
 	 * Needed, since exported CSV has to be parsable by field name as well as human readable.
@@ -46,7 +45,7 @@ public class CsvExporter extends Exporter {
 	private static final Logger log = LoggerFactory.getLogger(CsvExporter.class);
 
 	/** The CSV format options without the header fields. */
-	private CSVFormat baseFormat;
+	private final CSVFormat baseFormat;
 
 	/**
 	 * Default constructor.
@@ -54,15 +53,14 @@ public class CsvExporter extends Exporter {
 	 * The query parameter {@link Exporter#PARAM_OPTIONS} is examined for CSV format options. When no (valid) option is present, the default CSV format is used.
 	 *
 	 * @param adminClient mesh rest client
-	 * @param context
-	 *            The routing context of the export request
-	 * @param uuid
-	 *            The UUID of the form to be exported
-	 * @param schemaName
-	 *            The schema name of the form to be exported
+	 * @param context The routing context of the export request
+	 * @param uuid The UUID of the form to be exported
+	 * @param schemaName The schema name of the form to be exported
+	 * @param options The export options
+	 * @param baseUrl The base URL for file downloads
 	 */
-	protected CsvExporter(MeshRestClient adminClient, PluginContext context, String uuid, String schemaName) {
-		super(adminClient, context, uuid, schemaName);
+	protected CsvExporter(MeshRestClient adminClient, PluginContext context, String uuid, String schemaName, ExportOptions options, String baseUrl) {
+		super(adminClient, context, uuid, schemaName, options, baseUrl);
 
 		Predefined format = ReflectionUtils.getEnumValue(
 			Predefined.class,
@@ -94,10 +92,10 @@ public class CsvExporter extends Exporter {
 		JsonArray dataFields = formData.getJsonArray("data");
 
 		StringBuilderWriter writer = new StringBuilderWriter();
-		CSVFormat format = baseFormat.withHeader(getHeaders(formData));
+		CSVFormat format = baseFormat.withHeader(getHeaders(dataFields));
 		List<List<String>> records = dataFields.stream()
 			.filter(e -> e instanceof JsonObject)
-			.map(e -> getFieldValues(((JsonObject) e).getJsonObject("fields")))
+			.map(e -> getExportedValues(((JsonObject) e)))
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 
@@ -121,18 +119,14 @@ public class CsvExporter extends Exporter {
 	/**
 	 * Get the headers of the exported field as a String array.
 	 *
-	 * @param data
-	 *            The exported data
-	 *
+	 * @param dataFields The exported data
 	 * @return The labels of the exported fields as a String array
 	 */
-	private String[] getHeaders(JsonObject data) {
-		JsonArray dataFields = data.getJsonArray("data");
-
+	private String[] getHeaders(JsonArray dataFields) {
 		if (dataFields == null || dataFields.isEmpty()) {
 			return new String[0];
 		}
-		
+
 		String headerDelimiter = context.request().getParam(PARAM_DELIMITER);
 		if (headerDelimiter == null) {
 			headerDelimiter = CsvExporter.DEFAULT_HEADER_DELIMITER;
@@ -140,38 +134,74 @@ public class CsvExporter extends Exporter {
 
 		List<String> headers = new ArrayList<>();
 
+		if (options.isIncludeUuid()) {
+			headers.add("uuid");
+		}
+
+		if (options.isIncludeCreationTimestamp()) {
+			headers.add("created");
+		}
+
 		for (String fieldName : fieldNames) {
 			String fieldLabel = fieldLabels.getOrDefault(fieldName, fieldName);
 			String annotatedFieldLabel = fieldName.equals(fieldLabel)
 					? fieldName
 					: fieldName + headerDelimiter + fieldLabel;
+
 			headers.add(annotatedFieldLabel);
+
+			if (binaryFields.contains(fieldName)) {
+				headers.add(annotatedFieldLabel + " (filename)");
+			}
 		}
 
-		return headers.toArray(new String[headers.size()]);
+		return headers.toArray(new String[0]);
 	}
 
 	/**
 	 * Extract the field values from the given record into a list of Strings.
 	 *
-	 * @param record
-	 *            The record to extract fields from
+	 * <p>
+	 *     When the {@code options} specify {@link ExportOptions#isIncludeUuid() includeUuid}
+	 *     or {@link ExportOptions#isIncludeCreationTimestamp() includeCreationTimestamp}
+	 *     the data nodes UUID and if available language code or creation
+	 *     timestamp will be added respectively.
+	 * </p>
+	 *
+	 * @param data The loaded form data node to extract fields from
 	 *
 	 * @return The field values of the specified record in a list of Strings.
 	 */
-	private List<String> getFieldValues(JsonObject record) {
+	private List<String> getExportedValues(JsonObject data) {
+		JsonObject record = data == null ? null : data.getJsonObject("fields");
+
 		if (record == null) {
 			return null;
 		}
 
-		List<String> ret = new ArrayList<>(fieldNames.size());
+		List<String> ret = new ArrayList<>();
+
+		if (options.isIncludeUuid()) {
+			ret.add(data.getString("uuid"));
+		}
+
+		if (options.isIncludeCreationTimestamp()) {
+			ret.add(data.getString("created"));
+		}
 
 		for (String fieldName : fieldNames) {
 			Object value = record.getValue(fieldName, "");
 
 			// special handling for binary fields
 			if (value instanceof JsonObject) {
-				value = ((JsonObject) value).getValue("fileName", "");
+				value = ((JsonObject) value).getString("fileName", fieldName);
+
+				ret.add(String.format(
+					"%s/api/forms/forms/%s/data/%s/binary/%s",
+					baseUrl,
+					uuid,
+					data.getString("uuid"),
+					fieldName));
 			}
 
 			ret.add(value == null ? "" : String.valueOf(value));
