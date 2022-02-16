@@ -293,7 +293,6 @@ public interface PersistingContentDao extends ContentDao {
 	default HibNodeFieldContainer createFieldContainer(HibSchemaVersion version, HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
 		boolean handleDraftEdge) {
 		HibNodeFieldContainer previous = null;
-		ContentDao contentDao = Tx.get().contentDao();
 
 		// check whether there is a current draft version
 		if (handleDraftEdge) {
@@ -311,11 +310,11 @@ public interface PersistingContentDao extends ContentDao {
 
 		if (previous != null) {
 			// set the next version number
-			contentDao.setVersion(newContainer, previous.getVersion().nextDraft());
+			setVersion(newContainer, previous.getVersion().nextDraft());
 			previous.setNextVersion(newContainer);
 		} else {
 			// set the initial version number
-			contentDao.setVersion(newContainer, new VersionNumber());
+			setVersion(newContainer, new VersionNumber());
 		}
 
 		// clone the original or the previous container
@@ -630,10 +629,9 @@ public interface PersistingContentDao extends ContentDao {
 										  String conflictI18n,
 										  ContainerType type) {
 		NodeDao nodeDao = Tx.get().nodeDao();
-		ContentDao contentDao = Tx.get().contentDao();
 
 		// Determine the webroot path of the container parent node
-		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag(content));
+		String segment = getPathSegment(node, branchUuid, type, getLanguageTag(content));
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)

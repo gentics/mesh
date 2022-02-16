@@ -128,7 +128,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// Create the initial branch for the project and add the used schema version to it
 		HibBranch branch = branchDao.create(project, name, creator, batch);
 		
-		//project.getBranchRoot().create(name, creator, batch);
 		branch.setMigrated(true);
 		if (hostname != null) {
 			branch.setHostname(hostname);

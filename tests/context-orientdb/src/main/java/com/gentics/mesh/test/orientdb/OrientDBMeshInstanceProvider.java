@@ -6,11 +6,9 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.testcontainers.utility.ThrowingFunction;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.dagger.BaseMeshComponent;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshComponent.Builder;
