@@ -3,7 +3,6 @@ package com.gentics.mesh.core.db;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,9 +13,9 @@ import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.metric.CachingMetric;
+import com.gentics.mesh.util.ETag;
+
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
@@ -26,8 +25,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.concurrent.ConcurrentException;
-import org.apache.commons.lang3.concurrent.LazyInitializer;
 
 /**
  * Main description of a graph database.
@@ -223,7 +220,17 @@ public interface Database extends TxFactory {
 	 * 
 	 * @return
 	 */
-	String getDatabaseRevision();
+	default String getDatabaseRevision() {
+		String overrideRev = System.getProperty("mesh.internal.dbrev");
+		if (overrideRev != null) {
+			return overrideRev;
+		}
+		StringBuilder builder = new StringBuilder();
+		for (String changeUuid : getChangeUuidList()) {
+			builder.append(changeUuid);
+		}
+		return ETag.hash(builder.toString() + getVersion());
+	}
 
 	/**
 	 * Return the vertex count for the given class.
