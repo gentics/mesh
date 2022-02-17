@@ -104,6 +104,18 @@ public interface PersistingContentDao extends ContentDao {
 	void deleteField(HibDeletableField field);
 
 	/**
+	 * Get a field container version, that is not attached to a storage, 
+	 * and thus can be reused after being removed from storage into the transient state.
+	 * Override this method, if manipulating a weak reference to the field, to obtain an actual entity or its DTO.
+	 * 
+	 * @param field
+	 * @return
+	 */
+	default HibField detachField(HibField field) {
+		return field;
+	}
+
+	/**
 	 * Migrate field container of a node onto the new branch.
 	 * 
 	 * @param container container to migrate

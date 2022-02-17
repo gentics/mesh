@@ -26,13 +26,15 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -45,7 +47,6 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
@@ -261,7 +262,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		String binaryUuid = context.getBinaryUuid();
 
 		return db.singleTxWriteLock((batch, tx) -> {
-			ContentDao contentDao = tx.contentDao();
+			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
 			NodeDao nodeDao = tx.nodeDao();
@@ -333,7 +334,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				true);
 
 			// Get the potential existing field
-			HibBinaryField oldField = newDraftVersion.getBinary(fieldName);
+			HibBinaryField oldField = (HibBinaryField) contentDao.detachField(newDraftVersion.getBinary(fieldName));
 
 			// Create the new field
 			HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
