@@ -597,7 +597,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 */
 	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		schema.addField(fieldSchema);
+		schema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().orElseGet(() -> {
+			schema.addField(fieldSchema);
+			return fieldSchema;
+		});
 		if (setAsSegmentField) {
 			schema.setSegmentField(fieldSchema.getName());
 		}
