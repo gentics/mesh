@@ -52,6 +52,7 @@ mail:
   keepAlive: true
   maxPoolSize: 10
   ownHostname:
+  attachFileUploads: false
 fromAddress: "webmaster@gentics.com"
 adminMailTemplate: "adminemail"
 adminMailSubject: "Formular [[FORMNAME]] ausgefüllt"
