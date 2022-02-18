@@ -392,6 +392,7 @@ public class TestDataProvider {
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
+		Tx.get().commit();
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
 			getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();
@@ -445,6 +446,7 @@ public class TestDataProvider {
 
 	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
+		Tx.get().commit();
 	}
 
 	private void addBootstrapSchemas() {
@@ -461,7 +463,6 @@ public class TestDataProvider {
 		// binary_content
 		HibSchema binaryContentSchemaContainer = schemaDao.findByName("binary_content");
 		schemaContainers.put("binary_content", binaryContentSchemaContainer);
-
 	}
 
 	/**

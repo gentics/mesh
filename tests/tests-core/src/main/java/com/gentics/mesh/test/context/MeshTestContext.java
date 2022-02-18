@@ -256,7 +256,6 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		}
 		resetDatabase(settings);
-		meshTestContextProvider.getInstanceProvider().teardownStorage();
 	}
 
 	public void tearDownOnce(MeshTestSetting settings) throws Exception {
@@ -274,7 +273,7 @@ public class MeshTestContext extends TestWatcher {
 			network.close();
 		}
 		optionChanger = noopConsumer();
-
+		meshTestContextProvider.getInstanceProvider().teardownStorage();
 	}
 
 	private void removeConfigDirectory() throws IOException {

@@ -63,6 +63,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			schema.setSegmentField(segmentField);
 		}
 		version.setSchema(schema);
+		Tx.get().commit();
 		HibNode node = nodeDao.create(project(), user(), version);
 		HibBranch branch = branchDao.findByUuid(initialBranch().getProject(), initialBranch().getUuid());
 		nodeDao.setParentNode(node, branch.getUuid(), nodeDao.findByUuidGlobal(project().getBaseNode().getUuid()));
