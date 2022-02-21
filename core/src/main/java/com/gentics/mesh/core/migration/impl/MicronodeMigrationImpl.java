@@ -291,7 +291,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			HibMicronode micronode = field.getMicronode();
 			// transform to rest and migrate
 			MicronodeResponse restModel = micronode.transformToRestSync(ac, 0);
-			migrate(ac, micronode, restModel, fromVersion, toVersion, touchedFields);
+			migrate(ac, micronode, restModel, fromVersion);
 		}
 
 		// iterate over all micronode list fields to migrate
@@ -311,7 +311,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 				if (newMicronode.getSchemaContainerVersion().equals(fromVersion)) {
 					// transform to rest and migrate
 					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0);
-					migrate(ac, newMicronode, restModel, fromVersion, toVersion, touchedFields);
+					migrate(ac, newMicronode, restModel, fromVersion);
 				}
 			}
 		}

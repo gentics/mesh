@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.migration;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,7 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -60,22 +60,17 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	}
 
 	/**
-	 * Collect the migration scripts and set of touched fields when migrating the given container into the next version
+	 * Collect the set of touched fields when migrating the given container into the next version
 	 *
 	 * @param fromVersion
 	 *            Container which contains the expected migration changes
 	 * @param touchedFields
 	 *            Set of touched fields (will be modified)
-	 * @throws IOException
 	 */
-	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion, Set<String> touchedFields) throws IOException {
+	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion, Set<String> touchedFields) {
 		HibSchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
-			// if either the type changes or the field is removed, the field is
-			// "touched"
-			// if (change instanceof UpdateFieldChangeImpl) {
-			// touchedFields.add(((UpdateFieldChangeImpl) change).getFieldName());
-			// } else
+			// if either the type changes or the field is removed, the field is "touched"
 			if (change instanceof HibFieldTypeChange) {
 				touchedFields.add(((HibFieldTypeChange) change).getFieldName());
 			} else if (change instanceof HibRemoveFieldChange) {
@@ -93,27 +88,16 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            context
 	 * @param fromVersion
 	 *            rest model of the container
-	 * @param newVersion
-	 *            new schema version
-	 * @param touchedFields
-	 *            set of touched fields
 	 * @throws Exception
 	 */
 	protected void migrate(NodeMigrationActionContext ac, HibFieldContainer newContainer, FieldContainer newContent,
-		HibFieldSchemaVersionElement<?,?,?,?,?> fromVersion,
-		HibFieldSchemaVersionElement<?,?,?,?,?> newVersion, Set<String> touchedFields) throws Exception {
-
-		// Remove all touched fields (if necessary, they will be readded later)
-		newContainer.getFields(fromVersion).stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(newContainer::removeField);
-		newContainer.setSchemaContainerVersion(newVersion);
-
-		FieldMap fields = newContent.getFields();
-
+						   HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion) throws Exception {
+		FieldMap fields = new FieldMapImpl();
 		Map<String, Field> newFields = fromVersion.getChanges()
+			.filter(change -> !(change instanceof HibRemoveFieldChange)) // nothing to do for removed fields, they were never added
 			.map(change -> change.createFields(fromVersion.getSchema(), newContent))
 			.collect(StreamUtil.mergeMaps());
 
-		fields.clear();
 		fields.putAll(newFields);
 
 		newContainer.updateFieldsFromRest(ac, fields);
