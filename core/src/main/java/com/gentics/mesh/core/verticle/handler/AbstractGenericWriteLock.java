@@ -27,14 +27,14 @@ import io.micrometer.core.instrument.Timer;
  */
 public abstract class AbstractGenericWriteLock implements WriteLock {
 
-	private ILock clusterLock;
-	private final Semaphore localLock = new Semaphore(1);
-	private final MeshOptions options;
-	private final Lazy<HazelcastInstance> hazelcast;
-	private final boolean isClustered;
-	private final Timer writeLockTimer;
-	private final Counter timeoutCount;
-	private final ClusterManager clusterManager;
+	protected ILock clusterLock;
+	protected final Semaphore localLock = new Semaphore(1);
+	protected final MeshOptions options;
+	protected final Lazy<HazelcastInstance> hazelcast;
+	protected final boolean isClustered;
+	protected final Timer writeLockTimer;
+	protected final Counter timeoutCount;
+	protected final ClusterManager clusterManager;
 
 	public AbstractGenericWriteLock(MeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService, ClusterManager clusterManager) {
 		this.options = options;
