@@ -44,6 +44,8 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
@@ -236,13 +238,13 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testParallelDupUpload() throws IOException {
 
 		String folderUuid = tx(() -> folder("news").getUuid());
+		String schemaUuid = tx(() -> folder("news").getSchemaContainer().getUuid());
+
 		// Prepare schema
-		try (Tx tx = tx()) {
-			HibNode node = folder("news");
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		}
+		SchemaResponse schema = call(() -> client().findSchemaByUuid(schemaUuid));
+		SchemaUpdateRequest schemaUpdate = schema.toUpdateRequest();
+		schemaUpdate.addField(FieldUtil.createBinaryFieldSchema("image"));
+		client().updateSchema(schema.getUuid(), schemaUpdate).blockingGet();
 
 		Buffer buffer = getBuffer("/pictures/blume.jpg");
 		Observable.range(0, 200).flatMapSingle(number -> {
