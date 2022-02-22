@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -200,6 +201,18 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			}
 		}
 		// 3. Create a new edge from the container to the created micronode field
+		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
+		field.setFieldKey(key);
+		return field;
+	}
+
+	@Override
+	public HibMicronodeField createEmptyMicronode(String key, HibMicroschemaVersion microschema) {
+		// 1. Create a new micronode and assign the given schema to it
+		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
+		micronode.setSchemaContainerVersion(microschema);
+
+		// 2. Create a new edge from the container to the created micronode field
 		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;

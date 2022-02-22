@@ -229,6 +229,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		change.setPreviousContainerVersion(versionA);
 		change.setNextSchemaContainerVersion(versionB);
 		versionA.setNextVersion(versionB);
+		versionA.setNextChange(change);
 
 		// create a micronode based on the old microschema
 		HibNode node = nodeDao.create(folder("2015"), user(), schemaContainer("content").getLatestVersion(), project());
@@ -633,6 +634,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		change.setPreviousContainerVersion(versionA);
 		change.setNextSchemaContainerVersion(versionB);
 		versionA.setNextVersion(versionB);
+		versionA.setNextChange(change);
 
 		microschemaDao.assign(container, project(), user(), createBatch());
 		HibNode node = nodeDao.create(folder("2015"), user(), schemaContainer("content").getLatestVersion(), project());
