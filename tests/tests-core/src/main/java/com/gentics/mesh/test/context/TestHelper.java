@@ -17,6 +17,7 @@ import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -596,16 +597,22 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @throws IOException
 	 */
 	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
+		prepareTypedSchema(node, List.of(fieldSchema), setAsSegmentField ? Optional.of(fieldSchema.getName()) : Optional.empty());
+	}
+
+	default public void prepareTypedSchema(HibNode node, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		schema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().orElseGet(() -> {
-			schema.addField(fieldSchema);
-			return fieldSchema;
-		});
-		if (setAsSegmentField) {
-			schema.setSegmentField(fieldSchema.getName());
-		}
+		fieldSchemas.stream()
+			.filter(fieldSchema -> schema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().isEmpty())
+			.forEach(fieldSchema -> {
+				schema.addField(fieldSchema);
+				maybeSegmentFieldKey.filter(
+					segmentFieldKey -> segmentFieldKey.equals(fieldSchema.getName())).ifPresent(segmentFieldKey -> schema.setSegmentField(fieldSchema.getName())
+				);
+			});
  		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		// mesh().serverSchemaStorage().clear();
+ 		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
+ 		// mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
 	}
 

@@ -25,6 +25,7 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
+import com.gentics.mesh.test.MeshTestActions;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.MeshTestContext;
 
@@ -33,6 +34,10 @@ import io.vertx.core.Vertx;
 public interface BaseHelper {
 
 	MeshTestContext getTestContext();
+
+	default MeshTestActions actions() {
+		return getTestContext().actions();
+	}
 
 	default MeshComponent mesh() {
 		return getTestContext().getMeshComponent();

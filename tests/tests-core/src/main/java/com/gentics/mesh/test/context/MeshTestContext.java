@@ -62,6 +62,7 @@ import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshTestActions;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.SSLTestMode;
@@ -818,5 +819,9 @@ public class MeshTestContext extends TestWatcher {
 
 	public MeshOptions getOptions() {
 		return meshTestContextProvider.getOptions();
+	}
+
+	public MeshTestActions actions() {
+		return getInstanceProvider().actions();
 	}
 }
