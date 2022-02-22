@@ -205,13 +205,15 @@ public abstract class AdminHandler extends AbstractHandler {
 		boolean admin = db.tx(() -> ac.isAdmin());
 		MeshServerInfoModel info = new MeshServerInfoModel();
 		if (options.getHttpServerOptions().isServerTokens() || admin) {
-			info.setDatabaseVendor(db.getVendorName());
+			db.tx(() -> {
+				info.setDatabaseVendor(db.getVendorName());
+				info.setDatabaseVersion(db.getVersion());
+				info.setDatabaseRevision(db.getDatabaseRevision());
+			});
 			info.setSearchVendor(searchProvider.getVendorName());
-			info.setDatabaseVersion(db.getVersion());
 			info.setSearchVersion(searchProvider.getVersion());
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setVertxVersion(VersionCommand.getVersion());
-			info.setDatabaseRevision(db.getDatabaseRevision());
 			info.setMeshNodeName(options.getNodeName());
 		}
 		return info;
