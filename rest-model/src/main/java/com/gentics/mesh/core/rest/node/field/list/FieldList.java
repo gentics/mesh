@@ -35,6 +35,13 @@ public interface FieldList<T> extends Field {
 	 */
 	FieldList<T> setItems(List<T> items);
 
+	/**
+	 * Get the item type,
+	 * 
+	 * @return
+	 */
+	public String getItemType();
+
 	@Override
 	default Object getValue() {
 		return getItems();

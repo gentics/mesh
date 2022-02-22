@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -37,7 +38,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -70,17 +70,14 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		setSchema(false);
 	}
 
-	private void setSchema(boolean isRequired) {
+	private void setSchema(boolean isRequired) throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
-
 			// add non restricted string field
 			BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
 			binaryFieldSchema.setName(FIELD_NAME);
 			binaryFieldSchema.setLabel("Some label");
 			binaryFieldSchema.setRequired(isRequired);
-			schema.addField(binaryFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(binaryFieldSchema), Optional.empty());
 		}
 	}
 

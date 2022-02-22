@@ -6,14 +6,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDao;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -56,13 +59,12 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
-		HibSchema container = CommonTx.get().schemaDao().create(schema, null, null, false);;
-		HibSchemaVersion version = container.getLatestVersion();
 		schema.addField(createFieldSchema(isRequiredField));
 		if (segmentField != null) {
 			schema.setSegmentField(segmentField);
 		}
-		version.setSchema(schema);
+		HibSchema container = CommonTx.get().schemaDao().create(schema, null, null, false);
+		HibSchemaVersion version = container.getLatestVersion();
 		Tx.get().commit();
 		HibNode node = nodeDao.create(project(), user(), version);
 		HibBranch branch = branchDao.findByUuid(initialBranch().getProject(), initialBranch().getUuid());
@@ -83,13 +85,15 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected SchemaModel prepareNode(HibNode node, String listName, String listType) {
-		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
 		nodeListFieldSchema.setName(listName);
 		nodeListFieldSchema.setListType(listType);
-		schema.addField(nodeListFieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		return schema;
+		try {
+			prepareTypedSchema(node.getSchemaContainer(), List.of(nodeListFieldSchema), Optional.empty());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return node.getSchemaContainer().getLatestVersion().getSchema();
 	}
 
 	protected void assertList(int expectedItems, String fieldKey, String listType, NodeResponse response) {

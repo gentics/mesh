@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -54,6 +56,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -65,10 +68,19 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -361,6 +373,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public MeshRequest<NodeResponse> createNodeAsync(String parentNodeUuid, String fieldKey, Field field) {
+		tx(() -> prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()
+				.map(TestHelper::fieldIntoSchema)
+				.map(schema -> schema.setName(fieldKey)).collect(Collectors.toList()), Optional.empty()));
+
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNodeUuid));
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -597,11 +613,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @throws IOException
 	 */
 	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
-		prepareTypedSchema(node, List.of(fieldSchema), setAsSegmentField ? Optional.of(fieldSchema.getName()) : Optional.empty());
+		prepareTypedSchema(node.getSchemaContainer(), List.of(fieldSchema), setAsSegmentField ? Optional.of(fieldSchema.getName()) : Optional.empty());
 	}
 
 	default public void prepareTypedSchema(HibNode node, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
-		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		prepareTypedSchema(node.getSchemaContainer(), fieldSchemas, maybeSegmentFieldKey);
+	}
+
+	default public void prepareTypedSchema(HibSchema schemaContainer, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
+		SchemaVersionModel schema = schemaContainer.getLatestVersion().getSchema();
 		fieldSchemas.stream()
 			.filter(fieldSchema -> schema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().isEmpty())
 			.forEach(fieldSchema -> {
@@ -610,8 +630,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 					segmentFieldKey -> segmentFieldKey.equals(fieldSchema.getName())).ifPresent(segmentFieldKey -> schema.setSegmentField(fieldSchema.getName())
 				);
 			});
- 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
- 		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
+ 		schemaContainer.getLatestVersion().setSchema(schema);
+ 		actions().updateSchemaVersion(schemaContainer.getLatestVersion());
  		// mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
 	}
@@ -870,4 +890,33 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return threadMXBean.dumpAllThreads(true, true).length;
 	}
 
+	static FieldSchema fieldIntoSchema(Field field) {
+		FieldTypes type = FieldTypes.valueByName(field.getType());
+		switch(type) {
+		case BINARY:
+			return new BinaryFieldSchemaImpl();
+		case BOOLEAN:
+			return new BooleanFieldSchemaImpl();
+		case DATE:
+			return new DateFieldSchemaImpl();
+		case HTML:
+			return new HtmlFieldSchemaImpl();
+		case MICRONODE:
+			return new MicronodeFieldSchemaImpl();
+		case NODE:
+			return new NodeFieldSchemaImpl();
+		case NUMBER:
+			return new NumberFieldSchemaImpl();
+		case S3BINARY:
+			return new S3BinaryFieldSchemaImpl();
+		case STRING:
+			return new StringFieldSchemaImpl();
+		case LIST:
+			FieldList<?> fieldList = (FieldList<?>) field;
+			return new ListFieldSchemaImpl().setListType(fieldList.getItemType());
+		default:
+			break;		
+		}
+		throw new IllegalArgumentException("Unsupported Field type: " + field.getType());
+	}
 }
