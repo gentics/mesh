@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -39,10 +38,13 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 
 	@Override
 	protected BooleanFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(BOOLEAN_FIELD, isRequired);
+	}
+	protected BooleanFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		BooleanFieldSchemaImpl schema = new BooleanFieldSchemaImpl();
 		schema.setLabel("Some boolean field");
 		schema.setRequired(isRequired);
-		schema.setName(BOOLEAN_FIELD);
+		schema.setName(fieldKey);
 		return schema;
 	}
 
@@ -50,17 +52,14 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
-
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Update the schema and add a boolean field
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
 			booleanFieldSchema.setName(BOOLEAN_FIELD);
 			booleanFieldSchema.setLabel("Some boolean field");
 			booleanFieldSchema.setRequired(true);
-			schema.addField(booleanFieldSchema);
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			prepareTypedSchema(node, booleanFieldSchema, true);
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibBooleanField field = container.createBoolean(BOOLEAN_FIELD);
@@ -85,13 +84,13 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("trueBooleanField", false), createFieldSchema("falseBooleanField", false));
 			HibBooleanField trueBooleanField = container.createBoolean("trueBooleanField");
 			trueBooleanField.setBoolean(true);
 			HibBooleanField falseBooleanField = container.createBoolean("falseBooleanField");
 			falseBooleanField.setBoolean(false);
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema("trueBooleanField", false), createFieldSchema("falseBooleanField", false));
 			trueBooleanField.cloneTo(otherContainer);
 			falseBooleanField.cloneTo(otherContainer);
 
@@ -106,7 +105,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();;
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibBooleanField booleanField = container.createBoolean(BOOLEAN_FIELD);
 			assertEquals(BOOLEAN_FIELD, booleanField.getFieldKey());
 			booleanField.setBoolean(true);
@@ -130,7 +129,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", false), createFieldSchema("fieldB", false));
 			HibBooleanField fieldA = container.createBoolean("fieldA");
 			HibBooleanField fieldB = container.createBoolean("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -159,7 +158,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true));
 			HibBooleanField fieldA = container.createBoolean("fieldA");
 
 			// graph empty - rest empty

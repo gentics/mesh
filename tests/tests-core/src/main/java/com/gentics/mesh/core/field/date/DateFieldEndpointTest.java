@@ -181,11 +181,14 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		Long nowEpoch;
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			prepareTypedSchema(node, new DateFieldSchemaImpl().setName(FIELD_NAME), false);
 			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
 			tx.success();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 
 		try (Tx tx = tx()) {
