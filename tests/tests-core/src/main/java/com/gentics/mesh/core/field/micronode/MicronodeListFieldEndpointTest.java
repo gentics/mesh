@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,8 +53,9 @@ import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.schema.impl.AbstractFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -70,14 +72,12 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 			listFieldSchema.setName(FIELD_NAME);
 			listFieldSchema.setLabel("Some label");
 			listFieldSchema.setListType("micronode");
 			listFieldSchema.setAllowedSchemas(new String[] { "vcard" });
-			schema.addField(listFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(listFieldSchema), Optional.empty());
 		}
 	}
 
@@ -232,11 +232,10 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			List<String> oldValueList = latest.getPreviousVersion().getMicronodeList(FIELD_NAME).getList().stream()
 				.map(item -> item.getMicronode().getString("firstName").getString()).collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly("Max", "Moritz");
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
 		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test
@@ -396,11 +395,13 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		String sourceUuid = tx(() -> folder("2015").getUuid());
 		String targetUuid = contentUuid();
 
+		AbstractFieldSchema innerField = new NodeFieldSchemaImpl().setName("node");
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
-		vcard.addField(new NodeFieldSchemaImpl().setName("node"));
+		vcard.addField(innerField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
+		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerField)));
 
 		// 1. Set the reference
 		MicronodeResponse fieldItem = new MicronodeResponse();
@@ -459,11 +460,13 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		String sourceUuid = tx(() -> folder("2015").getUuid());
 		String targetUuid = contentUuid();
 
+		FieldSchema innerListField = new ListFieldSchemaImpl().setListType("node").setName("node");
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
-		vcard.addField(new ListFieldSchemaImpl().setListType("node").setName("node"));
+		vcard.addField(innerListField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
+		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerListField)));
 
 		// 1. Set the reference
 		MicronodeResponse fieldItem = new MicronodeResponse();

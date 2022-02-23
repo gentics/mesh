@@ -40,10 +40,12 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
 		String... i18nParams) {
 		HibNode node = folder("2015");
-		try {
-			prepareTypedSchema(node, TestHelper.fieldIntoSchema(field).setName(fieldKey), true);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if (field != null) {
+			try {
+				prepareTypedSchema(node, TestHelper.fieldIntoSchema(field).setName(fieldKey), true);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());

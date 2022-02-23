@@ -48,6 +48,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -634,6 +635,17 @@ public interface TestHelper extends EventHelper, ClientHelper {
  		actions().updateSchemaVersion(schemaContainer.getLatestVersion());
  		// mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
+	}
+
+	default public void prepareTypedMicroschema(HibMicroschema microschemaContainer, List<FieldSchema> fieldSchemas) throws IOException {
+		MicroschemaVersionModel microschema = microschemaContainer.getLatestVersion().getSchema();
+		fieldSchemas.stream()
+			.filter(fieldSchema -> microschema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().isEmpty())
+			.forEach(fieldSchema -> {
+				microschema.addField(fieldSchema);
+			});
+ 		microschemaContainer.getLatestVersion().setSchema(microschema);
+ 		actions().updateSchemaVersion(microschemaContainer.getLatestVersion());
 	}
 
 	default public MeshRequest<NodeResponse> uploadRandomData(HibNode node, String languageTag, String fieldKey, int binaryLen, String contentType,

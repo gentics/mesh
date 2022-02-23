@@ -40,6 +40,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.TestHelper;
 import com.gentics.mesh.util.Tuple;
 
 public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractMeshTest implements FieldTestcases {
@@ -211,6 +212,13 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	protected void updateContainer(InternalActionContext ac, HibNodeFieldContainer container, String fieldKey, Field field) {
 		FieldMap fieldMap = new FieldMapImpl();
 		fieldMap.put(fieldKey, field);
+		if (field != null) {
+			try {
+				prepareTypedSchema(container.getNode(), TestHelper.fieldIntoSchema(field).setName(fieldKey), true);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		container.updateFieldsFromRest(ac, fieldMap);
 	}
 

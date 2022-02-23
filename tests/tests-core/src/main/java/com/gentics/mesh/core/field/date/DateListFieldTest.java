@@ -36,9 +36,12 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Override
 	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(DATE_LIST, isRequired);
+	}
+	protected ListFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		ListFieldSchema schema = new ListFieldSchemaImpl();
 		schema.setListType("date");
-		schema.setName(DATE_LIST);
+		schema.setName(fieldKey);
 		schema.setRequired(isRequired);
 		return schema;
 	}
@@ -68,8 +71,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibDateFieldList list = container.createDateList("dummyList");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibDateFieldList list = container.createDateList(DATE_LIST);
 			assertNotNull(list);
 			HibDateField dateField = list.createDate(1L);
 			assertNotNull(dateField);
@@ -85,15 +88,15 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibDateFieldList testField = container.createDateList("testField");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibDateFieldList testField = container.createDateList(DATE_LIST);
 			testField.createDate(47L);
 			testField.createDate(11L);
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
-			assertTrue(otherContainer.getDateList("testField").equals(testField));
+			assertTrue(otherContainer.getDateList(DATE_LIST).equals(testField));
 		}
 	}
 
@@ -101,7 +104,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 			HibDateFieldList fieldA = container.createDateList("fieldA");
 			HibDateFieldList fieldB = container.createDateList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -119,8 +122,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibDateFieldList fieldA = container.createDateList("fieldA");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibDateFieldList fieldA = container.createDateList(DATE_LIST);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibDateFieldList) null));
 		}
@@ -130,7 +133,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			Long dummyValue = 4200L;
 
 			// rest null - graph null
