@@ -218,7 +218,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
+			assertThat(container.getNumber(name).getNumber().intValue()).as(NEWFIELDVALUE).isEqualTo(1);
 		});
 	}
 

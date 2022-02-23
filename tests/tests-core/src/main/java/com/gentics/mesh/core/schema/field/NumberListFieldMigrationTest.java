@@ -233,7 +233,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
+			assertThat(container.getNumber(name).getNumber().intValue()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
 		});
 	}
 
