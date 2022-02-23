@@ -40,9 +40,12 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Override
 	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(MICRONODE_LIST, isRequired);
+	}
+	protected ListFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		ListFieldSchema schema = new ListFieldSchemaImpl();
 		schema.setListType("micronode");
-		schema.setName(MICRONODE_LIST);
+		schema.setName(fieldKey);
 		schema.setRequired(isRequired);
 		return schema;
 	}
@@ -111,8 +114,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibMicronodeFieldList list = container.createMicronodeList("dummyList");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibMicronodeFieldList list = container.createMicronodeList(MICRONODE_LIST);
 			assertNotNull(list);
 		}
 	}
@@ -121,8 +124,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibMicronodeFieldList testField = container.createMicronodeList("testField");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibMicronodeFieldList testField = container.createMicronodeList(MICRONODE_LIST);
 
 			HibMicronode micronode = testField.createMicronode(microschemaContainers().get("vcard").getLatestVersion());
 			micronode.createString("firstName").setString("Donald");
@@ -132,12 +135,12 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			micronode.createString("firstName").setString("Mickey");
 			micronode.createString("lastName").setString("Mouse");
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
 			// We cannot use POJO field comparison anymore, since there may be lazy loaded objects.
-			//assertThat(otherContainer.getMicronodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
-			assertTrue(otherContainer.getMicronodeList("testField").equals(testField));
+			//assertThat(otherContainer.getMicronodeList(MICRONODE_LIST)).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertTrue(otherContainer.getMicronodeList(MICRONODE_LIST).equals(testField));
 		}
 	}
 
@@ -145,7 +148,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 			HibMicronodeFieldList fieldA = container.createMicronodeList("fieldA");
 			HibMicronodeFieldList fieldB = container.createMicronodeList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -178,8 +181,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibMicronodeFieldList fieldA = container.createMicronodeList("fieldA");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibMicronodeFieldList fieldA = container.createMicronodeList(MICRONODE_LIST);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibMicronodeFieldList) null));
 		}
@@ -189,7 +192,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 
 			// rest null - graph null
 			HibMicronodeFieldList fieldA = container.createMicronodeList(MICRONODE_LIST);
