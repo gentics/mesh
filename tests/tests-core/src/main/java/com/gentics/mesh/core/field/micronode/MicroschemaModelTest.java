@@ -12,6 +12,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,12 +34,15 @@ import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.MeshJsonException;
@@ -172,6 +176,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
 			HibMicroschema container = createMicroschema(schema);
+			tx.commit();
 			assertNotNull(microschemaDao.findByName("test"));
 			BulkActionContext bac = createBulkContext();
 			microschemaDao.delete(container, bac);
@@ -291,6 +296,10 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			InternalActionContext ac = mockActionContext();
 			EventQueueBatch batch = createBatch();
 			microschemaDao.applyChanges(vcard1, ac, model, batch);
+			prepareTypedSchema(folder("2015"), 
+					List.of(new MicronodeFieldSchemaImpl().setName("single"), 
+							new ListFieldSchemaImpl().setListType(FieldTypes.MICRONODE.toString()).setName("list")), 
+					Optional.empty());
 			return vcard1;
 		});
 		try (Tx tx = tx()) {

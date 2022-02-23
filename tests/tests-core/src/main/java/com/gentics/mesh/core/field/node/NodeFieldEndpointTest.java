@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -284,6 +285,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
@@ -299,11 +301,12 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	@Test
-	public void testReadNodeWithResolveLinks() {
+	public void testReadNodeWithResolveLinks() throws IOException {
 		HibNode newsNode = folder("news");
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
@@ -326,7 +329,6 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertNotNull(deserializedNodeField.getLanguagePaths());
 			assertThat(deserializedNodeField.getLanguagePaths()).containsKeys("en", "de");
 		}
-
 	}
 
 	@Test
@@ -347,6 +349,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
 			ContentDao contentDao = tx.contentDao();
 			// Create test field
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -379,8 +382,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			HibNode node1 = folder("2015");
 
+			prepareTypedSchema(node1, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
 			// Create test field
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node1, english());
+
 			container.createNode(FIELD_NAME, referencedNode);
 
 			return node1;
@@ -403,6 +408,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Create test field
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
@@ -438,9 +444,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	@Test
-	public void testReadExpandedNodeWithLanguageFallback() {
+	public void testReadExpandedNodeWithLanguageFallback() throws IOException {
 		try (Tx tx = tx()) {
 			HibNode folder = folder("2015");
+			prepareTypedSchema(schemaContainer("folder"), List.of(FieldUtil.createNodeFieldSchema(FIELD_NAME)), Optional.empty());
 
 			// add a node in german and english
 			NodeCreateRequest createGermanNode = new NodeCreateRequest();

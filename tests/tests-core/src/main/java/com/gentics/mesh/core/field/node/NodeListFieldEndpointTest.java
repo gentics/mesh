@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -196,11 +197,10 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			List<String> oldValueList = latest.getPreviousVersion().getNodeList(FIELD_NAME).getList().stream().map(item -> item.getNode().getUuid())
 				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(targetNode.getUuid(), targetNode2.getUuid());
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
 		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test
@@ -294,11 +294,14 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createListFieldSchema(FIELD_NAME, FieldTypes.NODE.toString()), false);
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode(folder("news"));
 			tx.success();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 
 		try (Tx tx = tx()) {
@@ -310,11 +313,12 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	}
 
 	@Test
-	public void testReadExpandedListWithNoPermOnItem() {
+	public void testReadExpandedListWithNoPermOnItem() throws IOException {
 		HibNode node = folder("2015");
 		HibNode referencedNode = folder("news");
 
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createListFieldSchema(FIELD_NAME, FieldTypes.NODE.toString()), false);
 			ContentDao contentDao = tx.contentDao();
 			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
@@ -352,6 +356,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Create node list
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createListFieldSchema(FIELD_NAME, FieldTypes.NODE.toString()), false);
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
