@@ -112,15 +112,15 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	Result<HibProject> findLinkedProjects(HibSchema schema);
 
 	/**
-	 * Load all nodes.
+	 * Load all nodes, accessible in the given branch with Read Published permission.
 	 * 
-	 * @param version
-	 * @param uuid
-	 * @param user
-	 * @param type
+	 * @param version schema version
+	 * @param branchUuid branch uuid
+	 * @param user user
+	 * @param type content type
 	 * @return
 	 */
-	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, HibUser user, ContainerType type);
+	Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user, ContainerType type);
 
 	/**
 	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
