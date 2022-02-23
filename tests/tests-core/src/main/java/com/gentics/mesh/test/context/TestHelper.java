@@ -17,6 +17,7 @@ import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,11 +26,13 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -930,5 +933,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			break;		
 		}
 		throw new IllegalArgumentException("Unsupported Field type: " + field.getType());
+	}
+
+	default String getDisplayName(HibNode node, String branchUuid) {
+		HibNodeFieldContainer content = Tx.get().contentDao().findVersion(node, Arrays.asList("en"), branchUuid, "draft");
+		String displayName = content.getDisplayFieldValue();
+		if (StringUtils.isEmpty(displayName)) {
+			displayName = "unnamed node (" + node.getUuid() + ")";
+		}
+		return displayName;
 	}
 }

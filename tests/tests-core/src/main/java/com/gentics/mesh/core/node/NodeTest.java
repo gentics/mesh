@@ -2,6 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
+import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -38,21 +41,27 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.util.MeshAssert;
 import com.gentics.mesh.test.util.TestUtils;
 
-@MeshTestSetting(testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -603,6 +612,106 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});
 
+		}
+	}
+
+	/**
+	 * Test implementation of {@link NodeDao#getChildrenStream(HibNode, InternalActionContext)}}.
+	 * Check whether
+	 * <ol>
+	 * <li>All children in the given branch are returned</li>
+	 * <li>Permissions are checked</li>
+	 * </ol>
+	 */
+	@Test
+	public void testGetChildrenStream() {
+		String initialBranchUuid = tx(() -> project().getInitialBranch().getUuid());
+		String newsFolderUuid = tx(() -> folder("news").getUuid());
+
+		createChild(newsFolderUuid, "in both branches", initialBranchUuid);
+
+		String newBranchUuid = tx(() -> {
+			HibBranch newBranch = createBranch("newbranch");
+
+			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+			context.setNewBranch(newBranch);
+			context.setOldBranch(newBranch.getPreviousBranch());
+			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+
+			return newBranch.getUuid();
+		});
+
+		createChild(newsFolderUuid, "in initial branch", initialBranchUuid);
+		createChild(newsFolderUuid, "in initial branch - no read", initialBranchUuid, InternalPermission.READ_PERM);
+		createChild(newsFolderUuid, "in initial branch - no read_published", initialBranchUuid, InternalPermission.READ_PUBLISHED_PERM);
+		createChild(newsFolderUuid, "in initial branch - no read, read_published", initialBranchUuid, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
+
+		createChild(newsFolderUuid, "in new branch", newBranchUuid);
+		createChild(newsFolderUuid, "in new branch - no read", newBranchUuid, InternalPermission.READ_PERM);
+		createChild(newsFolderUuid, "in new branch - no read_published", newBranchUuid, InternalPermission.READ_PUBLISHED_PERM);
+		createChild(newsFolderUuid, "in new branch - no read, read_published", newBranchUuid, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
+
+		assertThat(getChildrenNames(initialBranchUuid)).as("Children in initial branch").doesNotHaveDuplicates()
+				.containsOnly("2014", "2015", "News Overview english title", "in both branches", "in initial branch",
+						"in initial branch - no read", "in initial branch - no read_published");
+		assertThat(getChildrenNames(newBranchUuid)).as("Children in new branch").doesNotHaveDuplicates().containsOnly(
+				"2014", "2015", "News Overview english title", "in both branches", "in new branch",
+				"in new branch - no read", "in new branch - no read_published");
+
+		grantAdmin();
+
+		assertThat(getChildrenNames(initialBranchUuid)).as("Children in initial branch for admin")
+				.doesNotHaveDuplicates().containsOnly("2014", "2015", "News Overview english title", "in both branches",
+						"in initial branch", "in initial branch - no read", "in initial branch - no read_published",
+						"in initial branch - no read, read_published");
+		assertThat(getChildrenNames(newBranchUuid)).as("Children in new branch for admin").doesNotHaveDuplicates()
+				.containsOnly("2014", "2015", "News Overview english title", "in both branches", "in new branch",
+						"in new branch - no read", "in new branch - no read_published",
+						"in new branch - no read, read_published");
+	}
+
+	/**
+	 * Get display names of the children of folder "news" in the given branch
+	 * @param branchUuid branch UUID
+	 * @return display names of branch children
+	 */
+	protected List<String> getChildrenNames(String branchUuid) {
+		return tx(tx -> {
+			MeshAuthUser user = tx.userDao().findMeshAuthUserByUsername(user().getUsername());
+			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(boot(), user, RoleResponse.class,
+					new VersioningParametersImpl().setBranch(branchUuid));
+			ac.setProject(project().getName());
+			return tx.nodeDao().getChildrenStream(folder("news"), ac).map(node -> node.getDisplayName(ac))
+					.collect(Collectors.toList());
+		});
+	}
+
+	/**
+	 * Create a child node in the given parent. Optionally revoke some permissions on the new node.
+	 * @param parentUuid parent node UUID
+	 * @param name name
+	 * @param branchUuid branch UUID
+	 * @param revoke optional list of permission to revoke
+	 */
+	protected void createChild(String parentUuid, String name, String branchUuid, InternalPermission...revoke) {
+		String projectName = tx(() -> project().getName());
+		String nodeUuid = call(() -> {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest()
+					.setParentNode(new NodeReference().setUuid(parentUuid))
+					.setSchema(new SchemaReferenceImpl().setName("folder"))
+					.setLanguage("en");
+			nodeCreateRequest.getFields().put("name", new StringFieldImpl().setString(name));
+			return client().createNode(projectName, nodeCreateRequest, new VersioningParametersImpl().setBranch(branchUuid));
+		}).getUuid();
+
+		if (revoke.length > 0) {
+			tx(tx -> {
+				RoleDao roleDao = tx.roleDao();
+				HibNode node = tx.nodeDao().findByUuid(project(), nodeUuid);
+				for (InternalPermission perm : revoke) {
+					roleDao.revokePermissions(role(), node, perm);
+				}
+			});
 		}
 	}
 }
