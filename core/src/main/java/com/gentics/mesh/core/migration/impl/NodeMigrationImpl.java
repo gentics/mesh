@@ -166,9 +166,9 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
 		}
 
-		HibBranch branch = branchDao.findByUuid(ac.getBranch().getProject(), ac.getBranch().getUuid());
-		HibSchemaVersion toVersion = CommonTx.get().load(ac.getToVersion().getId(), schemaDao.getVersionPersistenceClass());
-		HibSchemaVersion fromVersion = CommonTx.get().load(ac.getFromVersion().getId(), schemaDao.getVersionPersistenceClass());
+		HibBranch branch = reloadBranch(ac.getBranch());
+		HibSchemaVersion toVersion = reloadVersion(ac.getToVersion());
+		HibSchemaVersion fromVersion = reloadVersion(ac.getFromVersion());
 		try {
 			String languageTag = container.getLanguageTag();
 			ac.getNodeParameters().setLanguages(languageTag);

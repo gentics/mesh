@@ -12,11 +12,16 @@ import javax.inject.Provider;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibFieldTypeChange;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibRemoveFieldChange;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
@@ -183,5 +188,18 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 			log.debug("Removing source container {" + container.getUuid() + "}");
 			contentDao.purge(container);
 		}
+	}
+
+	protected HibSchemaVersion reloadVersion(HibSchemaVersion version) {
+		return CommonTx.get().load(version.getId(), CommonTx.get().schemaDao().getVersionPersistenceClass());
+	}
+
+	protected HibMicroschemaVersion reloadVersion(HibMicroschemaVersion version) {
+		return CommonTx.get().load(version.getId(), CommonTx.get().microschemaDao().getVersionPersistenceClass());
+	}
+
+	protected HibBranch reloadBranch(HibBranch branch) {
+		PersistingBranchDao branchDao = CommonTx.get().branchDao();
+		return branchDao.findByUuid(branch.getProject(), branch.getUuid());
 	}
 }
