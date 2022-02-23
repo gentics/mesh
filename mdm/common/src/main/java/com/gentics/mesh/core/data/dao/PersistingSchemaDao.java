@@ -235,28 +235,6 @@ public interface PersistingSchemaDao
 	}
 
 	/**
-	 * Load all nodes, accessible the given branch with Read Published permission.
-	 * 
-	 * @param version
-	 * @param branchUuid
-	 * @param user
-	 * @param type
-	 * @return
-	 */
-	default Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user,
-			ContainerType type) {
-		UserDao userDao = Tx.get().userDao();
-		NodeDao nodeDao = Tx.get().nodeDao();
-		ContentDao contentDao = Tx.get().contentDao();
-
-		return new TraversalResult<>(getNodes(version.getSchemaContainer()).stream()
-			.filter(node -> nodeDao.getAvailableLanguageNames(node).stream()
-					.map(lang -> contentDao.getFieldContainer(node, lang, branchUuid, type))
-					.anyMatch(container -> container != null)
-				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
-	}
-
-	/**
 	 * Returns events for assignment on the schema action.
 	 * 
 	 * @return
