@@ -38,9 +38,12 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Override
 	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(NODE_LIST, isRequired);
+	}
+	protected ListFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		ListFieldSchema schema = new ListFieldSchemaImpl();
 		schema.setListType("node");
-		schema.setName(NODE_LIST);
+		schema.setName(fieldKey);
 		schema.setRequired(isRequired);
 		return schema;
 	}
@@ -73,8 +76,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			// Create node field
 			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibNodeFieldList list = container.createNodeList("dummyList");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNodeFieldList list = container.createNodeList(NODE_LIST);
 
 			// Add item
 			assertEquals(0, list.getList().size());
@@ -87,7 +90,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertEquals(node.getUuid(), foundNodeField.getNode().getUuid());
 
 			// Load list
-			HibNodeFieldList loadedList = container.getNodeList("dummyList");
+			HibNodeFieldList loadedList = container.getNodeList(NODE_LIST);
 			assertNotNull(loadedList);
 			assertEquals(1, loadedList.getSize());
 			assertEquals(node.getUuid(), loadedList.getList().get(0).getNode().getUuid());
@@ -110,16 +113,16 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			HibNode node = folder("2015");
 
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibNodeFieldList testField = container.createNodeList("testField");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNodeFieldList testField = container.createNodeList(NODE_LIST);
 			testField.createNode(0, node);
 			testField.createNode(1, node);
 			testField.createNode(2, node);
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
-			assertTrue(otherContainer.getNodeList("testField").equals(testField));
+			assertTrue(otherContainer.getNodeList(NODE_LIST).equals(testField));
 		}
 	}
 
@@ -127,7 +130,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 			HibNodeFieldList fieldA = container.createNodeList("fieldA");
 			HibNodeFieldList fieldB = container.createNodeList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -145,8 +148,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibNodeFieldList fieldA = container.createNodeList("fieldA");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNodeFieldList fieldA = container.createNodeList(NODE_LIST);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibNodeFieldList) null));
 		}
@@ -156,7 +159,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			String dummyKey = "test123";
 
 			// rest null - graph null
