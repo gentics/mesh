@@ -33,10 +33,14 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	private static final String NUMBER_LIST = "numberList";
 
+	@Override
 	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(NUMBER_LIST, isRequired);
+	}
+	protected ListFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		ListFieldSchema schema = new ListFieldSchemaImpl();
 		schema.setListType("number");
-		schema.setName(NUMBER_LIST);
+		schema.setName(fieldKey);
 		schema.setRequired(isRequired);
 		return schema;
 	}
@@ -47,10 +51,10 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			prepareNode(node, "numberList", "number");
+			prepareNode(node, NUMBER_LIST, "number");
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			HibNumberFieldList numberList = container.createNumberList("numberList");
+			HibNumberFieldList numberList = container.createNumberList(NUMBER_LIST);
 			numberList.createNumber(1);
 			numberList.createNumber(1.11);
 			tx.success();
@@ -58,7 +62,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
-			assertList(2, "numberList", "number", response);
+			assertList(2, NUMBER_LIST, "number", response);
 		}
 
 	}
@@ -67,8 +71,8 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibNumberFieldList list = container.createNumberList("dummyList");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberFieldList list = container.createNumberList(NUMBER_LIST);
 
 			list.createNumber(1);
 			assertEquals(1, list.getList().size());
@@ -85,15 +89,15 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibNumberFieldList testField = container.createNumberList("testField");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberFieldList testField = container.createNumberList(NUMBER_LIST);
 			testField.createNumber(47);
 			testField.createNumber(11);
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
-			assertTrue(otherContainer.getNumberList("testField").equals(testField));
+			assertTrue(otherContainer.getNumberList(NUMBER_LIST).equals(testField));
 		}
 	}
 
@@ -101,7 +105,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 			HibNumberFieldList fieldA = container.createNumberList("fieldA");
 			HibNumberFieldList fieldB = container.createNumberList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -119,8 +123,8 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibNumberFieldList fieldA = container.createNumberList("fieldA");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberFieldList fieldA = container.createNumberList(NUMBER_LIST);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibNumberFieldList) null));
 		}
@@ -130,7 +134,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			Long dummyValue = 4200L;
 
 			// rest null - graph null
