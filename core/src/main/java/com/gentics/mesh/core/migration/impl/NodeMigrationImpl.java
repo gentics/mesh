@@ -80,11 +80,9 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
-			SchemaVersionModel newSchema = db.tx(() -> toVersion.getSchema());
-
 			try {
 				db.tx(() -> {
-					prepareMigration(fromVersion, touchedFields);
+					prepareMigration(reloadVersion(fromVersion), touchedFields);
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();
