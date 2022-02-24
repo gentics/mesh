@@ -176,19 +176,6 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		String languageTag = transformation.getLanguage();
 
-		// Load needed elements
-		HibNode node = db.tx(tx -> {
-			NodeDao nodeDao = tx.nodeDao();
-			HibProject project = tx.getProject(ac);
-			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
-			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
-			}
-			return n;
-		});
-
 		// Prepare the imageManipulationParameter using the transformation request as source
 		ImageManipulationParameters parameters = new ImageManipulationParametersImpl();
 		parameters.setWidth(transformation.getWidth());
@@ -204,7 +191,16 @@ public class BinaryTransformHandler extends AbstractHandler {
 			parameters.setResizeMode(ResizeMode.SMART);
 		}
 		// Lookup the s3 binary and set the focal point parameters
-		S3HibBinary s3binaryField = db.tx(() -> {
+		S3HibBinary s3binaryField = db.tx(tx -> {
+			NodeDao nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+
+			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
+			}
+
 			HibNodeFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
 			S3HibBinaryField field = loadS3BinaryField(container, fieldName);
 			// Use the focal point which is stored along with the s3 binary field if no custom point was included in the query parameters.
@@ -234,7 +230,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 						return new TransformationResult(null, props.size(), infoV, file.getName());
 					});
 				})
-				.flatMap(transformationResult ->  Single.just(updateNodeInGraph(ac, s3UploadContext, transformationResult, node, languageTag, fieldName, parameters)))
+				.flatMap(transformationResult ->  Single.just(updateNodeInGraph(ac, s3UploadContext, transformationResult, uuid, languageTag, fieldName, parameters)))
 				.subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -359,13 +355,15 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 	}
 
-	private NodeResponse updateNodeInGraph(InternalActionContext ac, S3UploadContext s3UploadContext, TransformationResult result, HibNode node,
+	private NodeResponse updateNodeInGraph(InternalActionContext ac, S3UploadContext s3UploadContext, TransformationResult result, String nodeUuid,
 										   String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
-			ContentDao contentDao = tx.contentDao();
+			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
+			NodeDao nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
 
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
-
 			HibBranch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
@@ -378,11 +376,11 @@ public class BinaryTransformHandler extends AbstractHandler {
 			S3HibBinary s3HibBinary = s3binaries.create(s3UploadContext.getS3BinaryUuid(), s3UploadContext.getS3ObjectKey(), s3UploadContext.getFileName()).runInExistingTx(tx);
 
 			// Now create the binary field in which we store the information about the file
-			S3HibBinaryField oldField = newDraftVersion.getS3Binary(fieldName);
+			S3HibBinaryField oldField = (S3HibBinaryField) contentDao.detachField(newDraftVersion.getS3Binary(fieldName));
 			S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
 			if (oldField != null) {
 				oldField.copyTo(field);
-				tx.<CommonTx>unwrap().contentDao().deleteField(oldField);
+				newDraftVersion.removeField(oldField);
 			}
 			S3HibBinary currentS3Binary = field.getBinary();
 

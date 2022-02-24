@@ -22,8 +22,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -31,6 +31,8 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -45,7 +47,6 @@ import com.gentics.mesh.core.s3binary.S3BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.util.NodeUtil;
 
 import io.reactivex.Observable;
@@ -193,7 +194,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 		String fileName = context.getFileName();
 
 		return db.singleTxWriteLock((batch, tx) -> {
-			ContentDao contentDao = tx.contentDao();
+			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
 			NodeDao nodeDao = tx.nodeDao();
@@ -265,7 +266,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 					true);
 
 			// Get the potential existing field
-			S3HibBinaryField oldField = newDraftVersion.getS3Binary(fieldName);
+			S3HibBinaryField oldField = (S3HibBinaryField) contentDao.detachField(newDraftVersion.getS3Binary(fieldName));
 
 			// Create the new field
 			S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3binary);

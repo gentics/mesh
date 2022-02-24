@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -165,6 +166,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createNumberFieldSchema(PROJECT_NAME), false);
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNumberField numberField = container.createNumber(FIELD_NAME);

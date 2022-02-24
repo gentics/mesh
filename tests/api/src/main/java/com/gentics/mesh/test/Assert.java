@@ -20,7 +20,7 @@ public class Assert extends org.junit.Assert {
 			fail("Expected both numbers to be not null.");
 		}
 		// we convert both numbers to big decimal and compare them
-		assertEquals(new BigDecimal(expected.toString()), new BigDecimal(actual.toString()));
+		assertEquals(new BigDecimal(expected.toString()).doubleValue(), new BigDecimal(actual.toString()).doubleValue(), 0.00001);
 	}
 
 }

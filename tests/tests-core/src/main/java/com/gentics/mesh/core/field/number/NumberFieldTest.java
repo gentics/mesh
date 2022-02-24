@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -39,8 +38,11 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 
 	@Override
 	protected NumberFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(NUMBER_FIELD, isRequired);
+	}
+	protected NumberFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-		numberFieldSchema.setName(NUMBER_FIELD);
+		numberFieldSchema.setName(fieldKey);
 		numberFieldSchema.setLabel("Some number field");
 		numberFieldSchema.setRequired(isRequired);
 		return numberFieldSchema;
@@ -50,15 +52,16 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibNumberField testField = container.createNumber("testField");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberField testField = container.createNumber(NUMBER_FIELD);
 			testField.setNumber(4711);
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getNumber("testField")).as("cloned field").isNotNull()
-					.isEqualToIgnoringGivenFields(testField, "parentContainer");
+			assertThat(otherContainer.getNumber(NUMBER_FIELD)).as("cloned field").isNotNull()
+					.isEqualToIgnoringGivenFields(testField, "parentContainer", "value");
+			assertEquals(otherContainer.getNumber(NUMBER_FIELD).getNumber().doubleValue(), testField.getNumber().doubleValue(), 0.0001);
 		}
 	}
 
@@ -66,16 +69,16 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibNumberField numberField = container.createNumber("numberField");
-			assertEquals("numberField", numberField.getFieldKey());
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberField numberField = container.createNumber(NUMBER_FIELD);
+			assertEquals(NUMBER_FIELD, numberField.getFieldKey());
 			numberField.setNumber(42);
 			assertEquals(42, numberField.getNumber().intValue());
 			HibStringField bogusField1 = container.getString("bogus");
 			assertNull(bogusField1);
-			HibNumberField reloadedNumberField = container.getNumber("numberField");
+			HibNumberField reloadedNumberField = container.getNumber(NUMBER_FIELD);
 			assertNotNull(reloadedNumberField);
-			assertEquals("numberField", reloadedNumberField.getFieldKey());
+			assertEquals(NUMBER_FIELD, reloadedNumberField.getFieldKey());
 		}
 	}
 
@@ -87,17 +90,15 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Update the schema
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-			numberFieldSchema.setName("numberField");
+			numberFieldSchema.setName(NUMBER_FIELD);
 			// numberFieldSchema.setMin(10);
 			// numberFieldSchema.setMax(1000);
 			numberFieldSchema.setRequired(true);
-			schema.addField(numberFieldSchema);
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			prepareTypedSchema(node, numberFieldSchema, false);
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			HibNumberField numberField = container.createNumber("numberField");
+			HibNumberField numberField = container.createNumber(NUMBER_FIELD);
 			numberField.setNumber(100.9f);
 			tx.success();
 		}
@@ -108,7 +109,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			assertNotNull(json);
 			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 			assertNotNull(response);
-			NumberFieldImpl deserializedNumberField = response.getFields().getNumberField("numberField");
+			NumberFieldImpl deserializedNumberField = response.getFields().getNumberField(NUMBER_FIELD);
 			assertEquals(Double.valueOf(100.9), deserializedNumberField.getNumber().doubleValue(), 0.01);
 		}
 	}
@@ -117,7 +118,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true), createFieldSchema(NUMBER_FIELD + "_2", true));
 			Long number = System.currentTimeMillis();
 			HibNumberField fieldA = container.createNumber(NUMBER_FIELD);
 			HibNumberField fieldB = container.createNumber(NUMBER_FIELD + "_2");
@@ -131,7 +132,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true), createFieldSchema(NUMBER_FIELD + "_2", true));
 			HibNumberField fieldA = container.createNumber(NUMBER_FIELD);
 			HibNumberField fieldB = container.createNumber(NUMBER_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -142,7 +143,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			Long number = System.currentTimeMillis();
 
 			// rest null - graph null
