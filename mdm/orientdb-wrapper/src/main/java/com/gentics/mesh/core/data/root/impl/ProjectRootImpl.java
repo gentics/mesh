@@ -102,19 +102,19 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				switch (nestedRootNode) {
 				case PermissionRoots.BRANCHES:
 					BranchRoot branchRoot = project.getBranchRoot();
-					return branchRoot.resolveToElement(this, project, stack);
+					return branchRoot.resolveToElement(this, branchRoot, stack);
 				case PermissionRoots.TAG_FAMILIES:
 					TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-					return tagFamilyRoot.resolveToElement(this, project, stack);
+					return tagFamilyRoot.resolveToElement(this, tagFamilyRoot, stack);
 				case PermissionRoots.SCHEMAS:
 					SchemaRoot schemaRoot = project.getSchemaContainerRoot();
-					return schemaRoot.resolveToElement(this, project, stack);
+					return schemaRoot.resolveToElement(this, schemaRoot, stack);
 				case PermissionRoots.MICROSCHEMAS:
 					MicroschemaRoot microschemaRoot = project.getMicroschemaContainerRoot();
-					return microschemaRoot.resolveToElement(this, project, stack);
+					return microschemaRoot.resolveToElement(this, microschemaRoot, stack);
 				case PermissionRoots.NODES:
 					NodeRoot nodeRoot = project.getNodeRoot();
-					return nodeRoot.resolveToElement(this, project, stack);
+					return nodeRoot.resolveToElement(this, nodeRoot, stack);
 				default:
 					throw error(NOT_FOUND, "Unknown project element {" + nestedRootNode + "}");
 				}
