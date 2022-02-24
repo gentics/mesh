@@ -116,7 +116,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 			// if this is the first branch, make it the initial branch
 			branch.setInitial();
 		} else {
-			baseBranch.setNextBranch(branch);
+			branch.setPreviousBranch(baseBranch);
 		}
 
 		// make the new branch the latest

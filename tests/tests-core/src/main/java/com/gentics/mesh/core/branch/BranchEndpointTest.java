@@ -161,7 +161,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				assertThat(foundBranches).as("Existing uuids").doesNotContain(branch.getUuid());
 				foundBranches.add(branch.getUuid());
 				previousBranch = branch;
-				branch = branch.getNextBranch();
+				branch = branch.getNextBranches().get(0);
 			} while (branch != null);
 
 			assertThat(previousBranch).as("Latest Branch").matches(project.getLatestBranch());

@@ -12,6 +12,8 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
+import java.util.List;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -173,13 +175,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public Branch getNextBranch() {
-		return out(HAS_NEXT_BRANCH, BranchImpl.class).nextOrNull();
+	public List<? extends HibBranch> getNextBranches() {
+		return out(HAS_NEXT_BRANCH, BranchImpl.class).list();
 	}
 
 	@Override
-	public Branch setNextBranch(HibBranch branch) {
-		setUniqueLinkOutTo(toGraph(branch), HAS_NEXT_BRANCH);
+	public Branch setPreviousBranch(HibBranch branch) {
+		setUniqueLinkInTo(toGraph(branch), HAS_NEXT_BRANCH);
 		return this;
 	}
 

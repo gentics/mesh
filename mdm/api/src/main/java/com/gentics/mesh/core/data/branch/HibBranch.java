@@ -163,20 +163,20 @@ public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferencea
 	HibBranch setInitial();
 
 	/**
-	 * Get the next Branch.
+	 * Get the next branches.
 	 * 
-	 * @return next Branch
+	 * @return next branches
 	 */
-	HibBranch getNextBranch();
+	List<? extends HibBranch> getNextBranches();
 
 	/**
-	 * Set the next Branch.
-	 * 
+	 * Set the previous Branch.
+	 *
 	 * @param branch
-	 *            next Branch
+	 *            previous Branch
 	 * @return Fluent API
 	 */
-	HibBranch setNextBranch(HibBranch branch);
+	HibBranch setPreviousBranch(HibBranch branch);
 
 	/**
 	 * Get the previous Branch.

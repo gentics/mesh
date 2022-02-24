@@ -88,7 +88,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 * @return fluent API
 	 */
 	public BranchAssert hasNext(HibBranch branch) {
-		assertThat(actual.getNextBranch()).as(descriptionText() + " next branch").matches(branch);
+		assertThat(actual.getNextBranches().get(0)).as(descriptionText() + " next branch").matches(branch);
 		return this;
 	}
 
