@@ -48,7 +48,7 @@ public interface ElementResolver<B extends HibBaseElement, E extends HibBaseElem
 			}
 		}
 		if (stack.isEmpty()) {
-			return root != null ? root : permissionRoot;
+			return permissionRoot;
 		} else {
 			String uuid = stack.pop();
 			if (stack.isEmpty()) {
