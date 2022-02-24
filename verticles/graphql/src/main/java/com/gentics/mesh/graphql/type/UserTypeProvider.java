@@ -16,10 +16,12 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -123,11 +125,13 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference("Node"))
 			.dataFetcher(env -> {
-				Tx tx = Tx.get();
+				CommonTx tx = CommonTx.get();
 				ContentDao contentDao = tx.contentDao();
+				PersistingUserDao userDao = tx.userDao();
 				GraphQLContext gc = env.getContext();
-				HibUser user = env.getSource();
-				HibNode node = (HibNode) user.getReferencedNode();
+				HibUser user = tx.load(env.<HibUser>getSource().getId(), userDao.getPersistenceClass());
+				
+				HibNode node = user.getReferencedNode();
 				if (node == null) {
 					return null;
 				}
