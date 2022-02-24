@@ -3,7 +3,7 @@ package com.gentics.mesh.util;
 import java.util.Arrays;
 import java.util.UUID;
 
-import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang.RandomStringUtils;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -34,16 +34,14 @@ public final class CoreTestUtils {
 		// 1. Setup schema
 		SchemaVersionModel schema = createSchema(fields);
 		HibSchema schemaContainer = ctx.schemaDao().create(schema, null, null, false);
-		HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schemaContainer, v -> {
-			v.setSchema(schema);
-		});
+		HibSchemaVersion version = schemaContainer.getLatestVersion();
 		ctx.commit();
 		return ctx.contentDao().createPersisted(UUID.randomUUID().toString(), version, null);
 	}
 
 	public static SchemaVersionModel createSchema(FieldSchema... fields) {
 		SchemaVersionModel schema = new SchemaModelImpl();
-		schema.setName(new String(RandomUtils.nextBytes(20)));
+		schema.setName(RandomStringUtils.random(10, true, true));
 		Arrays.stream(fields).forEach(field -> schema.addField(field));
 		return schema;
 	}
