@@ -987,7 +987,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			CommonTx.get().persist(firstNode.getSchemaContainer().getLatestVersion());
+			actions().updateSchemaVersion(firstNode.getSchemaContainer().getLatestVersion());
 			Tx.get().commit();
 			firstMicronodeField = boot().contentDao().createFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), user())
 				.createMicronode(
@@ -1081,8 +1081,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			});
 			microschemaDao.mergeIntoPersisted(container);
 			Tx.get().commit();
-			CommonTx.get().persist(versionA);
-			CommonTx.get().persist(versionB);
+			actions().updateSchemaVersion(versionA);
+			actions().updateSchemaVersion(versionB);
 			// link the schemas with the changes in between
 			HibUpdateFieldChange updateFieldChange = (HibUpdateFieldChange) microschemaDao.createPersistedChange(versionA, SchemaChangeOperation.UPDATEFIELD);
 			updateFieldChange.setFieldName(oldFieldName);
@@ -1099,7 +1099,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName()).setName(micronodeFieldName)
 				.setLabel("Micronode List Field"));
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
-			CommonTx.get().persist(firstNode.getSchemaContainer().getLatestVersion());
+			actions().updateSchemaVersion(firstNode.getSchemaContainer().getLatestVersion());
 
 			// Create the new container version with the specified content which will be migrated
 			HibBranch branch = firstNode.getProject().getLatestBranch();
@@ -1234,7 +1234,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName(), "vcard").setName(
 				micronodeFieldName).setLabel("Micronode List Field"));
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
-			CommonTx.get().persist(firstNode.getSchemaContainer().getLatestVersion());
+			actions().updateSchemaVersion(firstNode.getSchemaContainer().getLatestVersion());
 			Tx.get().commit();
 
 			// 1.0
@@ -1353,8 +1353,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		versionB.setPreviousVersion(versionA);
 		schemaDao.mergeIntoPersisted(container);
 		Tx.get().commit();
-		CommonTx.get().persist(versionA);
-		CommonTx.get().persist(versionB);
+		actions().updateSchemaVersion(versionA);
+		actions().updateSchemaVersion(versionB);
 		return container;
 	}
 
