@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibRemoveFieldChange;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -76,7 +77,9 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		HibSchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
 			// if either the type changes or the field is removed, the field is "touched"
-			if (change instanceof HibFieldTypeChange) {
+			if (change instanceof HibUpdateFieldChange) {
+				touchedFields.add(((HibUpdateFieldChange) change).getFieldName());
+			} else if (change instanceof HibFieldTypeChange) {
 				touchedFields.add(((HibFieldTypeChange) change).getFieldName());
 			} else if (change instanceof HibRemoveFieldChange) {
 				touchedFields.add(((HibRemoveFieldChange) change).getFieldName());
