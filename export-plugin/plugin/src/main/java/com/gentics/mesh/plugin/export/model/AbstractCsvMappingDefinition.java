@@ -241,6 +241,10 @@ public class AbstractCsvMappingDefinition {
     public NumberFormat getNumberFormatter() {
         NumberFormat formatter;
 
+        if (numberStyle == null) {
+            return null;
+        }
+
         switch (numberStyle) {
             case NUMBER:
                 formatter = NumberFormat.getNumberInstance(Locale.forLanguageTag(numberLocale));

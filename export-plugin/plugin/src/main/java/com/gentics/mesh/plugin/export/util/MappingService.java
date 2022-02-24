@@ -1,20 +1,21 @@
 package com.gentics.mesh.plugin.export.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.plugin.export.extension.ConfigValueProvider;
 import com.gentics.mesh.plugin.export.extension.ExportConfigValuePlugin;
 import com.gentics.mesh.plugin.export.model.PluginConfiguration;
-import com.uwyn.jhighlight.fastutil.Hash;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.HashMap;
-import java.util.Map;
 
 @Singleton
 public class MappingService {

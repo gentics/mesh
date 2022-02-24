@@ -10,6 +10,15 @@
 
 = Mesh Export Plugin
 
+[[v2.1.4]]
+== 2.1.4
+
+icon:check[] Fixed columns not rendering empty cells on missing/empty values, which broke the CSV layout.
+
+icon:check[] Fixed output of null-values of Boolean-Mappings to actually output the configured null-value.
+
+icon:check[] Output of the CSV Header is done before processing/loading data. This is done to prevent proxy timeouts due to possible longer loading times, in which the entire request would be discarded.
+
 [[v2.1.3]]
 == 2.1.3
 

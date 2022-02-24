@@ -81,7 +81,7 @@ public class CsvConverter {
 		// Check if the values are present and not empty. If they are, we have to return
 		// empty columns to not screw up the layout.
 		if (!values.isPresent() || ((values.get().isEmpty()) && options.getMapping().size() > 1)) {
-			return generateEmptyMatrix(definition);
+			return generateEmptyMatrix(options, definition);
 		}
 
 		CsvMatrix matrix = new CsvMatrix();
@@ -110,7 +110,7 @@ public class CsvConverter {
 			putRootIntoElement(definition, element, node);
 
 			if (definition.getSubFilter() != null && !definition.getSubFilter().isAllowed(element)) {
-				return generateEmptyMatrix(definition).get(0);
+				return generateEmptyMatrix(options, definition).get(0);
 			}
 			return mapMultiColumns(options, definition, element);
 		}
@@ -278,7 +278,7 @@ public class CsvConverter {
 		return Optional.of(values);
 	}
 
-	private static CsvMatrix generateEmptyMatrix(CsvMappingDefinition definition) {
+	private static CsvMatrix generateEmptyMatrix(ConvertingOptions options, CsvMappingDefinition definition) {
 		CsvMatrix matrix = new CsvMatrix();
 
 		if (definition.getActualType().isMultiColumn()) {
@@ -293,6 +293,10 @@ public class CsvConverter {
 
 				matrix.add(tmp);
 			}
+		} else if (definition.getType() == CsvMappingDataType.BOOLEAN) {
+			matrix.add(new ColumnGroup(new Column()
+				.addValue(Utils.mergeMappings(options.getBooleanMapping(), definition.getBooleanMapping()).getNullValue()
+			)));
 		} else {
 			// Single-Column definitions only return a single "empty" column
 			matrix.add(new ColumnGroup(new Column().addValue("")));
@@ -349,7 +353,7 @@ public class CsvConverter {
 		JsonObject node
 	) {
 		if (values.isEmpty() && options.getMapping().size() > 1) {
-			return generateEmptyMatrix(definition).get(0);
+			return generateEmptyMatrix(options, definition).get(0);
 		}
 
 		// When it's a multi-column, then we iterate over each element and generate a column value for it
@@ -388,7 +392,7 @@ public class CsvConverter {
 			.collect(Collectors.toList());
 
 		if (groups.isEmpty()) {
-			groups.addAll(generateEmptyMatrix(definition));
+			groups.addAll(generateEmptyMatrix(options, definition));
 		}
 
 		ColumnGroup output = new ColumnGroup();
@@ -513,9 +517,9 @@ public class CsvConverter {
 					if (value instanceof Boolean) {
 						bool = (Boolean) value;
 					} else {
-						if ("true".equalsIgnoreCase(value.toString())) {
+						if ("true".equalsIgnoreCase(value.toString()) || "1".equalsIgnoreCase(value.toString())) {
 							bool = true;
-						} else if ("false".equalsIgnoreCase(value.toString())) {
+						} else if ("false".equalsIgnoreCase(value.toString()) || "0".equalsIgnoreCase(value.toString())) {
 							bool = false;
 						}
 					}
@@ -633,11 +637,19 @@ public class CsvConverter {
 			appendColumnGroupToPrintMatrix(printMatrix, group);
 		}
 
+		printMatrix = printMatrix
+			.stream()
+			.filter(list -> !list.stream()
+				.allMatch(col -> col == null || col.trim().isEmpty())
+			)
+			.collect(Collectors.toList());
+
 		return printMatrix;
 	}
 
 	private static void appendColumnGroupToPrintMatrix(List<List<String>> printMatrix, ColumnGroup group) {
 		int addSize = group.get(0).getValues().size();
+		int actuallyAdded = 0;
 		List<List<String>> copy = new ArrayList<>();
 
 		if (addSize > 1) {
@@ -648,6 +660,7 @@ public class CsvConverter {
 		}
 
 		for (int i = 0; i < addSize; i++) {
+			boolean isLast = i + 1 >= addSize;
 			List<String> groupRow = new ArrayList<>();
 
 			for (Column column : group) {
@@ -662,25 +675,31 @@ public class CsvConverter {
 			if (printMatrix.isEmpty()) {
 				// If it is the very first row, create a new row in the matrix
 
-				// Filtering out empty rows
-				if (groupRow.stream().allMatch(s -> s == null || s.trim().length() < 1)) {
+				// Filtering out empty rows, unless it is the last and all other previous lines were empty as well.
+				// This ensures that it renders empty columns for padding correctly.
+				if (!(isLast && actuallyAdded < 1) && groupRow.stream().allMatch(s -> s == null || s.trim().isEmpty())) {
 					continue;
 				}
+
 				printMatrix.add(new ArrayList<>(groupRow));
+				actuallyAdded++;
 			} else if (i == 0) {
 				// if it's the first element, then append it to each existing row
 				for (List<String> row : printMatrix) {
 					row.addAll(groupRow);
 				}
+				actuallyAdded++;
 			} else if (copy.isEmpty()) {
 				// If copy is empty, we can't append the row to anything yet
 				// Therefore simply append it as a new row
 
-				// Filtering out empty rows
-				if (groupRow.stream().allMatch(s -> s == null || s.trim().length() < 1)) {
+				// Filtering out empty rows, unless it is the last and all other previous lines were empty as well.
+				// This ensures that it renders empty columns for padding correctly.
+				if (!(isLast && actuallyAdded < 1) && groupRow.stream().allMatch(s -> s == null || s.trim().isEmpty())) {
 					continue;
 				}
 				printMatrix.add(new ArrayList<>(groupRow));
+				actuallyAdded++;
 			} else {
 				// For each additional value in the group, a new row has to be created
 				// The `copy` is a copy before the new columns were added
@@ -696,6 +715,7 @@ public class CsvConverter {
 					tmp.add(tmpRow);
 				}
 				printMatrix.addAll(tmp);
+				actuallyAdded++;
 			}
 		}
 	}

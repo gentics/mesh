@@ -4,7 +4,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.plugin.export.model.BooleanMapping;
-import com.uwyn.jhighlight.fastutil.Hash;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -182,7 +181,16 @@ public class Utils {
                     try {
                         // Same as above
                         String id = microNode.getFields().getStringField("id").getString();
-                        String value = microNode.getFields().getStringField("value").getString();
+                        String value = null;
+                        if (microNode.getFields().hasField("value")) {
+                            value = microNode.getFields().getStringField("value").getString();
+                        }
+                        if (value == null && microNode.getFields().hasField("name")) {
+                            value = microNode.getFields().getStringField("name").getString();
+                        }
+                        if (value == null && microNode.getFields().hasField("label")) {
+                            value = microNode.getFields().getStringField("label").getString();
+                        }
                         items.put(id, value);
                     } catch (Exception ignored) { }
                 }
