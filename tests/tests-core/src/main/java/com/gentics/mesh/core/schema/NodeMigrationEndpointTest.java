@@ -415,10 +415,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String newFieldName = "changedfield";
 		String jobUuid;
 
-		container = tx(() -> createDummySchemaWithChanges(oldFieldName, newFieldName, false));
 		try (Tx tx = tx()) {
 			PersistingBranchDao branchDao = tx.<CommonTx>unwrap().branchDao();
 			NodeDao nodeDao = tx.nodeDao();
+			container = createDummySchemaWithChanges(oldFieldName, newFieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
