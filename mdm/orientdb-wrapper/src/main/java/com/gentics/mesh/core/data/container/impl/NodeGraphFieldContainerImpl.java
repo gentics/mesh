@@ -330,26 +330,19 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<HibMicronodeField> getMicronodeFields(HibMicroschemaVersion version) {
-		String microschemaVersionUuid = version.getUuid();
+	public List<HibMicronodeField> getMicronodeFields() {
 		return new TraversalResult<>(outE(HAS_FIELD)
 			.has(MicronodeGraphFieldImpl.class)
 			.frameExplicit(MicronodeGraphFieldImpl.class))
-				.stream()
-				.filter(edge -> toGraph(edge.getMicronode()).property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
-				.collect(Collectors.toList());
+			.stream()
+			.collect(Collectors.toList());
 	}
 
 	@Override
-	public Result<HibMicronodeFieldList> getMicronodeListFields(HibMicroschemaVersion version) {
-		String microschemaVersionUuid = version.getUuid();
-		TraversalResult<? extends MicronodeGraphFieldList> lists = new TraversalResult<>(out(HAS_LIST)
+	public Result<HibMicronodeFieldList> getMicronodeListFields() {
+		return new TraversalResult<>(out(HAS_LIST)
 			.has(MicronodeGraphFieldListImpl.class)
 			.frameExplicit(MicronodeGraphFieldListImpl.class));
-		return new TraversalResult<>(lists
-			.stream()
-			.filter(list -> list.getValues().stream()
-				.anyMatch(micronode -> toGraph(micronode).property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))));
 	}
 
 	@Override

@@ -165,13 +165,13 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content, HibMicroschemaVersion version) {
-		return toGraph(content).getMicronodeFields(version);
+	public List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content) {
+		return toGraph(content).getMicronodeFields();
 	}
 
 	@Override
-	public Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content, HibMicroschemaVersion version) {
-		return toGraph(content).getMicronodeListFields(version);
+	public Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content) {
+		return toGraph(content).getMicronodeListFields();
 	}
 
 	@Override
