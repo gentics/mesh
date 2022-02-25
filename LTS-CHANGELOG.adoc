@@ -22,11 +22,9 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
 
-icon:check[] Server: Fixed defined Health-Check in docker container and added a startup-grace period of 60s.
 
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
-
 icon:check[] OrientDB: The included OrientDB version has been downgraded to version `3.1.11`.
 
 CAUTION: OrientDB version `3.1.15`, which was included in Mesh 1.6.23 has some serious bugs, therefore, Mesh 1.6.23 has been unreleased and the OrientDB Version
