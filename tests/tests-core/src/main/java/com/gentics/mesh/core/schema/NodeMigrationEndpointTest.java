@@ -441,7 +441,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				secondNode.getProject().getLatestBranch(), user);
 			secondEnglishContainer.createString(oldFieldName).setString("second content");
 
-			HibBranch latestBranch = tx.branchDao().findByUuid(project(), project().getLatestBranch().getUuid());
+			HibBranch latestBranch = reloadBranch(project().getLatestBranch());
 			jobUuid = branchDao.assignSchemaVersion(latestBranch, user, versionB, batch).getUuid();
 			tx.success();
 		}
@@ -572,7 +572,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
 			// do the schema migration twice
-			HibBranch latestBranch = tx.branchDao().findByUuid(project(), project().getLatestBranch().getUuid());
+			HibBranch latestBranch = reloadBranch(project().getLatestBranch());
 			jobAUuid = tx.branchDao().assignSchemaVersion(latestBranch, user, versionB, batch).getUuid();
 			tx.success();
 		}

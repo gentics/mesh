@@ -378,7 +378,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			updateSchema(schemaContainer, "newfield");
 			HibSchemaVersion secondVersion = schemaContainer.getLatestVersion();
 
-			HibBranch initialBranch = tx.branchDao().findByUuid(project, initialBranch().getUuid());
+			HibBranch initialBranch = reloadBranch(initialBranch());
 			HibBranch newBranch = createBranch("New Branch");
 
 			assertThat(initialBranch).as(initialBranch.getName()).hasSchema(schemaContainer).hasSchemaVersion(firstVersion)
@@ -481,7 +481,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			updateMicroschema(microschema, "newfield");
 			HibMicroschemaVersion secondVersion = microschema.getLatestVersion();
 
-			HibBranch initialBranch = tx.branchDao().findByUuid(project, initialBranch().getUuid());
+			HibBranch initialBranch = reloadBranch(initialBranch());
 			HibBranch newBranch = createBranch("New Branch");
 
 			assertThat(initialBranch).as(initialBranch.getName()).hasMicroschema(microschema).hasMicroschemaVersion(firstVersion)

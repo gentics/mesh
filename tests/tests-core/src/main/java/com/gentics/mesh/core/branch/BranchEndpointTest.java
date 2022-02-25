@@ -431,7 +431,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch created = createBranch(request);
 
 		tx(() -> {
-			assertThat(Tx.get().branchDao().findByUuid(created.getProject(), created.getUuid())).as("New Branch").isNotNull().hasPrevious(latest);
+			assertThat(reloadBranch(created)).as("New Branch").isNotNull().hasPrevious(latest);
 		});
 	}
 
@@ -448,7 +448,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch created = createBranch(request);
 
 		tx(() -> {
-			assertThat(Tx.get().branchDao().findByUuid(created.getProject(), created.getUuid())).as("New Branch").isNotNull().hasPrevious(base);
+			assertThat(reloadBranch(created)).as("New Branch").isNotNull().hasPrevious(base);
 		});
 	}
 
@@ -465,7 +465,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch created = createBranch(request);
 
 		tx(() -> {
-			assertThat(Tx.get().branchDao().findByUuid(created.getProject(), created.getUuid())).as("New Branch").isNotNull().hasPrevious(base);
+			assertThat(reloadBranch(created)).as("New Branch").isNotNull().hasPrevious(base);
 		});
 	}
 
@@ -591,10 +591,10 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			ListResponse<BranchResponse> responseList = call(() -> client().findBranches(PROJECT_NAME));
 			InternalActionContext ac = mockActionContext();
 			BranchDao branchDao = tx.branchDao();
-			BranchResponse initial = branchDao.transformToRestSync(initialBranch, ac, 0);
-			BranchResponse second = branchDao.transformToRestSync(secondBranch,ac, 0);
-			BranchResponse first = branchDao.transformToRestSync(firstBranch, ac, 0);
-			BranchResponse third = branchDao.transformToRestSync(thirdBranch, ac, 0);
+			BranchResponse initial = branchDao.transformToRestSync(reloadBranch(initialBranch), ac, 0);
+			BranchResponse second = branchDao.transformToRestSync(reloadBranch(secondBranch),ac, 0);
+			BranchResponse first = branchDao.transformToRestSync(reloadBranch(firstBranch), ac, 0);
+			BranchResponse third = branchDao.transformToRestSync(reloadBranch(thirdBranch), ac, 0);
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initial,
 				first, second, third);
@@ -605,7 +605,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
 		EventQueueBatch batch = createBatch();
 		HibBranch initialBranch = tx(() -> initialBranch());
-		HibProject project = project();
 
 		HibBranch firstBranch;
 		HibBranch secondBranch;
@@ -613,6 +612,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		try (Tx tx = tx()) {
 			BranchDao branchDao = tx.branchDao();
+			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			firstBranch = branchDao.create(project, "One", user(), batch);
 			secondBranch = branchDao.create(project, "Two", user(), batch);
 			thirdBranch = branchDao.create(project, "Three", user(), batch);
@@ -632,8 +632,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			InternalActionContext ac = mockActionContext();
 			assertThat(responseList).isNotNull();
 			BranchDao branchDao = tx.branchDao();
-			BranchResponse initial = branchDao.transformToRestSync(initialBranch, ac, 0);
-			BranchResponse second = branchDao.transformToRestSync(secondBranch,ac, 0);
+			BranchResponse initial = branchDao.transformToRestSync(reloadBranch(initialBranch), ac, 0);
+			BranchResponse second = branchDao.transformToRestSync(reloadBranch(secondBranch),ac, 0);
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initial, second);
 		}
 	}
