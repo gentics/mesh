@@ -159,9 +159,7 @@ public class TestDataProvider {
 			roles.clear();
 			groups.clear();
 
-			if (db.requiresTypeInit()) {
-				boot.initDatabaseTypes();
-			}
+			boot.initDatabaseTypes();
 
 			addBootstrappedData(tx);
 			addSchemaContainers();

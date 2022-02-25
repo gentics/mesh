@@ -75,15 +75,6 @@ public interface Database extends TxFactory {
 	boolean isEmptyDatabase();
 
 	/**
-	 * Returns true if the database requires type and index initialization using {@link #type()} and {@link #index()}.
-	 * 
-	 * @return
-	 * @deprecated The logic creating these types should be in {@link #init(String, String...)} or there should be a createTypes() method.
-	 */
-	@Deprecated
-	boolean requiresTypeInit();
-
-	/**
 	 * Initialise the database and store the settings.
 	 * 
 	 * @param meshVersion

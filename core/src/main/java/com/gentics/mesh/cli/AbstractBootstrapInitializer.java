@@ -196,18 +196,14 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	protected void initLocalData(PostProcessFlags flags, MeshOptions configuration, boolean isJoiningCluster) throws Exception {
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (isEmptyInstallation) {
-			if (db().requiresTypeInit()) {
-				initDatabaseTypes();
-			}
+			initDatabaseTypes();
 			// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 			initMandatoryData(configuration);
 			initBasicData(configuration);
 			initOptionalLanguages(configuration);
 			initOptionalData(isEmptyInstallation);
 			// TODO Initialize types
-			if (db().requiresTypeInit()) {
-				initPermissions();
-			}
+			initPermissions();
 			handleMeshVersion();
 
 			// Mark all changelog entries as applied for new installations
