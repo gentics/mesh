@@ -200,33 +200,30 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		}
 
 
-		// Run the actual migration in a dedicated transaction
 		try {
-			db.tx(tx -> {
-				ContentDao contentDao = tx.contentDao();
-				HibMicroschemaVersion fromVersion = reloadVersion(context.getFromVersion());
-				HibMicroschemaVersion toVersion = reloadVersion(context.getToVersion());
-				HibBranch branch = reloadBranch(context.getBranch());
-				String branchUuid = branch.getUuid();
+			ContentDao contentDao = Tx.get().contentDao();
+			HibMicroschemaVersion fromVersion = reloadVersion(context.getFromVersion());
+			HibMicroschemaVersion toVersion = reloadVersion(context.getToVersion());
+			HibBranch branch = reloadBranch(context.getBranch());
+			String branchUuid = branch.getUuid();
 
-				HibNode node = contentDao.getNode(container);
-				String languageTag = container.getLanguageTag();
-				ac.getNodeParameters().setLanguages(languageTag);
-				ac.getVersioningParameters().setVersion("draft");
-				HibNodeFieldContainer oldPublished = contentDao.getFieldContainer(node, languageTag, branchUuid, PUBLISHED);
+			HibNode node = contentDao.getNode(container);
+			String languageTag = container.getLanguageTag();
+			ac.getNodeParameters().setLanguages(languageTag);
+			ac.getVersioningParameters().setVersion("draft");
+			HibNodeFieldContainer oldPublished = contentDao.getFieldContainer(node, languageTag, branchUuid, PUBLISHED);
 
-				VersionNumber nextDraftVersion = null;
-				// 1. Check whether there is any other published container which we need to handle separately
-				if (oldPublished != null && !oldPublished.equals(container)) {
-					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields);
-					nextDraftVersion = nextDraftVersion.nextDraft();
-				}
+			VersionNumber nextDraftVersion = null;
+			// 1. Check whether there is any other published container which we need to handle separately
+			if (oldPublished != null && !oldPublished.equals(container)) {
+				nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, fromVersion, toVersion, touchedFields);
+				nextDraftVersion = nextDraftVersion.nextDraft();
+			}
 
-				// 2. Migrate the draft container. This will also update the draft edge.
-				migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, nextDraftVersion);
+			// 2. Migrate the draft container. This will also update the draft edge.
+			migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, nextDraftVersion);
 
-				postMigrationPurge(container, oldPublished);
-			});
+			postMigrationPurge(container, oldPublished);
 		} catch (Exception e1) {
 			log.error("Error while handling container {" + containerUuid + "} during schema migration.", e1);
 			errorsDetected.add(e1);
