@@ -11,6 +11,9 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -36,6 +39,7 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 				if (tag.getName().equals("blue")) {
 					continue;
 				} else {
+					tag = tx.tagDao().findByUuid(tag.getUuid());
 					tx.tagDao().delete(tag, createBulkContext());
 				}
 			}
@@ -57,45 +61,54 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
 
 		// level 1 - A [en]
+		StringField level1A = FieldUtil.createStringField("level1A");
 		NodeCreateRequest level1ANodeCreateRequest = new NodeCreateRequest();
 		level1ANodeCreateRequest.setParentNodeUuid(baseNodeUuid);
 		level1ANodeCreateRequest.setSchemaName(SCHEMA_NAME);
 		level1ANodeCreateRequest.setLanguage("en");
-		level1ANodeCreateRequest.getFields().put("name", FieldUtil.createStringField("level1A"));
+		level1ANodeCreateRequest.getFields().put("name", level1A);
 		call(() -> client().createNode(NODE_1A_UUID, PROJECT_NAME, level1ANodeCreateRequest));
 		testNodeUuids.add(NODE_1A_UUID);
 
 		// level 1 - B [en]
+		StringField level1B = FieldUtil.createStringField("level1B");
+		NodeFieldImpl node1A = FieldUtil.createNodeField(NODE_1A_UUID);
+		NodeFieldListImpl node1AList = FieldUtil.createNodeListField(NODE_1A_UUID, NODE_1A_UUID);
 		NodeCreateRequest level1BNodeCreateRequest = new NodeCreateRequest();
 		level1BNodeCreateRequest.setParentNodeUuid(baseNodeUuid);
 		level1BNodeCreateRequest.setSchemaName(SCHEMA_NAME);
 		level1BNodeCreateRequest.setLanguage("en");
-		level1BNodeCreateRequest.getFields().put("name", FieldUtil.createStringField("level1B"));
-		level1BNodeCreateRequest.getFields().put("node", FieldUtil.createNodeField(NODE_1A_UUID));
-		level1BNodeCreateRequest.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_1A_UUID, NODE_1A_UUID));
+		level1BNodeCreateRequest.getFields().put("name", level1B);
+		level1BNodeCreateRequest.getFields().put("node", node1A);
+		level1BNodeCreateRequest.getFields().put("nodeList", node1AList);
 		call(() -> client().createNode(NODE_1B_UUID, PROJECT_NAME, level1BNodeCreateRequest));
 		testNodeUuids.add(NODE_1B_UUID);
 
 		// level 1 - C [en]
+		StringField level1C = FieldUtil.createStringField("level1C");
+		NodeFieldImpl node1B = FieldUtil.createNodeField(NODE_1B_UUID);
+		NodeFieldListImpl node1BList = FieldUtil.createNodeListField(NODE_1B_UUID, NODE_1B_UUID);
 		NodeCreateRequest level1CNodeCreateRequest = new NodeCreateRequest();
 		level1CNodeCreateRequest.setParentNodeUuid(baseNodeUuid);
 		level1CNodeCreateRequest.setSchemaName(SCHEMA_NAME);
 		level1CNodeCreateRequest.setLanguage("en");
-		level1CNodeCreateRequest.getFields().put("name", FieldUtil.createStringField("level1C"));
-		level1CNodeCreateRequest.getFields().put("node", FieldUtil.createNodeField(NODE_1B_UUID));
-		level1CNodeCreateRequest.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_1B_UUID, NODE_1B_UUID));
+		level1CNodeCreateRequest.getFields().put("name", level1C);
+		level1CNodeCreateRequest.getFields().put("node", node1B);
+		level1CNodeCreateRequest.getFields().put("nodeList", node1BList);
 		call(() -> client().createNode(NODE_1C_UUID, PROJECT_NAME, level1CNodeCreateRequest));
 		testNodeUuids.add(NODE_1C_UUID);
 
 		// level 2 [en]
 		for (int i = 0; i < 10; i++) {
+			StringField level2i = FieldUtil.createStringField("level2-" + i);
+			NodeFieldListImpl node1AB = FieldUtil.createNodeListField(NODE_1A_UUID, NODE_1B_UUID);
 			NodeCreateRequest subNodeCreateRequest = new NodeCreateRequest();
 			subNodeCreateRequest.setParentNodeUuid(NODE_1B_UUID);
 			subNodeCreateRequest.setSchemaName(SCHEMA_NAME);
 			subNodeCreateRequest.setLanguage("en");
-			subNodeCreateRequest.getFields().put("name", FieldUtil.createStringField("level2-" + i));
-			subNodeCreateRequest.getFields().put("node", FieldUtil.createNodeField(NODE_1A_UUID));
-			subNodeCreateRequest.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_1A_UUID, NODE_1B_UUID));
+			subNodeCreateRequest.getFields().put("name", level2i);
+			subNodeCreateRequest.getFields().put("node", node1A);
+			subNodeCreateRequest.getFields().put("nodeList", node1AB);
 			NodeResponse level2NodeResponse = call(() -> client().createNode(PROJECT_NAME, subNodeCreateRequest));
 			testNodeUuids.add(level2NodeResponse.getUuid());
 		}
