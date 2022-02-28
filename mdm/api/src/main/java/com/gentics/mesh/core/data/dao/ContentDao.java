@@ -723,22 +723,18 @@ public interface ContentDao {
 	HibSchemaVersion getSchemaContainerVersion(HibNodeFieldContainer content);
 
 	/**
-	 * Get all micronode fields that have a micronode using the given microschema container version.
+	 * Get all micronode fields.
 	 *
-	 * @param version
-	 *            microschema container version
 	 * @return list of micronode fields
 	 */
-	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content, HibMicroschemaVersion version);
+	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content);
 
 	/**
-	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
+	 * Get all micronode list fields.
 	 *
-	 * @param version
-	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content, HibMicroschemaVersion version);
+	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content);
 
 	/**
 	 * Return the ETag for the field container.

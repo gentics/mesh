@@ -63,22 +63,18 @@ public interface NodeGraphFieldContainer extends HibNodeFieldContainer, GraphFie
 	void postfixSegmentFieldValue();
 
 	/**
-	 * Get all micronode fields that have a micronode using the given microschema container version.
-	 * 
-	 * @param version
-	 *            microschema container version
+	 * Get all micronode fields.
+	 *
 	 * @return list of micronode fields
 	 */
-	List<HibMicronodeField> getMicronodeFields(HibMicroschemaVersion version);
+	List<HibMicronodeField> getMicronodeFields();
 
 	/**
-	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
-	 * 
-	 * @param version
-	 *            microschema container version
+	 * Get all micronode list fields.
+	 *
 	 * @return list of micronode list fields
 	 */
-	Result<HibMicronodeFieldList> getMicronodeListFields(HibMicroschemaVersion version);
+	Result<HibMicronodeFieldList> getMicronodeListFields();
 
 	/**
 	 * Check whether this field container has the given type for any branch.

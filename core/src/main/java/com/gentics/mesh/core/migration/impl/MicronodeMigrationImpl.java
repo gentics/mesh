@@ -307,7 +307,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 										HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion, Set<String> touchedFields) throws Exception {
 		ContentDao contentDao = Tx.get().contentDao();
 		// iterate over all fields with micronodes to migrate
-		for (HibMicronodeField oldField : contentDao.getMicronodeFields(oldContainer, fromVersion)) {
+		for (HibMicronodeField oldField : contentDao.getMicronodeFields(oldContainer)) {
 			HibMicronode oldMicronode = oldField.getMicronode();
 			if (oldMicronode.getSchemaContainerVersion().equals(fromVersion)) {
 				// clone the micronode (this will not clone its fields)
@@ -322,7 +322,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		}
 
 		// iterate over all micronode list fields to migrate
-		for (HibMicronodeFieldList oldListField : contentDao.getMicronodeListFields(oldContainer, fromVersion)) {
+		for (HibMicronodeFieldList oldListField : contentDao.getMicronodeListFields(oldContainer)) {
 			// clone the field (this will not clone the micronodes)
 			HibMicronodeFieldList micronodeList = newContainer.createMicronodeList(oldListField.getFieldKey());
 
