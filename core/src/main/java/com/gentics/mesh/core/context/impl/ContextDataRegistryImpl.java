@@ -11,6 +11,7 @@ import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.shared.SharedKeys;
 
 /**
@@ -43,7 +44,7 @@ public class ContextDataRegistryImpl implements ContextDataRegistry {
 			return ((NodeMigrationActionContext) ac).getBranch();
 		}
 		if (project == null) {
-			project = getProject(ac);
+			project = Tx.get().getProject(ac);
 		}
 		if (project == null) {
 			// TODO i18n
