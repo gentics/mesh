@@ -291,22 +291,20 @@ public interface ContentDao {
 		boolean handleDraftEdge);
 
 	/**
-	 * Like {@link #createFieldContainer(HibNode, String, HibBranch, HibUser)}, but let the new field container be a clone of the given original (if not
-	 * null) and pass the schema version
-	 *
+	 * Create an "empty" field container (without any populate fields) from the provided parameters
 	 * @param version
-	 * @param languageTag
-	 * @param branch
+	 * 			the version of the field container
+	 * @param node
+	 * 			the node of the field container
 	 * @param editor
-	 *            User which will be set as editor
-	 * @param original
-	 *            Container to be used as a source for the new container
-	 * @param handleDraftEdge
-	 *            Whether to move the existing draft edge or create a new draft edge to the new container
-	 * @return Created container
+	 * 			the editor of the field container
+	 * @param languageTag
+	 * 			the languageTag of the field container
+	 * @param branch
+	 * 			the branch of the field container
+	 * @return
 	 */
-	HibNodeFieldContainer createFieldContainer(HibSchemaVersion version, HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
-											   boolean handleDraftEdge);
+	HibNodeFieldContainer createEmptyFieldContainer(HibSchemaVersion version, HibNode node, HibUser editor, String languageTag, HibBranch branch);
 
 	/**
 	 * Return the draft field containers of the node in the latest branch.
@@ -725,22 +723,18 @@ public interface ContentDao {
 	HibSchemaVersion getSchemaContainerVersion(HibNodeFieldContainer content);
 
 	/**
-	 * Get all micronode fields that have a micronode using the given microschema container version.
+	 * Get all micronode fields.
 	 *
-	 * @param version
-	 *            microschema container version
 	 * @return list of micronode fields
 	 */
-	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content, HibMicroschemaVersion version);
+	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content);
 
 	/**
-	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
+	 * Get all micronode list fields.
 	 *
-	 * @param version
-	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content, HibMicroschemaVersion version);
+	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content);
 
 	/**
 	 * Return the ETag for the field container.

@@ -426,6 +426,15 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibMicronodeField createMicronode(String key, HibMicroschemaVersion microschemaVersion);
 
 	/**
+	 * Create a new micronode field for given microschemaVersion. This method assumes there are no previous
+	 * micronodes to clone
+	 *
+	 * @param microschemaVersion
+	 * @return
+	 */
+	HibMicronodeField createEmptyMicronode(String key, HibMicroschemaVersion microschemaVersion);
+
+	/**
 	 * Create a new boolean field.
 	 * 
 	 * @param key

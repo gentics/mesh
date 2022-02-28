@@ -301,8 +301,7 @@ public interface PersistingContentDao extends ContentDao {
 		return createFieldContainer(version, node, languageTag, branch, editor, original, handleDraftEdge);
 	}
 
-	@Override
-	default HibNodeFieldContainer createFieldContainer(HibSchemaVersion version, HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
+	private HibNodeFieldContainer createFieldContainer(HibSchemaVersion version, HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
 		boolean handleDraftEdge) {
 		HibNodeFieldContainer previous = null;
 
@@ -340,6 +339,33 @@ public interface PersistingContentDao extends ContentDao {
 
 		// We need to update the display field property since we created a new
 		// node graph field container.
+		updateDisplayFieldValue(newContainer);
+
+		return newContainer;
+	}
+
+	@Override
+	default HibNodeFieldContainer createEmptyFieldContainer(HibSchemaVersion version, HibNode node, HibUser editor, String languageTag, HibBranch branch) {
+		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null);
+		newContainer.generateBucketId();
+		newContainer.setEditor(editor);
+		newContainer.setLastEditedTimestamp();
+		newContainer.setLanguageTag(languageTag);
+		newContainer.setSchemaContainerVersion(version);
+		ContentDao contentDao = Tx.get().contentDao();
+
+		HibNodeFieldContainer previous = getFieldContainer(node, languageTag, branch, DRAFT);
+		if (previous != null) {
+			// set the next version number
+			contentDao.setVersion(newContainer, previous.getVersion().nextDraft());
+			previous.setNextVersion(newContainer);
+		} else {
+			// set the initial version number
+			contentDao.setVersion(newContainer, new VersionNumber());
+		}
+
+		connectFieldContainer(node, newContainer, branch, languageTag, true);
+
 		updateDisplayFieldValue(newContainer);
 
 		return newContainer;
