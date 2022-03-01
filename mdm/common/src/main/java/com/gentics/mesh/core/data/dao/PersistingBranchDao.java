@@ -116,7 +116,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 			// if this is the first branch, make it the initial branch
 			branch.setInitial();
 		} else {
-			baseBranch.setNextBranch(branch);
+			branch.setPreviousBranch(baseBranch);
 		}
 
 		// make the new branch the latest
@@ -234,7 +234,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		}
 
 		// Delete all branches
-		for (HibBranch branch : findAll(project)) {
+		for (HibBranch branch : findAll(project).list()) {
 			bac.add(branch.onDeleted());
 			deletePersisted(project, branch);
 			bac.process();

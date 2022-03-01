@@ -2054,16 +2054,20 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
+		HibBranch initialBranch;
+		HibBranch newBranch;
 		try (Tx tx = tx()) {
 			// create a new branch
 			HibProject project = project();
-			HibBranch initialBranch = project.getInitialBranch();
-			HibBranch newBranch = createBranch("newbranch");
+			initialBranch = reloadBranch(project.getInitialBranch());
+			newBranch = createBranch("newbranch");
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
 			context.setOldBranch(initialBranch);
 			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+		}
 
+		try (Tx tx = tx()) {
 			// create node in one branch
 			HibNode node = content("concorde");
 			NodeCreateRequest parentRequest = new NodeCreateRequest();

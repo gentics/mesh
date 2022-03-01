@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
@@ -109,43 +110,42 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 */
 	private void migrateNode(String nodeUuid, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
-			db.tx((tx) -> {
-				NodeDao nodeDao = tx.nodeDao();
-				TagDao tagDao = tx.tagDao();
-				PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
-				HibBranch branchToMigrateTo = tx.branchDao().findByUuid(newBranch.getProject(), newBranch.getUuid());
-				HibNode node = tx.nodeDao().findByUuidGlobal(nodeUuid);
+			Tx tx = Tx.get();
+			NodeDao nodeDao = tx.nodeDao();
+			TagDao tagDao = tx.tagDao();
+			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
+			HibBranch branchToMigrateTo = tx.branchDao().findByUuid(newBranch.getProject(), newBranch.getUuid());
+			HibNode node = tx.nodeDao().findByUuidGlobal(nodeUuid);
 
-				// Check whether the node already has an initial container and thus was already migrated
-				if (contentDao.getFieldContainers(node, branchToMigrateTo, INITIAL).hasNext()) {
-					return;
-				}
+			// Check whether the node already has an initial container and thus was already migrated
+			if (contentDao.getFieldContainers(node, branchToMigrateTo, INITIAL).hasNext()) {
+				return;
+			}
 
-				HibNode parent = nodeDao.getParentNode(node, oldBranch.getUuid());
-				if (parent != null) {
-					nodeDao.setParentNode(node, branchToMigrateTo.getUuid(), parent);
-				}
+			HibNode parent = nodeDao.getParentNode(node, oldBranch.getUuid());
+			if (parent != null) {
+				nodeDao.setParentNode(node, branchToMigrateTo.getUuid(), parent);
+			}
 
-				Result<HibNodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
-				Result<HibNodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);
+			Result<HibNodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
+			Result<HibNodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);
 
-				// 1. Migrate draft containers first
-				drafts.forEach(container -> {
-					// We only need to set the initial edge if there are no published containers.
-					// Otherwise the initial edge will be set using the published container.
-					contentDao.migrateContainerOntoBranch(container, branchToMigrateTo, node, batch, DRAFT, !published.hasNext());
-				});
-
-				// 2. Migrate published containers
-				published.forEach(container -> {
-					// Set the initial edge for published containers since the published container may be an older version and created before the draft container was created.
-					// The initial edge should always point to the oldest container of either draft or published.
-					contentDao.migrateContainerOntoBranch(container, branchToMigrateTo, node, batch, PUBLISHED, true);
-				});
-
-				// Migrate tags
-				tagDao.getTags(node, oldBranch).forEach(tag -> tagDao.addTag(node, tag, branchToMigrateTo));
+			// 1. Migrate draft containers first
+			drafts.forEach(container -> {
+				// We only need to set the initial edge if there are no published containers.
+				// Otherwise the initial edge will be set using the published container.
+				contentDao.migrateContainerOntoBranch(container, branchToMigrateTo, node, batch, DRAFT, !published.hasNext());
 			});
+
+			// 2. Migrate published containers
+			published.forEach(container -> {
+				// Set the initial edge for published containers since the published container may be an older version and created before the draft container was created.
+				// The initial edge should always point to the oldest container of either draft or published.
+				contentDao.migrateContainerOntoBranch(container, branchToMigrateTo, node, batch, PUBLISHED, true);
+			});
+
+			// Migrate tags
+			tagDao.getTags(node, oldBranch).forEach(tag -> tagDao.addTag(node, tag, branchToMigrateTo));
 		} catch (Exception e1) {
 			log.error("Error while handling node {" + nodeUuid + "} during schema migration.", e1);
 			errorsDetected.add(e1);

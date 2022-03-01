@@ -1026,7 +1026,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 		ContentDao contentDao = Tx.get().contentDao();
 		// Delete all initial containers (which will delete all containers)
-		for (HibNodeFieldContainer container : contentDao.getFieldContainers(node, INITIAL).list()) {
+		for (HibNodeFieldContainer container : contentDao.getFieldContainers(node, INITIAL)) {
 			contentDao.delete(container, bac);
 		}
 		if (log.isDebugEnabled()) {
