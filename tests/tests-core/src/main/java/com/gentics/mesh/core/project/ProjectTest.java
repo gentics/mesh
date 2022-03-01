@@ -1,13 +1,19 @@
 package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -22,17 +28,22 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.google.common.collect.Iterators;
 
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(testSize = PROJECT, startServer = false)
+@MeshTestSetting(testSize = PROJECT, startServer = true)
 public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -231,4 +242,47 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		}
 	}
 
+	@Test
+	public void testDeleteWithTaggedBranches() {
+		int numBranches = 5;
+		BulkActionContext bac = createBulkContext();
+
+		String projectUuid = tx(() -> project().getUuid());
+		String initialBranchUuid = tx(() -> project().getInitialBranch().getUuid());
+
+		TagFamilyResponse tagFamily = createTagFamily(TestDataProvider.PROJECT_NAME, "Colours");
+		TagResponse red = createTag(TestDataProvider.PROJECT_NAME, tagFamily.getUuid(), "Red");
+		TagResponse green = createTag(TestDataProvider.PROJECT_NAME, tagFamily.getUuid(), "Green");
+		TagResponse blue = createTag(TestDataProvider.PROJECT_NAME, tagFamily.getUuid(), "Blue");
+
+		List<String> branchUuids = new ArrayList<>();
+		for (int i = 0; i < numBranches; i++) {
+			BranchCreateRequest request = new BranchCreateRequest()
+					.setName(String.format("Branch %d", i))
+					.setBaseBranch(new BranchReference().setUuid(initialBranchUuid))
+					.setLatest(true);
+			String branchUuid = call(() -> client().createBranch(TestDataProvider.PROJECT_NAME, request)).getUuid();
+			branchUuids.add(branchUuid);
+
+			BranchCreateRequest subrequest = new BranchCreateRequest()
+					.setName(String.format("Subbranch %d", i))
+					.setBaseBranch(new BranchReference().setUuid(branchUuid))
+					.setLatest(false);
+			branchUuids.add(call(() -> client().createBranch(TestDataProvider.PROJECT_NAME, subrequest)).getUuid());
+		}
+		for (String branchUuid : branchUuids) {
+			for (TagResponse tag : Arrays.asList(red, green, blue)) {
+				call(() -> client().addTagToBranch(TestDataProvider.PROJECT_NAME, branchUuid, tag.getUuid()));
+			}
+		}
+
+		tx(tx -> {
+			HibProject project = tx.projectDao().findByUuid(project().getUuid());
+			tx.projectDao().delete(project, bac);
+		});
+
+		tx(tx -> {
+			assertThat(tx.projectDao().findByUuid(projectUuid)).as("Deleted project").isNull();
+		});
+	}
 }
