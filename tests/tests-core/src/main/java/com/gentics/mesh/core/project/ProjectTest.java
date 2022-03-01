@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -261,14 +263,19 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 					.setName(String.format("Branch %d", i))
 					.setBaseBranch(new BranchReference().setUuid(initialBranchUuid))
 					.setLatest(true);
-			String branchUuid = call(() -> client().createBranch(TestDataProvider.PROJECT_NAME, request)).getUuid();
-			branchUuids.add(branchUuid);
+			AtomicReference<String> branchUuid = new AtomicReference<>();
+			waitForJobs(() -> {
+				branchUuid.set(call(() -> client().createBranch(TestDataProvider.PROJECT_NAME, request)).getUuid());
+			}, JobStatus.COMPLETED, 1);
+			branchUuids.add(branchUuid.get());
 
 			BranchCreateRequest subrequest = new BranchCreateRequest()
 					.setName(String.format("Subbranch %d", i))
-					.setBaseBranch(new BranchReference().setUuid(branchUuid))
+					.setBaseBranch(new BranchReference().setUuid(branchUuid.get()))
 					.setLatest(false);
-			branchUuids.add(call(() -> client().createBranch(TestDataProvider.PROJECT_NAME, subrequest)).getUuid());
+			waitForJobs(() -> {
+				branchUuids.add(call(() -> client().createBranch(TestDataProvider.PROJECT_NAME, subrequest)).getUuid());
+			}, JobStatus.COMPLETED, 1);
 		}
 		for (String branchUuid : branchUuids) {
 			for (TagResponse tag : Arrays.asList(red, green, blue)) {
