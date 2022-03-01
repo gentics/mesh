@@ -234,7 +234,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		}
 
 		// Delete all branches
-		for (HibBranch branch : findAll(project)) {
+		for (HibBranch branch : findAll(project).list()) {
 			bac.add(branch.onDeleted());
 			deletePersisted(project, branch);
 			bac.process();
