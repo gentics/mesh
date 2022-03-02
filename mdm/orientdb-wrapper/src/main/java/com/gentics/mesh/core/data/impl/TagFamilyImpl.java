@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -165,13 +164,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public void removeTag(HibTag tag) {
 		removeItem(toGraph(tag));
-	}
-
-	@Override
-	public PermissionChangedProjectElementEventModel onPermissionChanged(HibRole role) {
-		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
-		fillPermissionChanged(model, role);
-		return model;
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.page.Page;
@@ -55,7 +56,8 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * Domain model for branch.
  */
-public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferenceableElement<BranchReference>, HibUserTracking, HibNamedElement, Taggable {
+public interface HibBranch extends HibCoreElement<BranchResponse>, HibReferenceableElement<BranchReference>, 
+		HibUserTracking, HibProjectElement, HibNamedElement, Taggable {
 
 	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 

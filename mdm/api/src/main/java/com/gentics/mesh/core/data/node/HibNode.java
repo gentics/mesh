@@ -13,6 +13,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -34,7 +35,7 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 
 public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTracking, 
-		HibBucketableElement, HibTransformableElement<NodeResponse>, Taggable {
+		HibBucketableElement, HibTransformableElement<NodeResponse>, HibProjectElement, Taggable {
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(ElementType.NODE, NODE_CREATED, NODE_UPDATED, NODE_DELETED);
 
