@@ -120,7 +120,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	default HibField getField(String fieldKey) {
-		FieldSchema schema = getSchemaContainerVersion().getSchema().getField(fieldKey);
+		FieldSchema schema = getFieldSchema(fieldKey);
 		if (schema != null) {
 			return getField(schema);
 		} else {
@@ -129,11 +129,31 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	}
 
 	/**
+	 * Remove the field from container.
+	 * 
+	 * @param fieldKey
+	 */
+	void removeField(String fieldKey, BulkActionContext bac);
+
+	/**
+	 * Remove the field with the given key and use a dummy bulk action context.
+	 * 
+	 * @param fieldKey
+	 */
+	default void removeField(String fieldKey) {
+		removeField(fieldKey, new DummyBulkActionContext());
+	}
+
+	/**
 	 * Remove the field.
 	 * 
-	 * @param field
+	 * @param fieldKey
 	 */
-	void removeField(HibField field);
+	default void removeField(HibField field) {
+		if (field != null) {
+			removeField(field.getFieldKey());
+		}
+	}
 
 	/**
 	 * Get the schema container version used by this container
@@ -406,6 +426,15 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibMicronodeField createMicronode(String key, HibMicroschemaVersion microschemaVersion);
 
 	/**
+	 * Create a new micronode field for given microschemaVersion. This method assumes there are no previous
+	 * micronodes to clone
+	 *
+	 * @param microschemaVersion
+	 * @return
+	 */
+	HibMicronodeField createEmptyMicronode(String key, HibMicroschemaVersion microschemaVersion);
+
+	/**
 	 * Create a new boolean field.
 	 * 
 	 * @param key
@@ -473,13 +502,6 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @return
 	 */
 	HibStringField createString(String key);
-
-	/**
-	 * Delete the field edge with the given key from the container.
-	 *
-	 * @param key
-	 */
-	void deleteFieldEdge(String key);
 
 	/**
 	 * Checks if a field can have a node reference.

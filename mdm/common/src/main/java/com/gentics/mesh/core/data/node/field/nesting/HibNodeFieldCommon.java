@@ -82,13 +82,12 @@ public interface HibNodeFieldCommon extends HibNodeField {
 	 * A generalized implementation to {@link Object#equals(Object)}. Use it in the class implementations.
 	 * Cannot be an override because of the Java limitations.
 	 * 
-	 * @param field
 	 * @param obj
 	 * @return
 	 */
-	static boolean equalsNodeField(HibNodeField field, Object obj) {
+	default boolean nodeFieldEquals(Object obj) {
 		if (obj instanceof HibNodeField) {
-			HibNode nodeA = field.getNode();
+			HibNode nodeA = getNode();
 			HibNode nodeB = ((HibNodeField) obj).getNode();
 			return CompareUtils.equals(nodeA, nodeB);
 		}
@@ -96,11 +95,11 @@ public interface HibNodeFieldCommon extends HibNodeField {
 			NodeFieldListItem restItem = (NodeFieldListItem) obj;
 			// TODO assert key as well?
 			// getNode can't be null since this is in fact an edge
-			return CompareUtils.equals(restItem.getUuid(), field.getNode().getUuid());
+			return CompareUtils.equals(restItem.getUuid(), getNode().getUuid());
 		}
 		if (obj instanceof NodeField) {
 			NodeField nodeRestField = ((NodeField) obj);
-			HibNode nodeA = field.getNode();
+			HibNode nodeA = getNode();
 			String nodeUuid = nodeRestField.getUuid();
 			// The node graph field is a edge so getNode should never be null. Lets check it anyways.
 			if (nodeA != null) {

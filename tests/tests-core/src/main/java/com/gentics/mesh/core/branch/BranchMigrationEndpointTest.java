@@ -97,31 +97,30 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-
-			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(true);
-
+			HibBranch newBranchReloaded = reloadBranch(newBranch);
+			assertThat(newBranchReloaded.isMigrated()).as("Branch migration status").isEqualTo(true);
 			nodes.forEach(node -> {
 				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
-					assertThat(boot().contentDao().getFieldContainers(node, newBranch, type)).as(type + " Field Containers after Migration")
+					assertThat(boot().contentDao().getFieldContainers(node, newBranchReloaded, type)).as(type + " Field Containers after Migration")
 						.isNotNull()
 						.isNotEmpty();
 				});
 
 				if (published.contains(node)) {
-					assertThat(boot().contentDao().getFieldContainers(node, newBranch, ContainerType.PUBLISHED))
+					assertThat(boot().contentDao().getFieldContainers(node, newBranchReloaded, ContainerType.PUBLISHED))
 						.as("Published field containers after migration")
 						.isNotNull().isNotEmpty();
 				} else {
-					assertThat(boot().contentDao().getFieldContainers(node, newBranch, ContainerType.PUBLISHED))
+					assertThat(boot().contentDao().getFieldContainers(node, newBranchReloaded, ContainerType.PUBLISHED))
 						.as("Published field containers after migration")
 						.isNotNull().isEmpty();
 				}
 
 				HibNode initialParent = nodeDao.getParentNode(node, initialBranchUuid());
 				if (initialParent == null) {
-					assertThat(nodeDao.getParentNode(node, newBranch.getUuid())).as("Parent in new branch").isNull();
+					assertThat(nodeDao.getParentNode(node, newBranchReloaded.getUuid())).as("Parent in new branch").isNull();
 				} else {
-					assertThat(nodeDao.getParentNode(node, newBranch.getUuid())).as("Parent in new branch").isNotNull()
+					assertThat(nodeDao.getParentNode(node, newBranchReloaded.getUuid())).as("Parent in new branch").isNotNull()
 						.isEqualToComparingOnlyGivenFields(initialParent, "uuid");
 				}
 

@@ -1,11 +1,9 @@
 package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Spliterator;
-import java.util.Stack;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -14,6 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.dao.ElementResolver;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
@@ -40,7 +39,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
-public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissionsRoot {
+public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissionsRoot, ElementResolver<HibBaseElement, T> {
 
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
@@ -160,32 +159,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		return null;
 	}
 
-	/**
-	 * Resolve the given stack to the vertex.
-	 * 
-	 * @param stack
-	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
-	 * @return
-	 */
-	default HibBaseElement resolveToElement(Stack<String> stack) {
-		if (log.isDebugEnabled()) {
-			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
-			if (stack.isEmpty()) {
-				log.debug("Stack: is empty");
-			} else {
-				log.debug("Stack: " + stack.peek());
-			}
-		}
-		if (stack.isEmpty()) {
-			return this;
-		} else {
-			String uuid = stack.pop();
-			if (stack.isEmpty()) {
-				return findByUuid(uuid);
-			} else {
-				throw error(BAD_REQUEST, "Can't resolve remaining segments. Next segment would be: " + stack.peek());
-			}
-		}
+	@Override
+	default BiFunction<HibBaseElement, String, T> getFinder() {
+		return (unused, uuid) -> findByUuid(uuid);
 	}
 
 	/**

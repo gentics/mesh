@@ -24,7 +24,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -37,9 +36,12 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Override
 	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(HTML_LIST, isRequired);
+	}
+	protected ListFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		ListFieldSchema schema = new ListFieldSchemaImpl();
 		schema.setListType("html");
-		schema.setName(HTML_LIST);
+		schema.setName(fieldKey);
 		schema.setRequired(isRequired);
 		return schema;
 	}
@@ -47,20 +49,18 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
-		SchemaModel schema;
-
 		try (Tx tx = tx()) {
-			schema = prepareNode(node, "nodeList", "node");
+			HibNode node = folder("2015");
+			prepareNode(node, "nodeList", "node");
 			tx.success();
 		}
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			ListFieldSchema htmlListFieldSchema = new ListFieldSchemaImpl();
 			htmlListFieldSchema.setName(HTML_LIST);
 			htmlListFieldSchema.setListType("html");
-			schema.addField(htmlListFieldSchema);
+			prepareTypedSchema(node, htmlListFieldSchema, true);
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibHtmlFieldList htmlList = container.createHTMLList(HTML_LIST);
@@ -68,20 +68,19 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			htmlList.createHTML("some<b>more html</b>");
 			tx.success();
 		}
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, HTML_LIST, "html", response);
 		}
-
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibHtmlFieldList list = container.createHTMLList("dummyList");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibHtmlFieldList list = container.createHTMLList(HTML_LIST);
 			assertNotNull(list);
 			HibHtmlField htmlField = list.createHTML("HTML 1");
 			assertNotNull(htmlField);
@@ -97,16 +96,16 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibHtmlFieldList testField = container.createHTMLList("testField");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibHtmlFieldList testField = container.createHTMLList(HTML_LIST);
 			testField.createHTML("<b>One</b>");
 			testField.createHTML("<i>Two</i>");
 			testField.createHTML("<u>Three</u>");
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getHTMLList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertThat(otherContainer.getHTMLList(HTML_LIST).equals(testField));
 		}
 	}
 
@@ -114,7 +113,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 			HibHtmlFieldList fieldA = container.createHTMLList("fieldA");
 			HibHtmlFieldList fieldB = container.createHTMLList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -132,8 +131,8 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibHtmlFieldList fieldA = container.createHTMLList("fieldA");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibHtmlFieldList fieldA = container.createHTMLList(HTML_LIST);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibHtmlFieldList) null));
 		}
@@ -143,7 +142,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			String dummyValue = "test123";
 
 			// rest null - graph null

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
@@ -20,9 +19,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -33,7 +30,6 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -57,8 +53,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingSchemaDao 
 			extends SchemaDao, 
-			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, 
-			ElementResolvingRootDao<HibProject, HibSchema> {
+			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel> {
 
 	/**
 	 * Create the schema.
@@ -238,48 +233,6 @@ public interface PersistingSchemaDao
 	}
 
 	/**
-	 * Load all nodes, accessible the given branch with Read Published permission.
-	 * 
-	 * @param version
-	 * @param branchUuid
-	 * @param user
-	 * @param type
-	 * @return
-	 */
-	default Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user,
-			ContainerType type) {
-		UserDao userDao = Tx.get().userDao();
-		NodeDao nodeDao = Tx.get().nodeDao();
-		ContentDao contentDao = Tx.get().contentDao();
-
-		return new TraversalResult<>(getNodes(version.getSchemaContainer()).stream()
-			.filter(node -> nodeDao.getAvailableLanguageNames(node).stream()
-					.map(lang -> contentDao.getFieldContainer(node, lang, branchUuid, type))
-					.anyMatch(container -> container != null)
-				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
-	}
-
-	/**
-	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
-	 * 
-	 * @param version
-	 * @param branchUuid
-	 * @return
-	 */
-	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
-
-	/**
-	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
-	 * 
-	 * @param version
-	 * @param branchUuid
-	 * @param bucket
-	 *            Bucket to limit the selection by
-	 * @return
-	 */
-	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
-
-	/**
 	 * Returns events for assignment on the schema action.
 	 * 
 	 * @return
@@ -304,13 +257,22 @@ public interface PersistingSchemaDao
 		ProjectDao projectDao = Tx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
-		batch.add(projectDao.onSchemaAssignEvent(project, schemaContainer, ASSIGNED));
-		addItem(project, schemaContainer);
-
-		// assign the latest schema version to all branches of the project
-		for (HibBranch branch : branchDao.findAll(project)) {
-			branchDao.assignSchemaVersion(branch, user, schemaContainer.getLatestVersion(), batch);
-		}
+		branchDao.findAll(project).stream()
+			.filter(branch -> branch.contains(schemaContainer))
+			.findAny()
+			.ifPresentOrElse(existing -> {
+				throw error(BAD_REQUEST, "schema_conflicting_name", existing.getUuid(),
+						CREATE_PERM.getRestPerm().getName());
+			}, () -> {
+				// Adding new schema
+				batch.add(projectDao.onSchemaAssignEvent(project, schemaContainer, ASSIGNED));
+				addItem(project, schemaContainer);
+	
+				// Assign the latest schema version to all branches of the project
+				for (HibBranch branch : branchDao.findAll(project)) {
+					branchDao.assignSchemaVersion(branch, user, schemaContainer.getLatestVersion(), batch);
+				}
+			});
 	}
 
 	@Override

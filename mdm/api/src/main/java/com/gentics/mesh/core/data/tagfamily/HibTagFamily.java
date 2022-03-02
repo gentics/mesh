@@ -14,6 +14,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -32,7 +34,8 @@ import com.gentics.mesh.handler.VersionUtils;
 /**
  * Domain model for tag families.
  */
-public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibReferenceableElement<TagFamilyReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
+public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibReferenceableElement<TagFamilyReference>, 
+		HibProjectElement, HibUserTracking, HibBucketableElement, HibNamedElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
 
@@ -42,17 +45,17 @@ public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibRefe
 	}
 
 	/**
-	 * Return the project in which the tag family is used.
-	 * 
-	 * @return
-	 */
-	HibProject getProject();
-
-	/**
 	 * Set the project in which the tag family is used
 	 * @param project
 	 */
 	void setProject(HibProject project);
+
+	@Override
+	default PermissionChangedProjectElementEventModel onPermissionChanged(HibRole role) {
+		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
+		fillPermissionChanged(model, role);
+		return model;
+	}
 
 	@Override
 	default TagFamilyReference transformToReference() {

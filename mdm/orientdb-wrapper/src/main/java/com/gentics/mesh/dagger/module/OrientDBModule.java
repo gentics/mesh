@@ -93,7 +93,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
+import com.gentics.mesh.core.verticle.handler.OrientDBWriteLockImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.proxy.ClusterEnabledRequestDelegatorImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -153,7 +153,7 @@ public abstract class OrientDBModule {
 	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
 
 	@Binds
-	abstract WriteLock bindWriteLock(WriteLockImpl e);
+	abstract WriteLock bindWriteLock(OrientDBWriteLockImpl e);
 
 	@Binds
 	abstract RequestDelegator bindRequestDelegator(ClusterEnabledRequestDelegatorImpl e);

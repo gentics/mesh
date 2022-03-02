@@ -12,6 +12,8 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
+import java.util.List;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -40,7 +42,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -174,13 +175,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public Branch getNextBranch() {
-		return out(HAS_NEXT_BRANCH, BranchImpl.class).nextOrNull();
+	public List<? extends HibBranch> getNextBranches() {
+		return out(HAS_NEXT_BRANCH, BranchImpl.class).list();
 	}
 
 	@Override
-	public Branch setNextBranch(HibBranch branch) {
-		setUniqueLinkOutTo(toGraph(branch), HAS_NEXT_BRANCH);
+	public Branch setPreviousBranch(HibBranch branch) {
+		setUniqueLinkInTo(toGraph(branch), HAS_NEXT_BRANCH);
 		return this;
 	}
 
@@ -297,8 +298,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public HibBranch unassignMicroschema(HibMicroschema microschema) {
-		Microschema graphMicroschema = toGraph(microschema);
-		unassign(graphMicroschema, HAS_MICROSCHEMA_VERSION);
+		unassign(microschema, HAS_MICROSCHEMA_VERSION);
 		return this;
 	}
 

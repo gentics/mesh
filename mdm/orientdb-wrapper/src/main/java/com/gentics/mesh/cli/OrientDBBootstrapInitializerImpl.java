@@ -145,24 +145,20 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	@Override
 	public void initMandatoryData(MeshOptions config) throws Exception {
 		db.tx(tx -> {
-			if (db.requiresTypeInit()) {
-				MeshRoot meshRoot = meshRoot();
+			MeshRoot meshRoot = meshRoot();
 
-				// Create the initial root vertices
-				meshRoot.getTagRoot();
-				meshRoot.getTagFamilyRoot();
-				meshRoot.getProjectRoot();
-				meshRoot.getLanguageRoot();
-				meshRoot.getJobRoot();
-				meshRoot.getChangelogRoot();
+			// Create the initial root vertices
+			meshRoot.getTagRoot();
+			meshRoot.getTagFamilyRoot();
+			meshRoot.getProjectRoot();
+			meshRoot.getLanguageRoot();
+			meshRoot.getJobRoot();
+			meshRoot.getChangelogRoot();
 
-				meshRoot.getGroupRoot();
-				meshRoot.getRoleRoot();
-			}
+			meshRoot.getGroupRoot();
+			meshRoot.getRoleRoot();
 			
-			if (db.requiresTypeInit()) {
-				initLanguages();
-			}
+			initLanguages();
 
 			schemaStorage.init();
 			tx.success();
@@ -172,9 +168,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 	@Override
 	public void initOptionalData(Tx tx, boolean isEmptyInstallation) {
-		if (db.requiresTypeInit()) {
-			meshRoot = meshRoot();
-		}
+		meshRoot = meshRoot();
 	}
 
 	@Override
@@ -344,13 +338,11 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	// TODO: make change log generalized
 	@Override
 	public void invokeChangelog(PostProcessFlags flags) {
-
 		log.info("Invoking database changelog check...");
 		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
 		if (!cls.applyChanges(flags)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
-
 		// Update graph indices and vertex types (This may take some time)
 		DatabaseHelper.init(db);
 

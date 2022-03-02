@@ -125,8 +125,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 
 		HibMicronodeFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
-			HibMicronode micronode = vcardListField.createMicronode();
-			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+			HibMicronode micronode = vcardListField.createMicronode(microschemaContainers().get("vcard").getLatestVersion());
 			micronode.createString("firstName").setString(testdata.v1());
 			micronode.createString("lastName").setString(testdata.v2());
 		}
@@ -152,7 +151,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 
 		// create a non-empty list for the english version
 		HibNodeFieldList nodeListField = contentDao.getLatestDraftFieldContainer(node, english()).createNodeList("nodelist");
-		nodeListField.addItem(nodeListField.createNode("testNode", node));
+		nodeListField.addItem(nodeListField.createNode(node));
 
 		// create an empty list for the german version
 		contentDao.getLatestDraftFieldContainer(node, german()).createNodeList("nodelist");

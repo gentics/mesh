@@ -1,8 +1,8 @@
-package com.gentics.mesh.core.s3binary;
+package com.gentics.mesh.core.field.s3binary;
 
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -13,13 +13,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
 
 import javax.imageio.ImageIO;
 
-import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
-import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
-import com.gentics.mesh.test.MeshTestSetting;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +27,14 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.test.MeshTestSetting;
 
 @MeshTestSetting(awsContainer = MINIO, startServer = true)
 public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -54,13 +55,10 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
     @Before
     public void updateSchema() throws IOException {
         try (Tx tx = tx()) {
-            SchemaVersionModel schema = schemaContainer("content").getLatestVersion().getSchema();
             S3BinaryFieldSchema s3BinaryFieldSchema = new S3BinaryFieldSchemaImpl();
             s3BinaryFieldSchema.setName(FIELD_NAME);
             s3BinaryFieldSchema.setLabel("Some label");
-            schema.addField(s3BinaryFieldSchema);
-            schemaContainer("content").getLatestVersion().setSchema(schema);
-            tx.success();
+            prepareTypedSchema(schemaContainer("content"), List.of(s3BinaryFieldSchema), Optional.empty());
         }
     }
 

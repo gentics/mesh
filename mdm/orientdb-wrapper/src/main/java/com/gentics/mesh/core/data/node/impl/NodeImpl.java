@@ -16,14 +16,11 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.field.FieldType.STRING_SET;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +30,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -40,6 +39,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -62,12 +62,10 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -76,20 +74,16 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
-import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * @see Node
@@ -294,44 +288,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		property(PROJECT_KEY_PROPERTY, project.getUuid());
 	}
 
-	/**
-	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
-	 */
-	@Override
-	public HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
-		if (!isBaseNode() && !CommonTx.get().nodeDao().isVisibleInBranch(this, branch.getUuid())) {
-			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
-				branch.getName(), getUuid()));
-			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
-		}
-
-		Node node = toGraph(project).getNodeRoot().create(creator, schemaVersion, project, uuid);
-		node.setParentNode(branch.getUuid(), this);
-		node.setSchemaContainer(schemaVersion.getSchemaContainer());
-		// setCreated(creator);
-		return node;
-	}
-
-	/**
-	 * Create a {@link NodeFieldListItem} that contains the reference to this node.
-	 * 
-	 * @param ac
-	 * @param languageTags
-	 * @return
-	 */
-	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
-		Tx tx = GraphDBTx.getGraphTx();
-		// Create the rest field and populate the fields
-		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
-		String branchUuid = tx.getBranch(ac, getProject()).getUuid();
-		ContainerType type = forVersion(new VersioningParametersImpl(ac).getVersion());
-		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-			listItem.setUrl(mesh().webRootLinkReplacer().resolve(ac, branchUuid, type, this, ac.getNodeParameters().getResolveLinks(),
-				languageTags));
-		}
-		return listItem;
-	}
-
 	@Override
 	public Stream<HibNodeField> getInboundReferences() {
 		return toStream(inE(HAS_FIELD, HAS_ITEM)
@@ -404,13 +360,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Iterator<? extends GraphFieldContainerEdge> getEdges(String segmentInfo, String branchUuid, ContainerType type) {
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
-	}
-
-	@Override
 	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
@@ -447,5 +396,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
+	}
+
+	@Override
+	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type) {
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
+		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
+		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
 	}
 }

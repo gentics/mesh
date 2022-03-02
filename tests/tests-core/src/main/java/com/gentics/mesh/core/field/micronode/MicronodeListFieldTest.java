@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.CRE
 import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.FILL;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -41,9 +40,12 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Override
 	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(MICRONODE_LIST, isRequired);
+	}
+	protected ListFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		ListFieldSchema schema = new ListFieldSchemaImpl();
 		schema.setListType("micronode");
-		schema.setName(MICRONODE_LIST);
+		schema.setName(fieldKey);
 		schema.setRequired(isRequired);
 		return schema;
 	}
@@ -51,9 +53,9 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
+
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, MICRONODE_LIST, "micronode");
 			InternalActionContext ac = mockActionContext("");
@@ -78,6 +80,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
+
 			NodeResponse response = transform(node);
 			assertList(2, "micronodeList", "micronode", response);
 			MicronodeFieldList micronodeRestList = response.getFields().getMicronodeFieldList(MICRONODE_LIST);
@@ -110,8 +114,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibMicronodeFieldList list = container.createMicronodeList("dummyList");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibMicronodeFieldList list = container.createMicronodeList(MICRONODE_LIST);
 			assertNotNull(list);
 		}
 	}
@@ -120,24 +124,23 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibMicronodeFieldList testField = container.createMicronodeList("testField");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibMicronodeFieldList testField = container.createMicronodeList(MICRONODE_LIST);
 
-			HibMicronode micronode = testField.createMicronode();
-			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+			HibMicronode micronode = testField.createMicronode(microschemaContainers().get("vcard").getLatestVersion());
 			micronode.createString("firstName").setString("Donald");
 			micronode.createString("lastName").setString("Duck");
 
-			micronode = testField.createMicronode();
-			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+			micronode = testField.createMicronode(microschemaContainers().get("vcard").getLatestVersion());
 			micronode.createString("firstName").setString("Mickey");
 			micronode.createString("lastName").setString("Mouse");
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getMicronodeList("testField")).as("cloned field")
-					.isEqualToComparingFieldByField(testField);
+			// We cannot use POJO field comparison anymore, since there may be lazy loaded objects.
+			//assertThat(otherContainer.getMicronodeList(MICRONODE_LIST)).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertTrue(otherContainer.getMicronodeList(MICRONODE_LIST).equals(testField));
 		}
 	}
 
@@ -145,14 +148,13 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 			HibMicronodeFieldList fieldA = container.createMicronodeList("fieldA");
 			HibMicronodeFieldList fieldB = container.createMicronodeList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
 			// Create a micronode within the first list
-			HibMicronode micronodeA = fieldA.createMicronode();
-			micronodeA.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+			HibMicronode micronodeA = fieldA.createMicronode(microschemaContainer("vcard").getLatestVersion());
 			micronodeA.createString("firstName").setString("Donald");
 			micronodeA.createString("lastName").setString("Duck");
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
@@ -160,16 +162,14 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 			assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
 			// Create another micronode in the second list
-			HibMicronode micronodeB = fieldB.createMicronode();
-			micronodeB.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+			HibMicronode micronodeB = fieldB.createMicronode(microschemaContainer("vcard").getLatestVersion());
 			micronodeB.createString("firstName").setString("Donald");
 			micronodeB.createString("lastName").setString("Duck");
 
 			assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 
 			// Add another list to fieldB
-			HibMicronode micronodeC = fieldB.createMicronode();
-			micronodeC.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+			HibMicronode micronodeC = fieldB.createMicronode(microschemaContainer("vcard").getLatestVersion());
 			micronodeC.createString("firstName").setString("Donald");
 			micronodeC.createString("lastName").setString("Duck");
 			assertFalse("Field b contains more items compared to field a and thus both lists are not equal",
@@ -181,8 +181,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibMicronodeFieldList fieldA = container.createMicronodeList("fieldA");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibMicronodeFieldList fieldA = container.createMicronodeList(MICRONODE_LIST);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibMicronodeFieldList) null));
 		}
@@ -192,7 +192,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 
 			// rest null - graph null
 			HibMicronodeFieldList fieldA = container.createMicronodeList(MICRONODE_LIST);
@@ -201,8 +201,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
 
 			// rest set - graph set - different values
-			HibMicronode micronodeA = fieldA.createMicronode();
-			micronodeA.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+			HibMicronode micronodeA = fieldA.createMicronode(microschemaContainer("vcard").getLatestVersion());
 			micronodeA.createString("firstName").setString("Donald");
 			MicronodeResponse dummyValue2 = new MicronodeResponse();
 			dummyValue2.getFields().put("firstName", FieldUtil.createStringField("Dagobert"));
@@ -294,7 +293,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 						field.getList().get(1).getMicronode().getString("lastName").getString());
 				assertEquals("The list item of the field was not updated.", "updatedFirstname2",
 						field.getList().get(1).getMicronode().getString("firstName").getString());
-
+				field.removeAll();
 			});
 		}
 	}

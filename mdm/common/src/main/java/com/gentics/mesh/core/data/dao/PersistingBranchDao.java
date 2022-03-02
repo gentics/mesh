@@ -41,6 +41,9 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * A persisting extension to {@link BranchDao}
  * 
@@ -48,6 +51,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibProject, HibBranch> {
+	static final Logger log = LoggerFactory.getLogger(BranchDao.class);
 
 	/**
 	 * Make a new connection of the branch to the schema version, containing the migration status data.
@@ -107,13 +111,12 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		branch.setName(name);
 		branch.setActive(true);
 		branch.setMigrated(false);
-		branch.setProject(project);
 
 		if (baseBranch == null) {
 			// if this is the first branch, make it the initial branch
 			branch.setInitial();
 		} else {
-			baseBranch.setNextBranch(branch);
+			branch.setPreviousBranch(baseBranch);
 		}
 
 		// make the new branch the latest
@@ -231,7 +234,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		}
 
 		// Delete all branches
-		for (HibBranch branch : findAll(project)) {
+		for (HibBranch branch : findAll(project).list()) {
 			bac.add(branch.onDeleted());
 			deletePersisted(project, branch);
 			bac.process();

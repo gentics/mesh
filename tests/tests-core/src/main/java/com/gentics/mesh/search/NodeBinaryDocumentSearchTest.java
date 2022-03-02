@@ -70,8 +70,8 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
-			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
-				.setImageDominantColor("#super");
+			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA)
+				.setImageDominantColor("#super").setFileName("somefile.jpg").setMimeType("image/jpeg");
 
 			// file
 			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
@@ -128,13 +128,13 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
-			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
-				.setImageDominantColor("#super");
+			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA)
+				.setImageDominantColor("#super").setFileName("somefile.jpg").setMimeType("image/jpeg");
 
 			// file
 			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
-			HibBinaryField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
-				.setMimeType("text/plain");
+			HibBinaryField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB);
+			binary.setMimeType("text/plain").setFileName("somefile.dat");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
 			tx.success();

@@ -69,7 +69,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			BranchDao branchDao = tx.branchDao();
 			EventQueueBatch batch = createBatch();
-			HibBranch initialBranch = project().getInitialBranch();
+			HibBranch initialBranch = tx.<CommonTx>unwrap().load(project().getInitialBranch().getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project()));
 			HibBranch branchOne = branchDao.create(project(), "One", user(), batch);
 			HibBranch branchTwo = branchDao.create(project(), "Two", user(), batch);
 			HibBranch branchThree = branchDao.create(project(), "Three", user(), batch);
@@ -300,9 +300,11 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertThat(previousVersion).as("Previous version").isNotNull();
 
 			HibProject project = project();
-			createBranch("New Branch");
+			HibBranch initialBranch = project.getInitialBranch();
+			HibBranch newBranch = createBranch("New Branch");
 
-			for (HibBranch branch : Tx.get().branchDao().findAll(project)) {
+			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
+				branch = tx.<CommonTx>unwrap().load(branch.getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
 				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(latestVersion)
 					.hasNotSchemaVersion(previousVersion);
 			}
@@ -311,7 +313,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			EventQueueBatch batch = createBatch();
 			schemaDao.assign(schemaContainer, project(), user(), batch);
 
-			for (HibBranch branch : Tx.get().branchDao().findAll(project)) {
+			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
+				branch = tx.<CommonTx>unwrap().load(branch.getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
 				assertThat(branch).as(branch.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
 					.hasNotSchemaVersion(previousVersion);
 			}
@@ -336,7 +339,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			EventQueueBatch batch = createBatch();
 			schemaDao.unassign(schemaContainer, project, batch);
-			for (HibBranch branch : Tx.get().branchDao().findAll(project)) {
+			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
+				branch = tx.<CommonTx>unwrap().load(branch.getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
 				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
 			}
 		}
@@ -374,7 +378,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			updateSchema(schemaContainer, "newfield");
 			HibSchemaVersion secondVersion = schemaContainer.getLatestVersion();
 
-			HibBranch initialBranch = Tx.get().branchDao().findByUuid(project, initialBranch().getUuid());
+			HibBranch initialBranch = reloadBranch(initialBranch());
 			HibBranch newBranch = createBranch("New Branch");
 
 			assertThat(initialBranch).as(initialBranch.getName()).hasSchema(schemaContainer).hasSchemaVersion(firstVersion)
@@ -416,9 +420,11 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertThat(previousVersion).as("Previous version").isNotNull();
 
 			HibProject project = project();
-			createBranch("New Branch");
+			HibBranch initialBranch = initialBranch();
+			HibBranch newBranch = createBranch("New Branch");
 
-			for (HibBranch branch : Tx.get().branchDao().findAll(project)) {
+			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
+				branch = tx.<CommonTx>unwrap().load(branch.getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschema).hasNotMicroschemaVersion(latestVersion)
 					.hasNotMicroschemaVersion(previousVersion);
 			}
@@ -426,7 +432,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			// assign the schema to the project
 			tx.microschemaDao().assign(microschema, project, user(), createBatch());
 
-			for (HibBranch branch : Tx.get().branchDao().findAll(project)) {
+			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
+				branch = tx.<CommonTx>unwrap().load(branch.getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
 				assertThat(branch).as(branch.getName()).hasMicroschema(microschema).hasMicroschemaVersion(latestVersion)
 					.hasNotMicroschemaVersion(previousVersion);
 			}
@@ -442,14 +449,17 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUnassignMicroschema() throws Exception {
 		try (Tx tx = tx()) {
 			MicroschemaDao microschemaDao = tx.microschemaDao();
-			BranchDao branchDao = Tx.get().branchDao();
 			HibProject project = project();
 			List<? extends HibMicroschema> microschemas = microschemaDao.findAll(project).list();
 			HibMicroschema microschema = microschemas.get(0);
 
+			HibBranch initialBranch = initialBranch();
+			HibBranch newBranch = createBranch("New Branch");
+
 			microschemaDao.unassign(microschema, project, createBatch());
 
-			for (HibBranch branch : branchDao.findAll(project)) {
+			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
+				branch = tx.<CommonTx>unwrap().load(branch.getId(), tx.<CommonTx>unwrap().branchDao().getPersistenceClass(project));
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschema)
 					.hasNotMicroschemaVersion(microschema.getLatestVersion());
 			}
@@ -469,9 +479,9 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			// update microschema
 			updateMicroschema(microschema, "newfield");
-			HibMicroschemaVersion secondVersion = Tx.get().microschemaDao().findByUuid(microschema.getUuid()).getLatestVersion();
+			HibMicroschemaVersion secondVersion = microschema.getLatestVersion();
 
-			HibBranch initialBranch = Tx.get().branchDao().findByUuid(project, initialBranch().getUuid());
+			HibBranch initialBranch = reloadBranch(initialBranch());
 			HibBranch newBranch = createBranch("New Branch");
 
 			assertThat(initialBranch).as(initialBranch.getName()).hasMicroschema(microschema).hasMicroschemaVersion(firstVersion)

@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.dao;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -10,9 +9,9 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -238,8 +237,9 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
 
 	/**
-	 * Resolve the given path and return the path object that contains the resolved nodes.
+	 * Resolve the given path for the base node and return the path object that contains the resolved nodes.
 	 *
+	 * @param baseNode
 	 * @param branchUuid
 	 * @param type
 	 *            edge type
@@ -415,6 +415,12 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	void addReferenceUpdates(HibNode node, BulkActionContext bac);
 
 	/**
+	 * Gets all HibNodeFields that reference the node.
+	 * @return
+	 */
+	Stream<HibNodeField> getInboundReferences(HibNode node);
+
+	/**
 	 * Delete the given element
 	 * @param node
 	 */
@@ -475,15 +481,4 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	NodeReference transformToReference(HibNode node, InternalActionContext ac);
-
-	/**
-	 * Get the edges for the given segment info, branch uuid and container type
-	 *
-	 * @param baseNode
-	 * @param segmentInfo
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	Iterator<? extends HibNodeFieldContainerEdge> getEdges(HibNode baseNode, String segmentInfo, String branchUuid, ContainerType type);
 }

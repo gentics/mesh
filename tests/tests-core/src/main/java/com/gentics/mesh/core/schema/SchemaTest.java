@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -8,13 +10,23 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
@@ -25,20 +37,27 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.google.common.collect.Iterables;
 
-@MeshTestSetting(testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -336,4 +355,100 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		}
 	}
 
+	/**
+	 * Test implementation of {@link SchemaDao#findNodes(HibSchemaVersion, String, HibUser, ContainerType)}.
+	 * Check whether
+	 * <ol>
+	 * <li>Project base node is returned</li>
+	 * <li>All nodes of the branch are returned</li>
+	 * <li>Nodes of other branches are not returned</li>
+	 * <li>User permissions are checked</li>
+	 * </ol>
+	 */
+	@Test
+	public void testFindNodes() {
+		String projectName = tx(() -> project().getName());
+		String initialBranchUuid = tx(() -> project().getInitialBranch().getUuid());
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+
+		Set<String> folders = tx(() -> data().getFolders().values().stream()
+				.map(node -> getDisplayName(node, initialBranchUuid)).collect(Collectors.toSet()));
+		folders.add(tx(() -> getDisplayName(project().getBaseNode(), initialBranchUuid)));
+
+		// revoke permission to read folder("news")
+		tx(tx -> {
+			RoleDao roleDao = tx.roleDao();
+			HibNode newsFolder = data().getFolder("news");
+			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PERM);
+			return newsFolder.getUuid();
+		});
+
+		// revoke permission to read published  folder("deals")
+		tx(tx -> {
+			RoleDao roleDao = tx.roleDao();
+			HibNode newsFolder = data().getFolder("deals");
+			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PUBLISHED_PERM);
+			return newsFolder.getUuid();
+		});
+
+		// revoke all read permission from folder("products")
+		String product = tx(tx -> {
+			RoleDao roleDao = tx.roleDao();
+			HibNode newsFolder = data().getFolder("products");
+			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PERM);
+			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PUBLISHED_PERM);
+			return getDisplayName(newsFolder, initialBranchUuid);
+		});
+		folders.remove(product);
+
+		String newBranchUuid = tx(() -> {
+			HibBranch newBranch = createBranch("newbranch");
+
+			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+			context.setNewBranch(newBranch);
+			context.setOldBranch(newBranch.getPreviousBranch());
+			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+
+			return newBranch.getUuid();
+		});
+
+		// create new folder in initial branch
+		String initialDraftFolder = call(() -> {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest()
+					.setParentNode(new NodeReference().setUuid(baseNodeUuid))
+					.setSchema(new SchemaReferenceImpl().setName("folder"))
+					.setLanguage("en");
+			nodeCreateRequest.getFields().put("name", new StringFieldImpl().setString("in initial branch"));
+			return client().createNode(projectName, nodeCreateRequest, new VersioningParametersImpl().setBranch(initialBranchUuid));
+		}).getDisplayName();
+
+		// create new folder in new branch
+		String newDraftFolder = call(() -> {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest()
+					.setParentNode(new NodeReference().setUuid(baseNodeUuid))
+					.setSchema(new SchemaReferenceImpl().setName("folder")).setLanguage("en");
+			nodeCreateRequest.getFields().put("name", new StringFieldImpl().setString("in new branch"));
+			return client().createNode(projectName, nodeCreateRequest, new VersioningParametersImpl().setBranch(newBranchUuid));
+		}).getDisplayName();
+
+		for (Triple<String, ContainerType, String> testCase : Arrays.asList(
+				Triple.of(initialBranchUuid, ContainerType.DRAFT, initialDraftFolder),
+				Triple.of(newBranchUuid, ContainerType.DRAFT, newDraftFolder),
+				Triple.of(initialBranchUuid, ContainerType.PUBLISHED, (String)null),
+				Triple.of(newBranchUuid, ContainerType.PUBLISHED, (String)null))) {
+			Set<String> expected = new HashSet<>(folders);
+			if (testCase.getRight() != null) {
+				expected.add(testCase.getRight());
+			}
+
+			try (Tx tx = tx()) {
+				SchemaDao schemaDao = tx.schemaDao();
+				HibUser user = user();
+				HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+				List<? extends HibNode> nodes = schemaDao.findNodes(folderSchema, testCase.getLeft(), user, testCase.getMiddle()).list();
+				List<String> nodeUuids = nodes.stream().map(node -> getDisplayName(node, testCase.getLeft())).collect(Collectors.toList());
+				assertThat(nodeUuids).doesNotHaveDuplicates().containsOnlyElementsOf(expected);
+			}
+		}
+	}
 }

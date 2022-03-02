@@ -220,11 +220,6 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	public Class<? extends HibSchema> getPersistenceClass(HibProject root) {
-		return toGraph(root).getSchemaContainerRoot().getPersistanceClass();
-	}
-
-	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getSchemaContainerRoot().globalCount();
 	}

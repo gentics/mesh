@@ -9,9 +9,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
@@ -55,7 +57,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -77,9 +78,12 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	abstract protected HibNode getNode();
 
 	@Override
-	public void removeField(HibField field) {
-		if (field != null) {
-			toGraph(field).removeField(new DummyBulkActionContext(), this);
+	public void removeField(String fieldKey, BulkActionContext bac) {
+		if (StringUtils.isNotBlank(fieldKey)) {
+			HibField field = getField(fieldKey);
+			if (field != null) {
+				toGraph(field).removeField(bac, this);
+			}
 		}
 	}
 
@@ -101,6 +105,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NodeGraphField createNode(String key, HibNode node) {
+		deleteFieldEdge(key);
 		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, toGraph(node), HAS_FIELD, NodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
@@ -196,6 +201,18 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			}
 		}
 		// 3. Create a new edge from the container to the created micronode field
+		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
+		field.setFieldKey(key);
+		return field;
+	}
+
+	@Override
+	public HibMicronodeField createEmptyMicronode(String key, HibMicroschemaVersion microschema) {
+		// 1. Create a new micronode and assign the given schema to it
+		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
+		micronode.setSchemaContainerVersion(microschema);
+
+		// 2. Create a new edge from the container to the created micronode field
 		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
@@ -390,21 +407,17 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public void deleteFieldEdge(String key) {
+	public void delete(BulkActionContext bac) {
+		// Lists
+		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
+			field.removeField(bac, this);
+		}
+	}
+
+	private void deleteFieldEdge(String key) {
 		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 		if (traversal.hasNext()) {
 			traversal.next().remove();
 		}
 	}
-
-	@Override
-	public void delete(BulkActionContext bac) {
-
-		// Lists
-		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
-			field.removeField(bac, this);
-		}
-
-	}
-
 }

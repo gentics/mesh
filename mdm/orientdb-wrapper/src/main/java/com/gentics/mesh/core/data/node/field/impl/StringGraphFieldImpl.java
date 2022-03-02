@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import java.util.Objects;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
@@ -36,16 +34,6 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof StringGraphField) {
-			String valueA = getString();
-			String valueB = ((StringGraphField) obj).getString();
-			return Objects.equals(valueA, valueB);
-		}
-		if (obj instanceof StringField) {
-			String valueA = getString();
-			String valueB = ((StringField) obj).getString();
-			return Objects.equals(valueA, valueB);
-		}
-		return false;
+		return stringEquals(obj);
 	}
 }

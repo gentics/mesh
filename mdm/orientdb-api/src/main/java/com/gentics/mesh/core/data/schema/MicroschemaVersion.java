@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -17,6 +18,13 @@ public interface MicroschemaVersion extends
 		GraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschemaVersion, HibMicroschema>, HibMicroschemaVersion {
 
 	/**
+	 * Find all micronodes belonging to this microschema version.
+	 * 
+	 * @return
+	 */
+	Result<? extends Micronode> findMicronodes();
+
+	/**
 	 * Return a result with all draft {@link HibNodeFieldContainer}'s that contain at least one micronode field (or list of micronodes field) that uses
 	 * this schema version for the given branch.
 	 *
@@ -24,7 +32,7 @@ public interface MicroschemaVersion extends
 	 *            Uuid of the branch
 	 * @return
 	 */
-	Result<? extends HibNodeFieldContainer> getDraftFieldContainers(String branchUuid);
+	Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid);
 
 	@Override
 	default TypeInfo getTypeInfo() {

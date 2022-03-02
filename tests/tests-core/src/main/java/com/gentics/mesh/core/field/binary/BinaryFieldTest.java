@@ -34,7 +34,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -56,8 +55,12 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 	@Override
 	protected BinaryFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(BINARY_FIELD, isRequired);
+	}
+
+	protected BinaryFieldSchema createFieldSchema(String key, boolean isRequired) {
 		BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
-		binaryFieldSchema.setName(BINARY_FIELD);
+		binaryFieldSchema.setName(key);
 		binaryFieldSchema.setAllowedMimeTypes("image/jpg", "text/plain");
 		binaryFieldSchema.setRequired(isRequired);
 		return binaryFieldSchema;
@@ -96,10 +99,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Update the schema and add a binary field
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-
-			schema.addField(createFieldSchema(true));
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			prepareTypedSchema(node, createFieldSchema(true), false);
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibBinary binary = tx.binaries().create(hash, 10L).runInExistingTx(tx);
 			HibBinaryField field = container.createBinary(BINARY_FIELD, binary);
@@ -127,7 +127,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testFieldUpdate() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibBinary binary = tx.binaries().create(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
 				0L).runInExistingTx(tx);
@@ -162,7 +162,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 
 			HibBinary binary = tx.binaries().create(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
@@ -178,11 +178,11 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			field.getBinary().setImageHeight(133);
 			field.getBinary().setImageWidth(7);
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			field.cloneTo(otherContainer);
 
 			HibBinaryField clonedField = otherContainer.getBinary(BINARY_FIELD);
-			assertThat(clonedField).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(field, "outV", "id", "uuid", "element", "contentUuid", "dbUuid");
+			assertThat(clonedField).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(field, "outV", "id", "uuid", "element", "contentUuid", "dbUuid", "value", "parentContainer");
 			assertThat(clonedField.getBinary()).as("referenced binary of cloned field").isNotNull().isEqualToComparingFieldByField(field.getBinary());
 		}
 	}
@@ -191,7 +191,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 
 			HibBinary binary = tx.binaries().create(UUIDUtil.randomUUID(), 1L).runInExistingTx(tx);
 			HibBinaryField fieldA = container.createBinary("fieldA", binary);
@@ -211,7 +211,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibBinary binary = tx.binaries().create(UUIDUtil.randomUUID(), 0L).runInExistingTx(tx);
 			HibBinaryField fieldA = container.createBinary(BINARY_FIELD, binary);
 			assertFalse(fieldA.equals((Field) null));
@@ -223,9 +223,9 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibBinary binary = tx.binaries().create("hashsum", 1L).runInExistingTx(tx);
-			HibBinaryField fieldA = container.createBinary("fieldA", binary);
+			HibBinaryField fieldA = container.createBinary(BINARY_FIELD, binary);
 
 			// graph empty - rest empty
 			assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new BinaryFieldImpl()));

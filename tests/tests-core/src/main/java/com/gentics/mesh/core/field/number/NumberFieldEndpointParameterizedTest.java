@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -29,7 +30,7 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 
 	@Parameterized.Parameters(name = "{index}: {1}")
 	public static Collection<Object> paramData() {
-		return Arrays.asList(new Object[][] {
+		return Arrays.asList((Object[]) new Object[][] {
 			{ 1.0, "Float with 0 decimal places" },
 			{ Integer.MIN_VALUE, "Int min" },
 			{ Integer.MAX_VALUE, "Int max" },
@@ -85,6 +86,7 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 	public void testReadNodeWithExistingField() throws IOException {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createNumberFieldSchema(FIELD_NAME), false);
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNumberField numberField = container.createNumber(FIELD_NAME);

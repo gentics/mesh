@@ -41,6 +41,9 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * A persisting extension to {@link ProjectDao}
  * 
@@ -48,6 +51,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject> {
+	static final Logger log = LoggerFactory.getLogger(ProjectDao.class);
 
 	/**
 	 * Return the schema container permission root for the project.
@@ -124,7 +128,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// Create the initial branch for the project and add the used schema version to it
 		HibBranch branch = branchDao.create(project, name, creator, batch);
 		
-		//project.getBranchRoot().create(name, creator, batch);
 		branch.setMigrated(true);
 		if (hostname != null) {
 			branch.setHostname(hostname);

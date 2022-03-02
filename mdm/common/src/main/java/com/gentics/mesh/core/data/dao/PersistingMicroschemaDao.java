@@ -18,6 +18,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -47,8 +48,15 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingMicroschemaDao 
 		extends MicroschemaDao, 
-			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>,
-			ElementResolvingRootDao<HibProject, HibMicroschema>{
+			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
+
+	/**
+	 * Find all micronodes belonging to this microschema version
+	 * 
+	 * @param version
+	 * @return
+	 */
+	Result<? extends HibMicronode> findMicronodes(HibMicroschemaVersion version);
 
 	/**
 	 * Create a new microschema container.
@@ -108,13 +116,21 @@ public interface PersistingMicroschemaDao
 		PersistingProjectDao projectDao = CommonTx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
-		batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
-		addItem(project, microschemaContainer);
+		branchDao.findAll(project).stream()
+				.filter(branch -> branch.contains(microschemaContainer))
+				.findAny()
+				.ifPresentOrElse(existing -> {
+					HibMicroschema.log.warn("Microschema { " + microschemaContainer.getName() + " } is already assigned to the project { " + project.getName() + " }");
+				}, () -> {
+					// Adding new microschema
+					batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
+					addItem(project, microschemaContainer);
 
-		// assign the latest microschema version to all branches of the project
-		for (HibBranch branch : branchDao.findAll(project)) {
-			branchDao.assignMicroschemaVersion(branch, user, microschemaContainer.getLatestVersion(), batch);
-		}
+					// Assign the latest microschema version to all branches of the project
+					for (HibBranch branch : branchDao.findAll(project)) {
+						branchDao.assignMicroschemaVersion(branch, user, microschemaContainer.getLatestVersion(), batch);
+					}
+				});
 	}
 
 	/**
@@ -200,12 +216,13 @@ public interface PersistingMicroschemaDao
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		microschema.setVersion("1.0");
 		HibMicroschema container = createPersisted(uuid);
 		HibMicroschemaVersion version = createPersistedVersion(container, v -> {
+			// set the initial version
+			microschema.setVersion("1.0");
 			v.setName(microschema.getName());
 			v.setSchema(microschema);
-			v.setSchemaContainer(container);			
+			v.setSchemaContainer(container);
 		});
 		container.setLatestVersion(version);
 		container.setCreated(user);
@@ -284,7 +301,7 @@ public interface PersistingMicroschemaDao
 	@Override
 	default void delete(HibMicroschema microschema, BulkActionContext bac) {
 		for (HibMicroschemaVersion version : findAllVersions(microschema)) {
-			if (version.findMicronodes().hasNext()) {
+			if (findMicronodes(version).hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", microschema.getUuid());
 			}
 			deleteVersion(version, bac);

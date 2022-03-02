@@ -195,11 +195,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public Class<? extends HibTag> getPersistenceClass(HibTagFamily root) {
-		return toGraph(root).getPersistanceClass();
-	}
-
-	@Override
 	public long globalCount(HibTagFamily root) {
 		return toGraph(root).globalCount();
 	}

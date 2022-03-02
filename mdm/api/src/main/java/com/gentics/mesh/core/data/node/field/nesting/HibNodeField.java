@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 
 import io.vertx.core.logging.Logger;
@@ -54,10 +53,4 @@ public interface HibNodeField extends HibListableField {
 	 * @return
 	 */
 	Optional<String> getMicronodeFieldName();
-
-	/**
-	 * Get an origin that this node field is referenced from.
-	 * @return
-	 */
-	ReferenceType getReferenceType();
 }

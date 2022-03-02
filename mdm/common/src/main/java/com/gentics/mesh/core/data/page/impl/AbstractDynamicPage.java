@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.page.impl;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -9,8 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.ValidationUtil;
 
 /**
  * Abstract implementation for result element pages.
@@ -44,13 +42,7 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 	protected Iterator<? extends T> visibleItems;
 
 	public AbstractDynamicPage(PagingParameters pagingInfo) {
-		// TODO HIB use ValidationUtil from common module
-		if (pagingInfo.getPage() < 1) {
-			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(pagingInfo.getPage()));
-		}
-		if (pagingInfo.getPerPage() != null && pagingInfo.getPerPage() < 0) {
-			throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pagingInfo.getPerPage()));
-		}
+		ValidationUtil.validate(pagingInfo);
 		this.pageNumber = pagingInfo.getPage();
 		this.perPage = pagingInfo.getPerPage();
 
@@ -61,7 +53,6 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 		} else {
 			this.lowerBound = (pageNumber - 1) * perPage;
 		}
-
 	}
 
 	@Override

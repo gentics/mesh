@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -190,14 +192,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		List<String> fields = Arrays.asList("blume", "blume2", "dreamtime");
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("news");
-
-			// Add a schema called nonBinary
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			for (String fieldName : fields) {
-				schema.addField(FieldUtil.createBinaryFieldSchema(fieldName));
-			}
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			prepareTypedSchema(folder("news"), fields.stream().map(FieldUtil::createBinaryFieldSchema).collect(Collectors.toList()), Optional.empty());
 		}
 
 		String uuid = tx(() -> folder("news").getUuid());
@@ -236,12 +231,10 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testParallelDupUpload() throws IOException {
 
 		String folderUuid = tx(() -> folder("news").getUuid());
+
 		// Prepare schema
 		try (Tx tx = tx()) {
-			HibNode node = folder("news");
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			prepareTypedSchema(folder("news"), FieldUtil.createBinaryFieldSchema("image"), false);
 		}
 
 		Buffer buffer = getBuffer("/pictures/blume.jpg");
@@ -272,11 +265,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			HibNode node = folder("news");
-
-			// Add a schema called nonBinary
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			prepareTypedSchema(node, FieldUtil.createBinaryFieldSchema("image"), false);
 
 			call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
 		}
@@ -291,17 +280,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testUploadMultipleBrokenImages() {
+	public void testUploadMultipleBrokenImages() throws IOException {
 		String contentType = "image/jpeg";
 		int binaryLen = 10000;
 		HibNode node = folder("news");
 
 		// Add a schema called nonBinary
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			tx.success();
+			prepareTypedSchema(node, FieldUtil.createBinaryFieldSchema("image"), false);
 		}
 
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);

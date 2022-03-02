@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -56,10 +59,9 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public class RestUpdaters {
 
@@ -561,11 +563,8 @@ public class RestUpdaters {
 						+ "} is not allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
 				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
 			}
-			if (nodeFieldReference != null) {
-				// We can't update the graphNodeField since it is in fact an edge.
-				// We need to delete it and create a new one.
-				container.deleteFieldEdge(fieldKey);				
-			}
+
+			// The old node edge is deleted on a new edge creation.
 			container.createNode(fieldKey, node);
 		}
 	};
@@ -628,7 +627,7 @@ public class RestUpdaters {
 			if (log.isDebugEnabled()) {
 				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
 			}
-			graphNodeFieldList.addItem(graphNodeFieldList.createNode(String.valueOf(pos), node));
+			graphNodeFieldList.addItem(graphNodeFieldList.createNode(pos, node));
 		}
 
 	};
@@ -777,7 +776,7 @@ public class RestUpdaters {
 		// Handle Update - Focal point
 		FocalPoint newFocalPoint = s3binaryField.getFocalPoint();
 		if (newFocalPoint != null) {
-			S3HibBinary binary = graphS3BinaryField.getS3Binary();
+			S3HibBinary binary = graphS3BinaryField.getBinary();
 			Point imageSize = binary.getImageSize();
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {

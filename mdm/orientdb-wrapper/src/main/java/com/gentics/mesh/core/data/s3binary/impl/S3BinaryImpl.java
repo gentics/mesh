@@ -6,6 +6,7 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.HibBinaryDataElement;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
@@ -43,5 +44,10 @@ public class S3BinaryImpl extends MeshVertexImpl implements S3Binary {
 		bac.add(storage.delete(getS3ObjectKey()));
 		bac.add(onDeleted(getUuid(), getS3ObjectKey()));
 		getElement().remove();
+	}
+
+	@Override
+	public HibBinaryDataElement setSize(long sizeInBytes) {
+		return setSize(Long.valueOf(sizeInBytes));
 	}
 }

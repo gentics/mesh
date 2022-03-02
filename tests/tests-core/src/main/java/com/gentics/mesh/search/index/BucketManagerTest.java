@@ -71,7 +71,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 
 			// Delete all users to get empty set of vertices to work with
 			for (HibUser user : userDao.findAll().list()) {
-				ctx.delete(user, user.getClass());
+				ctx.delete(user);
 			}
 			long userCount = ctx.count(userDao.getPersistenceClass());
 			assertEquals(0, userCount);

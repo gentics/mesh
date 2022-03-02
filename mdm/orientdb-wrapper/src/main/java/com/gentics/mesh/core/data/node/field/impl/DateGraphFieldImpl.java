@@ -1,21 +1,16 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import static com.gentics.mesh.util.DateUtils.fromISO8601;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 /**
  * @see DateGraphField
  */
 public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements DateGraphField {
-
-
 
 	public DateGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);
@@ -48,16 +43,6 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof DateGraphField) {
-			Long dateA = getDate();
-			Long dateB = ((DateGraphField) obj).getDate();
-			return CompareUtils.equals(dateA, dateB);
-		}
-		if (obj instanceof DateField) {
-			Long dateA = getDate();
-			Long dateB = fromISO8601(((DateField) obj).getDate());
-			return CompareUtils.equals(dateA, dateB);
-		}
-		return false;
+		return dateEquals(obj);
 	}
 }

@@ -5,7 +5,6 @@ import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 /**
@@ -35,16 +34,6 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof NumberGraphField) {
-			Number valueA = getNumber();
-			Number valueB = ((NumberGraphField) obj).getNumber();
-			return CompareUtils.equals(valueA, valueB);
-		}
-		if (obj instanceof NumberField) {
-			Number valueA = getNumber();
-			Number valueB = ((NumberField) obj).getNumber();
-			return CompareUtils.equals(valueA, valueB);
-		}
-		return false;
+		return numberEquals(obj);
 	}
 }

@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -32,24 +33,19 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.util.HibClassConverter;
-import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionNumber;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
-	private static final Logger log = LoggerFactory.getLogger(ContentDaoWrapperImpl.class);
-
-	private final Database db;
+	private final OrientDBDatabase db;
 
 	@Inject
-	public ContentDaoWrapperImpl(Database db) {
+	public ContentDaoWrapperImpl(OrientDBDatabase db) {
 		this.db = db;
 	}
 
@@ -81,11 +77,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public Stream<HibNodeField> getInboundReferences(HibNode node) {
 		return toGraph(node).getInboundReferences();
-	}
-
-	@Override
-	public Result<? extends HibNodeFieldContainerEdge> getEdges(HibNodeFieldContainer content) {
-		return toGraph(content).getEdges();
 	}
 
 	@Override
@@ -174,13 +165,13 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content, HibMicroschemaVersion version) {
-		return toGraph(content).getMicronodeFields(version);
+	public List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content) {
+		return toGraph(content).getMicronodeFields();
 	}
 
 	@Override
-	public Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content, HibMicroschemaVersion version) {
-		return toGraph(content).getMicronodeListFields(version);
+	public Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content) {
+		return toGraph(content).getMicronodeListFields();
 	}
 
 	@Override
@@ -189,17 +180,12 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public void updateDisplayFieldValue(HibNodeFieldContainer content) {
-		toGraph(content).updateDisplayFieldValue();
-	}
-
-	@Override
 	public void postfixSegmentFieldValue(HibNodeFieldContainer content) {
 		toGraph(content).postfixSegmentFieldValue();
 	}
 
 	@Override
-	public Iterator<GraphFieldContainerEdge> getContainerEdge(HibNodeFieldContainer content, ContainerType type, String branchUuid) {
+	public Iterator<GraphFieldContainerEdge> getContainerEdges(HibNodeFieldContainer content, ContainerType type, String branchUuid) {
 		return toGraph(content).getContainerEdge(type, branchUuid);
 	}
 
@@ -230,7 +216,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public long globalCount() {
-		return HibClassConverter.toGraph(db).count(NodeGraphFieldContainer.class);
+		return db.count(NodeGraphFieldContainer.class);
 	}
 
 	@Override
@@ -241,11 +227,6 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 		}
 		container.setSchemaContainerVersion(version);
 		return container;
-	}
-
-	@Override
-	public Class<? extends HibMicronode> getMicronodePersistenceClass() {
-		return MicronodeImpl.class;
 	}
 
 	@Override
@@ -294,5 +275,25 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNodeFieldContainer getFieldContainerOfEdge(HibNodeFieldContainerEdge edge) {
 		return toGraph(edge).inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+	}
+
+	@Override
+	public Stream<? extends HibMicronode> findAllMicronodes() {
+		return StreamUtil.toStream(GraphDBTx.getGraphTx().getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class));
+	}
+
+	@Override
+	public Stream<? extends GraphFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container) {
+		return toGraph(container).getEdges().stream();
+	}
+
+	@Override
+	public void deleteField(HibDeletableField field) {
+		toGraph(field).remove();
+	}
+
+	@Override
+	public void setDisplayFieldValue(HibNodeFieldContainer container, String value) {
+		toGraph(container).property(NodeGraphFieldContainerImpl.DISPLAY_FIELD_PROPERTY_KEY, value);
 	}
 }

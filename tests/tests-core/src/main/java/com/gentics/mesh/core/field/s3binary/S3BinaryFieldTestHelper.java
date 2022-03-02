@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.s3binary;
+package com.gentics.mesh.core.field.s3binary;
 
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;

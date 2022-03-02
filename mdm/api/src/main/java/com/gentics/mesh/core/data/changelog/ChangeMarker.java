@@ -7,8 +7,6 @@ import com.gentics.mesh.core.data.HibBaseElement;
  */
 public interface ChangeMarker extends HibBaseElement {
 
-	public static String DURATION_KEY = "duration";
-
 	/**
 	 * Return the duration of the change.
 	 * 

@@ -354,7 +354,7 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 			HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
-				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
+				.setImageFocalPoint(new FocalPoint(0.2f, 0.3f)).setMimeType("image/jpeg");
 
 			// stringList
 			HibStringFieldList stringList = container.createStringList("stringList");
@@ -390,26 +390,24 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 
 			// nodeList
 			HibNodeFieldList nodeList = container.createNodeList("nodeList");
-			nodeList.createNode("0", node2);
-			nodeList.createNode("1", node3);
+			nodeList.createNode(0, node2);
+			nodeList.createNode(1, node3);
 
 			if (withMicroschema) {
 				// micronodeList
 				HibMicronodeFieldList micronodeList = container.createMicronodeList("micronodeList");
-				HibMicronode firstMicronode = micronodeList.createMicronode();
-				firstMicronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+				HibMicronode firstMicronode = micronodeList.createMicronode(microschemaContainer("vcard").getLatestVersion());
 				firstMicronode.createString("firstName").setString("Joe");
 				firstMicronode.createString("lastName").setString("Doe");
 				firstMicronode.createString("address").setString("Somewhere");
 				firstMicronode.createString("postcode").setString("1010");
 
-				HibMicronode secondMicronode = micronodeList.createMicronode();
-				secondMicronode.setSchemaContainerVersion(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
+				HibMicronode secondMicronode = micronodeList.createMicronode(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 				secondMicronode.createString("text").setString("Joe");
 				secondMicronode.createNode("nodeRef", content());
 				HibNodeFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
-				micrnodeNodeList.createNode("0", node2);
-				micrnodeNodeList.createNode("1", node3);
+				micrnodeNodeList.createNode(0, node2);
+				micrnodeNodeList.createNode(1, node3);
 
 				// micronode
 				HibMicronodeField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());

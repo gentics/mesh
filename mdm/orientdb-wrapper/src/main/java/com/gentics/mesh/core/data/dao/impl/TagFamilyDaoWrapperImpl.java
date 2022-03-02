@@ -171,4 +171,11 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 		TagFamilyDaoWrapper.super.onRootDeleted(root, bac);
 		toGraph(root).getTagFamilyRoot().delete(bac);
 	}
+
+	@Override
+	public HibTagFamily createPersisted(HibProject root, String uuid) {
+		HibTagFamily tf = super.createPersisted(root, uuid);
+		tf.setProject(root);
+		return tf;
+	}
 }

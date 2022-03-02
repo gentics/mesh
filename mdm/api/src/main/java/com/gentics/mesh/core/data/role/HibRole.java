@@ -32,22 +32,6 @@ public interface HibRole extends HibCoreElement<RoleResponse>, HibReferenceableE
 	 */
 	void removeElement();
 
-	/**
-	 * Transform the role to a reference POJO.
-	 * 
-	 * @return
-	 */
-	RoleReference transformToReference();
-
-	/**
-	 * Return the current element version.
-	 * 
-	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
 	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;

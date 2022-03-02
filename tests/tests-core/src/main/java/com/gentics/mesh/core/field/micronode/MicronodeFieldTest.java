@@ -13,7 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -47,7 +47,6 @@ import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -75,9 +74,12 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 	@Override
 	protected MicronodeFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(MICRONODE_FIELD, isRequired);
+	}
+	protected MicronodeFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		MicronodeFieldSchema schema = new MicronodeFieldSchemaImpl();
 		schema.setLabel("Some microschema label");
-		schema.setName(MICRONODE_FIELD);
+		schema.setName(fieldKey);
 		schema.setRequired(isRequired);
 		schema.setAllowedMicroSchemas("vcard");
 		return schema;
@@ -144,10 +146,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
 			HibMicroschema microschema = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
-
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			prepareTypedSchema(node, new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"), false);
+			tx.commit();
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibMicronodeField micronodeField = container.createMicronode("micronodefield", microschema.getLatestVersion());
@@ -171,8 +171,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			htmlList.createHTML("<i>second</i>");
 
 			HibNodeFieldList nodeList = micronode.createNodeList("listfield-node");
-			nodeList.createNode("0", node);
-			nodeList.createNode("1", newOverview);
+			nodeList.createNode(0, node);
+			nodeList.createNode(1, newOverview);
 
 			HibNumberFieldList numberList = micronode.createNumberList("listfield-number");
 			numberList.createNumber(47);
@@ -228,9 +228,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	public void testCreateMicronodeField() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 
-			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			HibMicronodeField field = container.createMicronode(MICRONODE_FIELD, dummyMicroschema.getLatestVersion());
 			assertNotNull(field);
 			HibMicronode micronode = field.getMicronode();
 			assertNotNull(micronode);
@@ -240,7 +240,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			assertNotNull(micronodeStringField);
 			micronodeStringField.setString("dummyString");
 
-			HibMicronodeField reloadedField = container.getMicronode("testMicronodeField");
+			HibMicronodeField reloadedField = container.getMicronode(MICRONODE_FIELD);
 			assertNotNull(reloadedField);
 			HibMicronode reloadedMicronode = reloadedField.getMicronode();
 			assertNotNull(reloadedMicronode);
@@ -256,9 +256,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	public void testMicronodeUpdateFromRest() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 
-			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			HibMicronodeField field = container.createMicronode(MICRONODE_FIELD, dummyMicroschema.getLatestVersion());
 			HibMicronode micronode = field.getMicronode();
 
 			MicroschemaVersionModel schema = micronode.getSchemaContainerVersion().getSchema();
@@ -280,14 +280,14 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibMicronodeField field = container.createMicronode(MICRONODE_FIELD, dummyMicroschema.getLatestVersion());
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			field.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getMicronode("testMicronodeField")).as("cloned field").isNotNull();
-			assertThat(otherContainer.getMicronode("testMicronodeField").getMicronode()).as("cloned micronode").isNotNull()
+			assertThat(otherContainer.getMicronode(MICRONODE_FIELD)).as("cloned field").isNotNull();
+			assertThat(otherContainer.getMicronode(MICRONODE_FIELD).getMicronode()).as("cloned micronode").isNotNull()
 					.isEqualToComparingFieldByField(field.getMicronode());
 		}
 	}
@@ -297,29 +297,23 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 
-			HibMicronodeField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			HibMicronodeField field = container.createMicronode(MICRONODE_FIELD, dummyMicroschema.getLatestVersion());
 			HibMicronode micronode = field.getMicronode();
 			String originalUuid = micronode.getUuid();
 
-			Iterator<? extends HibMicronode> existingMicronodes = ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass());
-			while (existingMicronodes.hasNext()) {
-				HibMicronode foundMicronode = existingMicronodes.next();
-				assertEquals(micronode.getUuid(), foundMicronode.getUuid());
-			}
+			Stream<? extends HibMicronode> existingMicronodes = ctx.contentDao().findAllMicronodes();
+			existingMicronodes.forEach(foundMicronode -> assertEquals(micronode.getUuid(), foundMicronode.getUuid()));
 
 			// update by recreation
-			HibMicronodeField updatedField = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+			HibMicronodeField updatedField = container.createMicronode(MICRONODE_FIELD, dummyMicroschema.getLatestVersion());
 			HibMicronode updatedMicronode = updatedField.getMicronode();
 
 			assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));
 
-			existingMicronodes = ctx.loadAll(ctx.contentDao().getMicronodePersistenceClass());
-			while (existingMicronodes.hasNext()) {
-				HibMicronode foundMicronode = existingMicronodes.next();
-				assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
-			}
+			existingMicronodes = ctx.contentDao().findAllMicronodes();
+			existingMicronodes.forEach(foundMicronode -> assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid()));
 		}
 	}
 
@@ -327,7 +321,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 			HibMicronodeField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
 			HibMicronodeField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -345,8 +339,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
-			HibMicronodeField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibMicronodeField fieldA = container.createMicronode(MICRONODE_FIELD, microschemaContainer("vcard").getLatestVersion());
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibMicronodeField) null));
 		}
@@ -357,7 +351,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
-			HibNodeFieldContainer container = CoreTestUtils.createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 
 			MicroschemaVersionModel microschema = new MicroschemaModelImpl();
 			microschema.setVersion("1.0");
@@ -369,6 +363,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 				// rest null - graph null
 				v.setSchema(microschema);
 			});
+			tx.commit();
 			HibMicronodeField fieldA = container.createMicronode(MICRONODE_FIELD, containerVersion);
 			MicronodeResponse restField = new MicronodeResponse();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));

@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,12 +22,7 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
-import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.util.NodeUtil;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -74,11 +67,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
 	}
 
-	@Override
-	public String getDisplayName() {
-		return getFileName();
-	}
-
 	/**
 	 * Remove the field from the given container. The attached binary will be be removed if no other container is referencing it. The data will be deleted from
 	 * the binary storage as well.
@@ -111,71 +99,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof BinaryGraphField) {
-			BinaryGraphField binaryField = (BinaryGraphField) obj;
-			String filenameA = getFileName();
-			String filenameB = binaryField.getFileName();
-			boolean filename = Objects.equals(filenameA, filenameB);
-
-			String mimeTypeA = getMimeType();
-			String mimeTypeB = binaryField.getMimeType();
-			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
-
-			HibBinary binaryA = getBinary();
-			HibBinary binaryB = binaryField.getBinary();
-
-			String hashSumA = binaryA != null ? binaryA.getSHA512Sum() : null;
-			String hashSumB = binaryB != null ? binaryB.getSHA512Sum() : null;
-			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
-			return filename && mimetype && sha512sum;
-		}
-		if (obj instanceof BinaryField) {
-			BinaryField binaryField = (BinaryField) obj;
-
-			boolean matchingFilename = true;
-			if (binaryField.getFileName() != null) {
-				String filenameA = getFileName();
-				String filenameB = binaryField.getFileName();
-				matchingFilename = Objects.equals(filenameA, filenameB);
-			}
-
-			boolean matchingMimetype = true;
-			if (binaryField.getMimeType() != null) {
-				String mimeTypeA = getMimeType();
-				String mimeTypeB = binaryField.getMimeType();
-				matchingMimetype = Objects.equals(mimeTypeA, mimeTypeB);
-			}
-
-			boolean matchingFocalPoint = true;
-			if (binaryField.getFocalPoint() != null) {
-				FocalPoint pointA = getImageFocalPoint();
-				FocalPoint pointB = binaryField.getFocalPoint();
-				matchingFocalPoint = Objects.equals(pointA, pointB);
-			}
-
-			boolean matchingDominantColor = true;
-			if (binaryField.getDominantColor() != null) {
-				String colorA = getImageDominantColor();
-				String colorB = binaryField.getDominantColor();
-				matchingDominantColor = Objects.equals(colorA, colorB);
-			}
-
-			boolean matchingSha512sum = true;
-			if (binaryField.getSha512sum() != null) {
-				String hashSumA = getBinary() != null ? getBinary().getSHA512Sum() : null;
-				String hashSumB = binaryField.getSha512sum();
-				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
-			}
-
-			boolean matchingMetadata = true;
-			if (binaryField.getMetadata() != null) {
-				BinaryMetadata graphMetadata = getMetadata();
-				BinaryMetadata restMetadata = binaryField.getMetadata();
-				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
-			}
-			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata;
-		}
-		return false;
+		return binaryFieldEquals(obj);
 	}
 
 	@Override

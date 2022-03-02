@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -31,6 +30,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
@@ -290,22 +290,20 @@ public interface ContentDao {
 		boolean handleDraftEdge);
 
 	/**
-	 * Like {@link #createFieldContainer(HibNode, String, HibBranch, HibUser)}, but let the new field container be a clone of the given original (if not
-	 * null) and pass the schema version
-	 *
+	 * Create an "empty" field container (without any populate fields) from the provided parameters
 	 * @param version
-	 * @param languageTag
-	 * @param branch
+	 * 			the version of the field container
+	 * @param node
+	 * 			the node of the field container
 	 * @param editor
-	 *            User which will be set as editor
-	 * @param original
-	 *            Container to be used as a source for the new container
-	 * @param handleDraftEdge
-	 *            Whether to move the existing draft edge or create a new draft edge to the new container
-	 * @return Created container
+	 * 			the editor of the field container
+	 * @param languageTag
+	 * 			the languageTag of the field container
+	 * @param branch
+	 * 			the branch of the field container
+	 * @return
 	 */
-	HibNodeFieldContainer createFieldContainer(HibSchemaVersion version, HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
-											   boolean handleDraftEdge);
+	HibNodeFieldContainer createEmptyFieldContainer(HibSchemaVersion version, HibNode node, HibUser editor, String languageTag, HibBranch branch);
 
 	/**
 	 * Return the draft field containers of the node in the latest branch.
@@ -724,22 +722,18 @@ public interface ContentDao {
 	HibSchemaVersion getSchemaContainerVersion(HibNodeFieldContainer content);
 
 	/**
-	 * Get all micronode fields that have a micronode using the given microschema container version.
+	 * Get all micronode fields.
 	 *
-	 * @param version
-	 *            microschema container version
 	 * @return list of micronode fields
 	 */
-	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content, HibMicroschemaVersion version);
+	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content);
 
 	/**
-	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
+	 * Get all micronode list fields.
 	 *
-	 * @param version
-	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content, HibMicroschemaVersion version);
+	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content);
 
 	/**
 	 * Return the ETag for the field container.
@@ -888,7 +882,15 @@ public interface ContentDao {
 	 * @param branchUuid
 	 * @return
 	 */
-	Iterator<? extends HibNodeFieldContainerEdge> getContainerEdge(HibNodeFieldContainer container, ContainerType type, String branchUuid);
+	Iterator<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container, ContainerType type, String branchUuid);
+
+	/**
+	 * Return a stream of all the edges of a container.
+	 * @param type
+	 * @param branchUuid
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container);
 
 	/**
 	 * Retrieve a conflicting edge for the given segment info, branch uuid and type, or null if there's no conflicting
@@ -933,9 +935,12 @@ public interface ContentDao {
 	Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type);
 
 	/**
-	 * Get all the edges for the given content
-	 * @param content
+	 * Create a {@link NodeFieldListItem} that contains the reference to the given node.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @param languageTags
 	 * @return
 	 */
-	Result<? extends HibNodeFieldContainerEdge> getEdges(HibNodeFieldContainer content);
+	NodeFieldListItem toListItem(HibNode node, InternalActionContext ac, String[] languageTags);
 }

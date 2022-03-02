@@ -37,13 +37,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.node.field.HibStringField;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
-import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
-import com.gentics.mesh.path.impl.PathSegmentImpl;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -54,6 +47,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -104,12 +98,18 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
+	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
 
 	@Override
 	default NodeReference transformToReference(HibNode node, InternalActionContext ac) {
@@ -1597,6 +1597,24 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return create(parentNode, creator, schemaVersion, project, project.getLatestBranch(), null);
 	}
 
+	/**
+	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
+	 */
+	@Override
+	default HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
+		if (!parentNode.isBaseNode() && !CommonTx.get().nodeDao().isVisibleInBranch(parentNode, branch.getUuid())) {
+			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
+				branch.getName(), parentNode.getUuid()));
+			throw error(NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
+		}
+
+		HibNode node = create(creator, schemaVersion, project, uuid);
+		setParentNode(node, branch.getUuid(), parentNode);
+		node.setSchemaContainer(schemaVersion.getSchemaContainer());
+		// setCreated(creator);
+		return node;
+	}
+
 	@Override
 	default void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch) {
 
@@ -1695,22 +1713,23 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Path resolvePath(HibNode baseNode, String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
+	default Path resolvePath(HibNode node, String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
 		if (pathStack.isEmpty()) {
 			return path;
 		}
 		String segment = pathStack.pop();
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving for path segment {" + segment + "}");
 		}
 
-		String segmentInfo = Tx.get().contentDao().composeSegmentInfo(baseNode, segment);
-		Iterator<? extends HibNodeFieldContainerEdge> edges = getEdges(baseNode, segmentInfo, branchUuid, type);
+		String segmentInfo = contentDao.composeSegmentInfo(node, segment);
+		Iterator<? extends HibNodeFieldContainerEdge> edges = getWebrootEdges(node, segmentInfo, branchUuid, type);
 		if (edges.hasNext()) {
 			HibNodeFieldContainerEdge edge = edges.next();
 			HibNode childNode = edge.getNode();
-			PathSegment pathSegment = getSegment(childNode, branchUuid, type, segment);
+			PathSegment pathSegment = contentDao.getSegment(childNode, branchUuid, type, segment);
 			if (pathSegment != null) {
 				path.addSegment(pathSegment);
 				return resolvePath(childNode, branchUuid, type, path, pathStack);
@@ -1719,77 +1738,42 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return path;
 	}
 
-	private PathSegment getSegment(HibNode node, String branchUuid, ContainerType type, String segment) {
-		// Check the different language versions
-		for (HibNodeFieldContainer container : Tx.get().contentDao().getFieldContainers(node, branchUuid, type)) {
-			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
-			String segmentFieldName = schema.getSegmentField();
-			// First check whether a string field exists for the given name
-			HibStringField field = container.getString(segmentFieldName);
-			if (field != null) {
-				String fieldValue = field.getString();
-				if (segment.equals(fieldValue)) {
-					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
-				}
-			}
-
-			// No luck yet - lets check whether a binary field matches the
-			// segmentField
-			HibBinaryField binaryField = container.getBinary(segmentFieldName);
-			if (binaryField == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-							+ "}");
-				}
-			} else {
-				String binaryFilename = binaryField.getFileName();
-				if (segment.equals(binaryFilename)) {
-					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
-				}
-			}
-			// No luck yet - lets check whether a S3 binary field matches the segmentField
-			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
-			if (s3Binary == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
-							+ "}");
-				}
-			} else {
-				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
-				if (segment.equals(s3binaryFilename)) {
-					return new PathSegmentImpl(container, s3Binary, container.getLanguageTag(), segment);
-				}
-			}
-
-		}
-		return null;
-	}
-
 	@Override
-	default void addReferenceUpdates(HibNode node, BulkActionContext bac) {
+	default void addReferenceUpdates(HibNode updatedNode, BulkActionContext bac) {
 		Set<String> handledNodeUuids = new HashSet<>();
-		ContentDao contentDao = Tx.get().contentDao();
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
 
-		contentDao.getInboundReferences(node)
-				.flatMap(HibNodeField::getReferencingContents)
-				.forEach(nodeContainer -> {
-					for (HibNodeFieldContainerEdge edge : contentDao.getEdges(nodeContainer)) {
-						ContainerType type = edge.getType();
-						// Only handle published or draft contents
-						if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-							HibNode referencingNode = edge.getNode();
-							String uuid = referencingNode.getUuid();
-							String languageTag = nodeContainer.getLanguageTag();
-							String branchUuid = edge.getBranchUuid();
-							String key = uuid + languageTag + branchUuid + type.getCode();
-							if (!handledNodeUuids.contains(key)) {
-								bac.add(onReferenceUpdated(referencingNode, referencingNode.getUuid(), referencingNode.getSchemaContainer(), branchUuid, type, languageTag));
-								handledNodeUuids.add(key);
-							}
+		getInboundReferences(updatedNode)
+			.flatMap(HibNodeField::getReferencingContents)
+			.forEach(nodeContainer -> {
+				contentDao.getContainerEdges(nodeContainer).forEach(edge -> {
+					ContainerType type = edge.getType();
+					// Only handle published or draft contents
+					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
+						HibNode referencingNode = nodeContainer.getNode();
+						String uuid = referencingNode.getUuid();
+						String languageTag = nodeContainer.getLanguageTag();
+						String branchUuid = edge.getBranchUuid();
+						String key = uuid + languageTag + branchUuid + type.getCode();
+						if (!handledNodeUuids.contains(key)) {
+							bac.add(onReferenceUpdated(updatedNode, referencingNode.getUuid(), referencingNode.getSchemaContainer(), branchUuid, type, languageTag));
+							handledNodeUuids.add(key);
 						}
 					}
 				});
+			});
 	}
+
+	/**
+	 * Get the edges for the given node, that satisfy the webroot lookup data.
+	 * 
+	 * @param node
+	 * @param segmentInfo
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type);
 
 	/**
 	 * Create a new referenced element update event model.
@@ -1820,5 +1804,23 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			event.setSchema(schema.transformToReference());
 		}
 		return event;
+	}
+
+	@Override
+	default HibNode create(HibProject project, HibUser user, HibSchemaVersion version) {
+		return create(user, version, project, null);
+	}
+
+	private HibNode create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {
+		// TODO check whether the mesh node is in fact a folder node.
+		HibNode node = createPersisted(project, uuid);
+		node.setSchemaContainer(version.getSchemaContainer());
+
+		// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
+		node.setCreator(creator);
+		node.setCreationTimestamp();
+		node.generateBucketId();
+
+		return node;
 	}
 }

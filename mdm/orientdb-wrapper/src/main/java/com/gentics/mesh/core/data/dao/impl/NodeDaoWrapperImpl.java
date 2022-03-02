@@ -11,26 +11,22 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.path.Path;
 
 import dagger.Lazy;
 
@@ -80,16 +76,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public HibNode create(HibProject project, HibUser user, HibSchemaVersion version) {
-		return toGraph(project).getNodeRoot().create(user, version, project);
-	}
-
-	@Override
-	public HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
-		return toGraph(parentNode).create(creator, schemaVersion, project, branch, uuid);
-	}
-
-	@Override
 	public Result<? extends HibNode> getChildren(HibNode node) {
 		return toGraph(node).getChildren();
 	}
@@ -128,11 +114,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public String getDisplayName(HibNode node, InternalActionContext ac) {
 		return toGraph(node).getDisplayName(ac);
-	}
-
-	@Override
-	public Iterator<? extends HibNodeFieldContainerEdge> getEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type) {
-		return toGraph(node).getEdges(segmentInfo, branchUuid, type);
 	}
 
 	@Override
@@ -200,5 +181,25 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public Stream<? extends HibNode> findAllGlobal() {
 		return boot.get().meshRoot().findAllNodes().stream();
+	}
+
+	@Override
+	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type) {
+		return toGraph(node).getWebrootEdges(segmentInfo, branchUuid, type);
+	}
+
+	@Override
+	public Stream<HibNodeField> getInboundReferences(HibNode node) {
+		return toGraph(node).getInboundReferences();
+	}
+
+	@Override
+	public HibNode createPersisted(HibProject root, String uuid) {
+		HibNode node = toGraph(root).getNodeRoot().create();
+		if (uuid != null) {
+			node.setUuid(uuid);
+		}
+		node.setProject(root);
+		return node;
 	}
 }

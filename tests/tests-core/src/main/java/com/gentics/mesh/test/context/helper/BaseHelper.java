@@ -4,7 +4,10 @@ import java.util.function.Consumer;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -23,8 +26,7 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+import com.gentics.mesh.test.MeshTestActions;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.MeshTestContext;
 
@@ -33,6 +35,10 @@ import io.vertx.core.Vertx;
 public interface BaseHelper {
 
 	MeshTestContext getTestContext();
+
+	default MeshTestActions actions() {
+		return getTestContext().actions();
+	}
 
 	default MeshComponent mesh() {
 		return getTestContext().getMeshComponent();
@@ -184,5 +190,9 @@ public interface BaseHelper {
 		} else {
 			tx(modifyAction::run);
 		}
+	}
+
+	default HibBranch reloadBranch(HibBranch branch) {
+		return Tx.get().branchDao().findByUuid(branch.getProject(), branch.getUuid());
 	}
 }

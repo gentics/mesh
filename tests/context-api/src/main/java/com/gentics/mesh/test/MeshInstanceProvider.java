@@ -56,4 +56,10 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	 * Uninitialize node storage.
 	 */
 	void teardownStorage();
+
+	/**
+	 * Get the implementation of the test actions utility.
+	 * @return
+	 */
+	MeshTestActions actions();
 }

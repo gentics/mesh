@@ -42,9 +42,9 @@ public class S3BasicImageDataProcessor implements S3BinaryDataProcessor {
 		FileUpload upload = ctx.getUpload();
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
 			Consumer<S3HibBinaryField> consumer = field -> {
-				log.info("Setting info to binary field " + field.getUuid() + " - " + info);
+				log.info("Setting info to binary field " + field.getFieldKey() + " - " + info);
 				field.setImageDominantColor(info.getDominantColor());
-				S3HibBinary binary = field.getS3Binary();
+				S3HibBinary binary = field.getBinary();
 				binary.setImageHeight(info.getHeight());
 				binary.setImageWidth(info.getWidth());
 			};

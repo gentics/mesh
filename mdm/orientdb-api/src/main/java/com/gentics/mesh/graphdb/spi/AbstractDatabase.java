@@ -11,7 +11,6 @@ import com.gentics.mesh.core.db.CommonDatabase;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.util.ETag;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -75,19 +74,6 @@ public abstract class AbstractDatabase extends CommonDatabase implements GraphDa
 			e.printStackTrace();
 		}
 		setupConnectionPool();
-	}
-
-	@Override
-	public String getDatabaseRevision() {
-		String overrideRev = System.getProperty("mesh.internal.dbrev");
-		if (overrideRev != null) {
-			return overrideRev;
-		}
-		StringBuilder builder = new StringBuilder();
-		for (String changeUuid : getChangeUuidList()) {
-			builder.append(changeUuid);
-		}
-		return ETag.hash(builder.toString() + getVersion());
 	}
 
 	@Override

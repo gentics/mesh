@@ -14,8 +14,6 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.result.Result;
 
 import dagger.Lazy;
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 
 /**
  * @See {@link BinaryDaoWrapper}
@@ -32,7 +30,7 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	}
 
 	@Override
-	public Result<HibBinaryField> findFields(HibBinary binary) {
+	public Result<? extends HibBinaryField> findFields(HibBinary binary) {
 		return toGraph(binary).findFields();
 	}
 
