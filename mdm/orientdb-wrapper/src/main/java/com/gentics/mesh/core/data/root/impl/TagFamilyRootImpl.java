@@ -92,7 +92,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 			} else {
 				String nestedRootNode = stack.pop();
 				if (PermissionRoots.TAGS.contentEquals(nestedRootNode)) {
-					return tagFamily.resolveToElement(permissionRoot, tagFamily, stack);
+					return tagFamily.resolveToElement(tagFamily, tagFamily, stack);
 				} else {
 					// TODO i18n
 					throw error(NOT_FOUND, "Unknown tagFamily element {" + nestedRootNode + "}");
