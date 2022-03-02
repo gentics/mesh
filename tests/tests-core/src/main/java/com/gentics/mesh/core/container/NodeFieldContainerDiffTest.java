@@ -21,8 +21,10 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
+@NoConsistencyCheck
 public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest implements FieldDiffTestcases {
 
 	@Test
@@ -176,7 +178,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			HibNodeFieldContainer containerB = createContainer(null);
+			HibNodeFieldContainer containerB = createContainer();
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertChanges(list, FieldChangeTypes.REMOVED);
 		}
@@ -187,7 +189,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testDiffBySchemaFieldAdded() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(null);
+			HibNodeFieldContainer containerA = createContainer();
 			HibNodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue");
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);

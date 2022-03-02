@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.CoreTestUtils;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
@@ -85,6 +86,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	}
 
 	@Test
+	@NoConsistencyCheck
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {

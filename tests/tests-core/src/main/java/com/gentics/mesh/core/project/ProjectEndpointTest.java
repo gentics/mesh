@@ -805,7 +805,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setBranch(branch.getName())));
 		}
 
-		checkConsistency();
+		consistency.check();
 
 		call(() -> client().deleteProject(uuid));
 	}
