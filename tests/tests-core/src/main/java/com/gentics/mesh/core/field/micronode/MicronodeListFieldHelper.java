@@ -11,7 +11,7 @@ public interface MicronodeListFieldHelper {
 	public static final FieldFetcher FETCH = (container, name) -> container.getMicronodeList(name);
 
 	public final DataProvider FILL = (container, name) -> {
-		container.createMicronodeFieldList(name);
+		container.createMicronodeList(name);
 		//		field.addItem(field.createMicronode(field));
 
 		// TestDataProvider.getInstance().getMicroschemaContainers().get("vcard").getLatestVersion());
@@ -21,5 +21,5 @@ public interface MicronodeListFieldHelper {
 		//		micronode.createString("lastName").setString("Duck");
 	};
 
-	public static final DataProvider CREATE_EMPTY = (container, name) -> container.createMicronodeFieldList(name);
+	public static final DataProvider CREATE_EMPTY = (container, name) -> container.createMicronodeList(name);
 }

@@ -8,13 +8,6 @@ import com.gentics.mesh.core.data.node.field.list.HibListField;
 public interface GraphFieldContainer extends HibFieldContainer, BasicFieldContainer {
 
 	/**
-	 * Delete the field edge with the given key from the container.
-	 * 
-	 * @param key
-	 */
-	void deleteFieldEdge(String key);
-
-	/**
 	 * Get the list field of specified type
 	 * 
 	 * @param classOfT

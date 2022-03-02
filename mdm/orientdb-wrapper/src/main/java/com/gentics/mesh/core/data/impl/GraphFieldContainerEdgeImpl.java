@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
-import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -84,16 +83,6 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	}
 
 	/**
-	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
-	 * 
-	 * @param parentNode
-	 * @param segment
-	 */
-	public void setSegmentInfo(HibNode parentNode, String segment) {
-		setSegmentInfo(composeSegmentInfo(parentNode, segment));
-	}
-
-	/**
 	 * Creates the key for the webroot index.
 	 *
 	 * @param db
@@ -107,18 +96,6 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static Object composeWebrootIndexKey(GraphDatabase db, String segmentInfo, String branchUuid, ContainerType type) {
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
-	}
-
-	/**
-	 * Generate the composed value for the segment info. The value is used in an unique index and thus needs to be composed to create a unique segment value per
-	 * level of the node tree structure.
-	 * 
-	 * @param parentNode
-	 * @param segment
-	 * @return
-	 */
-	public static String composeSegmentInfo(HibNode parentNode, String segment) {
-		return parentNode == null ? "" : parentNode.getUuid() + segment;
 	}
 
 	/**
@@ -247,17 +224,11 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @param lang
 	 * @return
 	 */
-	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, String code, String lang) {
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang",
-			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, code, lang));
-		Iterator<? extends GraphFieldContainerEdge> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);
-		if (frames.hasNext()) {
-			return frames.next();
-		} else {
-			return null;
-		}
+	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, ContainerType type, String lang) {
+		return GraphDBTx.getGraphTx().getGraph().frameElementExplicit(
+				MeshEdgeImpl.findEdge(nodeId, lang, branchUuid, type), 
+				GraphFieldContainerEdgeImpl.class
+			);
 	}
 
 	/**

@@ -111,8 +111,8 @@ public class JobTest extends AbstractMeshTest {
 			JobDao dao = tx.jobDao();
 			HibSchema schema = tx.<CommonTx>unwrap().schemaDao().createPersisted(null);
 			HibMicroschema microschema = tx.<CommonTx>unwrap().microschemaDao().createPersisted(null);
-			dao.enqueueSchemaMigration(user(), latestBranch(), createSchemaVersion(tx, schema), createSchemaVersion(tx, schema));
-			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx, microschema), createMicroschemaVersion(tx, microschema));
+			dao.enqueueSchemaMigration(user(), latestBranch(), createSchemaVersion(tx, schema, v -> {}), createSchemaVersion(tx, schema, v -> {}));
+			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx, microschema, v -> {}), createMicroschemaVersion(tx, microschema, v -> {}));
 			dao.enqueueBranchMigration(user(), latestBranch());
 
 			List<? extends HibJob> list = dao.findAll().list();

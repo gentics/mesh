@@ -7,24 +7,32 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import io.reactivex.Flowable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -38,10 +46,12 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -50,6 +60,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -61,10 +72,19 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -87,6 +107,7 @@ import com.gentics.mesh.test.context.helper.EventHelper;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.io.Resources;
 
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -356,6 +377,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public MeshRequest<NodeResponse> createNodeAsync(String parentNodeUuid, String fieldKey, Field field) {
+		tx(() -> prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()
+				.map(TestHelper::fieldIntoSchema)
+				.map(schema -> schema.setName(fieldKey)).collect(Collectors.toList()), Optional.empty()));
+
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNodeUuid));
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -592,14 +617,38 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @throws IOException
 	 */
 	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
-		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		schema.addField(fieldSchema);
-		if (setAsSegmentField) {
-			schema.setSegmentField(fieldSchema.getName());
-		}
- 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		// mesh().serverSchemaStorage().clear();
+		prepareTypedSchema(node.getSchemaContainer(), List.of(fieldSchema), setAsSegmentField ? Optional.of(fieldSchema.getName()) : Optional.empty());
+	}
+
+	default public void prepareTypedSchema(HibNode node, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
+		prepareTypedSchema(node.getSchemaContainer(), fieldSchemas, maybeSegmentFieldKey);
+	}
+
+	default public void prepareTypedSchema(HibSchema schemaContainer, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
+		SchemaVersionModel schema = schemaContainer.getLatestVersion().getSchema();
+		fieldSchemas.stream()
+			.filter(fieldSchema -> schema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().isEmpty())
+			.forEach(fieldSchema -> {
+				schema.addField(fieldSchema);
+				maybeSegmentFieldKey.filter(
+					segmentFieldKey -> segmentFieldKey.equals(fieldSchema.getName())).ifPresent(segmentFieldKey -> schema.setSegmentField(fieldSchema.getName())
+				);
+			});
+ 		schemaContainer.getLatestVersion().setSchema(schema);
+ 		actions().updateSchemaVersion(schemaContainer.getLatestVersion());
+ 		// mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
+	}
+
+	default public void prepareTypedMicroschema(HibMicroschema microschemaContainer, List<FieldSchema> fieldSchemas) throws IOException {
+		MicroschemaVersionModel microschema = microschemaContainer.getLatestVersion().getSchema();
+		fieldSchemas.stream()
+			.filter(fieldSchema -> microschema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().isEmpty())
+			.forEach(fieldSchema -> {
+				microschema.addField(fieldSchema);
+			});
+ 		microschemaContainer.getLatestVersion().setSchema(microschema);
+ 		actions().updateSchemaVersion(microschemaContainer.getLatestVersion());
 	}
 
 	default public MeshRequest<NodeResponse> uploadRandomData(HibNode node, String languageTag, String fieldKey, int binaryLen, String contentType,
@@ -856,4 +905,42 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return threadMXBean.dumpAllThreads(true, true).length;
 	}
 
+	static FieldSchema fieldIntoSchema(Field field) {
+		FieldTypes type = FieldTypes.valueByName(field.getType());
+		switch(type) {
+		case BINARY:
+			return new BinaryFieldSchemaImpl();
+		case BOOLEAN:
+			return new BooleanFieldSchemaImpl();
+		case DATE:
+			return new DateFieldSchemaImpl();
+		case HTML:
+			return new HtmlFieldSchemaImpl();
+		case MICRONODE:
+			return new MicronodeFieldSchemaImpl();
+		case NODE:
+			return new NodeFieldSchemaImpl();
+		case NUMBER:
+			return new NumberFieldSchemaImpl();
+		case S3BINARY:
+			return new S3BinaryFieldSchemaImpl();
+		case STRING:
+			return new StringFieldSchemaImpl();
+		case LIST:
+			FieldList<?> fieldList = (FieldList<?>) field;
+			return new ListFieldSchemaImpl().setListType(fieldList.getItemType());
+		default:
+			break;		
+		}
+		throw new IllegalArgumentException("Unsupported Field type: " + field.getType());
+	}
+
+	default String getDisplayName(HibNode node, String branchUuid) {
+		HibNodeFieldContainer content = Tx.get().contentDao().findVersion(node, Arrays.asList("en"), branchUuid, "draft");
+		String displayName = content.getDisplayFieldValue();
+		if (StringUtils.isEmpty(displayName)) {
+			displayName = "unnamed node (" + node.getUuid() + ")";
+		}
+		return displayName;
+	}
 }

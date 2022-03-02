@@ -46,7 +46,7 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 		// Remove the node to avoid test consistency check errors
 		tx(tx -> {
-			tx.<CommonTx>unwrap().delete(bogusNode, bogusNode.getClass());
+			tx.<CommonTx>unwrap().delete(bogusNode);
 		});
 	}
 

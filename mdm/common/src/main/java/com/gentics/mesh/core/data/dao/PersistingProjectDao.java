@@ -12,6 +12,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import javax.naming.InvalidNameException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -39,6 +41,9 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * A persisting extension to {@link ProjectDao}
  * 
@@ -46,6 +51,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject> {
+	static final Logger log = LoggerFactory.getLogger(ProjectDao.class);
 
 	/**
 	 * Return the schema container permission root for the project.
@@ -111,6 +117,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	default HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
 		PersistingBranchDao branchDao = CommonTx.get().branchDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
 		
 		HibProject project = createPersisted(uuid);
 		project.setName(name);
@@ -121,7 +128,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// Create the initial branch for the project and add the used schema version to it
 		HibBranch branch = branchDao.create(project, name, creator, batch);
 		
-		//project.getBranchRoot().create(name, creator, batch);
 		branch.setMigrated(true);
 		if (hostname != null) {
 			branch.setHostname(hostname);
@@ -137,7 +143,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		branchDao.assignSchemaVersion(branch, creator, schemaVersion, batch);
 
 		// Assign the provided schema container to the project
-		CommonTx.get().schemaDao().addItem(project, schemaVersion.getSchemaContainer());
+		schemaDao.addItem(project, schemaDao.findByUuid(schemaVersion.getSchemaContainer().getUuid()));
 		createBaseNode(project, creator, schemaVersion);
 
 		project.setCreated(creator);
@@ -174,6 +180,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		HibBaseElement projectPermRoot = CommonTx.get().data().permissionRoots().project();
 		UserDao userDao = CommonTx.get().userDao();
 		SchemaDao schemaDao = CommonTx.get().schemaDao();
+		ContentDao contentDao = CommonTx.get().contentDao();
 
 		// TODO also create a default object schema for the project. Move this
 		// into service class
@@ -217,6 +224,14 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		userDao.inheritRolePermissions(creator, project, getNodePermissionRoot(project));
 		userDao.inheritRolePermissions(creator, project, initialBranch);
 
+		// Register the project route
+		try {
+			CommonTx.get().data().mesh().routerStorageRegistry().addProject(project.getName());
+		} catch (InvalidNameException e) {
+			log.error("Failed to register project {" + project.getName() + "}");
+			throw error(BAD_REQUEST, "project_error_name_already_reserved", project.getName());
+		}
+
 		// Store the project and the branch in the index
 		batch.add(project.onCreated());
 		batch.add(initialBranch.onCreated());
@@ -224,7 +239,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
 		Tx.get().contentDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
-			batch.add(c.onCreated(branchUuid, DRAFT));
+			batch.add(contentDao.onCreated(c, branchUuid, DRAFT));
 		});
 
 		return project;
@@ -247,6 +262,8 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 			project.setName(newName);
 			project.setEditor(ac.getUser());
 			project.setLastEditedTimestamp();
+
+			mergeIntoPersisted(project);
 
 			// Update the project and its nodes in the index
 			batch.add(project.onUpdated());

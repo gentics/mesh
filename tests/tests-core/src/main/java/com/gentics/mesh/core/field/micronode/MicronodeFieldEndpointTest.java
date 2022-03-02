@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -46,8 +47,10 @@ import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.schema.impl.AbstractFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -243,11 +246,13 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		String sourceUuid = tx(() -> folder("2015").getUuid());
 		String targetUuid = contentUuid();
 
+		AbstractFieldSchema innerNodeField = new NodeFieldSchemaImpl().setName("node");
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
-		vcard.addField(new NodeFieldSchemaImpl().setName("node"));
+		vcard.addField(innerNodeField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
+		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerNodeField)));
 
 		// 1. Set the reference
 		MicronodeResponse field = new MicronodeResponse();
@@ -300,11 +305,13 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		String sourceUuid = tx(() -> folder("2015").getUuid());
 		String targetUuid = contentUuid();
 
+		FieldSchema innerNodeListField = new ListFieldSchemaImpl().setListType("node").setName("node");
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
-		vcard.addField(new ListFieldSchemaImpl().setListType("node").setName("node"));
+		vcard.addField(innerNodeListField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
+		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerNodeListField)));
 
 		// 1. Set the reference
 		MicronodeResponse field = new MicronodeResponse();
@@ -386,6 +393,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			prepareTypedSchema(node, new MicronodeFieldSchemaImpl().setName(FIELD_NAME), false);
 			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibMicronodeField micronodeField = container.createMicronode(FIELD_NAME, microschema);

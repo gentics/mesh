@@ -61,7 +61,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 			return true;
 		}
 
-		boolean isPublished = container.isPublished(tx.getBranch(this).getUuid());
+		boolean isPublished = contentDao.isPublished(container, tx.getBranch(this).getUuid());
 		if (isPublished && userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PUBLISHED_PERM)) {
 			return true;
 		}

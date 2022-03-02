@@ -8,6 +8,4 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
  */
 public interface StringGraphFieldList extends ListGraphField<HibStringField, StringFieldListImpl, String>, HibStringFieldList {
 
-	String TYPE = "string";
-
 }

@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.field.date.DateListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.date.DateListFieldHelper.FILL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.CoreTestUtils;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
@@ -36,9 +36,12 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Override
 	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		return createFieldSchema(DATE_LIST, isRequired);
+	}
+	protected ListFieldSchema createFieldSchema(String fieldKey, boolean isRequired) {
 		ListFieldSchema schema = new ListFieldSchemaImpl();
 		schema.setListType("date");
-		schema.setName(DATE_LIST);
+		schema.setName(fieldKey);
 		schema.setRequired(isRequired);
 		return schema;
 	}
@@ -46,8 +49,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, "dateList", "date");
 
@@ -57,8 +60,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			dateList.createDate(2L);
 			tx.success();
 		}
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, "dateList", "date", response);
 		}
@@ -68,8 +71,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
-			HibDateFieldList list = container.createDateList("dummyList");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibDateFieldList list = container.createDateList(DATE_LIST);
 			assertNotNull(list);
 			HibDateField dateField = list.createDate(1L);
 			assertNotNull(dateField);
@@ -85,15 +88,15 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
-			HibDateFieldList testField = container.createDateList("testField");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibDateFieldList testField = container.createDateList(DATE_LIST);
 			testField.createDate(47L);
 			testField.createDate(11L);
 
-			HibNodeFieldContainer otherContainer = contentDao(tx).createContainer();
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getDateList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertTrue(otherContainer.getDateList(DATE_LIST).equals(testField));
 		}
 	}
 
@@ -101,7 +104,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 			HibDateFieldList fieldA = container.createDateList("fieldA");
 			HibDateFieldList fieldB = container.createDateList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -119,8 +122,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
-			HibDateFieldList fieldA = container.createDateList("fieldA");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibDateFieldList fieldA = container.createDateList(DATE_LIST);
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((HibDateFieldList) null));
 		}
@@ -130,7 +133,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = contentDao(tx).createContainer();
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			Long dummyValue = 4200L;
 
 			// rest null - graph null

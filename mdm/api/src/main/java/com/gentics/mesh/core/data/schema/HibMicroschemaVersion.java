@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
@@ -18,7 +17,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -77,14 +75,6 @@ public interface HibMicroschemaVersion
 	 * @param version
 	 */
 	void setNextVersion(HibMicroschemaVersion version);
-
-
-	/**
-	 * Return an iterator over micronodes which reference this microschema version.
-	 *
-	 * @return Iterator over micronodes
-	 */
-	Result<? extends HibMicronode> findMicronodes();
 
 	@Override
 	default MicroschemaVersionModel getSchema() {

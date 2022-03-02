@@ -42,7 +42,7 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 		FileUpload upload = ctx.getUpload();
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
 			Consumer<HibBinaryField> consumer = field -> {
-				log.info("Setting info to binary field " + field.getUuid() + " - " + info);
+				log.info("Setting info to binary field " + field.getFieldKey() + " - " + info);
 				field.setImageDominantColor(info.getDominantColor());
 				HibBinary binary = field.getBinary();
 				binary.setImageHeight(info.getHeight());

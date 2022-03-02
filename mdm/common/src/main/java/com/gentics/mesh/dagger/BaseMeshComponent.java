@@ -11,6 +11,7 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -43,9 +44,9 @@ import com.gentics.mesh.search.index.schema.SchemaIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
-import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.LocalBinaryStorage;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import io.vertx.core.Vertx;
 
@@ -89,6 +90,9 @@ public interface BaseMeshComponent {
 
 	@Getter
 	ProjectNameCache projectNameCache();
+
+	@Getter
+	PageTransformer pageTransformer();
 
 	// Plugin
 	@Getter

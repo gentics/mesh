@@ -4,13 +4,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -192,15 +190,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	}
 
 	/**
-	 * Resolve the given stack to the element.
-	 * 
-	 * @param stack
-	 *            Stack which contains the remaining path elements which should be resolved starting with the current element
-	 * @return
-	 */
-	HibBaseElement resolveToElement(R root, Stack<String> stack);
-
-	/**
 	 * Create a new leaf object which is connected or directly related to this root element.
 	 * 
 	 * @param ac
@@ -295,10 +284,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return
 	 */
 	default boolean contains(R root, L element) {
-		if (findByUuid(root, element.getUuid()) == null) {
-			return false;
-		} else {
-			return true;
-		}
+		return findByUuid(root, element.getUuid()) != null;
 	}
 }

@@ -36,9 +36,11 @@ public class SchemaChangeTest extends AbstractMeshTest {
 			PersistingSchemaDao schemaDao = ctx.schemaDao();
 			HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
 
-			HibSchemaVersion versionA = container.getLatestVersion();
-			HibSchemaVersion versionB = createSchemaVersion(ctx, container);
-			HibSchemaVersion versionC = createSchemaVersion(ctx, container);
+			HibSchemaVersion versionA = createSchemaVersion(ctx, container, v -> {
+				container.setLatestVersion(v);
+			});
+			HibSchemaVersion versionB = createSchemaVersion(ctx, container, v -> {});
+			HibSchemaVersion versionC = createSchemaVersion(ctx, container, v -> {});
 
 			HibRemoveFieldChange change = (HibRemoveFieldChange) schemaDao.createPersistedChange(versionA, SchemaChangeOperation.REMOVEFIELD);
 			// Not true anymore, since version initialization is now the part of container initialization, as no container can exist without a version.
@@ -71,12 +73,14 @@ public class SchemaChangeTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			CommonTx ctx = (CommonTx) tx;
 			HibMicroschema container = createMicroschema(ctx);
-			HibMicroschemaVersion versionA = container.getLatestVersion();
-			HibMicroschemaVersion versionB = createMicroschemaVersion(ctx, container);
+			HibMicroschemaVersion versionA = createMicroschemaVersion(ctx, container, v -> {
+				container.setLatestVersion(v);
+			});
+			HibMicroschemaVersion versionB = createMicroschemaVersion(ctx, container, v -> {});
 			container.setLatestVersion(versionB);
 			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB,
 					version ->  ctx.microschemaDao().createPersistedChange((HibMicroschemaVersion) version, SchemaChangeOperation.REMOVEFIELD));
-			validate(container, versionA, versionB, oldChange, container1 -> createMicroschemaVersion(CommonTx.get(), (HibMicroschema) container1));
+			validate(container, versionA, versionB, oldChange, container1 -> createMicroschemaVersion(CommonTx.get(), (HibMicroschema) container1, v -> {}));
 		}
 	}
 
@@ -85,12 +89,14 @@ public class SchemaChangeTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			CommonTx ctx = (CommonTx) tx;
 			HibSchema container = createSchema(ctx);
-			HibSchemaVersion versionA = container.getLatestVersion();
-			HibSchemaVersion versionB = createSchemaVersion(ctx, container);
+			HibSchemaVersion versionA = createSchemaVersion(ctx, container, v -> {
+				container.setLatestVersion(v);
+			});
+			HibSchemaVersion versionB = createSchemaVersion(ctx, container, v -> {});
 			container.setLatestVersion(versionA);
 			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB, 
 					version ->  ctx.schemaDao().createPersistedChange((HibSchemaVersion) version, SchemaChangeOperation.REMOVEFIELD));
-			validate(container, versionA, versionB, oldChange, container1 -> createSchemaVersion(CommonTx.get(), (HibSchema) container1));
+			validate(container, versionA, versionB, oldChange, container1 -> createSchemaVersion(CommonTx.get(), (HibSchema) container1, v -> {}));
 		}
 	}
 

@@ -32,6 +32,11 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 	}
 
 	@Override
+	default int txId() {
+		return hashCode();
+	}
+
+	@Override
 	PersistingNodeDao nodeDao();
 
 	@Override

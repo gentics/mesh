@@ -8,12 +8,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -21,7 +18,6 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -51,29 +47,11 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	void setSchemaContainer(HibSchema container);
 
 	/**
-	 * Return the element version of the schema. Please note that this is not the schema version. The element version instead reflects the update history of the
-	 * element.
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
-	/**
 	 * Return jobs which reference the schema version.
 	 * 
 	 * @return
 	 */
 	Iterable<? extends HibJob> referencedJobsViaTo();
-
-	/**
-	 * Returns all nodes that the user has read permissions for.
-	 *
-	 * @param branchUuid Branch uuid
-	 * @param user User to check permissions for
-	 * @param type Container type
-	 * @return
-	 */
-	Result<? extends HibNode> getNodes(String branchUuid, HibUser user, ContainerType type);
 
 	/**
 	 * Check the autopurge flag of the version.
@@ -128,7 +106,7 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 		FieldsSet fields = generic.getFields();
 
 		// Load the schema and add/overwrite some properties
-		// Use getSchema to utilise the schema storage
+		// Use getSchema to utilize the schema storage
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
 		HibSchema container = getSchemaContainer();
 		container.fillCommonRestFields(ac, fields, restSchema);

@@ -32,6 +32,7 @@ public abstract class AbstractWebRootService implements WebRootService {
 		this.pathStore = pathStore;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
 		Tx tx = Tx.get();
@@ -60,7 +61,7 @@ public abstract class AbstractWebRootService implements WebRootService {
 		String strippedPath = PathPrefixUtil.strip(branch, path);
 		HibNodeFieldContainer containerByWebUrlPath = findByUrlFieldPath(branch.getUuid(), strippedPath, type);
 		if (containerByWebUrlPath != null) {
-			Path resolvedPath = containerByWebUrlPath.getPath(ac);
+			Path resolvedPath = contentDao.getPath(containerByWebUrlPath, ac);
 			pathStore.store(project, branch, type, path, resolvedPath);
 			return resolvedPath;
 		}

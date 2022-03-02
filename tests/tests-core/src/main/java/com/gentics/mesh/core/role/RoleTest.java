@@ -13,6 +13,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.db.CommonTx;
 import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -222,7 +224,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			GroupDao groupDao = tx.groupDao();
+			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
 			HibRole extraRole = roleDao.create("extraRole", user());
 			groupDao.addRole(group(), extraRole);
@@ -232,6 +234,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			groupDao.addRole(group(), extraRole);
 			groupDao.addRole(group(), extraRole);
 			groupDao.addRole(group(), extraRole);
+			groupDao.mergeIntoPersisted(group());
 
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			RoutingContext rc = mockRoutingContext();
@@ -368,7 +371,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			BulkActionContext context = createBulkContext();
 			try (Tx tx2 = tx()) {
 				RoleDao roleDao = tx2.roleDao();
-				HibRole role = role();
+				HibRole role = tx.roleDao().findByUuid(role().getUuid());
 				uuid = role.getUuid();
 				roleDao.delete(role, context);
 				tx2.success();

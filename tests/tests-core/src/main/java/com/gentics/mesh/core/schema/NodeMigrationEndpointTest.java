@@ -10,7 +10,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -178,6 +177,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		try (Tx tx = tx()) {
+			assignment1 = CommonTx.get().load(assignment1.getId(), assignment1.getClass());
+			assignment2 = CommonTx.get().load(assignment2.getId(), assignment2.getClass());
 			assertNotNull(assignment2.getJobUuid());
 			assertEquals(COMPLETED, assignment2.getMigrationStatus());
 			assertTrue("The assignment should be active.", assignment2.isActive());
@@ -247,6 +248,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
+			edge3 = CommonTx.get().load(edge3.getId(), edge3.getClass());
 			PersistingSchemaDao schemaDao = tx.<CommonTx>unwrap().schemaDao();
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(COMPLETED, edge3.getMigrationStatus());
@@ -413,10 +415,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String newFieldName = "changedfield";
 		String jobUuid;
 
-		container = tx(() -> createDummySchemaWithChanges(oldFieldName, newFieldName, false));
 		try (Tx tx = tx()) {
 			PersistingBranchDao branchDao = tx.<CommonTx>unwrap().branchDao();
 			NodeDao nodeDao = tx.nodeDao();
+			container = createDummySchemaWithChanges(oldFieldName, newFieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -439,7 +441,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				secondNode.getProject().getLatestBranch(), user);
 			secondEnglishContainer.createString(oldFieldName).setString("second content");
 
-			jobUuid = branchDao.assignSchemaVersion(project().getLatestBranch(), user, versionB, batch).getUuid();
+			HibBranch latestBranch = reloadBranch(project().getLatestBranch());
+			jobUuid = branchDao.assignSchemaVersion(latestBranch, user, versionB, batch).getUuid();
 			tx.success();
 		}
 
@@ -491,10 +494,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 
 		int nFieldContainers = tx(tx -> {
-			
+			ContentDao contentDao = tx.contentDao();
 			HibSchemaVersion schemaVersion = node.getSchemaContainer().getLatestVersion();
 			return Long.valueOf(tx.<CommonTx>unwrap().schemaDao().getFieldContainers(schemaVersion, initialBranchUuid())
-				.filter(c -> c.isPublished() || c.isPublished())
+				.filter(contentDao::isPublished)
 				.count()).intValue();
 		});
 
@@ -564,20 +567,21 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			String english = english();
 			HibNode parentNode = folder("2015");
 			firstNode = nodeDao.create(parentNode, user, versionA, project());
+			Tx.get().commit();
 			HibNodeFieldContainer firstEnglishContainer = boot().contentDao().createFieldContainer(firstNode, english,
 				firstNode.getProject().getLatestBranch(), user);
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
 			// do the schema migration twice
-			jobAUuid = tx.branchDao().assignSchemaVersion(project().getLatestBranch(), user, versionB, batch).getUuid();
+			HibBranch latestBranch = reloadBranch(project().getLatestBranch());
+			jobAUuid = tx.branchDao().assignSchemaVersion(latestBranch, user, versionB, batch).getUuid();
 			tx.success();
 		}
 		Thread.sleep(1000);
 
 		triggerAndWaitForJob(jobAUuid);
+		doSchemaMigration(versionA, versionB);
 		try (Tx tx = tx()) {
-			doSchemaMigration(versionA, versionB);
-
 			// assert that migration worked, but was only performed once
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(boot().contentDao().getFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
@@ -609,12 +613,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			EventQueueBatch batch = createBatch();
 			branchDao.assignSchemaVersion(project().getLatestBranch(), user(), versionA, batch);
+			Tx.get().commit();
 
 			// create a node and publish
 			node = nodeDao.create(folder("2015"), user(), versionA, project());
 			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english(), project().getLatestBranch(),
 				user());
-			englishContainer.createString(fieldName).setString("content");
+			englishContainer.createString(oldFieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			nodeDao.publish(node, ac, createBulkContext(), "en");
@@ -942,27 +947,28 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
 			container.generateBucketId();
 			container.setCreated(user());
-			versionA = container.getLatestVersion();
-			
-			MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
-			microschemaA.setName("migratedSchema");
-			microschemaA.setVersion("1.0");
-			FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
-			microschemaA.addField(oldField);
-			versionA.setName("migratedSchema");
-			versionA.setSchema(microschemaA);
-			microschemaDao.mergeIntoPersisted(container);
+			versionA = createMicroschemaVersion(tx, container, v-> {
+				container.setLatestVersion(v);					
+				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
+				microschemaA.setName("migratedSchema");
+				microschemaA.setVersion("1.0");
+				FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
+				microschemaA.addField(oldField);
+				v.setName("migratedSchema");
+				v.setSchema(microschemaA);
+			});
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = createMicroschemaVersion(tx, container);
-			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
-			microschemaB.setName("migratedSchema");
-			microschemaB.setVersion("2.0");
-			FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);
-			microschemaB.addField(newField);
-			versionB.setName("migratedSchema");
-			versionB.setSchema(microschemaB);
-			// boot().microschemaContainerRoot().addMicroschema(container);
+			versionB = createMicroschemaVersion(tx, container, v -> {
+				MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
+				microschemaB.setName("migratedSchema");
+				microschemaB.setVersion("2.0");
+				FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);
+				microschemaB.addField(newField);
+				v.setName("migratedSchema");
+				v.setSchema(microschemaB);
+			});
+			microschemaDao.mergeIntoPersisted(container);
 
 			// link the schemas with the changes in between
 			HibUpdateFieldChange updateFieldChange = (HibUpdateFieldChange) microschemaDao.createPersistedChange(versionA, SchemaChangeOperation.UPDATEFIELD);
@@ -971,15 +977,18 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
 			versionA.setNextVersion(versionB);
+			versionA.setNextChange(updateFieldChange);
 
 			// create micronode based on the old schema
 			String english = english();
-			firstNode = folder("2015");
+			firstNode = boot().nodeDao().findByUuidGlobal(folder("2015").getUuid());
 			SchemaVersionModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
 			schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
+			actions().updateSchemaVersion(firstNode.getSchemaContainer().getLatestVersion());
+			Tx.get().commit();
 			firstMicronodeField = boot().contentDao().createFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), user())
 				.createMicronode(
 					micronodeFieldName, versionA);
@@ -1049,28 +1058,31 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
 			container.generateBucketId();
 			container.setCreated(user());
-			versionA = container.getLatestVersion();
-			
-			MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
-			microschemaA.setName("migratedSchema");
-			microschemaA.setVersion("1.0");
-			FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
-			microschemaA.addField(oldField);
-			versionA.setName("migratedSchema");
-			versionA.setSchema(microschemaA);
-			microschemaDao.mergeIntoPersisted(container);
+			versionA = createMicroschemaVersion(tx, container, v -> {
+				container.setLatestVersion(v);
+				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
+				microschemaA.setName("migratedSchema");
+				microschemaA.setVersion("1.0");
+				FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
+				microschemaA.addField(oldField);
+				v.setName("migratedSchema");
+				v.setSchema(microschemaA);
+			});
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = createMicroschemaVersion(tx, container);
-			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
-			microschemaB.setName("migratedSchema");
-			microschemaB.setVersion("2.0");
-			FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);
-			microschemaB.addField(newField);
-			versionB.setName("migratedSchema");
-			versionB.setSchema(microschemaB);
-			// boot().microschemaContainerRoot().addMicroschema(container);
-
+			versionB = createMicroschemaVersion(tx, container, v -> {
+				MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
+				microschemaB.setName("migratedSchema");
+				microschemaB.setVersion("2.0");
+				FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);
+				microschemaB.addField(newField);
+				v.setName("migratedSchema");
+				v.setSchema(microschemaB);
+			});
+			microschemaDao.mergeIntoPersisted(container);
+			Tx.get().commit();
+			actions().updateSchemaVersion(versionA);
+			actions().updateSchemaVersion(versionB);
 			// link the schemas with the changes in between
 			HibUpdateFieldChange updateFieldChange = (HibUpdateFieldChange) microschemaDao.createPersistedChange(versionA, SchemaChangeOperation.UPDATEFIELD);
 			updateFieldChange.setFieldName(oldFieldName);
@@ -1078,6 +1090,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
 			versionA.setNextVersion(versionB);
+			versionA.setNextChange(updateFieldChange);
 
 			// create micronode based on the old schema
 			String en = english();
@@ -1086,6 +1099,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName()).setName(micronodeFieldName)
 				.setLabel("Micronode List Field"));
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(firstNode.getSchemaContainer().getLatestVersion());
 
 			// Create the new container version with the specified content which will be migrated
 			HibBranch branch = firstNode.getProject().getLatestBranch();
@@ -1093,9 +1107,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			HibNodeFieldContainer newContainer = contentDao.createFieldContainer(firstNode, en, branch, user(),
 				oldContainer,
 				true);
-			firstMicronodeListField = newContainer.createMicronodeFieldList(micronodeFieldName);
-			HibMicronode micronode = firstMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(versionA);
+			firstMicronodeListField = newContainer.createMicronodeList(micronodeFieldName);
+			HibMicronode micronode = firstMicronodeListField.createMicronode(versionA);
 			micronode.createString(oldFieldName).setString("first content");
 
 			secondNode = folder("news");
@@ -1104,13 +1117,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			secondMicronodeListField = contentDao.createFieldContainer(secondNode, en, branch2, user(),
 				oldContainer2,
 				true)
-				.createMicronodeFieldList(micronodeFieldName);
+				.createMicronodeList(micronodeFieldName);
 
-			micronode = secondMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(versionA);
+			micronode = secondMicronodeListField.createMicronode(versionA);
 			micronode.createString(oldFieldName).setString("second content");
-			micronode = secondMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(versionA);
+			micronode = secondMicronodeListField.createMicronode(versionA);
 			micronode.createString(oldFieldName).setString("third content");
 			tx.success();
 		}
@@ -1121,7 +1132,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForJob(jobUuid);
 
 		try (Tx tx = tx()) {
-
 			// assert that migration worked and created a new version
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo(
@@ -1185,27 +1195,28 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
 			container.generateBucketId();
 			container.setCreated(user());
-			versionA = container.getLatestVersion();
-			
-			MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
-			microschemaA.setName("migratedSchema");
-			microschemaA.setVersion("1.0");
-			FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
-			microschemaA.addField(oldField);
-			versionA.setName("migratedSchema");
-			versionA.setSchema(microschemaA);
-			microschemaDao.mergeIntoPersisted(container);
+			versionA = createMicroschemaVersion(tx, container, v -> {
+				container.setLatestVersion(v);
+				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
+				microschemaA.setName("migratedSchema");
+				microschemaA.setVersion("1.0");
+				FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
+				microschemaA.addField(oldField);
+				v.setName("migratedSchema");
+				v.setSchema(microschemaA);
+			});
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = createMicroschemaVersion(tx, container);
-			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
-			microschemaB.setName("migratedSchema");
-			microschemaB.setVersion("2.0");
-			FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);
-			microschemaB.addField(newField);
-			versionB.setName("migratedSchema");
-			versionB.setSchema(microschemaB);
-			// boot().microschemaContainerRoot().addMicroschema(container);
+			versionB = createMicroschemaVersion(tx, container, v -> {
+				MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
+				microschemaB.setName("migratedSchema");
+				microschemaB.setVersion("2.0");
+				FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);
+				microschemaB.addField(newField);
+				v.setName("migratedSchema");
+				v.setSchema(microschemaB);
+			});
+			microschemaDao.mergeIntoPersisted(container);
 
 			// link the schemas with the changes in between
 			HibUpdateFieldChange updateFieldChange = (HibUpdateFieldChange) microschemaDao.createPersistedChange(versionA, SchemaChangeOperation.UPDATEFIELD);
@@ -1214,6 +1225,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
 			versionA.setNextVersion(versionB);
+			versionA.setNextChange(updateFieldChange);
 
 			// create micronode based on the old schema
 			String english = english();
@@ -1222,6 +1234,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName(), "vcard").setName(
 				micronodeFieldName).setLabel("Micronode List Field"));
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(firstNode.getSchemaContainer().getLatestVersion());
+			Tx.get().commit();
 
 			// 1.0
 			HibNodeFieldContainer org = contentDao.getFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(),
@@ -1232,14 +1246,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				true);
 
 			firstMicronodeListField = newContainer
-				.createMicronodeFieldList(micronodeFieldName);
-			HibMicronode micronode = firstMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(versionA);
+				.createMicronodeList(micronodeFieldName);
+			HibMicronode micronode = firstMicronodeListField.createMicronode(versionA);
 			micronode.createString(oldFieldName).setString("first content");
 
 			// add another micronode from another microschema
-			micronode = firstMicronodeListField.createMicronode();
-			micronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+			micronode = firstMicronodeListField.createMicronode(microschemaContainer("vcard").getLatestVersion());
 			micronode.createString("firstName").setString("Max");
 			tx.success();
 		}
@@ -1287,43 +1299,45 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// create version 1 of the schema
 		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
-		HibSchemaVersion versionA = container.getLatestVersion();
+		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
+			SchemaVersionModel schemaA = new SchemaModelImpl();
+			schemaA.setName("migratedSchema");
+			schemaA.setVersion("1.0");
+			FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
+			schemaA.addField(oldField);
+			schemaA.addField(FieldUtil.createStringFieldSchema("name"));
+			schemaA.setDisplayField("name");
+			schemaA.setSegmentField("name");
+			schemaA.setContainer(false);
+			schemaA.validate();
+			v.setName("migratedSchema");
+			v.setSchema(schemaA);
+			container.setLatestVersion(v);
+		});
 		container.generateBucketId();
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
-
-		SchemaVersionModel schemaA = new SchemaModelImpl();
-		schemaA.setName("migratedSchema");
-		schemaA.setVersion("1.0");
-		FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
-		schemaA.addField(oldField);
-		schemaA.addField(FieldUtil.createStringFieldSchema("name"));
-		schemaA.setDisplayField("name");
-		schemaA.setSegmentField("name");
-		schemaA.setContainer(false);
-		schemaA.validate();
-		versionA.setName("migratedSchema");
-		versionA.setSchema(schemaA);
 		
 		// create version 2 of the schema (with the field renamed)
-		HibSchemaVersion versionB = createSchemaVersion(Tx.get(), container);
-		SchemaVersionModel schemaB = new SchemaModelImpl();
-		schemaB.setName("migratedSchema");
-		schemaB.setVersion("2.0");
-		FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);
-		if (setAddRaw) {
-			newField.setElasticsearch(IndexOptionHelper.getRawFieldOption());
-		}
-		schemaB.addField(newField);
-		schemaB.addField(FieldUtil.createStringFieldSchema("name"));
-		schemaB.setDisplayField("name");
-		schemaB.setSegmentField("name");
-		schemaB.setContainer(false);
-		schemaB.validate();
-		versionB.setName("migratedSchema");
-		versionB.setSchema(schemaB);
-		versionB.setSchemaContainer(container);
+		HibSchemaVersion versionB = createSchemaVersion(Tx.get(), container, v -> {
+			SchemaVersionModel schemaB = new SchemaModelImpl();
+			schemaB.setName("migratedSchema");
+			schemaB.setVersion("2.0");
+			FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);
+			if (setAddRaw) {
+				newField.setElasticsearch(IndexOptionHelper.getRawFieldOption());
+			}
+			schemaB.addField(newField);
+			schemaB.addField(FieldUtil.createStringFieldSchema("name"));
+			schemaB.setDisplayField("name");
+			schemaB.setSegmentField("name");
+			schemaB.setContainer(false);
+			schemaB.validate();
+			v.setName("migratedSchema");
+			v.setSchema(schemaB);
+			v.setSchemaContainer(container);
+		});
 
 		// link the schemas with the changes in between
 		HibUpdateFieldChange updateFieldChange = (HibUpdateFieldChange) schemaDao.createPersistedChange(versionA, SchemaChangeOperation.UPDATEFIELD);
@@ -1331,13 +1345,17 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateFieldChange.setRestProperty(SchemaChangeModel.NAME_KEY, newFieldName);
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);
+		versionA.setNextChange(updateFieldChange);
 
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
+		versionB.setPreviousVersion(versionA);
 		schemaDao.mergeIntoPersisted(container);
+		Tx.get().commit();
+		actions().updateSchemaVersion(versionA);
+		actions().updateSchemaVersion(versionB);
 		return container;
-
 	}
 
 	/**

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.page;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -74,8 +75,18 @@ public interface Page<T> extends Iterable<T> {
 	 * 
 	 * @return
 	 */
+	@Override
 	default Iterator<T> iterator() {
 		return (Iterator<T>) getWrappedList().iterator();
+	}
+
+	/**
+	 * Return the results stream.
+	 * 
+	 * @return
+	 */
+	default Stream<? extends T> stream() {
+		return getWrappedList().stream();
 	}
 
 	/**

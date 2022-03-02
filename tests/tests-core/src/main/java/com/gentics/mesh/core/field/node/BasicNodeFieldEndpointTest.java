@@ -6,6 +6,8 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 
@@ -16,7 +18,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -30,13 +31,11 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {
 		try (Tx tx = tx()) {
 			// 1. create required field
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName("htmlField");
 			htmlFieldSchema.setLabel("Some label");
 			htmlFieldSchema.setRequired(true);
-			schema.addField(htmlFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(htmlFieldSchema), Optional.empty());
 
 			// 2. Create new node with required field value
 			HibNode parentNode = folder("2015");

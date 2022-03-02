@@ -1,5 +1,7 @@
 package com.gentics.mesh.test.context;
 
+import java.util.function.Consumer;
+
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -18,8 +20,8 @@ public interface WrapperHelper {
 		return schema;
 	}
 
-	default HibSchemaVersion createSchemaVersion(Tx tx, HibSchema schema) {
-		HibSchemaVersion version = ((CommonTx) tx).schemaDao().createPersistedVersion(schema);
+	default HibSchemaVersion createSchemaVersion(Tx tx, HibSchema schema, Consumer<HibSchemaVersion> inflater) {
+		HibSchemaVersion version = ((CommonTx) tx).schemaDao().createPersistedVersion(schema, inflater);
 		return version;
 	}
 
@@ -29,8 +31,8 @@ public interface WrapperHelper {
 		return schema;
 	}
 
-	default HibMicroschemaVersion createMicroschemaVersion(Tx tx, HibMicroschema schema) {
-		HibMicroschemaVersion version = ((CommonTx) tx).microschemaDao().createPersistedVersion(schema);
+	default HibMicroschemaVersion createMicroschemaVersion(Tx tx, HibMicroschema schema, Consumer<HibMicroschemaVersion> inflater) {
+		HibMicroschemaVersion version = ((CommonTx) tx).microschemaDao().createPersistedVersion(schema, inflater);
 		return version;
 	}
 }

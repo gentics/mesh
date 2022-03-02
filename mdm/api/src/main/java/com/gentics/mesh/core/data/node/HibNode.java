@@ -13,6 +13,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -34,9 +35,14 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 
 public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTracking, 
-		HibBucketableElement, HibTransformableElement<NodeResponse>, Taggable {
+		HibBucketableElement, HibTransformableElement<NodeResponse>, HibProjectElement, Taggable {
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(ElementType.NODE, NODE_CREATED, NODE_UPDATED, NODE_DELETED);
+
+	@Override
+	default boolean hasPublishPermissions() {
+		return true;
+	}
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -94,14 +100,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	 * @return
 	 */
 	HibNode getParentNode(String branchUuid);
-
-	/**
-	 * Set the parent node of this node.
-	 *
-	 * @param branchUuid
-	 * @param parentNode
-	 */
-	void setParentNode(String branchUuid, HibNode parentNode);
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the

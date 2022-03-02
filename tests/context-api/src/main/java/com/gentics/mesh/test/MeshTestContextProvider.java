@@ -1,7 +1,6 @@
 package com.gentics.mesh.test;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.test.MeshOptionsProvider;
 
 /**
  * A runtime provider of context-specific {@link MeshInstanceProvider}. 

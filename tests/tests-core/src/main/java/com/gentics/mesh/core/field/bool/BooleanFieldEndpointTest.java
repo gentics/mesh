@@ -7,6 +7,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -22,7 +24,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -35,13 +36,10 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
 			booleanFieldSchema.setName(FIELD_NAME);
 			booleanFieldSchema.setLabel("Some label");
-			schema.addField(booleanFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
-			tx.success();
+			prepareTypedSchema(schemaContainer("folder"), List.of(booleanFieldSchema), Optional.empty());
 		}
 	}
 

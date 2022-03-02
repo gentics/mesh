@@ -1,11 +1,10 @@
-package com.gentics.mesh.storage;
+package com.gentics.mesh.core.data.storage;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.util.UUIDUtil;
-
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;

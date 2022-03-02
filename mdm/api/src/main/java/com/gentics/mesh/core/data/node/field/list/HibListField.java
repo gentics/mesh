@@ -4,9 +4,11 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicroschemaListableField;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.util.CompareUtils;
 
 /**
  * A listable field is a field which can be nested in lists. Typical listable fields are date, string, number fields.
@@ -69,10 +71,25 @@ public interface HibListField<T extends HibListableField, RM extends Field, U> e
 	 * 
 	 * @return
 	 */
-	long getSize();
+	int getSize();
 
 	/**
 	 * Remove all items from the list.
 	 */
 	void removeAll();
+
+	@SuppressWarnings("unchecked")
+	default boolean listEquals(Object obj) {
+		if (getClass().isInstance(obj)) {
+			List<? extends T> listA = getList();
+			List<? extends T> listB = getClass().cast(obj).getList();
+			return CompareUtils.equals(listA, listB);
+		}
+		return false;
+	}
+
+	@Override
+	default void validate() {
+		getList().stream().forEach(HibField::validate);
+	}
 }

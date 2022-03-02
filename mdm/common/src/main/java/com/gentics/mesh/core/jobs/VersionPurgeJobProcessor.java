@@ -9,6 +9,8 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.HibVersionPurgeJob;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -28,11 +30,13 @@ import io.vertx.core.logging.LoggerFactory;
 public class VersionPurgeJobProcessor implements SingleJobProcessor {
 
 	public static final Logger log = LoggerFactory.getLogger(VersionPurgeJobProcessor.class);
-	private Database db;
+	private final Database db;
+	private final PersistingJobDao jobDao;
 
 	@Inject
-	public VersionPurgeJobProcessor(Database db) {
+	public VersionPurgeJobProcessor(Database db, JobDao jobDao) {
 		this.db = db;
+		this.jobDao = (PersistingJobDao) jobDao;
 	}
 
 	@Override
@@ -48,6 +52,7 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 					db.tx(() -> {
 						purgeJob.setStopTimestamp();
 						purgeJob.setStatus(COMPLETED);
+						jobDao.mergeIntoPersisted(purgeJob);
 					});
 					db.tx(tx -> {
 						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} completed.");
@@ -59,6 +64,7 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 						purgeJob.setStopTimestamp();
 						purgeJob.setStatus(FAILED);
 						purgeJob.setError(error);
+						jobDao.mergeIntoPersisted(purgeJob);
 					});
 					db.tx(tx -> {
 						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} failed.", error);

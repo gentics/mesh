@@ -53,12 +53,12 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 			status = job.getStatus();
 		}
 		if (versionEdge != null) {
+			versionEdge = CommonTx.get().load(versionEdge.getId(), versionEdge.getClass());
 			versionEdge.setMigrationStatus(status);
 		}
 		job.setCompletionCount(completionCount);
 		job.setStatus(status);
 
-		CommonTx.get().jobDao().mergeIntoPersisted(job);
 		Database db = CommonTx.get().data().mesh().database();
 		db.tx().commit();
 		return this;

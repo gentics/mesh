@@ -11,9 +11,9 @@ import java.util.stream.Stream;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -24,8 +24,8 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -64,10 +64,11 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	public Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
+		ContentDao contentDao = Tx.get().contentDao();
 		return new TraversalResult<>(getMicronodeStream()
 			.flatMap(micronode -> micronode.getContainers().stream())
 			.filter(uniqueBy(ElementFrame::getId))
-			.filter(container -> container.isDraft(branchUuid)));
+			.filter(container -> contentDao.isDraft(container, branchUuid)));
 	}
 
 	@Override

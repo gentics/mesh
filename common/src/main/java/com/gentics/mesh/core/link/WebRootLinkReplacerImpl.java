@@ -32,7 +32,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -179,7 +179,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 					//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
 					if (Objects.isNull(linkResolver) || linkResolver.equals("s3")) {
 						String fieldName = s3binaryFieldSchema.getName();
-						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName).getS3Binary());
+						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName).getBinary());
 					} else {
 						return Optional.empty();
 					}

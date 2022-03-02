@@ -227,7 +227,7 @@ public final class FieldUtil {
 	}
 
 	@SafeVarargs
-	public static MicronodeField createNewMicronodeField(String microschema, Tuple<String, Field>... fields) {
+	public static MicronodeResponse createNewMicronodeField(String microschema, Tuple<String, Field>... fields) {
 		MicronodeResponse field = new MicronodeResponse();
 		MicroschemaReferenceImpl microschemaReference = new MicroschemaReferenceImpl();
 		microschemaReference.setName(microschema);
@@ -242,7 +242,7 @@ public final class FieldUtil {
 
 	@SafeVarargs
 	public static MicronodeField createMicronodeField(String microschema, Tuple<String, Field>... fields) {
-		MicronodeResponse field = (MicronodeResponse) createNewMicronodeField(microschema, fields);
+		MicronodeResponse field = createNewMicronodeField(microschema, fields);
 		return field;
 	}
 

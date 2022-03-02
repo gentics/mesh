@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -59,9 +60,10 @@ public interface PersistingContainerDao<
 	 * 
 	 * @return
 	 */
-	default SCV createPersistedVersion(SC container) {
+	default SCV createPersistedVersion(SC container, Consumer<SCV> inflater) {
 		SCV version = (SCV) CommonTx.get().create(getVersionPersistenceClass());
 		version.setSchemaContainer(container);
+		inflater.accept(version);
 		return version;
 	}
 
@@ -107,18 +109,19 @@ public interface PersistingContainerDao<
 		resultingSchema.setVersion(String.valueOf(Double.valueOf(resultingSchema.getVersion()) + 1));
 
 		// Create and set the next version of the schema
-		SCV nextVersion = CommonTx.get().create(version.getContainerVersionClass());
-		nextVersion.setSchema(resultingSchema);
-
-		// Check for conflicting container names
-		String newName = resultingSchema.getName();
-		SC foundContainer = findByName(resultingSchema.getName());
-		if (foundContainer != null && !foundContainer.getUuid().equals(version.getSchemaContainer().getUuid())) {
-			throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
-		}
-
-		nextVersion.setSchemaContainer(version.getSchemaContainer());
-		nextVersion.setName(resultingSchema.getName());
+		SCV nextVersion = createPersistedVersion(version.getSchemaContainer(), v -> {
+			v.setSchema(resultingSchema);
+			
+			// Check for conflicting container names
+			String newName = resultingSchema.getName();
+			SC foundContainer = findByName(resultingSchema.getName());
+			if (foundContainer != null && !foundContainer.getUuid().equals(version.getSchemaContainer().getUuid())) {
+				throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
+			}
+			v.setSchemaContainer(version.getSchemaContainer());
+			v.setName(resultingSchema.getName());
+		});
+		
 		version.getSchemaContainer().setName(resultingSchema.getName());
 		version.setNextVersion(nextVersion);
 		nextVersion.setPreviousVersion(version);
@@ -150,7 +153,7 @@ public interface PersistingContainerDao<
 		if (next != null) {
 			deleteChange(next, bc);
 		}
-		CommonTx.get().delete(change, change.getClass());
+		CommonTx.get().delete(change);
 	}
 
 	@Override
@@ -181,7 +184,7 @@ public interface PersistingContainerDao<
 		}
 		beforeVersionDeletedFromDatabase(version);
 		// Delete version
-		ctx.delete(version, version.getClass());
+		ctx.delete(version);
 	}
 
 	/**

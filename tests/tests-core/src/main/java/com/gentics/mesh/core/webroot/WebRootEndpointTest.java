@@ -6,10 +6,10 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.parameter.LinkType.MEDIUM;
 import static com.gentics.mesh.parameter.LinkType.SHORT;
+import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -37,13 +37,11 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -68,6 +66,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.URIUtils;
 
 @MeshTestSetting(awsContainer = MINIO, testSize = FULL, startServer = true)
@@ -182,10 +181,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// Modify the cache entry by adding another bogus segment. The validation should
 		// pick up the inconsistency and invalidate the whole path entry
 		tx(tx -> {
-			CommonTx ctx = tx.unwrap();
-			PersistingContentDao contentDao = ctx.contentDao();
-			HibNodeFieldContainer bogusContainer = contentDao.createContainer();
-			HibStringField bogusField = contentDao.createString(bogusContainer, "name");
+			HibNodeFieldContainer bogusContainer = CoreTestUtils.createContainer();
+			HibStringField bogusField = bogusContainer.createString("name");
 			Path entry = mesh().pathCache().getPath(project(), initialBranch(), ContainerType.DRAFT, path);
 			entry.addSegment(new PathSegmentImpl(bogusContainer, bogusField, "en", "bogus"));
 			tx.rollback();

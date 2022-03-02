@@ -37,7 +37,7 @@ public interface BinaryDao extends Dao<HibBinary> {
 	 *
 	 * @return
 	 */
-	Result<HibBinaryField> findFields(HibBinary binary);
+	Result<? extends HibBinaryField> findFields(HibBinary binary);
 
 	/**
 	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)

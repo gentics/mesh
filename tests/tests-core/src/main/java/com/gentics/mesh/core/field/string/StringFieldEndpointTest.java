@@ -10,6 +10,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -179,13 +180,15 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			prepareTypedSchema(node, FieldUtil.createStringFieldSchema(FIELD_NAME), false);
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibStringField stringField = container.createString(FIELD_NAME);
 			stringField.setString("someString");
 			tx.success();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-
 		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
 			StringFieldImpl deserializedStringField = response.getFields().getStringField(FIELD_NAME);

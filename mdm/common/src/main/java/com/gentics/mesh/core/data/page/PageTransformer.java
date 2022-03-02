@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.data.page;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -36,16 +37,24 @@ public class PageTransformer {
 	 * @return
 	 */
 	public ListResponse<RestModel> transformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac, int level) {
-		List<RestModel> responses = new ArrayList<>();
-		for (HibCoreElement<? extends RestModel> element : page) {
-			RestModel restModel = daos.get(element.getTypeInfo().getType())
-				.transformToRestSync(element, ac, level);
-			responses.add(restModel);
-		}
+		List<RestModel> responses = transformToRestSync(page.stream(), ac, level).collect(Collectors.toList());
 		ListResponse<RestModel> listResponse = new ListResponse<>();
 		page.setPaging(listResponse);
 		listResponse.getData().addAll(responses);
 		return listResponse;
+	}
+
+	/**
+	 * Transform the elements to a REST representation.
+	 * 
+	 * @param stream elements
+	 * @param ac
+	 * @param level Level of depth to be used for nested element transformation
+	 * @return
+	 */
+	public Stream<RestModel> transformToRestSync(Stream<? extends HibCoreElement<? extends RestModel>> stream, InternalActionContext ac, int level) {
+		return stream.map(element -> daos.get(element.getTypeInfo().getType())
+				.transformToRestSync(element, ac, level));
 	}
 
 	/**

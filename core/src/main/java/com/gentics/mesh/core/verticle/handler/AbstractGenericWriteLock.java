@@ -8,12 +8,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
@@ -23,22 +20,23 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 
 /**
- * @see WriteLock
+ * Generic application-based implementation of the WriteLock.
+ * 
+ * @author plyhun
+ *
  */
-@Singleton
-public class WriteLockImpl implements WriteLock {
+public abstract class AbstractGenericWriteLock implements WriteLock {
 
-	private ILock clusterLock;
-	private final Semaphore localLock = new Semaphore(1);
-	private final OrientDBMeshOptions options;
-	private final Lazy<HazelcastInstance> hazelcast;
-	private final boolean isClustered;
-	private final Timer writeLockTimer;
-	private final Counter timeoutCount;
-	private final ClusterManager clusterManager;
+	protected ILock clusterLock;
+	protected final Semaphore localLock = new Semaphore(1);
+	protected final MeshOptions options;
+	protected final Lazy<HazelcastInstance> hazelcast;
+	protected final boolean isClustered;
+	protected final Timer writeLockTimer;
+	protected final Counter timeoutCount;
+	protected final ClusterManager clusterManager;
 
-	@Inject
-	public WriteLockImpl(OrientDBMeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService, ClusterManager clusterManager) {
+	public AbstractGenericWriteLock(MeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService, ClusterManager clusterManager) {
 		this.options = options;
 		this.hazelcast = hazelcast;
 		this.isClustered = options.getClusterOptions().isEnabled();
@@ -46,6 +44,22 @@ public class WriteLockImpl implements WriteLock {
 		this.timeoutCount = metricsService.counter(WRITE_LOCK_TIMEOUT_COUNT);
 		this.clusterManager = clusterManager;
 	}
+
+	/**
+	 * Are the writes to DB synchronozed?
+	 * 
+	 * @return
+	 */
+	protected boolean isSyncWrites() {
+		return true;
+	}
+
+	/**
+	 * Get the transaction timeout
+	 * 
+	 * @return
+	 */
+	abstract protected long getSyncWritesTimeoutMillis();
 
 	@Override
 	public void close() {
@@ -72,10 +86,9 @@ public class WriteLockImpl implements WriteLock {
 				throw error(SERVICE_UNAVAILABLE, "error_cluster_topology_readonly").setLogStackTrace(false);
 			}
 
-			boolean syncWrites = options.getStorageOptions().isSynchronizeWrites();
-			if (syncWrites) {
+			if (isSyncWrites()) {
 				Timer.Sample timer = Timer.start();
-				long timeout = options.getStorageOptions().getSynchronizeWritesTimeout();
+				long timeout = getSyncWritesTimeoutMillis();
 				if (isClustered) {
 					try {
 						if (clusterLock == null) {
@@ -113,5 +126,4 @@ public class WriteLockImpl implements WriteLock {
 			return this;
 		}
 	}
-
 }

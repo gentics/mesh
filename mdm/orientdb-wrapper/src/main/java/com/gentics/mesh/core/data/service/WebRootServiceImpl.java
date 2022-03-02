@@ -29,7 +29,7 @@ public class WebRootServiceImpl extends AbstractWebRootService {
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(HibClassConverter.toGraph(database), path, branchUuid, type);
 		GraphFieldContainerEdge edge = HibClassConverter.toGraph(database).findEdge(WEBROOT_URLFIELD_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class);
 		if (edge != null) {
-			return edge.getNodeContainer();
+			return (NodeGraphFieldContainer) edge.getNodeContainer();
 		} else {
 			return null;
 		}

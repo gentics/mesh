@@ -13,15 +13,12 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.HibCoreElement;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -31,10 +28,8 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
@@ -167,36 +162,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {
-		// TODO check whether the mesh node is in fact a folder node.
-		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
-		if (uuid != null) {
-			node.setUuid(uuid);
-		}
-		node.setSchemaContainer(version.getSchemaContainer());
-
-		// TODO is this a duplicate? - Maybe we should only store the project assignment
-		// in one way?
-		node.setProject(project);
-		node.setCreator(creator);
-		node.setCreationTimestamp();
-		node.generateBucketId();
-
-		return node;
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		getElement().remove();
-	}
-
-	@Override
-	@Deprecated
-	/**
-	 * use {@link NodeDao#create(HibCoreElement, InternalActionContext, EventQueueBatch, String)} )}
-	 */
-	public Node create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return (Node) Tx.get().nodeDao().create(getProject(), ac, batch, uuid);
 	}
 
 	@Override

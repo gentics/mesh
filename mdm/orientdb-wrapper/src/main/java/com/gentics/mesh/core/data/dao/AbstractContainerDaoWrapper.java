@@ -58,7 +58,7 @@ public abstract class AbstractContainerDaoWrapper<
 	}
 
 	@Override
-	public void deleteChange(HibSchemaChange<?> change, BulkActionContext bac) {
+	public void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bac) {
 		toGraph(change).delete(bac);
 	}
 
@@ -94,13 +94,6 @@ public abstract class AbstractContainerDaoWrapper<
 	@Override
 	public Result<? extends HibBranch> getBranches(SCV version) {
 		return toGraph(version).getBranches();
-	}
-
-	@Override
-	public SC createPersisted(String uuid) {
-		SC vertex = super.createPersisted(uuid);
-		vertex.setLatestVersion(createPersistedVersion(vertex));
-		return vertex;
 	}
 
 	protected abstract RootVertex<D> getRoot();

@@ -1,22 +1,20 @@
 package com.gentics.mesh.core.data.node;
 
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -24,8 +22,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.path.Path;
-import com.syncleus.ferma.EdgeFrame;
 
 /**
  * The Node Domain Model interface.
@@ -38,10 +34,14 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 
 	String BRANCH_UUID_KEY = "branchUuid";
 
-	@Override
-	default boolean hasPublishPermissions() {
-		return true;
-	}
+	/**
+	 * Get all graph field edges.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainerEdge> getFieldContainerEdges(String branchUuid, ContainerType type);
 
 	Result<HibNode> getChildren();
 
@@ -69,7 +69,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 *            edge type
 	 * @return existing edge or null
 	 */
-	EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
+	GraphFieldContainerEdge getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -81,8 +81,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 */
 	Page<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch);
 
-	void assertPublishConsistency(InternalActionContext ac, HibBranch branch);
-
 	/**
 	 * Tests if the node is tagged with the given tag.
 	 *
@@ -93,27 +91,24 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	boolean hasTag(HibTag tag, HibBranch branch);
 
 	/**
+	 * Get edges for the given webroot segment info, branch uuid and container type
+	 * @param segmentInfo
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type);
+
+	/**
 	 * Remove the element.
 	 */
 	void removeElement();
 
 	/**
-	 * Create a child node in this node in the latest branch of the project.
-	 *
-	 * @param creator
-	 * @param schemaVersion
-	 * @param project
-	 * @return
+	 * Unparent a node from the given branch.
+	 * 
+	 * @param branchUuid
 	 */
-	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project);
-
-	/**
-	 * Adds reference update events to the context for all draft and published contents that reference this node.
-	 *
-	 * @param bac
-	 */
-	void addReferenceUpdates(BulkActionContext bac);
-
 	void removeParent(String branchUuid);
 
 	/**
@@ -131,86 +126,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 */
 	Page<HibNode> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingParameter);
-
-	/**
-	 * Create a child node in this node in the given branch
-	 *
-	 * @param creator
-	 * @param schemaVersion
-	 * @param project
-	 * @param branch
-	 * @param uuid
-	 * @return
-	 */
-	HibNode create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
-
-
-	/**
-	 * Remove published edges for each container found
-	 *
-	 * @param branchUuid
-	 * @param bac
-	 */
-	void removePublishedEdges(String branchUuid, BulkActionContext bac);
-
-	/**
-	 * Resolve the given path and return the path object that contains the resolved nodes.
-	 *
-	 * @param branchUuid
-	 * @param type
-	 *            edge type
-	 * @param nodePath
-	 * @param pathStack
-	 * @return
-	 */
-	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
-
-	/**
-	 * Return the path segment value of this node preferable in the given language.
-	 *
-	 * If more than one language is given, the path will lead to the first available language
-	 * of the node.
-	 *
-	 * When no language matches and <code>anyLanguage</code> is <code>true</code> the results language
-	 * is nondeterministic.
-	 *
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param anyLanguage
-	 *            whether to return the path segment value of this node in any language, when none in <code>langaugeTag</code> match
-	 * @param languageTag
-	 *
-	 * @return
-	 */
-	String getPathSegment(String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag);
-
-	/**
-	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
-	 * of the node.
-	 *
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param languageTag
-	 *
-	 * @return
-	 */
-	default String getPathSegment(String branchUuid, ContainerType type, String... languageTag) {
-		return getPathSegment(branchUuid, type, false, languageTag);
-	}
-
-	/**
-	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
-	 *
-	 * @param branchUuid
-	 *            branch uuid
-	 * @return true if the node is visible in the branch
-	 */
-	boolean isVisibleInBranch(String branchUuid);
-
+	
 	/**
 	 * Return the draft field container for the given language in the latest branch.
 	 *
@@ -218,22 +134,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return
 	 */
 	HibNodeFieldContainer getLatestDraftFieldContainer(String languageTag);
-
-	/**
-	 * Like {@link #createFieldContainer(String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not null).
-	 *
-	 * @param languageTag
-	 * @param branch
-	 * @param editor
-	 *            User which will be set as editor
-	 * @param original
-	 *            Container to be used as a source for the new container
-	 * @param handleDraftEdge
-	 *            Whether to move the existing draft edge or create a new draft edge to the new container
-	 * @return Created container
-	 */
-	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
-		boolean handleDraftEdge);
 
 	/**
 	 * Return containers of the given type
@@ -282,20 +182,6 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	HibNodeFieldContainer getFieldContainer(String languageTag, String branchUuid, ContainerType type);
 
 	/**
-	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will be
-	 * the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
-	 * container will be a clone of the last draft and will have the next version number.
-	 *
-	 * @param languageTag
-	 * @param branch
-	 *            branch
-	 * @param user
-	 *            user
-	 * @return
-	 */
-	HibNodeFieldContainer createFieldContainer(String languageTag, HibBranch branch, HibUser user);
-
-	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
 	 *
 	 * @return
@@ -303,51 +189,10 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	long getFieldContainerCount();
 
 	/**
-	 * Iterate the version chain from the back in order to find the given version.
+	 * Set the parent node of this node.
 	 *
-	 * @param languageTag
 	 * @param branchUuid
-	 * @param version
-	 * @return Found version or null when no version could be found.
+	 * @param parentNode
 	 */
-	default HibNodeFieldContainer findVersion(String languageTag, String branchUuid, String version) {
-		return findVersion(Arrays.asList(languageTag), branchUuid, version);
-	}
-
-	/**
-	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
-	 * is no de version the en version will be selected and returned.
-	 *
-	 * @param languageTags
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param version
-	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
-	 * @return Next matching field container or null when no language matches
-	 */
-	HibNodeFieldContainer findVersion(List<String> languageTags, String branchUuid, String version);
-
-	/**
-	 * Remove all edges to field container with type {@link ContainerType#INITIAL} for the specified branch uuid
-	 * @param initial
-	 * @param branchUUID
-	 */
-	void removeInitialFieldContainerEdge(HibNodeFieldContainer initial, String branchUUID);
-
-	/**
-	 * Remove the published edge for the given language tag and branch UUID
-	 *
-	 * @param languageTag
-	 * @param branchUuid
-	 */
-    void removePublishedEdge(String languageTag, String branchUuid);
-
-    /**
-	 * Set the graph field container to be the (only) published for the given branch.
-	 *
-	 * @param ac
-	 * @param container
-	 * @param branchUuid
-	 */
-	void setPublished(InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
+	void setParentNode(String branchUuid, HibNode parentNode);
 }

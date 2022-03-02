@@ -487,7 +487,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (container == null) {
 						return null;
 					}
-					return container.isPublished(tx.getBranch(gc).getUuid());
+					return tx.contentDao().isPublished(container, tx.getBranch(gc).getUuid());
 				}).build(),
 
 			// .isDraft
@@ -500,7 +500,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (container == null) {
 						return null;
 					}
-					return container.isDraft(tx.getBranch(gc).getUuid());
+					return tx.contentDao().isDraft(container, tx.getBranch(gc).getUuid());
 				}).build(),
 
 			// .version
@@ -531,7 +531,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return contentDao.getFieldContainers(node, tx.getBranch(gc), DRAFT).stream().filter(c -> {
 						String lang = c.getLanguageTag();
 						return lang.equals(languageTag);
-					}).findFirst().map(HibNodeFieldContainer::versions).orElse(null);
+					}).findFirst().map(contentDao::versions).orElse(null);
 				}).build(),
 
 			// .language
@@ -595,7 +595,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				String branchUuid = tx.getBranch(gc).getUuid();
 				HibNodeFieldContainer version = env.getSource();
-				return version.isDraft(branchUuid);
+				return tx.contentDao().isDraft(version, branchUuid);
 			}));
 
 		// .published
@@ -605,7 +605,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				String branchUuid = tx.getBranch(gc).getUuid();
 				HibNodeFieldContainer version = env.getSource();
-				return version.isPublished(branchUuid);
+				return tx.contentDao().isPublished(version, branchUuid);
 			}));
 
 		// .branchRoot
@@ -613,7 +613,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			.description("Flag that indicates whether the version is used as a branch root version for a branch.").type(GraphQLBoolean)
 			.dataFetcher((env) -> {
 				HibNodeFieldContainer version = env.getSource();
-				return version.isInitial();
+				return Tx.get().contentDao().isInitial(version);
 			}));
 
 		// .created

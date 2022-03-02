@@ -135,7 +135,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			boolean isDuplicate = !seenVersions.add(currentVersion);
 			if (isDuplicate) {
 				currentVersion = generateUniqueVersion(seenVersions, currentVersion);
-				currentContainer.setVersion(currentVersion);
+				contentDao.setVersion(currentContainer, currentVersion);
 				seenVersions.add(currentVersion);
 				mutated = true;
 			}
@@ -202,7 +202,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		newEdge.setBranchUuid(branchUuid);
 		newEdge.setLanguageTag(languageTag);
 		newEdge.setType(type);
-		to.updateWebrootPathInfo(context, branchUuid, "node_conflicting_segmentfield_update");
+		Tx.get().contentDao().updateWebrootPathInfo(to, context, branchUuid, "node_conflicting_segmentfield_update");
 		return newEdge;
 	}
 

@@ -3,11 +3,7 @@ package com.gentics.mesh.core.data.binary;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.result.Result;
-
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 
 /**
  * Vertex which contains the actual information about the binary content that is referenced by an {@link BinaryGraphField}.
@@ -23,25 +19,11 @@ public interface Binary extends MeshVertex, HibBinary {
 	String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
 	/**
-	 * Return the binary data stream.
-	 * 
-	 * @return
-	 */
-	Flowable<Buffer> getStream();
-
-	/**
-	 * Return the data as base 64 encoded string in the same thread, blocking.
-	 *
-	 * @return
-	 */
-	String getBase64ContentSync();
-
-	/**
 	 * Find all binary fields which make use of this binary.
 	 * 
 	 * @return
 	 */
-	Result<HibBinaryField> findFields();
+	Result<? extends HibBinaryField> findFields();
 
 	/**
 	 * Return the sha512 checksum.
@@ -122,21 +104,6 @@ public interface Binary extends MeshVertex, HibBinary {
 	default HibBinary setImageWidth(Integer width) {
 		property(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
 		return this;
-	}
-
-	/**
-	 * Return the image size.
-	 * 
-	 * @return
-	 */
-	default Point getImageSize() {
-		Integer x = getImageHeight();
-		Integer y = getImageWidth();
-		if (x == null || y == null) {
-			return null;
-		} else {
-			return new Point(x, y);
-		}
 	}
 
 }

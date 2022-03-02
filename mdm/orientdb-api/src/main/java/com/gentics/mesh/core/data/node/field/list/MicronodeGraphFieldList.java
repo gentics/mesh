@@ -9,6 +9,4 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
  */
 public interface MicronodeGraphFieldList extends ListGraphField<HibMicronodeField, MicronodeFieldList, HibMicronode>, HibMicronodeFieldList {
 
-	String TYPE = "micronode";
-
 }

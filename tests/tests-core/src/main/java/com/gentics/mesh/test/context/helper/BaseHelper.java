@@ -4,7 +4,10 @@ import java.util.function.Consumer;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -23,8 +26,7 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.storage.LocalBinaryStorage;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.test.MeshTestActions;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.MeshTestContext;
 
@@ -33,6 +35,10 @@ import io.vertx.core.Vertx;
 public interface BaseHelper {
 
 	MeshTestContext getTestContext();
+
+	default MeshTestActions actions() {
+		return getTestContext().actions();
+	}
 
 	default MeshComponent mesh() {
 		return getTestContext().getMeshComponent();
@@ -163,11 +169,30 @@ public interface BaseHelper {
 		return getTestContext().getTrackingSearchProvider();
 	}
 
+	/**
+	 * Modify the user making sure that the modification is done inside a transaction.
+	 * Since this method is not always called from a transaction scope, sometimes we need create one ourselves.
+	 * If there is an already existing transaction, we modify the user in the current transaction and commit the transaction
+	 * to make sure that the changes will be visible in different transactions.
+	 * @param modifier
+	 */
 	private void modifyUser(Consumer<HibUser> modifier) {
-		tx(() -> {
+		Runnable modifyAction = () -> {
 			HibUser user = CommonTx.get().userDao().findByUuid(user().getUuid());
 			modifier.accept(user);
 			CommonTx.get().userDao().mergeIntoPersisted(user);
-		});
+		};
+
+		CommonTx tx = CommonTx.get();
+		if (tx != null) {
+			modifyAction.run();
+			tx.commit();
+		} else {
+			tx(modifyAction::run);
+		}
+	}
+
+	default HibBranch reloadBranch(HibBranch branch) {
+		return Tx.get().branchDao().findByUuid(branch.getProject(), branch.getUuid());
 	}
 }

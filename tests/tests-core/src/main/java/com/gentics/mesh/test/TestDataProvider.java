@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -158,9 +159,7 @@ public class TestDataProvider {
 			roles.clear();
 			groups.clear();
 
-			if (db.requiresTypeInit()) {
-				boot.initDatabaseTypes();
-			}
+			boot.initDatabaseTypes();
 
 			addBootstrappedData(tx);
 			addSchemaContainers();
@@ -260,8 +259,6 @@ public class TestDataProvider {
 	private void addContents() {
 		TagDao tagDao = Tx.get().tagDao();
 
-		HibSchema contentSchema = schemaContainers.get("content");
-
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
 
@@ -295,7 +292,6 @@ public class TestDataProvider {
 
 	private void addFolderStructure() {
 		TagDao tagDao = Tx.get().tagDao();
-		NodeDao nodeDao = Tx.get().nodeDao();
 
 		HibNode baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
@@ -394,10 +390,11 @@ public class TestDataProvider {
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
+		Tx.get().commit();
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
 			getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();
-		schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch);
+		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
 		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
 		schemaDao.assign(getSchemaContainer("binary_content"), project, jobUser, batch);
 		projectUuid = project.getUuid();
@@ -447,6 +444,7 @@ public class TestDataProvider {
 
 	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
+		Tx.get().commit();
 	}
 
 	private void addBootstrapSchemas() {
@@ -463,7 +461,6 @@ public class TestDataProvider {
 		// binary_content
 		HibSchema binaryContentSchemaContainer = schemaDao.findByName("binary_content");
 		schemaContainers.put("binary_content", binaryContentSchemaContainer);
-
 	}
 
 	/**
@@ -570,20 +567,17 @@ public class TestDataProvider {
 		if (germanName != null) {
 			HibNodeFieldContainer germanContainer = contentDao.createFieldContainer(folderNode, german,
 				branch, userInfo.getUser());
-			// germanContainer.createString("displayName").setString(germanName);
-			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
-			germanContainer.updateDisplayFieldValue();
+			contentDao.updateDisplayFieldValue(germanContainer);
 			contentCount++;
 			contentDao.publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
 			HibNodeFieldContainer englishContainer = contentDao.createFieldContainer(folderNode, english,
 				branch, userInfo.getUser());
-			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
-			englishContainer.updateDisplayFieldValue();
+			contentDao.updateDisplayFieldValue(englishContainer);
 			contentCount++;
 			contentDao.publish(folderNode, ac, getEnglish(), branch, getUserInfo().getUser());
 		}
@@ -636,10 +630,9 @@ public class TestDataProvider {
 				branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
-			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
-			englishContainer.updateDisplayFieldValue();
+			contentDao.updateDisplayFieldValue(englishContainer);
 			contentCount++;
 			contentDao.publish(node, ac, getEnglish(), branch, getUserInfo().getUser());
 		}
@@ -649,10 +642,9 @@ public class TestDataProvider {
 				userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
-			germanContainer.createString("displayName").setString(name + " german");
 			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
-			germanContainer.updateDisplayFieldValue();
+			contentDao.updateDisplayFieldValue(germanContainer);
 			contentCount++;
 			contentDao.publish(node, ac, getGerman(), branch, getUserInfo().getUser());
 		}
@@ -687,6 +679,9 @@ public class TestDataProvider {
 	}
 
 	public HibProject getProject() {
+		Tx.maybeGet().ifPresent(tx -> {
+			project = tx.<CommonTx>unwrap().load(project.getId(), tx.<CommonTx>unwrap().projectDao().getPersistenceClass());
+		});
 		return project;
 	}
 
@@ -696,26 +691,51 @@ public class TestDataProvider {
 
 	@Getter
 	public HibNode getFolder(String name) {
+		Tx.maybeGet().ifPresent(tx -> {
+			HibNode folder = folders.get(name);
+			folder = tx.<CommonTx>unwrap().load(folder.getId(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(folder.getProject()));
+			folders.put(name, folder);
+		});
 		return folders.get(name);
 	}
 
 	@Getter
 	public HibTagFamily getTagFamily(String key) {
+		Tx.maybeGet().ifPresent(tx -> {
+			HibTagFamily tf = tagFamilies.get(key);
+			tf = tx.<CommonTx>unwrap().load(tf.getId(), tx.<CommonTx>unwrap().tagFamilyDao().getPersistenceClass(tf.getProject()));
+			tagFamilies.put(key, tf);
+		});
 		return tagFamilies.get(key);
 	}
 
 	@Getter
 	public HibNode getContent(String name) {
+		Tx.maybeGet().ifPresent(tx -> {
+			HibNode content = contents.get(name);
+			content = tx.<CommonTx>unwrap().load(content.getId(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(content.getProject()));
+			contents.put(name, content);
+		});
 		return contents.get(name);
 	}
 
 	@Getter
 	public HibTag getTag(String name) {
+		Tx.maybeGet().ifPresent(tx -> {
+			HibTag tag = tags.get(name);
+			tag = tx.<CommonTx>unwrap().load(tag.getId(), tx.<CommonTx>unwrap().tagDao().getPersistenceClass());
+			tags.put(name, tag);
+		});
 		return tags.get(name);
 	}
 
 	@Getter
 	public HibSchema getSchemaContainer(String name) {
+		Tx.maybeGet().ifPresent(tx -> {
+			HibSchema schema = schemaContainers.get(name);
+			schema = tx.<CommonTx>unwrap().load(schema.getId(), tx.<CommonTx>unwrap().schemaDao().getPersistenceClass());
+			schemaContainers.put(name, schema);
+		});
 		return schemaContainers.get(name);
 	}
 

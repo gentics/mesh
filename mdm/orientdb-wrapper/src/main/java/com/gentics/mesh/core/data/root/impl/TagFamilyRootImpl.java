@@ -14,11 +14,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.user.HibUser;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -57,34 +57,6 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public TagFamily create(String name, HibUser creator, String uuid) {
-		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
-		if (uuid != null) {
-			tagFamily.setUuid(uuid);
-		}
-		tagFamily.setName(name);
-		addTagFamily(tagFamily);
-		tagFamily.setCreated(creator);
-
-		// Add tag family to project
-		tagFamily.setProject(getProject());
-
-		// Add created tag family to tag family root
-		TagFamilyRoot root = mesh().boot().meshRoot().getTagFamilyRoot();
-		if (root != null && !root.equals(this)) {
-			root.addTagFamily(tagFamily);
-		}
-		tagFamily.generateBucketId();
-
-		return tagFamily;
-	}
-
-	@Override
-	public void removeTagFamily(TagFamily tagFamily) {
-		removeItem(tagFamily);
-	}
-
-	@Override
 	public void addTagFamily(TagFamily tagFamily) {
 		addItem(tagFamily);
 	}
@@ -109,7 +81,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public HibBaseElement resolveToElement(Stack<String> stack) {
+	public HibBaseElement resolveToElement(HibBaseElement permissionRoot, HibBaseElement root, Stack<String> stack) {
 		if (stack.isEmpty()) {
 			return this;
 		} else {
@@ -119,8 +91,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 				return tagFamily;
 			} else {
 				String nestedRootNode = stack.pop();
-				if ("tags".contentEquals(nestedRootNode)) {
-					return tagFamily.resolveToElement(stack);
+				if (PermissionRoots.TAGS.contentEquals(nestedRootNode)) {
+					return tagFamily.resolveToElement(permissionRoot, tagFamily, stack);
 				} else {
 					// TODO i18n
 					throw error(NOT_FOUND, "Unknown tagFamily element {" + nestedRootNode + "}");

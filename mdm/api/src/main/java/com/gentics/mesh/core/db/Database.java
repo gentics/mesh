@@ -13,6 +13,8 @@ import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -71,15 +73,6 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	boolean isEmptyDatabase();
-
-	/**
-	 * Returns true if the database requires type and index initialization using {@link #type()} and {@link #index()}.
-	 * 
-	 * @return
-	 * @deprecated The logic creating these types should be in {@link #init(String, String...)} or there should be a createTypes() method.
-	 */
-	@Deprecated
-	boolean requiresTypeInit();
 
 	/**
 	 * Initialise the database and store the settings.
@@ -218,7 +211,17 @@ public interface Database extends TxFactory {
 	 * 
 	 * @return
 	 */
-	String getDatabaseRevision();
+	default String getDatabaseRevision() {
+		String overrideRev = System.getProperty("mesh.internal.dbrev");
+		if (overrideRev != null) {
+			return overrideRev;
+		}
+		StringBuilder builder = new StringBuilder();
+		for (String changeUuid : getChangeUuidList()) {
+			builder.append(changeUuid);
+		}
+		return ETag.hash(builder.toString() + getVersion());
+	}
 
 	/**
 	 * Return the vertex count for the given class.
@@ -383,6 +386,22 @@ public interface Database extends TxFactory {
 
 	default <T> Single<T> singleTxWriteLock(Function<Tx, T> handler) {
 		return maybeTx(handler, true).toSingle();
+	}
+
+	/**
+	 * Executes an event action in a transaction within the worker thread pool.
+	 * @param action
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Single<T> singleTxWriteLock(TxEventAction<T> action) {
+		AtomicReference<EventQueueBatch> lazyBatch = new AtomicReference<>();
+		Function<Tx, T> handler = tx -> {
+			EventQueueBatch batch = tx.createBatch();
+			lazyBatch.set(batch);
+			return action.handle(batch, tx);
+		};
+		return maybeTx(handler, true).toSingle().doOnSuccess((ignored)-> lazyBatch.get().dispatch());
 	}
 
 	/**

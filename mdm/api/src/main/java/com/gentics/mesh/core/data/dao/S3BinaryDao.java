@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.util.UUIDUtil;
@@ -16,7 +17,9 @@ public interface S3BinaryDao extends Dao<S3HibBinary>{
      * @param s3ObjectKey
      * @return
      */
-    Transactional<? extends S3HibBinary> findByS3ObjectKey(String s3ObjectKey);
+    default Transactional<? extends S3HibBinary> findByS3ObjectKey(String s3ObjectKey) {
+        return getS3HibBinaries().findByS3ObjectKey(s3ObjectKey);
+    }
 
     /**
      * Create a new s3 binary.
@@ -27,7 +30,18 @@ public interface S3BinaryDao extends Dao<S3HibBinary>{
      *            aws object key the s3 binary
      * @return
      */
-    Transactional<? extends S3HibBinary> create(String uuid, String objectKey, String fileName);
+    default Transactional<? extends S3HibBinary> create(String uuid, String objectKey, String fileName) {
+        return getS3HibBinaries().create(uuid, objectKey,fileName);
+    }
+
+    /**
+     * Return a stream of S3 binaries.
+     *
+     * @return
+     */
+    default Transactional<Stream<S3HibBinary>> findAll() {
+        return getS3HibBinaries().findAll();
+    }
 
     /**
      * Create a new s3 binary.
@@ -36,13 +50,14 @@ public interface S3BinaryDao extends Dao<S3HibBinary>{
      * @return
      */
     default Transactional<? extends S3HibBinary> create(String objectKey, String fileName) {
-        return create(UUIDUtil.randomUUID(),objectKey,fileName);
+        return create(UUIDUtil.randomUUID(), objectKey, fileName);
     }
 
     /**
-     * Return a stream of S3 binaries.
+     * Return the s3 binaries
      *
      * @return
      */
-    Transactional<Stream<S3HibBinary>> findAll();
+    S3Binaries getS3HibBinaries();
+
 }

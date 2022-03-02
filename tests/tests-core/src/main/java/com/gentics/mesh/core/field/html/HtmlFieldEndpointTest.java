@@ -149,9 +149,12 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			prepareTypedSchema(node, new HtmlFieldSchemaImpl().setName(FIELD_NAME), false);
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");
 			tx.success();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 
 		try (Tx tx = tx()) {

@@ -27,7 +27,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -43,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.user.HibUser;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -1559,10 +1559,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeDao nodeDao = tx.nodeDao();
 			RoleDao roleDao = tx.roleDao();
 			// Create node with nl language
-			HibNode parentNode = folder("products");
+			HibProject project = tx.projectDao().findByUuid(project().getUuid());
+			HibNode parentNode = nodeDao.findByUuid(project, folder("products").getUuid());
 			HibLanguage languageNl = tx.languageDao().findByLanguageTag("nl");
-			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
-			node = nodeDao.create(parentNode, user(), version, project());
+			HibSchemaVersion version = tx.schemaDao().findByUuid(schemaContainer("content").getUuid()).getLatestVersion();
+			HibUser user = tx.userDao().findByUuid(user().getUuid());
+			node = nodeDao.create(parentNode, user, version, project);
 			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
@@ -1933,7 +1935,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibNode node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
-		assertTrue("The node is expected to be published", tx(() -> boot().contentDao().getFieldContainer(node, "en").isPublished()));
+		assertTrue("The node is expected to be published", tx(tx -> {
+			return tx.contentDao().isPublished(tx.contentDao().getFieldContainer(node, "en"));
+		}));
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)
@@ -2050,16 +2054,20 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
+		HibBranch initialBranch;
+		HibBranch newBranch;
 		try (Tx tx = tx()) {
 			// create a new branch
 			HibProject project = project();
-			HibBranch initialBranch = project.getInitialBranch();
-			HibBranch newBranch = createBranch("newbranch");
+			initialBranch = reloadBranch(project.getInitialBranch());
+			newBranch = createBranch("newbranch");
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
 			context.setOldBranch(initialBranch);
 			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+		}
 
+		try (Tx tx = tx()) {
 			// create node in one branch
 			HibNode node = content("concorde");
 			NodeCreateRequest parentRequest = new NodeCreateRequest();

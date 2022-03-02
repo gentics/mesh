@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.tinkerpop.blueprints.Direction.IN;
 
-import java.util.Iterator;
-
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -14,7 +12,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.tinkerpop.blueprints.Edge;
@@ -35,18 +32,6 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		return getGraphFieldContainer(languageTag, branch != null ? branch.getUuid() : null, type, classOfU);
 	}
 
-	protected Edge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
-		GraphDatabase db = mesh().database();
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.index().createComposedIndexKey(id(),
-			branchUuid, type.getCode(), languageTag)).iterator();
-		if (iterator.hasNext()) {
-			return iterator.next();
-		} else {
-			return null;
-		}
-	}
-
 	/**
 	 * Locate the field container using the provided information.
 	 * 
@@ -61,7 +46,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 */
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type,
 		Class<U> classOfU) {
-		Edge edge = getGraphFieldContainerEdge(languageTag, branchUuid, type);
+		Edge edge = MeshEdgeImpl.findEdge(getId(), languageTag, branchUuid, type);
 		if (edge != null) {
 			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			Vertex in = edge.getVertex(IN);

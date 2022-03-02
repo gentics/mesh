@@ -13,10 +13,17 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUserTracking;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
+import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
+import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.handler.VersionUtils;
@@ -24,13 +31,19 @@ import com.gentics.mesh.handler.VersionUtils;
 /**
  * Domain model for tags.
  */
-public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableElement<TagReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
+public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableElement<TagReference>, HibUserTracking, 
+		HibProjectElement, HibBucketableElement, HibNamedElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAG, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
+	}
+
+	@Override
+	default TagReference transformToReference() {
+		return new TagReference().setName(getName()).setUuid(getUuid()).setTagFamily(getTagFamily().getName());
 	}
 
 	/**
@@ -41,6 +54,12 @@ public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableEle
 	HibTagFamily getTagFamily();
 
 	/**
+	 * Set the tag family of the tag
+	 * @param tagFamily
+	 */
+	void setTagFamily(HibTagFamily tagFamily);
+
+	/**
 	 * Return the project in which the tag is used.
 	 * 
 	 * @return
@@ -48,9 +67,36 @@ public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableEle
 	HibProject getProject();
 
 	/**
-	 * Delete the tag.
+	 * Set the project
+	 * @param project
 	 */
-	void deleteElement();
+	void setProject(HibProject project);
+
+	@Override
+	default TagMeshEventModel createEvent(MeshEvent type) {
+		TagMeshEventModel event = new TagMeshEventModel();
+		event.setEvent(type);
+		fillEventInfo(event);
+
+		// .project
+		HibProject project = getProject();
+		ProjectReference reference = project.transformToReference();
+		event.setProject(reference);
+
+		// .tagFamily
+		HibTagFamily tagFamily = getTagFamily();
+		TagFamilyReference tagFamilyReference = tagFamily.transformToReference();
+		event.setTagFamily(tagFamilyReference);
+		return event;
+	}
+
+	@Override
+	default TagPermissionChangedEventModel onPermissionChanged(HibRole role) {
+		TagPermissionChangedEventModel model = new TagPermissionChangedEventModel();
+		fillPermissionChanged(model, role);
+		model.setTagFamily(getTagFamily().transformToReference());
+		return model;
+	}
 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**

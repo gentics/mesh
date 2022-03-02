@@ -7,16 +7,10 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -32,6 +26,7 @@ import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
@@ -40,6 +35,7 @@ import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
@@ -48,11 +44,6 @@ import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
-import com.gentics.mesh.core.data.node.field.*;
-import com.gentics.mesh.core.data.node.field.impl.*;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -62,19 +53,16 @@ import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListIm
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 /**
@@ -90,8 +78,18 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	abstract protected HibNode getNode();
 
 	@Override
+	public void removeField(String fieldKey, BulkActionContext bac) {
+		if (StringUtils.isNotBlank(fieldKey)) {
+			HibField field = getField(fieldKey);
+			if (field != null) {
+				toGraph(field).removeField(bac, this);
+			}
+		}
+	}
+
+	@Override
 	public StringGraphField createString(String key) {
-		// TODO check whether the key is already occupied
+		// TODO implement the check if the key exists in the schema. 
 		StringGraphFieldImpl field = new StringGraphFieldImpl(key, this);
 		field.setFieldKey(key);
 		return field;
@@ -107,6 +105,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NodeGraphField createNode(String key, HibNode node) {
+		deleteFieldEdge(key);
 		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, toGraph(node), HAS_FIELD, NodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
@@ -208,6 +207,18 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
+	public HibMicronodeField createEmptyMicronode(String key, HibMicroschemaVersion microschema) {
+		// 1. Create a new micronode and assign the given schema to it
+		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
+		micronode.setSchemaContainerVersion(microschema);
+
+		// 2. Create a new edge from the container to the created micronode field
+		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
+		field.setFieldKey(key);
+		return field;
+	}
+
+	@Override
 	public MicronodeGraphField getMicronode(String key) {
 		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(MicronodeGraphFieldImpl.class, null);
 	}
@@ -280,7 +291,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public HibMicronodeFieldList createMicronodeFieldList(String fieldKey) {
+	public HibMicronodeFieldList createMicronodeList(String fieldKey) {
 		return createList(MicronodeGraphFieldListImpl.class, fieldKey);
 	}
 
@@ -396,111 +407,17 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public List<HibField> getFields() {
-		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
-		List<HibField> fields = new ArrayList<>();
-		for (FieldSchema fieldSchema : schema.getFields()) {
-			HibField field = getField(fieldSchema);
-			if (field != null) {
-				fields.add(field);
-			}
+	public void delete(BulkActionContext bac) {
+		// Lists
+		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
+			field.removeField(bac, this);
 		}
-		return fields;
 	}
 
-	@Override
-	public void deleteFieldEdge(String key) {
+	private void deleteFieldEdge(String key) {
 		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 		if (traversal.hasNext()) {
 			traversal.next().remove();
 		}
 	}
-
-	@Override
-	public Iterable<? extends HibNode> getReferencedNodes() {
-		// Get all fields and group them by type
-		Map<String, List<FieldSchema>> affectedFields = getSchemaContainerVersion().getSchema().getFields().stream()
-			.filter(this::isNodeReferenceType)
-			.collect(Collectors.groupingBy(FieldSchema::getType));
-
-		Function<FieldTypes, List<FieldSchema>> getFields = type -> Optional.ofNullable(affectedFields.get(type.toString()))
-			.orElse(Collections.emptyList());
-
-		Stream<Stream<HibNode>> nodeStream = Stream.of(
-			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
-			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
-			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
-		);
-		return nodeStream.flatMap(Function.identity())::iterator;
-	}
-
-	/**
-	 * Checks if a field can have a node reference.
-	 */
-	private boolean isNodeReferenceType(FieldSchema schema) {
-		String type = schema.getType();
-		return type.equals(FieldTypes.NODE.toString()) || type.equals(FieldTypes.LIST.toString()) || type.equals(FieldTypes.MICRONODE.toString());
-	}
-
-	/**
-	 * Gets the node from a node field.
-	 * 
-	 * @param field
-	 *            The node field to get the node from
-	 * @return Gets the node as a stream or an empty stream if the node field is not set
-	 */
-	private Stream<HibNode> getNodeFromNodeField(FieldSchema field) {
-		return Optional.ofNullable(getNode(field.getName()))
-			.map(NodeGraphField::getNode)
-			.map(Stream::of)
-			.orElseGet(Stream::empty);
-	}
-
-	/**
-	 * Gets the nodes that are referenced by a micronode in the given field. This includes all node fields and node list fields in the micronode.
-	 */
-	private Stream<? extends HibNode> getNodesFromMicronode(FieldSchema field) {
-		return Optional.ofNullable(getMicronode(field.getName()))
-			.map(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false))
-			.orElseGet(Stream::empty);
-	}
-
-	/**
-	 * Gets the nodes that are referenced by a list field. In case of a node list, all nodes in that list are returned. In case of a micronode list, all nodes
-	 * referenced by all node fields and node list fields in all microschemas are returned. Otherwise an empty stream is returned.
-	 */
-	private Stream<? extends HibNode> getNodesFromList(FieldSchema field) {
-		ListFieldSchema list;
-		if (field instanceof ListFieldSchema) {
-			list = (ListFieldSchema) field;
-		} else {
-			throw new InvalidParameterException("Invalid field type");
-		}
-
-		String type = list.getListType();
-		if (type.equals(FieldTypes.NODE.toString())) {
-			return Optional.ofNullable(getNodeList(list.getName()))
-				.map(listField -> listField.getList().stream())
-				.orElseGet(Stream::empty)
-				.map(HibNodeField::getNode);
-		} else if (type.equals(FieldTypes.MICRONODE.toString())) {
-			return Optional.ofNullable(getMicronodeList(list.getName()))
-				.map(listField -> listField.getList().stream())
-				.orElseGet(Stream::empty)
-				.flatMap(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false));
-		} else {
-			return Stream.empty();
-		}
-	}
-
-	@Override
-	public void delete(BulkActionContext bac) {
-
-		// Lists
-		for (GraphField field : out(HAS_LIST).frame(GraphField.class)) {
-			field.removeField(bac, this);
-		}
-
-	}
-
 }

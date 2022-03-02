@@ -31,15 +31,13 @@ import com.gentics.mesh.test.MeshTestSetting;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 	private final DataProvider FILL = (container, name) -> {
-		HibMicronodeFieldList field = container.createMicronodeFieldList(name);
+		HibMicronodeFieldList field = container.createMicronodeList(name);
 
-		HibMicronode micronode = field.createMicronode();
-		micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+		HibMicronode micronode = field.createMicronode(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Donald");
 		micronode.createString("lastName").setString("Duck");
 
-		micronode = field.createMicronode();
-		micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+		micronode = field.createMicronode(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Mickey");
 		micronode.createString("lastName").setString("Mouse");
 	};

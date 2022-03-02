@@ -72,11 +72,19 @@ public interface HibUpdateFieldChange extends HibSchemaFieldChange {
 		String oldFieldName = getFieldName();
 		String newFieldName = getRestProperty(SchemaChangeModel.NAME_KEY);
 		if (oldFieldName != null && newFieldName != null) {
+			// field name changed
 			FieldSchema fieldSchema = oldSchema.getField(oldFieldName);
 			Field field = oldContent.getFields().getField(oldFieldName, fieldSchema);
 			return Collections.singletonMap(newFieldName, field);
-		} else {
-			return Collections.emptyMap();
 		}
+
+		if (oldFieldName != null) {
+			// no field renaming, we can clone the old field as is
+			FieldSchema fieldSchema = oldSchema.getField(oldFieldName);
+			Field field = oldContent.getFields().getField(oldFieldName, fieldSchema);
+			return Collections.singletonMap(oldFieldName, field);
+		}
+
+		return Collections.emptyMap();
 	}
 }

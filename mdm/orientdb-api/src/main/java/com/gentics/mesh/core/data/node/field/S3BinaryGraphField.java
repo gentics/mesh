@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 /**
  * The S3BinaryField Domain Model interface. The field is an edge between the field container and the {@link S3Binary}
  */
-public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, MeshEdge, DisplayField, S3HibBinaryField {
+public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, MeshEdge, DisplayField, S3HibBinaryField, GraphDeletableField {
 
 	String S3_BINARY_FILENAME_PROPERTY_KEY = "fileName";
 
@@ -112,14 +112,11 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 		return new FocalPoint(x, y);
 	}
 
-	/**
-	 * Set the image focal point.
-	 * 
-	 * @param point
-	 */
-	default void setImageFocalPoint(FocalPoint point) {
+	@Override
+	default S3BinaryGraphField setImageFocalPoint(FocalPoint point) {
 		property(S3_BINARY_IMAGE_FOCAL_POINT_X, point.getX());
 		property(S3_BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
+		return this;
 	}
 
 	/**

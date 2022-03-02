@@ -221,11 +221,10 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			List<String> oldValueList = latest.getPreviousVersion().getStringList(FIELD_NAME).getList().stream().map(item -> item.getString())
 				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly("A", "B");
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
 		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test

@@ -18,7 +18,7 @@ import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import io.reactivex.Single;
 import io.vertx.ext.web.RoutingContext;
@@ -72,7 +72,7 @@ public class S3BinaryFieldResponseHandler {
 	 * @param s3binaryField
 	 */
 	private void respond(RoutingContext rc, S3HibBinaryField s3binaryField) {
-		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+		String s3ObjectKey = s3binaryField.getBinary().getS3ObjectKey();
 		s3Binarystorage.exists(s3Options.getBucket(), s3ObjectKey).flatMap(
 				(res) -> {
 					if (res) {
@@ -104,8 +104,8 @@ public class S3BinaryFieldResponseHandler {
 				imageParams.setFocalPoint(fp);
 			}
 		}
-		Integer originalHeight = s3binaryField.getS3Binary().getImageHeight();
-		Integer originalWidth = s3binaryField.getS3Binary().getImageWidth();
+		Integer originalHeight = s3binaryField.getBinary().getImageHeight();
+		Integer originalWidth = s3binaryField.getBinary().getImageWidth();
 
 		if ("auto".equals(imageParams.getHeight())) {
 			imageParams.setHeight(originalHeight);
@@ -113,9 +113,9 @@ public class S3BinaryFieldResponseHandler {
 		if ("auto".equals(imageParams.getWidth())) {
 			imageParams.setWidth(originalWidth);
 		}
-		String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
+		String s3ObjectKey = s3binaryField.getBinary().getS3ObjectKey();
 		String cacheS3ObjectKey = s3ObjectKey + "/image-" + imageParams.getCacheKey();
-		String fileName = s3binaryField.getS3Binary().getFileName();
+		String fileName = s3binaryField.getBinary().getFileName();
 		imageManipulator
 				.handleS3CacheResize(s3Options.getBucket(), s3Options.getS3CacheOptions().getBucket(), s3ObjectKey, cacheS3ObjectKey, fileName, imageParams)
 				.andThen(Single.defer(() -> {

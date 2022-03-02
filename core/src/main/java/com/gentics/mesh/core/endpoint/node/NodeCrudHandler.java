@@ -129,7 +129,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(toUuid, "toUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				NodeDao nodeDao = tx.nodeDao();
 				HibProject project = tx.getProject(ac);
 
@@ -142,9 +142,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				HibNode sourceNode = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				HibNode targetNode = nodeDao.loadObjectByUuid(project, ac, toUuid, UPDATE_PERM);
 
-				utils.eventAction(batch -> {
-					nodeDao.moveTo(sourceNode, ac, targetNode, batch);
-				});
+				nodeDao.moveTo(sourceNode, ac, targetNode, batch);
 			}, () -> ac.send(NO_CONTENT));
 		}
 
@@ -261,7 +259,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(tagUuid, "tagUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				TagDao tagDao = tx.tagDao();
 				NodeDao nodeDao = tx.nodeDao();
 
@@ -277,10 +275,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 						log.debug("Node {{}} is already tagged with tag {{}}", node.getUuid(), tag.getUuid());
 					}
 				} else {
-					utils.eventAction(batch -> {
-						tagDao.addTag(node, tag, branch);
-						batch.add(nodeDao.onTagged(node, tag, branch, ASSIGNED));
-					});
+					tagDao.addTag(node, tag, branch);
+					batch.add(nodeDao.onTagged(node, tag, branch, ASSIGNED));
 				}
 
 				return nodeDao.transformToRestSync(node, ac, 0);
@@ -304,7 +300,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(tagUuid, "tagUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				TagDao tagDao = tx.tagDao();
 				NodeDao nodeDao = tx.nodeDao();
 				HibProject project = tx.getProject(ac);
@@ -314,10 +310,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				if (tagDao.hasTag(node, tag, branch)) {
-					utils.eventAction(batch -> {
-						tagDao.removeTag(node, tag, branch);
-						batch.add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
-					});
+					tagDao.removeTag(node, tag, branch);
+					batch.add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug("Node {{}} was not tagged with tag {{}}", node.getUuid(), tag.getUuid());
@@ -481,14 +475,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(nodeUuid, "nodeUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 				NodeDao nodeDao = tx.nodeDao();
 
 				HibProject project = tx.getProject(ac);
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
-				Page<? extends HibTag> page = utils.eventAction(batch -> {
-					return nodeDao.updateTags(node, ac, batch);
-				});
+				Page<? extends HibTag> page =  nodeDao.updateTags(node, ac, batch);
 
 				return pageTransformer.transformToRestSync(page, ac, 0);
 			}, model -> {

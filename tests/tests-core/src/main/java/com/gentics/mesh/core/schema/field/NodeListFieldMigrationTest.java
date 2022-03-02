@@ -31,8 +31,8 @@ import com.gentics.mesh.test.MeshTestSetting;
 public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest implements NodeListFieldTestHelper {
 	private final DataProvider FILL = (container, name) -> {
 		HibNodeFieldList field = container.createNodeList(name);
-		field.createNode("0", folder("2015"));
-		field.createNode("1", folder("news"));
+		field.createNode(0, folder("2015"));
+		field.createNode(1, folder("news"));
 	};
 
 	@Test

@@ -3,8 +3,10 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -14,13 +16,13 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -28,6 +30,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
@@ -287,6 +290,22 @@ public interface ContentDao {
 		boolean handleDraftEdge);
 
 	/**
+	 * Create an "empty" field container (without any populate fields) from the provided parameters
+	 * @param version
+	 * 			the version of the field container
+	 * @param node
+	 * 			the node of the field container
+	 * @param editor
+	 * 			the editor of the field container
+	 * @param languageTag
+	 * 			the languageTag of the field container
+	 * @param branch
+	 * 			the branch of the field container
+	 * @return
+	 */
+	HibNodeFieldContainer createEmptyFieldContainer(HibSchemaVersion version, HibNode node, HibUser editor, String languageTag, HibBranch branch);
+
+	/**
 	 * Return the draft field containers of the node in the latest branch.
 	 *
 	 * @return
@@ -339,7 +358,44 @@ public interface ContentDao {
 	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matches
 	 */
-	HibNodeFieldContainer findVersion(HibNode node, List<String> languageTags, String branchUuid, String version);
+
+	/**
+	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
+	 * is no de version the en version will be selected and returned.
+	 *
+	 * @param node
+	 * @param languageTags
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @param version
+	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
+	 * @return Next matching field container or null when no language matches
+	 */
+	default HibNodeFieldContainer findVersion(HibNode node, List<String> languageTags, String branchUuid, String version) {
+		HibNodeFieldContainer fieldContainer = null;
+
+		// TODO refactor the type handling and don't return INITIAL.
+		ContainerType type = forVersion(version);
+
+		for (String languageTag : languageTags) {
+
+			// Don't start the version lookup using the initial version. Instead start at the end of the chain and use the DRAFT version instead.
+			fieldContainer = getFieldContainer(node, languageTag, branchUuid, type == INITIAL ? DRAFT : type);
+
+			// Traverse the chain downwards and stop once we found our target version or we reached the end.
+			if (fieldContainer != null && type == INITIAL) {
+				while (fieldContainer != null && !version.equals(fieldContainer.getVersion().toString())) {
+					fieldContainer = fieldContainer.getPreviousVersion();
+				}
+			}
+
+			// We found a container for one of the languages
+			if (fieldContainer != null) {
+				break;
+			}
+		}
+		return fieldContainer;
+	}
 
 	/**
 	 * Iterate the version chain from the back in order to find the given version.
@@ -666,22 +722,18 @@ public interface ContentDao {
 	HibSchemaVersion getSchemaContainerVersion(HibNodeFieldContainer content);
 
 	/**
-	 * Get all micronode fields that have a micronode using the given microschema container version.
+	 * Get all micronode fields.
 	 *
-	 * @param version
-	 *            microschema container version
 	 * @return list of micronode fields
 	 */
-	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content, HibMicroschemaVersion version);
+	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content);
 
 	/**
-	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
+	 * Get all micronode list fields.
 	 *
-	 * @param version
-	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content, HibMicroschemaVersion version);
+	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content);
 
 	/**
 	 * Return the ETag for the field container.
@@ -823,4 +875,72 @@ public interface ContentDao {
 	 * @param languageTag
 	 */
 	void setLanguageTag(HibNodeFieldContainer content, String languageTag);
+
+	/**
+	 * Return an iterator over the edges for the given type and branch.
+	 * @param type
+	 * @param branchUuid
+	 * @return
+	 */
+	Iterator<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container, ContainerType type, String branchUuid);
+
+	/**
+	 * Return a stream of all the edges of a container.
+	 * @param type
+	 * @param branchUuid
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container);
+
+	/**
+	 * Retrieve a conflicting edge for the given segment info, branch uuid and type, or null if there's no conflicting
+	 * edge
+	 *
+	 * @param content
+	 * @param segmentInfo
+	 * @param branchUuid
+	 * @param type
+	 * @param edge
+	 * @return
+	 */
+	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootPath(HibNodeFieldContainer content, String segmentInfo, String branchUuid, ContainerType type, HibNodeFieldContainerEdge edge);
+
+	/**
+	 * 	Retrieve a conflicting edge for the given urlFieldValue, branch uuid and type, or null if there's no conflicting
+	 * 	edge
+	 * @param content
+	 * @param edge
+	 * @param urlFieldValue
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type);
+
+	/**
+	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
+	 *
+	 * @param parentNode
+	 * @param segment
+	 */
+	String composeSegmentInfo(HibNode parentNode, String segment);
+
+	/**
+	 * Return the field edges for the given node, branch and container type
+	 * @param node
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type);
+
+	/**
+	 * Create a {@link NodeFieldListItem} that contains the reference to the given node.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @param languageTags
+	 * @return
+	 */
+	NodeFieldListItem toListItem(HibNode node, InternalActionContext ac, String[] languageTags);
 }

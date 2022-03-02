@@ -6,13 +6,16 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.db.Tx;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,6 +29,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
@@ -34,8 +38,11 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -55,10 +62,13 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.helper.ExpectedEvent;
 import com.gentics.mesh.test.helper.UnexpectedEvent;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Flowable;
 import io.vertx.core.json.JsonObject;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mockito;
 /**
  * Test differential sync of elasticsearch.
  */
@@ -146,7 +156,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert update
 		tx(() -> {
-			group().setName("updated");
+			Tx.get().groupDao().findByUuid(group().getUuid()).setName("updated");
 		});
 		syncIndex();
 		assertMetrics("group", 0, 1, 0);
@@ -173,7 +183,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert update
 		tx(() -> {
-			role().setName("updated");
+			Tx.get().roleDao().findByUuid(role().getUuid()).setName("updated");
 		});
 		syncIndex();
 		assertMetrics("role", 0, 1, 0);
@@ -189,9 +199,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Test
 	@Ignore("Currently fails due to https://github.com/gentics/mesh/issues/606")
 	public void testTagSync() throws Exception {
+		TagDao tagDao = Tx.get().tagDao();
 		// Assert insert
 		tx(tx -> {
-			TagDao tagDao = tx.tagDao();
 			for (int i = 0; i < 400; i++) {
 				tagDao.create(tagFamily("colors"), "tag_" + i, project(), user());
 			}
@@ -203,7 +213,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert update
 		tx(tx -> {
-			tag("red").setName("updated");
+			tx.tagDao().findByUuid(tag("red").getUuid()).setName("updated");
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 1, 0);
@@ -211,7 +221,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			HibTagFamily tagFamily = tagFamily("colors");
-			boot().tagDao().findByName(tagFamily, "tag_3").deleteElement();
+			HibTag tag = tagDao.findByName(tagFamily, "tag_3");
+			tx.<CommonTx>unwrap().tagDao().deletePersisted(tag);
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 0, 1);
@@ -219,11 +230,14 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	@Test
 	public void testTagFamilySync() throws Exception {
+		// 400: The additional tag families need to be added to the index
 		// Assert insert
 		tx(tx -> {
-			CommonTx ctx = tx.unwrap();			
+			CommonTx ctx = tx.unwrap();
+			HibProject project = Tx.get().projectDao().findByUuid(projectUuid());
+			HibUser user = Tx.get().userDao().findByUuid(userUuid());
 			for (int i = 0; i < 400; i++) {
-				ctx.tagFamilyDao().create(project(), "tagfamily_" + i, user());
+				ctx.tagFamilyDao().create(project, "tagfamily_" + i, user);
 			}
 		});
 		syncIndex();
@@ -233,15 +247,17 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("tagfamily", 0, 0, 0);
 
 		// Assert update
-		tx(() -> {
-			tagFamily("colors").setName("updated");
+		tx((tx) -> {
+			tx.tagFamilyDao().findByUuid(tagFamily("colors").getUuid()).setName("updated");
 		});
 		syncIndex();
 		assertMetrics("tagfamily", 0, 1, 0);
 
 		// Assert deletion
 		tx(tx -> {
-			boot().tagFamilyDao().findByName(project(), "tagfamily_3").deleteElement();
+			PersistingTagFamilyDao tagFamilyDao = Tx.get().<CommonTx>unwrap().tagFamilyDao();
+			HibTagFamily tagfamily_3 = tagFamilyDao.findByName(project(), "tagfamily_3");
+			tagFamilyDao.deletePersisted(project(), tagfamily_3);
 		});
 		syncIndex();
 		assertMetrics("tagfamily", 0, 0, 1);
@@ -264,8 +280,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("project", 0, 0, 0);
 
 		// Assert update
-		tx(() -> {
-			project().setName("updated");
+		tx((tx) -> {
+			tx.projectDao().findByUuid(project().getUuid()).setName("updated");
 		});
 		boot().globalCacheClear();
 		syncIndex();

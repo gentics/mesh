@@ -81,9 +81,4 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 	public void setBucketId(Integer bucketId) {
 		BucketableElementHelper.setBucketId(this, bucketId);
 	}
-
-	@Override
-	public void generateBucketId() {
-		BucketableElementHelper.generateBucketId(this);
-	}
 }

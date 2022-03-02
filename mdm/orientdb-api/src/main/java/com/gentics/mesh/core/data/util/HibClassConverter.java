@@ -2,12 +2,15 @@ package com.gentics.mesh.core.data.util;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibContent;
+import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -28,6 +31,8 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.GraphDeletableField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
@@ -71,6 +76,26 @@ import com.syncleus.ferma.ElementFrame;
 public final class HibClassConverter {
 
 	private HibClassConverter() {
+	}
+
+	/**
+	 * Convert the container field to a graph counterpart.
+	 *
+	 * @param f
+	 * @return
+	 */
+	public static GraphDeletableField toGraph(HibDeletableField f) {
+		return checkAndCast(f, GraphDeletableField.class);
+	}
+
+	/**
+	 * Convert the container field to a graph counterpart.
+	 *
+	 * @param f
+	 * @return
+	 */
+	public static GraphField toGraph(HibField f) {
+		return checkAndCast(f, GraphField.class);
 	}
 
 	/**
@@ -375,16 +400,6 @@ public final class HibClassConverter {
 	}
 
 	/**
-	 * Convert the content to a graph element.
-	 * 
-	 * @param content
-	 * @return
-	 */
-	public static NodeGraphFieldContainer toGraph(HibContent content) {
-		return checkAndCast(content, NodeGraphFieldContainer.class);
-	}
-
-	/**
 	 * Convert the job to graph element.
 	 * 
 	 * @param job
@@ -402,6 +417,16 @@ public final class HibClassConverter {
 	 */
 	public static SchemaChange<?> toGraph(HibSchemaChange<?> change) {
 		return checkAndCast(change, SchemaChange.class);
+	}
+
+	/**
+	 * Convert the container edge to a graph element.
+	 *
+	 * @param change
+	 * @return
+	 */
+	public static GraphFieldContainerEdge toGraph(HibNodeFieldContainerEdge change) {
+		return checkAndCast(change, GraphFieldContainerEdge.class);
 	}
 
 	/**

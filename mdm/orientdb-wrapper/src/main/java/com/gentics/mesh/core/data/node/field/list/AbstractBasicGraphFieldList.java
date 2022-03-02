@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.util.CompareUtils;
 
 /**
  * Abstract class for basic graph field lists. Basic graph field lists are stored within dedicated vertices. The values of such lists are stored as properties
@@ -56,7 +55,7 @@ public abstract class AbstractBasicGraphFieldList<T extends HibListableField, RM
 	}
 
 	@Override
-	public long getSize() {
+	public int getSize() {
 		return getProperties("item").size();
 	}
 
@@ -100,12 +99,7 @@ public abstract class AbstractBasicGraphFieldList<T extends HibListableField, RM
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof ListGraphField) {
-			List<? extends T> listA = getList();
-			List<? extends T> listB = ((ListGraphField) obj).getList();
-			return CompareUtils.equals(listA, listB);
-		}
-		return false;
+		return listEquals(obj);
 	}
 
 	/**

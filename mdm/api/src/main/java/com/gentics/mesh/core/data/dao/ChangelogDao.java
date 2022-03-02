@@ -6,12 +6,12 @@ import com.gentics.mesh.core.data.changelog.Change;
 import com.gentics.mesh.core.data.changelog.ChangeMarker;
 
 /**
- * DAO for for @link {@link ChangeMarker} vertices.
+ * DAO for for @link {@link ChangeMarker} entities.
  */
 public interface ChangelogDao {
 
 	/**
-	 * Returns all listed changelog marker vertices.
+	 * Returns all listed changelog marker entities.
 	 * 
 	 * @return
 	 */

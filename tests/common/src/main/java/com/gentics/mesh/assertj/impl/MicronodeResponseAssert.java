@@ -56,8 +56,8 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 				break;
 			case "number":
 				assertThat(expected.getFields().getNumberField(key)).isNotNull();
-				assertThat(actual.getFields().getNumberField(key).getNumber()).as("Field " + key)
-						.isEqualTo(expected.getFields().getNumberField(key).getNumber());
+				assertThat(actual.getFields().getNumberField(key).getNumber().doubleValue()).as("Field " + key)
+						.isEqualTo(expected.getFields().getNumberField(key).getNumber().doubleValue());
 				break;
 			case "list":
 

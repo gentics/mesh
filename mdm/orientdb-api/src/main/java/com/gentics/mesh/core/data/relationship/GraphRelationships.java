@@ -154,7 +154,6 @@ public class GraphRelationships {
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
-
 	public static final String HAS_LIST = "HAS_LIST";
 
 	// Versioning
