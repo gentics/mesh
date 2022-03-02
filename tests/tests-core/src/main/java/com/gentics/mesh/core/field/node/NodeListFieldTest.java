@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -71,6 +72,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	}
 
 	@Test
+	@NoConsistencyCheck
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
@@ -108,6 +110,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	}
 
 	@Test
+	@NoConsistencyCheck
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {

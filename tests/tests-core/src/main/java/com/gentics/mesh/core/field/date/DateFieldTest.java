@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.DateUtils;
 
@@ -52,6 +53,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	}
 
 	@Test
+	@NoConsistencyCheck
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {

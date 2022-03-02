@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
@@ -159,6 +160,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	}
 
 	@Test
+	@NoConsistencyCheck
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {

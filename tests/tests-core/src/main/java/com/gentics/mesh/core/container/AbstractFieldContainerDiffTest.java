@@ -16,12 +16,12 @@ import com.gentics.mesh.util.CoreTestUtils;
 
 public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 
-	protected HibNodeFieldContainer createContainer(FieldSchema field) {
-		return CoreTestUtils.createContainer(field);
+	protected HibNodeFieldContainer createContainer(FieldSchema...fields) {
+		return CoreTestUtils.createContainer(fields);
 	}
 
-	protected SchemaVersionModel createSchema(FieldSchema field) {
-		return CoreTestUtils.createSchema(field);
+	protected SchemaVersionModel createSchema(FieldSchema...fields) {
+		return CoreTestUtils.createSchema(fields);
 	}
 
 	protected void assertChanges(List<FieldContainerChange> list, FieldChangeTypes expectedType) {
