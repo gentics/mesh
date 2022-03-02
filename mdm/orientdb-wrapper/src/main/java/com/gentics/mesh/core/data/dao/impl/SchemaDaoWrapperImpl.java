@@ -215,11 +215,6 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	public String getRootLabel(HibProject root) {
-		return toGraph(root).getSchemaContainerRoot().getRootLabel();
-	}
-
-	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getSchemaContainerRoot().globalCount();
 	}
