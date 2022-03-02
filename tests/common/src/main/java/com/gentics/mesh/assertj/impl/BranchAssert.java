@@ -3,6 +3,8 @@ package com.gentics.mesh.assertj.impl;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,7 +90,12 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 * @return fluent API
 	 */
 	public BranchAssert hasNext(HibBranch branch) {
-		assertThat(actual.getNextBranches().get(0)).as(descriptionText() + " next branch").matches(branch);
+		if (branch == null) {
+			assertThat(actual.getNextBranches()).as(descriptionText() + " next branches").isEmpty();
+		} else {
+			List<HibBranch> nextBranches = new ArrayList<>(actual.getNextBranches());
+			assertThat(nextBranches).as(descriptionText() + " next branch").contains(branch);
+		}
 		return this;
 	}
 
