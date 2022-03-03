@@ -1,11 +1,14 @@
 package com.gentics.mesh.test.context;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,5 +114,11 @@ public final class MeshTestHelper {
 			}
 		}
 		return file;
+	}
+
+	public static String getResourcePath(String path) throws URISyntaxException {
+		URL url = MeshTestHelper.class.getResource(path);
+		assertThat(url).as("Resource URL for " + path).isNotNull();
+		return new File(url.toURI()).getAbsolutePath();
 	}
 }
