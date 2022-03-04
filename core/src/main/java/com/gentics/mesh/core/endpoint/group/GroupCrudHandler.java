@@ -11,19 +11,19 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.GroupDAOActions;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import io.vertx.core.logging.Logger;
@@ -53,7 +53,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Page<? extends HibRole> rolePage = groupDao.getRoles(group, ac.getUser(), pagingInfo);
@@ -73,9 +73,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(roleUuid, "roleUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				GroupDaoWrapper groupDao = tx.groupDao();
-				RoleDaoWrapper roleDao = tx.roleDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				GroupDao groupDao = tx.groupDao();
+				RoleDao roleDao = tx.roleDao();
 
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -85,12 +85,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 						log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
 					}
 				} else {
-					utils.eventAction(batch -> {
-						groupDao.addRole(group, role);
-						group.setEditor(ac.getUser());
-						group.setLastEditedTimestamp();
-						batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
-					});
+					groupDao.addRole(group, role);
+					group.setEditor(ac.getUser());
+					group.setLastEditedTimestamp();
+					batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
 				}
 				return groupDao.transformToRestSync(group, ac, 0);
 			}, model -> ac.send(model, OK));
@@ -112,9 +110,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(groupUuid, "groupUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				GroupDaoWrapper groupDao = tx.groupDao();
-				RoleDaoWrapper roleDao = tx.roleDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				GroupDao groupDao = tx.groupDao();
+				RoleDao roleDao = tx.roleDao();
 
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -124,14 +122,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 					return;
 				}
 
-				utils.eventAction(batch -> {
-					groupDao.removeRole(group, role);
-					group.setEditor(ac.getUser());
-					group.setLastEditedTimestamp();
-					batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
-					return batch;
-				});
-
+				groupDao.removeRole(group, role);
+				group.setEditor(ac.getUser());
+				group.setLastEditedTimestamp();
+				batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
 			}, () -> ac.send(NO_CONTENT));
 		}
 	}
@@ -147,7 +141,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(groupUuid, "groupUuid");
 
 		utils.syncTx(ac, tx -> {
-			GroupDaoWrapper groupDao = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			HibUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
@@ -170,18 +164,16 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(userUuid, "userUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				GroupDaoWrapper groupDao = tx.groupDao();
-				UserDaoWrapper userDao = tx.userDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				GroupDao groupDao = tx.groupDao();
+				UserDao userDao = tx.userDao();
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// Only add the user if it is not yet assigned
 				if (!groupDao.hasUser(group, user)) {
-					utils.eventAction(batch -> {
-						groupDao.addUser(group, user);
-						batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
-					});
+					groupDao.addUser(group, user);
+					batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
 				}
 				return groupDao.transformToRestSync(group, ac, 0);
 			}, model -> ac.send(model, OK));
@@ -202,9 +194,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 		validateParameter(userUuid, "userUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				GroupDaoWrapper groupDao = tx.groupDao();
-				UserDaoWrapper userDao = tx.userDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				GroupDao groupDao = tx.groupDao();
+				UserDao userDao = tx.userDao();
 
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
@@ -214,10 +206,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 					return;
 				}
 
-				utils.eventAction(batch -> {
-					groupDao.removeUser(group, user);
-					batch.add(groupDao.createUserAssignmentEvent(group, user, UNASSIGNED));
-				});
+				groupDao.removeUser(group, user);
+				batch.add(groupDao.createUserAssignmentEvent(group, user, UNASSIGNED));
 			}, () -> ac.send(NO_CONTENT));
 		}
 	}

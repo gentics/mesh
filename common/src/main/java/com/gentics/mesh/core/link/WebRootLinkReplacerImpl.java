@@ -2,12 +2,12 @@ package com.gentics.mesh.core.link;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -18,21 +18,21 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.handler.VersionHandlerImpl;
+import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
-import com.gentics.mesh.storage.S3BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -140,7 +140,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		Node node = boot.meshRoot().findNodeByUuid(uuid);
+		HibNode node = boot.nodeDao().findByUuidGlobal(uuid);
 		String language;
 		// check for null
 		if (node == null) {
@@ -153,7 +153,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			case MEDIUM:
 				return "/" + projectName + "/error/404";
 			case FULL:
-				return VersionHandlerImpl.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
+				return VersionUtils.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
@@ -164,9 +164,10 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			} else {
 				language = languageTags[0];
 			}
+			ContentDao contentDao = Tx.get().contentDao();
 
-			NodeGraphFieldContainer nullableGraphFieldContainer = node.getGraphFieldContainer(language);
-			Optional<NodeGraphFieldContainer> maybeGraphFieldContainer = Optional.ofNullable(nullableGraphFieldContainer);
+			HibNodeFieldContainer nullableGraphFieldContainer = contentDao.getFieldContainer(node, language);
+			Optional<HibNodeFieldContainer> maybeGraphFieldContainer = Optional.ofNullable(nullableGraphFieldContainer);
 
 			Optional<S3HibBinary> maybeBinaryField = maybeGraphFieldContainer
 				.flatMap(graphFieldContainer -> Optional.ofNullable(graphFieldContainer.getSchemaContainerVersion()))
@@ -176,9 +177,9 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 				.flatMap(s3binaryFieldSchema -> {
 					String linkResolver = options.getS3Options().getLinkResolver();
 					//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
-					if (isNull(linkResolver) || linkResolver.equals("s3")) {
+					if (Objects.isNull(linkResolver) || linkResolver.equals("s3")) {
 						String fieldName = s3binaryFieldSchema.getName();
-						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName).getS3Binary());
+						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName).getBinary());
 					} else {
 						return Optional.empty();
 					}
@@ -201,7 +202,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		boolean forceAbsolute,
 		String... languageTags) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.nodeDao();
+		NodeDao nodeDao = tx.nodeDao();
 
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
@@ -245,7 +246,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return VersionHandlerImpl.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path
+			return VersionUtils.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path
 				+ branchQueryParameter(branch);
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);

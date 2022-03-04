@@ -6,7 +6,6 @@ import java.util.function.Function;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -21,7 +20,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * @param <T>
  *            Underlying type of graph elements which the search would locate.
  */
-public interface SearchHandler<T extends HibCoreElement, RM extends RestModel> {
+public interface SearchHandler<T extends HibCoreElement<?>, RM extends RestModel> {
 
 	/**
 	 * Invoke an elastic search query on the database and return a page which lists the found elements.

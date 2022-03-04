@@ -2,14 +2,39 @@ package com.gentics.mesh.core.data.schema;
 
 import java.util.stream.Stream;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
-public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>>
-	extends HibCoreElement, Comparable<SCV> {
+public interface HibFieldSchemaVersionElement<
+			R extends FieldSchemaContainer, 
+			RM extends FieldSchemaContainerVersion, 
+			RE extends NameUuidReference<RE>, 
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>>
+	extends HibCoreElement<R>, HibReferenceableElement<RE>, Comparable<SCV> {
+
+	/**
+	 * Return the class that is used for container versions.
+	 * 
+	 * @return Class of the container version
+	 */
+	Class<? extends SCV> getContainerVersionClass();
+
+	/**
+	 * Return the class that is used for containers.
+	 * 
+	 * @return Class of the container
+	 */
+	Class<? extends SC> getContainerClass();
 
 	/**
 	 * Return the schema name.
@@ -59,11 +84,6 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 	 * @param schema
 	 */
 	void setSchema(RM schema);
-
-	/**
-	 * Delete the version.
-	 */
-	void deleteElement();
 
 	// Version chain
 
@@ -129,9 +149,12 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 	 */
 	void setSchemaContainer(SC container);
 
-	default int compareTo(SCV version) {
-		return VersionUtil.compareVersions(getVersion(), version.getVersion());
-	}
+	/**
+	 * Set the version.
+	 * 
+	 * @param version
+	 */
+	void setVersion(String version);
 
 	/**
 	 * Returns a stream of all previous versions.
@@ -144,4 +167,69 @@ public interface HibFieldSchemaVersionElement<R extends FieldSchemaContainer, RM
 			HibFieldSchemaVersionElement::getPreviousVersion);
 	}
 
+	/**
+	 * Return an iterable of all jobs which reference the version via the _to_ reference.
+	 *
+	 * @return
+	 */
+	Iterable<? extends HibJob> referencedJobsViaTo();
+
+	/**
+	 * Return an iterable of all jobs which reference the version via the _from_ reference.
+	 *
+	 * @return
+	 */
+	Iterable<? extends HibJob> referencedJobsViaFrom();
+
+	/**
+	 * Get an event type to trigger on assigned to a branch.
+	 * 
+	 * @return
+	 */
+	MeshEvent getBranchAssignEvent();
+
+
+	/**
+	 * Get an event type to trigger on unassigned from a branch.
+	 * 
+	 * @return
+	 */
+	MeshEvent getBranchUnassignEvent();
+
+	/**
+	 * Get branch assignment event model class.
+	 * 
+	 * @return
+	 */
+	Class<? extends AbstractBranchAssignEventModel<RE>> getBranchAssignEventModelClass();
+
+	/**
+	 * Transform the element into the matching rest model response synchronously.
+	 *
+	 * @param ac
+	 *            Context of the calling action
+	 * @param level
+	 *            Level of transformation
+	 * @param languageTags
+	 *            optional list of language tags to be used for language fallback
+	 * @return
+	 * @deprecated Use DAO method to transform elements instead
+	 */
+	R transformToRestSync(InternalActionContext ac, int level, String... languageTags);
+
+	default int compareTo(SCV version) {
+		return VersionUtil.compareVersions(getVersion(), version.getVersion());
+	}
+
+	/**
+	 * Retrieves all changes for the next version.
+	 *
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default Stream<HibSchemaChange<FieldSchemaContainer>> getChanges() {
+		return StreamUtil.untilNull(
+			() -> (HibSchemaChange<FieldSchemaContainer>) getNextChange(),
+			change -> (HibSchemaChange<FieldSchemaContainer>) change.getNextChange());
+	}
 }

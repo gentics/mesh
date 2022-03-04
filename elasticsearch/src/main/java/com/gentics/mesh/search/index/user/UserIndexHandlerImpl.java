@@ -13,13 +13,12 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -35,7 +34,7 @@ import io.reactivex.Flowable;
 @Singleton
 public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implements UserIndexHandler {
 
-	private final static Set<String> indices = Collections.singleton(User.composeIndexName());
+	private final static Set<String> indices = Collections.singleton(HibUser.composeIndexName());
 
 	@Inject
 	UserTransformer transformer;
@@ -55,14 +54,14 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	}
 
 	@Override
-	public Class<User> getElementClass() {
-		return User.class;
+	public Class<HibUser> getElementClass() {
+		return HibUser.class;
 	}
 
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.userDao().globalCount();
+			return tx.userDao().count();
 		});
 	}
 
@@ -78,12 +77,12 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(User.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibUser.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, User.composeIndexName());
+		return filterIndicesByType(indices, HibUser.composeIndexName());
 	}
 
 	@Override
@@ -93,7 +92,7 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Function<String, HibUser> elementLoader() {
-		return uuid -> boot.meshRoot().getUserRoot().findByUuid(uuid);
+		return uuid -> boot.userDao().findByUuid(uuid);
 	}
 
 	@Override
@@ -103,7 +102,7 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = User.composeIndexName();
+		String indexName = HibUser.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "user");
 		return Collections.singletonMap(indexName, info);
 	}

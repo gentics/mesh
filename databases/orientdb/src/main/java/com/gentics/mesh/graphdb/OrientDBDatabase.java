@@ -1,10 +1,7 @@
 package com.gentics.mesh.graphdb;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_TIMEOUT_COUNT;
-import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_WAITING_TIME;
-import static com.gentics.mesh.metric.SimpleMetric.TX_RETRY;
-import static com.gentics.mesh.metric.SimpleMetric.TX_TIME;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -27,13 +24,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Triple;
+
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
@@ -43,12 +42,13 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.check.DiskQuotaChecker;
-import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.dagger.TransactionComponent;
 import com.gentics.mesh.graphdb.index.OrientDBIndexHandler;
@@ -60,7 +60,6 @@ import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
 import com.gentics.mesh.madl.frame.VertexFrame;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
 import com.gentics.mesh.util.ETag;
@@ -77,11 +76,9 @@ import com.orientechnologies.orient.server.distributed.ODistributedConfiguration
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration.ROLES;
 import com.orientechnologies.orient.server.distributed.OModifiableDistributedConfiguration;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
-import com.sun.xml.bind.v2.model.core.Ref;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -96,7 +93,6 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
 import dagger.Lazy;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -118,27 +114,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OrientStorage txProvider;
 
-	private MetricsService metrics;
-
-	private Timer txTimer;
-
-	private Counter txRetryCounter;
-
 	private OrientDBIndexHandler indexHandler;
 
 	private OrientDBTypeHandler typeHandler;
 
-	private OrientDBClusterManager clusterManager;
+	private OrientDBClusterManagerImpl clusterManager;
 
 	private final TxCleanupTask txCleanUpTask;
 
 	private Thread txCleanupThread;
-
-	private Timer topologyLockTimer;
-
-	private Counter topologyLockTimeoutCounter;
-
-	private Mesh mesh;
 
 	private WriteLock writeLock;
 
@@ -175,21 +159,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private AtomicLong usableDiskSpace;
 
 	@Inject
-	public OrientDBDatabase(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
-		OrientDBTypeHandler typeHandler,
-		OrientDBIndexHandler indexHandler,
-		OrientDBClusterManager clusterManager,
-		TxCleanupTask txCleanupTask,
-		Lazy<PermissionRoots> permissionRoots, Mesh mesh, WriteLock writeLock,
-		TransactionComponent.Factory txFactory) {
-		super(vertx);
+	public OrientDBDatabase(
+			OrientDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, 
+			Lazy<DaoCollection> daos, MetricsService metrics,
+			OrientDBTypeHandler typeHandler, OrientDBIndexHandler indexHandler,
+			OrientDBClusterManagerImpl clusterManager, TxCleanupTask txCleanupTask,
+			Lazy<PermissionRoots> permissionRoots, WriteLock writeLock,
+			TransactionComponent.Factory txFactory, Mesh mesh
+	) {
+		super(vertx, mesh, metrics);
 		this.options = options;
-		this.metrics = metrics;
 		if (metrics != null) {
-			txTimer = metrics.timer(TX_TIME);
-			txRetryCounter = metrics.counter(TX_RETRY);
-			topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
-			topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
 			totalDiskSpace = metrics.longGauge(OrientDBStorageMetric.DISK_TOTAL);
 			usableDiskSpace = metrics.longGauge(OrientDBStorageMetric.DISK_USABLE);
 		}
@@ -197,7 +177,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		this.indexHandler = indexHandler;
 		this.clusterManager = clusterManager;
 		this.txCleanUpTask = txCleanupTask;
-		this.mesh = mesh;
 		this.writeLock = writeLock;
 		this.txFactory = txFactory;
 	}
@@ -261,7 +240,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @param options
 	 * @return
 	 */
-	private int getRidBagValue(MeshOptions options) {
+	private int getRidBagValue(OrientDBMeshOptions options) {
 		boolean isClusterMode = options.getClusterOptions() != null && options.getClusterOptions().isEnabled();
 		if (isClusterMode) {
 			// This is the mandatory setting when using OrientDB in clustered mode.
@@ -366,7 +345,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public <T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		Stream<Vertex> stream = toStream(getVertices(classOfVertex, fieldNames, fieldValues));
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 
 		return new TraversalResult<>(stream.map(v -> {
 			return graph.frameElementExplicit(v, classOfVertex);
@@ -374,9 +353,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex) {
+	public <T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		FramedGraph fermaGraph = Tx.get().getGraph();
+		FramedGraph fermaGraph = GraphDBTx.getGraphTx().getGraph();
 		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();
 		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
@@ -387,7 +366,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @return
 	 */
 	public OrientBaseGraph unwrapCurrentGraph() {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph tx = ((OrientBaseGraph) baseGraph);
 		return tx;
@@ -402,7 +381,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T extends MeshElement> T findVertex(String fieldKey, Object fieldValue, Class<T> clazz) {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> it = orientBaseGraph.getVertices(clazz.getSimpleName(), new String[] { fieldKey }, new Object[] { fieldValue }).iterator();
 		if (it.hasNext()) {
@@ -412,7 +391,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public long count(Class<? extends MeshVertex> clazz) {
+	public long count(Class<? extends HibBaseElement> clazz) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		OrientVertexType type = orientBaseGraph.getVertexType(clazz.getSimpleName());
 		if (type == null) {
@@ -426,7 +405,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T extends EdgeFrame> T findEdge(String fieldKey, Object fieldValue, Class<T> clazz) {
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Edge> it = orientBaseGraph.getEdges(fieldKey, fieldValue).iterator();
 		if (it.hasNext()) {
@@ -436,12 +415,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void reload(MeshElement element) {
-		reload(element.getElement());
-	}
-
-	@Override
-	public void reload(Element element) {
+	public void reload(HibElement element) {
 		if (element instanceof OrientElement) {
 			if (metrics.isEnabled()) {
 				metrics.counter(SimpleMetric.GRAPH_ELEMENT_RELOAD).increment();
@@ -455,7 +429,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	@Override
 	@Deprecated
-	public Tx tx() {
+	public GraphDBTx tx() {
 		return txFactory.create(txProvider, resolver).tx();
 	}
 
@@ -503,7 +477,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			Timer.Sample sample = Timer.start();
 			// Check the status to prevent transactions during shutdown
 			checkStatus();
-			try (Tx tx = tx()) {
+			try (GraphDBTx tx = tx()) {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
 				tx.success();
@@ -561,35 +535,29 @@ public class OrientDBDatabase extends AbstractDatabase {
 		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded", cause);
 	}
 
-	private void checkStatus() {
-		MeshStatus status = mesh.getStatus();
-		switch (status) {
-		case READY:
-		case STARTING:
-			return;
-		default:
-			throw new RuntimeException("Mesh is not ready. Current status " + status.name() + ". Aborting transaction.");
-		}
-	}
-
 	@Override
-	public String backupGraph(String backupDirectory) throws IOException {
+	public String backupDatabase(String backupDirectory) throws IOException {
 		return txProvider.backup(backupDirectory);
 	}
 
 	@Override
-	public void restoreGraph(String backupFile) throws IOException {
+	public void restoreDatabase(String backupFile) throws IOException {
 		txProvider.restore(backupFile);
 	}
 
 	@Override
-	public void exportGraph(String outputDirectory) throws IOException {
+	public void exportDatabase(String outputDirectory) throws IOException {
 		txProvider.exportGraph(outputDirectory);
 	}
 
 	@Override
-	public void importGraph(String importFile) throws IOException {
+	public void importDatabase(String importFile) throws IOException {
 		txProvider.importGraph(importFile);
+	}
+
+	@Override
+	public String getElementVersion(HibElement hibElement) {
+		return getElementVersion((Element) hibElement);
 	}
 
 	@Override
@@ -629,7 +597,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	/**
 	 * Return the orientdb cluster manager.
 	 */
-	public OrientDBClusterManager clusterManager() {
+	public OrientDBClusterManagerImpl clusterManager() {
 		return clusterManager;
 	}
 
@@ -755,12 +723,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public boolean isEmptyDatabase() {
-		return tx(tx -> !tx.getGraph().v().hasNext());
-	}
-
-	@Override
-	public boolean requiresTypeInit() {
-		return true;
+		return tx(tx -> !toGraph(tx).getGraph().v().hasNext());
 	}
 
 	@Override

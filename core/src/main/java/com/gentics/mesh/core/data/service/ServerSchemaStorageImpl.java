@@ -9,8 +9,8 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -48,8 +48,8 @@ public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 	 */
 	public void init() {
 		// Iterate over all schemas and load them into the storage
-		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
-		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
+		SchemaDao schemaDao = Tx.get().schemaDao();
+		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		for (HibSchema schema : schemaDao.findAll()) {
 			for (HibSchemaVersion version : schemaDao.findAllVersions(schema)) {

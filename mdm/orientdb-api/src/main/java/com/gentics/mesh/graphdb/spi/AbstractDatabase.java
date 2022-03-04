@@ -5,8 +5,12 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.CommonDatabase;
+import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.metric.MetricsService;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -16,17 +20,18 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Abstract class for graph database implementations.
  */
-public abstract class AbstractDatabase implements Database {
+public abstract class AbstractDatabase extends CommonDatabase implements GraphDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
-	protected MeshOptions options;
+	protected OrientDBMeshOptions options;
 	protected String meshVersion;
 	protected String[] basePaths;
 
 	private final Lazy<Vertx> vertx;
 
-	public AbstractDatabase(Lazy<Vertx> vertx) {
+	public AbstractDatabase(Lazy<Vertx> vertx, Mesh mesh, MetricsService metrics) {
+		super(mesh, metrics);
 		this.vertx = vertx;
 	}
 
@@ -36,8 +41,9 @@ public abstract class AbstractDatabase implements Database {
 			log.debug("Clearing graph");
 		}
 		tx(tx -> {
-			tx.getGraph().e().removeAll();
-			tx.getGraph().v().removeAll();
+			GraphDBTx gtx = HibClassConverter.toGraph(tx);
+			gtx.getGraph().e().removeAll();
+			gtx.getGraph().v().removeAll();
 			tx.success();
 		});
 		if (log.isDebugEnabled()) {
@@ -68,19 +74,6 @@ public abstract class AbstractDatabase implements Database {
 			e.printStackTrace();
 		}
 		setupConnectionPool();
-	}
-
-	@Override
-	public String getDatabaseRevision() {
-		String overrideRev = System.getProperty("mesh.internal.dbrev");
-		if (overrideRev != null) {
-			return overrideRev;
-		}
-		StringBuilder builder = new StringBuilder();
-		for (String changeUuid : getChangeUuidList()) {
-			builder.append(changeUuid);
-		}
-		return ETag.hash(builder.toString() + getVersion());
 	}
 
 	@Override

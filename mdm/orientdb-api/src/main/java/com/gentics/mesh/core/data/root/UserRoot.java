@@ -17,8 +17,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  * Aggregation node for users.
  */
 public interface UserRoot extends RootVertex<User>, TransformableElementRoot<User, UserResponse> {
-	public static final String TYPE = "users";
-
 	/**
 	 * Find the user with the given username.
 	 * 
@@ -71,11 +69,4 @@ public interface UserRoot extends RootVertex<User>, TransformableElementRoot<Use
 	 * @return
 	 */
 	MeshAuthUser findMeshAuthUserByUuid(String userUuid);
-
-	/**
-	 * Create a new user.
-	 * 
-	 * @return
-	 */
-	User create();
 }

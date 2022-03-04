@@ -6,9 +6,9 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.util.Lazy;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -22,10 +22,10 @@ public class NodeReferenceIn {
 	private final Lazy<String> fieldName;
 	private final Lazy<String> micronodeFieldName;
 
-	private NodeReferenceIn(NodeContent node, NodeGraphField nodeGraphField) {
+	private NodeReferenceIn(NodeContent node, HibNodeField nodeField) {
 		this.node = node;
-		this.fieldName = new Lazy<>(nodeGraphField::getFieldName);
-		this.micronodeFieldName = new Lazy<>(() -> nodeGraphField.getMicronodeFieldName().orElse(null));
+		this.fieldName = new Lazy<>(nodeField::getFieldName);
+		this.micronodeFieldName = new Lazy<>(() -> nodeField.getMicronodeFieldName().orElse(null));
 	}
 
 	/**
@@ -37,15 +37,15 @@ public class NodeReferenceIn {
 	 */
 	public static Stream<NodeReferenceIn> fromContent(GraphQLContext gc, NodeContent content, ContainerType type) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.contentDao();
+		ContentDao contentDao = tx.contentDao();
 		String branchUuid = tx.getBranch(gc).getUuid();
 		return contentDao.getInboundReferences(content.getNode())
 			.flatMap(ref -> ref.getReferencingContents()
 				.filter(container -> {
-					if (type == DRAFT && container.isDraft(branchUuid)) {
+					if (type == DRAFT && contentDao.isDraft(container, branchUuid)) {
 						return true;
 					}
-					if (type == PUBLISHED && container.isPublished(branchUuid)) {
+					if (type == PUBLISHED && contentDao.isPublished(container, branchUuid)) {
 						return true;
 					}
 					return false;

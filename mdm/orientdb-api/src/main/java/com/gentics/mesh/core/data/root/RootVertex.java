@@ -1,36 +1,32 @@
 package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Spliterator;
-import java.util.Stack;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.ElementResolver;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.TraversalResult;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -43,7 +39,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
-public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissions, HasPermissionsRoot {
+public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissionsRoot, ElementResolver<HibBaseElement, T> {
 
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
@@ -67,8 +63,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission) {
 		HibUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.get().getGraph();
-		UserDaoWrapper userDao = Tx.get().userDao();
+		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
+		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		String idx = "e." + getRootLabel().toLowerCase() + "_out";
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
@@ -114,8 +110,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return
 	 */
 	default Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter) {
-		Page<? extends T> page = new DynamicNonTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
-		return page;
+		return new DynamicNonTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
 	}
 
 	/**
@@ -142,33 +137,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	}
 
 	/**
-	 * Load the object by name and check the given permission.
-	 * 
-	 * @param ac
-	 *            Context to be used in order to check user permissions
-	 * @param name
-	 *            Name of the object that should be loaded
-	 * @param perm
-	 *            Permission that must be granted in order to load the object
-	 * @return
-	 */
-	default T findByName(InternalActionContext ac, String name, InternalPermission perm) {
-		T element = findByName(name);
-		if (element == null) {
-			throw error(NOT_FOUND, "object_not_found_for_name", name);
-		}
-
-		HibUser requestUser = ac.getUser();
-		String elementUuid = element.getUuid();
-		UserDaoWrapper userDao = Tx.get().userDao();
-		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {
-			return element;
-		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
-		}
-	}
-
-	/**
 	 * Find the element with the given uuid.
 	 * 
 	 * @param uuid
@@ -176,12 +144,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return Found element or null if the element could not be located
 	 */
 	default T findByUuid(String uuid) {
+		GraphDatabase db = HibClassConverter.toGraph(db());
 		// Try to load the element using the index. This way no record load will happen.
-		T t = db().index().findByUuid(getPersistanceClass(), uuid);
+		T t = db.index().findByUuid(getPersistanceClass(), uuid);
 		if (t != null) {
-			FramedGraph graph = Tx.get().getGraph();
+			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			// Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db().createComposedIndexKey(t
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t
 				.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				return t;
@@ -190,130 +159,17 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		return null;
 	}
 
-	/**
-	 * Load the object by uuid and check the given permission.
-	 * 
-	 * @param ac
-	 *            Context to be used in order to check user permissions
-	 * @param uuid
-	 *            Uuid of the object that should be loaded
-	 * @param perm
-	 *            Permission that must be granted in order to load the object
-	 * @return Loaded element. A not found error will be thrown if the element could not be found. Returned value will never be null.
-	 */
-	default T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
-		return loadObjectByUuid(ac, uuid, perm, true);
+	@Override
+	default BiFunction<HibBaseElement, String, T> getFinder() {
+		return (unused, uuid) -> findByUuid(uuid);
 	}
 
 	/**
-	 * Load the object by uuid and check the given permission.
+	 * Create an uninitialized persisted object.
 	 * 
-	 * @param ac
-	 *            Context to be used in order to check user permissions
-	 * @param uuid
-	 *            Uuid of the object that should be loaded
-	 * @param perm
-	 *            Permission that must be granted in order to load the object
-	 * @param errorIfNotFound
-	 *            True if an error should be thrown, when the element could not be found
-	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
-	 *         be null.
-	 */
-	default T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		T element = findByUuid(uuid);
-		return checkPerms(element, uuid, ac, perm, errorIfNotFound);
-	}
-
-	default T checkPerms(T element, String uuid, InternalActionContext ac, InternalPermission perm, boolean errorIfNotFound) {
-		if (element == null) {
-			if (errorIfNotFound) {
-				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
-			} else {
-				return null;
-			}
-		}
-
-		HibUser requestUser = ac.getUser();
-		String elementUuid = element.getUuid();
-		UserDaoWrapper userDao = Tx.get().userDao();
-		if (userDao.hasPermission(requestUser, element, perm)) {
-			return element;
-		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
-		}
-	}
-
-	/**
-	 * Load the object by uuid. No permission check will be performed.
-	 * 
-	 * @param uuid
-	 *            Uuid of the object that should be loaded
-	 * @param errorIfNotFound
-	 *            True if an error should be thrown, when the element could not be found
-	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
-	 *         be null.
-	 */
-	default T loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		T element = findByUuid(uuid);
-		if (element == null) {
-			if (errorIfNotFound) {
-				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
-			} else {
-				return null;
-			}
-		}
-		return element;
-	}
-
-	/**
-	 * Resolve the given stack to the vertex.
-	 * 
-	 * @param stack
-	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
 	 * @return
 	 */
-	default HibBaseElement resolveToElement(Stack<String> stack) {
-		if (log.isDebugEnabled()) {
-			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
-			if (stack.isEmpty()) {
-				log.debug("Stack: is empty");
-			} else {
-				log.debug("Stack: " + stack.peek());
-			}
-		}
-		if (stack.isEmpty()) {
-			return this;
-		} else {
-			String uuid = stack.pop();
-			if (stack.isEmpty()) {
-				return findByUuid(uuid);
-			} else {
-				throw error(BAD_REQUEST, "Can't resolve remaining segments. Next segment would be: " + stack.peek());
-			}
-		}
-	}
-
-	/**
-	 * Create a new object which is connected or directly related to this aggregation vertex.
-	 * 
-	 * @param ac
-	 *            Context which is used to load information needed for the object creation
-	 * @param batch
-	 */
-	default T create(InternalActionContext ac, EventQueueBatch batch) {
-		return create(ac, batch, null);
-	}
-
-	/**
-	 * Create a new object which is connected or directly related to this aggregation vertex.
-	 * 
-	 * @param ac
-	 *            Context which is used to load information needed for the object creation
-	 * @param batch
-	 * @param uuid
-	 *            optional uuid to create the object with a given uuid (null to create a random uuid)
-	 */
-	T create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	T create();
 
 	/**
 	 * Add the given item to the this root vertex.
@@ -321,9 +177,10 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param item
 	 */
 	default void addItem(T item) {
+		GraphDatabase db = HibClassConverter.toGraph(db());
 		FramedGraph graph = getGraph();
 		// Check whether the item was already added by checking the index
-		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db().createComposedIndexKey(item.id(),
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.id(),
 			id()));
 		if (!edges.iterator().hasNext()) {
 			linkOut(item, getRootLabel());
@@ -378,10 +235,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param roleUuid
 	 * @return
 	 */
-	default PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
-		// TODO implement
-		throw new RuntimeException("Not implemented");
-	}
+	PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid);
 
 	/**
 	 * Return a traversal result for all roles which grant the permission to the element.
@@ -390,34 +244,5 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param perm
 	 * @return
 	 */
-	default Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
-		// TODO implement
-		throw new RuntimeException("Not implemented");
-	}
-
-	/**
-	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
-	 *
-	 * @param element
-	 * @param bac
-	 *            Deletion context which keeps track of the deletion process
-	 */
-	default void delete(T element, BulkActionContext bac) {
-		// TODO implement this in all derived classes
-		throw new RuntimeException("Not implemented");
-	}
-
-	/**
-	 * Update the vertex using the action context information.
-	 *
-	 * @param ac
-	 * @param batch
-	 *            Batch to which entries will be added in order to update the search index.
-	 * @return true if the element was updated. Otherwise false
-	 */
-	default boolean update(T element, InternalActionContext ac, EventQueueBatch batch) {
-		// TODO implement this in all derived classes
-		throw new RuntimeException("Not implemented");
-	}
-
+	Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm);
 }

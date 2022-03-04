@@ -6,13 +6,10 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -32,57 +29,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  * </p>
  */
 public interface ProjectRoot extends RootVertex<Project>, TransformableElementRoot<Project, ProjectResponse> {
-
-	public static final String TYPE = "projects";
-
-	/**
-	 * Create a new project with the given name and add it to the aggregation vertex. Assign the provided schema container version to the created initial branch
-	 * of the project.
-	 * 
-	 * @param projectName
-	 *            Name of the new project.
-	 * @param hostname
-	 *            Hostname of the project which will be assigend to the initial branch.
-	 * @param ssl
-	 *            SSL flag of the project which will be assigned to the initial branch.
-	 * @param pathPrefix
-	 *            Path prefix which will be assigned to the initial branch.
-	 * @param creator
-	 *            User that is being used to set the initial creator and editor references.
-	 * @param schemaVersion
-	 *            Schema container version which will be used to create the basenode
-	 * @param batch
-	 * @return
-	 */
-	@Deprecated
-	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaVersion schemaVersion, EventQueueBatch batch) {
-		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
-	}
-
-	/**
-	 * Create a new project with the given name and add it to the aggregation vertex. Assign the provided schema container version to the created initial branch
-	 * of the project.
-	 * 
-	 * @param projectName
-	 *            Name of the new project.
-	 * @param hostname
-	 *            Hostname of the project which will be assigned to the initial branch.
-	 * @param ssl
-	 *            SSL flag of the project which will be assigned to the initial branch.
-	 * @param pathPrefix
-	 *            Path prefix which will be assigned to the initial branch.
-	 * @param creator
-	 *            User that is being used to set the initial creator and editor references.
-	 * @param schemaVersion
-	 *            Schema container version which will be used to create the basenode
-	 * @param uuid
-	 *            Optional uuid
-	 * @param batch
-	 * @return
-	 */
-	Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaVersion schemaVersion,
-		String uuid, EventQueueBatch batch);
 
 	/**
 	 * Remove the project from the aggregation vertex.
@@ -123,12 +69,4 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 	 * @return
 	 */
 	String getSubETag(Project project, InternalActionContext ac);
-
-	/**
-	 * Create a new project.
-	 * 
-	 * @return
-	 */
-	Project create();
-
 }

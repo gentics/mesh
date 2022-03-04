@@ -12,12 +12,12 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
@@ -115,11 +115,11 @@ public class MainEventHandler implements EventHandler {
 			syncEventHandler,
 			clearEventHandler,
 			forEvent(MeshEvent.SEARCH_FLUSH_REQUEST, MainEventHandler::flushRequest),
-			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getSchema, Schema.composeIndexName()),
-			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, Microschema.composeIndexName()),
-			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getUser, User.composeIndexName()),
-			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getRole, Role.composeIndexName()),
-			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getProject, Project.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getSchema, HibSchema.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, HibMicroschema.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getUser, HibUser.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getRole, HibRole.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getProject, HibProject.composeIndexName()),
 			groupEventHandler,
 			tagEventHandler,
 			tagFamilyEventHandler,

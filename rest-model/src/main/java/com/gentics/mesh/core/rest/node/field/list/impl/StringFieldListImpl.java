@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.node.field.list.impl;
 
 import java.util.Arrays;
 
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.FieldMap;
 
 /**
@@ -19,5 +20,10 @@ public class StringFieldListImpl extends AbstractFieldList<String> {
 		StringFieldListImpl stringFieldList = new StringFieldListImpl();
 		stringFieldList.setItems(Arrays.asList(values));
 		return stringFieldList;
+	}
+
+	@Override
+	public String getItemType() {
+		return FieldTypes.STRING.toString();
 	}
 }

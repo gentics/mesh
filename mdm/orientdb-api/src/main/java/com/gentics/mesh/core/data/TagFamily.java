@@ -1,18 +1,10 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
-
-import java.util.Objects;
-
-import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.search.BucketableElement;
+import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -27,39 +19,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * projects via the {@link TagFamilyRootImpl} class.
  */
 public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
-	RootVertex<Tag>, ProjectElement, HibTagFamily, BucketableElement {
-
-	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
-
-	/**
-	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.
-	 * 
-	 * @param projectUuid
-	 * @return
-	 */
-	static String composeIndexName(String projectUuid) {
-		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
-		StringBuilder indexName = new StringBuilder();
-		indexName.append("tagfamily");
-		indexName.append("-").append(projectUuid);
-		return indexName.toString();
-	}
-
-	@Override
-	default TypeInfo getTypeInfo() {
-		return TYPE_INFO;
-	}
-
-	/**
-	 * Construct the documentId for tag family index documents.
-	 * 
-	 * @param elementUuid
-	 * @return documentId
-	 */
-	static String composeDocumentId(String elementUuid) {
-		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
-		return elementUuid;
-	}
+	RootVertex<Tag>, ProjectElement, HibTagFamily, GraphDBBucketableElement {
 
 	/**
 	 * Return the description of the tag family.
@@ -92,13 +52,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, Referencea
 	TagFamilyRoot getTagFamilyRoot();
 
 	/**
-	 * Set the project to which the tag family should be assigned.
-	 * 
-	 * @param project
-	 */
-	void setProject(Project project);
-
-	/**
 	 * Create a new tag using the information from the action context.
 	 * 
 	 * @param ac
@@ -108,19 +61,13 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, Referencea
 	Tag create(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
-	 * Add the given tag to the aggregation vertex.
-	 * 
-	 * @param tag
-	 *            Tag to be added
+	 * @deprecated Remove after PersistingTag/FamilyDao approached.
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
 	 */
-	void addTag(Tag tag);
-
-	/**
-	 * Remove the tag from the aggregation vertex.
-	 * 
-	 * @param tag
-	 *            Tag to be removed
-	 */
-	void removeTag(Tag tag);
+	@Deprecated
+	Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 }

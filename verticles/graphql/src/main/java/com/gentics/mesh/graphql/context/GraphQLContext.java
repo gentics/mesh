@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.error.PermissionException;
@@ -26,7 +26,7 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @return Provided element will be returned if at least one of the permissions grants access
 	 * @throws PermissionException
 	 */
-	<T extends HibCoreElement> T requiresPerm(T element, InternalPermission... permission);
+	<T extends HibCoreElement<?>> T requiresPerm(T element, InternalPermission... permission);
 
 	/**
 	 * Check whether the current user of the context has read permission on the container (via type and parent node).
@@ -34,7 +34,7 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @param container
 	 * @return
 	 */
-	boolean hasReadPerm(NodeGraphFieldContainer container);
+	boolean hasReadPerm(HibNodeFieldContainer container);
 
 	/**
 	 * Check whether the current user of the context has read permission on the container (via type and parent node).
@@ -44,7 +44,7 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @param env Environment used to add perm errors
 	 * @return Provided container or null if permissions are lacking.
 	 */
-	NodeGraphFieldContainer requiresReadPermSoft(NodeGraphFieldContainer container, DataFetchingEnvironment env);
+	HibNodeFieldContainer requiresReadPermSoft(HibNodeFieldContainer container, DataFetchingEnvironment env);
 
 	/**
 	 * Check whether the content can be read by the current user. Please note that this method will not check READ perms on the node. It is only checking the content container of the node. 

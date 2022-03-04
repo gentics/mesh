@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.23-SNAPSHOT</version>
+		<version>1.8.0-alpha3</version>
 	</parent>
 
 	<properties>
@@ -34,7 +34,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core</artifactId>
+			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -57,7 +57,7 @@
 					<execution>
 						<?m2e ignore?>
 						<id>copy-sharedlib-dependencies</id>
-						<phase>package</phase>
+						<phase>compile</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>

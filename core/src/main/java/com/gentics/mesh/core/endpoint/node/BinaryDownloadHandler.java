@@ -10,18 +10,18 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -63,7 +63,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 			// }
 
 			HibBranch branch = tx.getBranch(ac, node.getProject());
-			NodeGraphFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
+			HibNodeFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
 				branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
@@ -74,13 +74,13 @@ public class BinaryDownloadHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
 			if ((fieldSchema instanceof BinaryFieldSchema)) {
-				BinaryGraphField field = fieldContainer.getBinary(fieldName);
+				HibBinaryField field = fieldContainer.getBinary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
 				binaryFieldResponseHandler.handle(rc, field);
 			} else if ((fieldSchema instanceof S3BinaryFieldSchema)) {
-				S3BinaryGraphField field = fieldContainer.getS3Binary(fieldName);
+				S3HibBinaryField field = fieldContainer.getS3Binary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
 				}

@@ -16,11 +16,11 @@ import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
-import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.TokenUtil;
 
@@ -72,14 +71,14 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				UserDaoWrapper userDao = tx.userDao();
+				UserDao userDao = tx.userDao();
 
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
 				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				HibBaseElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+				HibBaseElement targetElement = boot.rootResolver().resolvePathToElement(pathToElement);
 				if (targetElement == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 				}

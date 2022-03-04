@@ -1,16 +1,16 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
  */
-public interface MeshRoot extends MeshVertex, HibMeshVersion {
+public interface MeshRoot extends RootResolver, MeshVertex, HibMeshVersion {
 
 	public static final String MESH_VERSION = "meshVersion";
 
@@ -94,14 +94,6 @@ public interface MeshRoot extends MeshVertex, HibMeshVersion {
 	MicroschemaRoot getMicroschemaContainerRoot();
 
 	/**
-	 * This method will try to resolve the given path and return the element that is matching the path.
-	 * 
-	 * @param pathToElement
-	 * @return Resolved element or null if no element could be found
-	 */
-	HibBaseElement resolvePathToElement(String pathToElement);
-
-	/**
 	 * Clear internally stored graph element references.
 	 * (e.g. to root elements)
 	 */
@@ -115,4 +107,18 @@ public interface MeshRoot extends MeshVertex, HibMeshVersion {
 	 */
 	Node findNodeByUuid(String uuid);
 
+	/**
+	 * Return total amount of nodes across all projects.
+	 * 
+	 * @return
+	 */
+	long nodeCount();
+
+	/**
+	 * Load all nodes.
+	 * This function is for the low level unit tests only.
+	 * 
+	 * @return
+	 */
+	Result<? extends Node> findAllNodes();
 }

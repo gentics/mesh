@@ -13,13 +13,12 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -53,14 +52,14 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	}
 
 	@Override
-	public Class<Role> getElementClass() {
-		return Role.class;
+	public Class<HibRole> getElementClass() {
+		return HibRole.class;
 	}
 
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.roleDao().globalCount();
+			return tx.roleDao().count();
 		});
 	}
 
@@ -76,29 +75,29 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = Role.composeIndexName();
+		String indexName = HibRole.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "role");
 		return Collections.singletonMap(indexName, info);
 	}
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Role.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibRole.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Role.composeIndexName());
+		return filterIndicesByType(indices, HibRole.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Role.composeIndexName());
+		return Collections.singleton(HibRole.composeIndexName());
 	}
 
 	@Override
 	public Function<String, HibRole> elementLoader() {
-		return (uuid) -> boot.meshRoot().getRoleRoot().findByUuid(uuid);
+		return (uuid) -> boot.roleDao().findByUuid(uuid);
 	}
 
 	@Override

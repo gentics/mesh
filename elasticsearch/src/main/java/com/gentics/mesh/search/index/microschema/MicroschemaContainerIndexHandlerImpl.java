@@ -15,12 +15,11 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -57,13 +56,13 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Class<? extends HibBucketableElement> getElementClass() {
-		return Microschema.class;
+		return HibMicroschema.class;
 	}
 
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.microschemaDao().globalCount();
+			return tx.microschemaDao().count();
 		});
 	}
 
@@ -79,22 +78,22 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Microschema.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibMicroschema.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Microschema.composeIndexName());
+		return filterIndicesByType(indices, HibMicroschema.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Microschema.composeIndexName());
+		return Collections.singleton(HibMicroschema.composeIndexName());
 	}
 
 	@Override
 	public Function<String, HibMicroschema> elementLoader() {
-		return (uuid) -> boot.meshRoot().getMicroschemaContainerRoot().findByUuid(uuid);
+		return (uuid) -> boot.microschemaDao().findByUuid(uuid);
 	}
 
 	@Override
@@ -104,7 +103,7 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = Microschema.composeIndexName();
+		String indexName = HibMicroschema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "microschema");
 		return Collections.singletonMap(indexName, info);
 	}

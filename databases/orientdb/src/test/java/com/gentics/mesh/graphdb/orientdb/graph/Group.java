@@ -3,7 +3,7 @@ package com.gentics.mesh.graphdb.orientdb.graph;
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.frame.AbstractVertexFrame;
 import com.gentics.mesh.annotation.Setter;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.TraversalResult;
 
 /**
  * Test entity

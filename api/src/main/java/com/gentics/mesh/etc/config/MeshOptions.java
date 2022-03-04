@@ -15,10 +15,10 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.util.PasswordUtil;
 
 /**
- * Main mesh configuration POJO.
+ * Mesh configuration POJO base.
  */
 @GenerateDocumentation
-public class MeshOptions implements Option {
+public abstract class MeshOptions implements Option {
 
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
@@ -75,10 +75,6 @@ public class MeshOptions implements Option {
 	private ClusterOptions clusterOptions = new ClusterOptions();
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Graph database options.")
-	private GraphStorageOptions storageOptions = new GraphStorageOptions();
-
-	@JsonProperty(required = true)
 	@JsonPropertyDescription("Search engine options.")
 	private ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 
@@ -110,10 +106,6 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Debug info options.")
 	private DebugInfoOptions debugInfoOptions = new DebugInfoOptions();
 
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("GraphQL options.")
-	private GraphQLOptions graphQLOptions = new GraphQLOptions();
-
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
@@ -144,6 +136,10 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("The maximum amount of node versions that are purged before the database transaction is committed.")
 	@EnvironmentVariable(name = MESH_MAX_PURGE_BATCH_SIZE, description = "Override the maximum purge batch size.")
 	private int versionPurgeMaxBatchSize = 10;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("GraphQL options.")
+	private GraphQLOptions graphQLOptions = new GraphQLOptions();
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
@@ -209,14 +205,14 @@ public class MeshOptions implements Option {
 		return this;
 	}
 
-	@JsonProperty("storage")
-	public GraphStorageOptions getStorageOptions() {
-		return this.storageOptions;
+	@JsonProperty("upload")
+	public MeshUploadOptions getUploadOptions() {
+		return uploadOptions;
 	}
 
 	@Setter
-	public MeshOptions setStorageOptions(GraphStorageOptions storageOptions) {
-		this.storageOptions = storageOptions;
+	public MeshOptions setUploadOptions(MeshUploadOptions uploadOptions) {
+		this.uploadOptions = uploadOptions;
 		return this;
 	}
 
@@ -231,17 +227,6 @@ public class MeshOptions implements Option {
 	@Setter
 	public MeshOptions setS3Options(S3Options s3options) {
 		this.s3options = s3options;
-		return this;
-	}
-
-	@JsonProperty("upload")
-	public MeshUploadOptions getUploadOptions() {
-		return uploadOptions;
-	}
-
-	@Setter
-	public MeshOptions setUploadOptions(MeshUploadOptions uploadOptions) {
-		this.uploadOptions = uploadOptions;
 		return this;
 	}
 
@@ -264,6 +249,26 @@ public class MeshOptions implements Option {
 	@Setter
 	public MeshOptions setMonitoringOptions(MonitoringConfig monitoringOptions) {
 		this.monitoringOptions = monitoringOptions;
+		return this;
+	}
+
+
+	/**
+	 * Get the graphql options
+	 * @return graphql options
+	 */
+	@JsonProperty("graphQL")
+	public GraphQLOptions getGraphQLOptions() {
+		return graphQLOptions;
+	}
+
+	/**
+	 * Set the graphql options
+	 * @param graphQlOptions options
+	 * @return fluent API
+	 */
+	public MeshOptions setGraphQlOptions(GraphQLOptions graphQlOptions) {
+		this.graphQLOptions = graphQlOptions;
 		return this;
 	}
 
@@ -367,25 +372,6 @@ public class MeshOptions implements Option {
 	@JsonProperty("cache")
 	public CacheConfig getCacheConfig() {
 		return cacheConfig;
-	}
-
-	/**
-	 * Get the graphql options
-	 * @return graphql options
-	 */
-	@JsonProperty("graphQL")
-	public GraphQLOptions getGraphQLOptions() {
-		return graphQLOptions;
-	}
-
-	/**
-	 * Set the graphql options
-	 * @param graphQlOptions options
-	 * @return fluent API
-	 */
-	public MeshOptions setGraphQlOptions(GraphQLOptions graphQlOptions) {
-		this.graphQLOptions = graphQlOptions;
-		return this;
 	}
 
 	@Setter
@@ -526,9 +512,6 @@ public class MeshOptions implements Option {
 		if (getClusterOptions() != null) {
 			getClusterOptions().validate(this);
 		}
-		if (getStorageOptions() != null) {
-			getStorageOptions().validate(this);
-		}
 		if (getSearchOptions() != null) {
 			getSearchOptions().validate(this);
 		}
@@ -547,9 +530,6 @@ public class MeshOptions implements Option {
 		if (getContentOptions() != null) {
 			getContentOptions().validate(this);
 		}
-		if (getGraphQLOptions() != null) {
-			getGraphQLOptions().validate(this);
-		}
 		if (getS3Options() != null) {
 			getS3Options().validate(this);
 		}
@@ -564,5 +544,4 @@ public class MeshOptions implements Option {
 	public void validate(MeshOptions options) {
 		validate();
 	}
-
 }

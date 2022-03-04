@@ -11,13 +11,12 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.23-SNAPSHOT</version>
+		<version>1.8.0-alpha3</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
-		<skip.test-plugins>true</skip.test-plugins>
 		<mesh.mdm.provider.groupId>${project.groupId}</mesh.mdm.provider.groupId>
 		<mesh.mdm.provider.artifactId>mesh-orientdb</mesh.mdm.provider.artifactId>
 		<mesh.mdm.provider.version>${project.version}</mesh.mdm.provider.version>
@@ -38,26 +37,13 @@
 
 
 	<dependencies>
-<!--		<dependency>-->
-<!--			<groupId>${mesh.mdm.provider.groupId}</groupId>-->
-<!--			<artifactId>${mesh.mdm.provider.artifactId}</artifactId>-->
-<!--			<version>${mesh.mdm.provider.version}</version>-->
-<!--		</dependency>-->
+		<!-- <dependency> -->
+		<!-- <groupId>${mesh.mdm.provider.groupId}</groupId> -->
+		<!-- <artifactId>${mesh.mdm.provider.artifactId}</artifactId> -->
+		<!-- <version>${mesh.mdm.provider.version}</version> -->
+		<!-- </dependency> -->
 
 		<!-- Internal dependencies -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-orientdb</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-distributed</artifactId>
@@ -128,12 +114,6 @@
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
 
-		<!-- Changelog system -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-changelog-system</artifactId>
-		</dependency>
-
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-core</artifactId>
@@ -183,34 +163,6 @@
 
 		<!-- Test dependencies -->
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-orientdb</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 		</dependency>
@@ -226,7 +178,6 @@
 			<artifactId>mesh-service-aws-s3-storage</artifactId>
 		</dependency>
 	</dependencies>
-
 
 	<build>
 		<plugins>
@@ -278,11 +229,6 @@
 								</manifestEntries>
 							</archive>
 						</configuration>
-					</execution>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>

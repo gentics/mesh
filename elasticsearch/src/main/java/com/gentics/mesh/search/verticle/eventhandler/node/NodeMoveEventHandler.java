@@ -45,8 +45,8 @@ public class NodeMoveEventHandler implements EventHandler {
 		return Flowable.defer(() -> {
 			NodeMovedEventModel model = requireType(NodeMovedEventModel.class, messageEvent.message);
 			return helper.getDb().transactional(tx -> {
-				return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
-					.flatMap(project -> findElementByUuidStream(project.getBranchRoot(), model.getBranchUuid())
+				return findElementByUuidStream(helper.getBoot().projectDao(), model.getProject().getUuid())
+					.flatMap(project -> findElementByUuidStream(helper.getBoot().branchDao(), project, model.getBranchUuid())
 						.flatMap(branch -> entities.generateNodeRequests(model.getUuid(), project, branch)))
 					.collect(toFlowable());
 			}).runInNewTx();

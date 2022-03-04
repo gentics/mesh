@@ -23,25 +23,31 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.node.field.*;
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -85,7 +91,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .binaryUuid
 		type.field(newFieldDefinition().name("binaryUuid").description("UUID of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
-			BinaryGraphField field = fetcher.getSource();
+			HibBinaryField field = fetcher.getSource();
 			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getUuid();
 		}));
@@ -95,14 +101,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .width
 		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
-			BinaryGraphField field = fetcher.getSource();
+			HibBinaryField field = fetcher.getSource();
 			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getImageWidth();
 		}));
 
 		// .height
 		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
-			BinaryGraphField field = fetcher.getSource();
+			HibBinaryField field = fetcher.getSource();
 			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getImageHeight();
 		}));
@@ -110,13 +116,13 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .sha512sum
 		type.field(
 			newFieldDefinition().name("sha512sum").description("SHA512 checksum of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
-				BinaryGraphField field = fetcher.getSource();
+				HibBinaryField field = fetcher.getSource();
 				return field.getBinary().getSHA512Sum();
 			}));
 
 		// .fileSize
 		type.field(newFieldDefinition().name("fileSize").description("Size of the binary data in bytes").type(GraphQLLong).dataFetcher(fetcher -> {
-			BinaryGraphField field = fetcher.getSource();
+			HibBinaryField field = fetcher.getSource();
 			return field.getBinary().getSize();
 		}));
 
@@ -126,14 +132,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .dominantColor
 		type.field(
 			newFieldDefinition().name("dominantColor").description("Computed image dominant color").type(GraphQLString).dataFetcher(fetcher -> {
-				BinaryGraphField field = fetcher.getSource();
+				HibBinaryField field = fetcher.getSource();
 				return field.getImageDominantColor();
 			}));
 
 		// .focalPoint
 		type.field(
 			newFieldDefinition().name("focalPoint").description("Focal point of the image.").type(createFocalPointType("FocalPoint")).dataFetcher(fetcher -> {
-				BinaryGraphField field = fetcher.getSource();
+				HibBinaryField field = fetcher.getSource();
 				return field.getImageFocalPoint();
 			}));
 
@@ -148,8 +154,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .s3binaryUuid
 		type.field(newFieldDefinition().name("s3binaryUuid").description("UUID of the s3 binary data.").type(GraphQLString).dataFetcher(fetcher -> {
-			S3BinaryGraphField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3HibBinaryField field = fetcher.getSource();
+			S3HibBinary s3Binary = field.getBinary();
 			return s3Binary == null ? 0 : s3Binary.getUuid();
 		}));
 
@@ -158,22 +164,22 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .width
 		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
-			S3BinaryGraphField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3HibBinaryField field = fetcher.getSource();
+			S3HibBinary s3Binary = field.getBinary();
 			return s3Binary == null ? 0 : s3Binary.getImageWidth();
 		}));
 
 		// .height
 		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
-			S3BinaryGraphField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3HibBinaryField field = fetcher.getSource();
+			S3HibBinary s3Binary = field.getBinary();
 			return s3Binary == null ? 0 : s3Binary.getImageHeight();
 		}));
 
 		// .fileSize
 		type.field(newFieldDefinition().name("fileSize").description("Size of the s3 binary data in bytes").type(GraphQLLong).dataFetcher(fetcher -> {
-			S3BinaryGraphField field = fetcher.getSource();
-			S3HibBinary s3Binary = field.getS3Binary();
+			S3HibBinaryField field = fetcher.getSource();
+			S3HibBinary s3Binary = field.getBinary();
 			return s3Binary.getSize();
 		}));
 
@@ -183,14 +189,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .dominantColor
 		type.field(
 				newFieldDefinition().name("dominantColor").description("Computed image dominant color").type(GraphQLString).dataFetcher(fetcher -> {
-					S3BinaryGraphField field = fetcher.getSource();
+					S3HibBinaryField field = fetcher.getSource();
 					return field.getImageDominantColor();
 				}));
 
 		// .focalPoint
 		type.field(
 				newFieldDefinition().name("focalPoint").description("Focal point of the image.").type(createFocalPointType("S3FocalPoint")).dataFetcher(fetcher -> {
-					S3BinaryGraphField field = fetcher.getSource();
+					S3HibBinaryField field = fetcher.getSource();
 					return field.getImageFocalPoint();
 				}));
 
@@ -226,7 +232,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public GraphQLFieldDefinition createBinaryDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(BINARY_FIELD_TYPE_NAME))
 			.dataFetcher(env -> {
-				GraphFieldContainer container = env.getSource();
+				HibFieldContainer container = env.getSource();
 				return container.getBinary(schema.getName());
 			}).build();
 
@@ -235,15 +241,15 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public GraphQLFieldDefinition createS3BinaryDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(S3_BINARY_FIELD_TYPE_NAME))
 				.dataFetcher(env -> {
-					GraphFieldContainer container = env.getSource();
+					HibFieldContainer container = env.getSource();
 					return container.getS3Binary(schema.getName());
 				}).build();
 	}
 
 	public GraphQLFieldDefinition createBooleanDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLBoolean).dataFetcher(env -> {
-			GraphFieldContainer container = env.getSource();
-			BooleanGraphField booleanField = container.getBoolean(schema.getName());
+			HibFieldContainer container = env.getSource();
+			HibBooleanField booleanField = container.getBoolean(schema.getName());
 			if (booleanField != null) {
 				return booleanField.getBoolean();
 			}
@@ -253,8 +259,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 	public GraphQLFieldDefinition createNumberDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLBigDecimal).dataFetcher(env -> {
-			GraphFieldContainer container = env.getSource();
-			NumberGraphField numberField = container.getNumber(schema.getName());
+			HibFieldContainer container = env.getSource();
+			HibNumberField numberField = container.getNumber(schema.getName());
 			if (numberField != null) {
 				return numberField.getNumber();
 			}
@@ -265,8 +271,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public GraphQLFieldDefinition createHtmlDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLString).argument(createLinkTypeArg())
 			.dataFetcher(env -> {
-				GraphFieldContainer container = env.getSource();
-				HtmlGraphField htmlField = container.getHtml(schema.getName());
+				HibFieldContainer container = env.getSource();
+				HibHtmlField htmlField = container.getHtml(schema.getName());
 				if (htmlField != null) {
 					Tx tx = Tx.get();
 					GraphQLContext gc = env.getContext();
@@ -283,8 +289,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLString).argument(createLinkTypeArg())
 			.dataFetcher(env -> {
 				Tx tx = Tx.get();
-				GraphFieldContainer container = env.getSource();
-				StringGraphField field = container.getString(schema.getName());
+				HibFieldContainer container = env.getSource();
+				HibStringField field = container.getString(schema.getName());
 				if (field != null) {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
@@ -298,8 +304,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 	public GraphQLFieldDefinition createDateDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLString).dataFetcher(env -> {
-			GraphFieldContainer container = env.getSource();
-			DateGraphField dateField = container.getDate(schema.getName());
+			HibFieldContainer container = env.getSource();
+			HibDateField dateField = container.getDate(schema.getName());
 			if (dateField != null) {
 				return DateUtils.toISO8601(dateField.getDate(), 0);
 			}
@@ -337,19 +343,19 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		return fieldType.dataFetcher(env -> {
 			Tx tx = Tx.get();
-			ContentDaoWrapper contentDao = tx.contentDao();
-			GraphFieldContainer container = env.getSource();
+			ContentDao contentDao = tx.contentDao();
+			HibFieldContainer container = env.getSource();
 			GraphQLContext gc = env.getContext();
 
 			switch (schema.getListType()) {
 			case "boolean":
-				BooleanGraphFieldList booleanList = container.getBooleanList(schema.getName());
+				HibBooleanFieldList booleanList = container.getBooleanList(schema.getName());
 				if (booleanList == null) {
 					return null;
 				}
 				return booleanList.getList().stream().map(item -> item.getBoolean()).collect(Collectors.toList());
 			case "html":
-				HtmlGraphFieldList htmlList = container.getHTMLList(schema.getName());
+				HibHtmlFieldList htmlList = container.getHTMLList(schema.getName());
 				if (htmlList == null) {
 					return null;
 				}
@@ -360,7 +366,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "string":
-				StringGraphFieldList stringList = container.getStringList(schema.getName());
+				HibStringFieldList stringList = container.getStringList(schema.getName());
 				if (stringList == null) {
 					return null;
 				}
@@ -371,19 +377,19 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "number":
-				NumberGraphFieldList numberList = container.getNumberList(schema.getName());
+				HibNumberFieldList numberList = container.getNumberList(schema.getName());
 				if (numberList == null) {
 					return null;
 				}
 				return numberList.getList().stream().map(item -> item.getNumber()).collect(Collectors.toList());
 			case "date":
-				DateGraphFieldList dateList = container.getDateList(schema.getName());
+				HibDateFieldList dateList = container.getDateList(schema.getName());
 				if (dateList == null) {
 					return null;
 				}
 				return dateList.getList().stream().map(item -> DateUtils.toISO8601(item.getDate(), 0)).collect(Collectors.toList());
 			case "node":
-				NodeGraphFieldList nodeList = container.getNodeList(schema.getName());
+				HibNodeFieldList nodeList = container.getNodeList(schema.getName());
 				if (nodeList == null) {
 					return null;
 				}
@@ -393,16 +399,16 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
 					HibNode node = item.getNode();
 					List<String> languageTags;
-					if (container instanceof NodeGraphFieldContainer) {
+					if (container instanceof HibNodeFieldContainer) {
 						languageTags = Arrays.asList(container.getLanguageTag());
-					} else if (container instanceof Micronode) {
-						Micronode micronode = (Micronode) container;
+					} else if (container instanceof HibMicronode) {
+						HibMicronode micronode = (HibMicronode) container;
 						languageTags = Arrays.asList(micronode.getContainer().getLanguageTag());
 					} else {
 						throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
 					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
-					NodeGraphFieldContainer itemContainer = contentDao.findVersion(node, gc, languageTags, nodeType);
+					HibNodeFieldContainer itemContainer = contentDao.findVersion(node, gc, languageTags, nodeType);
 					return new NodeContent(node, itemContainer, languageTags, nodeType);
 				});
 				if (filterArgument != null) {
@@ -413,7 +419,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					.filter(gc::hasReadPerm)
 					.collect(Collectors.toList());
 			case "micronode":
-				MicronodeGraphFieldList micronodeList = container.getMicronodeList(schema.getName());
+				HibMicronodeFieldList micronodeList = container.getMicronodeList(schema.getName());
 				if (micronodeList == null) {
 					return null;
 				}
@@ -455,8 +461,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, HibProject project) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
 			.dataFetcher(env -> {
-				GraphFieldContainer container = env.getSource();
-				MicronodeGraphField micronodeField = container.getMicronode(schema.getName());
+				HibFieldContainer container = env.getSource();
+				HibMicronodeField micronodeField = container.getMicronode(schema.getName());
 				if (micronodeField != null) {
 					return micronodeField.getMicronode();
 				}
@@ -477,13 +483,13 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
-				ContentDaoWrapper contentDao = Tx.get().contentDao();
+				ContentDao contentDao = Tx.get().contentDao();
 				GraphQLContext gc = env.getContext();
-				GraphFieldContainer source = env.getSource();
+				HibFieldContainer source = env.getSource();
 				ContainerType type = getNodeVersion(env);
 
 				// TODO decide whether we want to reference the default content by default
-				NodeGraphField nodeField = source.getNode(schema.getName());
+				HibNodeField nodeField = source.getNode(schema.getName());
 				if (nodeField != null) {
 					HibNode node = nodeField.getNode();
 					if (node != null) {
@@ -491,7 +497,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						List<String> languageTags = getLanguageArgument(env, source);
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-						NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+						HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 						container = gc.requiresReadPermSoft(container, env);
 						return new NodeContent(node, container, languageTags, type);
 					}

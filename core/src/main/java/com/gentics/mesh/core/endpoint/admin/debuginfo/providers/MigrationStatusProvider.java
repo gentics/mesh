@@ -8,14 +8,14 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Flowable;
 
@@ -57,8 +57,8 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 
 	private Flowable<ProjectBranch> getAllBranches() {
 		return db.singleTx(tx -> {
-			BranchDaoWrapper branchDao = tx.branchDao();
-			ProjectDaoWrapper projectDao = tx.projectDao();
+			BranchDao branchDao = tx.branchDao();
+			ProjectDao projectDao = tx.projectDao();
 			return projectDao.findAll().stream()
 				.flatMap(project -> branchDao.findAll(project).stream()
 					.map(branch -> new ProjectBranch(project.getName(), branch.getName(), branch)))

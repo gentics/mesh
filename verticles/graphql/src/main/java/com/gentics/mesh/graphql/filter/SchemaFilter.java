@@ -9,7 +9,7 @@ import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
@@ -41,7 +41,7 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 
 	private GraphQLEnumType schemaEnum() {
 		Tx tx = Tx.get();
-		SchemaDaoWrapper schemaDao = tx.schemaDao();
+		SchemaDao schemaDao = tx.schemaDao();
 		HibProject project = tx.getProject(context);
 		List<GraphQLEnumValueDefinition> values = StreamSupport.stream(schemaDao.findAll(project).spliterator(), false)
 			.map(schema -> {

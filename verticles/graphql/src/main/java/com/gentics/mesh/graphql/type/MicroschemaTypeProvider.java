@@ -12,9 +12,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -60,8 +60,8 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
 			GraphQLContext gc = env.getContext();
-			Microschema microschema = env.getSource();
-			UserDaoWrapper userDao = Tx.get().userDao();
+			HibMicroschema microschema = env.getSource();
+			UserDao userDao = Tx.get().userDao();
 			return microschema.findReferencedBranches().keySet().stream()
 				.map(HibBranch::getProject)
 				.distinct()

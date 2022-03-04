@@ -41,7 +41,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private final Lazy<Vertx> vertx;
 
-	private OrientDBClusterManager manager;
+	private OrientDBClusterManagerImpl manager;
 
 	private final Lazy<BootstrapInitializer> boot;
 
@@ -55,7 +55,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private ClusterOptions clusterOptions;
 
-	public TopologyEventBridge(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager,
+	public TopologyEventBridge(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManagerImpl manager,
 		HazelcastInstance hz) {
 		this.clusterOptions = options.getClusterOptions();
 		this.vertx = vertx;
@@ -136,6 +136,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			statusInfo.put("node", nodeName);
 			statusInfo.put("database", iDatabaseName);
 			statusInfo.put("status", iNewStatus.name());
+			statusInfo.put("online", iNewStatus == DB_STATUS.ONLINE);
 			getEventBus().publish(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
 		}
 		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && nodeName.equals(manager.getNodeName())) {

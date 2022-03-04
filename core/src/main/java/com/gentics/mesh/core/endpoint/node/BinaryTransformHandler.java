@@ -1,22 +1,38 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -29,16 +45,15 @@ import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.UUIDUtil;
+
 import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -50,16 +65,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Handler for binary or s3binary transformer requests.
@@ -113,7 +118,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		// Load needed elements
 		HibNode node = db.tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
@@ -125,7 +130,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		});
 
 		db.tx(() -> {
-			NodeGraphFieldContainer fieldContainer = loadTargetedContent(node, languageTag, fieldName);
+			HibNodeFieldContainer fieldContainer = loadTargetedContent(node, languageTag, fieldName);
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -134,13 +139,13 @@ public class BinaryTransformHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
 			if ((fieldSchema instanceof BinaryFieldSchema)) {
-				BinaryGraphField field = fieldContainer.getBinary(fieldName);
+				HibBinaryField field = fieldContainer.getBinary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
 				handleTransformImage(rc, uuid, fieldName);
 			} else if ((fieldSchema instanceof S3BinaryFieldSchema)) {
-				S3BinaryGraphField field = fieldContainer.getS3Binary(fieldName);
+				S3HibBinaryField field = fieldContainer.getS3Binary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
 				}
@@ -171,19 +176,6 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		String languageTag = transformation.getLanguage();
 
-		// Load needed elements
-		HibNode node = db.tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			HibProject project = tx.getProject(ac);
-			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
-			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
-			}
-			return n;
-		});
-
 		// Prepare the imageManipulationParameter using the transformation request as source
 		ImageManipulationParameters parameters = new ImageManipulationParametersImpl();
 		parameters.setWidth(transformation.getWidth());
@@ -199,16 +191,25 @@ public class BinaryTransformHandler extends AbstractHandler {
 			parameters.setResizeMode(ResizeMode.SMART);
 		}
 		// Lookup the s3 binary and set the focal point parameters
-		S3HibBinary s3binaryField = db.tx(() -> {
-			NodeGraphFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
-			S3BinaryGraphField field = loadS3BinaryField(container, fieldName);
+		S3HibBinary s3binaryField = db.tx(tx -> {
+			NodeDao nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+
+			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			if (language == null) {
+				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
+			}
+
+			HibNodeFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
+			S3HibBinaryField field = loadS3BinaryField(container, fieldName);
 			// Use the focal point which is stored along with the s3 binary field if no custom point was included in the query parameters.
 			// Otherwise the query parameter focal point will be used and thus override the stored focal point.
 			FocalPoint focalPoint = field.getImageFocalPoint();
 			if (!parameters.hasFocalPoint() && focalPoint != null) {
 				parameters.setFocalPoint(focalPoint);
 			}
-			return field.getS3Binary();
+			return field.getBinary();
 		});
 
 		parameters.validate();
@@ -229,7 +230,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 						return new TransformationResult(null, props.size(), infoV, file.getName());
 					});
 				})
-				.flatMap(transformationResult ->  Single.just(updateNodeInGraph(ac, s3UploadContext, transformationResult, node, languageTag, fieldName, parameters)))
+				.flatMap(transformationResult ->  Single.just(updateNodeInGraph(ac, s3UploadContext, transformationResult, uuid, languageTag, fieldName, parameters)))
 				.subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -255,19 +256,6 @@ public class BinaryTransformHandler extends AbstractHandler {
 		String temporaryId = UUIDUtil.randomUUID();
 		String languageTag = transformation.getLanguage();
 
-		// Load needed elements
-		HibNode node = db.tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			HibProject project = tx.getProject(ac);
-			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
-			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
-			}
-			return n;
-		});
-
 		// Prepare the imageManipulationParameter using the transformation request as source
 		ImageManipulationParameters parameters = new ImageManipulationParametersImpl();
 		parameters.setWidth(transformation.getWidth());
@@ -284,23 +272,30 @@ public class BinaryTransformHandler extends AbstractHandler {
 		}
 		UploadContext context = new UploadContext();
 		// Lookup the binary and set the focal point parameters
-		HibBinary binaryField = db.tx(() -> {
-			NodeGraphFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
-			BinaryGraphField field = loadBinaryField(container, fieldName);
-			// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
-			// Otherwise the query parameter focal point will be used and thus override the stored focal point.
-			FocalPoint focalPoint = field.getImageFocalPoint();
-			if (!parameters.hasFocalPoint() && focalPoint != null) {
-				parameters.setFocalPoint(focalPoint);
-			}
-			return field.getBinary();
-		});
 
 		parameters.validate();
 
 		// Read and resize the original image and store the result in the filesystem
-		Single<TransformationResult> obsTransformation = db.tx(() -> imageManipulator.handleResize(binaryField, parameters))
-			.flatMap(file -> {
+		Single<TransformationResult> obsTransformation = db.tx(tx -> {
+				NodeDao nodeDao = tx.nodeDao();
+				HibProject project = tx.getProject(ac);
+				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+	
+				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
+				}
+	
+				HibNodeFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
+				HibBinaryField field = loadBinaryField(container, fieldName);
+				// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
+				// Otherwise the query parameter focal point will be used and thus override the stored focal point.
+				FocalPoint focalPoint = field.getImageFocalPoint();
+				if (!parameters.hasFocalPoint() && focalPoint != null) {
+					parameters.setFocalPoint(focalPoint);
+				}
+				return imageManipulator.handleResize(field.getBinary(), parameters);
+			}).flatMap(file -> {
 				// Hash the resized image data and store it using the computed fieldUuid + hash
 				Flowable<Buffer> stream = fs.rxOpen(file, new OpenOptions()).flatMapPublisher(RxUtil::toBufferFlow);
 				Single<String> hash = FileUtils.hash(stream);
@@ -334,7 +329,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			return binaryStorage.storeInTemp(data, temporaryId).andThen(Single.just(r));
 		}).map(r -> {
 			// Update graph with the new image information
-			return updateNodeInGraph(ac, context, r, node, languageTag, fieldName, parameters);
+			return updateNodeInGraph(ac, context, r, uuid, languageTag, fieldName, parameters);
 		}).onErrorResumeNext(e -> {
 			if (context.isInvokeStore()) {
 				if (log.isDebugEnabled()) {
@@ -360,17 +355,19 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 	}
 
-	private NodeResponse updateNodeInGraph(InternalActionContext ac, S3UploadContext s3UploadContext, TransformationResult result, HibNode node,
+	private NodeResponse updateNodeInGraph(InternalActionContext ac, S3UploadContext s3UploadContext, TransformationResult result, String nodeUuid,
 										   String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
+			NodeDao nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
 
-			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
-
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 			HibBranch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
-			NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+			HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 					latestDraftVersion, true);
 
 			// TODO Add conflict checking
@@ -379,13 +376,13 @@ public class BinaryTransformHandler extends AbstractHandler {
 			S3HibBinary s3HibBinary = s3binaries.create(s3UploadContext.getS3BinaryUuid(), s3UploadContext.getS3ObjectKey(), s3UploadContext.getFileName()).runInExistingTx(tx);
 
 			// Now create the binary field in which we store the information about the file
-			S3BinaryGraphField oldField = newDraftVersion.getS3Binary(fieldName);
-			S3BinaryGraphField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
+			S3HibBinaryField oldField = (S3HibBinaryField) contentDao.detachField(newDraftVersion.getS3Binary(fieldName));
+			S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
 			if (oldField != null) {
 				oldField.copyTo(field);
-				oldField.remove();
+				newDraftVersion.removeField(oldField);
 			}
-			S3HibBinary currentS3Binary = field.getS3Binary();
+			S3HibBinary currentS3Binary = field.getBinary();
 
 			// TODO should we rename the image, if the extension is wrong?
 			if (nonNull(result)) {
@@ -403,34 +400,37 @@ public class BinaryTransformHandler extends AbstractHandler {
 				field.setImageFocalPoint(parameters.getFocalPoint());
 			}
 			// If the s3 binary field is the segment field, we need to update the webroot info in the node
-			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+			if (field.getFieldKey().equals(contentDao.getSchemaContainerVersion(newDraftVersion).getSchema().getSegmentField())) {
 				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
-			BranchDaoWrapper branchDao = tx.branchDao();
+			BranchDao branchDao = tx.branchDao();
 			// TODO maybe use a fixed method in project?
 			String branchUuid = branchDao.getLatestBranch(node.getProject()).getUuid();
 
 			// Purge the old draft
-			if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+			if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
 				contentDao.purge(latestDraftVersion);
 			}
 
-			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
+			batch.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
 			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}
 
-	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, HibNode node,
+	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, String nodeUuid,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
-			ContentDaoWrapper contentDao = tx.contentDao();
+			NodeDao nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 
-			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
+			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 
 			HibBranch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
-			NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+			HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 				latestDraftVersion, true);
 
 			// TODO Add conflict checking
@@ -449,11 +449,11 @@ public class BinaryTransformHandler extends AbstractHandler {
 			}
 
 			// Now create the binary field in which we store the information about the file
-			BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
-			BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
+			HibBinaryField oldField = (HibBinaryField) contentDao.detachField( newDraftVersion.getBinary(fieldName));
+			HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
 			if (oldField != null) {
 				oldField.copyTo(field);
-				oldField.remove();
+				newDraftVersion.removeField(oldField);
 			}
 			HibBinary currentBinary = field.getBinary();
 			currentBinary.setSize(result.getSize());
@@ -466,26 +466,26 @@ public class BinaryTransformHandler extends AbstractHandler {
 				field.setImageFocalPoint(parameters.getFocalPoint());
 			}
 			// If the binary field is the segment field, we need to update the webroot info in the node
-			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+			if (field.getFieldKey().equals(contentDao.getSchemaContainerVersion(newDraftVersion).getSchema().getSegmentField())) {
 				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
-			BranchDaoWrapper branchDao = tx.branchDao();
+			BranchDao branchDao = tx.branchDao();
 			// TODO maybe use a fixed method in project?
 			String branchUuid = branchDao.getLatestBranch(node.getProject()).getUuid();
 
 			// Purge the old draft
-			if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+			if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
 				contentDao.purge(latestDraftVersion);
 			}
 
-			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
+			batch.add(contentDao.onCreated(newDraftVersion, branchUuid, DRAFT));
 			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}
 
-	private NodeGraphFieldContainer loadTargetedContent(HibNode node, String languageTag, String fieldName) {
-		ContentDaoWrapper contentDao = boot.get().contentDao();
-		NodeGraphFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
+	private HibNodeFieldContainer loadTargetedContent(HibNode node, String languageTag, String fieldName) {
+		ContentDao contentDao = boot.get().contentDao();
+		HibNodeFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
 		if (latestDraftVersion == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
@@ -500,8 +500,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 		return latestDraftVersion;
 	}
 
-	private BinaryGraphField loadBinaryField(NodeGraphFieldContainer container, String fieldName) {
-		BinaryGraphField initialField = container.getBinary(fieldName);
+	private HibBinaryField loadBinaryField(HibNodeFieldContainer container, String fieldName) {
+		HibBinaryField initialField = container.getBinary(fieldName);
 		if (initialField == null) {
 			throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 		}
@@ -513,8 +513,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 	}
 
 
-	private S3BinaryGraphField loadS3BinaryField(NodeGraphFieldContainer container, String fieldName) {
-		S3BinaryGraphField initialField = container.getS3Binary(fieldName);
+	private S3HibBinaryField loadS3BinaryField(HibNodeFieldContainer container, String fieldName) {
+		S3HibBinaryField initialField = container.getS3Binary(fieldName);
 		if (initialField == null) {
 			throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 		}

@@ -8,24 +8,29 @@ import static com.gentics.mesh.metric.SimpleMetric.NODE_MIGRATION_PENDING;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.NodeMigrationActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
@@ -36,7 +41,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -76,11 +80,9 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
-			SchemaVersionModel newSchema = db.tx(() -> toVersion.getSchema());
-
 			try {
 				db.tx(() -> {
-					prepareMigration(fromVersion, touchedFields);
+					prepareMigration(reloadVersion(fromVersion), touchedFields);
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();
@@ -93,14 +95,10 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-			Queue<? extends NodeGraphFieldContainer> containers = db.tx(tx -> {
-				SchemaDaoWrapper schemaDao = tx.schemaDao();
-				Iterator<? extends NodeGraphFieldContainer> it = schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid());
-				Queue<NodeGraphFieldContainer> queue = new ArrayDeque<>();
-				while (it.hasNext()) {
-					queue.add(it.next());
-				}
-				return queue;
+			Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
+				SchemaDao schemaDao = tx.schemaDao();
+				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).stream()
+						.collect(Collectors.toCollection(ArrayDeque::new));
 			});
 
 			if (metrics.isEnabled()) {
@@ -120,7 +118,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
 				try (WriteLock lock = writeLock.lock(context)) {
-					migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
+					migrateContainer(context, batch, container, errors, touchedFields);
 				}
 				if (metrics.isEnabled()) {
 					migrationGauge.decrementAndGet();
@@ -149,33 +147,33 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 * @param batch
 	 * @param container
 	 *            Container to be migrated
-	 * @param fromVersion
-	 * @param newSchema
 	 * @param errorsDetected
 	 * @param touchedFields
 	 * @return
 	 */
-	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, NodeGraphFieldContainer container,
-		HibSchemaVersion fromVersion, SchemaVersionModel newSchema, List<Exception> errorsDetected,
-		Set<String> touchedFields) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, HibNodeFieldContainer container,
+								  List<Exception> errorsDetected, Set<String> touchedFields) {
+		ContentDao contentDao = Tx.get().contentDao();
+		BranchDao branchDao = Tx.get().branchDao();
+		PersistingSchemaDao schemaDao = CommonTx.get().schemaDao();
 
 		String containerUuid = container.getUuid();
-		String parentNodeUuid = contentDao.getNode(container).getUuid();
+		HibNode node = contentDao.getNode(container);
+		String parentNodeUuid = node.getUuid();
 		if (log.isDebugEnabled()) {
 			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
 		}
 
-		HibBranch branch = ac.getBranch();
-		HibSchemaVersion toVersion = ac.getToVersion();
+		HibBranch branch = reloadBranch(ac.getBranch());
+		HibSchemaVersion toVersion = reloadVersion(ac.getToVersion());
+		HibSchemaVersion fromVersion = reloadVersion(ac.getFromVersion());
 		try {
-			HibNode node = contentDao.getNode(container);
 			String languageTag = container.getLanguageTag();
 			ac.getNodeParameters().setLanguages(languageTag);
 			ac.getVersioningParameters().setVersion("draft");
 
 			VersionNumber nextDraftVersion = null;
-			NodeGraphFieldContainer oldPublished = contentDao.getGraphFieldContainer(node, languageTag, branch.getUuid(), PUBLISHED);
+			HibNodeFieldContainer oldPublished = contentDao.getFieldContainer(node, languageTag, branch.getUuid(), PUBLISHED);
 
 			// 1. Check whether there is any other published container which we need to handle separately
 			if (oldPublished != null && !oldPublished.equals(container)) {
@@ -183,14 +181,13 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 				boolean hasSameOldSchemaVersion = container != null
 					&& container.getSchemaContainerVersion().getId().equals(container.getSchemaContainerVersion().getId());
 				if (hasSameOldSchemaVersion) {
-					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, fromVersion, toVersion, touchedFields,
-						newSchema);
+					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, fromVersion, toVersion, touchedFields);
 					nextDraftVersion = nextDraftVersion.nextDraft();
 				}
 
 			}
 			// 2. Migrate the draft container. This will also update the draft edge.
-			migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, newSchema, nextDraftVersion);
+			migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, nextDraftVersion);
 
 			postMigrationPurge(container, oldPublished);
 		} catch (Exception e1) {
@@ -215,19 +212,15 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 * @param fromVersion
 	 * @param toVersion
 	 * @param touchedFields
-	 * @param newSchema
-	 *            new schema used to serialize the REST model
 	 * @param nextDraftVersion
 	 *            Suggested new draft version
 	 * @throws Exception
 	 */
 	private void migrateDraftContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
-		NodeGraphFieldContainer container, HibSchemaVersion fromVersion, HibSchemaVersion toVersion,
-		Set<String> touchedFields,
-		SchemaVersionModel newSchema, VersionNumber nextDraftVersion)
-		throws Exception {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+			HibNodeFieldContainer container, HibSchemaVersion fromVersion, HibSchemaVersion toVersion,
+			Set<String> touchedFields, VersionNumber nextDraftVersion) throws Exception {
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
 		String branchUuid = branch.getUuid();
 		String languageTag = container.getLanguageTag();
@@ -235,34 +228,34 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		// Check whether the same container is also used as a published version within the given branch.
 		// A migration is always scoped to a specific branch.
 		// We need to ensure that the migrated container is also published.
-		boolean publish = container.isPublished(branchUuid);
+		boolean publish = contentDao.isPublished(container, branchUuid);
 
 		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
 		ac.getGenericParameters().setFields("fields");
 		NodeResponse restModel = nodeDao.transformToRestSync(node, ac, 0, languageTag);
 
-		// Actual migration - Create the new version
-		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(),
-			container, true);
+		// Create field container
+		HibNodeFieldContainer migrated = contentDao.createEmptyFieldContainer(toVersion, node, container.getEditor(), languageTag, branch);
+		cloneUntouchedFields(container, migrated, touchedFields);
 
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
-			migrated.setVersion(container.getVersion().nextPublished());
+			contentDao.setVersion(migrated, container.getVersion().nextPublished());
 			nodeDao.setPublished(node, ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
 			}
-			migrated.setVersion(nextDraftVersion);
+			contentDao.setVersion(migrated, nextDraftVersion);
 		}
 
-		// Pass the new version through the migration scripts and update the version
-		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
+		// apply changes
+		migrate(ac, migrated, restModel, fromVersion);
 
 		// Ensure the search index is updated accordingly
-		sqb.add(migrated.onUpdated(branchUuid, DRAFT));
+		sqb.add(contentDao.onUpdated(migrated, branchUuid, DRAFT));
 		if (publish) {
-			sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
+			sqb.add(contentDao.onUpdated(migrated, branchUuid, PUBLISHED));
 		}
 	}
 
@@ -280,15 +273,14 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 * @param fromVersion
 	 * @param toVersion
 	 * @param touchedFields
-	 * @param newSchema
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
-		NodeGraphFieldContainer content, HibSchemaVersion fromVersion, HibSchemaVersion toVersion,
-		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
-		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		HibNodeFieldContainer content, HibSchemaVersion fromVersion, HibSchemaVersion toVersion,
+		Set<String> touchedFields) throws Exception {
+		NodeDao nodeDao = Tx.get().nodeDao();
+		ContentDao contentDao = Tx.get().contentDao();
 
 		String languageTag = content.getLanguageTag();
 		String branchUuid = branch.getUuid();
@@ -298,15 +290,23 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 		NodeResponse restModel = nodeDao.transformToRestSync(node, ac, 0, languageTag);
 
-		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, content.getLanguageTag(), branch, content.getEditor(),
-			content, true);
+		HibNodeFieldContainer migrated = contentDao.createEmptyFieldContainer(toVersion, node, content.getEditor(), languageTag, branch);
+		cloneUntouchedFields(content, migrated, touchedFields);
 
-		migrated.setVersion(content.getVersion().nextPublished());
+		contentDao.setVersion(migrated, content.getVersion().nextPublished());
 		nodeDao.setPublished(node, ac, migrated, branchUuid);
 
-		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
-		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
+		migrate(ac, migrated, restModel, fromVersion);
+		sqb.add(contentDao.onUpdated(migrated, branchUuid, PUBLISHED));
 		return migrated.getVersion();
 	}
 
+	private void cloneUntouchedFields(HibNodeFieldContainer oldContainer, HibNodeFieldContainer newContainer, Set<String> touchedFields) {
+		List<HibField> otherFields = oldContainer.getFields();
+		for (HibField graphField : otherFields) {
+			if (!touchedFields.contains(graphField.getFieldKey())) {
+				graphField.cloneTo(newContainer);
+			}
+		}
+	}
 }

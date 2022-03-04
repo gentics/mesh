@@ -1,0 +1,24 @@
+FROM adoptopenjdk/openjdk11:x86_64-alpine-jre-11.0.12_7
+
+USER root
+RUN mkdir /mesh
+RUN adduser -D -u %UID% -h /mesh mesh
+RUN chown mesh: /mesh
+RUN echo "mesh:mesh" | chpasswd
+
+USER mesh
+WORKDIR /mesh
+ADD bin /mesh/bin
+
+USER root
+RUN mkdir /data && mkdir /config && ln -s /data /mesh/data && chown mesh: /data 
+ADD mesh.yml /config/mesh.yml
+RUN chown mesh: /config -R && ln -s /config /mesh/config
+
+USER mesh
+VOLUME /data
+VOLUME /config
+
+USER mesh
+EXPOSE 8080
+CMD %CMD% 

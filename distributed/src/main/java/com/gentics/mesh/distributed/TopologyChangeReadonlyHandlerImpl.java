@@ -4,8 +4,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.graphdb.cluster.ClusterManager;
-
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;

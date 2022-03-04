@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -11,11 +9,10 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -33,7 +30,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public HibMicroschema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
+		MicroschemaDao microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByUuid(uuid);
 		} else {
@@ -43,7 +40,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public HibMicroschema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
+		MicroschemaDao microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByName(name);
 		} else {
@@ -52,13 +49,13 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo);
 		// return ac.getProject().getMicroschemaContainerRoot().findAll(ac2, pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibMicroschema> extraFilter) {
 		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo, schema -> {
 			return extraFilter.test(schema);
@@ -83,20 +80,17 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public MicroschemaResponse transformToRestSync(Tx tx, HibMicroschema element, InternalActionContext ac, int level, String... languageTags) {
-		Microschema graphSchema = toGraph(element);
-		return graphSchema.transformToRestSync(ac, level, languageTags);
+		return tx.microschemaDao().transformToRestSync(element, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibMicroschema element) {
-		Microschema graphSchema = toGraph(element);
-		return graphSchema.getAPIPath(ac);
+		return element.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibMicroschema element) {
-		Microschema graphSchema = toGraph(element);
-		return graphSchema.getETag(ac);
+		return element.getETag(ac);
 	}
 
 }

@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.23-SNAPSHOT</version>
+		<version>1.8.0-alpha3</version>
 	</parent>
 
 	<properties>
@@ -34,15 +34,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
-		</dependency>
+			<artifactId>mesh-mdm-orientdb-api</artifactId>
+		</dependency>		
 	</dependencies>
 	<build>
 		<plugins>

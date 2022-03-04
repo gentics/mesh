@@ -18,13 +18,15 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectMicroschemaLoadAllActionImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -33,7 +35,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.UUIDUtil;
@@ -75,7 +76,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+				MicroschemaDao microschemaDao = tx.microschemaDao();
 				HibMicroschema microschema = microschemaDao.findByUuid(uuid);
 				return microschema == null;
 			});
@@ -87,8 +88,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 				return;
 			}
 
-			utils.syncTx(ac, tx -> {
-				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				MicroschemaDao microschemaDao = tx.microschemaDao();
+				BranchDao branchDao = tx.branchDao();
 				HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				MicroschemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 				requestModel.validate();
@@ -102,29 +104,28 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 				}
 				HibUser user = ac.getUser();
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
-				String version = utils.eventAction(batch -> {
-					HibMicroschemaVersion createdVersion = microschemaDao.applyChanges(microschema.getLatestVersion(), ac, model, batch);
 
-					if (updateParams.getUpdateAssignedBranches()) {
-						Map<HibBranch, HibMicroschemaVersion> referencedBranches = microschemaDao.findReferencedBranches(microschema);
+				HibMicroschemaVersion createdVersion = microschemaDao.applyChanges(microschema.getLatestVersion(), ac, model, batch);
 
-						// Assign the created version to the found branches
-						for (Map.Entry<HibBranch, HibMicroschemaVersion> branchEntry : referencedBranches.entrySet()) {
-							HibBranch branch = branchEntry.getKey();
+				if (updateParams.getUpdateAssignedBranches()) {
+					Map<HibBranch, HibMicroschemaVersion> referencedBranches = microschemaDao.findReferencedBranches(microschema);
 
-							// Check whether a list of branch names was specified and skip branches which were not included in the list.
-							List<String> branchNames = updateParams.getBranchNames();
-							if (branchNames != null && !branchNames.isEmpty() && !branchNames.contains(branch.getName())) {
-								continue;
-							}
+					// Assign the created version to the found branches
+					for (Map.Entry<HibBranch, HibMicroschemaVersion> branchEntry : referencedBranches.entrySet()) {
+						HibBranch branch = branchEntry.getKey();
 
-							// Assign the new version to the branch
-							branch.assignMicroschemaVersion(user, createdVersion, batch);
+						// Check whether a list of branch names was specified and skip branches which were not included in the list.
+						List<String> branchNames = updateParams.getBranchNames();
+						if (branchNames != null && !branchNames.isEmpty() && !branchNames.contains(branch.getName())) {
+							continue;
 						}
-						batch.add(() -> MeshEvent.triggerJobWorker(boot.get().mesh()));
+
+						// Assign the new version to the branch
+						branchDao.assignMicroschemaVersion(branch, user, createdVersion, batch);
 					}
-					return createdVersion.getVersion();
-				});
+					batch.add(() -> MeshEvent.triggerJobWorker(boot.get().mesh()));
+				}
+				String version = createdVersion.getVersion();
 
 				if (updateParams.getUpdateAssignedBranches()) {
 					return message(ac, "schema_updated_migration_invoked", name, version);
@@ -146,7 +147,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		utils.syncTx(ac, tx -> {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
 
 			HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, uuid, READ_PERM);
 			MicroschemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
@@ -165,12 +166,12 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				MicroschemaDao microschemaDao = tx.microschemaDao();
 				HibMicroschema schema = tx.microschemaDao().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-				utils.eventAction(batch -> {
-					microschemaDao.applyChanges(schema.getLatestVersion(), ac, batch);
-				});
+
+				microschemaDao.applyChanges(schema.getLatestVersion(), ac, batch);
+
 				return message(ac, "migration_invoked", schema.getName());
 			}, model -> ac.send(model, OK));
 		}
@@ -205,10 +206,10 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	public void handleAddMicroschemaToProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 
-		utils.syncTx(ac, tx -> {
+		utils.syncTx(ac, (batch, tx) -> {
 			HibProject project = tx.getProject(ac);
-			UserDaoWrapper userDao = tx.userDao();
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			UserDao userDao = tx.userDao();
+			MicroschemaDao microschemaDao = tx.microschemaDao();
 
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
@@ -219,9 +220,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 			// Only assign if the microschema has not already been assigned.
 			if (!microschemaDao.contains(project, microschema)) {
 				// Assign the microschema to the project
-				utils.eventAction(batch -> {
-					microschemaDao.addMicroschema(project, ac.getUser(), microschema, batch);
-				});
+				microschemaDao.assign(microschema, project, ac.getUser(), batch);
 			}
 			return microschemaDao.transformToRestSync(microschema, ac, 0);
 		}, model -> ac.send(model, OK));
@@ -236,9 +235,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 
-		utils.syncTx(ac, tx -> {
-			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
-			UserDaoWrapper userDao = tx.userDao();
+		utils.syncTx(ac, (batch, tx) -> {
+			MicroschemaDao microschemaDao = tx.microschemaDao();
+			UserDao userDao = tx.userDao();
 
 			HibProject project = tx.getProject(ac);
 			String projectUuid = project.getUuid();
@@ -247,10 +246,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 			}
 			HibMicroschema microschema = tx.microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			if (microschemaDao.isLinkedToProject(microschema, project)) {
-				utils.eventAction(batch -> {
-					// Remove the microschema from the project
-					microschemaDao.unlink(microschema, project, batch);
-				});
+				// Remove the microschema from the project
+				microschemaDao.unassign(microschema, project, batch);
 			}
 		}, () -> ac.send(NO_CONTENT));
 	}

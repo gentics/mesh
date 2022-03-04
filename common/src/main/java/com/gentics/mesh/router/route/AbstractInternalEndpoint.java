@@ -6,8 +6,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.InternalEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.rest.impl.InternalEndpointRouteImpl;

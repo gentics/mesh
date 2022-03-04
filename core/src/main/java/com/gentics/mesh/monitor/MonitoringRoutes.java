@@ -12,7 +12,7 @@ import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.handler.MonitoringCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.handler.VersionHandlerImpl;
+import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
@@ -54,7 +54,7 @@ public class MonitoringRoutes {
 		this.options = options;
 		this.monitoringCrudHandler = monitoringCrudHandler;
 		this.liveness = liveness;
-		VersionHandlerImpl.generateVersionMountpoints()
+		VersionUtils.generateVersionMountpoints()
 			.forEach(mountPoint -> router.mountSubRouter(mountPoint, apiRouter));
 		this.adminHandler = adminHandler;
 		init();

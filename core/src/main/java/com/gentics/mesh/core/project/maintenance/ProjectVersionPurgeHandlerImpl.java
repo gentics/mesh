@@ -8,14 +8,14 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
 import com.google.common.collect.Lists;
 
@@ -58,8 +58,8 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 	}
 
 	private void purgeNode(Tx tx, HibNode node, ZonedDateTime maxAge, BulkActionContext bac) {
-		Iterable<? extends NodeGraphFieldContainer> initials = tx.contentDao().getGraphFieldContainers(node, ContainerType.INITIAL);
-		for (NodeGraphFieldContainer initial : initials) {
+		Iterable<? extends HibNodeFieldContainer> initials = tx.contentDao().getFieldContainers(node, ContainerType.INITIAL);
+		for (HibNodeFieldContainer initial : initials) {
 			Long counter = 0L;
 			purgeVersion(tx, counter, bac, initial, initial, false, maxAge);
 		}
@@ -80,16 +80,16 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 	 *            Flag which indicated whether the previous version has been removed
 	 * @param maxAge
 	 */
-	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
+	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, HibNodeFieldContainer lastRemaining, HibNodeFieldContainer version,
 		boolean previousRemoved, ZonedDateTime maxAge) {
 
-		ContentDaoWrapper contentDao = tx.contentDao();
+		ContentDao contentDao = tx.contentDao();
 		// We need to load some information first since we may remove the version in this step
-		List<NodeGraphFieldContainer> nextVersions = Lists.newArrayList(contentDao.getNextVersions(version));
+		List<HibNodeFieldContainer> nextVersions = Lists.newArrayList(contentDao.getNextVersions(version));
 		boolean isNewerThanMaxAge = maxAge != null && !isOlderThanMaxAge(version, maxAge);
 		boolean isInTimeFrame = maxAge == null || isOlderThanMaxAge(version, maxAge);
 
-		if (isInTimeFrame && version.isPurgeable()) {
+		if (isInTimeFrame && contentDao.isPurgeable(version)) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
 			contentDao.delete(version, bac, false);
@@ -106,7 +106,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 			}
 			if (txCounter % meshOptions.getVersionPurgeMaxBatchSize() == 0 && txCounter != 0) {
 				log.info("Committing batch - Elements handled {" + txCounter + "}");
-				tx.getGraph().commit();
+				tx.commit();
 			}
 			// Update the reference since this version is now the last remaining because it was not removed
 			lastRemaining = version;
@@ -119,13 +119,13 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 			return;
 		} else {
 			// Continue with next versions
-			for (NodeGraphFieldContainer next : nextVersions) {
+			for (HibNodeFieldContainer next : nextVersions) {
 				purgeVersion(tx, txCounter, bac, lastRemaining, next, previousRemoved, maxAge);
 			}
 		}
 	}
 
-	private boolean isOlderThanMaxAge(NodeGraphFieldContainer version, ZonedDateTime maxAge) {
+	private boolean isOlderThanMaxAge(HibNodeFieldContainer version, ZonedDateTime maxAge) {
 		Long editTs = version.getLastEditedTimestamp();
 		ZonedDateTime editDate = DateUtils.toZonedDateTime(editTs);
 		ZonedDateTime maxDate = maxAge;

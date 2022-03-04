@@ -4,13 +4,13 @@ import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -56,7 +56,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	@Override
 	public JsonObject principal() {
 		return db.tx(tx -> {
-			UserDaoWrapper userDao = tx.userDao();
+			UserDao userDao = tx.userDao();
 			JsonObject user = new JsonObject();
 			user.put("uuid", delegate.getUuid());
 			user.put("username", delegate.getUsername());

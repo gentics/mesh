@@ -15,13 +15,12 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
 import com.gentics.mesh.core.binary.impl.TikaResult;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
-import com.syncleus.ferma.FramedTransactionalGraph;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -64,15 +63,15 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 	@Override
 	public void apply() {
 		log.info("Applying change: " + getName());
-		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+		Tx tx = Tx.get();
 		AtomicLong total = new AtomicLong(0);
-		BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
-		binaryDao.findAll().runInExistingTx(Tx.get()).forEach(binary -> {
+		BinaryDao binaryDao = tx.binaryDao();
+		binaryDao.findAll().runInExistingTx(tx).forEach(binary -> {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);
 			if (uploadFile.exists()) {
 
-				Result<? extends BinaryGraphField> fields = binaryDao.findFields(binary);
+				Result<? extends HibBinaryField> fields = binaryDao.findFields(binary);
 				Map<String, TikaResult> results = new HashMap<>();
 
 				fields.forEach(field -> {
@@ -101,13 +100,13 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 					}
 
 					if (total.get() % 100 == 0) {
-						graph.commit();
+						tx.commit();
 					}
 					total.incrementAndGet();
 
 				});
 			} else {
-				graph.commit();
+				tx.commit();
 				log.info("File for binary {" + binary.getUuid() + "} could not be found {" + filename + "}");
 			}
 		});

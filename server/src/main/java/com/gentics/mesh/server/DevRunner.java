@@ -6,7 +6,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
@@ -38,13 +38,13 @@ public class DevRunner {
 		LoggingConfigurator.init();
 		Logger log = LoggerFactory.getLogger(DevRunner.class);
 
-		MeshOptions defaultOption = new MeshOptions();
+		OrientDBMeshOptions defaultOption = new OrientDBMeshOptions();
 		defaultOption.getSearchOptions().setStartEmbedded(false);
 		defaultOption.getSearchOptions().setUrl(null);
 		defaultOption.setInitialAdminPassword("admin");
 		defaultOption.setForceInitialAdminPasswordReset(false);
 		defaultOption.getDebugInfoOptions().setLogEnabled(false);
-		MeshOptions options = OptionsLoader.createOrloadOptions(defaultOption, args);
+		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, defaultOption, args);
 
 		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);

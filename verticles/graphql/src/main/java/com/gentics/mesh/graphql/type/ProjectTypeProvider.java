@@ -12,8 +12,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -58,7 +58,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	private NodeContent baseNodeFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = env.getSource();
 		HibNode node = project.getBaseNode();
@@ -66,7 +66,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env);
 		ContainerType type = getNodeVersion(env);
 
-		NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+		HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
 		return new NodeContent(node, container, languageTags, type);
 	}

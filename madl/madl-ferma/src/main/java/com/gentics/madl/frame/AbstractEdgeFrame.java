@@ -1,9 +1,9 @@
 package com.gentics.madl.frame;
 
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;

@@ -1,7 +1,5 @@
 package com.gentics.mesh.search.verticle.entity;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 import java.util.Map;
@@ -15,25 +13,18 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.DaoGlobal;
+import com.gentics.mesh.core.data.dao.RootDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -82,7 +73,7 @@ public class MeshEntities {
 	public final MeshEntity<HibTagFamily> tagFamily;
 	public final MeshEntity<HibSchema> schema;
 	public final MeshEntity<HibMicroschema> microschema;
-	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
+	public final MeshEntity<HibNodeFieldContainer> nodeContent;
 	private final Map<ElementType, MeshEntity<?>> entities;
 
 	@Inject
@@ -102,14 +93,14 @@ public class MeshEntities {
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
-		schema = new SimpleMeshEntity<>(schemaTransformer, Schema.TYPE_INFO, byHibElementUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, Microschema.TYPE_INFO, byHibElementUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
-		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
-		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byHibElementUuid(uuid -> boot.groupDao().findByUuid(uuid)));
-		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byHibElementUuid(uuid -> boot.roleDao().findByUuid(uuid)));
-		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byHibElementUuid(uuid -> boot.projectDao().findByUuid(uuid)));
-		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TagFamily.TYPE_INFO, this::toTagFamily);
-		tag = new SimpleMeshEntity<>(tagTransformer, Tag.TYPE_INFO, this::toTag);
+		schema = new SimpleMeshEntity<>(schemaTransformer, HibSchema.TYPE_INFO, byHibElementUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, HibMicroschema.TYPE_INFO, byHibElementUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
+		user = new SimpleMeshEntity<>(userTransformer, HibUser.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
+		group = new SimpleMeshEntity<>(groupTransformer, HibGroup.TYPE_INFO, byHibElementUuid(uuid -> boot.groupDao().findByUuid(uuid)));
+		role = new SimpleMeshEntity<>(roleTransformer, HibRole.TYPE_INFO, byHibElementUuid(uuid -> boot.roleDao().findByUuid(uuid)));
+		project = new SimpleMeshEntity<>(projectTransformer, HibProject.TYPE_INFO, byHibElementUuid(uuid -> boot.projectDao().findByUuid(uuid)));
+		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, HibTagFamily.TYPE_INFO, this::toTagFamily);
+		tag = new SimpleMeshEntity<>(tagTransformer, HibTag.TYPE_INFO, this::toTag);
 		nodeContent = new NodeMeshEntity(nodeTransformer, this::toNodeContent);
 
 		entities = Stream.of(schema, microschema, user, group, role, project, tagFamily, tag, nodeContent)
@@ -194,25 +185,25 @@ public class MeshEntities {
 
 	private Optional<HibTagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), eventModel.getUuid()));
+		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(boot.tagFamilyDao(), project, eventModel.getUuid()));
 	}
 
 	private Optional<HibTag> toTag(MeshElementEventModel eventModel) {
 		TagElementEventModel event = Util.requireType(TagElementEventModel.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), event.getTagFamily().getUuid()))
-			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
+		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(boot.tagFamilyDao(), project, event.getTagFamily().getUuid()))
+			.flatMap(family -> findElementByUuid(boot.tagDao(), family, eventModel.getUuid()));
 	}
 
-	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
-		ContentDaoWrapper contentDao = boot.contentDao();
+	private Optional<HibNodeFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
+		ContentDao contentDao = boot.contentDao();
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
+		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(boot.nodeDao(), project, eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
-				contentDao.getGraphFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
+				contentDao.getFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
 			));
 	}
 
@@ -221,14 +212,41 @@ public class MeshEntities {
 	 * If the element could not be found, a warning will be logged and an empty optional is returned.
 	 * @param rootVertex
 	 * @param uuid
-	 * @param <T>
+	 * @param <L>
 	 * @return
 	 */
-	public static <T extends MeshCoreVertex<? extends RestModel>> Optional<T> findElementByUuid(RootVertex<T> rootVertex, String uuid) {
+	public static <R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> Optional<L> findElementByUuid(RootDao<R, L> dao, R rootVertex, String uuid) {
 		return warningOptional(
 			String.format("Could not find element with uuid {%s} in class {%s}", uuid, rootVertex.getClass().getSimpleName()),
-			rootVertex.findByUuid(uuid)
+			dao.findByUuid(rootVertex, uuid)
 		);
+	}
+	
+	/**
+	 * Finds an element in the given root vertex.
+	 * If the element could not be found, a warning will be logged and an empty optional is returned.
+	 * @param dao
+	 * @param uuid
+	 * @param <L>
+	 * @return
+	 */
+	public static <L extends HibCoreElement<? extends RestModel>> Optional<L> findElementByUuid(DaoGlobal<L> dao, String uuid) {
+		return warningOptional(
+			String.format("Could not find element with uuid {%s} in class {%s}", uuid, dao.getClass().getSimpleName()),
+			dao.findByUuid(uuid)
+		);
+	}
+
+	/**
+	 * Same as {@link #findElementByUuid(RootVertex, String)}, but as a stream.
+	 *
+	 * @param dao
+	 * @param uuid
+	 * @param <L>
+	 * @return
+	 */
+	public static <L extends HibCoreElement<? extends RestModel>> Stream<L> findElementByUuidStream(DaoGlobal<L> dao, String uuid) {
+		return findElementByUuid(dao, uuid).stream();
 	}
 
 	/**
@@ -236,14 +254,14 @@ public class MeshEntities {
 	 *
 	 * @param rootVertex
 	 * @param uuid
-	 * @param <T>
+	 * @param <L>
 	 * @return
 	 */
-	public static <T extends MeshCoreVertex<? extends RestModel>> Stream<T> findElementByUuidStream(RootVertex<T> rootVertex, String uuid) {
-		return findElementByUuid(rootVertex, uuid).stream();
+	public static <R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> Stream<L> findElementByUuidStream(RootDao<R, L> dao, R rootVertex, String uuid) {
+		return findElementByUuid(dao, rootVertex, uuid).stream();
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
+	private <T extends HibCoreElement<? extends RestModel>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
 		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
 
@@ -257,7 +275,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibGroup element) {
-		return helper.createDocumentRequest(Group.composeIndexName(), element.getUuid(), group.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibGroup.composeIndexName(), element.getUuid(), group.transform(element), complianceMode);
 	}
 
 	/**
@@ -266,7 +284,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibUser element) {
-		return helper.createDocumentRequest(User.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibUser.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
 	}
 
 	/**
@@ -275,7 +293,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibTagFamily element, String projectUuid) {
-		return helper.createDocumentRequest(TagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibTagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element), complianceMode);
 	}
 
 	/**
@@ -284,7 +302,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(HibTag element, String projectUuid) {
-		return helper.createDocumentRequest(Tag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element), complianceMode);
+		return helper.createDocumentRequest(HibTag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element), complianceMode);
 	}
 
 	/**
@@ -298,18 +316,18 @@ public class MeshEntities {
 	 */
 	public Stream<CreateDocumentRequest> generateNodeRequests(String nodeUuid, HibProject project, HibBranch branch) {
 		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
-		return findElementByUuidStream(toGraph(project).getNodeRoot(), nodeUuid)
-		.flatMap(node -> latestVersionTypes()
-		.flatMap(type -> boot.contentDao().getGraphFieldContainers(node, branch, type).stream()
+		return findElementByUuidStream(boot.nodeDao(), project, nodeUuid)
+		.flatMap(node -> Util.latestVersionTypes()
+		.flatMap(type -> boot.contentDao().getFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
-			ContentDaoWrapper.composeIndexName(
+			ContentDao.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				container.getSchemaContainerVersion().getUuid(),
 				type,
 				container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)
 			),
-			ContentDaoWrapper.composeDocumentId(nodeUuid, container.getLanguageTag()),
+			ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
 			transformer.toDocument(container, branch.getUuid(), type), complianceMode
 		))));
 	}

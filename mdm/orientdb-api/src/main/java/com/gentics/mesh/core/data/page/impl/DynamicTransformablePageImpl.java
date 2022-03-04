@@ -9,11 +9,11 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.core.data.TransformableElement;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -106,7 +106,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	public DynamicTransformablePageImpl(HibUser requestUser, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
 		InternalPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(clazz, indexName, indexKey, dir, Tx.getActive().getGraph(), perm);
+		init(clazz, indexName, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm);
 	}
 
 	/**
@@ -146,9 +146,9 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 */
 	private void applyPagingAndPermChecks(Stream<Vertex> stream, Class<? extends T> clazz, InternalPermission perm) {
 		AtomicLong pageCounter = new AtomicLong();
-		FramedGraph graph = Tx.get().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 
-		UserDaoWrapper userDao = Tx.get().userDao();
+		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		// Only handle elements which are visible to the user
 		if (perm != null) {

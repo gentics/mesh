@@ -4,12 +4,20 @@ import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
+import java.util.Objects;
+
 import com.gentics.mesh.ElementType;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.handler.VersionUtils;
+import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.ext.auth.User;
 
@@ -17,13 +25,33 @@ import io.vertx.ext.auth.User;
 /**
  * Domain model for user.
  */
-public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableElement {
+public interface HibUser extends HibCoreElement<UserResponse>, HibReferenceableElement<UserReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.USER, USER_CREATED, USER_UPDATED, USER_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
+	}
+
+	/**
+	 * Compose the index name for the user index.
+	 *
+	 * @return
+	 */
+	static String composeIndexName() {
+		return "user";
+	}
+
+	/**
+	 * Compose the document id for the user documents.
+	 *
+	 * @param elementUuid
+	 * @return
+	 */
+	static String composeDocumentId(String elementUuid) {
+		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
+		return elementUuid;
 	}
 
 	/**
@@ -128,10 +156,14 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 
 	/**
 	 * Invalidate the reset token.
-	 * 
-	 * @return
+	 *
+	 * @return Fluent API
 	 */
-	HibUser invalidateResetToken();
+	default HibUser invalidateResetToken() {
+		setResetToken(null);
+		setResetTokenIssueTimestamp(null);
+		return this;
+	}
 
 	/**
 	 * Set the password hash.
@@ -233,7 +265,13 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	 *
 	 * @return ISO8601 formatted date or null if the date has not yet been set
 	 */
-	String getAPITokenIssueDate();
+	default String getAPITokenIssueDate() {
+		Long timestamp = getAPITokenIssueTimestamp();
+		if (timestamp == null) {
+			return null;
+		}
+		return DateUtils.toISO8601(timestamp, System.currentTimeMillis());
+	}
 
 	/**
 	 * Return the currently stored reset token.
@@ -243,17 +281,6 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	String getResetToken();
 
 	// Legacy - compat stuff
-
-	/**
-	 * Update all shortcut edges.
-	 */
-	void updateShortcutEdges();
-
-	/**
-	 * Delete the element.
-	 */
-	@Deprecated
-	void remove();
 
 	/**
 	 * Return the referenced node which was assigned to the user.
@@ -271,26 +298,14 @@ public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableE
 	HibUser setReferencedNode(HibNode node);
 
 	/**
-	 * A CRC32 hash of the users {@link #getRoles roles}.
-	 *
-	 * @return A hash of the users roles
-	 */
-	String getRolesHash();
-
-	/**
-	 * Return the current element version.
-	 * 
-	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
-
-	/**
 	 * Transform the user to a {@link MeshAuthUser} which implements the {@link User} interface and is thus usable in Vert.x Auth API code.
 	 * 
 	 * @return
 	 */
 	MeshAuthUser toAuthUser();
 
+	@Override
+	default String getAPIPath(InternalActionContext ac) {
+		return VersionUtils.baseRoute(ac) + "/users/" + getUuid();
+	}
 }
