@@ -6,6 +6,9 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.net.SocketException;
+
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.junit.Test;
@@ -30,6 +33,8 @@ public class SSLUserCertRequireServerTest extends AbstractMeshTest {
 			fail("The request should fail since no valid client was passed along.");
 		} catch (SSLHandshakeException e) {
 			assertEquals("Received fatal alert: bad_certificate", e.getMessage());
+		} catch (SocketException e) {
+			assertEquals("Software caused connection abort: recv failed", e.getMessage());
 		}
 
 		// Bob's cert does not match the server key and is not accepted
@@ -38,6 +43,8 @@ public class SSLUserCertRequireServerTest extends AbstractMeshTest {
 			fail("The request should fail since bob's cert is invalid.");
 		} catch (SSLHandshakeException e) {
 			assertEquals("Received fatal alert: bad_certificate", e.getMessage());
+		} catch (SocketException e) {
+			assertEquals("Software caused connection abort: recv failed", e.getMessage());
 		}
 	}
 
