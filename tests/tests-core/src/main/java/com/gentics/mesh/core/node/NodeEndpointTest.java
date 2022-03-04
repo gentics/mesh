@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -1382,8 +1383,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testReadByUUIDWithLinkPathsAndNoSegmentFieldRef() {
-		HibNode node = folder("news");
+		HibNode node;
 		try (Tx tx = tx()) {
+			NodeDao nodeDao = Tx.get().nodeDao();
+			node = nodeDao.findByUuidGlobal(folder("news").getUuid());
 			// Update the schema
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField(null);
@@ -1568,6 +1571,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			node = nodeDao.create(parentNode, user, version, project);
 			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());
+			HibSchemaVersion schemaVersion = englishContainer.getSchemaContainerVersion();
+			schemaVersion.getSchema().addField(new StringFieldSchemaImpl().setName("displayName"));
+			actions().updateSchemaVersion(schemaVersion);
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
 			englishContainer.createString("displayName").setString("displayName");
@@ -1672,13 +1678,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		final HibNode node = tx(() -> content("concorde"));
 		HibNodeFieldContainer origContainer = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			GroupDao groupRoot = tx.groupDao();
+			GroupDao groupDao = tx.groupDao();
 			HibNode prod = content("concorde");
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(prod, english());
 			assertEquals("Concorde_english_name", container.getString("teaser").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
 			UserInfo userInfo = data().createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
-			groupRoot.addUser(group(), userInfo.getUser());
+			groupDao.addUser(groupDao.findByUuid(groupUuid()), userInfo.getUser());
 			return container;
 		});
 
