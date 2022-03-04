@@ -22,8 +22,8 @@ public class DiskQuotaOptions implements Option {
 	public final static Pattern QUOTA_PATTERN_ABSOLUTE = Pattern.compile("(?<value>[0-9]+)(?<unit>b|B|k|K|m|M|g|G|t|T)");
 
 	public final static int DEFAULT_CHECK_INTERVAL = 10_000;
-	public final static String DEFAULT_WARN_THRESHOLD = "15%";
-	public final static String DEFAULT_READ_ONLY_THRESHOLD = "10%";
+	public final static String DEFAULT_WARN_THRESHOLD = "10%";
+	public final static String DEFAULT_READ_ONLY_THRESHOLD = "2%";
 
 	public final static String MESH_STORAGE_DISK_QUOTA_CHECK_INTERVAL_ENV = "MESH_STORAGE_DISK_QUOTA_CHECK_INTERVAL";
 	public final static String MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD_ENV = "MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD";

@@ -626,9 +626,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// Upload the binary in both nodes
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidA, "en", versionA, "binary", new ByteArrayInputStream(buffer.getBytes()),
-			buffer.length(), "1" + fileNameA, contentType));
+			buffer.length(), fileNameA, contentType));
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidB, "en", versionB, "binary", new ByteArrayInputStream(buffer.getBytes()),
-			buffer.length(), "2" + fileNameB, contentType));
+			buffer.length(), fileNameB, contentType));
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		File binaryFileA;
