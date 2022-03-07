@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 public final class UUIDUtil {
 
 	private static Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
+	private static Pattern shortUuid = Pattern.compile("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})");
+	private static final String WITH_DASHES = "$1-$2-$3-$4-$5";
 
 	private UUIDUtil() {
 
@@ -30,7 +32,7 @@ public final class UUIDUtil {
 	 * @return UUID which contains dashes
 	 */
 	public static String toFullUuid(String uuid) {
-		return uuid.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5");
+		return shortUuid.matcher(uuid).replaceAll(WITH_DASHES);
 	}
 
 	/**

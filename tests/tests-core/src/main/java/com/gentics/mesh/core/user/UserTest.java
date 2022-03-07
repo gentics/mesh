@@ -135,9 +135,10 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			long start = System.currentTimeMillis();
 			int nChecks = 9000;
 			int runs = 90;
+			HibNode content = content();
 			for (int e = 0; e < runs; e++) {
 				for (int i = 0; i < nChecks; i++) {
-					assertTrue(userDao.hasPermission(user, content(), READ_PERM));
+					assertTrue(userDao.hasPermission(user, content, READ_PERM));
 				}
 			}
 			long duration = System.currentTimeMillis() - start;
