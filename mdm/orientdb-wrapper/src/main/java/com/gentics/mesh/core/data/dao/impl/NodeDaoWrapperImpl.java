@@ -149,11 +149,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public String getRootLabel(HibProject root) {
-		return toGraph(root).getNodeRoot().getRootLabel();
-	}
-
-	@Override
 	public Class<? extends HibNode> getPersistenceClass(HibProject root) {
 		return toGraph(root).getNodeRoot().getPersistanceClass();
 	}

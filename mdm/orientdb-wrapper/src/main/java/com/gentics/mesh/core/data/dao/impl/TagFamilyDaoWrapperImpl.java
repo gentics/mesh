@@ -136,11 +136,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public String getRootLabel(HibProject root) {
-		return toGraph(root).getTagFamilyRoot().getRootLabel();
-	}
-
-	@Override
 	public Class<? extends HibTagFamily> getPersistenceClass(HibProject root) {
 		return toGraph(root).getTagFamilyRoot().getPersistanceClass();
 	}

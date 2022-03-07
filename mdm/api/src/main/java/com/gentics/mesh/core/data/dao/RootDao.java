@@ -226,13 +226,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	void removeItem(R root, L item);
 
 	/**
-	 * Return the label for the root element.
-	 * 
-	 * @return
-	 */
-	String getRootLabel(R root);
-
-	/**
 	 * Return the total count of all tracked elements in the given root.
 	 * 
 	 * @return
