@@ -17,7 +17,8 @@ properties([
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
-		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests.")
+		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
+		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step.")
 	])
 ])
 
@@ -143,7 +144,7 @@ stage("Setup Build Environment") {
 			stage("Maven Build") {
 				if (Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
-						if (Boolean.valueOf(params.runDeploy)) {
+						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
