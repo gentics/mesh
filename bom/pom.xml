@@ -28,7 +28,7 @@
 		<hazelcast.version>3.12.8</hazelcast.version>
 		<jackson.version>2.9.9</jackson.version>
 		<jackson-databind.version>2.9.10.8</jackson-databind.version>
-		<netty.version>4.1.42.Final</netty.version>
+		<netty.version>4.1.72.Final</netty.version>
 		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 	</properties>
