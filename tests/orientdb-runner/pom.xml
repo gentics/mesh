@@ -7,7 +7,7 @@
 		<artifactId>mesh-tests</artifactId>
 		<version>1.8.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>mest-orientdb-tests-runner</artifactId>
+	<artifactId>mesh-orientdb-tests-runner</artifactId>
 	<name>Mesh - Tests Runner - OrientDB</name>
 
 	<dependencies>
@@ -39,11 +39,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>tests-mesh-server</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>tests-mesh-demo</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -116,7 +111,6 @@
 						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-server</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-demo</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-changelog-system</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-elasticsearch</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-distributed</dependency>
