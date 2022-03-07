@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.util.ETag;
@@ -37,7 +38,8 @@ public interface HibNodeFieldContainer extends HibFieldContainer, HibEditorTrack
 	 * @return
 	 */
 	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
+		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type, 
+				getSchemaContainerVersion().getMicroschemaVersionHash(Tx.get().branchDao().findByUuid(getNode().getProject(), branchUuid)));
 	}
 
 	/**

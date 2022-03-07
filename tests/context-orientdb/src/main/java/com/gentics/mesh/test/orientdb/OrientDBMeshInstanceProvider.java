@@ -65,6 +65,9 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 
 		String exportPath = pathProvider.apply("exports");
 		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+
+		// disable periodic disk quota check
+		meshOptions.getStorageOptions().getDiskQuotaOptions().setCheckInterval(0);
 	}
 
 	@Override

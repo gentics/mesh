@@ -372,7 +372,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(branch.onSchemaAssignEvent(schemaVersion, ASSIGNED, edge.getMigrationStatus()));
+			batch.add(branch.onSchemaAssignEvent(schemaVersion, ASSIGNED, edge.getMigrationStatus(), currentVersion));
 		}
 		return job;
 	}
@@ -396,7 +396,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(branch.onMicroschemaAssignEvent(microschemaVersion, ASSIGNED, edge.getMigrationStatus()));
+			batch.add(branch.onMicroschemaAssignEvent(microschemaVersion, ASSIGNED, edge.getMigrationStatus(), currentVersion));
 		}
 		return job;
 	}

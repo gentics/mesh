@@ -64,6 +64,9 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();
 
+	@Rule
+	public ConsistencyRule consistency = new ConsistencyRule(getTestContext());
+
 	@Override
 	public MeshTestContext getTestContext() {
 		return testContext;
@@ -77,20 +80,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@After
 	public void clearLatches() {
 		eventAsserter().clear();
-	}
-
-	@After
-	public void checkConsistency() {
-		List<ConsistencyCheck> checks = mesh().consistencyChecks();
-		try (Tx tx = tx()) {
-			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
-			for (ConsistencyCheck check : checks) {
-				ConsistencyCheckResult result = check.invoke(db(), tx, false);
-				response.getInconsistencies().addAll(result.getResults());
-			}
-
-			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
-		}
 	}
 
 	@After

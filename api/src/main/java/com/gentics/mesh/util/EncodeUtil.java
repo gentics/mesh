@@ -8,12 +8,16 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Utility to help with UTF8 and ISO encoding operations 
  */
 public final class EncodeUtil {
 
+	private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
 	private static final Charset ISO88591_CHARSET = Charset.forName("ISO-8859-1");
 	private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 	public static final String UTF8_BOM = "\uFEFF";
@@ -99,4 +103,26 @@ public final class EncodeUtil {
 		}
 	}
 
+	/**
+	 * Make a hex representation of a byte array.
+	 * 
+	 * @param bytes
+	 * @return
+	 */
+	public static String bytesToHex(byte[] bytes) {
+	    byte[] hexChars = new byte[bytes.length * 2];
+	    for (int j = 0; j < bytes.length; j++) {
+	        int v = bytes[j] & 0xFF;
+	        hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+	        hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+	    }
+	    return new String(hexChars, StandardCharsets.UTF_8);
+	}
+
+	public static String md5Hex(byte[] inputBytes) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("MD5");
+	    md.update(inputBytes);
+	    byte[] digest = md.digest();
+	    return bytesToHex(digest);
+	}
 }

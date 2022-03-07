@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.user.HibUser;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -58,6 +58,7 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -1719,7 +1720,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), ContentDao.composeDocumentId(uuid, "en"));
+			ContainerType.DRAFT, null), ContentDao.composeDocumentId(uuid, "en"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
@@ -1748,7 +1749,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// Verify that exactly the selected language was updated
 			String indexName = ContentDao.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
-				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
+				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT, null);
 			String documentId = ContentDao.composeDocumentId(uuid, "en");
 			assertThat(trackingSearchProvider()).hasStore(indexName, documentId);
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
@@ -1798,8 +1799,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
 		assertThat(trackingSearchProvider()).hasStore(ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), ContentDao.composeDocumentId(uuid, "de"));
-
+			ContainerType.DRAFT, null), ContentDao.composeDocumentId(uuid, "de"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 	}
 

@@ -324,7 +324,8 @@ public class MeshEntities {
 				project.getUuid(),
 				branch.getUuid(),
 				container.getSchemaContainerVersion().getUuid(),
-				type
+				type,
+				container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)
 			),
 			ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
 			transformer.toDocument(container, branch.getUuid(), type), complianceMode

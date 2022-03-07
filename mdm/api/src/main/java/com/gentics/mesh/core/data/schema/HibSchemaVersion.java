@@ -5,14 +5,32 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.event.branch.AbstractBranchAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -22,6 +40,7 @@ import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.util.EncodeUtil;
 
 /**
  * Each schema update is stored within a dedicated schema container version in order to be able to keep track of changes in between different schema container
@@ -147,5 +166,114 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	@Override
 	default Class<? extends AbstractBranchAssignEventModel<SchemaReference>> getBranchAssignEventModelClass() {
 		return BranchSchemaAssignEventModel.class;
+	}
+
+	/**
+	 * Get the hash over all uuids of microschema versions, which are currently assigned to the branch and which are used in the schema version.
+	 * A microschema is "used" by a schema, if the schema contains a field of type "microschema", where the microschema is mentioned in the "allowed" property.
+	 * @param branch branch
+	 * @return hash
+	 */
+	default String getMicroschemaVersionHash(HibBranch branch) {
+		return getMicroschemaVersionHash(branch, Collections.emptyMap());
+	}
+
+	/**
+	 * Check whether the schema uses the given microschema.
+	 * A microschema is "used" by a schema, if the schema contains a field of type "microschema", where the microschema is mentioned in the "allowed" property.
+	 * @param microschema microschema in question
+	 * @return true, when the schema version uses the microschema, false if not
+	 */
+	default boolean usesMicroschema(HibMicroschema microschema) {
+		return !getFieldsUsingMicroschema(microschema).isEmpty();
+	}
+
+	/**
+	 * Variant of {@link #getMicroschemaVersionHash(Branch)}, that gets a replacement map (which might be empty, but not null). The replacement map may map microschema names
+	 * to microschema version uuids to be used instead of the currently assigned microschema version.
+	 * @param branch branch
+	 * @param replacementMap replacement map
+	 * @return hash
+	 */
+	default String getMicroschemaVersionHash(HibBranch branch, Map<String, String> replacementMap) {
+		Objects.requireNonNull(branch, "The branch must not be null");
+		Objects.requireNonNull(replacementMap, "The replacement map must not be null (but may be empty)");
+		Set<String> microschemaNames = getSchema().getFields().stream().filter(filterMicronodeField())
+				.flatMap(field -> {
+					return getAllowedMicroschemas(field).stream();
+				}).collect(Collectors.toSet());
+
+		if (microschemaNames.isEmpty()) {
+			return null;
+		} else {
+			Set<String> microschemaVersionUuids = new TreeSet<>();
+			for (HibBranchMicroschemaVersion edge : branch.findAllLatestMicroschemaVersionEdges()) {
+				HibMicroschemaVersion version = edge.getMicroschemaContainerVersion();
+				MicroschemaVersionModel microschema = version.getSchema();
+				String microschemaName = microschema.getName();
+
+				// if the microschema is one of the "used" microschemas, we either get the version uuid from the replacement map, or
+				// the uuid of the currently assigned version
+				if (microschemaNames.contains(microschemaName)) {
+					microschemaVersionUuids.add(replacementMap.getOrDefault(microschemaName, version.getUuid()));
+				}
+			}
+
+			if (microschemaVersionUuids.isEmpty()) {
+				return null;
+			} else {
+				try {
+					return EncodeUtil.md5Hex(microschemaVersionUuids.stream().collect(Collectors.joining("|")).getBytes());
+				} catch (NoSuchAlgorithmException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get the name of fields, using the microschema.
+	 * A field uses the microschema, if it is either a of type "microschema" or of type "list of microschemas" and mentions the microschema in the "allowed" property.
+	 * @param microschema microschema in question
+	 * @return set of field names
+	 */
+	default Set<String> getFieldsUsingMicroschema(HibMicroschema microschema) {
+		return getSchema().getFields().stream().filter(filterMicronodeField())
+				.filter(field -> getAllowedMicroschemas(field).contains(microschema.getName()))
+				.map(FieldSchema::getName).collect(Collectors.toSet());
+	}
+
+	/**
+	 * Return a predicate that filters fields that are either of type "micronode", or "list of micronodes"
+	 * @return predicate
+	 */
+	private Predicate<FieldSchema> filterMicronodeField() {
+		return field -> {
+			if (FieldTypes.valueByName(field.getType()) == FieldTypes.MICRONODE) {
+				return true;
+			} else if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
+				ListFieldSchema listField = (ListFieldSchema) field;
+				return FieldTypes.valueByName(listField.getListType()) == FieldTypes.MICRONODE;
+			} else {
+				return false;
+			}
+		};
+	}
+
+	/**
+	 * Get the allowed microschemas used by the field
+	 * @param field field
+	 * @return collection of allowed microschema names
+	 */
+	private Collection<String> getAllowedMicroschemas(FieldSchema field) {
+		if (field instanceof MicronodeFieldSchema) {
+			MicronodeFieldSchema micronodeField = (MicronodeFieldSchema) field;
+			return Arrays.asList(micronodeField.getAllowedMicroSchemas());
+		} else if (field instanceof ListFieldSchema) {
+			ListFieldSchema listField = (ListFieldSchema) field;
+			return Arrays.asList(listField.getAllowedSchemas());
+		} else {
+			return Collections.emptyList();
+		}
 	}
 }

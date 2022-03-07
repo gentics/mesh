@@ -486,7 +486,6 @@ public class MeshTestContext extends TestWatcher {
 
 		MeshOptions meshOptions = meshInstanceProvider.getOptions();
 
-
 		// disable periodic index check
 		meshOptions.getSearchOptions().setIndexCheckInterval(0);
 
@@ -533,7 +532,7 @@ public class MeshTestContext extends TestWatcher {
 
 		case CLIENT_CERT_REQUEST:
 			File serverPem = MeshTestHelper.extractResource("/client-ssl/server.pem");
-			File serverKey = MeshTestHelper.extractResource("/server.key");
+			File serverKey = MeshTestHelper.extractResource("/client-ssl/server.key");
 
 			httpOptions.setClientAuthMode(ClientAuth.REQUEST);
 			httpOptions.setSsl(true);

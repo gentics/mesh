@@ -192,10 +192,9 @@ public interface PersistingContainerDao<
 	 * 
 	 * @return
 	 */
-	private Stream<? extends AbstractBranchAssignEventModel<RE>> generateUnassignEvents(SCV version) {
-		
+	private Stream<? extends AbstractBranchAssignEventModel<RE>> generateUnassignEvents(SCV version) {		
 		return getBranches(version).stream()
-			.map(branch -> branch.onContainerAssignEvent(version, UNASSIGNED, null, () -> {
+			.map(branch -> branch.onContainerAssignEvent(version, UNASSIGNED, null, null, () -> {
 				try {
 					return version.getBranchAssignEventModelClass().getDeclaredConstructor().newInstance();
 				} catch (Throwable e) {

@@ -59,6 +59,7 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.context.NoConsistencyCheck;
 import com.gentics.mesh.util.CoreTestUtils;
 
 import io.vertx.core.json.JsonObject;
@@ -277,6 +278,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	}
 
 	@Test
+	@NoConsistencyCheck
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
@@ -347,6 +349,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	}
 
 	@Test
+	@NoConsistencyCheck
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {

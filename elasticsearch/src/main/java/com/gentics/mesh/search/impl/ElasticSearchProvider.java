@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isTimeoutError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -30,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -393,23 +393,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable processBulkOld(List<? extends BulkEntry> entries) {
-		if (entries.isEmpty()) {
-			return Completable.complete();
-		}
-
-		String bulkData = entries.stream()
-			.map(e -> e.toBulkString(installationPrefix()))
-			.collect(Collectors.joining("\n")) + "\n";
-		if (log.isTraceEnabled()) {
-			log.trace("Using bulk payload:");
-			log.trace(bulkData);
-		}
-
-		return processBulk(bulkData);
-	}
-
-	@Override
 	public Completable storeDocument(String index, String uuid, JsonObject document) {
 		String fullIndex = installationPrefix() + index;
 		long start = System.currentTimeMillis();
@@ -497,13 +480,17 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public String getVersion() {
+	public String getVersion(boolean failIfNotAvailable) {
 		try {
 			JsonObject info = client.info().sync();
 			return info.getJsonObject("version").getString("number");
 		} catch (HttpErrorException e) {
 			log.error("Unable to fetch node information.", e);
-			throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");
+			if (failIfNotAvailable) {
+				throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");
+			} else {
+				return null;
+			}
 		}
 	}
 
@@ -622,6 +609,40 @@ public class ElasticSearchProvider implements SearchProvider {
 				return Completable.complete();
 			}
 		}).compose(withTimeoutAndLog("Check mappings of index {" + indexName + "}", false));
+	}
+
+	@Override
+	public Completable reIndex(String source, String dest, JsonObject query) {
+		String sourceIndexName = installationPrefix() + source;
+		String destIndexName = installationPrefix() + dest;
+
+		JsonObject reIndex = new JsonObject()
+				.put("source", new JsonObject().put("index", sourceIndexName).put("query", query))
+				.put("dest", new JsonObject().put("index", destIndexName));
+
+		// start the reindex operation, but do not wait for completion.
+		return client.postBuilder("_reindex", reIndex).addQueryParameter("wait_for_completion", "false").async()
+				.doOnSubscribe(ignore -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Start reindex of {} into {}", source, dest);
+					}
+				}).doOnSuccess(ignore -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Successfully started reindex {} into {}", source, dest);
+					}
+				}).map(response -> response.getString("task")).flatMapCompletable(task -> {
+					// now wait for completion (up to 10s), if this fails with a timeout error, retry.
+					return client.getBuilder("_tasks/" + task).addQueryParameter("wait_for_completion", "true")
+							.addQueryParameter("timeout", "10s").async().doOnSubscribe(ignore -> {
+								if (log.isDebugEnabled()) {
+									log.debug("Wait for completion of task {}", task);
+								}
+							}).doOnSuccess(ignore -> {
+								if (log.isDebugEnabled()) {
+									log.debug("Task {} completed", task);
+								}
+							}).retry((count, error) -> isTimeoutError(error)).ignoreElement();
+				});
 	}
 
 	/**

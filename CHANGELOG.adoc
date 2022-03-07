@@ -24,8 +24,41 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.23]]
+== 1.7.23 (TBD)
+
+icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
+
+[[v1.7.22]]
+== 1.7.22 (1.12.2021)
+
+icon:check[] Search: When the ElasticSearch instance is not available, getting version information from the endpoint `/api/v1` failed with an internal
+server error. This has been fixed, calling the endpoint `/api/v1` will not fail anymore, but will not contain the ElasticSearch version.
+
+icon:check[] Rest: When a project with name "project" was deleted, calls to the endpoint `/projects` would cause 404 errors, until the Mesh instance was restarted.
+This has been fixed now.
+
+icon:check[] Java Rest Client: If requests to mesh fail with I/O errors (including timeouts), the thrown exception will now also contain the request method and URL.
+
+icon:check[] Server: Liveness-Check script `live.sh` will now fail if the `mesh.live` file has not been changed since 20s (previously 60s)
+
+icon:plus[] Docker-Image: The base image has been changed from JRE to JDK to include more tools for analyzing (e.g. creating heap-dumps). The base image has been updated to a newer JDK minor version (`11.0.12`)
+
 [[v1.7.21]]
-== 1.7.21 (TBD)
+== 1.7.21 (11.11.2021)
+
+icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 connection can be configured. By default the allowed headers/origins are set to `*`, the allowed methods are set to `"GET", "PUT", "POST", "DELETE"`. Setting any of the CORS configuration to `null` prevents is to override the server's default configuration. Setting all the CORS configuration to null or empty value prevents the CORS config to be changed at all.
+
+icon:check[] Cluster: When doing a rolling update in a cluster, a OConcurrentModificationException could occur during the startup, which could cause
+subsequent errors. This has been fixed.
+
+icon:plus[] Core: A periodic check for available disk space has been added. If not enough disk space is available, Gentics Mesh will be set to read-only to avoid corruption
+of the storage due to a full disk. Additionally, the metrics `mesh_storage_disk_total` and `mesh_storage_disk_usable` have been added to monitoring.
+
+icon:check[] Search: The indices for nodes of a schema, which contains fields of type "micronode" have a mapping for the fields in the allowed microschemas, but were not
+changed, if the microschemas were changed. This caused subsequent errors while indexing or searching.
+The naming of such indices have been changed to contain a hash over all allowed microschema versions and when a microschema is changed, a new index will be created now.
+This update will automatically drop and recreate all existing indices for schemas containing fields of type "micronode".
 
 icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 connection can be configured. By default the allowed headers/origins are set to `*`, the allowed methods are set to `"GET", "PUT", "POST", "DELETE"`. Setting any of the CORS configuration to `null` prevents is to override the server's default configuration. Setting all the CORS configuration to null or empty value prevents the CORS config to be changed at all.
 

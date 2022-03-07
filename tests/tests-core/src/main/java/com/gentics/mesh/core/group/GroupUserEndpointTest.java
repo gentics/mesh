@@ -64,7 +64,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 		UserResponse expectedTestUser = new UserResponse();
 		expectedTestUser.setUuid(userUuid());
-		expectedTestUser.setUsername(user().getUsername());
+		expectedTestUser.setUsername(tx(() -> user().getUsername()));
 
 		UserResponse expectedExtraUser = new UserResponse();
 		expectedExtraUser.setUuid(extraUserUuid);

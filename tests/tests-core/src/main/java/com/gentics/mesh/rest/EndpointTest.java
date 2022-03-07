@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.rest.impl.InternalEndpointRouteImpl;
 
 import io.vertx.ext.web.Route;
@@ -19,7 +20,7 @@ public class EndpointTest {
 		Router router = mock(Router.class);
 		Route route = mock(Route.class);
 		when(router.route()).thenReturn(route);
-		InternalEndpointRoute e = new InternalEndpointRouteImpl(router, null);
+		InternalEndpointRoute e = new InternalEndpointRouteImpl(router, null, mock(Database.class));
 
 		when(route.getPath()).thenReturn("/:bla/:blub/:blar");
 		assertEquals("/{bla}/{blub}/{blar}", e.getRamlPath());

@@ -54,10 +54,11 @@ public interface ContentDao {
 	 * @param branchUuid
 	 * @param schemaContainerVersionUuid
 	 * @param type
+	 * @param microSchemaVersionHash optional hash over all microschema versions, which are used by the schema version
 	 * @return
 	 */
-	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type) {
-		return composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null);
+	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String microSchemaVersionHash) {
+		return composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null, microSchemaVersionHash);
 	}
 
 	/**
@@ -76,9 +77,10 @@ public interface ContentDao {
 	 * @param schemaContainerVersionUuid
 	 * @param type
 	 * @param language
+	 * @param microSchemaVersionHash optional hash over all microschema versions, which are used by the schema version
 	 * @return
 	 */
-	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String language) {
+	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String language, String microSchemaVersionHash) {
 		Objects.requireNonNull(projectUuid, "The project uuid was not set");
 		Objects.requireNonNull(branchUuid, "The branch uuid was not set");
 		Objects.requireNonNull(schemaContainerVersionUuid, "The schema container version uuid was not set");
@@ -97,6 +99,10 @@ public interface ContentDao {
 		if (language != null) {
 			indexName.append("-");
 			indexName.append(language.toLowerCase());
+		}
+		if (microSchemaVersionHash != null) {
+			indexName.append("-");
+			indexName.append(microSchemaVersionHash.toLowerCase());
 		}
 		return indexName.toString();
 	}
@@ -177,6 +183,7 @@ public interface ContentDao {
 		id.append(languageTag);
 		return id.toString();
 	}
+
 	/**
 	 * Return the path segment value of this node preferable in the given language.
 	 *
@@ -480,7 +487,7 @@ public interface ContentDao {
 	 * @return
 	 */
 	default String getIndexName(HibNodeFieldContainer content, String projectUuid, String branchUuid, ContainerType type) {
-		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion(content).getUuid(), type);
+		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion(content).getUuid(), type, null);
 	}
 
 	/**

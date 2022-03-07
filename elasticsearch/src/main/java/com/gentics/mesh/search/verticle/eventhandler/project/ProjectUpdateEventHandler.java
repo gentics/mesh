@@ -80,7 +80,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 									.getFieldContainers(node, branch, type).stream()
 									.map(container -> helper.createDocumentRequest(
 											ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
-													container.getSchemaContainerVersion().getUuid(), type),
+													container.getSchemaContainerVersion().getUuid(), type, container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)),
 											ContentDao.composeDocumentId(node.getUuid(),
 													container.getLanguageTag()),
 											((NodeContainerTransformer) entities.nodeContent.getTransformer())
