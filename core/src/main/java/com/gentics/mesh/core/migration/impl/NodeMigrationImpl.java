@@ -22,14 +22,11 @@ import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -38,7 +35,6 @@ import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -73,7 +69,6 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		context.validate();
 		return Completable.defer(() -> {
 			HibSchemaVersion fromVersion = context.getFromVersion();
-			HibSchemaVersion toVersion = context.getToVersion();
 			SchemaMigrationCause cause = context.getCause();
 			HibBranch branch = context.getBranch();
 			MigrationStatusHandler status = context.getStatus();
@@ -154,8 +149,6 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, HibNodeFieldContainer container,
 								  List<Exception> errorsDetected, Set<String> touchedFields) {
 		ContentDao contentDao = Tx.get().contentDao();
-		BranchDao branchDao = Tx.get().branchDao();
-		PersistingSchemaDao schemaDao = CommonTx.get().schemaDao();
 
 		String containerUuid = container.getUuid();
 		HibNode node = contentDao.getNode(container);
