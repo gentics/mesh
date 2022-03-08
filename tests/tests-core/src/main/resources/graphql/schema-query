@@ -10,8 +10,8 @@
 		}
 	}
 
-    uuidSchema: schema(uuid:"70bf14ed1267446eb70c5f02cfec0e38") {
-        # [$.data.uuidSchema.uuid=70bf14ed1267446eb70c5f02cfec0e38]
+    uuidSchema: schema(uuid:"%SCHEMA_UUID%") {
+        # [$.data.uuidSchema.uuid=%SCHEMA_UUID%]
         uuid
         # [$.data.uuidSchema.name=folder]
         name

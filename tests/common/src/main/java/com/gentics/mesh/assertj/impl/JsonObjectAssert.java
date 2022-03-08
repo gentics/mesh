@@ -2,6 +2,7 @@ package com.gentics.mesh.assertj.impl;
 
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.UUIDUtil;
+import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
@@ -34,9 +36,11 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	 */
 	protected String key;
 
-	private static Map<String, String> staticVariables = Stream.of(
-		new SimpleImmutableEntry<>("CURRENT_API_BASE_PATH", CURRENT_API_BASE_PATH))
-		.collect(Collectors.toMap(SimpleImmutableEntry::getKey, SimpleImmutableEntry::getValue));
+	private static Map<String, String> staticVariables = ImmutableMap.<String, String>builder()
+			.put("CURRENT_API_BASE_PATH", CURRENT_API_BASE_PATH)
+			.build();
+
+	private Map<String, String> dynamicVariables = new HashMap<>();
 
 	public JsonObjectAssert(JsonObject actual) {
 		super(actual, JsonObjectAssert.class);
@@ -44,6 +48,17 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	public JsonObjectAssert key(String key) {
 		this.key = key;
+		return this;
+	}
+
+	/**
+	 * The assert will try to substitute assertion strings composed like %key% to value
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	public JsonObjectAssert replacingPlaceholderVariable(String key, String value) {
+		dynamicVariables.put(key, value);
 		return this;
 	}
 
@@ -200,7 +215,8 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		Matcher matcher = pattern.matcher(value);
 		while (matcher.find()) {
 			String varname = matcher.group(1);
-			value = matcher.replaceFirst(staticVariables.get(varname));
+			String replaceValue = staticVariables.getOrDefault(varname, dynamicVariables.getOrDefault(varname, null));
+			value = matcher.replaceFirst(replaceValue);
 			matcher = pattern.matcher(value);
 		}
 		return value;

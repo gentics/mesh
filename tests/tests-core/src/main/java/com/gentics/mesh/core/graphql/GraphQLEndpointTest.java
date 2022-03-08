@@ -20,8 +20,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.TestSize;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
@@ -93,11 +97,13 @@ import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public abstract class GraphQLEndpointTest extends AbstractMeshTest {
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
+public class GraphQLEndpointTest extends AbstractMeshTest {
 
-	protected static final String FOLDER_SCHEMA_UUID = "70bf14ed1267446eb70c5f02cfec0e38";
 	protected static final String NODE_WITH_LINKS_UUID = "8d2f5769fe114353af5769fe11e35355";
 	protected static final String NODE_WITH_NODE_REF_UUID = "e8f5c7875b2f49a7b5c7875b2fa9a718";
+	public static final String SCHEMA_UUID = "SCHEMA_UUID";
 
 	protected final String queryName;
 
@@ -123,7 +129,7 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 	 * @param version Whether to use the <code>draft</code> or <code>published</code> version
 	 * @param assertion A custom assertion to be applied on the GraphQL query result
 	 */
-	protected GraphQLEndpointTest(String queryName, boolean withMicroschema, String version, Consumer<JsonObject> assertion, String apiVersion) {
+	public GraphQLEndpointTest(String queryName, boolean withMicroschema, String version, Consumer<JsonObject> assertion, String apiVersion) {
 		this.queryName = queryName;
 		this.withMicroschema = withMicroschema;
 		this.version = version;
@@ -230,7 +236,6 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 
 			// Update the folder schema to contain all fields
 			HibSchema schemaContainer = schemaContainer("folder");
-			safelySetUuid(tx, schemaContainer, FOLDER_SCHEMA_UUID);
 			SchemaVersionModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
 			schema.setAutoPurge(true);
@@ -318,6 +323,7 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 				schema.addField(micronodeFieldSchema);
 			}
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(schemaContainer("folder").getLatestVersion());
 
 			// Setup some test data
 			HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
@@ -462,26 +468,20 @@ public abstract class GraphQLEndpointTest extends AbstractMeshTest {
 		call(() -> client.updateUser(user.getUuid(), new UserUpdateRequest().setNodeReference(newsNode)));
 
 		// Now execute the query and assert it
-		String query = getGraphQLQuery(queryName, apiVersion);
+		String query = getGraphQLQuery(queryName, apiVersion).replace("%" + SCHEMA_UUID + "%", schemaContainer("folder").getUuid());
 		//System.out.println(query);
 		GraphQLResponse response = call(
 			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
 		//System.out.println(jsonResponse.encodePrettily());
 		if (assertion == null) {
-			assertThat(jsonResponse).compliesToAssertions(queryName, apiVersion);
+			assertThat(jsonResponse)
+					.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
+					.compliesToAssertions(queryName, apiVersion);
 		} else {
 			assertion.accept(jsonResponse);
 		}
 	}
-
-	/**
-	 * Sets the uuid of a schema and also the "schema" property of all nodes of that schema.
-	 * @param tx
-	 * @param schemaContainer
-	 * @param uuid
-	 */
-	protected abstract void safelySetUuid(Tx tx, HibSchema schemaContainer, String uuid);
 
 	protected long dateToMilis(String date) throws ParseException {
 		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date).getTime();
