@@ -152,8 +152,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				}
 			}
 			return false;
-		})
-			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+		}).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	@Override

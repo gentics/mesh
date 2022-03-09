@@ -1570,7 +1570,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
-			englishContainer.createString("displayName").setString("displayName");
+			//englishContainer.createString("displayName").setString("displayName");
 			englishContainer.createString("slug").setString("filename.nl.html");
 			englishContainer.createHTML("content").setHtml("nl content");
 			roleDao.grantPermissions(role(), node, READ_PERM);
