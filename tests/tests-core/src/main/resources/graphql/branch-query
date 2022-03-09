@@ -16,8 +16,8 @@
             # [$.data.branch.schema.name=content]
             name
 		}
-		uuidSchema: schema(uuid:"70bf14ed1267446eb70c5f02cfec0e38") {
-		    # [$.data.branch.uuidSchema.uuid=70bf14ed1267446eb70c5f02cfec0e38]
+		uuidSchema: schema(uuid:"%SCHEMA_UUID%") {
+		    # [$.data.branch.uuidSchema.uuid=%SCHEMA_UUID%]
 		    uuid
 		    # [$.data.branch.uuidSchema.name=folder]
 		    name
