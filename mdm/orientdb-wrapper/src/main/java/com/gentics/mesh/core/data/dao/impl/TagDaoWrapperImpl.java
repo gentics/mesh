@@ -190,11 +190,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public String getRootLabel(HibTagFamily root) {
-		return toGraph(root).getRootLabel();
-	}
-
-	@Override
 	public long globalCount(HibTagFamily root) {
 		return toGraph(root).globalCount();
 	}

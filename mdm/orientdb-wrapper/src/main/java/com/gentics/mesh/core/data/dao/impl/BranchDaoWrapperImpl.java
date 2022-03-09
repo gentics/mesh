@@ -141,11 +141,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public String getRootLabel(HibProject root) {
-		return toGraph(root).getBranchRoot().getRootLabel();
-	}
-
-	@Override
 	public Class<? extends HibBranch> getPersistenceClass(HibProject root) {
 		return toGraph(root).getBranchRoot().getPersistanceClass();
 	}

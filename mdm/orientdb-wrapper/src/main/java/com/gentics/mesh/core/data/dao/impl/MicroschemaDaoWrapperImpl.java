@@ -179,11 +179,6 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	public String getRootLabel(HibProject root) {
-		return toGraph(root).getMicroschemaContainerRoot().getRootLabel();
-	}
-
-	@Override
 	public long globalCount(HibProject root) {
 		return toGraph(root).getMicroschemaContainerRoot().globalCount();
 	}
