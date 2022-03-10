@@ -81,9 +81,12 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 		HibSchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());
 
+		tx(tx -> {
+			content.setBucketId(Integer.MAX_VALUE);
+		});
+
 		long before = tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			content.setBucketId(Integer.MAX_VALUE);
 			// Count contents in bucket 0 to MaxInt/2
 			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 		});
