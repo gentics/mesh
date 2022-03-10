@@ -30,7 +30,6 @@
 		<module>tests-rest-client</module>
 		<module>tests-plugin-api</module>
 		<module>tests-server</module>
-		<module>tests-demo</module>
 		<module>tests-changelog-system</module>
 		<module>tests-elasticsearch</module>
 		<module>tests-distributed</module>

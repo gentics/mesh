@@ -159,8 +159,6 @@ public class TestDataProvider {
 			roles.clear();
 			groups.clear();
 
-			boot.initDatabaseTypes();
-
 			addBootstrappedData(tx);
 			addSchemaContainers();
 			addUserGroupRoleProject();

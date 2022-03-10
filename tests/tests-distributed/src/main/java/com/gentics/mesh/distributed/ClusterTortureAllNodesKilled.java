@@ -3,9 +3,11 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.test.ClientHelper.call;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.test.category.ClusterTests;
 
 /**
  * Cluster Torture: SIGKILL all nodes during sync process.
@@ -13,6 +15,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
  * @author plyhun
  *
  */
+@Category(ClusterTests.class)
 public class ClusterTortureAllNodesKilled extends AbstractClusterTortureTest {
 	
 	@Test
