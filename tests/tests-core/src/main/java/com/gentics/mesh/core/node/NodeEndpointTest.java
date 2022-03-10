@@ -47,7 +47,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -60,6 +59,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -2050,15 +2050,15 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
 		HibBranch initialBranch;
 		HibBranch newBranch;
+
+		waitForJobs(() -> {
+			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName("newbranch")));
+		}, COMPLETED, 1);
 		try (Tx tx = tx()) {
 			// create a new branch
 			HibProject project = project();
 			initialBranch = reloadBranch(project.getInitialBranch());
-			newBranch = createBranch("newbranch");
-			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
-			context.setNewBranch(newBranch);
-			context.setOldBranch(initialBranch);
-			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+			newBranch = tx.branchDao().findByName(project, "newbranch");
 		}
 
 		try (Tx tx = tx()) {
