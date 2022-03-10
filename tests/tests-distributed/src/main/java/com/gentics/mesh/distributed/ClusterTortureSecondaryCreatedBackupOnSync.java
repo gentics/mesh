@@ -6,8 +6,10 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.testcontainers.containers.BindMode;
 
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
 /**
@@ -16,6 +18,7 @@ import com.gentics.mesh.test.docker.MeshContainer;
  * @author plyhun
  *
  */
+@Category(ClusterTests.class)
 public class ClusterTortureSecondaryCreatedBackupOnSync extends AbstractClusterTortureTest {
 	@Test
 	public void testSecondaryBackupCreated() throws Exception {

@@ -1,6 +1,9 @@
 package com.gentics.mesh.distributed.coordinatortoken;
 
+import org.junit.experimental.categories.Category;
+
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.category.ClusterTests;
 
 /**
  * Executes the tests from {@link AbstractClusterCoordinatorTokenTest}.
@@ -17,6 +20,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
  * </ul>
  *
  */
+@Category(ClusterTests.class)
 public class ClusterCoordinatorTokenTestLocal extends AbstractClusterCoordinatorTokenTest {
 
 	@Override

@@ -3,9 +3,11 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.test.ClientHelper.call;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
 /**
@@ -14,6 +16,7 @@ import com.gentics.mesh.test.docker.MeshContainer;
  * @author plyhun
  *
  */
+@Category(ClusterTests.class)
 public class ClusterTortureSecondaryKilledDuringMigrationTest extends AbstractClusterTortureTest {
 
 	@Test

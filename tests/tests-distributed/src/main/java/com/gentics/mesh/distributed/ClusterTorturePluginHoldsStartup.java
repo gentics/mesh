@@ -5,9 +5,12 @@ import static com.gentics.mesh.util.TokenUtil.randomToken;
 import java.io.File;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
+@Category(ClusterTests.class)
 public class ClusterTorturePluginHoldsStartup extends AbstractClusterTortureTest {
 
 	private static final int STARTUP_TIMEOUT = 60 * 6;

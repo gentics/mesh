@@ -12,4 +12,4 @@ fi
 echo "Running tests: $tests"
 jacoco=$2
 echo "Using jacoco: $jacoco"
-time mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!demo,!doc,!performance-tests' test -Dtest=$tests -DfailIfNoTests=false -Djacoco.skip=$jacoco | ts "$3 [%Y-%m-%d %H:%M:%S]"
+time mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!demo,!doc,!performance-tests' test -Dtest=$tests -DfailIfNoTests=false -Djacoco.skip=$jacoco | ts "$3 [%Y-%m-%d %H:%M:%S]"
