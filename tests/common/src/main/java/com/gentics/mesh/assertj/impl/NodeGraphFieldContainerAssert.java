@@ -1,6 +1,7 @@
 package com.gentics.mesh.assertj.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
@@ -8,6 +9,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.util.StreamUtil;
 
 public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGraphFieldContainerAssert, HibNodeFieldContainer> {
 
@@ -68,8 +70,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 */
 	public NodeGraphFieldContainerAssert hasNext(HibNodeFieldContainer container) {
 		ContentDao contentDao = Tx.get().contentDao();
-		Iterable<HibNodeFieldContainer> next = contentDao.getNextVersions(actual);
-		assertThat(next).as(descriptionText() + " next container").isNotNull().usingFieldByFieldElementComparator().contains(container);
+		assertTrue(StreamUtil.toStream(contentDao.getNextVersions(actual)).anyMatch(c -> c.getId().equals(container.getId())));
 		return this;
 	}
 
@@ -80,8 +81,8 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert hasPrevious(HibNodeFieldContainer container) {
-		assertThat(actual.getPreviousVersion()).as(descriptionText() + " previous container").isNotNull()
-				.isEqualToComparingFieldByField(container);
+		assertThat(actual.getPreviousVersion().getId()).as(descriptionText() + " previous container").isNotNull()
+				.isEqualTo(container.getId());
 		return this;
 	}
 }

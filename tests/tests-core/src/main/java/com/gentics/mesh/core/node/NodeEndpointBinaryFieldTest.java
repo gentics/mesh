@@ -127,6 +127,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		SchemaUpdateRequest schemaRequest = JsonUtil.readValue(tx(() -> schemaContainer("content").getLatestVersion().getJson()),
 			SchemaUpdateRequest.class);
 		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
+
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaRequest));
 		}, COMPLETED, 1);

@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
@@ -25,7 +26,6 @@ import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -72,7 +72,6 @@ import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -370,7 +369,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testCreateWithDuplicateUuid() throws Exception {
-		String nodeUuid = tx(() -> project().getUuid());
+		String nodeUuid = tx(() -> project().getBaseNode().getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReferenceImpl().setName("content"));
@@ -383,7 +382,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
-			call(() -> client().createNode(nodeUuid, PROJECT_NAME, request), INTERNAL_SERVER_ERROR, "error_internal");
+			call(() -> client().createNode(nodeUuid, PROJECT_NAME, request), BAD_REQUEST);
 		}
 	}
 
@@ -1382,24 +1381,19 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testReadByUUIDWithLinkPathsAndNoSegmentFieldRef() {
-		HibNode node = folder("news");
-		try (Tx tx = tx()) {
-			// Update the schema
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			schema.setSegmentField(null);
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			mesh().serverSchemaStorage().clear();
-			tx.success();
-		}
+		String nodeUuid = tx(tx -> { return folder("news").getUuid(); });
+		String schemaUuid = tx(tx -> { return folder("news").getSchemaContainer().getUuid(); });
+		SchemaResponse schema = call(() -> client().findSchemaByUuid(schemaUuid));
 
-		try (Tx tx = tx()) {
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setResolveLinks(
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, schema.toUpdateRequest().setSegmentField(null)));
+		}, COMPLETED, 1);		
+
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setResolveLinks(
 				LinkType.FULL), new VersioningParametersImpl().draft()));
 			assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/error/404", response.getPath());
 			assertThat(response.getLanguagePaths()).containsEntry("en", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404");
 			assertThat(response.getLanguagePaths()).containsEntry("de", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404");
-		}
-
 	}
 
 	@Test
