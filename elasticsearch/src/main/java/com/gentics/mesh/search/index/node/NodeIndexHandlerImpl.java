@@ -191,7 +191,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			// Add all language specific indices (might be none)
 			schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), version, language);
+					.getUuid(), version, language, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
 				indexInfos.put(indexName, createIndexInfo(branch, schema, language, indexName, schema.getName() + "@" + schema.getVersion()));
@@ -200,7 +200,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			// And all default indices
 			Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), version, containerVersion.getMicroschemaVersionHash(branch));
+					.getUuid(), version, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
 				indexInfos.put(indexName, createIndexInfo(branch, schema, null, indexName, schema.getName() + "@" + schema.getVersion()));

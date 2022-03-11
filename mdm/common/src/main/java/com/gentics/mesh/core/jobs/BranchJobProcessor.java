@@ -123,15 +123,21 @@ public class BranchJobProcessor implements SingleJobProcessor {
 			return handler.migrateBranch(context)
 					.doOnComplete(() -> {
 						db.tx(() -> {
-							HibJob latest = jobDao.findByUuid(job.getUuid());
-							finalizeMigration(latest, context);
+							// Job is nullable in the case of some unit tests
+							if (job != null) {
+								HibJob latest = jobDao.findByUuid(job.getUuid());
+								finalizeMigration(latest, context);
+							}
 							context.getStatus().done();
 						});
 					}).doOnError(err -> {
 						db.tx(tx -> {
-							HibJob latest = jobDao.findByUuid(job.getUuid());
-							context.getStatus().error(err, "Error in branch migration.");
-							tx.createBatch().add(createEvent(latest, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+							// Job is nullable in the case of some unit tests
+							if (job != null) {
+								HibJob latest = jobDao.findByUuid(job.getUuid());
+								tx.createBatch().add(createEvent(latest, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+							}
+							context.getStatus().error(err, "Error in branch migration.");							
 						});
 					});
 		});

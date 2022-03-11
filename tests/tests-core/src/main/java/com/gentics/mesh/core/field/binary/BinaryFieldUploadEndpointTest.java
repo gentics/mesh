@@ -597,9 +597,10 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	 * Assert that deleting one node will not affect the binary of another node which uses the same binary (binary of the binaryfield).
 	 * 
 	 * @throws IOException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testDeleteBinaryNodeDeduplication() throws IOException {
+	public void testDeleteBinaryNodeDeduplication() throws IOException, InterruptedException {
 		// The data
 		String contentType = "application/blub";
 		int binaryLen = 8000;
@@ -673,6 +674,12 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			return tx.binaries().findByHash(hashA).runInExistingTx(tx);
 		});
 		assertNull("The binary for the hash should have also been removed since only one node used the binary.", binaryA);
+
+		// since the file is deleted asynchronously, this may take some time. We will make at most 5s for it
+		long start = System.currentTimeMillis();
+		while(binaryFileA.exists() && (System.currentTimeMillis() - start) < 5_000) {
+			Thread.sleep(200);
+		}
 		assertFalse("The binary file should have been removed.", binaryFileA.exists());
 
 		// The folder is not removed. Removing the parent folder of the upload would require us to lock uploads.
