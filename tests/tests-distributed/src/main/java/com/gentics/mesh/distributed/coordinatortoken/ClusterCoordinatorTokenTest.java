@@ -8,12 +8,15 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 import org.junit.ClassRule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 
+@Category(ClusterTests.class)
 public class ClusterCoordinatorTokenTest extends AbstractClusterCoordinatorTokenTest {
 	private static String clusterPostFix = randomUUID();
 	private static String coordinatorRegex = "nodeA";

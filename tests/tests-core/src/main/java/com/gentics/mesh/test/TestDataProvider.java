@@ -159,8 +159,6 @@ public class TestDataProvider {
 			roles.clear();
 			groups.clear();
 
-			boot.initDatabaseTypes();
-
 			addBootstrappedData(tx);
 			addSchemaContainers();
 			addUserGroupRoleProject();
@@ -226,11 +224,6 @@ public class TestDataProvider {
 
 		HibRole role = userInfo.getRole();
 		for (HibBaseElement meshVertex : elements) {
-			if (Mockito.mockingDetails(meshVertex).isMock()) {
-				// TODO to make the setup work for enterprise, we are temporarily using mocks for unimplemented entities.
-				// Should be considered for removal after Enterprise code is fully settled.
-				continue;
-			}
 			if (log.isTraceEnabled()) {
 				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
 			}

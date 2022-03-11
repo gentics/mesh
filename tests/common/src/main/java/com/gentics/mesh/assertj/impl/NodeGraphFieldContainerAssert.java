@@ -2,6 +2,11 @@ package com.gentics.mesh.assertj.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.gentics.mesh.util.StreamUtil;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -68,8 +73,8 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 */
 	public NodeGraphFieldContainerAssert hasNext(HibNodeFieldContainer container) {
 		ContentDao contentDao = Tx.get().contentDao();
-		Iterable<HibNodeFieldContainer> next = contentDao.getNextVersions(actual);
-		assertThat(next).as(descriptionText() + " next container").isNotNull().usingFieldByFieldElementComparator().contains(container);
+		List<HibNodeFieldContainer> next = StreamUtil.toStream(contentDao.getNextVersions(actual)).collect(Collectors.toList());
+		assertThat(next).as(descriptionText() + " next container").isNotNull().contains(container);
 		return this;
 	}
 
@@ -81,7 +86,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 */
 	public NodeGraphFieldContainerAssert hasPrevious(HibNodeFieldContainer container) {
 		assertThat(actual.getPreviousVersion()).as(descriptionText() + " previous container").isNotNull()
-				.isEqualToComparingFieldByField(container);
+				.isEqualTo(container);
 		return this;
 	}
 }

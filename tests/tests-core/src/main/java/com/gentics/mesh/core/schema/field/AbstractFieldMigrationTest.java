@@ -1112,7 +1112,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
 			user());
-		englishContainer.getSchemaContainerVersion().getSchema().addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel(micronodeFieldName));
 		actions().updateSchemaVersion(englishContainer.getSchemaContainerVersion());
 		HibMicronodeField micronodeField = englishContainer.createMicronode(micronodeFieldName, schemaVersion);
 		for (String fieldName : fieldNames) {

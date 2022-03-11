@@ -175,7 +175,7 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 		assertThat(schemaInfo.expectedDraftIndex).as("draft index name").isNotEqualTo(oldDraftIndex);
 		assertThat(schemaInfo.expectedPublishedIndex).as("published index name").isNotEqualTo(oldPublishedIndex);
 
-		new TestSchemaInfo(SCHEMA_NAME).assertIndices().assertIndexedDraftDocuments(draftNodeUuids)
+		schemaInfo.assertIndices().assertIndexedDraftDocuments(draftNodeUuids)
 				.assertIndexedPublishedDocuments(publishedNodeUuids);
 	}
 
