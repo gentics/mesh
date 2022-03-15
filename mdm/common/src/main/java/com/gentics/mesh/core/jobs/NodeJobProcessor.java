@@ -150,9 +150,8 @@ public class NodeJobProcessor implements SingleJobProcessor {
 									warnings.add(conflict);
 								}
 							}
-							job.setWarnings(warnings);
 							finalizeMigration(job, context);
-							context.getStatus().done();
+							context.getStatus().done(warnings);
 						});
 					}).doOnError(err -> {
 						db.tx(tx -> {
