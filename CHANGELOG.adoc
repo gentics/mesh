@@ -40,6 +40,8 @@ and thus were sometimes not cleaned up. The naming of those temporary indices ha
 
 icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possible internal errors when parsing uploaded files using tika.
 
+icon:plus[] Core: The Jackson libraries have been updated to version `2.13.2`.
+
 [[v1.7.23]]
 == 1.7.23 (TBD)
 
