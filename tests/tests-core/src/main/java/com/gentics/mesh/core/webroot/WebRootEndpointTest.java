@@ -28,6 +28,7 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -74,16 +75,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		HibNode node = content("news_2015");
-		String nodeUuid = tx(() -> node.getUuid());
-
 		try (Tx tx = tx()) {
-			ContentDao contentDao = tx.contentDao();
-			// 1. Transform the node into a binary content
-			HibSchema container = schemaContainer("binary_content");
-			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english())
-					.setSchemaContainerVersion(container.getLatestVersion());
+			HibNode node = content("news_2015");
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -93,14 +86,14 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		// 2. Update the binary data
-		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+		call(() -> uploadRandomData(content("news_2015"), "en", "binary", binaryLen, contentType, fileName));
 
 		// 3. Try to resolve the path
 		String path = "/News/2015/somefile.dat";
 		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path,
 				new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 		MeshBinaryResponse downloadResponse = response.getBinaryResponse();
-		assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
+		assertEquals("Webroot response node uuid header value did not match",  content("news_2015").getUuid(), response.getNodeUuid());
 		assertTrue(response.isBinary());
 		assertNotNull(downloadResponse);
 	}
@@ -118,6 +111,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			schema.addField(s3BinaryFieldSchema);
 			schema.setSegmentField("s3");
 			schemaContainer("content").getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(schemaContainer("content").getLatestVersion());
 			tx.success();
 		}
 
@@ -181,7 +175,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// Modify the cache entry by adding another bogus segment. The validation should
 		// pick up the inconsistency and invalidate the whole path entry
 		tx(tx -> {
-			HibNodeFieldContainer bogusContainer = CoreTestUtils.createContainer();
+			HibNodeFieldContainer bogusContainer = CoreTestUtils.createContainer(new StringFieldSchemaImpl().setName("name"));
 			HibStringField bogusField = bogusContainer.createString("name");
 			Path entry = mesh().pathCache().getPath(project(), initialBranch(), ContainerType.DRAFT, path);
 			entry.addSegment(new PathSegmentImpl(bogusContainer, bogusField, "en", "bogus"));
@@ -248,10 +242,13 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
 			mesh().serverSchemaStorage().addSchema(schema);
+			actions().updateSchemaVersion(folderSchema.getLatestVersion());
 
 			// Create content which is only german
 			HibSchema contentSchema = schemaContainer("content");
 			HibNode node = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
+			contentSchema.getLatestVersion().getSchema().addField(new StringFieldSchemaImpl().setName("displayName"));
+			actions().updateSchemaVersion(contentSchema.getLatestVersion());
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			roleDao.grantPermissions(role(), node, InternalPermission.values());
