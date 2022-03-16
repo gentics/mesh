@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -284,6 +285,10 @@ public class LinkRendererTest extends AbstractMeshTest {
 			HibNode parentNode = folder("2015");
 
 			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
+			schemaVersion.getSchema()
+					.addField(new StringFieldSchemaImpl().setName("displayName"))
+					.addField(new StringFieldSchemaImpl().setName("name"));
+			actions().updateSchemaVersion(schemaVersion);
 			// Create some dummy content
 			HibNode content = nodeDao.create(parentNode, user(), schemaVersion, project());
 			HibNodeFieldContainer germanContainer = boot().contentDao().createFieldContainer(content, german, content.getProject().getLatestBranch(), user());
@@ -313,6 +318,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 			HibBinary binary = tx.binaries().create("bogus", 1L).runInExistingTx(tx);
 			contentDao.getLatestDraftFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
 
@@ -340,6 +346,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.addField(new S3BinaryFieldSchemaImpl().setName("s3binary").setLabel("Binary content"));
 			schema.setSegmentField("s3binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
 			S3HibBinary binary = tx.s3binaries().create(UUIDUtil.randomUUID(), s3Bucket, fileName).runInExistingTx(tx);
 			contentDao.getLatestDraftFieldContainer(node, english()).createS3Binary("s3binary", binary).setFileName(fileName);
