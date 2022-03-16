@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
@@ -38,7 +38,7 @@ public class ServerWSTest extends AbstractVerticle {
 		// 3. Setup the SockJS Handler and add a route for it in our API
 		SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
 		SockJSHandler handler = SockJSHandler.create(vertx, sockJSoptions);
-		BridgeOptions bridgeOptions = new BridgeOptions();
+		SockJSBridgeOptions bridgeOptions = new SockJSBridgeOptions();
 		bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress("dummy"));
 		bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress("dummy"));
 		handler.bridge(bridgeOptions, event -> {

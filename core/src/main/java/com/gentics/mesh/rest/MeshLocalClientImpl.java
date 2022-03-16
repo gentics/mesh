@@ -135,7 +135,6 @@ import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 
@@ -1163,7 +1162,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
 
-		MultiMap attributes = new CaseInsensitiveHeaders();
+		MultiMap attributes = MultiMap.caseInsensitiveMultiMap();
 		attributes.add("language", languageTag);
 		attributes.add("version", version);
 
