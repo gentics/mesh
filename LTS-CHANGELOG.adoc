@@ -26,6 +26,9 @@ icon:check[] Core: When changing a microschema, the following migration of nodes
 new published version from the old draft version, instead of the old published version.
 This has been fixed now.
 
+icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
+(`status`, `type`, `branchName`, `branchUuid`, `schemaName`, `schemaUuid`, `microschemaName`, `microschemaUuid`, `fromVersion`, `toVersion`).
+
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
 
