@@ -37,9 +37,6 @@ the persistence layer.
 
 The business logic is now completely independent from our current persistency layer (OrientDB), but uses an
 (internal) persistence API instead. Persistence with OrientDB is the current implementation of the persistence API.
-
-In the future, it will be possible to make alternative implementations of the persistence API, which use other
-databases (like relational databases for example).
 ____
 
 icon:plus[] Core: The core Vert.x library was updated to version `3.9.12`.
