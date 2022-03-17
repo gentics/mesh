@@ -20,6 +20,9 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.25]]
 == 1.6.25 (TBD)
 
+icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
+(`status`, `type`, `branchName`, `branchUuid`, `schemaName`, `schemaUuid`, `microschemaName`, `microschemaUuid`, `fromVersion`, `toVersion`).
+
 icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
 
 [[v1.6.24]]

@@ -9,8 +9,6 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -20,7 +18,6 @@ import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -34,7 +31,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
-import io.reactivex.Completable;
 
 /**
  * DAO for jobs.
@@ -126,8 +122,14 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 
 	@Override
-	public Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getJobRoot().findAllNoPerm(ac, pagingInfo);
+	public Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibJob> extraFilter) {
+		if (extraFilter == null) {
+			return boot.get().meshRoot().getJobRoot().findAllNoPerm(ac, pagingInfo);
+		} else {
+			return boot.get().meshRoot().getJobRoot().findAllNoPerm(ac, pagingInfo, job -> {
+				return extraFilter.test(job);
+			});
+		}
 	}
 
 	@Override
