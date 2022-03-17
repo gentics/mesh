@@ -152,7 +152,7 @@ public interface RestPlugin extends MeshPlugin {
 										rc.next();
 									}
 								} else {
-									rc.next();
+									rc.fail(props.cause());
 								}
 							});
 						} else {
