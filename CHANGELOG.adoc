@@ -42,6 +42,8 @@ icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possi
 
 icon:plus[] Core: The Jackson libraries have been updated to version `2.13.2`.
 
+icon:plus[] Core: The Netty libraries have been updated to version `4.1.72.Final`.
+
 [[v1.7.23]]
 == 1.7.23 (TBD)
 
