@@ -27,9 +27,24 @@ include::content/docs/variables.adoc-include[]
 [[1.8.0]]
 == 1.8.0 (TBD)
 
+icon:bullhorn[] Architecture overhaul
+
+[quote]
+____
+
+The internal architecture has been changed, in order to make a clean separation between the business logic and
+the persistence layer.
+
+The business logic is now completely independent from our current persistency layer (OrientDB), but uses an
+(internal) persistence API instead. Persistence with OrientDB is the current implementation of the persistence API.
+
+In the future, it will be possible to make alternative implementations of the persistence API, which use other
+databases (like relational databases for example).
+____
+
 icon:plus[] Core: The core Vert.x library was updated to version `3.9.12`.
 
-CAUTION: With the update to Vert.x 3.9.12, creating a StaticHandler in a plugin to server static files from the plugin's classpath does not work any more.
+CAUTION: With the update to Vert.x 3.9.12, creating a StaticHandler in a plugin to serve static files from the plugin's classpath does not work any more.
 Instead of creating an instance of the StaticHandler, the new method RestPlugin::addStaticHandlerFromClasspath should be used instead.
 
 icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
@@ -43,9 +58,6 @@ icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possi
 icon:plus[] Core: The Jackson libraries have been updated to version `2.13.2`.
 
 icon:plus[] Core: The Netty libraries have been updated to version `4.1.72.Final`.
-
-[[v1.7.23]]
-== 1.7.23 (TBD)
 
 icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
 
