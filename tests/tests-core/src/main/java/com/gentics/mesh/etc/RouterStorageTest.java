@@ -12,8 +12,8 @@ import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.ParsedHeaderValues;
@@ -44,7 +44,7 @@ public class RouterStorageTest implements MeshOptionsTypeUnawareContext {
 		when(request.uri()).thenReturn("");
 		when(rc.request()).thenReturn(request);
 		when(rc.normalisedPath()).thenReturn("/blub");
-		when(rc.queryParams()).thenReturn(new CaseInsensitiveHeaders());
+		when(rc.queryParams()).thenReturn(MultiMap.caseInsensitiveMultiMap());
 		storage.root().getRouter().handleFailure(rc);
 	}
 }

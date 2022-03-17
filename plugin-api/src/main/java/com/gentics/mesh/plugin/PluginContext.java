@@ -13,6 +13,7 @@ import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.annotations.Nullable;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
@@ -387,4 +388,18 @@ public class PluginContext implements RoutingContext {
 		return rc.cookieMap();
 	}
 
+	@Override
+	public int addEndHandler(Handler<AsyncResult<Void>> handler) {
+		return rc.addEndHandler(handler);
+	}
+
+	@Override
+	public boolean removeEndHandler(int handlerID) {
+		return rc.removeEndHandler(handlerID);
+	}
+
+	@Override
+	public boolean isSessionAccessed() {
+		return rc.isSessionAccessed();
+	}
 }

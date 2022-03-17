@@ -27,6 +27,11 @@ include::content/docs/variables.adoc-include[]
 [[1.8.0]]
 == 1.8.0 (TBD)
 
+icon:plus[] Core: The core Vert.x library was updated to version `3.9.12`.
+
+CAUTION: With the update to Vert.x 3.9.12, creating a StaticHandler in a plugin to server static files from the plugin's classpath does not work any more.
+Instead of creating an instance of the StaticHandler, the new method RestPlugin::addStaticHandlerFromClasspath should be used instead.
+
 icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
 (`status`, `type`, `branchName`, `branchUuid`, `schemaName`, `schemaUuid`, `microschemaName`, `microschemaUuid`, `fromVersion`, `toVersion`).
 
@@ -35,6 +40,10 @@ and thus were sometimes not cleaned up. The naming of those temporary indices ha
 
 icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possible internal errors when parsing uploaded files using tika.
 
+icon:plus[] Core: The Jackson libraries have been updated to version `2.13.2`.
+
+icon:plus[] Core: The Netty libraries have been updated to version `4.1.72.Final`.
+
 [[v1.7.23]]
 == 1.7.23 (TBD)
 
@@ -42,6 +51,11 @@ icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'j
 
 [[v1.7.22]]
 == 1.7.22 (1.12.2021)
+
+icon:check[] OrientDB: The included OrientDB version has been downgraded to version `3.1.11`.
+
+CAUTION: OrientDB version `3.1.15`, which was included in Mesh 1.7.21 has some serious bugs, therefore, Mesh 1.7.21 has been unreleased and the OrientDB Version
+has been changed back to `3.1.11`.
 
 icon:check[] Search: When the ElasticSearch instance is not available, getting version information from the endpoint `/api/v1` failed with an internal
 server error. This has been fixed, calling the endpoint `/api/v1` will not fail anymore, but will not contain the ElasticSearch version.
@@ -56,9 +70,9 @@ icon:check[] Server: Liveness-Check script `live.sh` will now fail if the `mesh.
 icon:plus[] Docker-Image: The base image has been changed from JRE to JDK to include more tools for analyzing (e.g. creating heap-dumps). The base image has been updated to a newer JDK minor version (`11.0.12`)
 
 [[v1.7.21]]
-== 1.7.21 (11.11.2021)
+== 1.7.21 (11.11.2021 - Unreleased)
 
-icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 connection can be configured. By default the allowed headers/origins are set to `*`, the allowed methods are set to `"GET", "PUT", "POST", "DELETE"`. Setting any of the CORS configuration to `null` prevents is to override the server's default configuration. Setting all the CORS configuration to null or empty value prevents the CORS config to be changed at all.
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.15`.
 
 icon:check[] Cluster: When doing a rolling update in a cluster, a OConcurrentModificationException could occur during the startup, which could cause
 subsequent errors. This has been fixed.

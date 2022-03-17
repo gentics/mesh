@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.admin;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_REGISTERED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
@@ -11,15 +11,18 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -32,8 +35,8 @@ import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.plugin.ManifestInjectorPlugin;
 import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.category.PluginTests;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 
 /**
  * Tests for admin endpoint for plugins.
@@ -180,6 +183,39 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		assertEquals("world2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/hello"));
 		assertEquals("content", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/static/file.txt"));
 		assertEquals("content2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/static2/file.txt"));
+		assertThat(httpGet(CURRENT_API_BASE_PATH + "/plugins/basic/static/nonexistent.txt").execute().code())
+				.as("Response code for nonexistent.txt").isEqualTo(404);
+	}
+
+	/**
+	 * Test static file delivery, after the plugin was redeployed.
+	 * @throws IOException
+	 * @throws TimeoutException
+	 */
+	@Test
+	public void testStaticHandlerRedeploy() throws IOException, TimeoutException {
+		grantAdmin();
+
+		// deploy first version of plugin (containing changed.txt with old content and removed.txt)
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			copyAndDeploy(STATIC_PATH, "plugin.jar");
+		}
+		assertEquals("before change", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/static/static/changed.txt"));
+		assertEquals("removed", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/static/static/removed.txt"));
+		assertThat(httpGet(CURRENT_API_BASE_PATH + "/plugins/static/static/added.txt").execute().code())
+			.as("Response code for added.txt").isEqualTo(404);
+
+		// undeploy plugin
+		call(() -> client().undeployPlugin("static"));
+
+		// deploy second version of plugin (containing changed.txt with new content and added.txt)
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			copyAndDeploy(STATIC2_PATH, "plugin.jar");
+		}
+		assertEquals("after change", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/static/static/changed.txt"));
+		assertThat(httpGet(CURRENT_API_BASE_PATH + "/plugins/static/static/removed.txt").execute().code())
+			.as("Response code for removed.txt").isEqualTo(404);
+		assertEquals("added", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/static/static/added.txt"));
 	}
 
 	@Test
