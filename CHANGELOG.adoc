@@ -33,6 +33,8 @@ icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameter
 icon:check[] Search: The periodic check for correctness of the indices in Elasticsearch created temporary indices, which did not start with the installation prefix,
 and thus were sometimes not cleaned up. The naming of those temporary indices has now been changed to also start with the installation prefix.
 
+icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possible internal errors when parsing uploaded files using tika.
+
 [[v1.7.23]]
 == 1.7.23 (TBD)
 
