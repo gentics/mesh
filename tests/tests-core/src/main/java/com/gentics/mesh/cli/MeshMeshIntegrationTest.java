@@ -16,7 +16,6 @@ public abstract class MeshMeshIntegrationTest<T extends MeshOptions> implements 
 		T optionA = getOptions();
 		optionA.setNodeName("A");
 		optionA.getAuthenticationOptions().setKeystorePassword("ABC");
-		optionA.getSearchOptions().setStartEmbedded(false);
 		optionA.getSearchOptions().setUrl(null);
 		optionA.getHttpServerOptions().setPort(8081);
 		optionA.getMonitoringOptions().setEnabled(false);
@@ -27,7 +26,6 @@ public abstract class MeshMeshIntegrationTest<T extends MeshOptions> implements 
 		T optionB = getOptions();
 		optionB.setNodeName("B");
 		optionB.getAuthenticationOptions().setKeystorePassword("ABC");
-		optionB.getSearchOptions().setStartEmbedded(false);
 		optionB.getSearchOptions().setUrl(null);
 		optionB.getHttpServerOptions().setPort(8083);
 		optionB.getMonitoringOptions().setEnabled(false);

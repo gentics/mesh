@@ -23,7 +23,6 @@ public abstract class MultiMeshIntegrationTest<T extends MeshOptions> implements
 			T option = getOptions();
 			option.setNodeName("M" + i);
 			option.getAuthenticationOptions().setKeystorePassword("ABC");
-			option.getSearchOptions().setStartEmbedded(false);
 			option.getSearchOptions().setUrl(null);
 			option.getHttpServerOptions().setPort(8000 + i);
 			option.getMonitoringOptions().setEnabled(false);

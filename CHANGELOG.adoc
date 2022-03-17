@@ -22,8 +22,6 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
-* The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
-
 [[v1.8.0]]
 == 1.8.0 (TBD)
 
@@ -38,6 +36,8 @@ the persistence layer.
 The business logic is now completely independent from our current persistency layer (OrientDB), but uses an
 (internal) persistence API instead. Persistence with OrientDB is the current implementation of the persistence API.
 ____
+
+CAUTION: The support for the *embedded* version of Elasticsearch has been dropped. It is necessary now to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 icon:plus[] Core: The core Vert.x library was updated to version `3.9.12`.
 
