@@ -205,7 +205,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 				VersionNumber nextDraftVersion = null;
 				// 1. Check whether there is any other published container which we need to handle separately
 				if (oldPublished != null && !oldPublished.equals(container)) {
-					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields);
+					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, fromVersion, toVersion, touchedFields);
 					nextDraftVersion = nextDraftVersion.nextDraft();
 				}
 

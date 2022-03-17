@@ -22,6 +22,10 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
 
+icon:check[] Core: When changing a microschema, the following migration of nodes containing micronodes of the microschema would incorrectly generate the
+new published version from the old draft version, instead of the old published version.
+This has been fixed now.
+
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
 

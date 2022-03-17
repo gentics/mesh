@@ -3,6 +3,7 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 
@@ -17,7 +18,9 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -26,6 +29,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -111,6 +115,33 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 		assertVersions(testNode, "PD(5.0)=>(4.0)=>(3.1)=>(3.0)=>(2.1)=>(2.0)=>(1.1)=>(1.0)=>I(0.1)");
 	}
 
+	@Test
+	public void migrateModifiedNode() {
+		grantAdmin();
+		createTestSchema(false);
+		createMicroschemas();
+
+		NodeResponse testNode = createTestNode();
+		testNode = addLocation(testNode, location("aut", "eisenstadt"), true);
+		assertVersions(testNode, "PD(1.0)=>(0.2)=>I(0.1)");
+		testNode = addLocation(testNode, location("aut", "bregenz"), false);
+		assertVersions(testNode, "D(1.1)=>P(1.0)=>(0.2)=>I(0.1)");
+		updateMicroschema();
+		assertVersions(testNode, "D(2.1)=>P(2.0)=>(1.1)=>(1.0)=>(0.2)=>I(0.1)");
+
+		assertLocations(testNode, "0.1", location("aut", "vienna"), location("aut", "graz"), location("aut", "linz"));
+		assertLocations(testNode, "0.2", location("aut", "vienna"), location("aut", "graz"), location("aut", "linz"),
+				location("aut", "eisenstadt"));
+		assertLocations(testNode, "1.0", location("aut", "vienna"), location("aut", "graz"), location("aut", "linz"),
+				location("aut", "eisenstadt"));
+		assertLocations(testNode, "1.1", location("aut", "vienna"), location("aut", "graz"), location("aut", "linz"),
+				location("aut", "eisenstadt"), location("aut", "bregenz"));
+		assertLocations(testNode, "2.0", location("aut", "vienna"), location("aut", "graz"), location("aut", "linz"),
+				location("aut", "eisenstadt"));
+		assertLocations(testNode, "2.1", location("aut", "vienna"), location("aut", "graz"), location("aut", "linz"),
+				location("aut", "eisenstadt"), location("aut", "bregenz"));
+	}
+
 	public void updateMicroschema() {
 		MicroschemaUpdateRequest updateSchemaRequest = addRandomField(phoneMicroschema);
 		waitForLatestJob(() -> client().updateMicroschema(phoneMicroschema.getUuid(), updateSchemaRequest).blockingAwait());
@@ -133,13 +164,42 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 	}
 
 	private NodeResponse addLocation(NodeResponse node, MicronodeResponse location) {
+		return addLocation(node, location, true);
+	}
+
+	private NodeResponse addLocation(NodeResponse node, MicronodeResponse location, boolean publish) {
 		NodeUpdateRequest updateRequest = node.toRequest();
 		MicronodeFieldList locations = updateRequest.getFields().getMicronodeFieldList("locations");
 		locations.getItems().add(location);
 		updateRequest.getFields().put("locations", locations);
 		NodeResponse nodeResponse = client().updateNode(PROJECT_NAME, node.getUuid(), updateRequest).blockingGet();
-		publishNode(nodeResponse);
+		if (publish) {
+			publishNode(nodeResponse);
+		}
 		return client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()).blockingGet();
+	}
+
+	private void assertLocations(NodeResponse node, String version, MicronodeResponse...expected) {
+		NodeResponse nodeResponse = client()
+				.findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setVersion(version))
+				.blockingGet();
+		assertThat(nodeResponse.getFields().getMicronodeFieldList("locations")).as("Locations of version " + version).isNotNull();
+		assertThat(nodeResponse.getFields().getMicronodeFieldList("locations").getItems())
+				.as("Locations of version " + version).usingElementComparator(this::compareLocations).containsOnly(expected);
+	}
+
+	private int compareLocations(MicronodeField a, MicronodeField b) {
+		int cmp = getValue(a.getFields(), "country").compareTo(getValue(b.getFields(), "country"));
+		if (cmp != 0) {
+			return cmp;
+		} else {
+			return getValue(a.getFields(), "city").compareTo(getValue(b.getFields(), "city"));
+		}
+	}
+
+	private String getValue(FieldMap map, String key) {
+		StringFieldImpl field = map.getStringField(key);
+		return field != null ? field.toString() : null;
 	}
 
 	private MicronodeResponse phoneNumber(String countryCode, String number) {
