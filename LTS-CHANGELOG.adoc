@@ -29,6 +29,9 @@ This has been fixed now.
 icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
 (`status`, `type`, `branchName`, `branchUuid`, `schemaName`, `schemaUuid`, `microschemaName`, `microschemaUuid`, `fromVersion`, `toVersion`).
 
+icon:check[] Search: The periodic check for correctness of the indices in Elasticsearch created temporary indices, which did not start with the installation prefix,
+and thus were sometimes not cleaned up. The naming of those temporary indices has now been changed to also start with the installation prefix.
+
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
 

@@ -678,7 +678,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		JsonObject json = createIndexSettings(info);
 
-		String randomName = info.getIndexName() + UUIDUtil.randomUUID();
+		String randomName = installationPrefix() + info.getIndexName() + UUIDUtil.randomUUID();
 		String tempIndexName = randomName.toLowerCase();
 
 		return client.createIndex(tempIndexName, json).async()
