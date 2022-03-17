@@ -30,6 +30,9 @@ include::content/docs/variables.adoc-include[]
 icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
 (`status`, `type`, `branchName`, `branchUuid`, `schemaName`, `schemaUuid`, `microschemaName`, `microschemaUuid`, `fromVersion`, `toVersion`).
 
+icon:check[] Search: The periodic check for correctness of the indices in Elasticsearch created temporary indices, which did not start with the installation prefix,
+and thus were sometimes not cleaned up. The naming of those temporary indices has now been changed to also start with the installation prefix.
+
 [[v1.7.23]]
 == 1.7.23 (TBD)
 
