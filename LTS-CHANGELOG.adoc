@@ -28,6 +28,8 @@ and thus were sometimes not cleaned up. The naming of those temporary indices ha
 
 icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
 
+icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possible internal errors when parsing uploaded files using tika.
+
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
 
