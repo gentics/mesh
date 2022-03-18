@@ -39,6 +39,9 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -48,6 +51,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -305,12 +309,17 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert update
 		tx(tx -> {
-			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer draft = contentDao.getFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
-			draft.getString("slug").setString("updated");
+			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+			updateRequest.setFields(FieldMap.of("slug", new StringFieldImpl().setString("updated")));
+			updateRequest.setLanguage("en");
+			call(() -> client().updateNode(folder("2015").getProject().getName(), contentUuid(), updateRequest, new NodeParametersImpl().setLanguages("en")));
 		});
 		syncIndex();
-		assertUpdatedMetrics(call(() -> client().searchStatus()).getMetrics().get("node"), 2);
+		EntityMetrics metrics = call(() -> client().searchStatus()).getMetrics().get("node");
+		// orientdb implementation is making some unneeded document updates compared to the mdm implementation.
+		// to make the test work for both implementations, we just check that we have at least one document synced.
+		assertThat(metrics.getUpdate().getSynced()).isGreaterThanOrEqualTo(1);
+		assertThat(metrics.getUpdate().getPending()).isEqualTo(0);
 
 		// Assert deletion
 		tx(tx -> {
