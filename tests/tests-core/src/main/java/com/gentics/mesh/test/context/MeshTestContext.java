@@ -437,14 +437,14 @@ public class MeshTestContext extends TestWatcher {
 		meshDagger.boot().clearReferences();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
-			meshDagger.database().clear();
+			if (!meshTestContextProvider.getInstanceProvider().fastStorageCleanup(meshDagger.database())) {
+				meshDagger.database().clear();
+			}
 		} else if (settings.clusterMode()) {
 			meshDagger.database().clear();
 		} else {
 			meshDagger.database().stop();
-
 			meshTestContextProvider.getInstanceProvider().cleanupPhysicalStorage();
-
 			meshDagger.database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;

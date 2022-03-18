@@ -2,6 +2,7 @@ package com.gentics.mesh.test;
 
 import org.testcontainers.utility.ThrowingFunction;
 
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -62,4 +63,15 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	 * @return
 	 */
 	MeshTestActions actions();
+
+	/**
+	 * Performs the fast storage cleanup, e.g. in place data drop with keeping the schemas, if available.
+	 * 
+	 * @param db the database to clean up
+	 * @return true if the fast cleanup is available and succeeded.
+	 * @throws Exception
+	 */
+	default boolean fastStorageCleanup(Database db) throws Exception {
+		return false;
+	}
 }
