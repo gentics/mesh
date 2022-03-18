@@ -58,6 +58,10 @@ icon:plus[] Core: The Netty libraries have been updated to version `4.1.72.Final
 
 icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
 
+icon:check[] Cluster: When starting a node with a new version of Gentics Mesh in a cluster, application of the changelog and setting the new Mesh version and
+database revision was delayed until the write quorum is reached, but not until the cluster topology lock was raised, which could cause a blocked transaction.
+This has been fixed.
+
 [[v1.7.22]]
 == 1.7.22 (1.12.2021)
 
