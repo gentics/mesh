@@ -496,24 +496,33 @@ public class OrientDBClusterManager implements ClusterManager {
 	 */
 	@Override
 	public boolean isClusterTopologyLocked() {
+		return isClusterTopologyLocked(true);
+	}
+
+	/**
+	 * Checks if the cluster storage is locked cluster-wide.
+	 * @param doLog true if log messages shall be created, false if not
+	 * @return true iff cluster storage is locked
+	 */
+	protected boolean isClusterTopologyLocked(boolean doLog) {
 		if (topologyEventBridge == null) {
 			return false;
 		} else {
-			return topologyEventBridge.isClusterTopologyLocked();
+			return topologyEventBridge.isClusterTopologyLocked(doLog);
 		}
 	}
 
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
 		return Completable.defer(() -> {
-			if (isWriteQuorumReached()) {
+			if (isWriteQuorumReached() && !isClusterTopologyLocked(false)) {
 				return Completable.complete();
 			}
 			return Observable.using(
 				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
 				TimeoutStream::toObservable,
 				TimeoutStream::cancel).takeUntil(ignore -> {
-					return isWriteQuorumReached();
+					return isWriteQuorumReached() && !isClusterTopologyLocked(false);
 				})
 				.ignoreElements();
 		});
