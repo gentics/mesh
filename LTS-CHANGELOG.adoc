@@ -34,6 +34,10 @@ and thus were sometimes not cleaned up. The naming of those temporary indices ha
 
 icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possible internal errors when parsing uploaded files using tika.
 
+icon:check[] Cluster: When starting a node with a new version of Gentics Mesh in a cluster, application of the changelog and setting the new Mesh version and
+database revision was delayed until the write quorum is reached, but not until the cluster topology lock was raised, which could cause a blocked transaction.
+This has been fixed.
+
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
 
