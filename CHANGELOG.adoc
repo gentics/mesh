@@ -24,7 +24,7 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[1.8.0]]
+[[v1.8.0]]
 == 1.8.0 (TBD)
 
 icon:bullhorn[] Architecture overhaul
