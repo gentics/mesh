@@ -3,8 +3,9 @@ package com.gentics.mesh.graphdb.model;
 import java.util.Collections;
 import java.util.Set;
 
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.Element;
 
@@ -13,22 +14,7 @@ import io.vertx.core.Vertx;
 /**
  * Basic interface for graph elements.
  */
-public interface MeshElement extends ElementFrame {
-
-	/**
-	 * Set the uuid of the element.
-	 * 
-	 * @param uuid
-	 *            Uuid of the element
-	 */
-	void setUuid(String uuid);
-
-	/**
-	 * Return the uuid of the element.
-	 * 
-	 * @return Uuid of the element
-	 */
-	String getUuid();
+public interface MeshElement extends ElementFrame, HibElement {
 
 	/**
 	 * Return the underlying graph element.
@@ -36,13 +22,6 @@ public interface MeshElement extends ElementFrame {
 	 * @return Graph element
 	 */
 	Element getElement();
-
-	/**
-	 * Return the internal element version.
-	 * 
-	 * @return
-	 */
-	String getElementVersion();
 
 	/**
 	 * Provide TP 3.x compliant method.
@@ -94,7 +73,7 @@ public interface MeshElement extends ElementFrame {
 	 *
 	 * @return
 	 */
-	Database db();
+	GraphDatabase db();
 
 	/**
 	 * Return the used Vert.x instance.

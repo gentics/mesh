@@ -27,10 +27,9 @@ import org.mockito.Mockito;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
 import com.gentics.mesh.maven.VersionNumber;
@@ -102,11 +101,11 @@ public class ChangelogSystemTest {
 
 	@Test
 	public void testChangelogSystem() throws Exception {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
 		options.setNodeName("dummyNode");
 
-		Database db = getDatabase(options);
+		OrientDBDatabase db = getDatabase(options);
 		db.setupConnectionPool();
 		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
 		List<Change> testChanges = Arrays.asList(new ChangeDummy2(), new ChangeDummy());
@@ -126,11 +125,11 @@ public class ChangelogSystemTest {
 	 * @param options
 	 * @return
 	 */
-	public static Database getDatabase(MeshOptions options) {
+	public static OrientDBDatabase getDatabase(OrientDBMeshOptions options) {
 		MetricsService metrics = Mockito.mock(MetricsService.class);
 		Mockito.when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
 		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
-		Database database = new OrientDBDatabase(options, null, null, null, metrics, null, null, new OrientDBClusterManager(null, null, null, options, null), null, null, null, null, null);
+		OrientDBDatabase database = new OrientDBDatabase(options, null, null, null, metrics, null, null, new OrientDBClusterManagerImpl(null, null, null, options, null), null, null, null, null, null);
 		try {
 			database.init(null);
 			return database;

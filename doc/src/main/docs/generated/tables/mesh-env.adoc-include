@@ -5,6 +5,9 @@
 | Description 
 
 
+| *FLOAT_VALUE_ENV*
+| 
+
 | *MESH_GRAPH_TX_RETRY_LIMIT*
 | Override the transaction retry limit. Default: 10
 
@@ -35,6 +38,9 @@
 | *MESH_CLUSTER_COORDINATOR_REGEX*
 | Override the cluster coordinator regex.
 
+| *BOOLEAN_VALUE_ENV*
+| 
+
 | *MESH_CONTENT_AUTO_PURGE*
 | Override the content versioning flag
 
@@ -56,11 +62,14 @@
 | *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
 | Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
 
-| *MESH_HTTP_PORT*
-| Override the configured server http port.
+| *FLOAT_VALUE_PRIMITIVE_ENV*
+| 
 
 | *MESH_S3_CORS_ALLOWED_ORIGINS*
 | Override the configured AWS S3 CORS allowed origins.
+
+| *MESH_HTTP_PORT*
+| Override the configured server http port.
 
 | *MESH_S3_BINARY_REGION*
 | Override the configured AWS S3 region.
@@ -73,6 +82,9 @@
 
 | *MESH_CACHE_PATH_SIZE*
 | Override the path cache size.
+
+| *INTEGER_VALUE_ENV*
+| 
 
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
@@ -92,17 +104,20 @@
 | *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
 | Overwrite the disk quota warn threshold.
 
+| *STRING_VALUE_ENV*
+| 
+
 | *MESH_S3_CORS_ALLOWED_HEADERS*
 | Override the configured AWS S3 CORS allowed headers.
 
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
 
-| *MESH_IMAGE_CACHE_DIRECTORY*
-| Override the path for image cache directory.
-
 | *MESH_DEBUGINFO_LOG_ENABLED*
 | Enables the debug info log
+
+| *MESH_IMAGE_CACHE_DIRECTORY*
+| Override the path for image cache directory.
 
 | *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
 | Override the batch bulk length limit. Default: 5000000
@@ -131,14 +146,17 @@
 | *MESH_ELASTICSEARCH_USERNAME*
 | Override the configured Elasticsearch connection username.
 
-| *MESH_GRAPH_BACKUP_DIRECTORY*
-| Override the graph database backup directory.
-
 | *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
 | Override the cluster topology lock timeout in ms.
 
+| *MESH_GRAPH_BACKUP_DIRECTORY*
+| Override the graph database backup directory.
+
 | *MESH_DEFAULT_LANG*
 | Override the configured default language.
+
+| *TEST_ENV_KEY*
+| 
 
 | *MESH_GRAPH_TX_COMMIT_TIMEOUT*
 | Override the transaction commit timeout. Default: 0
@@ -161,6 +179,9 @@
 | *MESH_AUTH_ANONYMOUS_ENABLED*
 | Override the configured anonymous enabled flag.
 
+| *LONG_VALUE_PRIMITIVE_ENV*
+| 
+
 | *MESH_DEBUGINFO_LOG_PATTERN*
 | Override the log pattern
 
@@ -182,6 +203,9 @@
 | *MESH_START_IN_READ_ONLY*
 | Override the read only mode flag.
 
+| *BOOLEAN_VALUE_PRIMITIVE_ENV*
+| 
+
 | *MESH_CLUSTER_ENABLED*
 | Override cluster enabled flag.
 
@@ -197,6 +221,9 @@
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.
 
+| *DOUBLE_VALUE_ENV*
+| 
+
 | *MESH_HTTP_SSL_ENABLE*
 | Override the configured https server flag.
 
@@ -205,6 +232,9 @@
 
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
+
+| *STRING_SET_ENV*
+| 
 
 | *MESH_PLUGIN_TIMEOUT*
 | Override the configured plugin timeout.
@@ -221,6 +251,9 @@
 | *MESH_VERTX_WORKER_POOL_SIZE*
 | Override the configured Vert.x worker pool size.
 
+| *DOUBLE_VALUE_PRIMITIVE_ENV*
+| 
+
 | *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
 | Override the configured parser limit.
 
@@ -230,11 +263,11 @@
 | *MESH_ELASTICSEARCH_MAPPING_MODE*
 | Override the search mapping mode. 
 
-| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
-| Override the search idle wait flag.
-
 | *MESH_DEBUGINFO_LOG_FOLDER*
 | Override the path to the debug info log folder
+
+| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
+| Override the search idle wait flag.
 
 | *MESH_GRAPH_SYNC_WRITES*
 | Override the graph database sync writes flag.
@@ -242,14 +275,14 @@
 | *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
 | Override the configured CORS allowed credentials flag.
 
+| *INTEGER_VALUE_PRIMITIVE_ENV*
+| 
+
 | *MESH_CLUSTER_COORDINATOR_TOPOLOGY*
 | Override the cluster coordinator topology management mode.
 
 | *MESH_GRAPH_SYNC_WRITES_TIMEOUT*
 | Override the graph database sync write timeout.
-
-| *MESH_ELASTICSEARCH_STARTUP_TIMEOUT*
-| Override the configured elasticsearch server timeout.
 
 | *MESH_AUTH_PUBLIC_KEYS_PATH*
 | Override the configured public keys file path.
@@ -305,17 +338,17 @@
 | *MESH_ELASTICSEARCH_URL*
 | Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
 
-| *MESH_BINARY_DIR*
-| Override the configured binary data directory.
+| *TEST_ENV_KEY*
+| 
 
 | *MESH_UPDATECHECK*
 | Override the configured updatecheck flag.
 
+| *MESH_BINARY_DIR*
+| Override the configured binary data directory.
+
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
-
-| *MESH_ELASTICSEARCH_START_EMBEDDED*
-| Override the start embedded elasticsearch server flag.
 
 | *MESH_ELASTICSEARCH_RETRY_INTERVAL*
 | Override the retry interval.
@@ -326,23 +359,29 @@
 | *MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD*
 | Override the configured AWS S3 download time.
 
-| *MESH_HTTP_CORS_ORIGIN_PATTERN*
-| Override the configured CORS allowed origin pattern.
+| *STRING_LIST_ENV*
+| 
 
 | *MESH_S3_BINARY_ENDPOINT*
 | Override the configured AWS S3 custom endpoint.
 
+| *MESH_HTTP_CORS_ORIGIN_PATTERN*
+| Override the configured CORS allowed origin pattern.
+
 | *MESH_IMAGE_RESAMPLE_FILTER*
 | Override the sample filter for image resize operations.
+
+| *LONG_VALUE_ENV*
+| 
 
 | *MESH_MAX_PURGE_BATCH_SIZE*
 | Override the maximum purge batch size.
 
-| *MESH_HTTPS_PORT*
-| Override the configured server https port.
-
 | *MESH_IMAGE_MAX_WIDTH*
 | Override the max width for image resize operations.
+
+| *MESH_HTTPS_PORT*
+| Override the configured server https port.
 
 | *MESH_CLUSTER_INIT*
 | Enable or disable the initial cluster database setup. This is useful for testing.
@@ -358,6 +397,9 @@
 
 | *MESH_S3_CORS_ALLOWED_METHODS*
 | Override the configured AWS S3 CORS allowed methods.
+
+| *JSON_OBJECT_ENV*
+| 
 
 | *MESH_INITIAL_ADMIN_PASSWORD*
 | Password which will be used during initial admin user creation.

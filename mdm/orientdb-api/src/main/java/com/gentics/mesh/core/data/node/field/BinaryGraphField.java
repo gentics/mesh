@@ -6,9 +6,7 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.util.UniquenessUtil;
@@ -16,7 +14,7 @@ import com.gentics.mesh.util.UniquenessUtil;
 /**
  * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
  */
-public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge, DisplayField, HibBinaryField {
+public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge, DisplayField, HibBinaryField, GraphDeletableField {
 
 	String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
 
@@ -50,20 +48,12 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	}
 
 	/**
-	 * Copy the values of this field to the specified target field.
-	 * 
-	 * @param target
-	 * @return Fluent API
-	 */
-	BinaryGraphField copyTo(BinaryGraphField target);
-
-	/**
 	 * Set the binary filename.
 	 * 
 	 * @param fileName
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setFileName(String fileName) {
+	default HibBinaryField setFileName(String fileName) {
 		property(BINARY_FILENAME_PROPERTY_KEY, fileName);
 		return this;
 	}
@@ -102,17 +92,10 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param mimeType
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setMimeType(String mimeType) {
+	default HibBinaryField setMimeType(String mimeType) {
 		property(BINARY_CONTENT_TYPE_PROPERTY_KEY, mimeType);
 		return this;
 	}
-
-	/**
-	 * Check whether the binary data represents an image.
-	 * 
-	 * @return
-	 */
-	boolean hasProcessableImage();
 
 	/**
 	 * Set the binary image dominant color.
@@ -120,7 +103,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param dominantColor
 	 * @return Fluent API
 	 */
-	default BinaryGraphField setImageDominantColor(String dominantColor) {
+	default HibBinaryField setImageDominantColor(String dominantColor) {
 		property(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
 		return this;
 	}
@@ -153,9 +136,10 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * 
 	 * @param point
 	 */
-	default void setImageFocalPoint(FocalPoint point) {
+	default BinaryGraphField setImageFocalPoint(FocalPoint point) {
 		property(BINARY_IMAGE_FOCAL_POINT_X, point.getX());
 		property(BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
+		return this;
 	}
 
 	/**
@@ -278,13 +262,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 				setMetadata(e.substring(META_DATA_PROPERTY_PREFIX.length()), null);
 			});
 	}
-
-	/**
-	 * Return the {@link BinaryMetadata} REST model of the field.
-	 * 
-	 * @return
-	 */
-	BinaryMetadata getMetadata();
 
 	/**
 	 * Set the plain text content.

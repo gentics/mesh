@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.event.s3binary.S3BinaryEventModel;
 import com.gentics.mesh.core.rest.event.search.SearchIndexSyncEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
 import io.reactivex.functions.Action;
@@ -755,9 +756,17 @@ public enum MeshEvent {
 	 * @param mesh
 	 */
 	public static void triggerJobWorker(Mesh mesh) {
-		EventBus eb = mesh.getVertx().eventBus();
-		String name = mesh.getOptions().getNodeName();
-		eb.publish(JOB_WORKER_ADDRESS + name, null);
+		triggerJobWorker(mesh.getVertx().eventBus(), mesh.getOptions());
+	}
+
+	/**
+	 * Trigger the job processing event via the Vert.x API. This is only possible in embedded mode or within plugins.
+	 * 
+	 * @param eb event bus
+	 * @param options current Mesh options 
+	 */
+	public static void triggerJobWorker(EventBus eb, MeshOptions options) {
+		eb.publish(JOB_WORKER_ADDRESS + options.getNodeName(), null);
 	}
 
 	/**

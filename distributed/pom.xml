@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.23-SNAPSHOT</version>
+		<version>1.8.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -33,32 +33,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-orientdb</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
 		</dependency>
-
-		<!-- Test -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<skip>${skip.cluster.tests}</skip>
-					<forkCount>1</forkCount>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

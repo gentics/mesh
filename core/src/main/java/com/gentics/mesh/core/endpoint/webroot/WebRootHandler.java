@@ -14,15 +14,15 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
@@ -34,7 +34,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -54,13 +53,13 @@ import io.vertx.ext.web.RoutingContext;
 @Singleton
 public class WebRootHandler extends AbstractWebrootHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(WebRootHandler.class);
 
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
 	private final S3BinaryFieldResponseHandler s3binaryFieldResponseHandler;
 
 	@Inject
-	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
+	public WebRootHandler(Database database, WebRootService webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
 	  	S3BinaryFieldResponseHandler s3binaryFieldResponseHandler,
 		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
@@ -79,16 +78,16 @@ public class WebRootHandler extends AbstractWebrootHandler {
 			rc.mountPoint().length());
 
 		utils.syncTx(ac, tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			Path nodePath = findNodePathByProjectPath(ac, path);
 			PathSegment lastSegment = nodePath.getLast();
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
 			HibNode node = findNodeByPath(ac, rc, nodePath, path);
 
-			GraphField field = graphSegment.getPathField();
-			if (field instanceof BinaryGraphField) {
-				BinaryGraphField binaryField = (BinaryGraphField) field;
+			HibField field = graphSegment.getPathField();
+			if (field instanceof HibBinaryField) {
+				HibBinaryField binaryField = (HibBinaryField) field;
 				String sha512sum = binaryField.getBinary().getSHA512Sum();
 
 				// Check the etag
@@ -103,13 +102,13 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				}
 				binaryFieldResponseHandler.handle(rc, binaryField);
 				return null;
-			} else if (field instanceof S3BinaryGraphField) {
-				S3BinaryGraphField s3binaryField = (S3BinaryGraphField) field;
-				String s3ObjectKey = s3binaryField.getS3Binary().getS3ObjectKey();
-				String version = s3binaryField.getElementVersion();
+			} else if (field instanceof S3HibBinaryField) {
+				S3HibBinaryField s3binaryField = (S3HibBinaryField) field;
+				String s3ObjectKey = s3binaryField.getBinary().getS3ObjectKey();
+				//String version = s3binaryField.getElementVersion();
 
 				// Check the etag
-				String etagKey = s3ObjectKey + version;
+				String etagKey = s3ObjectKey; // + version;
 				if (s3binaryField.hasProcessableImage()) {
 					etagKey += ac.getImageParameters().getQueryParameters();
 				}
@@ -150,7 +149,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 		String uuid = null;
 		try (WriteLock lock = writeLock.lock(ac)) {
 			uuid = db.tx(tx -> {
-				ContentDaoWrapper contentDao = tx.contentDao();
+				ContentDao contentDao = tx.contentDao();
 
 				// Load all nodes for the given path
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -170,7 +169,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				// Update Node
 				if (nodePath.isFullyResolved()) {
 					PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-					NodeGraphFieldContainer container = graphSegment.getContainer();
+					HibNodeFieldContainer container = graphSegment.getContainer();
 					NodeUpdateRequest request = ac.fromJson(NodeUpdateRequest.class);
 					// We can deduce a missing the language via the path
 					if (request.getLanguage() == null) {

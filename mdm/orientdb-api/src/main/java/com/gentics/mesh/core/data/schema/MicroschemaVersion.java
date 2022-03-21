@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.ElementType.MICROSCHEMAVERSION;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
-
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -21,15 +17,15 @@ import com.gentics.mesh.core.result.Result;
 public interface MicroschemaVersion extends
 		GraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschemaVersion, HibMicroschema>, HibMicroschemaVersion {
 
-	static final TypeInfo TYPE_INFO = new TypeInfo(MICROSCHEMAVERSION, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, SCHEMA_DELETED);
-
-	@Override
-	default TypeInfo getTypeInfo() {
-		return TYPE_INFO;
-	}
+	/**
+	 * Find all micronodes belonging to this microschema version.
+	 * 
+	 * @return
+	 */
+	Result<? extends Micronode> findMicronodes();
 
 	/**
-	 * Return an iterator over all draft {@link NodeGraphFieldContainer}'s that contain at least one micronode field (or list of micronodes field) that uses
+	 * Return a result with all draft {@link HibNodeFieldContainer}'s that contain at least one micronode field (or list of micronodes field) that uses
 	 * this schema version for the given branch.
 	 *
 	 * @param branchUuid
@@ -38,11 +34,8 @@ public interface MicroschemaVersion extends
 	 */
 	Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid);
 
-	/**
-	 * Return an iterator over micronodes which reference this microschema version.
-	 *
-	 * @return Iterator over micronodes
-	 */
-	Result<? extends Micronode> findMicronodes();
-
+	@Override
+	default TypeInfo getTypeInfo() {
+		return HibMicroschemaVersion.super.getTypeInfo();
+	}
 }

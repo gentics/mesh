@@ -11,10 +11,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
@@ -22,7 +22,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Abstract class for CRUD REST handlers. The abstract class provides handler methods for create, read (one), read (multiple) and delete.
  */
-public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends RestModel> extends AbstractHandler implements CrudHandler {
+public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM extends RestModel> extends AbstractHandler implements CrudHandler {
 
 	public static final String TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY = "rootElement";
 

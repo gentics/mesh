@@ -1,3 +1,4 @@
+
 ---
 title: Changelog
 ---
@@ -21,7 +22,45 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
-* The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+[[v1.8.0]]
+== 1.8.0 (21.03.2022)
+
+icon:bullhorn[] Architecture overhaul
+
+[quote]
+____
+
+The internal architecture has been changed, in order to make a clean separation between the business logic and
+the persistence layer.
+
+The business logic is now completely independent from our current persistency layer (OrientDB), but uses an
+(internal) persistence API instead. Persistence with OrientDB is the current implementation of the persistence API.
+____
+
+CAUTION: The support for the *embedded* version of Elasticsearch has been dropped. It is necessary now to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+
+icon:plus[] Core: The core Vert.x library was updated to version `3.9.12`.
+
+CAUTION: With the update to Vert.x 3.9.12, creating a StaticHandler in a plugin to serve static files from the plugin's classpath does not work any more.
+Instead of creating an instance of the StaticHandler, the new method RestPlugin::addStaticHandlerFromClasspath should be used instead.
+
+icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
+(`status`, `type`, `branchName`, `branchUuid`, `schemaName`, `schemaUuid`, `microschemaName`, `microschemaUuid`, `fromVersion`, `toVersion`).
+
+icon:check[] Search: The periodic check for correctness of the indices in Elasticsearch created temporary indices, which did not start with the installation prefix,
+and thus were sometimes not cleaned up. The naming of those temporary indices has now been changed to also start with the installation prefix.
+
+icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possible internal errors when parsing uploaded files using tika.
+
+icon:plus[] Core: The Jackson libraries have been updated to version `2.13.2`.
+
+icon:plus[] Core: The Netty libraries have been updated to version `4.1.72.Final`.
+
+icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
+
+icon:check[] Cluster: When starting a node with a new version of Gentics Mesh in a cluster, application of the changelog and setting the new Mesh version and
+database revision was delayed until the write quorum is reached, but not until the cluster topology lock was raised, which could cause a blocked transaction.
+This has been fixed.
 
 [[v1.7.22]]
 == 1.7.22 (1.12.2021)

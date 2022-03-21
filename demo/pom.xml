@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.23-SNAPSHOT</version>
+		<version>1.8.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -39,20 +39,6 @@
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
 			<artifactId>zip4j</artifactId>
-		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.github.fge</groupId>
-					<artifactId>json-schema-validator</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 

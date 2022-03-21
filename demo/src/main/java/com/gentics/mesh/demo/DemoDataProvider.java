@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -48,7 +49,6 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClient;
@@ -99,16 +99,15 @@ public class DemoDataProvider {
 	/**
 	 * Setup the demo content
 	 * 
-	 * @param syncIndex
 	 * @throws JsonParseException
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 * @throws MeshSchemaException
 	 * @throws InterruptedException
 	 */
-	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
+	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		MeshAuthUser user = db.tx(() -> {
-			return boot.meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
+			return boot.userDao().findMeshAuthUserByUsername("admin");
 		});
 		client.setUser(user);
 
@@ -129,17 +128,7 @@ public class DemoDataProvider {
 		addWebclientPermissions();
 		addAnonymousPermissions();
 
-		if (syncIndex) {
-			invokeFullIndex();
-		}
 		log.info("Demo data setup completed");
-	}
-
-	/**
-	 * Invoke the reindex action to update the search index.
-	 */
-	public void invokeFullIndex() {
-		boot.syncIndex();
 	}
 
 	/**

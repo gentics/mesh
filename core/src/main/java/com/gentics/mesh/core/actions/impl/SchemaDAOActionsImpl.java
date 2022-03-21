@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -11,12 +9,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -34,7 +31,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public HibSchema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		SchemaDao schemaDao = ctx.tx().schemaDao();
 		if (perm == null) {
 			return schemaDao.findByUuid(uuid);
 		} else {
@@ -44,7 +41,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public HibSchema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		SchemaDao schemaDao = ctx.tx().schemaDao();
 		if (perm == null) {
 			return schemaDao.findByName(name);
 		} else {
@@ -61,20 +58,20 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<? extends HibSchema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
-		SchemaDaoWrapper schemaDao = tx.schemaDao();
-		return schemaDao.findAll(ac, project, pagingInfo);
+	public Page<? extends HibSchema> loadAll(Tx tx, HibProject project, InternalActionContext ac, PagingParameters pagingInfo) {
+		SchemaDao schemaDao = tx.schemaDao();
+		return schemaDao.findAll(project, ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		SchemaDao schemaDao = ctx.tx().schemaDao();
 		return schemaDao.findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibSchema> extraFilter) {
-		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		SchemaDao schemaDao = ctx.tx().schemaDao();
 		return schemaDao.findAll(ctx.project(), ctx.ac(), pagingInfo, schema -> {
 			return extraFilter.test(schema);
 		});
@@ -100,20 +97,17 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public SchemaResponse transformToRestSync(Tx tx, HibSchema schema, InternalActionContext ac, int level, String... languageTags) {
-		Schema graphSchema = toGraph(schema);
-		return graphSchema.transformToRestSync(ac, level, languageTags);
+		return tx.schemaDao().transformToRestSync(schema, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibSchema schema) {
-		Schema graphSchema = toGraph(schema);
-		return graphSchema.getAPIPath(ac);
+		return schema.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibSchema schema) {
-		Schema graphSchema = toGraph(schema);
-		return graphSchema.getETag(ac);
+		return schema.getETag(ac);
 	}
 
 }

@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.7.22"
+version: "1.8.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -3556,6 +3556,67 @@ mediaType: application/json
     /jobs: 
         get: 
             description: List all currently queued jobs.
+            queryParameters: 
+                fromVersion: 
+                    description: Parameter for filtering jobs by the 'from' version. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                microschemaName: 
+                    description: Parameter for filtering jobs by the microschema name. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                microschemaUuid: 
+                    description: Parameter for filtering jobs by the microschema uuid. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                branchName: 
+                    description: Parameter for filtering jobs by the branch name. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                branchUuid: 
+                    description: Parameter for filtering jobs by the branch uuid. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                type: 
+                    description: Parameter for filtering jobs by their type. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                schemaName: 
+                    description: Parameter for filtering jobs by the schema name. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                status: 
+                    description: Parameter for filtering jobs by their status. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                schemaUuid: 
+                    description: Parameter for filtering jobs by the schema uuid. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                toVersion: 
+                    description: Parameter for filtering jobs by the 'to' version. Multiple values can be given separated by commas.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
             responses: 
                 "200": 
                     description: List of jobs.
@@ -6050,13 +6111,13 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.7.22",
+                                  "meshVersion" : "1.8.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "3.8.5"
+                                  "vertxVersion" : "3.9.12"
                                 }
     /raml: 
         get: 

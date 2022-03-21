@@ -1,6 +1,6 @@
 package com.gentics.mesh.madl.frame;
 
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.TraversalResult;
 
 public interface EdgeFrame extends ElementFrame, com.syncleus.ferma.EdgeFrame {
 

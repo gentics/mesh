@@ -1,15 +1,37 @@
 package com.gentics.mesh.core.s3binary.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.binary.impl.TikaResult;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -18,31 +40,16 @@ import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.s3binary.S3BinaryDataProcessor;
 import com.gentics.mesh.core.s3binary.S3BinaryDataProcessorContext;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
+
 import dagger.Lazy;
 import io.reactivex.Maybe;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.function.Consumer;
-
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
- * This class can be used to parse binary data from {@link S3BinaryGraphField} fields. Once parsed the processor will populate the field with additional meta data
+ * This class can be used to parse binary data from {@link S3HibBinaryField} fields. Once parsed the processor will populate the field with additional meta data
  * from the parsing result.
  */
 @Singleton
@@ -125,7 +132,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<S3BinaryGraphField>> process(S3BinaryDataProcessorContext ctx) {
+	public Maybe<Consumer<S3HibBinaryField>> process(S3BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		return getExtractOptions(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName())
 			.flatMap(
@@ -144,13 +151,14 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	 */
 	private Maybe<S3BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
 		return db.maybeTx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
+			ContentDao contentDao = tx.contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			NodeGraphFieldContainer latestDraftVersion = toGraph(node).getGraphFieldContainers(branch, ContainerType.DRAFT).next();
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()
@@ -169,7 +177,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 		});
 	}
 
-	private Maybe<Consumer<S3BinaryGraphField>> process(S3BinaryExtractOptions extractOptions, FileUpload upload) {
+	private Maybe<Consumer<S3HibBinaryField>> process(S3BinaryExtractOptions extractOptions, FileUpload upload) {
 		// Shortcut if no field specific options are specified and parsing is globally disabled
 		if (!options.getUploadOptions().isParser() && extractOptions == null) {
 			log.debug("Not parsing " + upload.fileName()
@@ -198,7 +206,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 				boolean parseMetadata = extractOptions == null || extractOptions.getMetadata();
 				TikaResult pr = parseFile(ins, len, parseMetadata);
 
-				Consumer<S3BinaryGraphField> consumer = field -> {
+				Consumer<S3HibBinaryField> consumer = field -> {
 					pr.getMetadata().forEach((e, k) -> {
 						field.setMetadata(e, k);
 					});

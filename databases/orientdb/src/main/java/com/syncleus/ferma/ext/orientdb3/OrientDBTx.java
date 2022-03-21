@@ -3,14 +3,15 @@ package com.syncleus.ferma.ext.orientdb3;
 import static com.gentics.mesh.core.graph.GraphAttribute.MESH_COMPONENT;
 import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
 
-import java.util.function.Function;
-
 import javax.inject.Inject;
 
-import com.gentics.madl.traversal.RawTraversalResult;
-import com.gentics.madl.traversal.RawTraversalResultImpl;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cache.CacheCollection;
+import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.GroupDAOActions;
@@ -24,20 +25,37 @@ import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.*;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingJobDao;
+import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
+import com.gentics.mesh.core.data.dao.PersistingProjectDao;
+import com.gentics.mesh.core.data.dao.PersistingRoleDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.PersistingTagDao;
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
+import com.gentics.mesh.core.data.dao.S3BinaryDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.AbstractTx;
+import com.gentics.mesh.core.db.CommonTxData;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
-import com.gentics.mesh.madl.tp3.mock.Element;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -72,18 +90,21 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	private final Database db;
 	private final BootstrapInitializer boot;
-	private final TxData txData;
+	private final CommonTxData txData;
 	private final ContextDataRegistry contextDataRegistry;
-	private final DaoCollection daos;
+	private final OrientDBDaoCollection daos;
+	private final CacheCollection caches;
+	private final SecurityUtils security;
 	private final Binaries binaries;
 	private final S3Binaries s3binaries;
 
 	private Timer commitTimer;
 
 	@Inject
-	public OrientDBTx(MeshOptions options, Database db, BootstrapInitializer boot, DaoCollection daos, OrientStorage provider,
-		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry,
-		Binaries binaries, S3Binaries s3binaries) {
+	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
+		OrientDBDaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
+		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
+		ContextDataRegistry contextDataRegistry, S3Binaries s3binaries, Binaries binaries, CommonTxData txData) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -91,7 +112,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			this.commitTimer = metrics.timer(COMMIT_TIME);
 		}
 		// Check if an active transaction already exists.
-		Tx activeTx = Tx.get();
+		GraphDBTx activeTx = GraphDBTx.getGraphTx();
 		if (activeTx != null) {
 			// TODO Use this spot here to check for nested / wrapped transactions. Nested Tx must not be used when using MDM / Hibernate
 			isWrapped = true;
@@ -100,9 +121,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new TxDataImpl(options, boot, permissionRoots);
+		this.txData = txData;
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
+		this.caches = caches;
+		this.security = security;
 		this.binaries = binaries;
 		this.s3binaries = s3binaries;
 	}
@@ -142,35 +165,6 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public <T extends RawTraversalResult<?>> T traversal(Function<GraphTraversalSource, GraphTraversal<?, ?>> traverser) {
-		return (T) new RawTraversalResultImpl(traverser.apply(rawTraverse()), typeResolver);
-	}
-
-	@Override
-	public GraphTraversalSource rawTraverse() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public <T> T createVertex(Class<T> clazzOfR) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public <E extends Element> E getElement(Object id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int txId() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	protected void init(FramedTransactionalGraph transactionalGraph) {
 		Mesh mesh = boot.mesh();
 		if (mesh != null) {
@@ -182,13 +176,8 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public TxData data() {
+	public CommonTxData data() {
 		return txData;
-	}
-
-	@Override
-	public HibBranch getBranch(InternalActionContext ac) {
-		return contextDataRegistry.getBranch(ac);
 	}
 
 	@Override
@@ -204,7 +193,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	// DAOs
 
 	@Override
-	public UserDaoWrapper userDao() {
+	public PersistingUserDao userDao() {
 		return daos.userDao();
 	}
 
@@ -254,72 +243,72 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public GroupDaoWrapper groupDao() {
+	public PersistingGroupDao groupDao() {
 		return daos.groupDao();
 	}
 
 	@Override
-	public RoleDaoWrapper roleDao() {
+	public PersistingRoleDao roleDao() {
 		return daos.roleDao();
 	}
 
 	@Override
-	public ProjectDaoWrapper projectDao() {
+	public PersistingProjectDao projectDao() {
 		return daos.projectDao();
 	}
 
 	@Override
-	public JobDaoWrapper jobDao() {
+	public PersistingJobDao jobDao() {
 		return daos.jobDao();
 	}
 
 	@Override
-	public LanguageDaoWrapper languageDao() {
+	public PersistingLanguageDao languageDao() {
 		return daos.languageDao();
 	}
 
 	@Override
-	public SchemaDaoWrapper schemaDao() {
+	public PersistingSchemaDao schemaDao() {
 		return daos.schemaDao();
 	}
 
 	@Override
-	public TagDaoWrapper tagDao() {
+	public PersistingTagDao tagDao() {
 		return daos.tagDao();
 	}
 
 	@Override
-	public TagFamilyDaoWrapper tagFamilyDao() {
+	public PersistingTagFamilyDao tagFamilyDao() {
 		return daos.tagFamilyDao();
 	}
 
 	@Override
-	public MicroschemaDaoWrapper microschemaDao() {
+	public PersistingMicroschemaDao microschemaDao() {
 		return daos.microschemaDao();
 	}
 
 	@Override
-	public BinaryDaoWrapper binaryDao() {
+	public BinaryDao binaryDao() {
 		return daos.binaryDao();
 	}
 
 	@Override
-	public S3BinaryDaoWrapper s3binaryDao() {
+	public S3BinaryDao s3binaryDao() {
 		return daos.s3binaryDao();
 	}
 
 	@Override
-	public BranchDaoWrapper branchDao() {
+	public PersistingBranchDao branchDao() {
 		return daos.branchDao();
 	}
 
 	@Override
-	public NodeDaoWrapper nodeDao() {
+	public PersistingNodeDao nodeDao() {
 		return daos.nodeDao();
 	}
 
 	@Override
-	public ContentDaoWrapper contentDao() {
+	public PersistingContentDao contentDao() {
 		return daos.contentDao();
 	}
 
@@ -331,5 +320,20 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public S3Binaries s3binaries() {
 		return s3binaries;
+	}
+
+	@Override
+	public PermissionCache permissionCache() {
+		return caches.permissionCache();
+	}
+
+	@Override
+	public PasswordEncoder passwordEncoder() {
+		return security.passwordEncoder();
+	}
+
+	@Override
+	public EventQueueBatch createBatch() {
+		return txData.mesh().batchProvider().get();
 	}
 }

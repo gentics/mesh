@@ -18,8 +18,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
@@ -34,7 +35,6 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
@@ -109,18 +109,18 @@ public class NodeContentEventHandler implements EventHandler {
 			return entities.nodeContent.getDocument(message);
 		}).map(doc -> helper.createDocumentRequest(
 			getIndexName(message, getSchemaVersionUuid(message).runInNewTx()),
-			ContentDaoWrapper.composeDocumentId(message.getUuid(), message.getLanguageTag()),
+			ContentDao.composeDocumentId(message.getUuid(), message.getLanguageTag()),
 			doc, complianceMode));
 	}
 
 	private DeleteDocumentRequest deleteNodes(NodeMeshEventModel message, String schemaVersionUuid) {
 		return helper.deleteDocumentRequest(
-			getIndexName(message, schemaVersionUuid), ContentDaoWrapper.composeDocumentId(message.getUuid(), message.getLanguageTag()),
+			getIndexName(message, schemaVersionUuid), ContentDao.composeDocumentId(message.getUuid(), message.getLanguageTag()),
 			complianceMode);
 	}
 
 	private String getIndexName(NodeMeshEventModel message, String schemaVersionUuid) {
-		return ContentDaoWrapper.composeIndexName(
+		return ContentDao.composeIndexName(
 			message.getProject().getUuid(),
 			message.getBranchUuid(),
 			schemaVersionUuid,
@@ -152,7 +152,7 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private String getSchemaVersionUuid(SchemaReference reference) {
 		return helper.getDb().tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			SchemaDao schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao
 				.findByUuid(reference.getUuid());
 			return schemaDao.findVersionByRev(schema, reference.getVersion()).getUuid();

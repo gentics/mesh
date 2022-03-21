@@ -15,15 +15,15 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.ProjectDAOActions;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
 
 /**
@@ -71,15 +71,13 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				HibUser user = ac.getUser();
-				ProjectDaoWrapper projectDao = tx.projectDao();
+				ProjectDao projectDao = tx.projectDao();
 				HibProject project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
-				db.tx(() -> {
-					if (before.isPresent()) {
-						boot.jobRoot().enqueueVersionPurge(user, project, before.get());
-					} else {
-						boot.jobRoot().enqueueVersionPurge(user, project);
-					}
-				});
+				if (before.isPresent()) {
+					boot.jobDao().enqueueVersionPurge(user, project, before.get());
+				} else {
+					boot.jobDao().enqueueVersionPurge(user, project);
+				}
 				MeshEvent.triggerJobWorker(boot.mesh());
 				return message(ac, "project_version_purge_enqueued");
 			}, message -> ac.send(message, OK));

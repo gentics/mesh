@@ -35,6 +35,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -332,6 +333,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readJobList.method(GET);
 		readJobList.description("List all currently queued jobs.");
 		readJobList.produces(APPLICATION_JSON);
+		readJobList.addQueryParameters(JobParametersImpl.class);
 		readJobList.exampleResponse(OK, jobExamples.createJobList(), "List of jobs.");
 		readJobList.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);

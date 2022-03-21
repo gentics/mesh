@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.binary.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -25,20 +24,21 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
@@ -48,7 +48,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
 /**
- * This class can be used to parse binary data from {@link BinaryGraphField} fields. Once parsed the processor will populate the field with additional meta data
+ * This class can be used to parse binary data from {@link HibBinaryField} fields. Once parsed the processor will populate the field with additional meta data
  * from the parsing result.
  */
 @Singleton
@@ -131,7 +131,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<BinaryGraphField>> process(BinaryDataProcessorContext ctx) {
+	public Maybe<Consumer<HibBinaryField>> process(BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		return getExtractOptions(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName())
 			.flatMap(
@@ -150,13 +150,14 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	 */
 	private Maybe<BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
 		return db.maybeTx(tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
+			ContentDao contentDao = tx.contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			NodeGraphFieldContainer latestDraftVersion = toGraph(node).getGraphFieldContainers(branch, ContainerType.DRAFT).next();
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()
@@ -175,7 +176,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		});
 	}
 
-	private Maybe<Consumer<BinaryGraphField>> process(BinaryExtractOptions extractOptions, FileUpload upload) {
+	private Maybe<Consumer<HibBinaryField>> process(BinaryExtractOptions extractOptions, FileUpload upload) {
 		// Shortcut if no field specific options are specified and parsing is globally disabled
 		if (!options.getUploadOptions().isParser() && extractOptions == null) {
 			log.debug("Not parsing " + upload.fileName()
@@ -204,7 +205,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 				boolean parseMetadata = extractOptions == null || extractOptions.getMetadata();
 				TikaResult pr = parseFile(ins, len, parseMetadata);
 
-				Consumer<BinaryGraphField> consumer = field -> {
+				Consumer<HibBinaryField> consumer = field -> {
 					pr.getMetadata().forEach((e, k) -> {
 						field.setMetadata(e, k);
 					});

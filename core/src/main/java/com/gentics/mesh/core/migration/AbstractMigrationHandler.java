@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.migration;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,13 +10,20 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.inject.Provider;
 
 import com.gentics.mesh.context.NodeMigrationActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibFieldTypeChange;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibRemoveFieldChange;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
-import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationHandler;
@@ -29,9 +33,9 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.StreamUtil;
 
@@ -62,26 +66,23 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	}
 
 	/**
-	 * Collect the migration scripts and set of touched fields when migrating the given container into the next version
+	 * Collect the set of touched fields when migrating the given container into the next version
 	 *
 	 * @param fromVersion
 	 *            Container which contains the expected migration changes
 	 * @param touchedFields
 	 *            Set of touched fields (will be modified)
-	 * @throws IOException
 	 */
-	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?> fromVersion, Set<String> touchedFields) throws IOException {
+	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion, Set<String> touchedFields) {
 		HibSchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
-			// if either the type changes or the field is removed, the field is
-			// "touched"
-			// if (change instanceof UpdateFieldChangeImpl) {
-			// touchedFields.add(((UpdateFieldChangeImpl) change).getFieldName());
-			// } else
-			if (change instanceof FieldTypeChangeImpl) {
-				touchedFields.add(((FieldTypeChangeImpl) change).getFieldName());
-			} else if (change instanceof RemoveFieldChange) {
-				touchedFields.add(((RemoveFieldChange) change).getFieldName());
+			// if either the type changes or the field is removed, the field is "touched"
+			if (change instanceof HibUpdateFieldChange) {
+				touchedFields.add(((HibUpdateFieldChange) change).getFieldName());
+			} else if (change instanceof HibFieldTypeChange) {
+				touchedFields.add(((HibFieldTypeChange) change).getFieldName());
+			} else if (change instanceof HibRemoveFieldChange) {
+				touchedFields.add(((HibRemoveFieldChange) change).getFieldName());
 			}
 
 			change = change.getNextChange();
@@ -95,27 +96,16 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            context
 	 * @param fromVersion
 	 *            rest model of the container
-	 * @param newVersion
-	 *            new schema version
-	 * @param touchedFields
-	 *            set of touched fields
 	 * @throws Exception
 	 */
-	protected void migrate(NodeMigrationActionContext ac, GraphFieldContainer newContainer, FieldContainer newContent,
-		HibFieldSchemaVersionElement fromVersion,
-		HibFieldSchemaVersionElement newVersion, Set<String> touchedFields) throws Exception {
-
-		// Remove all touched fields (if necessary, they will be readded later)
-		newContainer.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(newContainer));
-		newContainer.setSchemaContainerVersion(newVersion);
-
-		FieldMap fields = newContent.getFields();
-
-		Map<String, Field> newFields = toGraph(fromVersion).getChanges()
+	protected void migrate(NodeMigrationActionContext ac, HibFieldContainer newContainer, FieldContainer newContent,
+						   HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion) throws Exception {
+		FieldMap fields = new FieldMapImpl();
+		Map<String, Field> newFields = fromVersion.getChanges()
+			.filter(change -> !(change instanceof HibRemoveFieldChange)) // nothing to do for removed fields, they were never added
 			.map(change -> change.createFields(fromVersion.getSchema(), newContent))
 			.collect(StreamUtil.mergeMaps());
 
-		fields.clear();
 		fields.putAll(newFields);
 
 		newContainer.updateFieldsFromRest(ac, fields);
@@ -187,19 +177,32 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 * @param oldPublished
 	 *            Optional published container
 	 */
-	protected void postMigrationPurge(NodeGraphFieldContainer container, NodeGraphFieldContainer oldPublished) {
-		ContentDaoWrapper contentDao = Tx.get().contentDao();
+	protected void postMigrationPurge(HibNodeFieldContainer container, HibNodeFieldContainer oldPublished) {
+		ContentDao contentDao = Tx.get().contentDao();
 
 		// The purge operation was suppressed before. We need to invoke it now
 		// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.
-		if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && contentDao.isPurgeable(oldPublished)) {
+		if (oldPublished != null && !oldPublished.equals(container) && contentDao.isAutoPurgeEnabled(oldPublished) && contentDao.isPurgeable(oldPublished)) {
 			log.debug("Removing old published container {" + oldPublished.getUuid() + "}");
 			contentDao.purge(oldPublished);
 		}
 		// Now we can purge the draft container (which may also be the published container)
-		if (container.isAutoPurgeEnabled() && contentDao.isPurgeable(container)) {
+		if (contentDao.isAutoPurgeEnabled(container) && contentDao.isPurgeable(container)) {
 			log.debug("Removing source container {" + container.getUuid() + "}");
 			contentDao.purge(container);
 		}
+	}
+
+	protected HibSchemaVersion reloadVersion(HibSchemaVersion version) {
+		return CommonTx.get().load(version.getId(), CommonTx.get().schemaDao().getVersionPersistenceClass());
+	}
+
+	protected HibMicroschemaVersion reloadVersion(HibMicroschemaVersion version) {
+		return CommonTx.get().load(version.getId(), CommonTx.get().microschemaDao().getVersionPersistenceClass());
+	}
+
+	protected HibBranch reloadBranch(HibBranch branch) {
+		PersistingBranchDao branchDao = CommonTx.get().branchDao();
+		return branchDao.findByUuid(branch.getProject(), branch.getUuid());
 	}
 }

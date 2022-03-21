@@ -4,14 +4,11 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.Set;
 
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.common.ContainerType;
-
 /**
  * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to branches and are either of type "Initial, Draft or
  * Published"
  */
-public interface GraphFieldContainerEdge extends MeshEdge {
+public interface GraphFieldContainerEdge extends MeshEdge, HibNodeFieldContainerEdge {
 
 	// Webroot index
 
@@ -36,50 +33,6 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	String EDGE_TYPE_KEY = "edgeType";
 
 	/**
-	 * Get the language tag
-	 * 
-	 * @return language tag
-	 */
-	String getLanguageTag();
-
-	/**
-	 * Set the language tag.
-	 * 
-	 * @param languageTag
-	 */
-	void setLanguageTag(String languageTag);
-
-	/**
-	 * Get the edge type
-	 * 
-	 * @return edge type
-	 */
-	ContainerType getType();
-
-	/**
-	 * Set the edge type
-	 * 
-	 * @param type
-	 *            edge type
-	 */
-	void setType(ContainerType type);
-
-	/**
-	 * Get the branch Uuid
-	 * 
-	 * @return branch Uuid
-	 */
-	String getBranchUuid();
-
-	/**
-	 * Set the branch Uuid
-	 * 
-	 * @param uuid
-	 *            branch Uuid
-	 */
-	void setBranchUuid(String uuid);
-
-	/**
 	 * Reset the webroot properties.
 	 */
 	default void defaultClearDraftPaths() {
@@ -95,24 +48,19 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	BasicFieldContainer getContainer();
 
 	/**
-	 * Return the referenced content.
+	 * Set the branch Uuid
 	 * 
-	 * @return
+	 * @param uuid
+	 *            branch Uuid
 	 */
-	NodeGraphFieldContainer getNodeContainer();
-
-	/**
-	 * Return the node from which this edge originates.
-	 * 
-	 * @return
-	 */
-	Node getNode();
+	void setBranchUuid(String uuid);
 
 	/**
 	 * Set the webroot segment info for the edge.
 	 * 
 	 * @param segmentInfo
 	 */
+	@Override
 	default void setSegmentInfo(String segmentInfo) {
 		property(WEBROOT_PROPERTY_KEY, segmentInfo);
 	}
@@ -131,6 +79,7 @@ public interface GraphFieldContainerEdge extends MeshEdge {
 	 * 
 	 * @param urlFieldInfo
 	 */
+	@Override
 	default void setUrlFieldInfo(Set<String> urlFieldInfo) {
 		property(WEBROOT_URLFIELD_PROPERTY_KEY, urlFieldInfo);
 	}

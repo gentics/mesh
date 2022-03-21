@@ -1,0 +1,138 @@
+{
+	# [$.data.bogus=<is-null>]
+	bogus: schema(name:"bogus") {
+		name
+	}
+
+	schemas {
+		elements {
+			name
+		}
+	}
+
+    uuidSchema: schema(uuid:"%SCHEMA_UUID%") {
+        # [$.data.uuidSchema.uuid=%SCHEMA_UUID%]
+        uuid
+        # [$.data.uuidSchema.name=folder]
+        name
+    }
+
+	folderSchema: schema(name: "folder") {
+		# [$.data.folderSchema.name=folder]
+		name
+		# [$.data.folderSchema.isAutoPurge=true]
+		isAutoPurge
+	}
+
+	schema(name:"content") {
+		# [$.data.schema.uuid=<is-uuid>]
+		uuid
+		# [$.data.schema.name=content]
+		name
+		# [$.data.schema.etag=<is-not-null>]
+		etag
+		# [$.data.schema.created=<is-date>]
+		created
+		creator {
+			# [$.data.schema.creator.uuid=<is-uuid>]
+			uuid
+			# [$.data.schema.creator.etag=<is-not-null>]
+			etag
+			# [$.data.schema.creator.created=<is-date>]
+			created
+			edited
+			username
+			firstname
+			lastname
+			emailAddress
+		}
+		# [$.data.schema.edited=<is-not-null>]
+		edited
+		editor {
+			# [$.data.schema.editor.uuid=<is-uuid>]
+			uuid
+			# [$.data.schema.editor.etag=<is-not-null>]
+			etag
+			# [$.data.schema.editor.created=<is-date>]
+			created
+			edited
+			username
+			firstname
+			lastname
+			emailAddress
+		}
+		# [$.data.schema.displayField=title]
+		displayField
+		# [$.data.schema.segmentField=slug]
+		segmentField
+		# [$.data.schema.isContainer=false]
+		isContainer
+		# [$.data.schema.isAutoPurge=<is-null>]
+		isAutoPurge
+		nodes {
+		    elements {
+		        # [$.data.schema.nodes.elements[0].uuid=<is-uuid>]
+		        uuid
+		        schema {
+		            # [$.data.schema.nodes.elements[0].schema.name=content]
+		            name
+		        }
+		    }
+		}
+
+		# [$.data.schema.fields.size()=4]
+		fields {
+			# [$.data.schema.fields[0].name=slug]
+			# [$.data.schema.fields[1].name=title]
+			# [$.data.schema.fields[3].name=content]
+			name
+
+			# [$.data.schema.fields[0].label=Slug]
+			# [$.data.schema.fields[1].label=Title]
+			# [$.data.schema.fields[3].label=Content]
+			label
+
+			# [$.data.schema.fields[0].required=true]
+			# [$.data.schema.fields[1].required=false]
+			# [$.data.schema.fields[3].required=false]
+			required
+
+			# [$.data.schema.fields[0].type=string]
+			# [$.data.schema.fields[1].type=string]
+			# [$.data.schema.fields[3].type=html]
+			type
+		}
+	}
+
+	# Check if "fields" type is generated only once (if not, this would cause an error)
+	schemaAlias: schema(name:"content") {
+		fields {
+			name
+		}
+	}
+
+	project {
+		name
+		rootNode {
+			schema {
+				#[$.data.project.rootNode.schema.uuid=<is-uuid>]
+				uuid
+				#[$.data.project.rootNode.schema.name=folder]
+				name
+				#[$.data.project.rootNode.schema.etag=<is-not-null>]
+				etag
+				#[$.data.project.rootNode.schema.created=<is-date>]
+				created
+				#[$.data.project.rootNode.schema.edited=<is-date>]
+				edited
+				#[$.data.project.rootNode.schema.isContainer=true]
+				isContainer
+				#[$.data.project.rootNode.schema.displayField=folder]
+				displayField
+				#[$.data.project.rootNode.schema.segmentField=folder]
+				segmentField
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

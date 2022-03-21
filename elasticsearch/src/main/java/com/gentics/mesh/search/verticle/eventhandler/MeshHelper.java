@@ -8,9 +8,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;

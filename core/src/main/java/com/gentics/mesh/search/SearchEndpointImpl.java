@@ -13,8 +13,8 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -26,7 +26,6 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
@@ -111,32 +110,32 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerHandler("users", (uuid) -> boot.get().meshRoot().getUserRoot().findByUuid(uuid), UserListResponse.class, userSearchHandler,
+		registerHandler("users", (uuid) -> boot.get().userDao().findByUuid(uuid), UserListResponse.class, userSearchHandler,
 			userExamples.getUserListResponse(), false);
-		registerHandler("groups", (uuid) -> boot.get().meshRoot().getGroupRoot().findByUuid(uuid), GroupListResponse.class, groupSearchHandler,
+		registerHandler("groups", (uuid) -> boot.get().groupDao().findByUuid(uuid), GroupListResponse.class, groupSearchHandler,
 			groupExamples.getGroupListResponse(), false);
-		registerHandler("roles", (uuid) -> boot.get().meshRoot().getRoleRoot().findByUuid(uuid), RoleListResponse.class, roleSearchHandler,
+		registerHandler("roles", (uuid) -> boot.get().roleDao().findByUuid(uuid), RoleListResponse.class, roleSearchHandler,
 			roleExamples.getRoleListResponse(), false);
 
 		registerHandler("nodes", (uuid) -> {
-			Node node = db.index().findByUuid(NodeImpl.class, uuid);
+			HibNode node = boot.get().nodeDao().findByUuidGlobal(uuid);
 			return node;
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
-		registerHandler("tags", (uuid) -> boot.get().meshRoot().getTagRoot().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
+		registerHandler("tags", (uuid) -> boot.get().tagDao().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
 			.createTagListResponse(), false);
-		registerHandler("tagFamilies", (uuid) -> boot.get().meshRoot().getTagFamilyRoot().findByUuid(uuid), TagFamilyListResponse.class,
+		registerHandler("tagFamilies", (uuid) -> boot.get().tagFamilyDao().findByUuid(uuid), TagFamilyListResponse.class,
 			tagFamilySearchHandler,
 			tagFamilyExamples.getTagFamilyListResponse(), false);
 
-		registerHandler("projects", (uuid) -> boot.get().meshRoot().getProjectRoot().findByUuid(uuid), ProjectListResponse.class,
+		registerHandler("projects", (uuid) -> boot.get().projectDao().findByUuid(uuid), ProjectListResponse.class,
 			projectSearchHandler, projectExamples
 				.getProjectListResponse(),
 			false);
-		registerHandler("schemas", (uuid) -> boot.get().meshRoot().getSchemaContainerRoot().findByUuid(uuid), SchemaListResponse.class,
+		registerHandler("schemas", (uuid) -> boot.get().schemaDao().findByUuid(uuid), SchemaListResponse.class,
 			schemaContainerSearchHandler,
 			schemaExamples.getSchemaListResponse(), false);
-		registerHandler("microschemas", (uuid) -> boot.get().meshRoot().getMicroschemaContainerRoot().findByUuid(uuid), MicroschemaListResponse.class,
+		registerHandler("microschemas", (uuid) -> boot.get().microschemaDao().findByUuid(uuid), MicroschemaListResponse.class,
 			microschemaContainerSearchHandler, microschemaExamples.getMicroschemaListResponse(), false);
 		addAdminHandlers();
 	}
@@ -200,7 +199,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
-	private <T extends HibCoreElement, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
+	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse,
 		boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();

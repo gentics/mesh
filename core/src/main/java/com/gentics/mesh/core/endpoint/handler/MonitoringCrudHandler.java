@@ -1,23 +1,24 @@
 package com.gentics.mesh.core.endpoint.handler;
 
-import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
-import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
-import com.gentics.mesh.core.rest.plugin.PluginStatus;
-import com.gentics.mesh.graphdb.cluster.ClusterManager;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
-import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
+import com.gentics.mesh.core.rest.plugin.PluginStatus;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Handler for monitoring related actions.

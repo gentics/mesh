@@ -20,7 +20,7 @@ import org.reflections.Reflections;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.AbstractParameters;
 
@@ -73,7 +73,7 @@ public class TableGenerator extends AbstractRenderingGenerator {
 			}
 
 			// Render mesh options table
-			if (clazz.equals(MeshOptions.class)) {
+			if (clazz.equals(OrientDBMeshOptions.class)) {
 				writeFile(clazz.getSimpleName() + ".adoc-include", renderFlatTable(clazz));
 				continue;
 			}

@@ -5,18 +5,18 @@ import java.util.Map;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
@@ -35,64 +35,64 @@ public abstract class DaoTransformableModule {
 	@Getter
 	@Provides
 	@SuppressWarnings("unchecked")
-	public static Map<ElementType, DaoTransformable<HibCoreElement, RestModel>> map(
-		Map<ElementType, DaoTransformable<? extends HibCoreElement, ? extends RestModel>> daos) {
-		return (Map<ElementType, DaoTransformable<HibCoreElement, RestModel>>) (Object) daos;
+	public static Map<ElementType, DaoTransformable<HibCoreElement<? extends RestModel>, RestModel>> map(
+		Map<ElementType, DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel>> daos) {
+		return (Map<ElementType, DaoTransformable<HibCoreElement<? extends RestModel>, RestModel>>) (Object) daos;
 	}
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.ROLE)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> role(RoleDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> role(RoleDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.GROUP)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> group(GroupDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> group(GroupDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.USER)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> user(UserDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> user(UserDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.PROJECT)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> project(ProjectDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> project(ProjectDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.SCHEMA)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> schema(SchemaDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> schema(SchemaDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.MICROSCHEMA)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> microschema(MicroschemaDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> microschema(MicroschemaDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.BRANCH)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> branch(BranchDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> branch(BranchDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.NODE)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> node(NodeDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> node(NodeDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.TAG)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> tag(TagDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> tag(TagDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.TAGFAMILY)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> tagFamily(TagFamilyDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> tagFamily(TagFamilyDao dao);
 
 	@Binds
 	@IntoMap
 	@ElementTypeKey(ElementType.JOB)
-	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> job(JobDaoWrapper dao);
+	abstract DaoTransformable<? extends HibCoreElement<? extends RestModel>, ? extends RestModel> job(JobDao dao);
 
 }

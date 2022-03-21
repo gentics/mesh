@@ -5,11 +5,11 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * CRUD handler for the tag family REST endpoint operation.

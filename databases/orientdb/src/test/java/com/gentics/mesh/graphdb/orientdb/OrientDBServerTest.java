@@ -9,9 +9,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
-import com.gentics.mesh.graphdb.spi.Database;
 
 @Ignore
 public class OrientDBServerTest extends AbstractOrientDBTest {
@@ -32,7 +33,7 @@ public class OrientDBServerTest extends AbstractOrientDBTest {
 
 	@Test
 	public void testServer() throws Exception {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.getStorageOptions().setDirectory(dbDirectory.getAbsolutePath());
 		options.getStorageOptions().setStartServer(true);
 
@@ -43,7 +44,7 @@ public class OrientDBServerTest extends AbstractOrientDBTest {
 		for (int i = 0; i < 100; i++) {
 			int e = i;
 			db.tx(tx -> {
-				Person p = tx.getGraph().addFramedVertex(Person.class);
+				Person p = HibClassConverter.toGraph(tx).getGraph().addFramedVertex(Person.class);
 				p.setName("personName_" + e);
 				tx.success();
 				Thread.sleep(5000);

@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.s3binary;
 
-import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
-import io.reactivex.Maybe;
-
 import java.util.function.Consumer;
+
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+
+import io.reactivex.Maybe;
 
 /**
  * A S3 binary data processor accepts a fileupload in order to extract specific information from the data.
@@ -24,6 +25,6 @@ public interface S3BinaryDataProcessor {
 	 * @param context
 	 * @return Modifier for the s3 binary graph field.
 	 */
-	Maybe<Consumer<S3BinaryGraphField>> process(S3BinaryDataProcessorContext context);
+	Maybe<Consumer<S3HibBinaryField>> process(S3BinaryDataProcessorContext context);
 
 }

@@ -2,7 +2,6 @@ package com.gentics.mesh.dagger;
 
 import javax.inject.Provider;
 
-import com.gentics.mesh.storage.S3BinaryStorage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.annotation.Getter;
@@ -11,10 +10,15 @@ import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.page.PageTransformer;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -22,6 +26,7 @@ import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -36,15 +41,12 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
-import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.LocalBinaryStorage;
 
 import io.vertx.core.Vertx;
 
@@ -52,6 +54,9 @@ import io.vertx.core.Vertx;
  * Dagger interface for the central mesh components. The method allow quick access to elements outside of the dagger di scope.
  */
 public interface BaseMeshComponent {
+
+	@Getter
+	Database database();
 
 	@Getter
 	MeshOptions options();
@@ -65,10 +70,10 @@ public interface BaseMeshComponent {
 	@Getter
 	SchemaComparator schemaComparator();
 
-	// Data
-
 	@Getter
-	PermissionProperties permissionProperties();
+	MicroschemaComparator microschemaComparator();
+
+	// Data
 
 	@Getter
 	UserProperties userProperties();
@@ -85,6 +90,9 @@ public interface BaseMeshComponent {
 
 	@Getter
 	ProjectNameCache projectNameCache();
+
+	@Getter
+	PageTransformer pageTransformer();
 
 	// Plugin
 	@Getter

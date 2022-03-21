@@ -14,10 +14,11 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryDownloadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryTransformHandler;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -54,9 +54,9 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 	private BinaryDownloadHandler binaryDownloadHandler;
 
 	@Inject
-	public WebRootFieldHandler(Database database, WebRootServiceImpl webrootService,
-			BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler,
-		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
+	public WebRootFieldHandler(Database database, WebRootService webrootService,
+							   BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler,
+							   NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
 		this.binaryDownloadHandler = binaryDownloadHandler;
 	}
@@ -71,7 +71,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 		String fieldName = rc.request().getParam("param0");
 
 		utils.syncTx(ac, tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			// Cut all the common parts off, obtaining the project-based path.
 			String path = rc.request().path();
@@ -86,7 +86,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
 			HibNode node = findNodeByPath(ac, rc, nodePath, path);
 
-			NodeGraphFieldContainer container = graphSegment.getContainer();
+			HibNodeFieldContainer container = graphSegment.getContainer();
 			FieldSchema fieldSchema = container.getSchemaContainerVersion().getSchema().getField(fieldName);
 
 			if (fieldSchema == null) {
@@ -127,7 +127,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			languageTags.add(lastSegment.getLanguageTag());
 			languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
 
-			Field field = container.getRestFieldFromGraph(ac, fieldName, fieldSchema, languageTags, 0);
+			Field field = container.getRestField(ac, fieldName, fieldSchema, languageTags, 0);
 			if (field == null) {
 				throw error(NOT_FOUND, "error_field_not_found_with_name", fieldName);
 			}

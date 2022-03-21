@@ -29,5 +29,4 @@ public interface MicronodeMigrationContext {
 	 * Validate that all needed information are present in the context.
 	 */
 	void validate();
-
 }

@@ -9,6 +9,8 @@ import static com.gentics.mesh.core.rest.plugin.PluginStatus.VALIDATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +30,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import org.apache.commons.collections4.map.HashedMap;
 import org.pf4j.AbstractPluginManager;
 import org.pf4j.CompoundPluginLoader;
@@ -59,9 +63,6 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.cluster.ClusterManager;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
@@ -270,7 +271,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			PluginWrapper plugin = getPlugin(id);
 			if (plugin == null || plugin.getPlugin() == null) {
 				log.error("The plugin {" + path + "/" + id + "} could not be loaded.");
-				plugins.remove(id);
+				removePlugin(id);
+				removePluginClassLoader(id);
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 			}
 			validate(plugin.getPlugin());
@@ -278,10 +280,12 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		} catch (GenericRestException e) {
 			log.error("Post start validation of plugin {" + path + "/" + id + "} failed.", e);
 			removePlugin(id);
+			removePluginClassLoader(id);
 			throw e;
 		} catch (Throwable e) {
 			log.error("Error while loading plugin class", e);
 			removePlugin(id);
+			removePluginClassLoader(id);
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 		}
 
@@ -345,6 +349,24 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		} catch (Throwable e2) {
 			log.error("Error while unloading plugin {" + id + "}", e2);
 			return false;
+		}
+	}
+
+	/**
+	 * Remove the plugin classloader
+	 * @param pluginId plugin ID
+	 */
+	private void removePluginClassLoader(String pluginId) {
+		Map<String, ClassLoader> pluginClassLoaders = getPluginClassLoaders();
+		if (pluginClassLoaders.containsKey(pluginId)) {
+			ClassLoader classLoader = pluginClassLoaders.remove(pluginId);
+			if (classLoader instanceof Closeable) {
+				try {
+					((Closeable) classLoader).close();
+				} catch (IOException e) {
+					throw new PluginRuntimeException(e, "Cannot close classloader");
+				}
+			}
 		}
 	}
 

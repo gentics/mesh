@@ -36,7 +36,6 @@ import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
-import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchMappingsCache;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
@@ -55,7 +54,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import net.lingala.zip4j.exception.ZipException;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -72,8 +70,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	private final Lazy<Vertx> vertx;
 
 	private final ElasticsearchClient<JsonObject> client;
-
-	private ElasticsearchProcessManager processManager;
 
 	private Function<Throwable, CompletableSource> ignore404 = error -> isNotFoundError(error) ? Completable.complete()
 		: Completable.error(error);
@@ -97,24 +93,10 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public void start() {
 		log.debug("Creating elasticsearch provider.");
-
-		ElasticSearchOptions searchOptions = getOptions();
-
-		if (searchOptions.isStartEmbedded()) {
-			try {
-				processManager.start();
-				processManager.startWatchDog();
-			} catch (IOException | ZipException e) {
-				log.error("Error while starting embedded Elasticsearch server.", e);
-				throw new RuntimeException("Error while starting embedded Elasticsearch server", e);
-			}
-		}
-
 	}
 
 	@Override
 	public ElasticSearchProvider init() {
-		processManager = new ElasticsearchProcessManager(vertx.get(), options.getSearchOptions());
 		return this;
 	}
 
@@ -225,11 +207,6 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (client != null) {
 			log.info("Closing Elasticsearch REST client.");
 			client.close();
-		}
-		if (processManager != null) {
-			log.info("Stopping Elasticsearch server.");
-			processManager.stopWatchDog();
-			processManager.stop();
 		}
 	}
 
@@ -678,7 +655,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		JsonObject json = createIndexSettings(info);
 
-		String randomName = info.getIndexName() + UUIDUtil.randomUUID();
+		String randomName = installationPrefix() + info.getIndexName() + UUIDUtil.randomUUID();
 		String tempIndexName = randomName.toLowerCase();
 
 		return client.createIndex(tempIndexName, json).async()

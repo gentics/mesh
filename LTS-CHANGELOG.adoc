@@ -17,13 +17,25 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.25]]
+== 1.6.25 (21.03.2022)
+
+icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
+(`status`, `type`, `branchName`, `branchUuid`, `schemaName`, `schemaUuid`, `microschemaName`, `microschemaUuid`, `fromVersion`, `toVersion`).
+
+icon:check[] Search: The periodic check for correctness of the indices in Elasticsearch created temporary indices, which did not start with the installation prefix,
+and thus were sometimes not cleaned up. The naming of those temporary indices has now been changed to also start with the installation prefix.
+
+icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
+
+icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possible internal errors when parsing uploaded files using tika.
+
+icon:check[] Cluster: When starting a node with a new version of Gentics Mesh in a cluster, application of the changelog and setting the new Mesh version and
+database revision was delayed until the write quorum is reached, but not until the cluster topology lock was raised, which could cause a blocked transaction.
+This has been fixed.
+
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
-
-icon:check[] OrientDB: The included OrientDB version has been downgraded to version `3.1.11`.
-
-CAUTION: OrientDB version `3.1.15`, which was included in Mesh 1.6.23 has some serious bugs, therefore, Mesh 1.6.23 has been unreleased and the OrientDB Version
-has been changed back to `3.1.11`.
 
 icon:check[] Search: When the ElasticSearch instance is not available, getting version information from the endpoint `/api/v1` failed with an internal
 server error. This has been fixed, calling the endpoint `/api/v1` will not fail anymore, but will not contain the ElasticSearch version.
@@ -40,7 +52,7 @@ icon:plus[] Docker-Image: The base image has been changed from JRE to JDK to inc
 [[v1.6.23]]
 == 1.6.23 (11.11.2021)
 
-icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.15`.
+icon:plus[] AWS S3: Now the Cross-Origin Request Settings parameters of a S3 connection can be configured. By default the allowed headers/origins are set to `*`, the allowed methods are set to `"GET", "PUT", "POST", "DELETE"`. Setting any of the CORS configuration to `null` prevents is to override the server's default configuration. Setting all the CORS configuration to null or empty value prevents the CORS config to be changed at all.
 
 icon:check[] Cluster: When doing a rolling update in a cluster, a OConcurrentModificationException could occur during the startup, which could cause
 subsequent errors. This has been fixed.

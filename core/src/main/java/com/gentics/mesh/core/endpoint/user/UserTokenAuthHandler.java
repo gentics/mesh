@@ -12,11 +12,11 @@ import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.parameter.UserParameters;
 
 import io.vertx.core.AsyncResult;
@@ -59,7 +59,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 
 			MeshAuthUser lastEditor = db.tx(tx -> {
 				// 1. Load the element from the root element using the given uuid
-				UserDaoWrapper userDao = tx.userDao();
+				UserDao userDao = tx.userDao();
 				HibUser element = userDao.findByUuid(uuid);
 
 				if (element == null) {

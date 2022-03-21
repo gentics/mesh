@@ -8,8 +8,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.MeshHeaders;
 
 import io.vertx.core.AsyncResult;

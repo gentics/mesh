@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
@@ -17,25 +16,20 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.math.NumberUtils;
-
-import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -43,12 +37,10 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -80,7 +72,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+				NodeDao nodeDao = tx.nodeDao();
 				HibProject project = tx.getProject(ac);
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, DELETE_PERM);
 				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
@@ -89,7 +81,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				// Create the batch first since we can't delete the container and access it later in batch creation
 				utils.bulkableAction(bac -> {
 					HibBranch branch = tx.getBranch(ac);
-					tx.contentDao().deleteFromBranch(node, ac, branch, bac, false);
+					nodeDao.deleteFromBranch(node, ac, branch, bac, false);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}
@@ -137,8 +129,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(toUuid, "toUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				NodeDao nodeDao = tx.nodeDao();
 				HibProject project = tx.getProject(ac);
 
 				// TODO Add support for moving nodes across projects.
@@ -150,9 +142,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				HibNode sourceNode = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				HibNode targetNode = nodeDao.loadObjectByUuid(project, ac, toUuid, UPDATE_PERM);
 
-				utils.eventAction(batch -> {
-					nodeDao.moveTo(sourceNode, ac, targetNode, batch);
-				});
+				nodeDao.moveTo(sourceNode, ac, targetNode, batch);
 			}, () -> ac.send(NO_CONTENT));
 		}
 
@@ -170,7 +160,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode node = crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
 			return nodeDao.transformToNavigation(node, ac);
 		}, model -> ac.send(model, OK));
@@ -193,7 +183,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 			VersioningParameters versionParams = ac.getVersioningParameters();
 			InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, requiredPermission);
 
 			Page<? extends HibNode> page = nodeDao.getChildren(node, ac, nodeParams.getLanguageList(options),
@@ -237,8 +227,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			TagDaoWrapper tagDao = tx.tagDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			TagDao tagDao = tx.tagDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, READ_PERM);
 			Page<? extends HibTag> tagPage = tagDao.getTags(node, ac.getUser(), ac.getPagingParameters(), tx.getBranch(ac));
@@ -269,26 +259,24 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(tagUuid, "tagUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				TagDaoWrapper tagDao = tx.tagDao();
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				TagDao tagDao = tx.tagDao();
+				NodeDao nodeDao = tx.nodeDao();
 
 				HibProject project = tx.getProject(ac);
 				HibBranch branch = tx.getBranch(ac);
 
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
+				// The project is considered within tagDao.loadObjectByUuid();
+				HibTag tag = tagDao.loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 				if (tagDao.hasTag(node, tag, branch)) {
 					if (log.isDebugEnabled()) {
 						log.debug("Node {{}} is already tagged with tag {{}}", node.getUuid(), tag.getUuid());
 					}
 				} else {
-					utils.eventAction(batch -> {
-						tagDao.addTag(node, tag, branch);
-
-						batch.add(toGraph(node).onTagged(tag, branch, ASSIGNED));
-					});
+					tagDao.addTag(node, tag, branch);
+					batch.add(nodeDao.onTagged(node, tag, branch, ASSIGNED));
 				}
 
 				return nodeDao.transformToRestSync(node, ac, 0);
@@ -312,20 +300,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(tagUuid, "tagUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				TagDaoWrapper tagDao = tx.tagDao();
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				TagDao tagDao = tx.tagDao();
+				NodeDao nodeDao = tx.nodeDao();
 				HibProject project = tx.getProject(ac);
 				HibBranch branch = tx.getBranch(ac);
 
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				HibTag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				if (tagDao.hasTag(node, tag, branch)) {
-					utils.eventAction(batch -> {
-						tagDao.removeTag(node, tag, branch);
-						batch.add(toGraph(node).onTagged(tag, branch, UNASSIGNED));
-					});
+					tagDao.removeTag(node, tag, branch);
+					batch.add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug("Node {{}} was not tagged with tag {{}}", node.getUuid(), tag.getUuid());
@@ -347,7 +333,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
@@ -368,7 +354,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+				NodeDao nodeDao = tx.nodeDao();
 
 				HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -393,7 +379,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+				NodeDao nodeDao = tx.nodeDao();
 
 				HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -417,7 +403,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, READ_PERM);
 			return nodeDao.transformToPublishStatus(node, ac, languageTag);
@@ -439,7 +425,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+				NodeDao nodeDao = tx.nodeDao();
 
 				HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -466,7 +452,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+				NodeDao nodeDao = tx.nodeDao();
 
 				HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -475,34 +461,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}
-	}
-
-	/**
-	 * Read a single node and respond with a transformed node.
-	 * 
-	 * @param ac
-	 *            Action context
-	 * @param uuid
-	 *            Uuid of the node which should be read
-	 * @param handler
-	 *            Handler which provides the root vertex which will be used to locate the node
-	 */
-	protected void readElement(InternalActionContext ac, String uuid, TxAction1<RootVertex<Node>> handler) {
-		validateParameter(uuid, "uuid");
-
-		utils.syncTx(ac, tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
-			RootVertex<Node> root = handler.handle();
-			InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-			// TODO refactor to use dao
-			HibNode node = root.loadObjectByUuid(ac, uuid, requiredPermission);
-			return nodeDao.transformToRestSync(node, ac, 0);
-		}, model -> {
-			HttpResponseStatus code = HttpResponseStatus
-				.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
-			ac.send(model, code);
-		});
-
 	}
 
 	/**
@@ -517,14 +475,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(nodeUuid, "nodeUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.nodeDao();
+			utils.syncTx(ac, (batch, tx) -> {
+				NodeDao nodeDao = tx.nodeDao();
 
 				HibProject project = tx.getProject(ac);
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
-				Page<? extends HibTag> page = utils.eventAction(batch -> {
-					return nodeDao.updateTags(node, ac, batch);
-				});
+				Page<? extends HibTag> page =  nodeDao.updateTags(node, ac, batch);
 
 				return pageTransformer.transformToRestSync(page, ac, 0);
 			}, model -> {
@@ -544,7 +500,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
 			return boot.nodeDao().transformToVersionList(node, ac);

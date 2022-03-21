@@ -1,6 +1,5 @@
 package com.gentics.mesh.demo;
 
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -35,7 +34,7 @@ public class UserInfo {
 		this.role = role;
 	}
 
-	public void setUser(User user) {
+	public void setUser(HibUser user) {
 		this.user = user;
 	}
 

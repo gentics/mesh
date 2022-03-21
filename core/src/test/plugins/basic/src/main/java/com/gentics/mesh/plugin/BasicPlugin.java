@@ -8,7 +8,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.StaticHandler;
 
 public class BasicPlugin extends AbstractPlugin implements RestPlugin {
 
@@ -27,8 +26,8 @@ public class BasicPlugin extends AbstractPlugin implements RestPlugin {
 			rc.response().end("world");
 		});
 
-		StaticHandler staticHandler = StaticHandler.create("webroot-basic", getClass().getClassLoader());
-		router.route("/static/*").handler(staticHandler);
+		addStaticHandlerFromClasspath(router.route("/static/*"), "webroot-basic");
+
 		return router;
 	}
 

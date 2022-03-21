@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.path.Path;
 
@@ -34,6 +34,6 @@ public interface WebRootService {
 	 *            Specific type to be looking for
 	 * @return
 	 */
-	NodeGraphFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type);
+	HibNodeFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type);
 
 }

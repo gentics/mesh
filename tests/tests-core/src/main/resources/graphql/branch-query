@@ -1,0 +1,33 @@
+{
+    branch {
+		# [$.data.branch.uuid=<is-uuid>]
+		uuid
+		# [$.data.branch.name=dummy]
+		name
+		# [$.data.branch.latest=true]
+		latest
+		tags {
+			# [$.data.branch.tags.totalCount=0]
+			totalCount
+		}
+		schema(name:"content") {
+            # [$.data.branch.schema.uuid=<is-uuid>]
+            uuid
+            # [$.data.branch.schema.name=content]
+            name
+		}
+		uuidSchema: schema(uuid:"%SCHEMA_UUID%") {
+		    # [$.data.branch.uuidSchema.uuid=%SCHEMA_UUID%]
+		    uuid
+		    # [$.data.branch.uuidSchema.name=folder]
+		    name
+		}
+		schemas {
+		    elements {
+                # [$.data.branch.schemas.elements[0].uuid=<is-uuid>]
+		        uuid
+		    }
+		}
+    }
+}
+# [$.errors=<is-undefined>]

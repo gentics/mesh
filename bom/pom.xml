@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.7.23-SNAPSHOT</version>
+		<version>1.8.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -21,16 +21,17 @@
 		<graphql.version>10.0</graphql.version>
 		<pf4j.version>3.1.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
-		<spring.security.version>4.2.13.RELEASE</spring.security.version>
+		<spring.security.version>4.2.16.RELEASE</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
 		<orientdb.version>3.1.11</orientdb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
-		<jackson.version>2.9.9</jackson.version>
-		<jackson-databind.version>2.9.10</jackson-databind.version>
-		<netty.version>4.1.42.Final</netty.version>
+		<jackson.version>2.13.2</jackson.version>
+		<jackson-databind.version>2.13.2</jackson-databind.version>
+		<netty.version>4.1.72.Final</netty.version>
 		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
+		<snakeyaml.version>1.30</snakeyaml.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
@@ -86,7 +87,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>25.0-jre</version>
+				<version>29.0-jre</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-cli</groupId>
@@ -101,12 +102,12 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.4</version>
+				<version>2.7</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.10</version>
+				<version>1.15</version>
 			</dependency>
 
 			<!-- HTTP Client -->
@@ -134,7 +135,12 @@
 			<dependency>
 				<groupId>org.raml</groupId>
 				<artifactId>raml-parser</artifactId>
-				<version>0.8.14</version>
+				<version>0.8.17</version>
+			</dependency>
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>${snakeyaml.version}</version>
 			</dependency>
 
 			<!-- Json -->
@@ -190,7 +196,7 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-yaml</artifactId>
-				<version>2.9.4</version>
+				<version>${jackson.version}</version>
 			</dependency>
 
 			<!-- Hazelcast -->
@@ -379,6 +385,18 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<!-- Mesh tests -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-tests-context-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-tests-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<!-- Default storage provider -->
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
@@ -491,21 +509,18 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-common</artifactId>
+				<artifactId>tests-mesh-common</artifactId>
 				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-core</artifactId>
+				<artifactId>tests-mesh-core</artifactId>
 				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-rest-model</artifactId>
+				<artifactId>tests-mesh-rest-model</artifactId>
 				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
@@ -514,11 +529,79 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-api</artifactId>
+				<artifactId>tests-mesh-api</artifactId>
 				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
-
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-rest-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-plugin-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-demo</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-changelog-system</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-elasticsearch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-distributed</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-distributed-coordinator</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-aws-s3-storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-image-imgscalr</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-jwt-auth</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-local-storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-service-metrics-prometheus</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>tests-mesh-admin-gui</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.github.stefanbirkner</groupId>
 				<artifactId>system-rules</artifactId>
@@ -568,7 +651,7 @@
 			<dependency>
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
-				<version>1.11.2</version>
+				<version>1.14.2</version>
 			</dependency>
 
 			<!-- GraphQL -->

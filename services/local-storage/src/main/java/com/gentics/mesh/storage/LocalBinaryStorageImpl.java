@@ -14,7 +14,9 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.binary.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.storage.AbstractBinaryStorage;
+import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.util.RxUtil;

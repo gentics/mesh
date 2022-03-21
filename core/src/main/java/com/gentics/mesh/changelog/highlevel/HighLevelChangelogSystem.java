@@ -4,7 +4,7 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
-import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.dao.ChangelogDao;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -24,38 +24,38 @@ public interface HighLevelChangelogSystem {
 	 * Apply the changes which were not yet applied.
 	 * 
 	 * @param flags Flags which will be used to control the post process actions
-	 * @param meshRoot mesh root
+	 * @param dao mesh root
 	 * @param filter optional filter
 	 */
-	void apply(PostProcessFlags flags, MeshRoot meshRoot, Predicate<? super HighLevelChange> filter);
+	void apply(PostProcessFlags flags, ChangelogDao dao, Predicate<? super HighLevelChange> filter);
 
 	/**
 	 * Check whether the change has already been applied.
 	 *
-	 * @param root
+	 * @param dao
 	 * @param change
 	 * @return
 	 */
-	default boolean isApplied(MeshRoot root, HighLevelChange change) {
+	default boolean isApplied(ChangelogDao dao, HighLevelChange change) {
 		if (log.isDebugEnabled()) {
 			log.debug("Checking change {" + change.getName() + "}/{" + change.getUuid() + "}");
 		}
-		return root.getChangelogRoot().hasChange(change);
+		return dao.hasChange(change);
 	}
 
 	/**
 	 * Mark all high level changes as applied.
 	 *
-	 * @param meshRoot
+	 * @param dao
 	 */
-	void markAllAsApplied(MeshRoot meshRoot);
+	void markAllAsApplied(ChangelogDao dao);
 
 	/**
 	 * Check whether any high level changelog entry needs to be applied.
 	 * 
-	 * @param meshRoot
+	 * @param dao
 	 * @param filter optional filter for high level changes to check (may be null to check all high level changes)
 	 * @return
 	 */
-	boolean requiresChanges(MeshRoot meshRoot, Predicate<? super HighLevelChange> filter);
+	boolean requiresChanges(ChangelogDao dao, Predicate<? super HighLevelChange> filter);
 }

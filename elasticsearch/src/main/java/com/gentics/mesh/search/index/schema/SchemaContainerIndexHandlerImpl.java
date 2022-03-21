@@ -14,12 +14,11 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -53,14 +52,14 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 	}
 
 	@Override
-	public Class<Schema> getElementClass() {
-		return Schema.class;
+	public Class<HibSchema> getElementClass() {
+		return HibSchema.class;
 	}
 
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.schemaDao().globalCount();
+			return tx.schemaDao().count();
 		});
 	}
 
@@ -76,29 +75,29 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Schema.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibSchema.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Schema.composeIndexName());
+		return filterIndicesByType(indices, HibSchema.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Schema.composeIndexName());
+		return Collections.singleton(HibSchema.composeIndexName());
 	}
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = Schema.composeIndexName();
+		String indexName = HibSchema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "schema");
 		return Collections.singletonMap(indexName, info);
 	}
 
 	@Override
 	public Function<String, HibSchema> elementLoader() {
-		return (uuid) -> boot.meshRoot().getSchemaContainerRoot().findByUuid(uuid);
+		return (uuid) -> boot.schemaDao().findByUuid(uuid);
 	}
 
 	@Override

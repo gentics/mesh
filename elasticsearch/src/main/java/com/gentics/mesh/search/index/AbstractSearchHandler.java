@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -40,7 +41,6 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.DevNullSearchProvider;
@@ -48,7 +48,6 @@ import com.gentics.mesh.search.SearchHandler;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.util.SearchWaitUtil;
-import com.gentics.mesh.util.Tuple;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
@@ -63,7 +62,7 @@ import io.vertx.core.logging.LoggerFactory;
  *
  * @param <T>
  */
-public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends RestModel> implements SearchHandler<T, RM> {
+public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM extends RestModel> implements SearchHandler<T, RM> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchHandler.class);
 
@@ -257,8 +256,8 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 			JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 			JsonArray hits = hitsInfo.getJsonArray("hits");
 
-			List<Tuple<T, String>> list = new ArrayList<>();
-			db.tx(() -> {
+			List<RM> list = new ArrayList<>();
+			db.tx(tx -> {
 				for (int i = 0; i < hits.size(); i++) {
 					JsonObject hit = hits.getJsonObject(i);
 					String id = hit.getString("_id");
@@ -284,10 +283,10 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 							throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
 						}
 					} else {
-						// TODO maybe it would be better to directly transform the element here.
-						list.add(Tuple.tuple(element, language));
+						list.add(actions.transformToRestSync(tx, element, ac, 0, language));
 					}
 				}
+				return list;
 			});
 
 			// Set meta information to the rest response
@@ -296,15 +295,6 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 			return Observable.fromIterable(list);
 		}).onErrorResumeNext(error -> {
 			return Observable.error(mapToMeshError(error));
-		}).flatMapSingle(element -> {
-			// TODO add resume next to omit the item if it can't be transformed for some reason.
-			// This would be better than to just fail the whole request
-			// TODO maybe add extra permission filtering? This would not be very costly for smaller pages and ensure perm consistency?
-			// TODO it would be good to batch the transformation of the elements to save the overhead of creating transactions and use the L1 cache.
-			return db.tx(tx ->  {
-				RM model = actions.transformToRestSync(tx, element.v1(), ac, 0, element.v2());
-				return Single.just(model);
-			});
 		}).collect(() -> listResponse.getData(), (x, y) -> {
 			x.add(y);
 		}).subscribe(list -> {

@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh-tests</artifactId>
+		<version>1.8.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>mesh-tests-context-api</artifactId>
+	<name>Mesh - Tests context API</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tests-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
+		</dependency>
+	</dependencies>
+</project>

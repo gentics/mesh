@@ -7,575 +7,60 @@
 | Description
 
 
+| cache
+| false
+| object
+| Cache options.
+
+| cluster
+| false
+| object
+| Cluster options.
+
+| content
+| false
+| object
+| Content related options.
+
+| debugInfo
+| false
+| object
+| Debug info options.
+
 | defaultLanguage
 | false
 | string
 | Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.
+
+| graphQL
+| false
+| object
+| GraphQL options.
+
+| httpServer
+| false
+| object
+| Http server options.
+
+| image
+| false
+| object
+| Image handling options.
 
 | languagesFilePath
 | false
 | string
 | Optional path to a JSON file containing additional languages
 
-| updateCheck
+| monitoring
 | false
-| boolean
-| Turn on or off the update checker.
+| object
+| Monitoring options.
 
-| httpServerOptions.port
-| false
-| int
-| Configure the Gentics Mesh HTTP server port. Default is: 8080
-
-| httpServerOptions.sslPort
-| false
-| int
-| Configure the Gentics Mesh HTTPS server port. Default is: 8443
-
-| httpServerOptions.host
+| nodeName
 | false
 | string
-| Configure the Gentics Mesh HTTP server host to bind to. Default is: 0.0.0.0
-
-| httpServerOptions.corsAllowedOriginPattern
-| false
-| string
-| Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.
-
-| httpServerOptions.corsAllowCredentials
-| false
-| boolean
-| Flag which indicates whether credentials are allowed to be passed along using CORS requests.
-
-| httpServerOptions.enableCors
-| false
-| boolean
-| Flag which indicates whether CORS handling should be enabled.
-
-| httpServerOptions.http
-| false
-| boolean
-| Flag which indicates whether http server should be enabled. Default: true
-
-| httpServerOptions.ssl
-| false
-| boolean
-| Flag which indicates whether https server should be enabled. Default: false
-
-| httpServerOptions.certPath
-| false
-| string
-| Flag which indicates whether SSL support be enabled.
-
-| httpServerOptions.keyPath
-| false
-| string
-| Path to the SSL private key. Default: config/key.pem
-
-| httpServerOptions.clientAuthMode
-| false
-| clientauth
-| Configure the client certificate handling mode. Options: none, request, required. Default: none
-
-| httpServerOptions.trustedCertPaths
-| false
-| list
-| Configure the trusted SSL certificates.
-
-| httpServerOptions.verticleAmount
-| false
-| int
-| Amount of rest API verticles to be deployed. Default is 2 * CPU Cores
-
-| httpServerOptions.serverTokens
-| false
-| boolean
-| Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL. Default is true
-
-| monitoringOptions.enabled
-| false
-| boolean
-| Enable or disable the monitoring system. Default is: true
-
-| monitoringOptions.port
-| false
-| int
-| Configure the Gentics Mesh monitoring HTTP server port. Default is: 8081
-
-| monitoringOptions.host
-| false
-| string
-| Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: 127.0.0.1
-
-| monitoringOptions.jvmMetricsEnabled
-| false
-| boolean
-| Enable or disable the measuring of JVM metrics. Default is: true
-
-| vertxOptions.workerPoolSize
-| false
-| int
-| Configure worker pool size. Default is: 20
-
-| vertxOptions.eventPoolSize
-| false
-| int
-| Configure event pool size. Default is 2 * CPU Cores
-
-| clusterOptions.networkHost
-| false
-| string
-| IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.
-
-| clusterOptions.enabled
-| false
-| boolean
-| Flag to enable or disable the cluster mode.
-
-| clusterOptions.clusterName
-| false
-| string
-| Name of the cluster. Only instances with a common cluster name will form a cluster.
-
-| clusterOptions.vertxPort
-| false
-| integer
-| Port used by Vert.x for the eventbus server. Default: 4848
-
-| clusterOptions.coordinatorMode
-| false
-| coordinatormode
-| The coordinator mode will add an additional request controller plane which will internally process requests in-between cluster nodes. Default: DISABLED
-
-| clusterOptions.coordinatorRegex
-| false
-| string
-| The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all database master nodes are eligible.
-
-| clusterOptions.topologyLockTimeout
-| false
-| long
-| Define the timeout in ms for the topology lock. The topology lock will lock all transactions whenever the cluster topology changes. Default: 0. A value of 0 will disable the locking mechanism.
-
-| clusterOptions.topologyLockDelay
-| false
-| long
-| Define the delay in ms for the topology lock. It will delay the lock after receiving the database online event. Default: 20000. A value of 0 will disable the delay mechanism.
-
-| clusterOptions.coordinatorTopology
-| false
-| coordinationtopology
-| The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.
-
-| clusterOptions.topologyChangeReadOnly
-| false
-| boolean
-| Flag to enable or disable setting the cluster in readonly mode, when the topology changes.
-
-| storageOptions.directory
-| true
-| string
-| Path to the graph database data directory.
-
-| storageOptions.backupDirectory
-| true
-| string
-| Path to the graph database backup directory.
-
-| storageOptions.exportDirectory
-| true
-| string
-| Path to the graph database export directory.
-
-| storageOptions.startServer
-| true
-| boolean
-| Flag which indicates whether the graph database admin web server should be started. Default: false
-
-| storageOptions.synchronizeWrites
-| true
-| boolean
-| Flag which controls whether writes to the graph database should be synchronized. Default: true
-
-| storageOptions.synchronizeWritesTimeout
-| true
-| long
-| Set the timeout in milliseconds for the sync write lock. Default: 60000
-
-| storageOptions.txRetryDelay
-| false
-| int
-| The delay in milliseconds when a transaction has to be retried.
-
-| storageOptions.txRetryLimit
-| false
-| int
-| The limit for the tx retires.
-
-| storageOptions.txCommitTimeout
-| false
-| long
-| The transaction commit timeout in milliseconds. A timeout value of zero means that transaction commit operations will never timeout.
-
-| storageOptions.parameters
-| false
-| map
-| Additional set of graph database parameters.
-
-| storageOptions.clusterJoinTimeout
-| false
-| int
-| The timeout for joining the graphdb cluster in milliseconds. This also includes the time it takes to synchronize the graphdb over the network.
-
-| diskQuota.checkInterval
-| false
-| int
-| Check interval in ms. Setting this to 0 will disable the disk quota check. Default: 10000
-
-| diskQuota.warnThreshold
-| false
-| string
-| Threshold for the disk quota warn level. This can be set either as percentage (e.g. 15%) or as absolute disk space (e.g. 10G). If less than the defined disk space is available, warnings will be logged. Default: 15%
-
-| diskQuota.readOnlyThreshold
-| false
-| string
-| Threshold for the disk quota ready only level. This can be set either as percentage (e.g. 10%) or as absolute disk space (e.g. 5G). If less than the defined disk space is available, Mesh will automatically be set to readonly. Default: 10%
-
-| searchOptions.url
-| false
-| string
-| Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.
-
-| searchOptions.username
-| false
-| string
-| Username to be used for Elasticsearch authentication.
-
-| searchOptions.password
-| false
-| string
-| Password to be used for Elasticsearch authentication.
-
-| searchOptions.certPath
-| false
-| string
-| Path to the trusted server certificate (PEM format). This setting can be used when the Elasticsearch server is using a self-signed certificate which would otherwise not be trusted.
-
-| searchOptions.caPath
-| false
-| string
-| Path to the trusted common authority certificate (PEM format)
-
-| searchOptions.hostnameVerification
-| false
-| boolean
-| Flag which controls whether hostname verification should be enabled. Default: true
-
-| searchOptions.timeout
-| false
-| long
-| Timeout for Elasticsearch operations. Default: 60000ms
-
-| searchOptions.startupTimeout
-| false
-| integer
-| Timeout for Elasticsearch startup. Default: 45sec
-
-| searchOptions.startEmbedded
-| false
-| boolean
-| Flag which indicates whether to deploy and start the included Elasticsearch server.
-
-| searchOptions.embeddedArguments
-| false
-| string
-| String of arguments which will be used for starting the Elasticsearch server instance
-
-| searchOptions.prefix
-| false
-| string
-| Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: mesh-
-
-| searchOptions.bulkLimit
-| false
-| int
-| Upper limit for the size of bulk requests. Default: 100
-
-| searchOptions.bulkLengthLimit
-| false
-| long
-| Upper limit for the total encoded string length of the bulk requests. Default: 5000000
-
-| searchOptions.eventBufferSize
-| false
-| int
-| Upper limit for mesh events that are to be mapped to elastic search requests. Default: 1000
-
-| searchOptions.bulkDebounceTime
-| false
-| int
-| The maximum amount of time in milliseconds between two bulkable requests before they are sent. Default: 2000
-
-| searchOptions.idleDebounceTime
-| false
-| int
-| The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: 100
-
-| searchOptions.retryInterval
-| false
-| int
-| The time in milliseconds between retries of elastic search requests in case of a failure. Default: 5000
-
-| searchOptions.retryLimit
-| false
-| int
-| The amount of retries on a single request before the request is discarded. Default: 3
-
-| searchOptions.waitForIdle
-| false
-| boolean
-| If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: true
-
-| searchOptions.includeBinaryFields
-| false
-| boolean
-| If true, the content and metadata of binary fields will be included in the search index. Default: true
-
-| searchOptions.mappingMode
-| false
-| mappingmode
-| This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings. Default: DYNAMIC
-
-| searchOptions.complianceMode
-| false
-| compliancemode
-| This setting controls the compliance mode for Elasticsearch. When set to ES_7 it will support Elasticsearch 7.x - In PRE_ES_7 mode it will support Elasticsearch 6.x - Default: PRE_ES_7
-
-| searchOptions.syncBatchSize
-| false
-| int
-| Configure the index sync batch size. Default: 50000
-
-| searchOptions.indexCheckInterval
-| false
-| long
-| Set the interval of index checks in ms. Default: 60000
-
-| searchOptions.indexMappingCacheTimeout
-| false
-| long
-| Set the timeout for the cache of index mappings in ms. Default: 3600000
-
-| uploadOptions.byteLimit
-| false
-| long
-| The upload size limit in bytes. Default: 250
-
-| uploadOptions.directory
-| false
-| string
-| Path binary data storage directory. Fileuploads will be placed here.
-
-| uploadOptions.tempDirectory
-| false
-| string
-| Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.
-
-| uploadOptions.parserLimit
-| false
-| int
-| The parser limit for uploaded documents (pdf, doc, docx). Default: 40000
-
-| uploadOptions.parser
-| false
-| boolean
-| If true, the document parser will process uploads and extract metadata and contents. Default: true
-
-| uploadOptions.metadataWhitelist
-| false
-| set
-| If set, the parser will only extract metadata with the keys specified in the list.
-
-| s3options.enabled
-| false
-| boolean
-| Flag to enable or disable the S3 engine.
-
-| s3options.bucket
-| false
-| string
-| AWS S3 bucket where binaries will be uploaded to and downloaded from
-
-| s3options.expirationTimeUpload
-| false
-| int
-| After this time in milliseconds the AWS S3 URL used for upload will expire.
-
-| s3options.expirationTimeDownload
-| false
-| int
-| After this time in milliseconds the AWS S3 URL used for download will expire.
-
-| s3options.linkResolver
-| false
-| string
-| Style of linkResolving:&#x27;s3&#x27; (default) resolved Links will render a pre-signed URL directly to S3 OR &#x27;mesh&#x27; resolved Links will render a mesh-url
-
-| s3options.metadataWhitelist
-| false
-| set
-| If set, the parser will only extract metadata with the keys specified in the list.
-
-| s3options.parserLimit
-| false
-| int
-| The parser limit for uploaded documents (pdf, doc, docx). 
-
-| s3options.region
-| false
-| string
-| AWS S3 region
-
-| s3options.secretAccessKey
-| false
-| string
-| AWS S3 secret access key
-
-| s3options.accessKeyId
-| false
-| string
-| AWS S3 access key id
-
-| s3options.endpoint
-| false
-| string
-| AWS S3 custom endpoint
-
-| s3cacheOptions.bucket
-| false
-| string
-| AWS S3 bucket where transformed/resized images will be uploaded to and downloaded from.
-
-| s3cacheOptions.expirationTimeDownload
-| false
-| int
-| After this time in milliseconds the AWS S3 URL used for download of a transformed image will expire.
-
-| s3cacheOptions.region
-| false
-| string
-| AWS S3 region for transformed / resized images
-
-| s3options.corsAllowedHeaders
-| false
-| list
-| AWS S3 setting for allowed headers for Cross-Origin Resource Sharing. Setting this to null will force default server values.
-
-| s3options.corsAllowedOrigins
-| false
-| list
-| AWS S3 setting for allowed origins for Cross-Origin Resource Sharing. Setting this to null will force default server values.
-
-| s3options.corsAllowedMethods
-| false
-| list
-| AWS S3 setting for allowed methods for Cross-Origin Resource Sharing. Setting this to null will force default server values.
-
-| authenticationOptions.tokenExpirationTime
-| true
-| int
-| Time in minutes which an issued token stays valid.
-
-| authenticationOptions.keystorePassword
-| true
-| string
-| The Java keystore password for the keystore file.
-
-| authenticationOptions.keystorePath
-| true
-| string
-| Path to the java keystore file which will be used to store cryptographic keys.
-
-| authenticationOptions.algorithm
-| true
-| string
-| Algorithm which is used to verify and sign JWT.
-
-| authenticationOptions.enableAnonymousAccess
-| false
-| boolean
-| Flag which indicates whether anonymous access should be enabled.
-
-| authenticationOptions.publicKeysPath
-| false
-| string
-| Path to the public keys file which contains a list of additional JWK formatted public keys which will be used to verify JWTs.
-
-| imageOptions.imageCacheDirectory
-| false
-| string
-| Configure the path for image cache directory. Default: data/binaryImageCache
-
-| imageOptions.maxWidth
-| false
-| integer
-| Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
-
-| imageOptions.maxHeight
-| false
-| integer
-| Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
-
-| imageOptions.jpegQuality
-| false
-| float
-| Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1. Default: 0.95
-
-| imageOptions.resampleFilter
-| false
-| resamplefilter
-| Configure the filter that is used when resizing images. Default: LANCZOS
-
-| contentOptions.autoPurge
-| false
-| boolean
-| Flag which controls the global setting for the auto purge mechanism. The setting can be overriden by the schema &#x27;autoPurge&#x27; flag. Default: true
-
-| cacheConfig.pathCacheSize
-| false
-| long
-| Set the maximum size of the path cache. A value of 0 will disable the cache. Default: 20000
-
-| debugInfoOptions.logFolder
-| false
-| string
-| The path of the folder where the debug info log is stored.
-
-| debugInfoOptions.logFileSize
-| false
-| string
-| The maximum file size of a single log file.
-
-| debugInfoOptions.logEnabled
-| false
-| boolean
-| Enables the debug info log.
-
-| debugInfoOptions.logPattern
-| false
-| string
-| The pattern used for each log line.
-
-| graphQLOptions.slowThreshold
-| false
-| long
-| Threshold for logging slow graphql queries. Default: 60000ms
-
-| tempDirectory
-| false
-| string
-| Path to the central tmp directory.
+| Name of the cluster node instance. If not specified a name will be generated.
 
 | pluginDirectory
 | false
@@ -584,22 +69,52 @@
 
 | pluginTimeout
 | false
-| int
+| integer
 | Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes. Default: 120 seconds.
 
-| nodeName
+| s3options
 | false
-| string
-| Name of the cluster node instance. If not specified a name will be generated.
+| object
+| S3 options.
+
+| search
+| false
+| object
+| Search engine options.
+
+| security
+| false
+| object
+| Authentication options.
 
 | startInReadOnly
 | false
 | boolean
 | If true, Gentics Mesh will be started in read only mode.
 
+| tempDirectory
+| false
+| string
+| Path to the central tmp directory.
+
+| updateCheck
+| false
+| boolean
+| Turn on or off the update checker.
+
+| upload
+| false
+| object
+| File upload options.
+
 | versionPurgeMaxBatchSize
 | false
-| int
+| integer
 | The maximum amount of node versions that are purged before the database transaction is committed.
+
+| vertxOptions
+| true
+| object
+| Vert.x specific options.
 
 |======

@@ -69,22 +69,6 @@ cluster:
   topologyLockDelay: 20000
   coordinatorTopology: "UNMANAGED"
   topologyChangeReadOnly: false
-storage:
-  directory: "data/graphdb"
-  backupDirectory: "data/backup"
-  exportDirectory: "data/export"
-  startServer: false
-  synchronizeWrites: true
-  synchronizeWritesTimeout: 60000
-  txRetryDelay: 10
-  txRetryLimit: 10
-  txCommitTimeout: 0
-  parameters: {}
-  clusterJoinTimeout: 500000
-  diskQuota:
-    checkInterval: 10000
-    warnThreshold: "15%"
-    readOnlyThreshold: "10%"
 search:
   url: "http://localhost:9200"
   username: null
@@ -93,13 +77,6 @@ search:
   caPath: null
   hostnameVerification: true
   timeout: 60000
-  startupTimeout: 45
-  startEmbedded: true
-  embeddedArguments: "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75\
-    \ -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true\
-    \ -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true\
-    \ -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0\
-    \ -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError"
   prefix: "mesh-"
   bulkLimit: 100
   bulkLengthLimit: 5000000
@@ -146,3 +123,19 @@ debugInfo:
   logPattern: "%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n"
 graphQL:
   slowThreshold: 60000
+storage:
+  directory: "data/graphdb"
+  backupDirectory: "data/backup"
+  exportDirectory: "data/export"
+  startServer: false
+  synchronizeWrites: true
+  synchronizeWritesTimeout: 60000
+  txRetryDelay: 10
+  txRetryLimit: 10
+  txCommitTimeout: 0
+  parameters: {}
+  clusterJoinTimeout: 500000
+  diskQuota:
+    checkInterval: 10000
+    warnThreshold: "10%"
+    readOnlyThreshold: "2%"

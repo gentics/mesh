@@ -20,16 +20,16 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -67,7 +67,7 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 		}
 
 		utils.syncTx(ac, tx -> {
-			RoleDaoWrapper roleDao = tx.roleDao();
+			RoleDao roleDao = tx.roleDao();
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
@@ -75,7 +75,7 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			HibBaseElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+			HibBaseElement targetElement = boot.rootResolver().resolvePathToElement(pathToElement);
 			if (targetElement == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
@@ -110,51 +110,51 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 		}
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
+			utils.syncTx(ac, (batch, tx) -> {
 
 				if (log.isDebugEnabled()) {
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 
-				RoleDaoWrapper roleDao = tx.roleDao();
+				RoleDao roleDao = tx.roleDao();
 				// 1. Load the role that should be used
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				HibBaseElement element = boot.meshRoot().resolvePathToElement(pathToElement);
+				HibBaseElement element = boot.rootResolver().resolvePathToElement(pathToElement);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 				}
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
-				String name = utils.eventAction(batch -> {
-					// Prepare the sets for revoke and grant actions
-					Set<InternalPermission> permissionsToGrant = new HashSet<>();
-					Set<InternalPermission> permissionsToRevoke = new HashSet<>();
 
-					for (InternalPermission permission : InternalPermission.values()) {
-						Boolean permValue = requestModel.getPermissions().getNullable(permission.getRestPerm());
-						if (permValue != null) {
-							if (permValue) {
-								permissionsToGrant.add(permission);
-							} else {
-								permissionsToRevoke.add(permission);
-							}
+				// Prepare the sets for revoke and grant actions
+				Set<InternalPermission> permissionsToGrant = new HashSet<>();
+				Set<InternalPermission> permissionsToRevoke = new HashSet<>();
+
+				for (InternalPermission permission : InternalPermission.values()) {
+					Boolean permValue = requestModel.getPermissions().getNullable(permission.getRestPerm());
+					if (permValue != null) {
+						if (permValue) {
+							permissionsToGrant.add(permission);
+						} else {
+							permissionsToRevoke.add(permission);
 						}
 					}
-					if (log.isDebugEnabled()) {
-						for (InternalPermission p : permissionsToGrant) {
-							log.debug("Granting permission: " + p);
-						}
-						for (InternalPermission p : permissionsToRevoke) {
-							log.debug("Revoking permission: " + p);
-						}
+				}
+				if (log.isDebugEnabled()) {
+					for (InternalPermission p : permissionsToGrant) {
+						log.debug("Granting permission: " + p);
 					}
-					// 3. Apply the permission actions
-					roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
-						permissionsToRevoke);
-					return role.getName();
-				});
+					for (InternalPermission p : permissionsToRevoke) {
+						log.debug("Revoking permission: " + p);
+					}
+				}
+				// 3. Apply the permission actions
+				roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
+					permissionsToRevoke);
+				String name = role.getName();
+
 				if (ac.getSecurityLogger().isInfoEnabled()) {
 					ac.getSecurityLogger().info(String.format("Permission for role {%s} (%s) to {%s} set to %s",
 						role.getName(), roleUuid, pathToElement, requestModel.toJson()));

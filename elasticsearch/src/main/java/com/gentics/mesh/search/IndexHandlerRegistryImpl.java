@@ -6,11 +6,11 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
 import com.gentics.mesh.search.index.role.RoleIndexHandlerImpl;
@@ -77,7 +77,7 @@ public class IndexHandlerRegistryImpl implements IndexHandlerRegistry {
 	 * @param element
 	 * @return
 	 */
-	public IndexHandler<?> getForClass(MeshElement element) {
+	public IndexHandler<?> getForClass(HibElement element) {
 		Class<?> clazzOfElement = element.getClass();
 		return getForClass(clazzOfElement);
 	}

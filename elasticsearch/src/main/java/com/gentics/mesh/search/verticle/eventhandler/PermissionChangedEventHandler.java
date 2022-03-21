@@ -12,19 +12,19 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
@@ -81,23 +81,23 @@ public class PermissionChangedEventHandler implements EventHandler {
 	private Flowable<UpdateDocumentRequest> handleNodePermissionsChange(PermissionChangedProjectElementEventModel model) {
 		NodeContainerTransformer tf = (NodeContainerTransformer) meshEntities.nodeContent.getTransformer();
 		return meshHelper.getDb().tx(tx -> {
-			ProjectDaoWrapper projectDao = tx.projectDao();
-			BranchDaoWrapper branchDao = tx.branchDao();
-			NodeDaoWrapper nodeDao = tx.nodeDao();
+			ProjectDao projectDao = tx.projectDao();
+			BranchDao branchDao = tx.branchDao();
+			NodeDao nodeDao = tx.nodeDao();
 
 			return ofNullable(projectDao.findByUuid(model.getProject().getUuid()))
 				.flatMap(project -> ofNullable(nodeDao.findByUuid(project, model.getUuid()))
 					.flatMap(node -> branchDao.findAll(project).stream()
 						.flatMap(branch -> Util.latestVersionTypes()
-							.flatMap(type -> tx.contentDao().getGraphFieldContainers(node, branch.getUuid(), type).stream()
+							.flatMap(type -> tx.contentDao().getFieldContainers(node, branch.getUuid(), type).stream()
 								.map(container -> meshHelper.updateDocumentRequest(
-									ContentDaoWrapper.composeIndexName(
+									ContentDao.composeIndexName(
 										model.getProject().getUuid(),
 										branch.getUuid(),
 										container.getSchemaContainerVersion().getUuid(),
 										type,
 										container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)),
-									ContentDaoWrapper.composeDocumentId(model.getUuid(), container.getLanguageTag()),
+									ContentDao.composeDocumentId(model.getUuid(), container.getLanguageTag()),
 									tf.toPermissionPartial(node, type), complianceMode))))))
 				.collect(toFlowable());
 		});
@@ -117,26 +117,26 @@ public class PermissionChangedEventHandler implements EventHandler {
 		// TODO Consider moving to entities
 		switch (model.getType()) {
 		case USER:
-			return User.composeIndexName();
+			return HibUser.composeIndexName();
 		case GROUP:
-			return Group.composeIndexName();
+			return HibGroup.composeIndexName();
 		case ROLE:
-			return Role.composeIndexName();
+			return HibRole.composeIndexName();
 		case PROJECT:
-			return Project.composeIndexName();
+			return HibProject.composeIndexName();
 		case SCHEMA:
-			return Schema.composeIndexName();
+			return HibSchema.composeIndexName();
 		case MICROSCHEMA:
-			return Microschema.composeIndexName();
+			return HibMicroschema.composeIndexName();
 		case TAG:
 			if (model instanceof PermissionChangedProjectElementEventModel) {
 				PermissionChangedProjectElementEventModel projectModel = (PermissionChangedProjectElementEventModel) model;
-				return Tag.composeIndexName(projectModel.getProject().getUuid());
+				return HibTag.composeIndexName(projectModel.getProject().getUuid());
 			}
 		case TAGFAMILY:
 			if (model instanceof PermissionChangedProjectElementEventModel) {
 				PermissionChangedProjectElementEventModel projectModel = (PermissionChangedProjectElementEventModel) model;
-				return TagFamily.composeIndexName(projectModel.getProject().getUuid());
+				return HibTagFamily.composeIndexName(projectModel.getProject().getUuid());
 			}
 		default:
 			throw new InvalidParameterException("Unexpected event: " + model);

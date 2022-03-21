@@ -14,13 +14,12 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -53,14 +52,14 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 	}
 
 	@Override
-	public Class<Project> getElementClass() {
-		return Project.class;
+	public Class<HibProject> getElementClass() {
+		return HibProject.class;
 	}
 
 	@Override
 	public long getTotalCountFromGraph() {
 		return db.tx(tx -> {
-			return tx.projectDao().globalCount();
+			return tx.projectDao().count();
 		});
 	}
 
@@ -76,25 +75,25 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Project.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibProject.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		return indices.stream()
 			.filter(i -> i.startsWith(getType()))
-			.filter(i -> !i.equals(Project.composeIndexName()))
+			.filter(i -> !i.equals(HibProject.composeIndexName()))
 			.collect(Collectors.toSet());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Project.composeIndexName());
+		return Collections.singleton(HibProject.composeIndexName());
 	}
 
 	@Override
 	public Function<String, HibProject> elementLoader() {
-		return (uuid) -> boot.meshRoot().getProjectRoot().findByUuid(uuid);
+		return (uuid) -> boot.projectDao().findByUuid(uuid);
 	}
 
 	@Override
@@ -104,7 +103,7 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = Project.composeIndexName();
+		String indexName = HibProject.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "project");
 		return Collections.singletonMap(indexName, info);
 	}

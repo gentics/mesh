@@ -17,7 +17,8 @@ properties([
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
-		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests.")
+		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
+		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step.")
 	])
 ])
 
@@ -95,7 +96,7 @@ stage("Setup Build Environment") {
 										sshagent(["git"]) {
 											try {
 												def jacoco = Boolean.valueOf(params.runSonar);
-												sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco}"
+												sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} split${current}"
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 											} finally {
 												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -115,7 +116,7 @@ stage("Setup Build Environment") {
 					} else {
 						sshagent(["git"]) {
 							try {
-								sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -pl '!ferma,!demo,!doc,!performance-tests' clean install"
+								sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -pl '!ferma,!demo,!doc,!performance-tests' clean install"
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 							}
@@ -143,7 +144,7 @@ stage("Setup Build Environment") {
 			stage("Maven Build") {
 				if (Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
-						if (Boolean.valueOf(params.runDeploy)) {
+						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
@@ -184,7 +185,7 @@ stage("Setup Build Environment") {
 						try {
 							unstash 'project'
 							sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
-							sh "mvn -B test -pl distributed"
+							sh "mvn -B -Dsurefire.groups=com.gentics.mesh.test.category.ClusterTests -DfailIfNoTests=false test"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
 							deleteDir()

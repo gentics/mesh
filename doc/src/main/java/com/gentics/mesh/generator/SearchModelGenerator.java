@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.mockito.Mockito;
@@ -26,6 +27,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -53,10 +55,10 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -103,7 +105,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 	 * @return
 	 */
 	public static Mesh initPaths() {
-		MeshOptions options = new MeshOptions();
+		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.setNodeName("Example Generator");
 		options.getAuthenticationOptions().setKeystorePassword("ABCD");
 
@@ -143,7 +145,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		// outputDir.mkdirs();
 
 		meshDagger = DaggerOrientDBMeshComponent.builder()
-			.configuration(new MeshOptions())
+			.configuration(new OrientDBMeshOptions())
 			.searchProviderType(TRACKING)
 			.mesh(mesh)
 			.build();
@@ -166,7 +168,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			when(tx.roleDao()).thenReturn(roleDao);
 			when(tx.groupDao()).thenReturn(groupDao);
 
-			writeNodeDocumentExample(nodeDao, contentDao, tagDao);
+			writeNodeDocumentExample(nodeDao, contentDao, tagDao, roleDao);
 			writeTagDocumentExample();
 			writeGroupDocumentExample();
 			writeUserDocumentExample(userDao);
@@ -191,7 +193,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		return txMock;
 	}
 
-	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDaoWrapper contentDao, TagDaoWrapper tagDao) throws Exception {
+	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDao contentDao, TagDaoWrapper tagDao, RoleDaoWrapper roleDao) throws Exception {
 		String language = "de";
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibProject project = mockProject(user);
@@ -200,8 +202,9 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibTag tagB = mockTag("red", user, tagFamily, project);
 		HibNode parentNode = mockNodeBasic("folder", user);
 		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
+		when(roleDao.getRolesWithPerm(Mockito.any(), Mockito.any())).thenReturn(new TraversalResult<>(Collections.emptyList()));
 
-		write(new NodeContainerTransformer(new MeshOptions()).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
+		write(new NodeContainerTransformer(new OrientDBMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
 	}
 
 	private void writeProjectDocumentExample() throws Exception {

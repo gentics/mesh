@@ -3,7 +3,7 @@ package com.syncleus.ferma.ext.orientdb3;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 
@@ -12,40 +12,45 @@ import com.gentics.mesh.core.data.dao.PermissionRoots;
  */
 @Singleton
 public class PermissionRootsImpl implements PermissionRoots {
-	private final BootstrapInitializer boot;
+	private final OrientDBBootstrapInitializer boot;
 
 	@Inject
-	public PermissionRootsImpl(BootstrapInitializer boot) {
+	public PermissionRootsImpl(OrientDBBootstrapInitializer boot) {
 		this.boot = boot;
 	}
 
 	@Override
 	public HibBaseElement project() {
-		return boot.projectRoot();
+		return boot.meshRoot().getProjectRoot();
 	}
 
 	@Override
 	public HibBaseElement user() {
-		return boot.userRoot();
+		return boot.meshRoot().getUserRoot();
 	}
 
 	@Override
 	public HibBaseElement group() {
-		return boot.groupRoot();
+		return boot.meshRoot().getGroupRoot();
 	}
 
 	@Override
 	public HibBaseElement role() {
-		return boot.roleRoot();
+		return boot.meshRoot().getRoleRoot();
 	}
 
 	@Override
 	public HibBaseElement microschema() {
-		return boot.microschemaContainerRoot();
+		return boot.meshRoot().getMicroschemaContainerRoot();
 	}
 
 	@Override
 	public HibBaseElement schema() {
-		return boot.schemaContainerRoot();
+		return boot.meshRoot().getSchemaContainerRoot();
+	}
+
+	@Override
+	public HibBaseElement mesh() {
+		return boot.meshRoot();
 	}
 }

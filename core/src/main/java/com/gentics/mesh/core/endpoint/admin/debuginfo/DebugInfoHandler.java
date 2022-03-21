@@ -17,7 +17,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.time.StopWatch;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.db.Database;
 
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
