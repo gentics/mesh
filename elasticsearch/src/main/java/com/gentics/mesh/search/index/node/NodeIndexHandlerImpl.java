@@ -486,7 +486,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 					branch.getUuid(),
 					version.getUuid(),
 					type,
-					lang));
+					lang,
+					version.getMicroschemaVersionHash(branch)));
 			Stream<String> defaultIndex = Stream.of(ContentDao.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),

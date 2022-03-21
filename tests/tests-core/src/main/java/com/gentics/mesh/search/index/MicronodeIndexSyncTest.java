@@ -4,8 +4,11 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -35,6 +38,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.LanguageOverrideUtil;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -503,6 +507,75 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 	}
 
 	/**
+	 * Test resync for index with language code and microschema hash
+	 * @throws Exception
+	 */
+	@Test
+	public void testResyncLanguageSpecific() throws Exception {
+		// create a microschema
+		createMicroschema(MICROSCHEMA_NAME, req -> {
+			req.addField(FieldUtil.createStringFieldSchema(MICROSCHEMA_FIELD_NAME));
+		});
+
+		JsonObject esSettings = getJson("/elasticsearch/custom/languageOverride.json");
+		// create schema using the microschema
+		createSchema(SCHEMA_NAME, req -> {
+			req.addField(FieldUtil.createMicronodeFieldSchema(MICRONODE_FIELD1_NAME)
+					.setAllowedMicroSchemas(MICROSCHEMA_NAME));
+			req.setElasticsearch(esSettings);
+		});
+
+		// create some nodes
+		Map<String, Set<String>> draftNodeUuids = new HashMap<>();
+		Map<String, Set<String>> publishedNodeUuids = new HashMap<>();
+
+		for (String language : Arrays.asList("en", "de")) {
+			for (boolean micronode : Arrays.asList(true, false)) {
+				for (boolean published : Arrays.asList(true, false)) {
+					NodeCreateRequest request = new NodeCreateRequest()
+							.setSchemaName(SCHEMA_NAME)
+							.setParentNodeUuid(project.getRootNode().getUuid())
+							.setLanguage(language);
+
+					if (micronode) {
+						request.getFields().put(MICRONODE_FIELD1_NAME, FieldUtil.createMicronodeField(MICROSCHEMA_NAME,
+								Tuple.tuple(MICROSCHEMA_FIELD_NAME, FieldUtil.createStringField("one"))));
+					}
+
+					NodeResponse node = call(() -> client().createNode(PROJECT_NAME, request));
+					draftNodeUuids.computeIfAbsent(language, key -> new HashSet<>()).add(node.getUuid());
+
+					if (published) {
+						call(() -> client().publishNode(PROJECT_NAME, node.getUuid()));
+						publishedNodeUuids.computeIfAbsent(language, key -> new HashSet<>()).add(node.getUuid());
+					}
+				}
+			}
+		}
+
+		waitForSearchIdleEvent();
+		refreshIndices();
+
+		TestSchemaInfo testSchemaInfo = new TestSchemaInfo(SCHEMA_NAME);
+		testSchemaInfo
+			.assertIndices()
+			.assertIndexedDraftDocuments("de", draftNodeUuids.get("de"))
+			.assertIndexedDraftDocuments("en", draftNodeUuids.get("en"))
+			.assertIndexedPublishedDocuments("de", publishedNodeUuids.get("de"))
+			.assertIndexedPublishedDocuments("en", publishedNodeUuids.get("en"));
+
+		clearIndex();
+		syncIndex();
+
+		testSchemaInfo
+			.assertIndices()
+			.assertIndexedDraftDocuments("de", draftNodeUuids.get("de"))
+			.assertIndexedDraftDocuments("en", draftNodeUuids.get("en"))
+			.assertIndexedPublishedDocuments("de", publishedNodeUuids.get("de"))
+			.assertIndexedPublishedDocuments("en", publishedNodeUuids.get("en"));
+	}
+
+	/**
 	 * Create a schema with given name
 	 * @param name schema name
 	 * @param requestConsumer consumer for setup of the schema create request
@@ -590,7 +663,11 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 
 		public String expectedDraftIndex;
 
+		public Map<String, String> expectedLanguageDraftIndices = new HashMap<>();
+
 		public String expectedPublishedIndex;
+
+		public Map<String, String> expectedLanguagePublishedIndices = new HashMap<>();
 
 		/**
 		 * Create an instance for the given schema. Determines the expected index names
@@ -622,6 +699,13 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 				}
 			}).collect(Collectors.toSet());
 
+			// check whether the schema has language specific es settings
+			Set<String> languages = new HashSet<>();
+			if (schema.getElasticsearch() != null) {
+				JsonObject esSettings = schema.getElasticsearch();
+				languages.addAll(LanguageOverrideUtil.findLanguages(esSettings).collect(Collectors.toSet()));
+			}
+
 			// get the uuid of the microschema version, which is assigned to the branch
 			BranchInfoMicroschemaList microschemaList = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, branchUuid));
 
@@ -637,10 +721,24 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 			if (microschemaUuids.isEmpty()) {
 				expectedDraftIndex = String.format("mesh-node-%s-%s-%s-draft", project.getUuid(), branchUuid, schemaVersionUuid);
 				expectedPublishedIndex = String.format("mesh-node-%s-%s-%s-published", project.getUuid(), branchUuid, schemaVersionUuid);
+
+				for (String language : languages) {
+					expectedLanguageDraftIndices.put(language, String.format("mesh-node-%s-%s-%s-draft-%s",
+							project.getUuid(), branchUuid, schemaVersionUuid, language));
+					expectedLanguagePublishedIndices.put(language, String.format("mesh-node-%s-%s-%s-published-%s",
+							project.getUuid(), branchUuid, schemaVersionUuid, language));
+				}
 			} else {
 				String expectedHash = DigestUtils.md5Hex(microschemaUuids.stream().collect(Collectors.joining("|")));
 				expectedDraftIndex = String.format("mesh-node-%s-%s-%s-draft-%s", project.getUuid(), branchUuid, schemaVersionUuid, expectedHash);
 				expectedPublishedIndex = String.format("mesh-node-%s-%s-%s-published-%s", project.getUuid(), branchUuid, schemaVersionUuid, expectedHash);
+
+				for (String language : languages) {
+					expectedLanguageDraftIndices.put(language, String.format("mesh-node-%s-%s-%s-draft-%s-%s",
+							project.getUuid(), branchUuid, schemaVersionUuid, language, expectedHash));
+					expectedLanguagePublishedIndices.put(language, String.format("mesh-node-%s-%s-%s-published-%s-%s",
+							project.getUuid(), branchUuid, schemaVersionUuid, language, expectedHash));
+				}
 			}
 		}
 
@@ -653,34 +751,65 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 			ElasticsearchClient<JsonObject> client = searchProvider().getClient();
 			String indexNamePattern = String.format("mesh-node-%s-%s-%s*", project.getUuid(), branchUuid, schemaVersionUuid);
 			JsonObject indexResponse = client.readIndex(indexNamePattern).sync();
-			assertThat(indexResponse.fieldNames()).as("Index names").containsOnly(expectedDraftIndex, expectedPublishedIndex);
+
+			Set<String> allIndices = new HashSet<>();
+			allIndices.add(expectedDraftIndex);
+			allIndices.addAll(expectedLanguageDraftIndices.values());
+			allIndices.add(expectedPublishedIndex);
+			allIndices.addAll(expectedLanguagePublishedIndices.values());
+
+			assertThat(indexResponse.fieldNames()).as("Index names").containsOnlyElementsOf(allIndices);
 			return this;
 		}
 
 		/**
 		 * Assert that the draft index contains only the documents with given uuid (and language "en")
-		 * @param indexName index name
 		 * @param uuids expected uuids
 		 * @return fluent API
 		 * @throws HttpErrorException
 		 */
 		public TestSchemaInfo assertIndexedDraftDocuments(Set<String> uuids) throws HttpErrorException {
-			assertThat(getIndexDocumentIds(expectedDraftIndex)).as("Documents in index " + expectedDraftIndex).containsOnlyElementsOf(
-					uuids.stream().map(uuid -> ContentDao.composeDocumentId(uuid, "en"))
+			return assertIndexedDraftDocuments("en", uuids);
+		}
+
+		/**
+		 * Assert that the draft index contains only the documents with given uuid and the given language
+		 * @param language language
+		 * @param uuids expected uuids
+		 * @return fluent API
+		 * @throws HttpErrorException
+		 */
+		public TestSchemaInfo assertIndexedDraftDocuments(String language, Set<String> uuids) throws HttpErrorException {
+			String indexName = expectedLanguageDraftIndices.getOrDefault(language, expectedDraftIndex);
+
+			assertThat(getIndexDocumentIds(indexName)).as("Documents in index " + indexName).containsOnlyElementsOf(
+					uuids.stream().map(uuid -> ContentDao.composeDocumentId(uuid, language))
 							.collect(Collectors.toSet()));
 			return this;
 		}
 
 		/**
 		 * Assert that the published index contains only the documents with given uuid (and language "en")
-		 * @param indexName index name
 		 * @param uuids expected uuids
 		 * @return fluent API
 		 * @throws HttpErrorException
 		 */
 		public TestSchemaInfo assertIndexedPublishedDocuments(Set<String> uuids) throws HttpErrorException {
-			assertThat(getIndexDocumentIds(expectedPublishedIndex)).as("Documents in index " + expectedPublishedIndex).containsOnlyElementsOf(
-					uuids.stream().map(uuid -> ContentDao.composeDocumentId(uuid, "en"))
+			return assertIndexedPublishedDocuments("en", uuids);
+		}
+
+		/**
+		 * Assert that the published index contains only the documents with given uuid and the given language
+		 * @param language language
+		 * @param uuids expected uuids
+		 * @return fluent API
+		 * @throws HttpErrorException
+		 */
+		public TestSchemaInfo assertIndexedPublishedDocuments(String language, Set<String> uuids) throws HttpErrorException {
+			String indexName = expectedLanguagePublishedIndices.getOrDefault(language, expectedPublishedIndex);
+
+			assertThat(getIndexDocumentIds(indexName)).as("Documents in index " + indexName).containsOnlyElementsOf(
+					uuids.stream().map(uuid -> ContentDao.composeDocumentId(uuid, language))
 							.collect(Collectors.toSet()));
 			return this;
 		}
