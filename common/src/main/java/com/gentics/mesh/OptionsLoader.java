@@ -101,15 +101,9 @@ public final class OptionsLoader {
 				options.getSearchOptions().setUrl(esUrl);
 			}
 
-			String embeddedEsFlag = commandLine.getOptionValue(MeshCLI.EMBEDDED_ELASTICSEARCH);
-			if (embeddedEsFlag != null) {
-				options.getSearchOptions().setStartEmbedded(Boolean.valueOf(embeddedEsFlag));
-			}
-
 			boolean disableES = commandLine.hasOption(MeshCLI.DISABLE_ELASTICSEARCH);
 			if (disableES) {
 				options.getSearchOptions().setUrl(null);
-				options.getSearchOptions().setStartEmbedded(false);
 			}
 
 			String adminPassword = commandLine.getOptionValue(MeshCLI.RESET_ADMIN_PASSWORD);
