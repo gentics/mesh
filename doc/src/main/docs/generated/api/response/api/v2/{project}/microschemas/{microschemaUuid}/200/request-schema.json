@@ -65,7 +65,8 @@
         "map" : {
           "type" : "object",
           "additionalProperties" : {
-            "type" : "any"
+            "type" : "object",
+            "id" : "urn:jsonschema:java:lang:Object"
           }
         },
         "empty" : {
@@ -81,6 +82,16 @@
         "type" : "object",
         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
         "properties" : {
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the field."
+          },
+          "type" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Type of the field."
+          },
           "required" : {
             "type" : "boolean"
           },
@@ -91,16 +102,6 @@
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-          },
-          "name" : {
-            "type" : "string",
-            "required" : true,
-            "description" : "Name of the field."
-          },
-          "type" : {
-            "type" : "string",
-            "required" : true,
-            "description" : "Type of the field."
           }
         }
       }
