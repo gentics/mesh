@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-tests</artifactId>
-		<version>1.8.0-SNAPSHOT</version>
+		<version>1.8.0</version>
 	</parent>
 	<artifactId>tests-mesh-elasticsearch</artifactId>
 	<name>Mesh Elasticsearch - Shared tests</name>
