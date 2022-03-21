@@ -25,7 +25,6 @@ import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -43,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -77,6 +75,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.parameter.LinkType;
@@ -207,8 +206,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				request.setParentNodeUuid(uuid);
 
 				call(() -> client().createNode(PROJECT_NAME, request));
-				// long duration = currentTimeMillis() - start;
-				// out.println("Duration:" + i + " " + (duration / i));
+				long duration = System.currentTimeMillis() - start;
+				System.out.println("Duration:" + i + " " + (duration / i));
 			}
 		}
 	}
@@ -371,7 +370,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testCreateWithDuplicateUuid() throws Exception {
-		String nodeUuid = tx(() -> project().getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReferenceImpl().setName("content"));
@@ -384,7 +382,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
-			call(() -> client().createNode(nodeUuid, PROJECT_NAME, request), INTERNAL_SERVER_ERROR, "error_internal");
+			call(() -> client().createNode(parentNodeUuid, PROJECT_NAME, request), BAD_REQUEST);
 		}
 	}
 
