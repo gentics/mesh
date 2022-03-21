@@ -43,7 +43,7 @@ public class DemoVerticle extends AbstractVerticle {
 		if (boot.isInitialSetup()) {
 			vertx.executeBlocking(bc -> {
 				try {
-					demoDataProvider.setup(true);
+					demoDataProvider.setup();
 					bc.complete();
 				} catch (Exception e) {
 					log.error("Error while generating demo data.", e);

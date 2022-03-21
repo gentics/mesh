@@ -161,7 +161,7 @@ public class DemoDumpGenerator {
 
 		// Setup demo data
 		meshInternal.database().tx(tx -> {
-			provider.setup(false);
+			provider.setup();
 			tx.success();
 		});
 	}
