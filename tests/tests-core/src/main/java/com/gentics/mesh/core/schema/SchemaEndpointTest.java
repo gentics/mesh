@@ -179,7 +179,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	@Override
-	@Ignore("Not yet implemented")
+	@Ignore("Not valid over dup UUIDs being allowed globally")
 	public void testCreateWithDuplicateUuid() throws Exception {
 	}
 
@@ -189,20 +189,24 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
-			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		} 
+		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
-			SchemaResponse restSchema = call(() -> client().createSchema(schema));
-			waitForSearchIdleEvent();
+		SchemaResponse restSchema = call(() -> client().createSchema(schema));
+		waitForSearchIdleEvent();
 
+		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot().schemaDao(), restSchema.getUuid(), true);
-			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
-			trackingSearchProvider().reset();
+		}		
+		call(() -> client().findSchemaByUuid(restSchema.getUuid()));
+		trackingSearchProvider().reset();
 
-			call(() -> client().deleteSchema(restSchema.getUuid()));
-			waitForSearchIdleEvent();
-			// Only schemas which are not in use can be delete and also removed from the index
+		call(() -> client().deleteSchema(restSchema.getUuid()));
+		waitForSearchIdleEvent();
+		// Only schemas which are not in use can be delete and also removed from the index
+		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 		}
 

@@ -269,6 +269,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	@Override
+	@Ignore("Not valid over dup UUIDs being allowed globally")
 	public void testCreateWithDuplicateUuid() throws Exception {
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("newTagFamily");

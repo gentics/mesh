@@ -1270,6 +1270,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	@Override
+	@Ignore("Not valid over dup UUIDs being allowed globally")
 	public void testCreateWithDuplicateUuid() throws Exception {
 		String groupUuid = groupUuid();
 		UserCreateRequest request = new UserCreateRequest();

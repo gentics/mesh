@@ -13,6 +13,11 @@ public interface CrudEndpointTestCases {
 
 	void testCreateWithUuid() throws Exception;
 
+	@Deprecated
+	/**
+	 * @deprecated Not valid, if dup UUIDs allowed across the entity types
+	 * @throws Exception
+	 */
 	void testCreateWithDuplicateUuid() throws Exception;
 
 	// Read
