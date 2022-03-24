@@ -17,6 +17,13 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.27]]
+== 1.6.27 (TBD)
+
+icon:check[] Clustering: When starting an instance of Gentics Mesh with the command line parameter `-resetAdminPassword` to reset the password of the
+`admin` user, starting would fail if the write quorum of OrientDB was not reached. The startup behaviour has been changed now, so that resetting the
+password is delayed until the write quorum is reached.
+
 [[v1.6.26]]
 == 1.6.26 (23.03.2022)
 
