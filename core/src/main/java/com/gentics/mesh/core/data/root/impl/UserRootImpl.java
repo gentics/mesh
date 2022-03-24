@@ -161,7 +161,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		}
 
 		Boolean adminFlag = requestModel.getAdmin();
-		if (adminFlag != null) {
+		if (adminFlag != null && adminFlag.booleanValue()) {
 			if (requestUser.isAdmin()) {
 				user.setAdmin(adminFlag);
 			} else {
