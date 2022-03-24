@@ -155,4 +155,10 @@ public interface ClientHelper extends EventHelper {
 		});
 	}
 
+	default <T> T nonAdminCall(ClientHandler<T> handler) {
+		return runAsNonAdmin(() -> {
+			return com.gentics.mesh.test.ClientHelper.call(handler);
+		});
+	}
+
 }
