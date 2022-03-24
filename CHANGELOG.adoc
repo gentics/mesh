@@ -35,6 +35,10 @@ icon:check[] Clustering: When starting an instance of Gentics Mesh with the comm
 `admin` user, starting would fail if the write quorum of OrientDB was not reached. The startup behaviour has been changed now, so that resetting the
 password is delayed until the write quorum is reached.
 
+icon:check[] Rest: When creating a new user and setting the admin flag to `false`, this failed if the request user did not have the admin flag set
+to `true`. The permission check has been fixed now, so that the admin flag is only required for the requesting user, if the new user should also
+have the admin flag set to `true`.
+
 [[v1.8.2]]
 == 1.8.2 (29.03.2022)
 
