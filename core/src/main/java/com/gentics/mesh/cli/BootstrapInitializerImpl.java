@@ -634,24 +634,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Handle admin password reset
 		String password = configuration.getAdminPassword();
 		if (password != null) {
-			db.tx(tx -> {
-				User adminUser = userRoot().findByName(ADMIN_USERNAME);
-				if (adminUser != null) {
-					adminUser.setPassword(password);
-					adminUser.setAdmin(true);
-				} else {
-					// Recreate the user if it can't be found.
-					UserRoot userRoot = meshRoot.getUserRoot();
-					adminUser = userRoot.create(ADMIN_USERNAME, null);
-					adminUser.setCreator(adminUser);
-					adminUser.setCreationTimestamp();
-					adminUser.setEditor(adminUser);
-					adminUser.setLastEditedTimestamp();
-					adminUser.setPassword(password);
-					adminUser.setAdmin(true);
-				}
-				tx.success();
-			});
+			// wait for writeQuorum, then update/create the admin user
+			db.clusterManager().waitUntilWriteQuorumReached().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
+					"setting admin password", ensureAdminUser(password), 60 * 1000)).subscribe();
 		}
 
 		registerEventHandlers();
@@ -774,21 +759,23 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		// wait for writeQuorum, then raise a global lock and execute changelog
 		db.clusterManager().waitUntilWriteQuorumReached()
-				.andThen(doWithLock(executeChangelog(flags, configuration), 60 * 1000)).subscribe();
+				.andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY, "executing changelog", executeChangelog(flags, configuration), 60 * 1000)).subscribe();
 	}
 
 	/**
-	 * Return a completable which will try to get a global lock with name {@link #GLOBAL_CHANGELOG_LOCK_KEY} and will then execute the locked action
+	 * Return a completable which will try to get a global lock with given name and will then execute the locked action
+	 * @param lockName name of the lock to acquire
+	 * @param description description of the locked action (for log output)
 	 * @param lockedAction locked action
 	 * @param timeout timeout for waiting for the lock
 	 * @return completable
 	 */
-	protected Completable doWithLock(Completable lockedAction, long timeout) {
-		return mesh.getRxVertx().sharedData().rxGetLockWithTimeout(GLOBAL_CHANGELOG_LOCK_KEY, timeout).toMaybe()
+	protected Completable doWithLock(String lockName, String description, Completable lockedAction, long timeout) {
+		return mesh.getRxVertx().sharedData().rxGetLockWithTimeout(lockName, timeout).toMaybe()
 				.flatMapCompletable(lock -> {
-					log.debug("Acquired lock for executing changelog");
+					log.debug("Acquired lock for " + description);
 					return lockedAction.doFinally(() -> {
-						log.debug("Releasing lock for executing changelog");
+						log.debug("Releasing lock for " + description);
 						lock.release();
 					});
 				});
@@ -807,6 +794,35 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			log.info("Changelog completed.");
 			new ChangelogSystem(db, options).setCurrentVersionAndRev();
+			return Completable.complete();
+		});
+	}
+
+	/**
+	 * Completable which will ensure that the admin user exists, is flagged as "admin" and has the given password set.
+	 * @param password admin password
+	 * @return completable
+	 */
+	protected Completable ensureAdminUser(String password) {
+		return Completable.defer(() -> {
+			db.tx(tx -> {
+				User adminUser = userRoot().findByName(ADMIN_USERNAME);
+				if (adminUser != null) {
+					adminUser.setPassword(password);
+					adminUser.setAdmin(true);
+				} else {
+					// Recreate the user if it can't be found.
+					UserRoot userRoot = meshRoot.getUserRoot();
+					adminUser = userRoot.create(ADMIN_USERNAME, null);
+					adminUser.setCreator(adminUser);
+					adminUser.setCreationTimestamp();
+					adminUser.setEditor(adminUser);
+					adminUser.setLastEditedTimestamp();
+					adminUser.setPassword(password);
+					adminUser.setAdmin(true);
+				}
+				tx.success();
+			});
 			return Completable.complete();
 		});
 	}
