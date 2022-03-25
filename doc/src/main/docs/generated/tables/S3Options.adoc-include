@@ -17,6 +17,21 @@
 | string
 | AWS S3 bucket where binaries will be uploaded to and downloaded from
 
+| corsAllowedHeaders
+| false
+| array
+| AWS S3 setting for allowed headers for Cross-Origin Resource Sharing. Setting this to null will force default server values.
+
+| corsAllowedMethods
+| false
+| array
+| AWS S3 setting for allowed methods for Cross-Origin Resource Sharing. Setting this to null will force default server values.
+
+| corsAllowedOrigins
+| false
+| array
+| AWS S3 setting for allowed origins for Cross-Origin Resource Sharing. Setting this to null will force default server values.
+
 | enabled
 | false
 | boolean

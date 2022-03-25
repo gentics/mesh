@@ -38,7 +38,6 @@ public class MeshIntegerationTest extends AbstractIntegrationTest implements Mes
 	public void testStartupWithOptions() throws Exception {
 		MeshOptions options = getOptions();
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
-		options.getSearchOptions().setStartEmbedded(false);
 		options.getSearchOptions().setUrl(null);
 		options.setNodeName("TestNode");
 

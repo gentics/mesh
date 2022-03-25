@@ -1,0 +1,60 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| branchName
+| string 
+| false
+| Parameter for filtering jobs by the branch name. Multiple values can be given separated by commas.
+
+| branchUuid
+| string 
+| false
+| Parameter for filtering jobs by the branch uuid. Multiple values can be given separated by commas.
+
+| fromVersion
+| string 
+| false
+| Parameter for filtering jobs by the &#x27;from&#x27; version. Multiple values can be given separated by commas.
+
+| microschemaName
+| string 
+| false
+| Parameter for filtering jobs by the microschema name. Multiple values can be given separated by commas.
+
+| microschemaUuid
+| string 
+| false
+| Parameter for filtering jobs by the microschema uuid. Multiple values can be given separated by commas.
+
+| schemaName
+| string 
+| false
+| Parameter for filtering jobs by the schema name. Multiple values can be given separated by commas.
+
+| schemaUuid
+| string 
+| false
+| Parameter for filtering jobs by the schema uuid. Multiple values can be given separated by commas.
+
+| status
+| string 
+| false
+| Parameter for filtering jobs by their status. Multiple values can be given separated by commas.
+
+| toVersion
+| string 
+| false
+| Parameter for filtering jobs by the &#x27;to&#x27; version. Multiple values can be given separated by commas.
+
+| type
+| string 
+| false
+| Parameter for filtering jobs by their type. Multiple values can be given separated by commas.
+
+|======

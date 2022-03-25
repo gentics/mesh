@@ -36,7 +36,6 @@ public class ServerRunner {
 		Logger log = LoggerFactory.getLogger(ServerRunner.class);
 
 		OrientDBMeshOptions defaultOption = new OrientDBMeshOptions();
-		defaultOption.getSearchOptions().setStartEmbedded(false);
 		defaultOption.getSearchOptions().setUrl(null);
 		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, defaultOption, args);
 

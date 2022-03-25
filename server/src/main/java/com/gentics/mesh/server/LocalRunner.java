@@ -44,7 +44,6 @@ public class LocalRunner {
 		options.getAuthenticationOptions().setKeystorePassword("finger");
 		options.getStorageOptions().setStartServer(true);
 		options.getSearchOptions().setUrl(null);
-		options.getSearchOptions().setStartEmbedded(false);
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {

@@ -20,7 +20,8 @@
           "properties" : {
             "type" : "object",
             "additionalProperties" : {
-              "type" : "any"
+              "type" : "object",
+              "id" : "urn:jsonschema:java:lang:Object"
             }
           }
         }

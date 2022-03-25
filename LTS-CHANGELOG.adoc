@@ -17,8 +17,13 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.26]]
+== 1.6.26 (23.03.2022)
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.2`.
+
 [[v1.6.25]]
-== 1.6.25 (TBD)
+== 1.6.25 (21.03.2022)
 
 icon:plus[] Rest: The endpoint `/api/v1/admin/jobs` now supports query parameters for filtering
 (`status`, `type`, `branchName`, `branchUuid`, `schemaName`, `schemaUuid`, `microschemaName`, `microschemaUuid`, `fromVersion`, `toVersion`).
@@ -29,6 +34,10 @@ and thus were sometimes not cleaned up. The naming of those temporary indices ha
 icon:check[] Security: The 'spring-security', 'jsoup', 'commons-io', 'guava', 'jackson-databind'  libraries have been updated.
 
 icon:check[] Core: The 'commons-codec' libary has been updated. This fixes possible internal errors when parsing uploaded files using tika.
+
+icon:check[] Cluster: When starting a node with a new version of Gentics Mesh in a cluster, application of the changelog and setting the new Mesh version and
+database revision was delayed until the write quorum is reached, but not until the cluster topology lock was raised, which could cause a blocked transaction.
+This has been fixed.
 
 [[v1.6.24]]
 == 1.6.24 (01.12.2021)
