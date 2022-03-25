@@ -10,6 +10,11 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.8.0]]
+== 1.8.0 (2022-03-25)
+
+icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
 [[v1.6.19]]
 == 1.6.19 (TBD)
 

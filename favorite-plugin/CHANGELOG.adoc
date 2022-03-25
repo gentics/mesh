@@ -10,6 +10,11 @@
 
 = Mesh Favorite Plugin
 
+[[v1.8.0]]
+== 1.8.0 (2022-03-25)
+
+icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
 [[v3.0.0]]
 
 CAUTION: This version of the plugin needs at least Mesh 0.37.0 due to the changes in the plugin system.
