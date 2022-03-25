@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.gentics.mesh.plugin.commercial</groupId>
         <artifactId>mesh-commercial-plugins</artifactId>
-        <version>1.6.21-SNAPSHOT</version>
+        <version>1.8.0-SNAPSHOT</version>
     </parent>
 
     <modules>
@@ -45,8 +45,9 @@
                     <version>3.8.1</version>
                     <configuration>
                         <verbose>false</verbose>
-                        <source>8</source>
-                        <target>8</target>
+                        <compilerVersion>11</compilerVersion>
+                        <source>11</source>
+                        <target>11</target>
                         <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     </configuration>
                     <dependencies>

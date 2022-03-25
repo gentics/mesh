@@ -1,13 +1,15 @@
 package com.gentics.mesh.plugin.formgenerator;
 
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
-import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
-import com.gentics.mesh.test.local.MeshLocalServer;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
+import com.gentics.mesh.test.local.MeshLocalServer;
 
 /**
  * Test case for enabling the plugin for a project, that has a non-empty pathPrefix
@@ -15,7 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ProjectWithPathPrefixTest extends AbstractPluginLocalIntegrationTest {
 
 	@ClassRule
-	public static final MeshLocalServer server = new MeshLocalServer().withInMemoryMode().waitForStartup();
+	public static final MeshLocalServer server = new OrientDBMeshLocalServer()
+		.withInMemoryMode()
+		.waitForStartup();
 
 	@Test
 	public void startPlugin() throws Exception {

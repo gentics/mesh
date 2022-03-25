@@ -10,6 +10,7 @@ import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.plugin.gcms.config.GCMSPluginConfig;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
@@ -30,7 +31,7 @@ public abstract class AbstractGCMSPluginTest extends AbstractPluginLocalIntegrat
 	}
 
 	@Rule
-	public final MeshLocalServer server = new MeshLocalServer()
+	public final MeshLocalServer server = new OrientDBMeshLocalServer()
 		.withInMemoryMode()
 		.withPlugin(GCMSTestPlugin.class, "gcmsPlugin")
 		.waitForStartup();

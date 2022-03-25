@@ -28,6 +28,7 @@ import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.formgenerator.service.SchemaService;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 import com.icegreen.greenmail.junit.GreenMailRule;
@@ -59,7 +60,9 @@ public abstract class AbstractFormGeneratorPluginIntegrationTest extends Abstrac
 	}
 
 	@ClassRule
-	public static final MeshLocalServer server = new MeshLocalServer().withInMemoryMode().waitForStartup();
+	public static final MeshLocalServer server = new OrientDBMeshLocalServer()
+		.withInMemoryMode()
+		.waitForStartup();
 
 	@Rule
 	public GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP);

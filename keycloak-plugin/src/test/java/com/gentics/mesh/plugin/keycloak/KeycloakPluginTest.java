@@ -15,11 +15,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.docker.KeycloakContainer;
@@ -47,7 +48,7 @@ public class KeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 	}
 
 	@Rule
-	public final MeshLocalServer server = new MeshLocalServer()
+	public final MeshLocalServer server = new OrientDBMeshLocalServer()
 		.withInMemoryMode()
 		.withPlugin(KeycloakTestPlugin.class, "authPlugin")
 		.waitForStartup();
@@ -87,7 +88,7 @@ public class KeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 		assertEquals("group2", me2.getGroups().get(1).getName());
 
 		// Invoke request without token
-		JsonObject meJson = new JsonObject(get(VersionHandler.CURRENT_API_BASE_PATH + "/auth/me"));
+		JsonObject meJson = new JsonObject(get(MeshVersion.CURRENT_API_BASE_PATH + "/auth/me"));
 		assertEquals("anonymous", meJson.getString("username"));
 
 		restClient().setAPIKey(null);

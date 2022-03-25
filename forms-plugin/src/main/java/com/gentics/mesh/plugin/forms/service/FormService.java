@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -811,7 +811,7 @@ public class FormService {
 	 * @return schema filled with data
 	 * @throws FormsError
 	 */
-	private <T extends Schema> T getSchema(NodeResponse formNode, T schema) throws FormsError {
+	private <T extends SchemaModel> T getSchema(NodeResponse formNode, T schema) throws FormsError {
 		schema.setName(getSchemaName(formNode.getUuid()));
 		schema.setContainer(false);
 		try {

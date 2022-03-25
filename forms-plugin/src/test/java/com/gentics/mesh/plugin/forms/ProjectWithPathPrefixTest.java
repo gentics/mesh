@@ -8,6 +8,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
@@ -17,7 +18,9 @@ import com.gentics.mesh.test.local.MeshLocalServer;
 public class ProjectWithPathPrefixTest extends AbstractPluginLocalIntegrationTest {
 
 	@ClassRule
-	public static final MeshLocalServer server = new MeshLocalServer().withInMemoryMode().waitForStartup();
+	public static final MeshLocalServer server = new OrientDBMeshLocalServer()
+		.withInMemoryMode()
+		.waitForStartup();
 
 	@Test
 	public void startPlugin() throws Exception {

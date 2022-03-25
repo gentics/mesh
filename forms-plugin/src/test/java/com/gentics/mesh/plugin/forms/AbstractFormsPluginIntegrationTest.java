@@ -15,13 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
-import com.google.common.net.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import okhttp3.Cookie;
-import okhttp3.MultipartBody;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -40,20 +34,26 @@ import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
+import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.UUIDUtil;
+import com.google.common.net.HttpHeaders;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import okhttp3.Cookie;
 import okhttp3.Headers;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -77,7 +77,9 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	@ClassRule
-	public static final MeshLocalServer server = new MeshLocalServer().withInMemoryMode().waitForStartup();
+	public static final MeshLocalServer server = new OrientDBMeshLocalServer()
+		.withInMemoryMode()
+		.waitForStartup();
 
 	@Rule
 	public GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP);

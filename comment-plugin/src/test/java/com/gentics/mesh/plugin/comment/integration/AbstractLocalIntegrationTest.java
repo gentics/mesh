@@ -21,6 +21,7 @@ import com.gentics.mesh.plugin.comment.TestCommentClient;
 import com.gentics.mesh.plugin.comment.TestCommentPlugin;
 import com.gentics.mesh.plugin.comment.model.NestedCommentSection;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
@@ -31,9 +32,9 @@ import okhttp3.Response;
 public abstract class AbstractLocalIntegrationTest extends AbstractPluginLocalIntegrationTest {
 
 	@ClassRule
-	public static final MeshLocalServer server = new MeshLocalServer()
-		.withNodeName("comment-plugin")
+	public static final MeshLocalServer server = new OrientDBMeshLocalServer()
 		.withInMemoryMode()
+		.withNodeName("comment-plugin")
 		.waitForStartup();
 
 	protected static TestCommentClient client;

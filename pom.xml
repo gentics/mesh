@@ -4,20 +4,20 @@
 
 	<groupId>com.gentics.mesh.plugin.commercial</groupId>
 	<artifactId>mesh-commercial-plugins</artifactId>
-	<version>1.6.21-SNAPSHOT</version>
+	<version>1.8.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>1.6.0</version>
+		<version>1.8.1</version>
 	</parent>
 
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>1.6.3</mesh.version>
+		<mesh.version>1.8.1</mesh.version>
 	</properties>
 
 	<modules>
@@ -40,7 +40,7 @@
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-bom</artifactId>
-				<version>1.6.3</version>
+				<version>${mesh.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -87,8 +87,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>8</source>
-					<target>8</target>
+					<verbose>false</verbose>
+					<compilerVersion>11</compilerVersion>
+					<source>11</source>
+					<target>11</target>
 				</configuration>
 			</plugin>
 			<plugin>
