@@ -38,6 +38,7 @@ public class HttpServerConfig implements Option {
 	public static final String DEFAULT_KEY_PATH = "config/key.pem";
 	public static final ClientAuth DEFAULT_CLIENT_AUTH_MODE = ClientAuth.NONE;
 	public static final boolean DEFAULT_SERVER_TOKENS = true;
+	public static final int DEFAULT_MAX_FORM_ATTRIBUTE_SIZE = -1;
 
 	public static final String MESH_HTTP_PORT_ENV = "MESH_HTTP_PORT";
 	public static final String MESH_HTTPS_PORT_ENV = "MESH_HTTPS_PORT";
@@ -54,6 +55,7 @@ public class HttpServerConfig implements Option {
 	public static final String MESH_HTTP_SSL_TRUSTED_CERTS_ENV = "MESH_HTTP_SSL_TRUSTED_CERTS";
 	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV = "MESH_HTTP_CORS_ALLOW_CREDENTIALS";
 	public static final String MESH_HTTP_SERVER_TOKENS_ENV = "MESH_HTTP_SERVER_TOKENS";
+	public static final String MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE_ENV = "MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE";
 
 	public static final int DEFAULT_VERTICLE_AMOUNT = 2 * Runtime.getRuntime().availableProcessors();
 
@@ -126,6 +128,11 @@ public class HttpServerConfig implements Option {
 	@JsonPropertyDescription("Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL. Default is true")
 	@EnvironmentVariable(name = MESH_HTTP_SERVER_TOKENS_ENV, description = "Override the http server tokens flag.")
 	private boolean serverTokens = DEFAULT_SERVER_TOKENS;
+
+	@JsonProperty(defaultValue = "" + DEFAULT_MAX_FORM_ATTRIBUTE_SIZE)
+	@JsonPropertyDescription("Set the maximum size of a form attribute, set to -1 for unlimited.")
+	@EnvironmentVariable(name = MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE_ENV, description = "Override the max form attribute size")
+	private int maxFormAttributeSize;
 
 	public HttpServerConfig() {
 	}
@@ -272,6 +279,16 @@ public class HttpServerConfig implements Option {
 	@Setter
 	public HttpServerConfig setServerTokens(boolean flag) {
 		this.serverTokens = flag;
+		return this;
+	}
+
+	public int getMaxFormAttributeSize() {
+		return maxFormAttributeSize;
+	}
+
+	@Setter
+	public HttpServerConfig setMaxFormAttributeSize(int maxFormAttributeSize) {
+		this.maxFormAttributeSize = maxFormAttributeSize;
 		return this;
 	}
 
