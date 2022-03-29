@@ -53,6 +53,7 @@ httpServer:
   trustedCertPaths: []
   verticleAmount: 16
   serverTokens: true
+  maxFormAttributeSize: -1
 monitoring:
   enabled: true
   port: 8081
