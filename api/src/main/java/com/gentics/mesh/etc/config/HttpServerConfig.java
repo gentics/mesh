@@ -132,7 +132,7 @@ public class HttpServerConfig implements Option {
 	@JsonProperty(defaultValue = "" + DEFAULT_MAX_FORM_ATTRIBUTE_SIZE)
 	@JsonPropertyDescription("Set the maximum size of a form attribute, set to -1 for unlimited.")
 	@EnvironmentVariable(name = MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE_ENV, description = "Override the max form attribute size")
-	private int maxFormAttributeSize;
+	private int maxFormAttributeSize = DEFAULT_MAX_FORM_ATTRIBUTE_SIZE;
 
 	public HttpServerConfig() {
 	}
