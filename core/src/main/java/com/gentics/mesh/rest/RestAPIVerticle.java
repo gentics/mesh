@@ -174,7 +174,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			if (log.isDebugEnabled()) {
 				log.debug("Setting http server options..");
 			}
-			applyCommonSettings(httpOptions);
+			applyCommonSettings(httpOptions, meshServerOptions);
 			httpOptions.setPort(meshServerOptions.getPort());
 			httpOptions.setSsl(false);
 
@@ -187,7 +187,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			if (log.isDebugEnabled()) {
 				log.debug("Setting ssl server options..");
 			}
-			applyCommonSettings(httpsOptions);
+			applyCommonSettings(httpsOptions, meshServerOptions);
 			httpsOptions.setPort(meshServerOptions.getSslPort());
 			httpsOptions.setSsl(true);
 			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
@@ -241,7 +241,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	}
 
-	private void applyCommonSettings(HttpServerOptions options) {
+	private void applyCommonSettings(HttpServerOptions options, HttpServerConfig serverConfig) {
 		String host = config().getString("host");
 		options.setHost(host);
 		options.setCompressionSupported(true);
@@ -252,6 +252,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 		options.setTcpFastOpen(true)
 			.setTcpNoDelay(true)
 			.setTcpQuickAck(true);
+
+		options.setMaxFormAttributeSize(serverConfig.getMaxFormAttributeSize());
 	}
 
 	@Override
@@ -267,7 +269,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	/**
 	 * Register the API endpoints and bind them to the given router.
-	 * 
+	 *
 	 * @param storage
 	 * @throws Exception
 	 */
