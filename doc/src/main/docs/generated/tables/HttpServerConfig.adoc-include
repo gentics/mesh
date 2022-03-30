@@ -47,6 +47,11 @@
 | string
 | Path to the SSL private key. Default: config/key.pem
 
+| maxFormAttributeSize
+| false
+| integer
+| Set the maximum size of a form attribute, set to -1 for unlimited.
+
 | port
 | false
 | integer
