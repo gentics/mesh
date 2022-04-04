@@ -211,7 +211,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			model = change.transformToRest();
 			assertEquals("test", model.getProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY));
 			assertEquals("test2", model.getProperty(SchemaChangeModel.SEGMENT_FIELD_KEY));
-			assertThat((String[]) model.getProperty(SchemaChangeModel.URLFIELDS_KEY)).containsExactly("fieldA", "fieldB");
+			assertThat((Object[]) model.getProperty(SchemaChangeModel.URLFIELDS_KEY)).containsExactly("fieldA", "fieldB");
 			assertEquals("someName", model.getProperty(SchemaChangeModel.NAME_KEY));
 			assertEquals("someDescription", model.getProperty(SchemaChangeModel.DESCRIPTION_KEY));
 			assertTrue("The container flag should have been set.", model.getProperty(SchemaChangeModel.CONTAINER_FLAG_KEY));
