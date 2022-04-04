@@ -85,7 +85,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			assertFalse(branch.getTags().list().contains(tag));
+			assertFalse(reloadBranch(branch).getTags().list().contains(tag));
 			roleDao.revokePermissions(role(), branch, UPDATE_PERM);
 			tx.success();
 		}
@@ -94,7 +94,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			assertFalse(branch.getTags().list().contains(tag));
+			assertFalse(reloadBranch(branch).getTags().list().contains(tag));
 		}
 	}
 
@@ -107,7 +107,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			assertFalse(branch.getTags().list().contains(tag));
+			assertFalse(reloadBranch(branch).getTags().list().contains(tag));
 			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
 		}
@@ -116,7 +116,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			assertFalse(branch.getTags().list().contains(tag));
+			assertFalse(reloadBranch(branch).getTags().list().contains(tag));
 		}
 	}
 
