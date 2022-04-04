@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -57,6 +59,8 @@ public class Form implements RestModel {
 
 	private String templateContext;
 
+	private Map<String, Object> properties = new LinkedHashMap<>();
+
 	public Form() {
 	}
 
@@ -81,6 +85,7 @@ public class Form implements RestModel {
 		this.elements = other.elements == null ? new ArrayList<>() : new ArrayList<>(other.elements);
 		this.currentPage = other.currentPage;
 		this.templateContext = other.templateContext;
+		this.properties = other.properties == null ? new LinkedHashMap<>() : new LinkedHashMap<>(other.properties);
 	}
 
 	public String getUuid() {
@@ -256,6 +261,37 @@ public class Form implements RestModel {
 	 */
 	public void setTemplateContext(String templateContext) {
 		this.templateContext = templateContext;
+	}
+
+	/**
+	 * Get the map of additional properties.
+	 * @return The map of additional properties
+	 */
+	@JsonAnyGetter
+	public Map<String, Object> getAny() {
+		if (properties == null) {
+			properties = new LinkedHashMap<>();
+		}
+
+		return properties;
+	}
+
+	/**
+	 * Set the specified additional property to the given value.
+	 *
+	 * <p>
+	 *     This will store {@code value} under {@code key} in the
+	 *     {@link #properties} map.
+	 * </p>
+	 *
+	 * @param key The name of the additional property
+	 * @param value The value of the additional property
+	 */
+	@JsonAnySetter
+	public void setProperty(String key, Object value) {
+		if (StringUtils.isNotBlank(key)) {
+			getAny().put(key, value);
+		}
 	}
 
 	/**
@@ -563,7 +599,7 @@ public class Form implements RestModel {
 	 * @return A mapping from form element names to their respective JSON
 	 * 		representation
 	 */
-	private Map<String, Object> elementMap() {
+	public Map<String, Object> elementMap() {
 		return flattened()
 			.map(elt -> {
 				JsonObject json = new JsonObject(elt.toJson());

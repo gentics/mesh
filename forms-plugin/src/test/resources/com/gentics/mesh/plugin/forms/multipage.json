@@ -1,5 +1,6 @@
 {
 	"name": "Form with Pages",
+	"cms_id": 1,
 	"elements": [
 		{
 			"type": "formprogress",

@@ -1,6 +1,7 @@
 {
 	"name": "Simple poll",
 	"type": "POLL",
+	"cms_id": 1,
 	"elements": [
 		{
 			"type": "checkbox",

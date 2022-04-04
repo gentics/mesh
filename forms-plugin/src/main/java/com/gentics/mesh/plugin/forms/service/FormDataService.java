@@ -3,9 +3,7 @@ package com.gentics.mesh.plugin.forms.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
-import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -231,44 +229,58 @@ public class FormDataService {
 	 * @return single search response
 	 */
 	public Single<JsonObject> find(String projectName, String formUuid, String query, JsonObject pagingParams, boolean publishedOnly) {
-		try {
-			Single<GraphQLRequest> request = loadFormAndAssembleFindFormGraphQLRequest(projectName, formUuid, query, pagingParams);
-			VersioningParameters params = new VersioningParametersImpl();
+		return statusService.languageFallback(projectName)
+			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
+			.flatMap(formService::toForm)
+			.flatMap(form -> {
+				GraphQLRequest graphQlRequest = createGraphQlRequest(form, query, pagingParams);
+				VersioningParameters params = new VersioningParametersImpl();
 
-			if (publishedOnly) {
-				params.published();
-			} else {
-				params.draft();
-			}
-
-			Single<GraphQLResponse> response = request
-				.flatMap(graphQLRequest -> userClient.graphql(projectName, graphQLRequest, params)
-				.toSingle());
-
-			return response.flatMap(graphQLResponse -> {
-				JsonObject clientResponse = new JsonObject();
-				// log all errors
-				if (graphQLResponse.getErrors() != null) {
-					for (GraphQLError error : graphQLResponse.getErrors()) {
-						log.warn("Error in graphql response {}", error.toJson());
-					}
-				}
-
-				JsonObject nodes = null;
-				if (graphQLResponse.getData() != null) {
-					nodes = graphQLResponse.getData().getJsonObject("nodes");
-				}
-				if (nodes != null) {
-					pagingService.addPagingInfoToResponse(clientResponse, nodes);
-					clientResponse.put("entries", nodes.getJsonArray("elements"));
-					return Single.just(clientResponse);
+				if (publishedOnly) {
+					params.published();
 				} else {
-					return Single.error(new FormsError(500, "Unexpected NULL search response."));
+					params.draft();
 				}
+
+				return adminClient.graphql(projectName, graphQlRequest, params).toSingle()
+					.flatMap(graphQlResponse -> {
+						JsonObject clientResponse = new JsonObject();
+						JsonObject nodes = graphQlResponse.getData().getJsonObject("nodes");
+
+						if (nodes != null) {
+							pagingService.addPagingInfoToResponse(clientResponse, nodes);
+							clientResponse.put("entries", nodes.getJsonArray("elements"));
+
+							return Single.just(clientResponse.put("elements", new JsonObject(form.elementMap())));
+						}
+
+						return Single.error(new FormsError(500, "Unexpected NULL search response."));
+					});
 			});
-		} catch (IOException ex) {
-			return Single.error(ex);
-		}
+	}
+
+	/**
+	 * Create a GraphQL request to load form data nodes for the specified form.
+	 * Loads the specified form and creates a GraphQLRequest with a query to find the form data nodes (and the page) indicated by the HTTP query string.
+	 *
+	 * @param form The form to load form data for
+	 * @param query The Elasticsearch query to use
+	 * @param pagingParams Paging parameters for the GraphQL query
+	 * @return a GraphQLRequest
+	 * @throws IOException if loading the ElasticSearch or GraphQL query fails
+	 */
+	private GraphQLRequest createGraphQlRequest(Form form, String query, JsonObject pagingParams) throws IOException {
+		String rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData.graphql"), "UTF-8");
+		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer())
+			.put("query", assembleFindFormDataESQuery(form.getUuid(), query).toString());
+		Map<String, String> context = new HashMap<>();
+
+		context.put("schemaName", SchemaService.getSchemaName(form.getUuid()));
+		context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
+
+		String graphQLQuery = new Handlebars().compileInline(rawGraphQLQuery).apply(Context.newContext(context));
+
+		return new GraphQLRequest().setQuery(graphQLQuery).setVariables(graphQLParams);
 	}
 
 	/**
@@ -625,37 +637,6 @@ public class FormDataService {
 		}
 
 		return url;
-	}
-
-	/**
-	 * Loads the specified form and creates a GraphQLRequest with a query to find the form data nodes (and the page) indicated by the HTTP query string.
-	 *
-	 * @param formUuid
-	 *            the UUID of the form
-	 *
-	 * @return a GraphQLRequest
-	 * @throws IOException
-	 *             if loading the ElasticSearch or GraphQL query fails
-	 */
-	private Single<GraphQLRequest> loadFormAndAssembleFindFormGraphQLRequest(String projectName, String formUuid, String query,
-		JsonObject pagingParams) throws IOException {
-		String rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData.graphql"), "UTF-8");
-		JsonObject esQuery = assembleFindFormDataESQuery(formUuid, query);
-		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
-		graphQLParams.put("query", esQuery.toString());
-
-		return statusService.languageFallback(projectName)
-				.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
-				.flatMap(formService::toForm)
-				.flatMap(form -> {
-			Map<String, String> context = new HashMap<>();
-			context.put("schemaName", SchemaService.getSchemaName(formUuid));
-			context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
-			String graphQLQuery = new Handlebars().compileInline(rawGraphQLQuery).apply(Context.newContext(context));
-			GraphQLRequest graphQLRequest = new GraphQLRequest();
-			graphQLRequest.setQuery(graphQLQuery).setVariables(graphQLParams);
-			return Single.just(graphQLRequest);
-		});
 	}
 
 	/**
