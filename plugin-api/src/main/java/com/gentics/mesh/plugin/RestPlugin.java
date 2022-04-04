@@ -97,7 +97,18 @@ public interface RestPlugin extends MeshPlugin {
 		long handlerCreationTime = System.currentTimeMillis();
 
 		// create and prepare (configure) the static handler to handle files from storage/[base]
-		StaticHandler staticHandler = StaticHandler.create(new File(getStorageDir(), base).getPath());
+		String webRoot = new File(getStorageDir(), base).getPath();
+
+		// if the storage directory is absolute, we need to allow root filesystem access for the static handler
+		boolean allowRootAccess = false;
+		for (File root : File.listRoots()) {
+			if (webRoot.startsWith(root.getAbsolutePath())) {
+				allowRootAccess = true;
+				break;
+			}
+		}
+		StaticHandler staticHandler = StaticHandler.create().setAllowRootFileSystemAccess(allowRootAccess)
+				.setWebRoot(webRoot);
 		if (prepareStaticHandler != null) {
 			prepareStaticHandler.handle(staticHandler);
 		}

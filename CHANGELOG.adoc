@@ -27,6 +27,10 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Core: The included Mesh UI has been updated to version `1.3.3`.
 
+icon:check[] Plugins: Creating a static handler for files in the plugin's classpath using the new method RestPlugin::addStaticHandlerFromClasspath did not
+work, if the plugin directory was configured with an absolute path. Plugin initialization would fail, because the static handler could not be created.
+This has been fixed by allowing root filesystem access to the static handler, if the plugin directory is configured with an absolute path.
+
 [[v1.8.2]]
 == 1.8.2 (29.03.2022)
 
