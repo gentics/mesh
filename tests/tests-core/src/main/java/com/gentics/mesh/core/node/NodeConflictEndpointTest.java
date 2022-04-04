@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -167,6 +168,12 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			"test-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-lastname"))));
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en", "de");
+
+		tx(() -> {
+			HibSchemaVersion latestVersion = getTestNode().getSchemaContainer().getLatestVersion();
+			latestVersion.getSchema().addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
+			actions().updateSchemaVersion(latestVersion);
+		});
 
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, nodeUuid, request, parameters));
 		assertThat(restNode).hasVersion("1.1");
