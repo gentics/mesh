@@ -312,12 +312,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	}
 
 	@Override
-	public String getSubETag(InternalActionContext ac) {
-		UserDao userRoot = mesh().boot().userDao();
-		return userRoot.getSubETag(this, ac);
-	}
-
-	@Override
 	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}

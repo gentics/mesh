@@ -13,7 +13,9 @@ import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.VersionUtils;
@@ -307,5 +309,11 @@ public interface HibUser extends HibCoreElement<UserResponse>, HibReferenceableE
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/users/" + getUuid();
+	}
+
+	@Override
+	default String getSubETag(InternalActionContext ac) {
+		UserDao userDao = Tx.get().userDao();
+		return userDao.getSubETag(this, ac);
 	}
 }

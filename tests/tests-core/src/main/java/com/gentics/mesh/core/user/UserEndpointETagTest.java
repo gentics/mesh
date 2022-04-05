@@ -66,7 +66,7 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 		String etag;
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			HibUser user = user();
+			HibUser user = tx.userDao().findByUuid(userUuid());
 
 			etag = userDao.getETag(user(), mockActionContext());
 			callETag(() -> client().findUserByUuid(user.getUuid()), etag, true, 304);
