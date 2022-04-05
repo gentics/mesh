@@ -1,6 +1,7 @@
 {
 	"type": "GENERIC",
 	"name": "Form with Textfield",
+	"cms_id": 1,
 	"elements": [
 		{
 			"type": "input",

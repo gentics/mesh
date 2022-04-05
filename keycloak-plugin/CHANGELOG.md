@@ -10,10 +10,27 @@
 
 = Mesh Keycloak Plugin Changelog
 
+[[v1.8.1]]
+== 1.8.1 (2022-04-05)
+
+icon:plus[] The initialization of the plugin will now fail if no public-keys are provided or can be loaded during startup.
+
 [[v1.8.0]]
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.7.1]]
+== 1.7.1 (2022-04-05)
+
+icon:plus[] The initialization of the plugin will now fail if no public-keys are provided or can be loaded during startup.
+
+[[v1.7.0]]
+== 1.7.0 (2021-03-18)
+
+icon:plus[] It's now possible to define roles that are managed by the plugin
+
+icon:plus[] The configuration can now be accessed in the mapper script via `config` variable
 
 [[v1.6.18]]
 == 1.6.18 (2022-02-01)

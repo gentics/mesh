@@ -106,6 +106,8 @@ custom:
 
 # Form properties
 
+The following properties are used by the plugin itself (although some _may_ be empty or `null`):
+
 | Key | Type | Description | Default value |
 |-----|------|-------------|---------------|
 | `name` | string | Name of the form | REQUIRED |
@@ -114,6 +116,8 @@ custom:
 | `mailtemp` | string | Mail template for overriding `adminMailTemplate` from the configuration | `null` |
 | `successurl` | string | URL for redirection after user successfully filled the form | `null` |
 | `elements` | array of objects | Array of embedded elements | `[]` |
+
+Other custom elements provided in the form JSON will still be stored and made available during rendering.
 
 # Default Elements
 
