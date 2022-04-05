@@ -1,0 +1,51 @@
+{
+	"name": "Form with three Textfields",
+	"cms_id": 1,
+	"elements": [
+		{
+			"type": "input",
+			"name": "input1",
+			"placeholderName": "",
+			"label": "First Field",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		},
+		{
+			"type": "input",
+			"name": "input2",
+			"placeholderName": "",
+			"label": "Second Field",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		},
+		{
+			"type": "input",
+			"name": "input3",
+			"placeholderName": "",
+			"label": "Third Field",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		}
+	]
+}

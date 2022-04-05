@@ -185,7 +185,7 @@ public class SearchHandler extends AbstractQueryHandler {
 		return querySupplier.get()
 			.doOnSuccess(this::injectBranchUuidSource)
 			.doOnSuccess(this::traceQuery)
-			.flatMap(query -> RequestUtils.getSearchRequest(context, query.encode(), config.isMultiProjectSearch(project)).toSingle())
+			.flatMap(query -> RequestUtils.getSearchRequest(context, query.encode(), multiProjectSearch, waitForIdle).toSingle())
 			.map(JsonUtils::jsonObjectOf)
 			.flatMap(this::transformResult)
 			.flatMap(result -> transformHits(result.getJsonArray(RS_HITS_FIELD)).flatMap(hits -> finalizeHits(result, hits)))

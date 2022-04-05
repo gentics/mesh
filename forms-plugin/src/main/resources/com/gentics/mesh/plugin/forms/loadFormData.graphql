@@ -1,0 +1,26 @@
+query ($uuid: String, $perPage: Long = 2147483647, $page: Long = 1) {
+  schema(name: "{{{ schemaName }}}") {
+    fields {
+      name
+      label
+    }
+  }
+
+  node(uuid: $uuid) {
+    uuid
+    displayName
+    children (perPage: $perPage, page: $page) {
+      elements {
+        uuid
+        created
+        version
+        fields {
+          ... on {{{ schemaName }}} {
+          	{{{ fieldNames }}}
+            errors
+          }
+        }
+      }
+    }
+  }
+}

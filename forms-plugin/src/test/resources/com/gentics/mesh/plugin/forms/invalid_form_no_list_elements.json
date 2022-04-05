@@ -1,0 +1,10 @@
+{
+	"name": "Invalid form with selectgroup element without list elements",
+	"elements": [
+		{
+			"type": "selectgroup",
+			"name": "selectgroup1",
+			"label": "Select Group"
+		}
+	]
+}

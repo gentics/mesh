@@ -1,0 +1,88 @@
+{
+	"name": "Selection fields",
+	"type": "GENERIC",
+	"email": "test@green.mail",
+	"mailsubject": "testmail",
+	"mailtemp": "testmail",
+	"elements": [
+		{
+			"type": "checkbox",
+			"name": "checkbox1",
+			"label": "Checkbox element"
+		},
+		{
+			"type": "selectgroup",
+			"name": "radiobuttons1",
+			"select_type": "radiobuttons",
+			"label": "Radio buttons element",
+			"customProperty": "customValue",
+			"moreCustomProperties": {
+				"no": false,
+				"yes": "yes",
+				"one": 1,
+				"many": [1, 2, 3],
+				"more": {
+					"foo": "bar"
+				}
+			},
+			"options": [
+				{
+					"value": "Option which is never selected",
+					"key": "r_X"
+				},
+				{
+					"value": "Radio button option 1",
+					"key": "r_1"
+				},
+				{
+					"value": "Radio button option 2",
+					"key": "r_2"
+				},
+				{
+					"value": "Radio button option 3",
+					"key": "r_3"
+				}
+			]
+		},
+		{
+			"type": "selectgroup",
+			"name": "singleselect1",
+			"select_type": "singleselect",
+			"label": "Single-select element",
+			"options": [
+				{
+					"value": "Single-select option 1",
+					"key": "s_1"
+				},
+				{
+					"value": "Single-select option 2",
+					"key": "s_2"
+				},
+				{
+					"value": "Single-select option 3",
+					"key": "s_3"
+				}
+			]
+		},
+		{
+			"type": "selectgroup",
+			"name": "multiselect1",
+			"select_type": "multiselect",
+			"label": "Multi-select element",
+			"options": [
+				{
+					"value": "Multi-select option 1",
+					"key": "m_1"
+				},
+				{
+					"value": "Multi-select option 2",
+					"key": "m_2"
+				},
+				{
+					"value": "Multi-select option 3",
+					"key": "m_3"
+				}
+			]
+		}
+	]
+}

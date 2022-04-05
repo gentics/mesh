@@ -78,7 +78,7 @@ public class AutocompleteHandler extends AbstractQueryHandler {
 
 		return querySupplier.get()
 			.doOnSuccess(this::traceQuery)
-			.flatMap(query -> RequestUtils.getSearchRequest(context, query.encode(), multiProjectSearch).toSingle())
+			.flatMap(query -> RequestUtils.getSearchRequest(context, query.encode(), multiProjectSearch, waitForIdle).toSingle())
 			.map(JsonUtils::jsonObjectOf)
 			.map(result -> parseResult(result, context.request().getParam("q")))
 			.flatMapCompletable(resultMapper)

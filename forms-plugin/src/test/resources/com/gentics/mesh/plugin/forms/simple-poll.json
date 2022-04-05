@@ -1,0 +1,15 @@
+{
+	"name": "Simple poll",
+	"type": "POLL",
+	"cms_id": 1,
+	"elements": [
+		{
+			"type": "checkbox",
+			"name": "checkbox1",
+			"label": "Checkbox element",
+			"properties": {
+				"textkey": "Custom Checkbox Property"
+			}
+		}
+	]
+}

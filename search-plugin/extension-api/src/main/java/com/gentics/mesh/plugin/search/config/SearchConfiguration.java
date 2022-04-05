@@ -24,11 +24,12 @@ public class SearchConfiguration {
 	public static final String SEARCH_DID_YOU_MEAN_THRESHOLD = "SEARCH_DID_YOU_MEAN_THRESHOLD";
 	public static final String SEARCH_CACHE_ENABLED = "SEARCH_CACHE_ENABLED";
 	public static final String SEARCH_CACHE_EXPIRE_TIME = "SEARCH_CACHE_EXPIRE_TIME";
+	public static final String SEARCH_WAIT_FOR_IDLE = "SEARCH_WAIT_FOR_IDLE";
 
 	public static final int DEFAULT_DID_YOU_MEAN_THRESHOLD = 10;
 	public static final int DEFAULT_PAGE_SIZE = 8;
 	public static final int DEFAULT_EXPIRE_TIME = 60;
-
+	public static final Boolean DEFAULT_WAIT_FOR_IDLE = null;
 
 	private final Logger log = LoggerFactory.getLogger(SearchConfiguration.class);
 
@@ -61,6 +62,11 @@ public class SearchConfiguration {
 	@JsonPropertyDescription("The expiretime in seconds for cached information about schemas")
 	@EnvironmentVariable(name = SEARCH_CACHE_EXPIRE_TIME, description = "Override the expire time of cached search queries.")
 	private int expireTime = DEFAULT_EXPIRE_TIME;
+
+	@JsonProperty(defaultValue = "null (parameter is not set)")
+	@JsonPropertyDescription("The value for the waitForIdle search parameter for the request to Mesh.")
+	@EnvironmentVariable(name = SEARCH_WAIT_FOR_IDLE, description = "Override the value for the waitForIdle parameter.")
+	private Boolean waitForIdle = DEFAULT_WAIT_FOR_IDLE;
 
 	@JsonProperty
 	@JsonPropertyDescription("Set of custom queries. The values are used as paths and query filenames.")
@@ -120,6 +126,16 @@ public class SearchConfiguration {
 
 	public SearchConfiguration setExpireTime(int expireTime) {
 		this.expireTime = expireTime;
+
+		return this;
+	}
+
+	public Boolean getWaitForIdle() {
+		return waitForIdle;
+	}
+
+	public SearchConfiguration setWaitForIdle(Boolean waitForIdle) {
+		this.waitForIdle = waitForIdle;
 
 		return this;
 	}

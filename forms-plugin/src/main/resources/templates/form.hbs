@@ -1,0 +1,23 @@
+{{!-- render only if form was properly initialized --}}
+{{#if form }}
+	{{!-- switch context to form ... instead of writing form.multipage, form.elements --}}
+	{{#with form }}
+		{{!--
+		if this form is not a multipage form, wrap it in a form element with an action
+		elements/formpage.hbs will render a form for each page on a multipage form
+		--}}
+		{{#unless multipage }}
+			<form method="POST"
+				enctype="multipart/form-data"
+				action="{{pathPrefix}}/api/forms/forms/{{ id }}/data{{#if dataid}}/{{ dataid }}{{/if}}">
+		{{/unless}}
+		{{!-- loop through all form fields and render their template - type == templatename --}}
+		{{#each elements}}
+		        {{> error }}
+			{{> (formsElementTemplate type) }}
+		{{/each}}
+		{{#unless multipage }}
+			</form>
+		{{/unless}}
+	{{/with}}
+{{/if}}

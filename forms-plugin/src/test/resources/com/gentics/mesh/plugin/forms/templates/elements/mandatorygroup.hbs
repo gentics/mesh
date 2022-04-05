@@ -1,0 +1,8 @@
+<section class="c-form__section">
+	<fieldset>
+{{#each elements}}
+{{> formgenerator/error }}
+{{> (formsElementTemplate type) }}
+{{/each}}
+	</fieldset>
+</section>

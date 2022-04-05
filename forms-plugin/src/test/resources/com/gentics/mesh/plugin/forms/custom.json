@@ -1,0 +1,12 @@
+{
+	"name": "Form with Custom Field",
+	"cms_id": 1,
+	"elements": [
+		{
+			"type": "custom",
+			"name": "custom1",
+			"label": "Text",
+			"elements": []
+		}
+	]
+}

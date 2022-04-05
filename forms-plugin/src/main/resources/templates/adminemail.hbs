@@ -1,0 +1,53 @@
+{{#*inline "oneLine"}}
+<tr>
+  <td style='padding:3.75pt 3.75pt 3.75pt 3.75pt'>
+    <p class=MsoNormal>
+      <span style='font-size:10.0pt;font-family:"Tahoma","sans-serif";color:black'>
+         {{ this.label }}
+      </span>
+    </p>
+  </td>
+  <td style='padding:3.75pt 3.75pt 3.75pt 3.75pt'>
+    <p class=MsoNormal>
+      <span style='font-size:10.0pt;font-family:"Tahoma","sans-serif";color:black'>
+{{#if value.length}}
+<ul>
+	{{#if valueLabel}}
+		{{#each valueLabel}}<li>{{this}}</li>{{/each}}
+	{{else}}
+		{{#each value}}<li>{{this}}</li>{{/each}}
+	{{/if}}
+</ul>
+{{else if this.isFile}}
+<a href="{{baseUrl}}/api/forms/forms/{{form.uuid}}/data/{{dataUuid}}/binary/{{this.name}}" download="{{value}}">{{value}}</a>
+{{else}}
+	{{#if valueLabel}}
+		{{valueLabel}}
+	{{else}}
+		{{#equals validation "date"}}
+			Formatted date (MM/dd/yyyy): {{formatDate value "MM/dd/yyyy"}}
+		{{else}}
+			Raw value ({{type}}/{{validation}}): {{value}}
+		{{/equals}}
+	{{/if}}
+{{/if}}
+      </span>
+    </p>
+  </td>
+</tr>
+{{/inline}}
+
+<table>
+  <tr>
+    <td style='padding:0cm 0cm 0cm 0cm'>
+       <div class=MsoNormal align=center style='text-align:center'>
+          <span style='font-family:"Tahoma","sans-serif";color:black'>
+             <h1>Formulardaten</h1>
+          </span>
+       </div>
+    </td>
+  </tr>
+  {{#each data}}
+  {{#> oneLine}}{{/oneLine}}
+  {{/each}}
+</table>

@@ -1,0 +1,545 @@
+openapi: 3.0.2
+servers: 
+  - url: "http://localhost:8080/api/v2"
+info:
+  title: Forms-Plugin
+  version: "1.6.3"
+paths:
+  /{project}/plugins/forms/active:
+    parameters:
+      - $ref: '#/components/parameters/project'
+    get:
+      summary: Get activation status of the plugin in the project
+      tags:
+        - Status
+      responses:
+        "200":
+          description: Activation status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationStatus'
+    put:
+      summary: Activate the plugin in the project
+      tags:
+        - Status
+      responses:
+        "200":
+          description: Activation status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationStatus'
+    delete:
+      summary: Deactivate the plugin in the project
+      tags:
+        - Status
+      responses:
+        "200":
+          description: Activation status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationStatus'
+  /{project}/plugins/forms/languages:
+    parameters:
+      - $ref: '#/components/parameters/project'
+    get:
+      summary: Get the current languages
+      tags:
+        - Languages
+      responses:
+        "200":
+          description: Current languages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Languages'
+    put:
+      summary: Set the current languages
+      tags:
+        - Languages
+      responses:
+        "200":
+          description: Languages have been set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Languages'
+  /{project}/plugins/forms/forms:
+    parameters:
+      - $ref: '#/components/parameters/project'
+    get:
+      summary: List all forms
+      tags:
+        - Forms
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/perPage'
+      responses:
+        "200":
+          description: A page of forms
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FormPage"
+  /{project}/plugins/forms/forms/{formUuid}:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+    get:
+      summary: Load a specific form
+      tags: 
+        - Forms
+      responses:
+        "200":
+          $ref: '#/components/responses/FormResponse'
+    post:
+      summary: Create or update a form
+      tags:
+        - Forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Form'
+      responses:
+        "200":
+          $ref: '#/components/responses/FormResponse'
+    delete:
+      summary: Delete a form
+      tags:
+        - Forms
+      responses:
+        "204":
+          description: The form was deleted successfully
+  /{project}/plugins/forms/forms/{formUuid}/online/{language}:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+      - $ref: '#/components/parameters/language'
+    get:
+      summary: Get the online status of a form
+      tags:
+        - Forms
+      responses:
+        "200":
+          $ref: '#/components/responses/FormOnlineResponse'
+    put:
+      summary: Set a form online
+      tags:
+        - Forms
+      responses:
+        "200":
+          $ref: '#/components/responses/FormOnlineResponse'
+    delete:
+      summary: Set a form offline
+      tags:
+        - Forms
+      responses:
+        "200":
+          $ref: '#/components/responses/FormOnlineResponse'
+  /{project}/plugins/forms/forms/{formUuid}/preview:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+    post:
+      summary: Render preview
+      tags:
+        - Forms
+      responses:
+        "200":
+          description: Rendered form
+          content:
+            text/html:
+              example: "<form></form>"
+            application/json:
+              schema:
+                properties:
+                  html:
+                    type: string
+                    example: "<form></form>"
+  /{project}/plugins/forms/forms/{formUuid}/elements:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+    get:
+      summary: Load elements of a form
+      tags:
+        - Forms
+      responses:
+        "200":
+          description: Form elements
+          content:
+            application/json:
+              schema:
+                properties:
+                  elements:
+                    type: array
+                    items:
+                      type: object
+  /{project}/plugins/forms/forms/{formUuid}/schema:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+    get:
+      summary: Load a form schema
+      tags:
+        - Forms
+      responses:
+        "200":
+          description: The form schema
+          content:
+            application/json:
+              schema:
+                type: object
+  /{project}/plugins/forms/forms/{formUuid}/export:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+      - name: format
+        in: query
+        required: false
+        schema:
+          type: string
+          default: "csv"
+      - name: headerDelimiter
+        in: query
+        required: false
+        description: Delimiter that is used between a field name and a field label in the header row of an exported CSV. The default delimiter is "|||". In case no field label is set for a field or the field label has no or only whitespace characters, only the field name will be exported and the delimiter is not used.
+        schema:
+          type: string
+          default: "%7C%7C%7C"
+    get:
+      summary: Export Form
+      tags:
+        - Forms
+      responses:
+        "200":
+          description: Exported Form
+  /{project}/plugins/forms/forms/{formUuid}/binaries:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+    get:
+      tags:
+        - Forms
+      summary: Download binary data
+      description: Downloads all files of all form data of a form as a single zip file
+      responses:
+        "200":
+          description: A zip file containing all binaries
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+  /{project}/plugins/forms/forms/{formUuid}/data:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+    get:
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/perPage'
+        - name: q
+          in: query
+          description: Search query - This will use ElasticSearch to search all fields of the form data
+          schema:
+            type: string
+      summary: List all form data from a form
+      tags:
+        - Form Data
+      responses:
+        "200":
+          description: Page of form data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDataPage'
+    post:
+      parameters:
+        - $ref: '#/components/parameters/publish'
+      summary: Create form data
+      tags: 
+       - Form Data
+      requestBody:
+        description: Form data
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FormData'
+      responses:
+        "205":
+          description: Form data saved successfully
+        "303":
+          description: Redirects to configured URL
+  /{project}/plugins/forms/forms/{formUuid}/jsondata:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+    post:
+      parameters:
+        - $ref: '#/components/parameters/publish'
+      summary: Create form data
+      tags: 
+       - Form Data
+      requestBody:
+        description: Form data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormData'
+      responses:
+        "200":
+          description: Created form data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDataResponse'
+  /{project}/plugins/forms/forms/{formUuid}/data/{formDataUuid}:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+      - $ref: '#/components/parameters/formDataUuid'
+    get:
+      summary: Load/Render specific form data
+      tags: 
+       - Form Data
+      responses:
+        "200":
+          description: Form data as JSON or rendered as HTML
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDataResponse'
+            text/html:
+              schema:
+                type: string
+    post:
+      parameters:
+        - $ref: '#/components/parameters/publish'
+      summary: Update form data
+      tags: 
+       - Form Data
+      requestBody:
+        description: Form data
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FormData'
+      responses:
+        "205":
+          description: Form data saved successfully
+        "303":
+          description: Redirects to configured URL
+    delete:
+      summary: Delete form data
+      tags:
+        - Form Data
+      responses:
+        "204":
+          description: Form data was deleted successfully
+  /{project}/plugins/forms/forms/{formUuid}/jsondata/{formDataUuid}:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+      - $ref: '#/components/parameters/formDataUuid'
+    post:
+      parameters:
+        - $ref: '#/components/parameters/publish'
+      summary: Update form data
+      tags: 
+       - Form Data
+      requestBody:
+        description: Form data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormData'
+      responses:
+        "200":
+          description: Updated form data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormDataResponse'
+  /{project}/plugins/forms/forms/{formUuid}/jsondata/{formDataUuid}/binary/{binaryFieldName}:
+    parameters:
+      - $ref: '#/components/parameters/project'
+      - $ref: '#/components/parameters/formUuid'
+      - $ref: '#/components/parameters/formDataUuid'
+      - name: binaryFieldName
+        required: true
+        description: The field name of the binary
+        in: path
+        schema:
+          type: string
+    get:
+      tags: 
+        - Form Data
+      summary: Download a binary
+      responses:
+        "200":
+          description: Binary data
+components:
+  responses:
+    FormResponse:
+      description: The created form
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FormResponse'
+    FormOnlineResponse:
+      description: Online status of the form
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FormOnlineResponse'
+  requestBodies:
+    FormCreateRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            
+  parameters:
+    publish:
+      in: query
+      name: publish
+      description: If false, the saved form data will not be published
+      schema:
+        type: boolean
+        default: true
+    project:
+      in: path
+      required: true
+      description: The project name
+      example: "demo"
+      name: project
+      schema:
+        type: string
+        minLength: 1
+    formUuid:
+      in: path
+      required: true
+      description: The form UUID
+      example: "bff1326e4cc946ff93e331d0be39217c"
+      name: formUuid
+      schema:
+        $ref: '#/components/schemas/uuid'
+    language:
+      in: path
+      required: true
+      description: The form language
+      example: "de"
+      name: language
+      schema:
+        type: string
+    formDataUuid:
+      in: path
+      required: true
+      description: The form data UUID
+      example: "91f97955b0fa4822834f47dd69960149"
+      name: formDataUuid
+      schema:
+        $ref: '#/components/schemas/uuid'
+    page:
+      in: query
+      name: page
+      required: false
+      schema:
+        type: number
+        default: 1
+        minimum: 1
+    perPage:
+      in: query
+      name: perPage
+      description: The number of elements per page. Per default all elements will be fetched.
+      required: false
+      schema:
+        type: number
+        minimum: 0
+  schemas:
+    ActivationStatus:
+      type: object
+      properties:
+        active:
+          type: boolean
+          example: true
+    Languages:
+      type: object
+      properties:
+        languages:
+          type: array
+          example: ["de", "en"]
+          items:
+            type: string
+    Form:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Formular Nr. 1"
+        pageId:
+          type: number
+          example: 1234
+    FormResponse:
+      allOf:
+        - properties:
+            uuid:
+              $ref: '#/components/schemas/uuid'
+        - $ref: '#/components/schemas/Form'
+    FormOnlineResponse:
+      type: object
+      properties:
+        online:
+          type: boolean
+          example: true
+    FormPage:
+      allOf:
+        - $ref: '#/components/schemas/PageProperties'
+        - properties:
+            forms:
+              type: array
+              items:
+                $ref: '#/components/schemas/FormResponse'
+    FormData:
+      type: object
+    FormDataResponse:
+      allOf:
+        - properties:
+            uuid:
+              $ref: '#/components/schemas/uuid'
+        - $ref: '#/components/schemas/FormDataResponse'
+    FormDataPage:
+      allOf:
+        - $ref: '#/components/schemas/PageProperties'
+        - properties:
+            entries:
+              type: array
+              items:
+                $ref: '#/components/schemas/FormDataResponse'
+    PageProperties:
+      type: object
+      properties:
+        totalCount:
+          type: number
+          minimum: 0
+          example: 1
+        currentPage:
+          type: number
+          minimum: 0
+          example: 1
+        pageCount:
+          type: number
+          minimum: 0
+          example: 1
+        perPage:
+          type: number
+          minimum: 1
+          example: 10
+    uuid:
+      type: string
+      pattern: "[0-9a-f]{32}"
+      example: "29a53fee7af6468da53fee7af6568d75"

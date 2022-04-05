@@ -28,6 +28,12 @@ public abstract class AbstractQueryHandler {
 	protected final PluginContext context;
 	/** Whether the project receiving the request is configured to search multiple projects. */
 	protected final boolean multiProjectSearch;
+	/**
+	 * Whether the Mesh search request should wait for Elasticsearch to be idle before performing the search.
+	 *
+	 * May be {@code null}, in wich case Mesh decides based on its configuration.
+	 */
+	protected final Boolean waitForIdle;
 
 	/** Supplier for the actual Elasticsearch query. */
 	protected Supplier<Single<JsonObject>> querySupplier;
@@ -38,6 +44,7 @@ public abstract class AbstractQueryHandler {
 		this.config = config;
 		this.context = context;
 		this.multiProjectSearch = config.isMultiProjectSearch(context.projectName());
+		this.waitForIdle = config.getWaitForIdle();
 	}
 
 	/**

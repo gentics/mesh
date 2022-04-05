@@ -1,0 +1,21 @@
+{
+	"name": "Form with Filefield",
+	"email": "test@green.mail",
+	"mailsubject": "testmail",
+	"mailtemp": "testmail",
+	"elements": [
+		{
+			"type": "file",
+			"name": "file1",
+			"placeholderName": "",
+			"label": "Datei",
+			"mandatory": false,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"allowed_filetypes": [],
+			"max_filesize": "10",
+			"elements": []
+		}
+	]
+}

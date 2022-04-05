@@ -1,0 +1,20 @@
+{
+	"elements": [
+		{
+			"name": "buttons_1",
+			"type": "buttons",
+			"active": true,
+			"elements": [],
+			"submitlabel": "Absenden",
+			"resetlabel": null,
+			"showreset": false
+		}
+	],
+	"email": "",
+	"successurl": "",
+	"mailsubject": null,
+	"mailtemp": null,
+	"language": "en",
+	"name": "Formular ohne Felder",
+	"cms_id": 16
+}

@@ -1,0 +1,15 @@
+{{#if form }}
+{{#with form }}
+Form: {{ name }}
+Multipage: {{ multipage }}
+Path prefix: {{ pathPrefix }}
+CMS ID: {{cms_id}}
+{{#each elements}}
+{{> (formsElementTemplate type) }}
+{{/each}}
+{{/with}}
+{{else}}
+{{#each elements}}
+{{> (formsElementTemplate type) }}
+{{/each}}
+{{/if}}

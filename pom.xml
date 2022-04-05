@@ -32,6 +32,7 @@
 		<module>keycloak-plugin</module>
 		<module>gcms-plugin</module>
 		<module>export-plugin</module>
+		<module>forms-plugin</module>
 	</modules>
 
 	<dependencyManagement>
@@ -57,6 +58,30 @@
 	</dependencyManagement>
 
 	<build>
+		<!--
+			Plugin management can be released once the parents are updated
+			to maven-vertx-parent 3.8.5.1 (-> maven-parent 5.1.0).
+		-->
+		<pluginManagement>
+			<plugins>
+				<!--
+					We need to fix the sonar cube version, because newer
+					versions require Java 11 to run.
+				-->
+				<plugin>
+					<groupId>org.sonarsource.scanner.maven</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>3.8.0.2131</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>3.0.0-M4</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

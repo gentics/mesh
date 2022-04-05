@@ -1,0 +1,125 @@
+:icons: font
+
+////
+* Write changelog entries in present tense
+* Include GitHub issue or PR if possible using link:http://...[#123] format
+* Review your changelog entries
+* Don't include security sensitive information in the changelog
+* Include links to documentation if possible
+////
+
+= Mesh Forms Plugin
+
+[[v1.6.20]]
+== 1.6.20 (2022-02-16)
+
+icon:plus[] Export: Adds new forms plugin options `export.includeUuid` and `export.includeCreationTimestamp` to specify whether exports should include the respective fields.
+
+icon:plus[] Export: Adds download links for binary fields, and an extra filename field to exports.
+
+[[v1.6.19]]
+== 1.6.19 (2022-02-14)
+
+icon:plus[] Forms: The structure of providing options for a `selectgroup` has changed: the field is now called `options` and the fields of the elements must be `key` (the stored value) and `value` (the human-readable label). The old format of `listelements` with `value` and `label` fields is still allowed (and will be converted accordingly) but deprecated.
+
+icon:plus[] Forms Helper: Changes the behavior of the `pollResultTemplate` helper to refer to the `generic.hbs` template for all elements except `checkbox` and `selectgroup`.
+
+icon:plus[] Polls: Adds the labels of selectgroup values in the render context for poll results (under the key) `valueLabels`.
+
+icon:plus[] Forms Helper: Adds the following new forms helpers:
+
+* `getValueLabel KEY`: gets the label for the specified KEY for a selectgroup element. This is intended for rendering poll results, for example: `{{#each values}}{{getValueLabel @key}}: {{@value}}{{/each}}`.
+* `formatDate DATE_STRING TARGET_FORMAT [SOURCE_FORMAT]`: parses the given `DATE_STRING` as a date in `SOURCE_FORMAT`, and returns the resulting string of formatting it in `TARGET_FORMAT`. When no `SOURCE_FORMAT` is specified, it is assumed to be an ISO date (YYYY-MM-DD).
+* `formatTime TIME_STRING TARGET_FORMAT [SOURCE_FORMAT]`: parses the given `TIME_STRING` as a time in `SOURCE_FORMAT`, and returns the resulting string of formatting it in `TARGET_FORMAT`. When no `SOURCE_FORMAT` is specified, it is assumed to be an ISO time (HH:mm).
+
+icon:plus[] Forms: Adds `valueLabel` for the selected items in a selectgroup when rendering e-mails with form data.
+
+icon:plus[] Forms: Adds custom properties of a form element when rendering e-mails.
+
+icon:plus[] Forms: Adds a mapping from element name to the element definition when rendering forms or form data.
+
+icon:plus[] Forms: Adds custom element properties to render context for rendering poll results.
+
+icon:plus[] Forms: Adds type of form (key: `type`) element when rendering form data for e-mails.
+
+icon:plus[] Multipage forms: The new setting `multipageRenderMode` can be used to control which page will be marked as active. The following settings are available:
+
+* `multipageRenderMode: SKIP_COMPLETED` (default): the first page, that is not marked as completed in the respective data node, will be marked as active for rendering
+* `multipageRenderMode: FORCE_NEXT`: the page _after_ the last submitted page will be marked as active for rendering (even if that page is already marked as completed)
+
+icon:plus[] Forms: Adds paging information for rendering the form progress:
+
+* `form.pageCount`: the total number of form pages
+* `form.currentPage.index`: the index of the currently active form page
+* `form.currentPage.name`: the name of the currently active form page
+* `form.currentPage.description`: the index of the currently active form page
+
+icon:check[] Forms Helper: Fixes a possible NullPointerException in the `equals` helper.
+
+icon:check[] Forms: Fixes an issue with the `templateContext` which was not used correctly for rendering.
+
+icon:check[] Forms: Changes the path of the `forms-voted` cookie to /, since it is not only needed on the referer path (the page containing the poll), but also the API path for submitting new form data. This fixes the issue that two polls on the same page would overwrite the other polls cookie.
+
+[[v1.6.18]]
+== 1.6.18 (2022-02-02)
+
+icon:plus[] Forms: Add new query parameter `publishedOnly` to the `/forms/ID/data` and `/forms/ID/export` endpoints (must be `true` or `false`) which determines whether the returned list or export should only contain published form data nodes (i.e. completed nodes; this is the default) or draft versions as well.
+
+icon:check[] Forms: Changes the default behavior of the export so that it does _not_ contain unpublished form data (to bring it in sync with the default behavior of the data endpoint).
+
+[[v1.6.17]]
+== 1.6.17 (2022-01-10)
+
+icon:plus[] Forms: Adds new form type `POLL`, which alters how forms are rendered. When a POLL form is rendered, and the `forms-voted` cookie contains the UUID of the rendered form, the results of the poll will be rendered instead.
+icon:check[] Forms: Fixes `pathPrefix` value while rendering multipage forms. The value was only supplied on the first page of a form.
+
+[[v1.6.16]]
+== 1.6.16 (2021-12-17)
+
+icon:plus[] Configuration: Allows that custom configurations can be added and accessed via handlebars template.
+icon:plus[] Elements: Adds link:https://friendlycaptcha.com/[Friendly Captcha] form element
+
+[[v1.6.15]]
+== 1.6.15 (2021-11-25)
+
+icon:plus[] Rendering: Adds the path prefix of the projects default branch to the render context via the key `pathPrefix`. This is mainly intended for creating the forms action URL in the handlebars templates.
+
+[[v1.6.13]]
+== 1.6.13 (2021-09-27)
+
+icon:check[] Form data exported as CSV or returned via REST will now contain the fields in the order, they are included in the form.
+
+icon:check[] The logging for mail sending errors (e.g. sending is not possible, because there is no template configured) has been improved.
+
+icon:check[] Some errors that occurred on projects having a non-empty path prefix have been fixed.
+
+[[v1.6.11]]
+== 1.6.11 (2021-08-02)
+
+icon:check[] The logging for the RecaptchaElement has been improved.
+
+[[v1.6.10]]
+== 1.6.10 (2021-06-30)
+
+icon:check[] Form data exported as CSV now includes field names in addition to field labels in the header row. The field name and the field label of a field are separated by `|||`. A custom delimiter can be set with the query parameter `headerDelimiter`. In case no field label is set for a field or the field label has no or only whitespace characters, only the field name will be exported and the delimiter is not used.
+icon:check[] In singlepage forms, all elements will be verified for errors when POSTing, not only the elements for which data was posted.
+icon:check[] If a singlepage form is not completely filled or fails some verifications, it will now also be rendered with the incomplete
+data and the error messages.
+
+[[v1.6.9]]
+== 1.6.9 (2021-05-27)
+
+icon:check[] The `formsElementTemplate` handlebar helper now checks for the parameter `defaultSubtype` to fallback to if no `subtype` is given by the context. See `forms-plugin/src/main/resources/templates/elements/selectgroup.hbs` for a usage example.
+
+[[v1.6.8]]
+== 1.6.8 (2021-04-22)
+
+icon:check[] Using the Forms Plugin in a cluster will now work also for new activated projects. Before this fix, newly activated projects were
+not usable in all cluster nodes until the node was restarted.
+
+[[v1.6.7]]
+== 1.6.7 (2021-04-08)
+
+icon:plus[] New Forms Plugin derived from formgenerator plugin, adapted for use with Gentics CMP
+icon:plus[] improved binary handling
+icon:plus[] multi language support

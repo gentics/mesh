@@ -1,0 +1,20 @@
+<div class="element-formpage floating-label" element-name="{{ name }}">
+	<div class="content form-group">
+		<div class="formpage" data-formpageid="{{ name }}" {{#unless active}}style="display: none;"{{/unless}}>
+			<form method="POST"
+				enctype="multipart/form-data"
+				action="{{pathPrefix}}/api/forms/forms/{{ ../id }}/data{{#if ../dataid}}/{{ ../dataid }}{{/if}}"
+				class="c-form">
+				<input type="hidden" name="{{ name }}" value="1">
+				<section class="c-form__section">
+					<fieldset>
+{{#each elements}}
+{{> error }}
+{{> (formsElementTemplate type) }}
+{{/each}}
+					</fieldset>
+				</section>
+			</form>
+		</div>
+	</div>
+</div>

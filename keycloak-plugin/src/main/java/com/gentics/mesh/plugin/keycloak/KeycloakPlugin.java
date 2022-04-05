@@ -58,7 +58,7 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 				.doOnSuccess(KeycloakPluginConfig::overrideWithEnv)
 				.ignoreElement()
 				// TODO Make loading of public keys non-blocking
-				.andThen(Completable.fromAction(this::loadPublicKeys))
+				.andThen(Completable.defer(this::loadPublicKeys))
 				.andThen(loadMapperScript())
 				.andThen(initializeRolesAndGroups());
 	}
@@ -112,13 +112,13 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 	/**
 	 * Load the public keys for the configured realm from keycloak.
 	 */
-	private void loadPublicKeys() {
+	private Completable loadPublicKeys() {
 		KeycloakPluginConfig config = getConfig();
 
 		publicKeys = Collections.emptySet();
 
 		if (!config.isLoadPublicKeys()) {
-			return;
+			return Completable.complete();
 		}
 
 		try {
@@ -144,10 +144,10 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 		} catch (Exception e) {
 			log.error("Error while loading public keys: {}", e.getMessage());
 
-			if (log.isTraceEnabled()) {
-				log.error(e);
-			}
+			return Completable.error(e);
 		}
+
+		return Completable.complete();
 	}
 
 	private Completable loadMapperScript() {

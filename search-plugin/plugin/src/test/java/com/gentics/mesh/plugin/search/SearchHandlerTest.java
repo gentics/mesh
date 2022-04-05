@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.http.HttpConstants;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.SearchParameters;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.search.config.CustomQueryOptions;
 import com.gentics.mesh.plugin.search.config.SearchConfiguration;
@@ -28,6 +30,7 @@ import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,10 +38,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.gentics.mesh.plugin.search.util.TestUtils.mockContext;
 import static com.gentics.mesh.plugin.search.util.TestUtils.mockRequest;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyVararg;
@@ -403,7 +408,6 @@ public class SearchHandlerTest {
 
 		when(queryServiceMock.getCustomQuery(any(), anyString())).thenReturn(Single.just(expectedQuery));
 
-		String expectedResult = new JsonObject().put("result", "custom handler result").encode();
 		PluginContext pc = mockContext(DEFAULT_PROJECT, "/search/custom/" + customQuery, "q=test");
 		CustomHandler customHandler = new CustomQueryHandler(queryServiceMock, new CustomQueryOptions(customQuery)) ;
 
@@ -415,6 +419,52 @@ public class SearchHandlerTest {
 		verify(queryServiceMock, never()).getSearchResultQuery(anyString());
 		verify(queryServiceMock, never()).getSearchResultQuery(anyString(), anyString());
 		verify(queryServiceMock, times(1)).getCustomQuery(any(), eq(customQuery));
+	}
+
+	@Test
+	public void testWaitForIdle() {
+		doTestWaitForIdle(true);
+	}
+
+	@Test
+	public void testDontWaitForIdle() {
+		doTestWaitForIdle(false);
+	}
+
+	@Test
+	public void testWaitForIdleDefault() {
+		doTestWaitForIdle(null);
+	}
+
+	private void doTestWaitForIdle(Boolean wait) {
+		// The did you mean queries would mess up the count of the searchNodesRaw() invocations.
+		config.setDidYouMeanThreshold(0);
+		config.setResultQuery(null);
+		config.setWaitForIdle(wait);
+
+		PluginContext pc = mockContext(DEFAULT_PROJECT, "/search", "q=test");
+
+		makeSearchRequest(pc, null);
+
+		ArgumentCaptor<ParameterProvider> varArgs = ArgumentCaptor.forClass(ParameterProvider.class);
+
+		verify(pc.client(), times(1)).searchNodesRaw(anyString(), anyString(), varArgs.capture());
+
+		Optional<Boolean> waitParam = varArgs.getAllValues().stream()
+			.filter(param -> param instanceof SearchParameters && ((SearchParameters) param).isWait().isPresent())
+			.map(param -> ((SearchParameters) param).isWait().get())
+			.findAny();
+
+		if (wait == null) {
+			assertThat(waitParam)
+				.as("waitForIdle parameter")
+				.isNotPresent();
+		} else {
+			assertThat(waitParam)
+				.as("waitForIdle parameter")
+				.isPresent()
+				.contains(wait);
+		}
 	}
 
 	/**

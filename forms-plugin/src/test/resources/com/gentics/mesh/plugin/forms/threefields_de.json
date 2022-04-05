@@ -1,0 +1,65 @@
+{
+	"name": "Formular mit drei Textfeldern",
+	"language": "de",
+	"elements": [
+		{
+			"type": "input",
+			"name": "input1",
+			"placeholderName": "",
+			"label": "Erstes Feld",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		},
+		{
+			"type": "input",
+			"name": "input2",
+			"placeholderName": "",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		},
+		{
+			"type": "input",
+			"name": "input3",
+			"placeholderName": "",
+			"label": "Drittes Feld",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		},
+		{
+			"type": "input",
+			"name": "input4",
+			"placeholderName": "",
+			"label": " ",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		}
+	]
+}

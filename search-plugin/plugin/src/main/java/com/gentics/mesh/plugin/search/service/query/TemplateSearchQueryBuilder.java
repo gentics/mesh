@@ -53,10 +53,10 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 
 	private static final Logger log = LoggerFactory.getLogger(TemplateSearchQueryBuilder.class);
 
-	private final Handlebars handlebars = new Handlebars();
+	protected final Handlebars handlebars = new Handlebars();
 
-	private SearchConfiguration config;
-	private Cache<String, Object> cache;
+	protected SearchConfiguration config;
+	protected Cache<String, Object> cache;
 
 	@Override
 	public SearchQueryBuilder init(SearchConfiguration config) {
@@ -148,7 +148,7 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 	 * 		to the query
 	 * @return The final query
 	 */
-	private JsonObject buildQuery(PluginContext context, String name, String rawQuery, boolean addPaging) {
+	protected JsonObject buildQuery(PluginContext context, String name, String rawQuery, boolean addPaging) {
 		String cacheKey = context.projectName() + "/" + name;
 		Object template = cache.get(cacheKey, parseTemplate(rawQuery));
 
@@ -179,7 +179,7 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 	 * @return The final query
 	 * @throws RuntimeException When the template could not be generated or applied to the search parameters
 	 */
-	private JsonObject buildQuery(PluginContext context, boolean addPaging, Object template) {
+	protected JsonObject buildQuery(PluginContext context, boolean addPaging, Object template) {
 		Map<String, Object> params = getParameters(context.request(), context.projectName());
 
 		if (template instanceof RuntimeException) {
@@ -211,7 +211,7 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 	 * @param projectName The project that received the search request
 	 * @return A map containing the extracted query parameters
 	 */
-	private Map<String, Object> getParameters(HttpServerRequest request, String projectName) {
+	protected Map<String, Object> getParameters(HttpServerRequest request, String projectName) {
 		Map<String, Object> params = new HashMap<>();
 		String param = request.getParam("l");
 
@@ -238,7 +238,7 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 	 * @param source The source for the template
 	 * @return A loading function which will create a Handlebars template
 	 */
-	private Function<String, Object> parseTemplate(String source) {
+	protected Function<String, Object> parseTemplate(String source) {
 		return cacheKey -> {
 			if (StringUtils.isBlank(source)) {
 				log.debug("No source for template provided");

@@ -1,0 +1,24 @@
+{
+	"name": "Form with Date field",
+	"type": "GENERIC",
+	"email": "test@green.mail",
+	"mailsubject": "testmail",
+	"mailtemp": "testmail",
+	"elements": [
+		{
+			"type": "input",
+			"name": "date1",
+			"placeholderName": "",
+			"label": "Date",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "datepicker",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		}
+	]
+}

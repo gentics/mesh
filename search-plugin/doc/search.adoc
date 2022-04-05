@@ -13,12 +13,13 @@ A plugin to search Mesh projects used as a content respository for the Gentics C
 ## Configuration
 
 This is an example configuration file specifying every possible setting.
-Except for `projects` and `customQueries` (which are by default empty), all
-values are the default values.
+Except for `waitForIdle`, `projects` and `customQueries` (which are by
+default empty or `null`), all values are the default values.
 
 .Example configuration:
 ```yml
 pageSize: 8
+waitForIdle: false
 projects:
   main_project_name:
     - other_searched_project
@@ -38,6 +39,10 @@ that should be searched.
 
 For custom queries of type `SEARCH` a shorthand notation can be used by just
 specifying the name (without the `name:` and `type:` parts).
+
+The default value for `waitForIdle` is `null` because Mesh has its own fallback
+mechanism when the parameter is missing in a search request, and this mimicks
+the "default behavior".
 
 ## Search endpoints
 
@@ -234,7 +239,7 @@ aggregations are extracted.
 If a `resultQuery` is configured, the GraphQl query with that name will be
 loaded from the `QueryService` and used to load additional information about the
 hits from Mesh. All hits will be grouped by Mesh branch and one GraphQl query
-will be issued per branch. 
+will be issued per branch.
 
 The resultQuery can only contain the following Handlebars placeholders for
 schema names, and must otherwise be a valid GraphQL query:
@@ -319,7 +324,7 @@ The response of the `resultQuery` is used to enhance the hits:
 Every entry in `languages` is passed to the injected `HitTransformer`, which can
 further enhance the hits with data loaded by the GraphQL query.
 
-Default implementation is `com.gentics.mesh.plugin.search.transformer.BasicHitTransformer`, 
+Default implementation is `com.gentics.mesh.plugin.search.transformer.BasicHitTransformer`,
 which adds the field `title` as `excerpt`, and copies all fields to the result.
 
 ###### Cleaning up the search result*

@@ -1,0 +1,53 @@
+projects:
+  - "testproject"
+
+elements:
+  custom: com.gentics.mesh.plugin.forms.CustomElement
+  customconfig: com.gentics.mesh.plugin.forms.CustomConfigElement
+  not-validated: com.gentics.mesh.plugin.forms.model.CustomNotValidated
+
+validateElements: true
+
+mail:
+  port: 3025
+  attachFileUploads: true
+
+apiKey: "Foo4Lais7Mae3vahngaichae6aifoh9aefeeSoh9phooc0pee3"
+templatesPath: "target/test-classes/com/gentics/mesh/plugin/forms/templates"
+fromAddress: "webmaster@gentics.com"
+adminMailSubject: "Formular [[FORMNAME]] ausgefüllt"
+userMailSubject: "Herzlichen Dank"
+reCaptcha:
+  siteKey: your-site-key
+  secretKey: your-secret-key
+fileUpload:
+    allowedFileTypes:
+      all:
+        - ".*"
+      image:
+        - "image/.*"
+      audio:
+        - "audio/.*"
+      video:
+        - "video/.*"
+    allowedFileNames:
+      archive:
+        - ".*\\.zip"
+        - ".*\\.rar"
+        - ".*\\.7z"
+        - ".*\\.bz"
+        - ".*\\.bz2"
+        - ".*\\.gz"
+      documents:
+        - ".*\\.doc"
+        - ".*\\.docx"
+        - ".*\\.xls"
+        - ".*\\.xlsx"
+        - ".*\\.pdf"
+        - ".*\\.txt"
+        - ".*\\.ods"
+        - ".*\\.odt"
+custom:
+  test: "test"
+  testobject:
+    testfield: "another test field"

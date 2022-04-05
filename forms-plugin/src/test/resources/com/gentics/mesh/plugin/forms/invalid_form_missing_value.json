@@ -1,0 +1,15 @@
+{
+	"name": "Invalid form with select group element with a missing label",
+	"elements": [
+		{
+			"type": "selectgroup",
+			"name": "selectgroup1",
+			"label": "Select group",
+			"options": [
+				{
+					"key": "no-value"
+				}
+			]
+		}
+	]
+}

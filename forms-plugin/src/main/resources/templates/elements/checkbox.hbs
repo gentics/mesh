@@ -1,0 +1,6 @@
+<div>
+	<input type="checkbox" id="{{ name }}" name="{{ name }}" value="{{ value }}"
+		{{#if mandatory}}required="required"{{/if}}
+		{{#equals value data.value}}checked="checked"{{else}}{{#if checked}}checked="checked"{{/if}}{{/equals}}>
+	<label for="{{ name }}">{{{ label }}}</label>
+</div>

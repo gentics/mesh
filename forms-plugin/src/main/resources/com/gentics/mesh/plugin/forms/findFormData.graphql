@@ -1,0 +1,18 @@
+query ($query: String, $perPage: Long = -1, $page: Long = 1) {
+  nodes (query: $query, perPage: $perPage, page: $page) {
+    elements {
+      uuid
+      version
+      fields {
+        ... on {{{ schemaName }}} {
+          {{{ fieldNames }}}
+          errors
+        }
+      }
+    }
+    totalCount
+    currentPage
+    pageCount
+    perPage
+  }
+}

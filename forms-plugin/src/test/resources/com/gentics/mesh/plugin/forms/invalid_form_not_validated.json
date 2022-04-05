@@ -1,0 +1,10 @@
+{
+	"name": "Invalid form with non-validated custom element without list elements",
+	"elements": [
+		{
+			"type": "not-validated",
+			"name": "notvalidated1",
+			"label": "Not validated"
+		}
+	]
+}

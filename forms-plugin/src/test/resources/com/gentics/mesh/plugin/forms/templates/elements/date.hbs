@@ -1,0 +1,11 @@
+<div class="mdc-textfield mdc-textfield--box mdc-textfield--with-trailing-icon" data-mdc-auto-init="DateTime" data-type="date" data-future="true" element-name="{{ name }}">
+  <div class="content form-group">
+    <input type="text" id="{{ name }}" class="mdc-textfield__input" name="{{ name }}" placeholdername=""
+      value="{{#if data.value }}{{ data.value }}{{else}}{{ value }}{{/if}}"
+      {{#if mandatory}}required="required"{{/if}}>
+    <label for="{{ name }}" class="control-label mdc-textfield__label">{{{ label }}}</label>
+    <svg class="mdc-textfield__icon" role="img" aria-hidden="true">
+      <use xlink:href="#calendar-empty"></use>
+    </svg>
+  </div>
+</div>
