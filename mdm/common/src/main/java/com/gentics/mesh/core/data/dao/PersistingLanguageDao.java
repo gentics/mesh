@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.dao;
 
-import org.apache.commons.lang.NotImplementedException;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;

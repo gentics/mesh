@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
@@ -58,9 +57,6 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializer implements OrientDBBootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(OrientDBBootstrapInitializerImpl.class);
-
-	@Inject
-	public ServerSchemaStorageImpl schemaStorage;
 
 	@Inject
 	public ChangelogSystem changelogSystem;
@@ -142,28 +138,21 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 			throw new RuntimeException("Error while creating clusterd Vert.x instance");
 		}
 	}
+
 	@Override
-	public void initMandatoryData(MeshOptions config) throws Exception {
-		db.tx(tx -> {
-			MeshRoot meshRoot = meshRoot();
+	protected void initPermissionRoots(Tx tx) {
+		MeshRoot meshRoot = meshRoot();
 
-			// Create the initial root vertices
-			meshRoot.getTagRoot();
-			meshRoot.getTagFamilyRoot();
-			meshRoot.getProjectRoot();
-			meshRoot.getLanguageRoot();
-			meshRoot.getJobRoot();
-			meshRoot.getChangelogRoot();
+		// Create the initial root vertices
+		meshRoot.getTagRoot();
+		meshRoot.getTagFamilyRoot();
+		meshRoot.getProjectRoot();
+		meshRoot.getLanguageRoot();
+		meshRoot.getJobRoot();
+		meshRoot.getChangelogRoot();
 
-			meshRoot.getGroupRoot();
-			meshRoot.getRoleRoot();
-			
-			initLanguages();
-
-			schemaStorage.init();
-			tx.success();
-		});
-
+		meshRoot.getGroupRoot();
+		meshRoot.getRoleRoot();
 	}
 
 	@Override

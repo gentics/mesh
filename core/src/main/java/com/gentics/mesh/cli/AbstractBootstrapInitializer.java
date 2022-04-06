@@ -51,6 +51,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -112,6 +113,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	public static final String GLOBAL_CHANGELOG_LOCK_KEY = "MESH_CHANGELOG_LOCK";
 
 	private static final String ADMIN_USERNAME = "admin";
+
+	@Inject
+	public ServerSchemaStorageImpl schemaStorage;
 
 	@Inject
 	public Database db;
@@ -881,9 +885,26 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 						log.debug("Changed nativeName of language {" + languageTag + " } to {" + languageNativeName + "}");
 					}
 				}
-			}
+			}			
 		}
 	}
+
+	@Override
+	public void initMandatoryData(MeshOptions config) throws Exception {
+		db.tx(tx -> {
+			initLanguages();
+			initPermissionRoots(tx);
+			schemaStorage.init();
+			tx.success();
+		});
+	}
+
+	/**
+	 * Init permission storage.
+	 * 
+	 * @param tx transaction
+	 */
+	protected abstract void initPermissionRoots(Tx tx);
 
 	/**
 	 * Init languages from the data set.

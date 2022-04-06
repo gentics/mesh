@@ -79,17 +79,22 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		List<HibNode> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 		for (int i = 0; i < 20; i++) {
-			try (Tx tx = tx()) {
-				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
-				HibNode oldValue = getNodeValue(container, FIELD_NAME);
+			HibNode newValue = targetNodes.get(i % 2);
 
-				HibNode newValue = targetNodes.get(i % 2);
+			HibNode oldValue = null;
+			HibNodeFieldContainer container = null;
 
-				// Update the field to point to new target
-				NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(newValue.getUuid()));
-				NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-				assertThat(field.getUuid()).as("New Value").isEqualTo(newValue.getUuid());
+			try (Tx tx = tx()) {					
+				container = boot().contentDao().getFieldContainer(node, "en");
+				oldValue = getNodeValue(container, FIELD_NAME);
+			}
 
+			// Update the field to point to new target
+			NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(newValue.getUuid()));
+			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+			assertThat(field.getUuid()).as("New Value").isEqualTo(newValue.getUuid());
+
+			try (Tx tx = tx()) {					
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getNodeValue(container, FIELD_NAME));
 			}
@@ -99,14 +104,12 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			HibNode target = folder("news");
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-			String oldNumber = firstResponse.getVersion();
+		HibNode target = folder("news");
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		String oldNumber = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 	}
 
 	@Test
@@ -114,14 +117,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		String oldVersion;
 		HibNode target = folder("news");
 
-		try (Tx tx = tx()) {
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-			oldVersion = firstResponse.getVersion();
-			tx.success();
-		}
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		String oldVersion = firstResponse.getVersion();
 
 		NodeResponse secondResponse = tx(() -> updateNode(FIELD_NAME, null));
 		assertThat(secondResponse.getFields().getNodeField(FIELD_NAME)).as("Deleted Field").isNull();
@@ -137,21 +136,18 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(latest.getPreviousVersion().getNode(FIELD_NAME)).isNotNull();
 			String oldValue = latest.getPreviousVersion().getNode(FIELD_NAME).getNode().getUuid();
 			assertThat(oldValue).isEqualTo(target.getUuid());
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
 		}
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
 		String uuid = tx(() -> folder("news").getUuid());
-		try (Tx tx = tx()) {
-			updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(uuid));
-			tx.success();
-		}
+		updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(uuid));
 		try (Tx tx = tx()) {
 			updateNodeFailure(FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", FIELD_NAME);
 		}
@@ -252,30 +248,26 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Ignore("Field deletion is currently not implemented.")
 	public void testCreateDeleteNodeField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
-			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertEquals(folder("news").getUuid(), field.getUuid());
+		NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertEquals(folder("news").getUuid(), field.getUuid());
 
-			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-			nodeUpdateRequest.setLanguage("en");
-			nodeUpdateRequest.getFields().put(FIELD_NAME, null);
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
-			response = client()
-				.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).blockingGet();
+		response = client()
+			.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).blockingGet();
 
-			assertNull("The field should have been deleted", response.getFields().getNodeField(FIELD_NAME));
-		}
+		assertNull("The field should have been deleted", response.getFields().getNodeField(FIELD_NAME));
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
-			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertEquals(folder("news").getUuid(), field.getUuid());
-		}
+		NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertEquals(folder("news").getUuid(), field.getUuid());
 	}
 
 	@Test
@@ -292,12 +284,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			NodeResponse response = readNode(node);
-			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
-			assertNotNull(deserializedNodeField);
-			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
-		}
+		NodeResponse response = readNode(node);
+		NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
+		assertNotNull(deserializedNodeField);
+		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 	}
 
 	@Test
@@ -313,34 +303,30 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			// Read the node
-			NodeParametersImpl parameters = new NodeParametersImpl();
-			parameters.setLanguages("en");
-			parameters.setResolveLinks(LinkType.FULL);
-			NodeResponse response = call(
-				() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
+		// Read the node
+		NodeParametersImpl parameters = new NodeParametersImpl();
+		parameters.setLanguages("en");
+		parameters.setResolveLinks(LinkType.FULL);
+		NodeResponse response = call(
+			() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
 
-			// Check whether the field contains the languagePath
-			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
-			assertNotNull(deserializedNodeField);
-			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
-			assertNotNull(deserializedNodeField.getPath());
-			assertNotNull(deserializedNodeField.getLanguagePaths());
-			assertThat(deserializedNodeField.getLanguagePaths()).containsKeys("en", "de");
-		}
+		// Check whether the field contains the languagePath
+		NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
+		assertNotNull(deserializedNodeField);
+		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+		assertNotNull(deserializedNodeField.getPath());
+		assertNotNull(deserializedNodeField.getLanguagePaths());
+		assertThat(deserializedNodeField.getLanguagePaths()).containsKeys("en", "de");
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertNull(
-				"The expanded node field within the response should be null since we created the node without providing any field information.",
-				field);
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertNull(
+			"The expanded node field within the response should be null since we created the node without providing any field information.",
+			field);
 	}
 
 	@Test
@@ -357,18 +343,15 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
 				new VersioningParametersImpl().draft()));
 
-			// Check expanded node field
-			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertNotNull("The referenced field should not be null", deserializedExpandedNodeField);
-			NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
-			assertEquals(referencedNode.getUuid(), expandedField.getUuid());
-			assertNotNull(expandedField.getCreator());
-
-		}
+		// Check expanded node field
+		NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertNotNull("The referenced field should not be null", deserializedExpandedNodeField);
+		NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
+		assertEquals(referencedNode.getUuid(), expandedField.getUuid());
+		assertNotNull(expandedField.getCreator());
 	}
 
 	@Test
@@ -390,15 +373,12 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			return node1;
 		});
-		try (Tx tx = tx()) {
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
 				new VersioningParametersImpl().draft()));
 
-			// Assert that the field has not been loaded
-			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertNull("The referenced field should be null", deserializedExpandedNodeField);
-
-		}
+		// Assert that the field has not been loaded
+		NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertNull("The referenced field should be null", deserializedExpandedNodeField);
 	}
 
 	@Test
@@ -415,65 +395,64 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			// 1. Read node with collapsed fields and check that the collapsed node field can be read
-			NodeResponse responseCollapsed = readNode(node);
-			NodeField deserializedNodeField = responseCollapsed.getFields().getNodeField(FIELD_NAME);
-			assertNotNull(deserializedNodeField);
-			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+		// 1. Read node with collapsed fields and check that the collapsed node field can be read
+		NodeResponse responseCollapsed = readNode(node);
+		NodeField deserializedNodeField = responseCollapsed.getFields().getNodeField(FIELD_NAME);
+		assertNotNull(deserializedNodeField);
+		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 
-			// Check whether it is possible to read the field in an expanded form.
-			NodeResponse deserializedExpandedNodeField = responseCollapsed.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertNotNull(deserializedExpandedNodeField);
+		// Check whether it is possible to read the field in an expanded form.
+		NodeResponse deserializedExpandedNodeField = responseCollapsed.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertNotNull(deserializedExpandedNodeField);
 
-			// 2. Read node with expanded fields
-			NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
+		// 2. Read node with expanded fields
+		NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
 
-			// Check collapsed node field
-			deserializedNodeField = responseExpanded.getFields().getNodeField(FIELD_NAME);
-			assertNotNull(deserializedNodeField);
-			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+		// Check collapsed node field
+		deserializedNodeField = responseExpanded.getFields().getNodeField(FIELD_NAME);
+		assertNotNull(deserializedNodeField);
+		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 
-			// Check expanded node field
-			deserializedExpandedNodeField = responseExpanded.getFields().getNodeFieldExpanded(FIELD_NAME);
-			NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
-			assertNotNull(expandedField);
-			assertEquals(newsNode.getUuid(), expandedField.getUuid());
-			assertNotNull(expandedField.getCreator());
-		}
+		// Check expanded node field
+		deserializedExpandedNodeField = responseExpanded.getFields().getNodeFieldExpanded(FIELD_NAME);
+		NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
+		assertNotNull(expandedField);
+		assertEquals(newsNode.getUuid(), expandedField.getUuid());
+		assertNotNull(expandedField.getCreator());
 	}
 
 	@Test
 	public void testReadExpandedNodeWithLanguageFallback() throws IOException {
+		HibNode folder = folder("2015");
 		try (Tx tx = tx()) {
-			HibNode folder = folder("2015");
 			prepareTypedSchema(schemaContainer("folder"), List.of(FieldUtil.createNodeFieldSchema(FIELD_NAME)), Optional.empty());
+		}
+		// add a node in german and english
+		NodeCreateRequest createGermanNode = new NodeCreateRequest();
+		createGermanNode.setSchema(new SchemaReferenceImpl().setName("folder"));
+		createGermanNode.setParentNodeUuid(folder.getUuid());
+		createGermanNode.setLanguage("de");
+		createGermanNode.getFields().put("name", createStringField("German Target"));
 
-			// add a node in german and english
-			NodeCreateRequest createGermanNode = new NodeCreateRequest();
-			createGermanNode.setSchema(new SchemaReferenceImpl().setName("folder"));
-			createGermanNode.setParentNodeUuid(folder.getUuid());
-			createGermanNode.setLanguage("de");
-			createGermanNode.getFields().put("name", createStringField("German Target"));
+		NodeResponse germanTarget = client().createNode(PROJECT_NAME, createGermanNode).blockingGet();
 
-			NodeResponse germanTarget = client().createNode(PROJECT_NAME, createGermanNode).blockingGet();
+		NodeUpdateRequest createEnglishNode = new NodeUpdateRequest();
+		createEnglishNode.setLanguage("en");
+		createEnglishNode.getFields().put("name", createStringField("English Target"));
 
-			NodeUpdateRequest createEnglishNode = new NodeUpdateRequest();
-			createEnglishNode.setLanguage("en");
-			createEnglishNode.getFields().put("name", createStringField("English Target"));
+		NodeResponse updateEnglishNode = client().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode).blockingGet();
 
-			NodeResponse updateEnglishNode = client().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode).blockingGet();
+		// add a node in german (referencing the target node)
+		NodeCreateRequest createSourceNode = new NodeCreateRequest();
+		createSourceNode.setSchema(new SchemaReferenceImpl().setName("folder"));
+		createSourceNode.setParentNodeUuid(folder.getUuid());
+		createSourceNode.setLanguage("de");
+		createSourceNode.getFields().put("name", createStringField("German Source"));
+		createSourceNode.getFields().put(FIELD_NAME, createNodeField(germanTarget.getUuid()));
 
-			// add a node in german (referencing the target node)
-			NodeCreateRequest createSourceNode = new NodeCreateRequest();
-			createSourceNode.setSchema(new SchemaReferenceImpl().setName("folder"));
-			createSourceNode.setParentNodeUuid(folder.getUuid());
-			createSourceNode.setLanguage("de");
-			createSourceNode.getFields().put("name", createStringField("German Source"));
-			createSourceNode.getFields().put(FIELD_NAME, createNodeField(germanTarget.getUuid()));
-
-			NodeResponse source = client().createNode(PROJECT_NAME, createSourceNode).blockingGet();
-
+		NodeResponse source = client().createNode(PROJECT_NAME, createSourceNode).blockingGet();
+		try (Tx tx = tx()) {
+				
 			// read source node with expanded field
 			for (String[] requestedLangs : asList(new String[] { "de" }, new String[] { "de", "en" }, new String[] { "en", "de" })) {
 				NodeResponse response = client().findNodeByUuid(PROJECT_NAME, source.getUuid(),
