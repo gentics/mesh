@@ -5,6 +5,8 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -103,7 +105,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 		enableAutoPurgeOnSchema();
 		HibNode node = content();
 		String nodeUuid = tx(() -> node.getUuid());
-		tx(() -> prepareSchema(node, "", "binary"));
+		tx(() -> prepareSchema(content(), "", "binary"));
 		assertVersions(nodeUuid, "en", "PD(2.0)=>I(0.1)");
 
 		call(() -> uploadRandomData(node, "en", "binary", 1000, "application/pdf", "somefile.PDF"));
@@ -113,7 +115,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testAutoPurgeWithBinaryTransform() {
+	public void testAutoPurgeWithBinaryTransform() throws IOException {
 		HibNode node = content();
 		String nodeUuid = tx(() -> node.getUuid());
 		assertVersions(nodeUuid, "en", "PD(1.0)=>I(0.1)");
@@ -122,9 +124,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 		assertVersions(nodeUuid, "en", "PD(2.0)=>I(0.1)");
 
 		// 1. Upload image
-		String version = db().tx(() -> {
-			return uploadImage(node, "en", "image").getVersion();
-		});
+		String version = uploadImage(node, "en", "image").getVersion();
 		assertVersions(nodeUuid, "en", "D(2.1)=>P(2.0)=>I(0.1)");
 
 		// 2. Transform the image
