@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -170,6 +171,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
 				HibNode node = nodeDao.create(parentNode, user, schemaVersion, project);
+				node.getSchemaContainer().getLatestVersion().getSchema().addField(new StringFieldSchemaImpl().setName("name"));
+				actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 				HibNodeFieldContainer fieldContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(), user);
 				fieldContainer.createString("name").setString("Name_" + i);
 				HibMicronodeField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
