@@ -1,5 +1,6 @@
 package com.gentics.mesh.distributed;
 
+import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_CACHES;
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
@@ -12,6 +13,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
+import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
@@ -47,14 +49,17 @@ public class DistributedEventManager {
 
 	private final Lazy<PermissionCache> permCache;
 
+	private final CacheRegistry cacheRegistry;
+
 	@Inject
 	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistry routerStorageRegistry,
-		Lazy<PermissionCache> permCache) {
+		Lazy<PermissionCache> permCache, CacheRegistry cacheRegistry) {
 		this.vertx = vertx;
 		this.db = db;
 		this.boot = boot;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.permCache = permCache;
+		this.cacheRegistry = cacheRegistry;
 	}
 
 	public void registerHandlers() {
@@ -74,6 +79,12 @@ public class DistributedEventManager {
 		eb.consumer(CLEAR_PERMISSION_STORE.address, handler -> {
 			log.debug("Received permissionstore clear event");
 			permCache.get().clear(false);
+		});
+
+		// Register for event to clear the caches
+		eb.consumer(CLEAR_CACHES.address, handler -> {
+			log.debug("Received cache clear event");
+			cacheRegistry.clear();
 		});
 
 		// React on project creates

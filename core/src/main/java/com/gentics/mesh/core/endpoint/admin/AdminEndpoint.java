@@ -106,6 +106,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addRuntimeConfigHandler();
 		addShutdownHandler();
 		addCoordinatorHandler();
+		addCacheHandler();
 	}
 
 	private void addSecurityLogger() {
@@ -456,4 +457,17 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		updateConfig.handler(rc -> adminHandler.handleUpdateCoordinationConfig(wrap(rc)));
 	}
 
+	private void addCacheHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/cache");
+		endpoint.method(DELETE);
+		endpoint.setMutating(false);
+		endpoint.description(
+			"Clear all internal caches (cluster wide).");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Clearing the caches has been invoked.");
+		endpoint.handler(rc -> {
+			adminHandler.handleCacheClear(wrap(rc));
+		});
+	}
 }
