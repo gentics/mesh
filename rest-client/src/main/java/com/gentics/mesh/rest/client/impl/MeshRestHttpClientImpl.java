@@ -1529,6 +1529,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> clearCache() {
+		return prepareRequest(DELETE, "/admin/cache", GenericMessageResponse.class);
+	}
+
+	@Override
 	public MeshRequest<EmptyResponse> ready() {
 		return prepareRequest(GET, "/health/ready", EmptyResponse.class);
 	}
