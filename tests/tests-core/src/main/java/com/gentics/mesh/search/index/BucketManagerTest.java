@@ -6,6 +6,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.group.HibGroup;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Bucket;
@@ -65,20 +68,21 @@ public class BucketManagerTest extends AbstractMeshTest {
 	public void testManagerForNoElements() {
 		int syncBatchSize = 100;
 		options().getSearchOptions().setSyncBatchSize(syncBatchSize);
+
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
-			PersistingUserDao userDao = ctx.userDao();
+			PersistingGroupDao groupDao = ctx.groupDao();
 
-			// Delete all users to get empty set of vertices to work with
-			for (HibUser user : userDao.findAll().list()) {
-				ctx.delete(user);
+			// Delete all groups to get empty set of vertices to work with
+			for (HibGroup group : groupDao.findAll().list()) {
+				groupDao.deletePersisted(group);
 			}
-			long userCount = ctx.count(userDao.getPersistenceClass());
-			assertEquals(0, userCount);
+			long groupCount = ctx.count(groupDao.getPersistenceClass());
+			assertEquals(0, groupCount);
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<Bucket> buckets = bulkManager.getBuckets(userCount).toList().blockingGet();
+			List<Bucket> buckets = bulkManager.getBuckets(groupCount).toList().blockingGet();
 			assertBuckets(buckets, syncBatchSize);
 			int expectedBucketsCount = 1;
 			assertEquals(expectedBucketsCount, buckets.size());
