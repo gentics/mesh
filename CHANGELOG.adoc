@@ -39,6 +39,12 @@ icon:check[] Rest: When creating a new user and setting the admin flag to `false
 to `true`. The permission check has been fixed now, so that the admin flag is only required for the requesting user, if the new user should also
 have the admin flag set to `true`.
 
+icon:check[] Core: When a project was renamed, deleted and then recreated with the same name, an internal cache was not cleared and caused
+subsequent errors in calls to the project, until the Mesh instance was restarted.
+This has been fixed now. The internal caches will be properly cleared.
+
+icon:plus[] Rest: The new endpoint `DELETE /api/v1/admin/cache` will clear all internal caches (cluster wide).
+
 [[v1.8.2]]
 == 1.8.2 (29.03.2022)
 
