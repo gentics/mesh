@@ -885,15 +885,15 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 						log.debug("Changed nativeName of language {" + languageTag + " } to {" + languageNativeName + "}");
 					}
 				}
-			}			
+			}
 		}
 	}
 
 	@Override
 	public void initMandatoryData(MeshOptions config) throws Exception {
 		db.tx(tx -> {
-			initLanguages();
 			initPermissionRoots(tx);
+			initLanguages();
 			schemaStorage.init();
 			tx.success();
 		});
