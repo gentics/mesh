@@ -1842,4 +1842,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<EmptyResponse> writable() {
 		return null;
 	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> clearCache() {
+		return null;
+	}
 }

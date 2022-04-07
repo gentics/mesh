@@ -199,6 +199,13 @@ public enum MeshEvent {
 		null,
 		"Event which will clear the path stores."),
 
+	/**
+	 * Event which is sent to clear all internal caches
+	 */
+	CLEAR_CACHES("mesh.clear-caches",
+		null,
+		"Event which will clear the internal caches."),
+
 	/* User */
 
 	USER_CREATED("mesh.user.created",
