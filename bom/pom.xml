@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.8.0-SNAPSHOT</version>
+		<version>1.8.3-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -26,11 +26,12 @@
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
 		<orientdb.version>3.1.11</orientdb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
-		<jackson.version>2.9.9</jackson.version>
-		<jackson-databind.version>2.9.10.8</jackson-databind.version>
-		<netty.version>4.1.42.Final</netty.version>
+		<jackson.version>2.13.2</jackson.version>
+		<jackson-databind.version>2.13.2</jackson-databind.version>
+		<netty.version>4.1.72.Final</netty.version>
 		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
+		<snakeyaml.version>1.30</snakeyaml.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
@@ -106,7 +107,7 @@
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.10</version>
+				<version>1.15</version>
 			</dependency>
 
 			<!-- HTTP Client -->
@@ -135,6 +136,11 @@
 				<groupId>org.raml</groupId>
 				<artifactId>raml-parser</artifactId>
 				<version>0.8.17</version>
+			</dependency>
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>${snakeyaml.version}</version>
 			</dependency>
 
 			<!-- Json -->
@@ -190,7 +196,7 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-yaml</artifactId>
-				<version>2.9.4</version>
+				<version>${jackson.version}</version>
 			</dependency>
 
 			<!-- Hazelcast -->

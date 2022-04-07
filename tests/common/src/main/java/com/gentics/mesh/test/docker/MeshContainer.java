@@ -115,8 +115,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	protected String dataPathPostfix;
 
-	protected boolean startEmbeddedES = false;
-
 	protected CoordinatorMode coordinatorMode = null;
 
 	protected String coordinatorPlaneRegex;
@@ -213,14 +211,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		addEnv(ClusterOptions.MESH_CLUSTER_VERTX_PORT_ENV, "8123");
 		addEnv(MeshOptions.MESH_PLUGIN_DIR_ENV, "/plugins");
 
-		if (startEmbeddedES) {
-			exposedPorts.add(9200);
-			exposedPorts.add(9300);
-		} else {
-			// Don't run the embedded ES
-			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
-			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
-		}
+		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
@@ -579,16 +570,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	 */
 	public MeshContainer withClusterName(String name) {
 		this.clusterName = name;
-		return this;
-	}
-
-	/**
-	 * Start the embedded ES
-	 * 
-	 * @return
-	 */
-	public MeshContainer withES() {
-		this.startEmbeddedES = true;
 		return this;
 	}
 

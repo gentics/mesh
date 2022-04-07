@@ -247,7 +247,6 @@ public class MeshTestContext extends TestWatcher {
 		case CONTAINER_ES7:
 		case CONTAINER_ES6:
 		case CONTAINER_ES6_TOXIC:
-		case EMBEDDED:
 			meshDagger.searchProvider().clear().blockingAwait();
 			break;
 		case TRACKING:
@@ -437,14 +436,14 @@ public class MeshTestContext extends TestWatcher {
 		meshDagger.boot().clearReferences();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
-			meshDagger.database().clear();
+			if (!meshTestContextProvider.getInstanceProvider().fastStorageCleanup(meshDagger.database())) {
+				meshDagger.database().clear();
+			}
 		} else if (settings.clusterMode()) {
 			meshDagger.database().clear();
 		} else {
 			meshDagger.database().stop();
-
 			meshTestContextProvider.getInstanceProvider().cleanupPhysicalStorage();
-
 			meshDagger.database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
@@ -577,7 +576,6 @@ public class MeshTestContext extends TestWatcher {
 			}
 			elasticsearch.waitingFor(Wait.forHttp("/"));
 
-			searchOptions.setStartEmbedded(false);
 			if (settings.elasticsearch() == UNREACHABLE) {
 				searchOptions.setUrl("http://localhost:1");
 			} else {
@@ -600,20 +598,13 @@ public class MeshTestContext extends TestWatcher {
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
-			searchOptions.setStartEmbedded(false);
 			searchOptions.setUrl("http://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy);
-			break;
-		case EMBEDDED:
-			searchOptions.setComplianceMode(ComplianceMode.ES_6);
-			searchOptions.setStartEmbedded(true);
 			break;
 		case NONE:
 			searchOptions.setUrl(null);
-			searchOptions.setStartEmbedded(false);
 			break;
 		case TRACKING:
 			System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
-			searchOptions.setStartEmbedded(false);
 			break;
 		default:
 			break;

@@ -520,6 +520,12 @@ public interface EventHelper extends BaseHelper {
 		refreshIndices();
 	}
 
+	default void clearIndex() throws TimeoutException {
+		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_CLEAR_FINISHED, 10_000)) {
+			SyncEventHandler.invokeClear(vertx());
+		}
+	}
+
 	/**
 	 * Get the index mappings for the index with given name. Method will fail, if index does not exist
 	 * @param indexName elasticsearch index name (including prefix)

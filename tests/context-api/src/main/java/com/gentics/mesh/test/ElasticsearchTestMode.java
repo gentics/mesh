@@ -18,11 +18,6 @@ public enum ElasticsearchTestMode {
 	TRACKING,
 
 	/**
-	 * Run with the embedded ES enabled
-	 */
-	EMBEDDED,
-
-	/**
 	 * Run using an ES docker container
 	 */
 	CONTAINER_ES6,

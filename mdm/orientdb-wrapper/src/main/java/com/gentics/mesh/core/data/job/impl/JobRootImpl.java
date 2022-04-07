@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -216,6 +217,11 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 */
 	public Page<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, false);
+	}
+
+	@Override
+	public Page<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, extraFilter, false);
 	}
 
 	@Override

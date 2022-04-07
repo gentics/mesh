@@ -16,7 +16,8 @@
       "type" : "object",
       "description" : "Map of i18n properties which were used to construct the provided message",
       "additionalProperties" : {
-        "type" : "any"
+        "type" : "object",
+        "id" : "urn:jsonschema:java:lang:Object"
       }
     }
   }

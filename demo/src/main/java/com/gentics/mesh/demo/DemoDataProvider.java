@@ -99,14 +99,13 @@ public class DemoDataProvider {
 	/**
 	 * Setup the demo content
 	 * 
-	 * @param syncIndex
 	 * @throws JsonParseException
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 * @throws MeshSchemaException
 	 * @throws InterruptedException
 	 */
-	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
+	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		MeshAuthUser user = db.tx(() -> {
 			return boot.userDao().findMeshAuthUserByUsername("admin");
 		});
@@ -129,17 +128,7 @@ public class DemoDataProvider {
 		addWebclientPermissions();
 		addAnonymousPermissions();
 
-		if (syncIndex) {
-			invokeFullIndex();
-		}
 		log.info("Demo data setup completed");
-	}
-
-	/**
-	 * Invoke the reindex action to update the search index.
-	 */
-	public void invokeFullIndex() {
-		boot.syncIndex();
 	}
 
 	/**

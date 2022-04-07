@@ -43,7 +43,7 @@ public class DemoVerticle extends AbstractVerticle {
 		if (boot.isInitialSetup()) {
 			vertx.executeBlocking(bc -> {
 				try {
-					demoDataProvider.setup(true);
+					demoDataProvider.setup();
 					bc.complete();
 				} catch (Exception e) {
 					log.error("Error while generating demo data.", e);
@@ -64,12 +64,7 @@ public class DemoVerticle extends AbstractVerticle {
 			});
 		} else {
 			log.info("Demo graph was already setup once. Not invoking demo data setup.");
-			vertx.executeBlocking(bc -> {
-				demoDataProvider.invokeFullIndex();
-				bc.complete();
-			}, false, rh -> {
-				promise.complete();
-			});
+			promise.complete();
 		}
 
 	}

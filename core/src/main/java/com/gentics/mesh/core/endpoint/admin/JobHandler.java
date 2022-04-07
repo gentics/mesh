@@ -9,19 +9,29 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.action.JobDAOActions;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -30,6 +40,7 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.parameter.JobParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import io.vertx.core.logging.Logger;
@@ -64,7 +75,82 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 			JobDao root = boot.jobDao();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
-			Page<? extends HibJob> page = root.findAllNoPerm(ac, pagingInfo);
+			JobParameters jobParameters = ac.getJobParameters();
+			Predicate<HibJob> filter = null;
+			if (!jobParameters.isEmpty()) {
+				List<Pair<Set<String>, Function<HibJob, String>>> props = new ArrayList<>();
+				props.add(Pair.of(jobParameters.getBranchName(), job -> {
+					HibBranch branch = job.getBranch();
+					return branch != null ? branch.getName() : null;
+				}));
+				props.add(Pair.of(jobParameters.getBranchUuid(), job -> {
+					HibBranch branch = job.getBranch();
+					return branch != null ? branch.getUuid() : null;
+				}));
+				props.add(Pair.of(jobParameters.getSchemaName(), job -> {
+					HibSchemaVersion toSchemaVersion = job.getToSchemaVersion();
+					if (toSchemaVersion != null) {
+						return toSchemaVersion.getSchemaContainer().getName();
+					} else {
+						return null;
+					}
+				}));
+				props.add(Pair.of(jobParameters.getSchemaUuid(), job -> {
+					HibSchemaVersion toSchemaVersion = job.getToSchemaVersion();
+					if (toSchemaVersion != null) {
+						return toSchemaVersion.getSchemaContainer().getUuid();
+					} else {
+						return null;
+					}
+				}));
+				props.add(Pair.of(jobParameters.getMicroschemaName(), job -> {
+					HibMicroschemaVersion toVersion = job.getToMicroschemaVersion();
+					if (toVersion != null) {
+						return toVersion.getSchemaContainer().getName();
+					} else {
+						return null;
+					}
+				}));
+				props.add(Pair.of(jobParameters.getMicroschemaUuid(), job -> {
+					HibMicroschemaVersion toVersion = job.getToMicroschemaVersion();
+					if (toVersion != null) {
+						return toVersion.getSchemaContainer().getUuid();
+					} else {
+						return null;
+					}
+				}));
+				props.add(Pair.of(jobParameters.getFromVersion(), job -> {
+					if (job.getFromSchemaVersion() != null) {
+						return job.getFromSchemaVersion().getVersion();
+					} else if (job.getFromMicroschemaVersion() != null) {
+						return job.getFromMicroschemaVersion().getVersion();
+					}
+					return null;
+				}));
+				props.add(Pair.of(jobParameters.getToVersion(), job -> {
+					if (job.getToSchemaVersion() != null) {
+						return job.getToSchemaVersion().getVersion();
+					} else if (job.getToMicroschemaVersion() != null) {
+						return job.getToMicroschemaVersion().getVersion();
+					}
+					return null;
+				}));
+				filter = job -> {
+					if (!jobParameters.getStatus().isEmpty() && !jobParameters.getStatus().contains(job.getStatus())) {
+						return false;
+					}
+					if (!jobParameters.getType().isEmpty() && !jobParameters.getType().contains(job.getType())) {
+						return false;
+					}
+					for (Pair<Set<String>, Function<HibJob, String>> prop : props) {
+						if (!prop.getLeft().isEmpty() && !prop.getLeft().contains(prop.getRight().apply(job))) {
+							return false;
+						}
+					}
+					return true;
+				};
+			}
+			Page<? extends HibJob> page = root.findAllNoPerm(ac, pagingInfo, filter);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {

@@ -17,6 +17,11 @@
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
+| oldSchema
+| true
+| object
+| Reference to the old schema version that was assigned before (may be null).
+
 | origin
 | true
 | string
