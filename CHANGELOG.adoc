@@ -31,6 +31,10 @@ icon:check[] Plugins: Creating a static handler for files in the plugin's classp
 work, if the plugin directory was configured with an absolute path. Plugin initialization would fail, because the static handler could not be created.
 This has been fixed by allowing root filesystem access to the static handler, if the plugin directory is configured with an absolute path.
 
+icon:check[] Clustering: When starting an instance of Gentics Mesh with the command line parameter `-resetAdminPassword` to reset the password of the
+`admin` user, starting would fail if the write quorum of OrientDB was not reached. The startup behaviour has been changed now, so that resetting the
+password is delayed until the write quorum is reached.
+
 [[v1.8.2]]
 == 1.8.2 (29.03.2022)
 
