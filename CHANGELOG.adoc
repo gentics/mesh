@@ -22,6 +22,29 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
+[[v1.8.3]]
+== 1.8.3 (08.04.2022)
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.3`.
+
+icon:check[] Plugins: Creating a static handler for files in the plugin's classpath using the new method RestPlugin::addStaticHandlerFromClasspath did not
+work, if the plugin directory was configured with an absolute path. Plugin initialization would fail, because the static handler could not be created.
+This has been fixed by allowing root filesystem access to the static handler, if the plugin directory is configured with an absolute path.
+
+icon:check[] Clustering: When starting an instance of Gentics Mesh with the command line parameter `-resetAdminPassword` to reset the password of the
+`admin` user, starting would fail if the write quorum of OrientDB was not reached. The startup behaviour has been changed now, so that resetting the
+password is delayed until the write quorum is reached.
+
+icon:check[] Rest: When creating a new user and setting the admin flag to `false`, this failed if the request user did not have the admin flag set
+to `true`. The permission check has been fixed now, so that the admin flag is only required for the requesting user, if the new user should also
+have the admin flag set to `true`.
+
+icon:check[] Core: When a project was renamed, deleted and then recreated with the same name, an internal cache was not cleared and caused
+subsequent errors in calls to the project, until the Mesh instance was restarted.
+This has been fixed now. The internal caches will be properly cleared.
+
+icon:plus[] Rest: The new endpoint `DELETE /api/v1/admin/cache` will clear all internal caches (cluster wide).
+
 [[v1.8.2]]
 == 1.8.2 (29.03.2022)
 

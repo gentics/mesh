@@ -134,4 +134,10 @@ public interface AdminClientMethods {
 	 * @return
 	 */
 	MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig);
+
+	/**
+	 * Clear the caches (cluster wide)
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> clearCache();
 }

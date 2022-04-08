@@ -26,6 +26,7 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -55,9 +56,9 @@ public class OrientDBAdminHandler extends AdminHandler {
 	public OrientDBAdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot,
 			SearchProvider searchProvider, HandlerUtilities utils, MeshOptions options,
 			RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-			ConsistencyCheckHandler consistencyCheckHandler) {
+			ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry) {
 		super(vertx, db, routerStorage, boot, searchProvider, utils, options, routerStorageRegistry, coordinator, writeLock,
-				consistencyCheckHandler);
+				consistencyCheckHandler, cacheRegistry);
 	}
 
 	@Override
