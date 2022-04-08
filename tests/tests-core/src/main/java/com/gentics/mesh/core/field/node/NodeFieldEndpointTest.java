@@ -78,7 +78,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		HibNode node = folder("2015");
 		List<HibNode> targetNodes = Arrays.asList(folder("news"), folder("deals"));
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 1; i++) {
 			HibNode newValue = targetNodes.get(i % 2);
 
 			HibNode oldValue = null;

@@ -55,6 +55,8 @@ import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -93,7 +95,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		// 2. Update the binary data
-		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+		call(() -> uploadRandomData(content("news_2015"), "en", "binary", binaryLen, contentType, fileName));
 
 		// 3. Try to resolve the path
 		String path = "/News/2015/somefile.dat";
@@ -236,19 +238,20 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadContentWithNodeRefByPath() throws Exception {
+		// Update content schema and add node field
+		String json = tx(() -> schemaContainer("folder").getLatestVersion().getJson());
+		String uuid = tx(() -> schemaContainer("folder").getUuid());
+		waitForJob(() -> {
+			SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
+			call(() -> client().updateSchema(uuid, schema));
+		});
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
 			RoleDao roleDao = tx.roleDao();
 			HibNode parentNode = folder("2015");
-			// Update content schema and add node field
-			HibSchema folderSchema = schemaContainer("folder");
-			SchemaVersionModel schema = folderSchema.getLatestVersion().getSchema();
-			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
-			folderSchema.getLatestVersion().setSchema(schema);
-			mesh().serverSchemaStorage().addSchema(schema);
-
 			// Create content which is only german
 			HibSchema contentSchema = schemaContainer("content");
 			HibNode node = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
@@ -258,12 +261,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, german(), project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
-			englishContainer.createString("displayName").setString("german displayName");
+			//englishContainer.createString("displayName").setString("german displayName");
 			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015
 			contentDao.getLatestDraftFieldContainer(parentNode, english()).createNode("nodeRef", node);
-			tx.success();
 		}
 
 		try (Tx tx = tx()) {
