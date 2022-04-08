@@ -448,6 +448,15 @@ Event which will clear the path stores.
 
 
 
+=== _mesh.clear-caches_
+
+Event which will clear the internal caches.
+
+
+
+
+
+
 === _mesh.user.created_
 
 Emitted when a user was created.
