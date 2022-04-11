@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -216,6 +217,25 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		assertThat(httpGet(CURRENT_API_BASE_PATH + "/plugins/static/static/removed.txt").execute().code())
 			.as("Response code for removed.txt").isEqualTo(404);
 		assertEquals("added", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/static/static/added.txt"));
+	}
+
+	/**
+	 * Test static file delivery, when the plugin directory is configured with an absolute path.
+	 * @throws IOException
+	 * @throws TimeoutException
+	 */
+	@Test
+	public void testStaticHandlerAbsolutePluginDir() throws IOException, TimeoutException {
+		grantAdmin();
+
+		// make the configured plugin dir absolute
+		File pluginDir = new File(pluginDir());
+		setPluginBaseDir(pluginDir.getAbsolutePath());
+
+		try (ExpectedEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+			copyAndDeploy(STATIC_PATH, "plugin.jar");
+		}
+		assertEquals("before change", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/static/static/changed.txt"));
 	}
 
 	@Test
