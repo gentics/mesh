@@ -137,6 +137,18 @@ public abstract class MeshOptions implements Option {
 	@EnvironmentVariable(name = MESH_MAX_PURGE_BATCH_SIZE, description = "Override the maximum purge batch size.")
 	private int versionPurgeMaxBatchSize = 10;
 
+	public MailOptions getMailOptions() {
+		return mailOptions;
+	}
+
+	public void setMailOptions(MailOptions mailOptions) {
+		this.mailOptions = mailOptions;
+	}
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Mail options.")
+	private MailOptions mailOptions= new MailOptions();
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
 	private GraphQLOptions graphQLOptions = new GraphQLOptions();

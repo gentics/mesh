@@ -63,10 +63,12 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private HandlerUtilities handlerUtilities;
 
+	private MailHandler mailHandler;
+
 	@Inject
 	public AdminEndpoint(MeshAuthChainImpl chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
 		PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler,
-		HandlerUtilities handlerUtilities) {
+		HandlerUtilities handlerUtilities, MailHandler mailHandler) {
 		super("admin", chain);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
@@ -76,6 +78,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		this.localConfigHandler = localConfigHandler;
 		this.shutdownHandler = shutdownHandler;
 		this.handlerUtilities = handlerUtilities;
+		this.mailHandler = mailHandler;
 	}
 
 	public AdminEndpoint() {
@@ -112,6 +115,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addShutdownHandler();
 		addCoordinatorHandler();
 		addCacheHandler();
+		addMailHandler();
 	}
 
 	private void addSecurityLogger() {
@@ -474,6 +478,19 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Clearing the caches has been invoked.");
 		endpoint.handler(rc -> {
 			adminHandler.handleCacheClear(wrap(rc));
+		});
+	}
+	private void addMailHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/mail");
+		endpoint.method(POST);
+		endpoint.setMutating(false);
+		endpoint.description("Send an email with the given data in the body");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleRequest(adminExamples.createMailOptionsRequest());
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "The Mail was sent!.");
+		endpoint.blockingHandler(rc -> {
+			mailHandler.handleInvokeMailWorker(wrap(rc));
 		});
 	}
 
