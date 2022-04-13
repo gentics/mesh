@@ -1,6 +1,7 @@
 package com.gentics.mesh.cli;
 
 import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
 import java.io.File;
@@ -13,14 +14,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
+import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
+import ch.qos.logback.core.util.FileSize;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,23 +86,21 @@ import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
-import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
+import io.vertx.core.spi.cluster.ClusterManager;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * @see BootstrapInitializer
@@ -177,6 +180,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	protected Vertx vertx;
 
 	protected String initialPasswordInfo;
+
+	private ClusterManager clusterManager;
 
 	protected AbstractBootstrapInitializer() {
 		clearReferences();
@@ -910,7 +915,60 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * @param vertxOptions
 	 *            Vert.x options
 	 */
-	protected abstract Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions);
+	protected Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions) {
+		clusterManager = db.clusterManager().getVertxClusterManager();
+		vertxOptions.setClusterManager(clusterManager);
+		String localIp = options.getClusterOptions().getNetworkHost();
+
+		Integer clusterPort = options.getClusterOptions().getVertxPort();
+		int vertxClusterPort = clusterPort == null ? 0 : clusterPort;
+
+		EventBusOptions eventbus = vertxOptions.getEventBusOptions();
+		eventbus.setHost(localIp);
+		eventbus.setPort(vertxClusterPort);
+		eventbus.setClusterPublicHost(localIp);
+		eventbus.setClusterPublicPort(vertxClusterPort);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Using Vert.x cluster port {" + vertxClusterPort + "}");
+			log.debug("Using Vert.x cluster public port {" + vertxClusterPort + "}");
+			log.debug("Binding Vert.x on host {" + localIp + "}");
+		}
+		CompletableFuture<Vertx> fut = new CompletableFuture<>();
+		Vertx.clusteredVertx(vertxOptions, rh -> {
+			log.info("Created clustered Vert.x instance");
+			if (rh.failed()) {
+				Throwable cause = rh.cause();
+				log.error("Failed to create clustered Vert.x instance", cause);
+				fut.completeExceptionally(new RuntimeException("Error while creating clusterd Vert.x instance", cause));
+				return;
+			}
+			Vertx vertx = rh.result();
+			fut.complete(vertx);
+		});
+		try {
+			return fut.get(getClusteredVertxInitializationTimeoutInSeconds(), SECONDS);
+		} catch (Exception e) {
+			throw new RuntimeException("Error while creating clusterd Vert.x instance");
+		}
+	}
+
+	/**
+	 * The timeout used when initializing a clustered vertx instance. If the instance is not available during the provided
+	 * timeout, and exception will be thrown
+	 * @return
+	 */
+	public int getClusteredVertxInitializationTimeoutInSeconds() {
+		return 10;
+	}
+
+	/**
+	 * Return the cluster manager
+	 * @return
+	 */
+	protected ClusterManager getClusterManager() {
+		return clusterManager;
+	}
 
 	/**
 	 * Get the database instance

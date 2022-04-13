@@ -70,8 +70,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 	private MeshRoot meshRoot;
 
-	private HazelcastClusterManager manager;
-
 	private final ReindexAction SYNC_INDEX_ACTION = (() -> {
 		// Init the classes / indices
 		DatabaseHelper.init(db);
@@ -101,47 +99,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		// Update graph indices and vertex types (This may take some time)
 		DatabaseHelper.init(db);
 	}
-	
-	@Override
-	protected Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions) {
-		HazelcastInstance hazelcast = db.clusterManager().getHazelcast();
-		Objects.requireNonNull(hazelcast, "The hazelcast instance was not yet initialized.");
-		manager = new HazelcastClusterManager(hazelcast);
-		vertxOptions.setClusterManager(manager);
-		String localIp = options.getClusterOptions().getNetworkHost();
 
-		Integer clusterPort = options.getClusterOptions().getVertxPort();
-		int vertxClusterPort = clusterPort == null ? 0 : clusterPort;
-
-		EventBusOptions eventbus = vertxOptions.getEventBusOptions();
-		eventbus.setHost(localIp);
-		eventbus.setPort(vertxClusterPort);
-		eventbus.setClusterPublicHost(localIp);
-		eventbus.setClusterPublicPort(vertxClusterPort);
-
-		if (log.isDebugEnabled()) {
-			log.debug("Using Vert.x cluster port {" + vertxClusterPort + "}");
-			log.debug("Using Vert.x cluster public port {" + vertxClusterPort + "}");
-			log.debug("Binding Vert.x on host {" + localIp + "}");
-		}
-		CompletableFuture<Vertx> fut = new CompletableFuture<>();
-		Vertx.clusteredVertx(vertxOptions, rh -> {
-			log.info("Created clustered Vert.x instance");
-			if (rh.failed()) {
-				Throwable cause = rh.cause();
-				log.error("Failed to create clustered Vert.x instance", cause);
-				fut.completeExceptionally(new RuntimeException("Error while creating clusterd Vert.x instance", cause));
-				return;
-			}
-			Vertx vertx = rh.result();
-			fut.complete(vertx);
-		});
-		try {
-			return fut.get(10, SECONDS);
-		} catch (Exception e) {
-			throw new RuntimeException("Error while creating clusterd Vert.x instance");
-		}
-	}
 	@Override
 	public void initMandatoryData(MeshOptions config) throws Exception {
 		db.tx(tx -> {
@@ -236,9 +194,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 			// Now since hazelcast is ready we can create Vert.x
 			initVertx(options);
 
-			// Register the event handlers now since vert.x can now be used
-			db.clusterManager().registerEventHandlers();
-
 			// Setup the connection pool in order to allow transactions to be used
 			db.setupConnectionPool();
 
@@ -257,8 +212,6 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 			// Now init vert.x since hazelcast is now ready.
 			initVertx(options);
 
-			// Register the event handlers now since vert.x can now be used
-			db.clusterManager().registerEventHandlers();
 			isInitialSetup = false;
 
 			// Setup the connection pool in order to allow transactions to be used
@@ -273,7 +226,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		boolean active = false;
 		while (!active) {
 			log.info("Waiting for hazelcast to become active");
-			active = manager.getHazelcastInstance().getLifecycleService().isRunning();
+			active = ((HazelcastClusterManager) getClusterManager()).getHazelcastInstance().getLifecycleService().isRunning();
 			if (active) {
 				break;
 			}
