@@ -87,6 +87,7 @@ import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -610,6 +611,41 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		// Handle admin password reset
 		String password = configuration.getAdminPassword();
 		if (password != null) {
+			// wait for writeQuorum, then update/create the admin user
+			db().clusterManager().waitUntilWriteQuorumReached().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
+					"setting admin password", ensureAdminUser(password), 60 * 1000)).subscribe();
+		}
+
+		registerEventHandlers();
+
+	}
+
+	/**
+	 * Return a completable which will try to get a global lock with given name and will then execute the locked action
+	 * @param lockName name of the lock to acquire
+	 * @param description description of the locked action (for log output)
+	 * @param lockedAction locked action
+	 * @param timeout timeout for waiting for the lock
+	 * @return completable
+	 */
+	protected Completable doWithLock(String lockName, String description, Completable lockedAction, long timeout) {
+		return mesh.getRxVertx().sharedData().rxGetLockWithTimeout(lockName, timeout).toMaybe()
+				.flatMapCompletable(lock -> {
+					log.debug("Acquired lock for " + description);
+					return lockedAction.doFinally(() -> {
+						log.debug("Releasing lock for " + description);
+						lock.release();
+					});
+				});
+	}
+
+	/**
+	 * Completable which will ensure that the admin user exists, is flagged as "admin" and has the given password set.
+	 * @param password admin password
+	 * @return completable
+	 */
+	protected Completable ensureAdminUser(String password) {
+		return Completable.defer(() -> {
 			db().tx(tx -> {
 				UserDao userDao = tx.userDao();
 				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
@@ -628,10 +664,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				}
 				tx.success();
 			});
-		}
-
-		registerEventHandlers();
-
+			return Completable.complete();
+		});
 	}
 
 	@Override

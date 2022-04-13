@@ -318,24 +318,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 		// wait for writeQuorum, then raise a global lock and execute changelog
 		db.clusterManager().waitUntilWriteQuorumReached()
-				.andThen(doWithLock(executeChangelog(flags, configuration), 60 * 1000)).subscribe();
-	}
-
-	/**
-	 * Return a completable which will try to get a global lock with name {@link #GLOBAL_CHANGELOG_LOCK_KEY} and will then execute the locked action
-	 * @param lockedAction locked action
-	 * @param timeout timeout for waiting for the lock
-	 * @return completable
-	 */
-	protected Completable doWithLock(Completable lockedAction, long timeout) {
-		return mesh.getRxVertx().sharedData().rxGetLockWithTimeout(GLOBAL_CHANGELOG_LOCK_KEY, timeout).toMaybe()
-				.flatMapCompletable(lock -> {
-					log.debug("Acquired lock for executing changelog");
-					return lockedAction.doFinally(() -> {
-						log.debug("Releasing lock for executing changelog");
-						lock.release();
-					});
-				});
+				.andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY, "executing changelog", executeChangelog(flags, configuration), 60 * 1000)).subscribe();
 	}
 
 	/**
