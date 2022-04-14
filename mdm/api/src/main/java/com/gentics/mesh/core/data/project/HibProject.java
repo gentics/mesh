@@ -4,9 +4,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 
-import java.util.Set;
-
 import java.util.Objects;
+import java.util.Set;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
@@ -45,14 +44,6 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenc
 	}
 
 	/**
-	 * Locate the branch with the given name or uuid. Fallback to the latest branch if the given branch could not be found.
-	 *
-	 * @param branchNameOrUuid
-	 * @return
-	 */
-	HibBranch findBranchOrLatest(String branchNameOrUuid);
-
-	/**
 	 * Return the currently set latest branch of the project.
 	 *
 	 * @return
@@ -65,14 +56,6 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenc
 	 * @return
 	 */
 	HibBranch getInitialBranch();
-
-	/**
-	 * Find the branch with the given name or uuid that exists in the project.
-	 *
-	 * @param branchNameOrUuid
-	 * @return
-	 */
-	HibBranch findBranch(String branchNameOrUuid);
 
 	/**
 	 * Return the base node of the project.

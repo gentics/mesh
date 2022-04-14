@@ -222,4 +222,9 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 		branch.setProject(root);
 		return branch;
 	}
+
+	@Override
+	public HibBranch getInitialBranch(HibProject project) {
+		return toGraph(project).getBranchRoot().getInitialBranch();
+	}
 }
