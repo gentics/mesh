@@ -78,6 +78,7 @@ import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -171,6 +172,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Inject
 	public LivenessManager liveness;
+
+	@Inject
+	public EventBusLivenessManager eventbusLiveness;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
@@ -421,6 +425,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		if (initialPasswordInfo != null) {
 			System.out.println(initialPasswordInfo);
 		}
+
+		eventbusLiveness.startRegularChecks();
 	}
 
 	/**

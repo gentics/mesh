@@ -26,6 +26,10 @@ icon:check[] Rest: Many reading request were implemented in a way that they woul
 So would e.g. a long running graphql request cause webroot requests executed at the same time to be queued until the graphql request was done.
 The behaviour has been changed, so that reading requests will only be queued, if the worker pool has been exhausted.
 
+icon:check[] Core: A periodic check for the EventBus has been added, which can be configured via the configuration settings `vertxOptions.eventBus.checkInterval`,
+`vertxOptions.eventBus.warnThreshold` and `vertxOptions.eventBus.errorThreshold`. If enabled (which is the default), and the periodically sent ping event is not
+received within the given error threshold, the Mesh instance which be considered unhealthy (liveness check will fail).
+
 [[v1.6.27]]
 == 1.6.27 (08.04.2022)
 
