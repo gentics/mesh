@@ -6,8 +6,10 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.changelog.highlevel.change.ExtractPlainText;
 import com.gentics.mesh.changelog.highlevel.change.FixNodeVersionOrder;
 import com.gentics.mesh.changelog.highlevel.change.RestructureWebrootIndex;
+import com.gentics.mesh.changelog.highlevel.change.SetAdminUserFlag;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 
 /**
@@ -17,13 +19,19 @@ import com.gentics.mesh.core.data.changelog.HighLevelChange;
  *
  */
 @Singleton
-public class OrientDBHighLevelChangesList extends HighLevelChangesList {
+public class OrientDBHighLevelChangesList implements HighLevelChangesList {
 
 	@Inject
 	public RestructureWebrootIndex restructureWebroot;
 
 	@Inject
 	public FixNodeVersionOrder fixNodeVersionOrder;
+
+	@Inject
+	public ExtractPlainText plainText;
+
+	@Inject
+	public SetAdminUserFlag setAdminUserFlag;
 
 	@Inject
 	public OrientDBHighLevelChangesList() {
