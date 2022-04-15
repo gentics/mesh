@@ -41,6 +41,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -189,6 +190,8 @@ public interface MeshComponent {
 	MeshEventSender eventSender();
 
 	LivenessManager livenessManager();
+
+	EventBusLivenessManager eventbusLivenessManager();
 
 	@Component.Builder
 	interface Builder {

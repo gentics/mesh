@@ -88,7 +88,9 @@ import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.event.EventBusLivenessManagerImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistry;
@@ -189,6 +191,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public LivenessManager liveness;
+
+	@Inject
+	public EventBusLivenessManager eventbusLiveness;
 
 	private MeshRoot meshRoot;
 
@@ -397,6 +402,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (initialPasswordInfo != null) {
 			System.out.println(initialPasswordInfo);
 		}
+
+		eventbusLiveness.startRegularChecks();
 	}
 
 	/**
