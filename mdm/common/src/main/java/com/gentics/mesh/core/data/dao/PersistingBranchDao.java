@@ -12,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -411,5 +412,43 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 */
 	private void setTagsToRest(HibBranch branch, InternalActionContext ac, BranchResponse restNode) {
 		restNode.setTags(branch.getTags().stream().map(HibTag::transformToReference).collect(Collectors.toList()));
+	}
+
+	/**
+	 * Look for a branch in the project by either UUID or name, making aware of the cache.
+	 * 
+	 * @param project
+	 * @param branchNameOrUuid
+	 * @return
+	 */
+	default Optional<HibBranch> findBranchOpt(HibProject project, String branchNameOrUuid) {
+		return Optional.ofNullable(CommonTx.get().data().mesh().branchCache().get(project.getId() + "-" + branchNameOrUuid, key -> {
+			HibBranch branch = null;
+
+			if (!isEmpty(branchNameOrUuid)) {
+				branch = findByUuid(project, branchNameOrUuid);
+				if (branch == null) {
+					branch = findByName(project, branchNameOrUuid);
+				}
+				if (branch == null) {
+					return null;
+				}
+			} else {
+				branch = getLatestBranch(project);
+			}
+
+			return branch;
+		}));
+	}
+
+	@Override
+	default HibBranch findBranch(HibProject project, String branchNameOrUuid) {
+		return findBranchOpt(project, branchNameOrUuid)
+			.orElseThrow(() -> error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid));
+	}
+
+	@Override
+	default HibBranch findBranchOrLatest(HibProject project, String branchNameOrUuid) {
+		return findBranchOpt(project, branchNameOrUuid).orElseGet(() -> getLatestBranch(project));
 	}
 }

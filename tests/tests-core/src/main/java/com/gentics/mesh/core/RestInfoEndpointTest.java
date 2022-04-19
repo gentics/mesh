@@ -33,7 +33,6 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 	public void testGetInfo() {
 		MeshServerInfoModel info = call(() -> client().getApiInfo());
 		assertEquals(Mesh.getPlainVersion(), info.getMeshVersion());
-		assertEquals("orientdb", info.getDatabaseVendor());
 		assertEquals("dev-null", info.getSearchVendor());
 		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
 		assertEquals(options().getNodeName(), info.getMeshNodeName());

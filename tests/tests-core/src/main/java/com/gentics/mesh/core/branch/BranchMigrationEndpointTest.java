@@ -132,9 +132,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartForInitial() throws Throwable {
-		try (Tx tx = tx()) {
-			triggerAndWaitForJob(requestBranchMigration(initialBranch()), FAILED);
-		}
+		triggerAndWaitForJob(requestBranchMigration(initialBranch()), FAILED);
 	}
 
 	@Test
