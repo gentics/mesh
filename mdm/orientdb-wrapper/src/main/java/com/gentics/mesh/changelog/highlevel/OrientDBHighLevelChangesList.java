@@ -1,15 +1,12 @@
 package com.gentics.mesh.changelog.highlevel;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.changelog.highlevel.change.ExtractPlainText;
 import com.gentics.mesh.changelog.highlevel.change.FixNodeVersionOrder;
 import com.gentics.mesh.changelog.highlevel.change.RestructureWebrootIndex;
-import com.gentics.mesh.changelog.highlevel.change.SetAdminUserFlag;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 
 /**
@@ -19,7 +16,7 @@ import com.gentics.mesh.core.data.changelog.HighLevelChange;
  *
  */
 @Singleton
-public class OrientDBHighLevelChangesList implements HighLevelChangesList {
+public class OrientDBHighLevelChangesList extends HighLevelChangesList {
 
 	@Inject
 	public RestructureWebrootIndex restructureWebroot;
@@ -28,27 +25,21 @@ public class OrientDBHighLevelChangesList implements HighLevelChangesList {
 	public FixNodeVersionOrder fixNodeVersionOrder;
 
 	@Inject
-	public ExtractPlainText plainText;
-
-	@Inject
-	public SetAdminUserFlag setAdminUserFlag;
-
-	@Inject
 	public OrientDBHighLevelChangesList() {
 	}
 
 	@Override
 	public List<HighLevelChange> getList() {
-		return Arrays.asList(
-			restructureWebroot,
-			plainText,
-			fixNodeVersionOrder,
-			setAdminUserFlag
+		List<HighLevelChange> changeList = super.getList();
+
 		// ADD NEW CHANGES HERE!
 		// WARNING!
 		// Only add changes when absolutely needed. Try to avoid changelog entries since those would require a offline update.
 		// Instead it is recommended to write changes in a way so that those can be applied on the fly.
 		// WARNING!
-		);
+		changeList.add(restructureWebroot);
+		changeList.add(fixNodeVersionOrder);
+
+		return changeList;
 	}
 }
