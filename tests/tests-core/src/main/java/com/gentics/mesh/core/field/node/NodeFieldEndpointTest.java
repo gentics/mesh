@@ -426,6 +426,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode folder = folder("2015");
 		try (Tx tx = tx()) {
 			prepareTypedSchema(schemaContainer("folder"), List.of(FieldUtil.createNodeFieldSchema(FIELD_NAME)), Optional.empty());
+			tx.success();
 		}
 		// add a node in german and english
 		NodeCreateRequest createGermanNode = new NodeCreateRequest();
@@ -450,7 +451,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		createSourceNode.getFields().put("name", createStringField("German Source"));
 		createSourceNode.getFields().put(FIELD_NAME, createNodeField(germanTarget.getUuid()));
 
-		NodeResponse source = client().createNode(PROJECT_NAME, createSourceNode).blockingGet();
+		NodeResponse source = call(() -> client().createNode(PROJECT_NAME, createSourceNode));
 		try (Tx tx = tx()) {
 				
 			// read source node with expanded field
