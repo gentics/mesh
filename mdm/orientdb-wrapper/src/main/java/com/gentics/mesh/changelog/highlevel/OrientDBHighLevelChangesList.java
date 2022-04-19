@@ -1,5 +1,6 @@
 package com.gentics.mesh.changelog.highlevel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -30,7 +31,7 @@ public class OrientDBHighLevelChangesList extends HighLevelChangesList {
 
 	@Override
 	public List<HighLevelChange> getList() {
-		List<HighLevelChange> changeList = super.getList();
+		List<HighLevelChange> changeList = new ArrayList<>(super.getList());
 
 		// ADD NEW CHANGES HERE!
 		// WARNING!
