@@ -82,12 +82,38 @@ public interface BranchDao extends DaoTransformable<HibBranch, BranchResponse>, 
 	HibBranch create(HibProject project, String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, EventQueueBatch batch);
 
 	/**
-	 * Return the latest branch for the project.
-	 * 
+	 * Return the currently set latest branch of the project.
+	 *
 	 * @param project
 	 * @return
 	 */
 	HibBranch getLatestBranch(HibProject project);
+
+	/**
+	 * Return the initial branch of the project.
+	 *
+	 * @param project
+	 * @return
+	 */
+	HibBranch getInitialBranch(HibProject project);
+
+	/**
+	 * Locate the branch with the given name or uuid. Fallback to the latest branch if the given branch could not be found.
+	 *
+	 * @param project
+	 * @param branchNameOrUuid
+	 * @return
+	 */
+	HibBranch findBranchOrLatest(HibProject project, String branchNameOrUuid);
+
+	/**
+	 * Find the branch with the given name or uuid that exists in the project.
+	 *
+	 * @param project
+	 * @param branchNameOrUuid
+	 * @return
+	 */
+	HibBranch findBranch(HibProject project, String branchNameOrUuid);
 
 	/**
 	 * Find the branch schema edge for the given branch and version.

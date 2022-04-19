@@ -88,7 +88,7 @@ public class MeshTestContext extends TestWatcher {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
 	}
 
-	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
+	public static final Logger LOG = LoggerFactory.getLogger(MeshTestContext.class);
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
@@ -304,7 +304,7 @@ public class MeshTestContext extends TestWatcher {
 	private void setupRestEndpoints(MeshTestSetting settings) throws Exception {
 		mesh.getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
-		log.info("Using port:  " + httpPort);
+		LOG.info("Using port:  " + httpPort);
 		meshDagger.routerStorageRegistry().addProject(TestDataProvider.PROJECT_NAME);
 
 		// Setup the rest client
@@ -364,7 +364,7 @@ public class MeshTestContext extends TestWatcher {
 				clients.put("http_v" + version, oldClient);
 			});
 		});
-		log.info("Using monitoring port: " + monitoringPort);
+		LOG.info("Using monitoring port: " + monitoringPort);
 		MonitoringClientConfig monitoringClientConfig = new MonitoringClientConfig.Builder()
 			.setBasePath(CURRENT_API_BASE_PATH)
 			.setHost("localhost")
@@ -447,7 +447,7 @@ public class MeshTestContext extends TestWatcher {
 			meshDagger.database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
-		log.info("Clearing DB took {" + duration + "} ms.");
+		LOG.info("Clearing DB took {" + duration + "} ms.");
 		if (trackingSearchProvider != null) {
 			trackingSearchProvider.reset();
 		}
@@ -694,7 +694,7 @@ public class MeshTestContext extends TestWatcher {
 	 * @throws Exception
 	 */
 	public void initDagger(MeshOptions options, MeshTestSetting settings) throws Exception {
-		log.info("Initializing dagger context");
+		LOG.info("Initializing dagger context");
 		try {
 			@NotNull MeshComponent.Builder builder = getMeshDaggerBuilder();
 			mesh = new MeshImpl(options, builder);
@@ -751,7 +751,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private void listenToSearchIdleEvent() {
 		idleConsumer = vertx.eventBus().consumer(MeshEvent.SEARCH_IDLE.address, handler -> {
-			log.info("Got search idle event");
+			LOG.info("Got search idle event");
 			if (idleLatch != null) {
 				idleLatch.countDown();
 			}

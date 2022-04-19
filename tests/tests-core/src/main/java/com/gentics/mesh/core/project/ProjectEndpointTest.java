@@ -220,6 +220,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	@Override
+	@Ignore("Not valid over dup UUIDs being allowed globally")
 	public void testCreateWithDuplicateUuid() throws Exception {
 		try (Tx noTx = tx()) {
 			String uuid = user().getUuid();

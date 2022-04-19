@@ -178,10 +178,10 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-
-			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_found_field_is_not_binary",
-				"nonBinary");
 		}
+
+		call(() -> uploadRandomData(folder("news"), "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_found_field_is_not_binary",
+			"nonBinary");
 	}
 
 	@Test
@@ -262,13 +262,13 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "image/jpeg";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("news");
 			prepareTypedSchema(node, FieldUtil.createBinaryFieldSchema("image"), false);
-
-			call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
 		}
+
+		call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
 
 		String uuid = tx(() -> folder("news").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
