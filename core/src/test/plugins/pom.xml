@@ -27,6 +27,8 @@
 		<module>graphql</module>
 		<module>invalid-graphql</module>
 		<module>auth</module>
+		<module>static</module>
+		<module>static2</module>
 	</modules>
 
 	<repositories>

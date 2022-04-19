@@ -28,7 +28,7 @@ public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 
 	@Override
 	public Single<T> toSingle() {
-		return new io.vertx.reactivex.core.Future<T>(future).rxSetHandler();
+		return new io.vertx.reactivex.core.Future<T>(future).rxOnComplete();
 	}
 
 	@Override

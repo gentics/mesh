@@ -41,8 +41,6 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private boolean clustering = false;
 
-	private boolean startEmbeddedES = false;
-
 	private boolean isInMemory = false;
 
 	private List<Tuple<Class<? extends MeshPlugin>, String>> plugins = new ArrayList<>();
@@ -85,12 +83,9 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		meshOptions.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		meshOptions.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
 		meshOptions.getMonitoringOptions().setEnabled(false);
-		meshOptions.getSearchOptions().setStartEmbedded(startEmbeddedES);
 		meshOptions.setInitialAdminPassword("admin");
 		meshOptions.setForceInitialAdminPasswordReset(false);
-		if (!startEmbeddedES) {
-			meshOptions.getSearchOptions().setUrl(null);
-		}
+		meshOptions.getSearchOptions().setUrl(null);
 
 		meshOptions.getClusterOptions().setEnabled(clustering);
 		if (clusterName != null) {
@@ -216,16 +211,6 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 */
 	public MeshLocalServer withClustering() {
 		this.clustering = true;
-		return this;
-	}
-
-	/**
-	 * Start the embedded ES
-	 * 
-	 * @return Fluent API
-	 */
-	public MeshLocalServer withES() {
-		this.startEmbeddedES = true;
 		return this;
 	}
 

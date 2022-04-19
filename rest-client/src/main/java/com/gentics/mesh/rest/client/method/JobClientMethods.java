@@ -3,7 +3,7 @@ package com.gentics.mesh.rest.client.method;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
@@ -18,7 +18,7 @@ public interface JobClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<JobListResponse> findJobs(PagingParameters... parameters);
+	MeshRequest<JobListResponse> findJobs(ParameterProvider... parameters);
 
 	/**
 	 * Load a specific job.

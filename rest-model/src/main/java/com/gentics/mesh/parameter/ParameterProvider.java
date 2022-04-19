@@ -1,7 +1,13 @@
 package com.gentics.mesh.parameter;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.raml.model.parameter.QueryParameter;
@@ -35,6 +41,30 @@ public interface ParameterProvider {
 	void setParameter(String name, String value);
 
 	/**
+	 * Set the multivalue query parameter
+	 * @param <T> value type
+	 * @param name parameter name
+	 * @param values parameter values
+	 * @param converter function to convert the values into strings
+	 */
+	default <T> void setMultivalueParameter(String name, Collection<T> values, Function<T, String> converter) {
+		if (values == null) {
+			setParameter(name, null);
+		} else {
+			setParameter(name, values.stream().map(converter::apply).collect(Collectors.joining(",")));
+		}
+	}
+
+	/**
+	 * Set the multivalue query parameter to string values
+	 * @param name name
+	 * @param values string values
+	 */
+	default void setMultivalueParameter(String name, Collection<String> values) {
+		setMultivalueParameter(name, values, Function.identity());
+	}
+
+	/**
 	 * Return the query parameter value for the given name.
 	 * 
 	 * @param name
@@ -42,6 +72,31 @@ public interface ParameterProvider {
 	 * @return Loaded value or null
 	 */
 	String getParameter(String name);
+
+	/**
+	 * Return the query parameter values for the given name.
+	 * @param <T> value type
+	 * @param name parameter name
+	 * @param converter function that converts the stores String into the expected value
+	 * @return Loaded values or empty set
+	 */
+	default <T> Set<T> getMultivalueParameter(String name, Function<String, T> converter) {
+		String value = getParameter(name);
+		if (value == null || value.isEmpty()) {
+			return Collections.emptySet();
+		} else {
+			return Arrays.asList(value.split(",")).stream().map(converter::apply).collect(Collectors.toSet());
+		}
+	}
+
+	/**
+	 * Return the query parameter values for the given name as set of strings
+	 * @param name parameter name
+	 * @return Loaded values or empty set
+	 */
+	default Set<String> getMultivalueParameter(String name) {
+		return getMultivalueParameter(name, Function.identity());
+	}
 
 	/**
 	 * Return the query parameters as a map.

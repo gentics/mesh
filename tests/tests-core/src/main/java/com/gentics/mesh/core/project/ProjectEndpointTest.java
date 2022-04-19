@@ -220,6 +220,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	@Override
+	@Ignore("Not valid over dup UUIDs being allowed globally")
 	public void testCreateWithDuplicateUuid() throws Exception {
 		try (Tx noTx = tx()) {
 			String uuid = user().getUuid();
@@ -836,5 +837,38 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// get the list of projects
 		list = call(() -> client().findProjects());
 		assertThat(list.getData().stream().map(ProjectResponse::getName)).as("List of projects").containsOnly("dummy");
+	}
+
+	/**
+	 * Test renaming, deleting and re-creating a project (together with project name cache)
+	 */
+	@Test
+	public void testRenameDeleteCreateProject() {
+		// create project named "project"
+		ProjectResponse project = createProject("project");
+
+		// get tag families of project (this will put project into cache)
+		call(() -> client().findTagFamilies("project"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+
+		// rename project to "newproject"
+		project = updateProject(project.getUuid(), "newproject");
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// get tag families of newproject (this will put project into cache)
+		call(() -> client().findTagFamilies("newproject"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+
+		// delete "newproject"
+		deleteProject(project.getUuid());
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// create (again)
+		project = createProject("project");
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// get tag families of project
+		call(() -> client().findTagFamilies("project"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
 	}
 }

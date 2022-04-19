@@ -35,6 +35,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -110,6 +111,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addRuntimeConfigHandler();
 		addShutdownHandler();
 		addCoordinatorHandler();
+		addCacheHandler();
 	}
 
 	private void addSecurityLogger() {
@@ -332,6 +334,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readJobList.method(GET);
 		readJobList.description("List all currently queued jobs.");
 		readJobList.produces(APPLICATION_JSON);
+		readJobList.addQueryParameters(JobParametersImpl.class);
 		readJobList.exampleResponse(OK, jobExamples.createJobList(), "List of jobs.");
 		readJobList.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -459,7 +462,21 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		updateConfig.exampleRequest(adminExamples.createCoordinatorConfigRequest());
 		updateConfig.handler(rc -> adminHandler.handleUpdateCoordinationConfig(wrap(rc)));
 	}
-	
+
+	private void addCacheHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/cache");
+		endpoint.method(DELETE);
+		endpoint.setMutating(false);
+		endpoint.description(
+			"Clear all internal caches (cluster wide).");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Clearing the caches has been invoked.");
+		endpoint.handler(rc -> {
+			adminHandler.handleCacheClear(wrap(rc));
+		});
+	}
+
 	static Handler<RoutingContext> internalHandler(BiConsumer<RoutingContext, InternalActionContext> handler) {
 		return ctx -> handler.accept(ctx, new InternalRoutingActionContextImpl(ctx));
 	}

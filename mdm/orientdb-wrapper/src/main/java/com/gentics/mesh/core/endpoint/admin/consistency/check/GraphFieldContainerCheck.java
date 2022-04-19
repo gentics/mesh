@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -37,8 +36,8 @@ import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.util.VersionNumber;
-
 import com.syncleus.ferma.FramedGraph;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -175,13 +174,12 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 	 * 0.18.3. Due to this bug the {@link Node} was deleted leaving the {@link NodeGraphFieldContainer} dangling in the graph.
 	 */
 	public boolean repair(HibNodeFieldContainer hibContainer) {
-		ContentDao contentDao = Tx.get().contentDao();
 		NodeGraphFieldContainer container = toGraph(hibContainer);
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		BootstrapInitializer boot = mesh.boot();
 		// Pick the first project we find to fetch the initial branchUuid
 		HibProject project = boot.projectDao().findAll().iterator().next();
-		String branchUuid = project.getInitialBranch().getUuid();
+		String branchUuid = boot.branchDao().getInitialBranch(project).getUuid();
 
 		HibSchemaVersion version = container.getSchemaContainerVersion();
 		if (version == null) {

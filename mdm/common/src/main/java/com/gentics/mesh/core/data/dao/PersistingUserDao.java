@@ -509,7 +509,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		}
 
 		Boolean adminFlag = requestModel.getAdmin();
-		if (adminFlag != null) {
+		if (adminFlag != null && adminFlag.booleanValue()) {
 			if (requestUser.isAdmin()) {
 				user.setAdmin(adminFlag);
 			} else {

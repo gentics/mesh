@@ -29,7 +29,8 @@ public class MeshIntegerationTest extends AbstractIntegrationTest implements Mes
 
 	@Test
 	public void testStartup() throws Exception {
-		Mesh mesh = Mesh.create();
+		MeshOptions options = getOptions();
+		Mesh mesh = Mesh.create(options);
 		mesh.rxRun().blockingAwait(TIMEOUT, TimeUnit.SECONDS);
 		mesh.shutdown();
 	}
@@ -38,7 +39,6 @@ public class MeshIntegerationTest extends AbstractIntegrationTest implements Mes
 	public void testStartupWithOptions() throws Exception {
 		MeshOptions options = getOptions();
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
-		options.getSearchOptions().setStartEmbedded(false);
 		options.getSearchOptions().setUrl(null);
 		options.setNodeName("TestNode");
 

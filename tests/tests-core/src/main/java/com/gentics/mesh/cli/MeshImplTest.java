@@ -34,7 +34,6 @@ public class MeshImplTest implements MeshOptionsTypeUnawareContext {
 
 	public MeshOptions options() {
 		MeshOptions opts = getOptions();
-		opts.getSearchOptions().setStartEmbedded(false);
 		return opts;
 	}
 }

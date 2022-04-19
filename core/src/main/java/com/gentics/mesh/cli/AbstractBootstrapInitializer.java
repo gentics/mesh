@@ -51,6 +51,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -89,6 +90,7 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -112,6 +114,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	public static final String GLOBAL_CHANGELOG_LOCK_KEY = "MESH_CHANGELOG_LOCK";
 
 	private static final String ADMIN_USERNAME = "admin";
+
+	@Inject
+	public ServerSchemaStorageImpl schemaStorage;
 
 	@Inject
 	public Database db;
@@ -605,6 +610,41 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		// Handle admin password reset
 		String password = configuration.getAdminPassword();
 		if (password != null) {
+			// wait for writeQuorum, then update/create the admin user
+			db().clusterManager().waitUntilWriteQuorumReached().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
+					"setting admin password", ensureAdminUser(password), 60 * 1000)).subscribe();
+		}
+
+		registerEventHandlers();
+
+	}
+
+	/**
+	 * Return a completable which will try to get a global lock with given name and will then execute the locked action
+	 * @param lockName name of the lock to acquire
+	 * @param description description of the locked action (for log output)
+	 * @param lockedAction locked action
+	 * @param timeout timeout for waiting for the lock
+	 * @return completable
+	 */
+	protected Completable doWithLock(String lockName, String description, Completable lockedAction, long timeout) {
+		return mesh.getRxVertx().sharedData().rxGetLockWithTimeout(lockName, timeout).toMaybe()
+				.flatMapCompletable(lock -> {
+					log.debug("Acquired lock for " + description);
+					return lockedAction.doFinally(() -> {
+						log.debug("Releasing lock for " + description);
+						lock.release();
+					});
+				});
+	}
+
+	/**
+	 * Completable which will ensure that the admin user exists, is flagged as "admin" and has the given password set.
+	 * @param password admin password
+	 * @return completable
+	 */
+	protected Completable ensureAdminUser(String password) {
+		return Completable.defer(() -> {
 			db().tx(tx -> {
 				UserDao userDao = tx.userDao();
 				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
@@ -623,10 +663,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				}
 				tx.success();
 			});
-		}
-
-		registerEventHandlers();
-
+			return Completable.complete();
+		});
 	}
 
 	@Override
@@ -884,6 +922,23 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			}
 		}
 	}
+
+	@Override
+	public void initMandatoryData(MeshOptions config) throws Exception {
+		db.tx(tx -> {
+			initPermissionRoots(tx);
+			initLanguages();
+			schemaStorage.init();
+			tx.success();
+		});
+	}
+
+	/**
+	 * Init permission storage.
+	 * 
+	 * @param tx transaction
+	 */
+	protected abstract void initPermissionRoots(Tx tx);
 
 	/**
 	 * Init languages from the data set.

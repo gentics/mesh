@@ -11,6 +11,7 @@ import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.shared.SharedKeys;
 
 /**
@@ -50,7 +51,7 @@ public class ContextDataRegistryImpl implements ContextDataRegistry {
 			throw error(INTERNAL_SERVER_ERROR, "Cannot get branch without a project");
 		}
 		String branchNameOrUuid = ac.getVersioningParameters().getBranch();
-		return project.findBranch(branchNameOrUuid);
+		return Tx.get().branchDao().findBranch(project, branchNameOrUuid);
 	}
 
 }
