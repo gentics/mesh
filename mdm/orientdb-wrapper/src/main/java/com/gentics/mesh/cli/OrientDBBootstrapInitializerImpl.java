@@ -226,7 +226,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		boolean active = false;
 		while (!active) {
 			log.info("Waiting for hazelcast to become active");
-			active = ((HazelcastClusterManager) getClusterManager()).getHazelcastInstance().getLifecycleService().isRunning();
+			active = db().clusterManager().getHazelcast().getLifecycleService().isRunning();
 			if (active) {
 				break;
 			}

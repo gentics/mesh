@@ -25,7 +25,6 @@ public class ClusterOptions implements Option {
 	public static final long DEFAULT_TOPOLOGY_LOCK_TIMEOUT = 0;
 	public static final long DEFAULT_TOPOLOGY_LOCK_DELAY = 20_000; // 20 seconds
 	public static final boolean DEFAULT_TOPOLOGY_CHANGE_READONLY = DISABLED;
-	public static final String DEFAULT_HAZELCAST_CONFIG_PATH = "config/hazelcast.xml";
 
 	public static final String MESH_CLUSTER_NETWORK_HOST_ENV = "MESH_CLUSTER_NETWORK_HOST";
 	public static final String MESH_CLUSTER_ENABLED_ENV = "MESH_CLUSTER_ENABLED";
@@ -37,7 +36,6 @@ public class ClusterOptions implements Option {
 	public static final String MESH_CLUSTER_TOPOLOGY_LOCK_DELAY_ENV = "MESH_CLUSTER_TOPOLOGY_LOCK_DELAY";
 	public static final String MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV = "MESH_CLUSTER_COORDINATOR_TOPOLOGY";
 	public static final String MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY_ENV = "MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY";
-	public static final String MESH_CLUSTER_HAZELCAST_CONFIG_PATH_ENV = "MESH_CLUSTER_HAZELCAST_CONFIG_PATH";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
@@ -94,11 +92,6 @@ public class ClusterOptions implements Option {
 	@JsonPropertyDescription("Flag to enable or disable setting the cluster in readonly mode, when the topology changes.")
 	@EnvironmentVariable(name = MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY_ENV, description = "Override the topology change readonly flag.")
 	private boolean topologyChangeReadOnly = DEFAULT_TOPOLOGY_CHANGE_READONLY;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("The path of the hazelcast configuration path")
-	@EnvironmentVariable(name = MESH_CLUSTER_HAZELCAST_CONFIG_PATH_ENV, description = "Override the default hazelcast configuration path")
-	private String hazelcastConfigPath = DEFAULT_HAZELCAST_CONFIG_PATH;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -205,16 +198,6 @@ public class ClusterOptions implements Option {
 	 */
 	public ClusterOptions setTopologyChangeReadOnly(boolean topologyChangeReadOnly) {
 		this.topologyChangeReadOnly = topologyChangeReadOnly;
-		return this;
-	}
-
-	public String getHazelcastConfigPath() {
-		return hazelcastConfigPath;
-	}
-
-	@Setter
-	public ClusterOptions setHazelcastConfigPath(String hazelcastConfigPath) {
-		this.hazelcastConfigPath = hazelcastConfigPath;
 		return this;
 	}
 

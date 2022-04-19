@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 
+import com.hazelcast.core.HazelcastInstance;
 import io.reactivex.Completable;
 
 /**
@@ -16,6 +17,13 @@ public interface ClusterManager {
 	 * @return
 	 */
 	io.vertx.core.spi.cluster.ClusterManager getVertxClusterManager();
+
+	/**
+	 * Return the hazelcast instance which was created by the manager.
+	 *
+	 * @return
+	 */
+	HazelcastInstance getHazelcast();
 
 	/**
 	 * Initialize the configuration files.
