@@ -7,7 +7,6 @@ import com.gentics.mesh.plugin.env.PluginEnvironment;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.StaticHandler;
 
 public class Basic2Plugin extends AbstractPlugin implements RestPlugin {
 
@@ -26,8 +25,7 @@ public class Basic2Plugin extends AbstractPlugin implements RestPlugin {
 			rc.response().end("world2");
 		});
 
-		StaticHandler staticHandler = StaticHandler.create("webroot-basic2", getClass().getClassLoader());
-		router.route("/static2/*").handler(staticHandler);
+		addStaticHandlerFromClasspath(router.route("/static2/*"), "webroot-basic2");
 
 		return router;
 	}

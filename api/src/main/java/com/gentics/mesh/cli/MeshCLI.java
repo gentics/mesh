@@ -27,8 +27,6 @@ public final class MeshCLI {
 
 	public static final String ELASTICSEARCH_URL = "elasticsearchUrl";
 
-	public static final String EMBEDDED_ELASTICSEARCH = "embeddedElasticsearch";
-
 	public static final String DISABLE_ELASTICSEARCH = "disableElasticsearch";
 
 	/**
@@ -53,10 +51,6 @@ public final class MeshCLI {
 
 		Option help = new Option(HELP, "This output");
 		options.addOption(help);
-
-		Option elasticsearch = new Option(EMBEDDED_ELASTICSEARCH, true, "Flag which can be used to disable the embedded Elasticsearch server.");
-		elasticsearch.setArgName("flag");
-		options.addOption(elasticsearch);
 
 		Option disableElasticsearch = new Option(DISABLE_ELASTICSEARCH, "Flag which can be used to disable the Elasticsearch integration.");
 		options.addOption(disableElasticsearch);

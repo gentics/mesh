@@ -164,7 +164,9 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	 *
 	 * @param options
 	 */
-	void setIndexOptions(JsonObject options);
+	default void setIndexOptions(JsonObject options) {
+		setRestProperty(ELASTICSEARCH_KEY, options.encode());
+	}
 
 	/**
 	 * Transform the entity model into the rest representation.

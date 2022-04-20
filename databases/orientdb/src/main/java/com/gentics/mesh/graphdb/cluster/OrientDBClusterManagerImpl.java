@@ -14,12 +14,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -256,17 +259,15 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 	}
 
 	@Override
-	public void registerEventHandlers() {
-		// Mesh.vertx().eventBus().consumer(MeshEvent.CLUSTER_NODE_LEAVING, (Message<JsonObject> rh) -> {
-		// String nodeName = rh.body().getString("node");
-		// log.info("Received {" + MeshEvent.CLUSTER_NODE_LEAVING + "} for node {" + nodeName + "}. Removing node from config.");
-		// removeNode(nodeName);
-		// });
+	public HazelcastInstance getHazelcast() {
+		return hazelcastPlugin != null ? hazelcastPlugin.getHazelcastInstance() : null;
 	}
 
 	@Override
-	public HazelcastInstance getHazelcast() {
-		return hazelcastPlugin != null ? hazelcastPlugin.getHazelcastInstance() : null;
+	public ClusterManager getVertxClusterManager() {
+		HazelcastInstance hazelcast = getHazelcast();
+		Objects.requireNonNull(hazelcast, "The hazelcast instance was not yet initialized.");
+		return new HazelcastClusterManager(hazelcast);
 	}
 
 	private void writeOrientBackupConfig(File configFile) throws IOException {
@@ -509,24 +510,33 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 	 */
 	@Override
 	public boolean isClusterTopologyLocked() {
+		return isClusterTopologyLocked(true);
+	}
+
+	/**
+	 * Checks if the cluster storage is locked cluster-wide.
+	 * @param doLog true if log messages shall be created, false if not
+	 * @return true iff cluster storage is locked
+	 */
+	protected boolean isClusterTopologyLocked(boolean doLog) {
 		if (topologyEventBridge == null) {
 			return false;
 		} else {
-			return topologyEventBridge.isClusterTopologyLocked();
+			return topologyEventBridge.isClusterTopologyLocked(doLog);
 		}
 	}
 
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
 		return Completable.defer(() -> {
-			if (isWriteQuorumReached()) {
+			if (isWriteQuorumReached() && !isClusterTopologyLocked(false)) {
 				return Completable.complete();
 			}
 			return Observable.using(
 				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
 				TimeoutStream::toObservable,
 				TimeoutStream::cancel).takeUntil(ignore -> {
-					return isWriteQuorumReached();
+					return isWriteQuorumReached() && !isClusterTopologyLocked(false);
 				})
 				.ignoreElements();
 		});

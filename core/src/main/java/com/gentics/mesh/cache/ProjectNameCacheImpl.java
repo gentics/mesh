@@ -35,12 +35,7 @@ public class ProjectNameCacheImpl extends AbstractMeshCache<String, HibProject> 
 		return factory.<String, HibProject>builder()
 			.events(EVENTS)
 			.action((event, cache) -> {
-				String name = event.body().getString("name");
-				if (name != null) {
-					cache.invalidate(name);
-				} else {
-					cache.invalidate();
-				}
+				cache.invalidate();
 			})
 			.name("projectname")
 			.maxSize(CACHE_SIZE)

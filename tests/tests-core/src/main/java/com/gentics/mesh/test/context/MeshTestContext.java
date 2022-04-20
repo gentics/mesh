@@ -88,7 +88,7 @@ public class MeshTestContext extends TestWatcher {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
 	}
 
-	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
+	public static final Logger LOG = LoggerFactory.getLogger(MeshTestContext.class);
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
@@ -247,7 +247,6 @@ public class MeshTestContext extends TestWatcher {
 		case CONTAINER_ES7:
 		case CONTAINER_ES6:
 		case CONTAINER_ES6_TOXIC:
-		case EMBEDDED:
 			meshDagger.searchProvider().clear().blockingAwait();
 			break;
 		case TRACKING:
@@ -305,7 +304,7 @@ public class MeshTestContext extends TestWatcher {
 	private void setupRestEndpoints(MeshTestSetting settings) throws Exception {
 		mesh.getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
-		log.info("Using port:  " + httpPort);
+		LOG.info("Using port:  " + httpPort);
 		meshDagger.routerStorageRegistry().addProject(TestDataProvider.PROJECT_NAME);
 
 		// Setup the rest client
@@ -365,7 +364,7 @@ public class MeshTestContext extends TestWatcher {
 				clients.put("http_v" + version, oldClient);
 			});
 		});
-		log.info("Using monitoring port: " + monitoringPort);
+		LOG.info("Using monitoring port: " + monitoringPort);
 		MonitoringClientConfig monitoringClientConfig = new MonitoringClientConfig.Builder()
 			.setBasePath(CURRENT_API_BASE_PATH)
 			.setHost("localhost")
@@ -436,19 +435,17 @@ public class MeshTestContext extends TestWatcher {
 	private void resetDatabase(MeshTestSetting settings) throws Exception {
 		meshDagger.boot().clearReferences();
 		long start = System.currentTimeMillis();
-		if (settings.inMemoryDB()) {
-			meshDagger.database().clear();
-		} else if (settings.clusterMode()) {
-			meshDagger.database().clear();
+		if (settings.inMemoryDB() || settings.clusterMode()) {
+			if (!meshTestContextProvider.getInstanceProvider().fastStorageCleanup(meshDagger.database())) {
+				meshDagger.database().clear();
+			}
 		} else {
 			meshDagger.database().stop();
-
 			meshTestContextProvider.getInstanceProvider().cleanupPhysicalStorage();
-
 			meshDagger.database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
-		log.info("Clearing DB took {" + duration + "} ms.");
+		LOG.info("Clearing DB took {" + duration + "} ms.");
 		if (trackingSearchProvider != null) {
 			trackingSearchProvider.reset();
 		}
@@ -577,7 +574,6 @@ public class MeshTestContext extends TestWatcher {
 			}
 			elasticsearch.waitingFor(Wait.forHttp("/"));
 
-			searchOptions.setStartEmbedded(false);
 			if (settings.elasticsearch() == UNREACHABLE) {
 				searchOptions.setUrl("http://localhost:1");
 			} else {
@@ -600,20 +596,13 @@ public class MeshTestContext extends TestWatcher {
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
-			searchOptions.setStartEmbedded(false);
 			searchOptions.setUrl("http://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy);
-			break;
-		case EMBEDDED:
-			searchOptions.setComplianceMode(ComplianceMode.ES_6);
-			searchOptions.setStartEmbedded(true);
 			break;
 		case NONE:
 			searchOptions.setUrl(null);
-			searchOptions.setStartEmbedded(false);
 			break;
 		case TRACKING:
 			System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
-			searchOptions.setStartEmbedded(false);
 			break;
 		default:
 			break;
@@ -703,7 +692,7 @@ public class MeshTestContext extends TestWatcher {
 	 * @throws Exception
 	 */
 	public void initDagger(MeshOptions options, MeshTestSetting settings) throws Exception {
-		log.info("Initializing dagger context");
+		LOG.info("Initializing dagger context");
 		try {
 			@NotNull MeshComponent.Builder builder = getMeshDaggerBuilder();
 			mesh = new MeshImpl(options, builder);
@@ -760,7 +749,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private void listenToSearchIdleEvent() {
 		idleConsumer = vertx.eventBus().consumer(MeshEvent.SEARCH_IDLE.address, handler -> {
-			log.info("Got search idle event");
+			LOG.info("Got search idle event");
 			if (idleLatch != null) {
 				idleLatch.countDown();
 			}

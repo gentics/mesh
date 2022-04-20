@@ -13,7 +13,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
-import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
@@ -51,7 +51,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 		if (localRouter != null) {
 			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
 			handler = SockJSHandler.create(vertx, sockJSoptions);
-			BridgeOptions bridgeOptions = new BridgeOptions();
+			SockJSBridgeOptions bridgeOptions = new SockJSBridgeOptions();
 			for (MeshEvent event : MeshEvent.publicEvents()) {
 				// TODO ensure that clients can't fire internal mesh events. 
 				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(event.address));

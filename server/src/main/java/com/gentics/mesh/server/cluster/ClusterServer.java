@@ -51,7 +51,6 @@ public abstract class ClusterServer {
 		options.getClusterOptions().setClusterName("test");
 		options.getClusterOptions().setEnabled(true);
 		options.getSearchOptions().setUrl(null);
-		options.getSearchOptions().setStartEmbedded(false);
 		options.getDebugInfoOptions().setLogEnabled(false);
 
 		// New settings

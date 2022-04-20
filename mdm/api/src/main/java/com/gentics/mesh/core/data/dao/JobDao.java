@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.time.ZonedDateTime;
+import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -31,7 +32,22 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	 *            Paging information object that contains page options
 	 * @return
 	 */
-	Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo);
+	default Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+		return findAllNoPerm(ac, pagingInfo, null);
+	}
+
+	/**
+	 * Find all elements and return a paged result. No permission check will be performed.
+	 * 
+	 * @param ac
+	 *            action context
+	 * @param pagingInfo
+	 *            Paging information object that contains page options
+	 * @param extraFilter
+	 *            Additional filter to be applied
+	 * @return
+	 */
+	Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibJob> extraFilter);
 
 	/**
 	 * Enqueue the microschema/micronode migration.

@@ -118,10 +118,11 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest), CONFLICT, "node_conflicting_segmentfield_update", "name", "sameValue");
 
 		// Assert job warnings
-		JobListResponse jobs = call(() -> client().findJobs());
-		JobResponse job = jobs.getData().get(0);
-		assertEquals("node-conflict-resolution", job.getWarnings().get(0).getType());
-
+		runAsAdmin(() -> {
+			JobListResponse jobs = call(() -> client().findJobs());
+			JobResponse job = jobs.getData().get(0);
+			assertEquals("node-conflict-resolution", job.getWarnings().get(0).getType());
+		});
 	}
 
 	@Test

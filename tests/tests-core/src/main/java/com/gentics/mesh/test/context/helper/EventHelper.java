@@ -267,6 +267,44 @@ public interface EventHelper extends BaseHelper {
 		}
 	}
 
+	/**
+	 * Run the given action without admin permissions enabled.
+	 * 
+	 * @param action
+	 * @return result
+	 * @throws Exception
+	 */
+	default <T> T runAsNonAdmin(Supplier<T> action) {
+		boolean isAdmin = tx(() -> user().isAdmin());
+		// Revoke perms to check the job
+		if (isAdmin) {
+			revokeAdmin();
+		}
+		T t = action.get();
+		if (isAdmin) {
+			grantAdmin();
+		}
+		return t;
+	}
+
+	/**
+	 * Run the given action without admin permissions enabled.
+	 * 
+	 * @param action
+	 * @throws Exception
+	 */
+	default void runAsNonAdmin(Runnable action) {
+		boolean isAdmin = tx(() -> user().isAdmin());
+		// Revoke perms to check the job
+		if (isAdmin) {
+			revokeAdmin();
+		}
+		action.run();
+		if (isAdmin) {
+			grantAdmin();
+		}
+	}
+
 	default JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
 		return waitForJobs(() -> {
 			action.run();
@@ -518,6 +556,12 @@ public interface EventHelper extends BaseHelper {
 			SyncEventHandler.invokeSync(vertx(), null);
 		}
 		refreshIndices();
+	}
+
+	default void clearIndex() throws TimeoutException {
+		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_CLEAR_FINISHED, 10_000)) {
+			SyncEventHandler.invokeClear(vertx());
+		}
 	}
 
 	/**

@@ -374,7 +374,7 @@ public interface PersistingContentDao extends ContentDao {
     @Override
 	default Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node) {
 		// FIX ME: We should not rely on specific branches.
-		return getFieldContainers(node, node.getProject().getLatestBranch(), DRAFT);
+		return getFieldContainers(node, CommonTx.get().branchDao().getLatestBranch(node.getProject()), DRAFT);
 	}
 
     @Override

@@ -69,17 +69,14 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			boot().initDatabaseTypes();;
 			boot().clearReferences();
-			// TODO sanity check the MeshRoot -> RootResolver replacement
 			assertNotNull(boot().rootResolver());
 		}
 	}
 
 	@Test
 	public void testIsEmpty() {
-		try (Tx tx = tx()) {
-			assertFalse(boot().isEmptyInstallation());
-			db().clear();
-			assertTrue(boot().isEmptyInstallation());
-		}
+		assertFalse(boot().isEmptyInstallation());
+		db().clear();
+		assertTrue(boot().isEmptyInstallation());
 	}
 }

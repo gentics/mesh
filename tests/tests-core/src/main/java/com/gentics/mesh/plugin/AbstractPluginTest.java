@@ -11,6 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
+import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -27,6 +28,10 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	public static final String BASIC_PATH = "../../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
 	public static final String BASIC2_PATH = "../../core/target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
+
+	public static final String STATIC_PATH = "../../core/target/test-plugins/static/target/static-plugin-0.0.1-SNAPSHOT.jar";
+
+	public static final String STATIC2_PATH = "../../core/target/test-plugins/static2/target/static2-plugin-0.0.1-SNAPSHOT.jar";
 
 	public static final String CLIENT_PATH = "../../core/target/test-plugins/client/target/client-plugin-0.0.1-SNAPSHOT.jar";
 
@@ -55,6 +60,13 @@ public class AbstractPluginTest extends AbstractMeshTest {
 
 	@After
 	public void cleanup() throws IOException {
+		// undeploy all plugins
+		grantAdmin();
+		PluginListResponse plugins = call(() -> client().findPlugins());
+		for (PluginResponse plugin : plugins.getData()) {
+			call(() -> client().undeployPlugin(plugin.getId()));
+		}
+
 		File dir = new File(pluginDir());
 		if (dir.exists()) {
 			FileUtils.forceDelete(dir);
@@ -71,7 +83,7 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	}
 
 	public PluginResponse copyAndDeploy(String sourcePath, String name) throws IOException {
-		FileUtil.copy(new File(sourcePath), new File(pluginDir(), name));
+		FileUtil.copy(new File(sourcePath), new File(pluginDir(), name), true);
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		return call(() -> client().deployPlugin(request));
 	}

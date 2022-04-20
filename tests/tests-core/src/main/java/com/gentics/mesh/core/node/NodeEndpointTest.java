@@ -90,6 +90,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -206,8 +207,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				request.setParentNodeUuid(uuid);
 
 				call(() -> client().createNode(PROJECT_NAME, request));
-				// long duration = currentTimeMillis() - start;
-				// out.println("Duration:" + i + " " + (duration / i));
+				long duration = System.currentTimeMillis() - start;
+				MeshTestContext.LOG.info("Duration:" + i + " " + (duration / i));
 			}
 		}
 	}

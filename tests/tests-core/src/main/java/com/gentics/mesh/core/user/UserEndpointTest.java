@@ -465,6 +465,29 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	public void testCreateAdminUserAsNonAdmin() {
+		UserCreateRequest createRequest = new UserCreateRequest();
+		createRequest.setUsername("test1234");
+		createRequest.setAdmin(true);
+		createRequest.setPassword("finger");
+
+		runAsNonAdmin(() -> {
+			return call(() -> client().createUser(createRequest), FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
+		});
+	}
+
+	@Test
+	public void testCreateNonAdminUserAsNonAdmin() {
+		UserCreateRequest createRequest = new UserCreateRequest();
+		createRequest.setUsername("test1234");
+		createRequest.setAdmin(false);
+		createRequest.setPassword("finger");
+
+		UserResponse response = nonAdminCall(() -> client().createUser(createRequest));
+		assertThat(response).isNotAdmin();
+	}
+
+	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
 		final int intialUserCount = users().size();
@@ -1270,6 +1293,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	@Override
+	@Ignore("Not valid over dup UUIDs being allowed globally")
 	public void testCreateWithDuplicateUuid() throws Exception {
 		String groupUuid = groupUuid();
 		UserCreateRequest request = new UserCreateRequest();

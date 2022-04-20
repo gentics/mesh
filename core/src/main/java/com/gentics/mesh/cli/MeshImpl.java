@@ -72,9 +72,6 @@ public class MeshImpl implements Mesh {
 			if (options.getClusterOptions().isEnabled()) {
 				throw new RuntimeException("Clustering is currently limited to a single instance mode.");
 			}
-			if (options.getSearchOptions().isStartEmbedded()) {
-				throw new RuntimeException("Embedded ES support is currently limited to single instance mode");
-			}
 		}
 		Objects.requireNonNull(options, "Please specify a valid options object.");
 		this.options = options;

@@ -683,7 +683,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
 		try (Tx tx = tx()) {
-			prepareSchema(node, "image/.*", fieldName);
+			prepareSchema(tx.nodeDao().findByUuidGlobal(node.getUuid()), "image/.*", fieldName);
 			tx.success();
 		}
 		String uuid = tx(() -> node.getUuid());

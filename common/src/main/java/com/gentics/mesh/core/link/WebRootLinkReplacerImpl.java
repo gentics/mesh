@@ -220,7 +220,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 		HibProject theirProject = node.getProject();
 
-		HibBranch branch = theirProject.findBranchOrLatest(branchNameOrUuid);
+		HibBranch branch = tx.branchDao().findBranchOrLatest(theirProject, branchNameOrUuid);
 
 		// edge type defaults to DRAFT
 		if (edgeType == null) {

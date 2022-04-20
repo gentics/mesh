@@ -63,7 +63,6 @@ public class DemoDumpGenerator {
 	public void init() throws Exception {
 		OrientDBMeshOptions options = new OrientDBMeshOptions();
 		options.getSearchOptions().setUrl(null);
-		options.getSearchOptions().setStartEmbedded(false);
 		options.setInitialAdminPassword("admin");
 		options.setForceInitialAdminPasswordReset(false);
 
@@ -162,7 +161,7 @@ public class DemoDumpGenerator {
 
 		// Setup demo data
 		meshInternal.database().tx(tx -> {
-			provider.setup(false);
+			provider.setup();
 			tx.success();
 		});
 	}

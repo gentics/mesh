@@ -60,8 +60,6 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 
 	private String extraOpts;
 
-	private boolean startEmbeddedES = false;
-
 	private boolean useFilesystem = false;
 
 	/**
@@ -110,14 +108,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 			addEnv("JAVAOPTS", javaOpts);
 		}
 
-		if (startEmbeddedES) {
-			exposedPorts.add(9200);
-			exposedPorts.add(9300);
-		} else {
-			// Don't run the embedded ES
-			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
-			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
-		}
+		addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 
 		if (!useFilesystem) {
 			addEnv("MESH_GRAPH_DB_DIRECTORY", "null");
@@ -222,16 +213,6 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	 */
 	public MeshDockerServer withNodeName(String name) {
 		this.nodeName = name;
-		return this;
-	}
-
-	/**
-	 * Start the embedded ES.
-	 * 
-	 * @return
-	 */
-	public MeshDockerServer withES() {
-		this.startEmbeddedES = true;
 		return this;
 	}
 

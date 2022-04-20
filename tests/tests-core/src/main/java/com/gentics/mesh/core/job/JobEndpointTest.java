@@ -13,7 +13,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+
 import com.gentics.mesh.core.db.CommonTx;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -24,8 +32,12 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.JobParameters;
+import com.gentics.mesh.parameter.client.JobParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.util.TestUtils;
@@ -50,7 +62,9 @@ public class JobEndpointTest extends AbstractMeshTest {
 		});
 
 		jobList = adminCall(() -> client().findJobs());
-		JobResponse job = jobList.getData().get(0);
+		Optional<JobResponse> optionalSchemaMigrationJob = jobList.getData().stream().filter(job -> job.getType() == JobType.schema).findFirst();
+		assertThat(optionalSchemaMigrationJob).as("Schema migration job").isPresent();
+		JobResponse job = optionalSchemaMigrationJob.get();
 		assertThat(job.getProperties()).doesNotContainKey("microschemaUuid");
 		assertThat(job.getProperties()).doesNotContainKey("microschemaName");
 		assertThat(job.getProperties()).containsKey("schemaName");
@@ -62,6 +76,99 @@ public class JobEndpointTest extends AbstractMeshTest {
 		});
 
 		assertThat(adminCall(() -> client().findJobs()).getData()).hasSize(2);
+	}
+
+	/**
+	 * Test filtering by status and/or type when getting the jobs list
+	 */
+	@Test
+	public void testListJobsFiltered() {
+		JobListResponse jobList = adminCall(() -> client().findJobs());
+		assertThat(jobList.getData()).isEmpty();
+
+		String json = tx(() -> schemaContainer("folder").getLatestVersion().getJson());
+		String uuid = tx(() -> schemaContainer("folder").getUuid());
+		waitForJob(() -> {
+			SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+			schema.setName("folder2");
+			call(() -> client().updateSchema(uuid, schema));
+		});
+
+		tx((tx) -> {
+			boot().jobDao().enqueueBranchMigration(user(), initialBranch());
+		});
+
+		String branchName = tx(() -> initialBranch().getName());
+
+		JobResponse branchMigrationJob = new JobResponse();
+		branchMigrationJob.setType(JobType.branch);
+		branchMigrationJob.setStatus(JobStatus.QUEUED);
+
+		JobResponse schemaMigrationJob = new JobResponse();
+		schemaMigrationJob.setType(JobType.schema);
+		schemaMigrationJob.setStatus(JobStatus.COMPLETED);
+
+		// test with different filters
+		List<Pair<Consumer<JobParameters>, List<JobResponse>>> tests = Arrays.asList(
+				Pair.of(p -> {}, Arrays.asList(branchMigrationJob, schemaMigrationJob)),
+				Pair.of(p -> p.setStatus(JobStatus.FAILED), Collections.emptyList()),
+				Pair.of(p -> p.setStatus(JobStatus.COMPLETED), Arrays.asList(schemaMigrationJob)),
+				Pair.of(p -> p.setStatus(JobStatus.QUEUED), Arrays.asList(branchMigrationJob)),
+				Pair.of(p -> p.setStatus(JobStatus.COMPLETED, JobStatus.QUEUED), Arrays.asList(schemaMigrationJob, branchMigrationJob)),
+				Pair.of(p -> p.setType(JobType.versionpurge), Collections.emptyList()),
+				Pair.of(p -> p.setType(JobType.schema), Arrays.asList(schemaMigrationJob)),
+				Pair.of(p -> p.setType(JobType.branch), Arrays.asList(branchMigrationJob)),
+				Pair.of(p -> p.setType(JobType.branch, JobType.schema), Arrays.asList(branchMigrationJob, schemaMigrationJob)),
+				Pair.of(p -> p.setType(JobType.branch).setStatus(JobStatus.COMPLETED), Collections.emptyList()),
+				Pair.of(p -> p.setType(JobType.branch).setStatus(JobStatus.QUEUED), Arrays.asList(branchMigrationJob)),
+				Pair.of(p -> p.setBranchName("doesnotexist"), Collections.emptyList()),
+				Pair.of(p -> p.setBranchName(branchName), Arrays.asList(branchMigrationJob, schemaMigrationJob)),
+				Pair.of(p -> p.setSchemaName("folder2"), Arrays.asList(schemaMigrationJob))
+			);
+
+		for (Pair<Consumer<JobParameters>, List<JobResponse>> test : tests) {
+			JobParametersImpl parameters = new JobParametersImpl();
+			test.getLeft().accept(parameters);
+			String description = null;
+			if (parameters.isEmpty()) {
+				description = "Unfiltered job list";
+			} else {
+				description = "Job List filtered for";
+				if (!parameters.getStatus().isEmpty()) {
+					description += " status=" + parameters.getStatus();
+				}
+				if (!parameters.getType().isEmpty()) {
+					description += " type=" + parameters.getType();
+				}
+				if (!parameters.getBranchName().isEmpty()) {
+					description += " branchName=" + parameters.getBranchName();
+				}
+				if (!parameters.getBranchUuid().isEmpty()) {
+					description += " branchUuid=" + parameters.getBranchUuid();
+				}
+				if (!parameters.getSchemaName().isEmpty()) {
+					description += " schemaName=" + parameters.getSchemaName();
+				}
+				if (!parameters.getSchemaUuid().isEmpty()) {
+					description += " schemaUuid=" + parameters.getSchemaUuid();
+				}
+				if (!parameters.getMicroschemaName().isEmpty()) {
+					description += " microschemaName=" + parameters.getMicroschemaName();
+				}
+				if (!parameters.getMicroschemaUuid().isEmpty()) {
+					description += " microschemaUuid=" + parameters.getMicroschemaUuid();
+				}
+				if (!parameters.getFromVersion().isEmpty()) {
+					description += " fromVersion=" + parameters.getFromVersion();
+				}
+				if (!parameters.getToVersion().isEmpty()) {
+					description += " toVersion=" + parameters.getToVersion();
+				}
+			}
+			jobList = adminCall(() -> client().findJobs(parameters));
+			assertThat(jobList.getData()).as(description).usingElementComparatorOnFields("status", "type")
+					.containsOnlyElementsOf(test.getRight());
+		}
 	}
 
 	@Test

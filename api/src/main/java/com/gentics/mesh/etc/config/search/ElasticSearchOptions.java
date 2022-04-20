@@ -21,8 +21,6 @@ public class ElasticSearchOptions implements Option {
 	public static final String DEFAULT_URL = "http://localhost:9200";
 	public static final long DEFAULT_TIMEOUT = 60_000L;
 
-	public static final int DEFAULT_STARTUP_TIMEOUT = 45;
-
 	public static final int DEFAULT_BULK_LIMIT = 100;
 	public static final int DEFAULT_BULK_LENGTH_LIMIT = 5_000_000;
 	public static final int DEFAULT_SYNC_BATCH_SIZE = 50_000;
@@ -39,8 +37,6 @@ public class ElasticSearchOptions implements Option {
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 
-	public static final String DEFAULT_ARGS = "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError";
-
 	public static final boolean DEFAULT_HOSTNAME_VERIFICATION = true;
 
 	public static final long DEFAULT_INDEX_CHECK_INTERVAL = 60 * 1000;
@@ -53,8 +49,6 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_CA_PATH_ENV = "MESH_ELASTICSEARCH_CA_PATH";
 
 	public static final String MESH_ELASTICSEARCH_TIMEOUT_ENV = "MESH_ELASTICSEARCH_TIMEOUT";
-	public static final String MESH_ELASTICSEARCH_STARTUP_TIMEOUT_ENV = "MESH_ELASTICSEARCH_STARTUP_TIMEOUT";
-	public static final String MESH_ELASTICSEARCH_START_EMBEDDED_ENV = "MESH_ELASTICSEARCH_START_EMBEDDED";
 	public static final String MESH_ELASTICSEARCH_PREFIX_ENV = "MESH_ELASTICSEARCH_PREFIX";
 	public static final String MESH_ELASTICSEARCH_BULK_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LIMIT";
 	public static final String MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT";
@@ -107,20 +101,6 @@ public class ElasticSearchOptions implements Option {
 	@JsonPropertyDescription("Timeout for Elasticsearch operations. Default: " + DEFAULT_TIMEOUT + "ms")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_TIMEOUT_ENV, description = "Override the configured elasticsearch server timeout.")
 	private Long timeout = DEFAULT_TIMEOUT;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Timeout for Elasticsearch startup. Default: " + DEFAULT_STARTUP_TIMEOUT + "sec")
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_STARTUP_TIMEOUT_ENV, description = "Override the configured elasticsearch server timeout.")
-	private Integer startupTimeout = DEFAULT_STARTUP_TIMEOUT;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which indicates whether to deploy and start the included Elasticsearch server.")
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_START_EMBEDDED_ENV, description = "Override the start embedded elasticsearch server flag.")
-	private boolean startEmbedded = true;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("String of arguments which will be used for starting the Elasticsearch server instance")
-	private String embeddedArguments = DEFAULT_ARGS;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: "
@@ -208,26 +188,6 @@ public class ElasticSearchOptions implements Option {
 
 	public ElasticSearchOptions() {
 
-	}
-
-	/**
-	 * Flag which indicates whether the embedded ES should be started.
-	 * 
-	 * @return
-	 */
-	public boolean isStartEmbedded() {
-		return startEmbedded;
-	}
-
-	/**
-	 * Set the flag to start the embedded ES server.
-	 * 
-	 * @param startEmbedded
-	 * @return Fluent API
-	 */
-	public ElasticSearchOptions setStartEmbedded(boolean startEmbedded) {
-		this.startEmbedded = startEmbedded;
-		return this;
 	}
 
 	/**
@@ -327,26 +287,6 @@ public class ElasticSearchOptions implements Option {
 	@Setter
 	public ElasticSearchOptions setHostnameVerification(boolean hostnameVerification) {
 		this.hostnameVerification = hostnameVerification;
-		return this;
-	}
-
-	public String getEmbeddedArguments() {
-		return embeddedArguments;
-	}
-
-	@Setter
-	public ElasticSearchOptions setEmbeddedArguments(String embeddedArguments) {
-		this.embeddedArguments = embeddedArguments;
-		return this;
-	}
-
-	public long getStartupTimeout() {
-		return startupTimeout;
-	}
-
-	@Setter
-	public ElasticSearchOptions setStartupTimeout(Integer startupTimeout) {
-		this.startupTimeout = startupTimeout;
 		return this;
 	}
 
@@ -478,14 +418,13 @@ public class ElasticSearchOptions implements Option {
 	}
 
 	/**
-	 * Disable the elasticsearch integration by setting a null URL and disabling the embedded ES provider.
+	 * Disable the elasticsearch integration by setting a null URL.
 	 * 
 	 * @return
 	 */
 	@JsonIgnore
 	public ElasticSearchOptions disable() {
 		setUrl(null);
-		setStartEmbedded(false);
 		return this;
 	}
 
