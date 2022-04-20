@@ -23,6 +23,7 @@ import org.jsoup.Jsoup;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
@@ -519,6 +520,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 		TagDao tagDao = Tx.get().tagDao();
 		NodeDao nodeDao = Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();
+		BranchDao branchDao = Tx.get().branchDao();
 
 		HibNode node = contentDao.getNode(container);
 		JsonObject document = new JsonObject();
@@ -529,9 +531,9 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
 		addProject(document, node.getProject());
-		Result<HibTag> tags = tagDao.getTags(node, node.getProject().getLatestBranch());
+		Result<HibTag> tags = tagDao.getTags(node, branchDao.getLatestBranch(node.getProject()));
 		addTags(document, tags);
-		addTagFamilies(document, tagDao.getTags(node, node.getProject().getLatestBranch()));
+		addTagFamilies(document, tagDao.getTags(node, branchDao.getLatestBranch(node.getProject())));
 		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.

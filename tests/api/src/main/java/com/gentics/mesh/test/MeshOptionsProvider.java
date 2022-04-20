@@ -1,5 +1,6 @@
 package com.gentics.mesh.test;
 
+import java.lang.reflect.Modifier;
 import java.util.Set;
 
 import org.reflections.Reflections;
@@ -42,14 +43,20 @@ public interface MeshOptionsProvider {
 	static <T extends MeshOptionsProvider> T spawnProviderInstance(String className, Class<T> classOfT) {
 		
 		try {
-			Class<? extends T> classToInstantiate;
+			Class<? extends T> classToInstantiate = null;
 			if (StringUtils.isBlank(className)) {
 				Reflections reflections = new Reflections("com.gentics.mesh");
 				Set<Class<? extends T>> classes = reflections.getSubTypesOf(classOfT);
 				
 				if (classes.size() > 0) {
-					classToInstantiate = classes.iterator().next();
-				} else {
+					for (Class<? extends T> cls : classes) {
+						if (!cls.isInterface() && !Modifier.isAbstract(cls.getModifiers())) {
+							classToInstantiate = cls;
+							break;
+						}
+					}
+				}
+				if (classToInstantiate == null) {
 					throw new IllegalStateException("No implementations of " 
 							+ classOfT.getCanonicalName() 
 							+ " found in either com.gentics.mesh package or system properties."

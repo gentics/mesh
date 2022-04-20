@@ -9,12 +9,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.Optional;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -216,17 +211,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public HibBranch findBranch(String branchNameOrUuid) {
-		return findBranchOpt(branchNameOrUuid)
-			.orElseThrow(() -> error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid));
-	}
-
-	@Override
-	public HibBranch findBranchOrLatest(String branchNameOrUuid) {
-		return findBranchOpt(branchNameOrUuid).orElseGet(this::getLatestBranch);
-	}
-
-	@Override
 	public HibBaseElement getBranchPermissionRoot() {
 		return getBranchRoot();
 	}
@@ -239,26 +223,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	public HibBaseElement getNodePermissionRoot() {
 		return getNodeRoot();
-	}
-
-	private Optional<HibBranch> findBranchOpt(String branchNameOrUuid) {
-		return Optional.ofNullable(mesh().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
-			HibBranch branch = null;
-
-			if (!isEmpty(branchNameOrUuid)) {
-				branch = getBranchRoot().findByUuid(branchNameOrUuid);
-				if (branch == null) {
-					branch = getBranchRoot().findByName(branchNameOrUuid);
-				}
-				if (branch == null) {
-					return null;
-				}
-			} else {
-				branch = getLatestBranch();
-			}
-
-			return branch;
-		}));
 	}
 
 	@Override

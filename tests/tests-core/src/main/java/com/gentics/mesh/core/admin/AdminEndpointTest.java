@@ -26,6 +26,8 @@ public class AdminEndpointTest extends AbstractMeshTest {
 		meshApi().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 		MeshStatusResponse status = call(() -> client().meshStatus());
 		assertEquals(MeshStatus.WAITING_FOR_CLUSTER, status.getStatus());
+		// Normalize the status for the cleanup.
+		meshApi().setStatus(MeshStatus.READY);
 	}
 
 	@Test

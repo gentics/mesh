@@ -80,10 +80,10 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 	public void testAddTagToNoPermBranch() throws Exception {
 		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
-		HibBranch branch = tx(() -> project().getLatestBranch());
-		String branchUuid = tx(() -> branch.getUuid());
+		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 
 		try (Tx tx = tx()) {
+			HibBranch branch = project().getLatestBranch();
 			RoleDao roleDao = tx.roleDao();
 			assertFalse(branch.getTags().list().contains(tag));
 			roleDao.revokePermissions(role(), branch, UPDATE_PERM);
@@ -94,6 +94,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
+			HibBranch branch = project().getLatestBranch();
 			assertFalse(branch.getTags().list().contains(tag));
 		}
 	}
@@ -102,11 +103,11 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 	public void testAddNoPermTagToBranch() throws Exception {
 		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
-		HibBranch branch = tx(() -> project().getLatestBranch());
-		String branchUuid = tx(() -> branch.getUuid());
+		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
+			HibBranch branch = project().getLatestBranch();
 			assertFalse(branch.getTags().list().contains(tag));
 			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
@@ -116,6 +117,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
+			HibBranch branch = project().getLatestBranch();
 			assertFalse(branch.getTags().list().contains(tag));
 		}
 	}

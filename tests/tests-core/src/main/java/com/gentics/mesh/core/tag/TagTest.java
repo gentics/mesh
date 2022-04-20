@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -145,6 +146,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String german = "de";
 			HibNodeFieldContainer germanContainer = boot().contentDao().createFieldContainer(node, german, branch, user());
 
+			germanContainer.getSchemaContainerVersion().getSchema().addField(new StringFieldSchemaImpl().setName("displayName"));
+			germanContainer.getSchemaContainerVersion().getSchema().addField(new StringFieldSchemaImpl().setName("name"));
+			actions().updateSchemaVersion(germanContainer.getSchemaContainerVersion());
 			germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 			germanContainer.createString("name").setString("german node name");
 
@@ -269,17 +273,18 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testNodeUntaggingInBranch() throws Exception {
-		HibNode node = folder("2015");
+		HibNode node = null;
 		HibBranch initialBranch = tx(() -> initialBranch());
 		HibProject project = project();
 		HibBranch newBranch = null;
 		HibTag tag = null;
 
 		try (Tx tx = tx()) {
+			node = folder("2015");
 			TagDao tagDao = tx.tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
-			initialBranch = project.getInitialBranch();
+			initialBranch = reloadBranch(project.getInitialBranch());
 			tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(tagDao.findByUuid(root, uuid));
@@ -302,6 +307,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		try (Tx tx = tx()) {
 			TagDao tagDao = tx.tagDao();
+			assertThat(tagDao.getTags(node, newBranch).list()).isNotEmpty();
 			// 5. Untag in initial branch
 			tagDao.removeTag(node, tag, initialBranch);
 
