@@ -435,12 +435,10 @@ public class MeshTestContext extends TestWatcher {
 	private void resetDatabase(MeshTestSetting settings) throws Exception {
 		meshDagger.boot().clearReferences();
 		long start = System.currentTimeMillis();
-		if (settings.inMemoryDB()) {
+		if (settings.inMemoryDB() || settings.clusterMode()) {
 			if (!meshTestContextProvider.getInstanceProvider().fastStorageCleanup(meshDagger.database())) {
 				meshDagger.database().clear();
 			}
-		} else if (settings.clusterMode()) {
-			meshDagger.database().clear();
 		} else {
 			meshDagger.database().stop();
 			meshTestContextProvider.getInstanceProvider().cleanupPhysicalStorage();

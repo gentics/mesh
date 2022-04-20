@@ -25,6 +25,10 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>
