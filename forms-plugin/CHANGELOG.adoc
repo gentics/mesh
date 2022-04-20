@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.2]]
+1.8.2 (2022-04-19)
+
+icon:check[] Forms: Fixed an issue where no form data was loaded when the form was not stored in the Mesh default language.
+
 [[v1.8.0]]
 == 1.8.0 (2022-03-25)
 

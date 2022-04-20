@@ -906,8 +906,24 @@ public class FormService {
 		VersioningParameters published = new VersioningParametersImpl().published();
 		PagingParameters paging = new PagingParametersImpl().setPerPage((long) CHILDREN_BATCH_SIZE);
 
+		// get the languages of the project
+		// this will be used with the $project/nodes/$uuid/children endpoint to provide the 'lang' parameter
+		// the values for this parameter need to contain:
+		//   - the actual language of the parent node
+		//   - the default language of the mesh instance (default 'en') as data nodes will be created in this language
 		return statusService.getLanguages(project, adminClient)
-			.map(availableLanguages -> availableLanguages.getLanguages() != null ? availableLanguages.getLanguages().toArray(new String[0]) : new String[] { "en" })
+			.map(availableLanguages -> {
+				List<String> languagesForRequest = new ArrayList<>();
+				if (availableLanguages.getLanguages() != null) {
+					languagesForRequest.addAll(availableLanguages.getLanguages());
+				}
+				// if the available languages in the project do not contain english, this will result in no data being loaded
+				// so we make sure to always add 'en'
+				if (!languagesForRequest.contains("en")) {
+					languagesForRequest.add("en");
+				}
+				return languagesForRequest.toArray(new String[languagesForRequest.size()]);
+			})
 			.map(availableLanguages -> new NodeParametersImpl().setLanguages(availableLanguages))
 			.toFlowable()
 			.flatMap(lang -> Flowable.generate(AvailableFormData::new, (state, emitter) -> {
