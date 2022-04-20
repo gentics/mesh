@@ -85,6 +85,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
 		contentDao.getLatestDraftFieldContainer(node, english()).createNumber("speed").setNumber(number);
 	}
@@ -101,6 +102,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardFieldSchema.setName("vcard");
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(vcardFieldSchema);
+		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
 		HibMicronodeField vcardField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronode("vcard",
 			microschemaContainers().get("vcard").getLatestVersion());
@@ -122,6 +124,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardListFieldSchema.setListType("micronode");
 		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(vcardListFieldSchema);
+		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
 		HibMicronodeFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
@@ -148,6 +151,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		nodeListFieldSchema.setListType("node");
 		nodeListFieldSchema.setAllowedSchemas(schema.getName());
 		schema.addField(nodeListFieldSchema);
+		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
 		// create a non-empty list for the english version
 		HibNodeFieldList nodeListField = contentDao.getLatestDraftFieldContainer(node, english()).createNodeList("nodelist");

@@ -148,20 +148,25 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeOfflineNoPermission() {
+		HibNode node;
+		String nodeUuid;
 		try (Tx tx = tx()) {
-			HibNode node = folder("products");
-			String nodeUuid = node.getUuid();
+			node = folder("products");
+			nodeUuid = node.getUuid();
 
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
+		}
 
-			db().tx(() -> {
-				RoleDao roleDao = tx.roleDao();
-				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
-				return null;
-			});
+		tx((tx) -> {
+			RoleDao roleDao = tx.roleDao();
+			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
+			return null;
+		});
+
+		tx(() -> {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid,
 				PUBLISH_PERM.getRestPerm().getName());
-		}
+		});
 	}
 
 	@Test

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Objects;
 
+import com.gentics.mesh.core.db.CommonTx;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -93,6 +94,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
+			currentVersion = reloadSchemaVersion(currentVersion);
 			assertEquals("The name of the old version should not be updated", "content", currentVersion.getName());
 			assertEquals("The name of the schema was not updated", name, currentVersion.getNextVersion().getName());
 			HibSchema reloaded = schemaDao.findByUuid(schemaUuid);
@@ -199,13 +201,14 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-			assertNotNull("The container should now have a new version", currentVersion.getNextVersion());
+			HibSchemaVersion reloaded = reloadSchemaVersion(currentVersion);
+			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
+			assertNotNull("The container should now have a new version", reloaded.getNextVersion());
 
 			// Assert that migration worked
 			HibNode node = content();
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-				!Objects.equals(currentVersion.getVersion(),
+				!Objects.equals(reloaded.getVersion(),
 					boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
 			assertNull("There should no longer be a content field of type html",
 				boot().contentDao().getFieldContainer(node, "en").getHtml("content"));
@@ -301,6 +304,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			// 3. Assert updated schema
 			HibSchema container = schemaContainer("content");
+			currentVersion = reloadSchemaVersion(currentVersion);
 			assertNull("The segment field reference should have been set to null", currentVersion.getNextVersion().getSchema().getSegmentField());
 		}
 	}
@@ -359,6 +363,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
+			currentVersion = reloadSchemaVersion(currentVersion);
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
 
 			// 6. Assert migrated node
@@ -391,15 +396,16 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+			HibSchemaVersion reloaded = reloadSchemaVersion(currentVersion);
+			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
+			assertNotEquals("The container should now have a new version", reloaded.getUuid(), schemaContainer("content").getLatestVersion().getUuid());
 
 			// Assert that migration worked
 			HibNode node = content();
 			assertNotNull("The schema of the node should contain the new field schema",
 				boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField"));
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-				!Objects.equals(currentVersion.getVersion(),
+				!Objects.equals(reloaded.getVersion(),
 					boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
 			assertEquals("label1234",
 				boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField").getLabel());
@@ -433,15 +439,16 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+			HibSchemaVersion reloaded = reloadSchemaVersion(currentVersion);
+			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
+			assertNotEquals("The container should now have a new version", reloaded.getUuid(), schemaContainer("content").getLatestVersion().getUuid());
 
 			// Assert that migration worked
 			HibNode node = content();
 			assertNotNull("The schema of the node should contain the new field schema",
 					boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField"));
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-				!Objects.equals(currentVersion.getVersion(), boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
+				!Objects.equals(reloaded.getVersion(), boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
 			assertArrayEquals(new String[] {"5678"}, boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField", StringFieldSchema.class).getAllowedValues());
 		}
 	}
@@ -471,15 +478,16 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+			HibSchemaVersion reloaded = reloadSchemaVersion(currentVersion);
+			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
+			assertNotEquals("The container should now have a new version", reloaded.getUuid(), schemaContainer("content").getLatestVersion().getUuid());
 
 			// Assert that migration worked
 			HibNode node = content();
 			assertNotNull("The schema of the node should contain the new field schema",
 				boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField"));
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-				!Objects.equals(currentVersion.getVersion(), boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
+				!Objects.equals(reloaded.getVersion(), boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
 			assertArrayEquals(new String[] {"5678"}, boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField", StringFieldSchema.class).getAllowedValues());
 		}
 
@@ -500,8 +508,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
+			HibSchemaVersion reloaded = reloadSchemaVersion(currentVersion);
+			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
+			assertNotEquals("The container should now have a new version", reloaded.getUuid(), schemaContainer("content").getLatestVersion().getUuid());
 
 			// Assert that migration worked
 			HibNode node = content();
@@ -545,15 +554,16 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			}, COMPLETED, 1);
 
 			try (Tx tx = tx()) {
-				assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-				assertNotEquals("The container should now have a new version", currentVersion.getUuid(), container.getLatestVersion().getUuid());
+				HibSchemaVersion reloaded = reloadSchemaVersion(currentVersion);
+				assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
+				assertNotEquals("The container should now have a new version", reloaded.getUuid(), schemaContainer("content").getLatestVersion().getUuid());
 
 				// Assert that migration worked
 				HibNode node = content();
 				assertNotNull("The schema of the node should contain the new field schema",
 					boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
 				assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-					!Objects.equals(currentVersion.getVersion(),
+					!Objects.equals(reloaded.getVersion(),
 						boot().contentDao().getFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
 			}
 
@@ -568,7 +578,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
 			assertNull("The last version should not have any futher versions", container.getLatestVersion().getNextVersion());
 
-			HibSchemaVersion version = container.getLatestVersion();
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			int nVersions = 0;
 			while (true) {
 				version = version.getPreviousVersion();
@@ -723,11 +733,11 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			ContentDao contentDao = tx.contentDao();
 
 			assertThat(contentDao.getFieldContainer(content, "en", initialBranchUuid(), ContainerType.DRAFT))
-				.isOf(schemaContainer.getLatestVersion());
+				.isOf(schemaContainer("content").getLatestVersion());
 
 			// node must not be migrated for new branch
 			assertThat(contentDao.getFieldContainer(content, "en", newBranch.getUuid(), ContainerType.DRAFT))
-				.isOf(schemaContainer.getLatestVersion().getPreviousVersion());
+				.isOf(schemaContainer("content").getLatestVersion().getPreviousVersion());
 		}
 	}
 
@@ -775,4 +785,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("The field value was not preserved.", contentFieldValue, response.getFields().getHtmlField("newcontent").getHTML());
 	}
 
+	private HibSchemaVersion reloadSchemaVersion(HibSchemaVersion schemaVersion) {
+		return CommonTx.get().load(schemaVersion.getId(), CommonTx.get().schemaDao().getVersionPersistenceClass());
+	}
 }
