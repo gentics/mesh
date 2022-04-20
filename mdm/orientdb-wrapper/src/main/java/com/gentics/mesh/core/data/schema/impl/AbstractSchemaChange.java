@@ -99,11 +99,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public void setIndexOptions(JsonObject options) {
-		setRestProperty(ELASTICSEARCH_KEY, options.encode());
-	}
-
-	@Override
 	public void updateFromRest(SchemaChangeModel restChange) {
 		for (String key : restChange.getProperties().keySet()) {
 			setRestProperty(key, restChange.getProperties().get(key));

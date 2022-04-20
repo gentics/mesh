@@ -12,15 +12,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.db.Tx;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
@@ -48,6 +39,9 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -57,6 +51,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -308,27 +303,32 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			boot().contentDao().createFieldContainer(node, german(), initialBranch(), user());
 		});
 		syncIndex();
-		assertMetrics("node", 1, 2, 0);
+		assertInsertedMetrics(call(() -> client().searchStatus()).getMetrics().get("node"), 1);
 		syncIndex();
 		assertMetrics("node", 0, 0, 0);
 
 		// Assert update
 		tx(tx -> {
-			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer draft = contentDao.getFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
-			draft.getString("slug").setString("updated");
+			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+			updateRequest.setFields(FieldMap.of("slug", new StringFieldImpl().setString("updated")));
+			updateRequest.setLanguage("en");
+			call(() -> client().updateNode(folder("2015").getProject().getName(), contentUuid(), updateRequest, new NodeParametersImpl().setLanguages("en")));
 		});
 		syncIndex();
-		assertMetrics("node", 0, 2, 0);
+		EntityMetrics metrics = call(() -> client().searchStatus()).getMetrics().get("node");
+		// orientdb implementation is making some unneeded document updates compared to the mdm implementation.
+		// to make the test work for both implementations, we just check that we have at least one document synced.
+		assertThat(metrics.getUpdate().getSynced()).isGreaterThanOrEqualTo(1);
+		assertThat(metrics.getUpdate().getPending()).isEqualTo(0);
 
 		// Assert deletion
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer draft = contentDao.getFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
-			contentDao.delete(draft, new DummyBulkActionContext()); // TODO may fail
+			contentDao.delete(draft, new DummyBulkActionContext());
 		});
 		syncIndex();
-		assertMetrics("node", 0, 2, 1);
+		assertDeletedMetrics(call(() -> client().searchStatus()).getMetrics().get("node"), 1);
 	}
 
 	@Test
@@ -519,15 +519,26 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	private void assertMetrics(String type, long inserted, long updated, long deleted) {
 		EntityMetrics entityMetrics = call(() -> client().searchStatus()).getMetrics().get(type);
-		assertEquals("We expected " + inserted + " elements to be inserted during the sync", inserted,
-			entityMetrics.getInsert().getSynced().longValue());
-		assertEquals("We expected " + updated + " elements to be updated during the sync", updated,
-			entityMetrics.getUpdate().getSynced().longValue());
-		assertEquals("We expected " + deleted + " elements to be deleted during the sync", deleted,
-			entityMetrics.getDelete().getSynced().longValue());
+		assertInsertedMetrics(entityMetrics, inserted);
+		assertUpdatedMetrics(entityMetrics, updated);
+		assertDeletedMetrics(entityMetrics, deleted);
+	}
 
+	private void assertInsertedMetrics(EntityMetrics entityMetrics, long inserted) {
+		assertEquals("We expected " + inserted + " elements to be inserted during the sync", inserted,
+				entityMetrics.getInsert().getSynced().longValue());
 		assertEquals("Pending inserts should be zero after the sync.", 0, entityMetrics.getInsert().getPending().longValue());
+	}
+
+	private void assertUpdatedMetrics(EntityMetrics entityMetrics, long updated) {
+		assertEquals("We expected " + updated + " elements to be updated during the sync", updated,
+				entityMetrics.getUpdate().getSynced().longValue());
 		assertEquals("Pending updates should be zero after the sync.", 0, entityMetrics.getUpdate().getPending().longValue());
+	}
+
+	private void assertDeletedMetrics(EntityMetrics entityMetrics, long deleted) {
+		assertEquals("We expected " + deleted + " elements to be deleted during the sync", deleted,
+				entityMetrics.getDelete().getSynced().longValue());
 		assertEquals("Pending deletes should be zero after the sync.", 0, entityMetrics.getDelete().getPending().longValue());
 	}
-	}
+}

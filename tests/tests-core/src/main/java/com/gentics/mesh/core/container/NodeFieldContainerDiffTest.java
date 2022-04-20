@@ -109,6 +109,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 				microschema.getFields().add(FieldUtil.createStringFieldSchema("lastName"));
 				v.setSchema(microschema);
 			});
+			tx.commit();
 
 			HibMicronodeField micronodeA = containerA.createMicronode("micronodeField", version);
 			micronodeA.getMicronode().createString("firstName").setString("firstnameValue");

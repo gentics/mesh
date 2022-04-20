@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import com.gentics.mesh.core.data.user.HibUser;
 import org.junit.Test;
 
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
@@ -51,7 +52,8 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 
 		// Verify that anonymous access does not work if the anonymous user is deleted
 		try (Tx tx = tx()) {
-			((CommonTx) tx).userDao().deletePersisted(users().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME));
+			HibUser anonymousUser = tx.userDao().findByUuid(users().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME).getUuid());
+			((CommonTx) tx).userDao().deletePersisted(anonymousUser);
 			tx.success();
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");
