@@ -142,8 +142,6 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 			return handler.migrateMicronodes(context)
 					.doOnComplete(() -> {
 						db.tx(() -> {
-							JobWarningList warnings = new JobWarningList();
-							job.setWarnings(warnings);
 							finalizeMigration(job, context);
 							context.getStatus().done();
 						});

@@ -2,17 +2,16 @@ package com.gentics.mesh.assertj.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.util.StreamUtil;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.util.StreamUtil;
 
 public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGraphFieldContainerAssert, HibNodeFieldContainer> {
 
