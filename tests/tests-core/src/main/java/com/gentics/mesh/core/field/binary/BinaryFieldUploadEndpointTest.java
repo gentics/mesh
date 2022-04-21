@@ -193,6 +193,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(folder("news"), fields.stream().map(FieldUtil::createBinaryFieldSchema).collect(Collectors.toList()), Optional.empty());
+			tx.success();
 		}
 
 		String uuid = tx(() -> folder("news").getUuid());
@@ -235,6 +236,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// Prepare schema
 		try (Tx tx = tx()) {
 			prepareTypedSchema(folder("news"), FieldUtil.createBinaryFieldSchema("image"), false);
+			tx.success();
 		}
 
 		Buffer buffer = getBuffer("/pictures/blume.jpg");
@@ -266,6 +268,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createBinaryFieldSchema("image"), false);
+			tx.success();
 		}
 
 		call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
@@ -288,6 +291,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// Add a schema called nonBinary
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createBinaryFieldSchema("image"), false);
+			tx.success();
 		}
 
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);

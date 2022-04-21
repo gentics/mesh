@@ -68,11 +68,9 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			NodeFieldListImpl listField = new NodeFieldListImpl();
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test

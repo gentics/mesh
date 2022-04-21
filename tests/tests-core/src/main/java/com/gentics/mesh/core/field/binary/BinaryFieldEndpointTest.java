@@ -78,6 +78,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			binaryFieldSchema.setLabel("Some label");
 			binaryFieldSchema.setRequired(isRequired);
 			prepareTypedSchema(schemaContainer("folder"), List.of(binaryFieldSchema), Optional.empty());
+			prepareTypedSchema(folder("2015"), binaryFieldSchema, true);
+			tx.success();
 		}
 	}
 

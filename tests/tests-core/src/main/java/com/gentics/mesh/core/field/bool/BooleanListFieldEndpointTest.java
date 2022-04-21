@@ -46,13 +46,11 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			BooleanFieldListImpl listField = new BooleanFieldListImpl();
-			listField.add(true);
-			listField.add(false);
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		BooleanFieldListImpl listField = new BooleanFieldListImpl();
+		listField.add(true);
+		listField.add(false);
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test

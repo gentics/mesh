@@ -78,6 +78,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			listFieldSchema.setListType("micronode");
 			listFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 			prepareTypedSchema(schemaContainer("folder"), List.of(listFieldSchema), Optional.empty());
+			tx.success();
 		}
 	}
 
@@ -95,12 +96,10 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
-			listField.add(createItem("Max", "Böse"));
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
+		listField.add(createItem("Max", "Böse"));
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
@@ -401,7 +400,10 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		vcard.addField(innerField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
-		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerField)));
+		tx(tx -> {
+			prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerField)); 
+			tx.success();
+		});
 
 		// 1. Set the reference
 		MicronodeResponse fieldItem = new MicronodeResponse();
@@ -466,7 +468,10 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		vcard.addField(innerListField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
-		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerListField)));
+		tx(tx -> {
+			prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerListField)); 
+			tx.success();
+		});
 
 		// 1. Set the reference
 		MicronodeResponse fieldItem = new MicronodeResponse();

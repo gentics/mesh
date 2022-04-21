@@ -192,18 +192,17 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = tx()) {
+		String oldVersion = tx(() -> {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 			field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
-			String oldVersion = firstResponse.getVersion();
-
-			createNodeAndExpectFailure(FIELD_NAME, new MicronodeResponse(), BAD_REQUEST, "micronode_error_missing_reference", "micronodeField");
-
+			return firstResponse.getVersion();
+		});
+		createNodeAndExpectFailure(FIELD_NAME, new MicronodeResponse(), BAD_REQUEST, "micronode_error_missing_reference", "micronodeField");
+		try (Tx tx = tx()){				
 			MicronodeResponse emptyField = new MicronodeResponse().setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
-
 			// Assert that an empty request will not update any data of the micronode
 			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).as("Updated Field").isNotNull();
@@ -252,7 +251,10 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		vcard.addField(innerNodeField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
-		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerNodeField)));
+		tx(tx -> {
+			prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerNodeField)); 
+			tx.success();
+		});
 
 		// 1. Set the reference
 		MicronodeResponse field = new MicronodeResponse();
@@ -311,7 +313,10 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		vcard.addField(innerNodeListField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
-		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerNodeListField)));
+		tx(tx -> {
+			prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerNodeListField)); 
+			tx.success();
+		});
 
 		// 1. Set the reference
 		MicronodeResponse field = new MicronodeResponse();
@@ -364,27 +369,23 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithInvalidMicroschema() {
-		try (Tx tx = tx()) {
-			MicronodeResponse field = new MicronodeResponse();
-			MicroschemaReferenceImpl microschema = new MicroschemaReferenceImpl();
-			microschema.setName("notexisting");
-			field.setMicroschema(microschema);
-			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-			createNodeAndExpectFailure(FIELD_NAME, field, BAD_REQUEST, "error_microschema_reference_not_found", "notexisting", "-", "-");
-		}
+		MicronodeResponse field = new MicronodeResponse();
+		MicroschemaReferenceImpl microschema = new MicroschemaReferenceImpl();
+		microschema.setName("notexisting");
+		field.setMicroschema(microschema);
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		createNodeAndExpectFailure(FIELD_NAME, field, BAD_REQUEST, "error_microschema_reference_not_found", "notexisting", "-", "-");
 	}
 
 	@Test
 	public void testCreateNodeWithNotAllowedMicroschema() {
-		try (Tx tx = tx()) {
-			MicronodeResponse field = new MicronodeResponse();
-			MicroschemaReferenceImpl microschema = new MicroschemaReferenceImpl();
-			microschema.setName("captionedImage");
-			field.setMicroschema(microschema);
-			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-			createNodeAndExpectFailure(FIELD_NAME, field, BAD_REQUEST, "node_error_invalid_microschema_field_value", "micronodeField",
+		MicronodeResponse field = new MicronodeResponse();
+		MicroschemaReferenceImpl microschema = new MicroschemaReferenceImpl();
+		microschema.setName("captionedImage");
+		field.setMicroschema(microschema);
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		createNodeAndExpectFailure(FIELD_NAME, field, BAD_REQUEST, "node_error_invalid_microschema_field_value", "micronodeField",
 				"captionedImage");
-		}
 	}
 
 	@Test

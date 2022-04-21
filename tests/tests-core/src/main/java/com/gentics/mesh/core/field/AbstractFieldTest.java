@@ -221,5 +221,4 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		container.updateFieldsFromRest(ac, fieldMap);
 	}
-
 }

@@ -371,6 +371,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			container.createNode(FIELD_NAME, referencedNode);
 
+			tx.success();
 			return node1;
 		});
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),

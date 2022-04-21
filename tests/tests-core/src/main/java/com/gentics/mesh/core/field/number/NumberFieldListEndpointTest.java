@@ -49,13 +49,11 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			NumberFieldListImpl listField = new NumberFieldListImpl();
-			listField.add(42);
-			listField.add(41);
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(42);
+		listField.add(41);
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test

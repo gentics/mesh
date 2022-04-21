@@ -47,13 +47,11 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			StringFieldListImpl listField = new StringFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test

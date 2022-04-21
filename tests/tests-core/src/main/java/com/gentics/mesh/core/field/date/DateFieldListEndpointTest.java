@@ -53,13 +53,11 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			DateFieldListImpl listField = new DateFieldListImpl();
-			listField.add(toISO8601(4200L));
-			listField.add(toISO8601(4100L));
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		DateFieldListImpl listField = new DateFieldListImpl();
+		listField.add(toISO8601(4200L));
+		listField.add(toISO8601(4100L));
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test

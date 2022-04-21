@@ -41,8 +41,9 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		String... i18nParams) {
 		HibNode node = folder("2015");
 		if (field != null) {
-			try {
+			try (Tx tx = tx()) {
 				prepareTypedSchema(node, TestHelper.fieldIntoSchema(field).setName(fieldKey), true);
+				tx.success();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -78,9 +79,12 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 * @return
 	 */
 	protected NodeResponse updateNode(String fieldKey, Field field, boolean expandAll) {
-		tx(() -> prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()
+		tx(tx -> {
+			prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()
 				.map(TestHelper::fieldIntoSchema)
-				.map(schema -> schema.setName(fieldKey)).collect(Collectors.toList()), Optional.empty()));
+				.map(schema -> schema.setName(fieldKey)).collect(Collectors.toList()), Optional.empty()); 
+			tx.success();
+		});
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
@@ -99,7 +103,10 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 
 	protected void updateNodeFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		HibNode node = folder("2015");
-		tx(() -> prepareTypedSchema(node, TestHelper.fieldIntoSchema(field).setName(fieldKey), true));
+		tx(tx -> { 
+			prepareTypedSchema(node, TestHelper.fieldIntoSchema(field).setName(fieldKey), true); 
+			tx.success();
+		});
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);

@@ -40,6 +40,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 			booleanFieldSchema.setName(FIELD_NAME);
 			booleanFieldSchema.setLabel("Some label");
 			prepareTypedSchema(schemaContainer("folder"), List.of(booleanFieldSchema), Optional.empty());
+			tx.success();
 		}
 	}
 
