@@ -2,6 +2,8 @@ package com.gentics.mesh.test;
 
 import java.math.BigDecimal;
 
+import org.assertj.core.data.Percentage;
+
 /**
  * Extended {@link org.junit.Assert} class which contains additional asserters.
  */
@@ -20,7 +22,7 @@ public class Assert extends org.junit.Assert {
 			fail("Expected both numbers to be not null.");
 		}
 		// we convert both numbers to big decimal and compare them
-		assertEquals(new BigDecimal(expected.toString()).doubleValue(), new BigDecimal(actual.toString()).doubleValue(), 0.00001);
+		org.assertj.core.api.Assertions.assertThat(new BigDecimal(actual.toString()).doubleValue()).isCloseTo(new BigDecimal(expected.toString()).doubleValue(), Percentage.withPercentage(0.999999));
 	}
 
 }

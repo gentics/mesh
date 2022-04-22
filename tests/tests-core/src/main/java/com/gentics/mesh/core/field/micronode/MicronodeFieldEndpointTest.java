@@ -86,11 +86,9 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			MicronodeField field = response.getFields().getMicronodeField(FIELD_NAME);
-			assertNull(field);
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		MicronodeField field = response.getFields().getMicronodeField(FIELD_NAME);
+		assertNull(field);
 	}
 
 	@Test
@@ -141,17 +139,15 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			MicronodeResponse field = new MicronodeResponse();
-			field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
-			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-			field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
-			String oldNumber = firstResponse.getVersion();
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
+		String oldNumber = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, field);
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, field);
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 	}
 
 	@Test
@@ -182,59 +178,53 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			HibMicronode oldMicronode = latest.getPreviousVersion().getMicronode(FIELD_NAME).getMicronode();
 			assertThat(oldMicronode.getString("firstName").getString()).as("Old version micronode firstname field value should not be modified")
 				.isEqualTo("Max");
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
 		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		String oldVersion = tx(() -> {
-			MicronodeResponse field = new MicronodeResponse();
-			field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
-			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-			field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
-			return firstResponse.getVersion();
-		});
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
+		String oldVersion =  firstResponse.getVersion();;
 		createNodeAndExpectFailure(FIELD_NAME, new MicronodeResponse(), BAD_REQUEST, "micronode_error_missing_reference", "micronodeField");
-		try (Tx tx = tx()){				
-			MicronodeResponse emptyField = new MicronodeResponse().setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
-			// Assert that an empty request will not update any data of the micronode
-			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
-			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).as("Updated Field").isNotNull();
-			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME).getFields().getStringField("firstName").getString()).isEqualTo("Max");
-			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME).getFields().getStringField("lastName").getString())
-				.isEqualTo("Moritz");
-			assertThat(secondResponse.getVersion()).as("No new version number should have been generated").isEqualTo(oldVersion);
 
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
-		}
+		MicronodeResponse emptyField = new MicronodeResponse().setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		// Assert that an empty request will not update any data of the micronode
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+		assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME).getFields().getStringField("firstName").getString()).isEqualTo("Max");
+		assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME).getFields().getStringField("lastName").getString())
+			.isEqualTo("Moritz");
+		assertThat(secondResponse.getVersion()).as("No new version number should have been generated").isEqualTo(oldVersion);
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNodeWithField();
+		NodeResponse response = createNodeWithField();
 
-			MicronodeResponse createdField = response.getFields().getMicronodeField(FIELD_NAME);
-			assertNotNull("Created field does not exist", createdField);
-			assertNotNull("Micronode has no uuid set", createdField.getUuid());
+		MicronodeResponse createdField = response.getFields().getMicronodeField(FIELD_NAME);
+		assertNotNull("Created field does not exist", createdField);
+		assertNotNull("Micronode has no uuid set", createdField.getUuid());
 
-			assertEquals("Check microschema name", "vcard", createdField.getMicroschema().getName());
-			assertEquals("Check microschema uuid", microschemaContainers().get("vcard").getUuid(), createdField.getMicroschema().getUuid());
+		assertEquals("Check microschema name", "vcard", createdField.getMicroschema().getName());
+		assertEquals("Check microschema uuid", microschemaContainers().get("vcard").getUuid(), createdField.getMicroschema().getUuid());
 
-			// check micronode fields
-			StringField createdFirstnameField = createdField.getFields().getStringField("firstName");
-			assertNotNull("Micronode did not contain firstName field", createdFirstnameField);
-			assertEquals("Check micronode firstName", "Max", createdFirstnameField.getString());
-		}
+		// check micronode fields
+		StringField createdFirstnameField = createdField.getFields().getStringField("firstName");
+		assertNotNull("Micronode did not contain firstName field", createdFirstnameField);
+		assertEquals("Check micronode firstName", "Max", createdFirstnameField.getString());
 	}
 
 	/**
@@ -402,15 +392,12 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			NodeResponse response = readNode(node);
-			MicronodeResponse deserializedMicronodeField = response.getFields().getMicronodeField(FIELD_NAME);
-			assertNotNull("Micronode field must not be null", deserializedMicronodeField);
-			StringField firstNameField = deserializedMicronodeField.getFields().getStringField("firstName");
-			assertNotNull("Micronode must contain firstName field", firstNameField);
-			assertEquals("Check firstName value", "Max", firstNameField.getString());
-		}
-
+		NodeResponse response = readNode(node);
+		MicronodeResponse deserializedMicronodeField = response.getFields().getMicronodeField(FIELD_NAME);
+		assertNotNull("Micronode field must not be null", deserializedMicronodeField);
+		StringField firstNameField = deserializedMicronodeField.getFields().getStringField("firstName");
+		assertNotNull("Micronode must contain firstName field", firstNameField);
+		assertEquals("Check firstName value", "Max", firstNameField.getString());
 	}
 
 	/**
@@ -448,15 +435,13 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		}
 
 		// 3. Update the node
-		try (Tx tx = tx()) {
-			MicronodeResponse field = new MicronodeResponse();
-			field.setMicroschema(new MicroschemaReferenceImpl().setName("noderef"));
-			for (int i = 0; i < 10; i++) {
-				field.getFields().put("nodefield_" + i, FieldUtil.createNodeField(node.getUuid()));
-			}
-			NodeResponse response = updateNode("noderef", field, true);
-			assertThat(response.getFields().getMicronodeField("noderef")).matches(field, nodeMicroschema);
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReferenceImpl().setName("noderef"));
+		for (int i = 0; i < 10; i++) {
+			field.getFields().put("nodefield_" + i, FieldUtil.createNodeField(node.getUuid()));
 		}
+		NodeResponse response = updateNode("noderef", field, true);
+		assertThat(response.getFields().getMicronodeField("noderef")).matches(field, nodeMicroschema);
 	}
 
 	/**
@@ -512,30 +497,25 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// 4. Prepare the micronode field for the update request
 		MicronodeResponse field = new MicronodeResponse();
-		try (Tx tx = tx()) {
-			field.setMicroschema(new MicroschemaReferenceImpl().setName("full"));
-			field.getFields().put("booleanfield", FieldUtil.createBooleanField(true));
-			field.getFields().put("datefield", FieldUtil.createDateField(toISO8601(date)));
-			field.getFields().put("htmlfield", FieldUtil.createHtmlField("<b>HTML</b> value"));
-			field.getFields().put("listfield-boolean", FieldUtil.createBooleanListField(true, false));
-			field.getFields().put("listfield-date", FieldUtil.createDateListField(toISO8601(date), toISO8601(0)));
-			field.getFields().put("listfield-html", FieldUtil.createHtmlListField("<b>first</b>", "<i>second</i>", "<u>third</u>"));
-			field.getFields().put("listfield-node", FieldUtil.createNodeListField(newsOverview.getUuid(), newsFolder.getUuid()));
-			field.getFields().put("listfield-number", FieldUtil.createNumberListField(47, 11));
-			field.getFields().put("listfield-string", FieldUtil.createStringListField("first", "second", "third"));
-			field.getFields().put("nodefield", FieldUtil.createNodeField(newsOverview.getUuid()));
-			field.getFields().put("numberfield", FieldUtil.createNumberField(4711));
-			field.getFields().put("stringfield", FieldUtil.createStringField("String value"));
-		}
+		field.setMicroschema(new MicroschemaReferenceImpl().setName("full"));
+		field.getFields().put("booleanfield", FieldUtil.createBooleanField(true));
+		field.getFields().put("datefield", FieldUtil.createDateField(toISO8601(date)));
+		field.getFields().put("htmlfield", FieldUtil.createHtmlField("<b>HTML</b> value"));
+		field.getFields().put("listfield-boolean", FieldUtil.createBooleanListField(true, false));
+		field.getFields().put("listfield-date", FieldUtil.createDateListField(toISO8601(date), toISO8601(0)));
+		field.getFields().put("listfield-html", FieldUtil.createHtmlListField("<b>first</b>", "<i>second</i>", "<u>third</u>"));
+		field.getFields().put("listfield-node", FieldUtil.createNodeListField(newsOverview.getUuid(), newsFolder.getUuid()));
+		field.getFields().put("listfield-number", FieldUtil.createNumberListField(47, 11));
+		field.getFields().put("listfield-string", FieldUtil.createStringListField("first", "second", "third"));
+		field.getFields().put("nodefield", FieldUtil.createNodeField(newsOverview.getUuid()));
+		field.getFields().put("numberfield", FieldUtil.createNumberField(4711));
+		field.getFields().put("stringfield", FieldUtil.createStringField("String value"));
 
-		try (Tx tx = tx()) {
-			// 5. Invoke the update request
-			NodeResponse response = updateNode("full", field);
-
-			// 6. Compare the response with the update request
-			assertThat(response.getFields().getMicronodeField("full")).matches(field, fullMicroschema);
-		}
-
+		// 5. Invoke the update request
+		NodeResponse response = updateNode("full", field);
+	
+		// 6. Compare the response with the update request
+		assertThat(response.getFields().getMicronodeField("full")).matches(field, fullMicroschema);
 	}
 
 	/**

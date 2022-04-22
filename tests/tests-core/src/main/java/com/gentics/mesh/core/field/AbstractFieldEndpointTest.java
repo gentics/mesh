@@ -39,9 +39,9 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
 		String... i18nParams) {
-		HibNode node = folder("2015");
 		if (field != null) {
 			try (Tx tx = tx()) {
+				HibNode node = folder("2015");
 				prepareTypedSchema(node, TestHelper.fieldIntoSchema(field).setName(fieldKey), true);
 				tx.success();
 			} catch (IOException e) {
@@ -49,7 +49,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 			}
 		}
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setParentNodeUuid(node.getUuid());
+		nodeCreateRequest.setParentNodeUuid(folder("2015").getUuid());
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
