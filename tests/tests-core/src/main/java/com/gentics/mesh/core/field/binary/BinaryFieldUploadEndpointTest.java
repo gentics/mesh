@@ -151,8 +151,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				HibNodeFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 				assertNotNull("No new version was created.", newContainer);
 				assertEquals(newContainer.getUuid(), contentDao.getLatestDraftFieldContainer(node, english()).getUuid());
-
-				NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
+			}
+			NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
+			try (Tx tx = tx()) {
+				ContentDao contentDao = tx.contentDao();
+				HibNodeFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 				String value = container.getBinary("binary") == null ? null : container.getBinary("binary").getFileName();
 				assertEquals("Version {" + container.getVersion() + "} did not contain the old value", oldFilename, value);

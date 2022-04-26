@@ -59,56 +59,48 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = tx()) {
-			NumberFieldListImpl listField = new NumberFieldListImpl();
-			listField.add(42);
-			listField.add(41);
-			listField.add(null);
-			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(42);
+		listField.add(41);
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			assertThat(response.getFields().getNumberFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getNumberFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			NumberFieldListImpl listField = new NumberFieldListImpl();
-			listField.add(41L);
-			listField.add(42L);
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(41L);
+		listField.add(42L);
 
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = tx()) {
-			// 1. Update an existing node
-			NumberFieldListImpl listField = new NumberFieldListImpl();
-			listField.add(41L);
-			listField.add(42L);
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		// 1. Update an existing node
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(41L);
+		listField.add(42L);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-			// 2. Read the node
-			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
-			NumberFieldListImpl deserializedField = response.getFields().getNumberFieldList(FIELD_NAME);
-			assertNotNull(deserializedField);
-			assertThat(deserializedField.getItems()).as("List field values from updated node (null values are omitted)").containsExactly(41, 42);
-		}
+		// 2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		NumberFieldListImpl deserializedField = response.getFields().getNumberFieldList(FIELD_NAME);
+		assertNotNull(deserializedField);
+		assertThat(deserializedField.getItems()).as("List field values from updated node (null values are omitted)").containsExactly(41, 42);
 	}
 
 	@Test

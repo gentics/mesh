@@ -36,11 +36,9 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNodeWithField();
-			BooleanFieldListImpl field = response.getFields().getBooleanFieldList(FIELD_NAME);
-			assertThat(field.getItems()).as("Only valid values (true,false) should be stored").containsExactly(true, false);
-		}
+		NodeResponse response = createNodeWithField();
+		BooleanFieldListImpl field = response.getFields().getBooleanFieldList(FIELD_NAME);
+		assertThat(field.getItems()).as("Only valid values (true,false) should be stored").containsExactly(true, false);
 	}
 
 	@Test
@@ -56,56 +54,48 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = tx()) {
-			BooleanFieldListImpl listField = new BooleanFieldListImpl();
-			listField.add(true);
-			listField.add(false);
-			listField.add(null);
-			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		BooleanFieldListImpl listField = new BooleanFieldListImpl();
+		listField.add(true);
+		listField.add(false);
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			assertThat(response.getFields().getBooleanFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getBooleanFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			BooleanFieldListImpl listField = new BooleanFieldListImpl();
-			listField.add(true);
-			listField.add(false);
+		BooleanFieldListImpl listField = new BooleanFieldListImpl();
+		listField.add(true);
+		listField.add(false);
 
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = tx()) {
-			// 1. Update an existing node
-			BooleanFieldListImpl listField = new BooleanFieldListImpl();
-			listField.add(true);
-			listField.add(false);
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		// 1. Update an existing node
+		BooleanFieldListImpl listField = new BooleanFieldListImpl();
+		listField.add(true);
+		listField.add(false);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-			// 2. Read the node
-			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
-			BooleanFieldListImpl deserializedBooleanField = response.getFields().getBooleanFieldList(FIELD_NAME);
-			assertNotNull(deserializedBooleanField);
-			assertThat(deserializedBooleanField.getItems()).as("Only valid list field values should be listed").containsExactly(true, false);
-		}
+		// 2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		BooleanFieldListImpl deserializedBooleanField = response.getFields().getBooleanFieldList(FIELD_NAME);
+		assertNotNull(deserializedBooleanField);
+		assertThat(deserializedBooleanField.getItems()).as("Only valid list field values should be listed").containsExactly(true, false);
 	}
 
 	@Test

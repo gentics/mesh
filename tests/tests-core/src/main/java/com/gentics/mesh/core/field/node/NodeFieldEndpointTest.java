@@ -278,6 +278,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
@@ -297,6 +298,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
@@ -336,6 +338,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			// Create test field
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -366,6 +369,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			HibNode node1 = folder("2015");
 
 			prepareTypedSchema(node1, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			// Create test field
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node1, english());
 
@@ -390,6 +394,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Create test field
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);

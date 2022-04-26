@@ -215,6 +215,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		if (field != null) {
 			try {
 				prepareTypedSchema(container.getNode(), TestHelper.fieldIntoSchema(field).setName(fieldKey), true);
+				Tx.get().commit();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

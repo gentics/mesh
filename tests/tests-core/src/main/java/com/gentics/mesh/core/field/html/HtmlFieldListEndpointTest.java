@@ -37,11 +37,9 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNodeWithField();
-			HtmlFieldListImpl field = response.getFields().getHtmlFieldList(FIELD_NAME);
-			assertThat(field.getItems()).containsExactly("A", "B", "C");
-		}
+		NodeResponse response = createNodeWithField();
+		HtmlFieldListImpl field = response.getFields().getHtmlFieldList(FIELD_NAME);
+		assertThat(field.getItems()).containsExactly("A", "B", "C");
 	}
 
 	@Test
@@ -69,60 +67,52 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			assertThat(response.getFields().getHtmlFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getHtmlFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			HtmlFieldListImpl listField = new HtmlFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add("C");
+		HtmlFieldListImpl listField = new HtmlFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add("C");
 
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = tx()) {
-			// 1. Update an existing node
-			HtmlFieldListImpl listField = new HtmlFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add("C");
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		// 1. Update an existing node
+		HtmlFieldListImpl listField = new HtmlFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add("C");
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-			// 2. Read the node
-			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
-			HtmlFieldListImpl deserializedField = response.getFields().getHtmlFieldList(FIELD_NAME);
-			assertNotNull(deserializedField);
-			assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly("A", "B", "C");
-		}
+		// 2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		HtmlFieldListImpl deserializedField = response.getFields().getHtmlFieldList(FIELD_NAME);
+		assertNotNull(deserializedField);
+		assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly("A", "B", "C");
 	}
 
 	@Test
 	public void testHtmlList() throws IOException {
-		try (Tx tx = tx()) {
-			HtmlFieldListImpl listField = new HtmlFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add("C");
+		HtmlFieldListImpl listField = new HtmlFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add("C");
 
-			NodeResponse response = createNode(FIELD_NAME, listField);
-			HtmlFieldListImpl listFromResponse = response.getFields().getHtmlFieldList(FIELD_NAME);
-			assertEquals(3, listFromResponse.getItems().size());
-		}
+		NodeResponse response = createNode(FIELD_NAME, listField);
+		HtmlFieldListImpl listFromResponse = response.getFields().getHtmlFieldList(FIELD_NAME);
+		assertEquals(3, listFromResponse.getItems().size());
 	}
 
 	@Test

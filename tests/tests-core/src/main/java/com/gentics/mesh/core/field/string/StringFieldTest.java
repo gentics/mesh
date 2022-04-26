@@ -61,6 +61,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 			stringFieldSchema.setLabel("Some string field");
 			stringFieldSchema.setRequired(true);
 			prepareTypedSchema(node, stringFieldSchema, false);
+			tx.commit();
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibStringField field = container.createString(STRING_FIELD);

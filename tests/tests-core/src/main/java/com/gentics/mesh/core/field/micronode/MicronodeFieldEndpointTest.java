@@ -385,6 +385,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			prepareTypedSchema(node, new MicronodeFieldSchemaImpl().setName(FIELD_NAME), false);
+			tx.commit();
 			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibMicronodeField micronodeField = container.createMicronode(FIELD_NAME, microschema);
