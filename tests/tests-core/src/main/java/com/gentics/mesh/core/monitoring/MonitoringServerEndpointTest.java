@@ -106,7 +106,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 	public void testAPIInfo() {
 		MeshServerInfoModel info = call(() -> monClient().versions());
 		assertEquals(Mesh.getPlainVersion(), info.getMeshVersion());
-		assertEquals("orientdb", info.getDatabaseVendor());
+		assertEquals(db().getVendorName(), info.getDatabaseVendor());
 		assertEquals("dev-null", info.getSearchVendor());
 		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
 		assertEquals(options().getNodeName(), info.getMeshNodeName());
