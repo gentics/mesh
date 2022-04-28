@@ -1,6 +1,6 @@
 package com.gentics.mesh.changelog.highlevel;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -31,16 +31,16 @@ public class OrientDBHighLevelChangesList extends HighLevelChangesList {
 
 	@Override
 	public List<HighLevelChange> getList() {
-		return Arrays.asList(
-			restructureWebroot,
-			plainText,
-			fixNodeVersionOrder,
-			setAdminUserFlag
+		List<HighLevelChange> changeList = new ArrayList<>(super.getList());
+
 		// ADD NEW CHANGES HERE!
 		// WARNING!
 		// Only add changes when absolutely needed. Try to avoid changelog entries since those would require a offline update.
 		// Instead it is recommended to write changes in a way so that those can be applied on the fly.
 		// WARNING!
-		);
+		changeList.add(restructureWebroot);
+		changeList.add(fixNodeVersionOrder);
+
+		return changeList;
 	}
 }
