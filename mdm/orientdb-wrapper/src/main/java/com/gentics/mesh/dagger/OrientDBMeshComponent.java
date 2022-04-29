@@ -1,16 +1,16 @@
 package com.gentics.mesh.dagger;
 
-import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
+import com.gentics.mesh.cache.ProjectBranchNameCache;
+import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.dagger.module.CommonModule;
 import com.gentics.mesh.dagger.module.OrientDBModule;
-import com.gentics.mesh.dagger.module.SearchWaitUtilProviderModule;
+import com.gentics.mesh.dagger.module.OverridesProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.util.SearchWaitUtil;
@@ -22,7 +22,7 @@ import dagger.Component;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { CommonModule.class, SearchWaitUtilProviderModule.class, OrientDBModule.class })
+@Component(modules = { CommonModule.class, OverridesProviderModule.class, OrientDBModule.class })
 public interface OrientDBMeshComponent extends MeshComponent {
 
 	@Getter
@@ -46,7 +46,13 @@ public interface OrientDBMeshComponent extends MeshComponent {
 		Builder searchProviderType(@Nullable SearchProviderType type);
 
 		@BindsInstance
-		Builder searchWaitUtilSupplier(@Nullable Supplier<SearchWaitUtil> swUtil);
+		Builder searchWaitUtilSupplier(@Nullable OverrideSupplier<SearchWaitUtil> swUtil);
+
+		@BindsInstance
+		Builder projectNameCacheSupplier(@Nullable OverrideSupplier<ProjectNameCache> cache);
+
+		@BindsInstance
+		Builder projectBranchNameCacheSupplier(@Nullable OverrideSupplier<ProjectBranchNameCache> cache);
 
 		OrientDBMeshComponent build();
 	}

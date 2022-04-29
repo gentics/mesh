@@ -6,9 +6,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -16,7 +13,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 /**
  * @see ProjectBranchNameCache
  */
-@Singleton
 public class ProjectBranchNameCacheImpl extends AbstractMeshCache<String, HibBranch> implements ProjectBranchNameCache {
 
 	private static final long CACHE_SIZE = 500;
@@ -29,7 +25,6 @@ public class ProjectBranchNameCacheImpl extends AbstractMeshCache<String, HibBra
 		CLUSTER_DATABASE_CHANGE_STATUS,
 	};
 
-	@Inject
 	public ProjectBranchNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {
 		super(createCache(factory), registry, CACHE_SIZE);
 	}

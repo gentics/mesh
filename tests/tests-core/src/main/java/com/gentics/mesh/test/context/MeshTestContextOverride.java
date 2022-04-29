@@ -1,5 +1,6 @@
 package com.gentics.mesh.test.context;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -27,7 +28,7 @@ public class MeshTestContextOverride extends MeshTestContext {
 		return options;
 	}
 
-	public SearchWaitUtil getWaitUtil() {
+	public SearchWaitUtil getWaitUtil(Mesh mesh) {
 		return waitUtil;
 	}
 

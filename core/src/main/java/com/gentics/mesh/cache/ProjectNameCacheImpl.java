@@ -5,9 +5,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -15,7 +12,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 /**
  * @see ProjectNameCache
  */
-@Singleton
 public class ProjectNameCacheImpl extends AbstractMeshCache<String, HibProject> implements ProjectNameCache {
 
 	public static final long CACHE_SIZE = 100;
@@ -26,7 +22,6 @@ public class ProjectNameCacheImpl extends AbstractMeshCache<String, HibProject> 
 		PROJECT_DELETED, 
 		PROJECT_UPDATED };
 
-	@Inject
 	public ProjectNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {
 		super(createCache(factory), registry, CACHE_SIZE);
 	}
