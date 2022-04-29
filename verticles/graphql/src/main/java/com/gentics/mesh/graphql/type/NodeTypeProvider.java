@@ -174,11 +174,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 
 		ContainerType type = getNodeVersion(env);
-		return nodeDao.getBreadcrumbNodes(content.getNode(), gc).stream().map(node -> {
-			List<String> languageTags = getLanguageArgument(env, content);
-			HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
-			return new NodeContent(node, container, languageTags, type);
-		})
+		List<String> languageTags = getLanguageArgument(env, content);
+		return nodeDao.getBreadcrumbContent(content.getNode(), languageTags, type, gc)
 			.filter(item -> item.getContainer() != null)
 			.filter(gc::hasReadPerm)
 			.collect(Collectors.toList());

@@ -36,7 +36,7 @@ public final class CoreTestUtils {
 		HibSchema schemaContainer = ctx.schemaDao().create(schema, null, null, false);
 		HibSchemaVersion version = schemaContainer.getLatestVersion();
 		ctx.commit();
-		return ctx.contentDao().createPersisted(UUID.randomUUID().toString(), version, null);
+		return ctx.contentDao().createPersisted(UUID.randomUUID().toString(), version, null, null, new VersionNumber(), null);
 	}
 
 	public static SchemaVersionModel createSchema(FieldSchema... fields) {

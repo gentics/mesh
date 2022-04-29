@@ -37,6 +37,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.node.NodeContent;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -190,6 +191,32 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			.map(node1 -> transformToReference(node1, ac))
 			.collect(Collectors.toList());
 		restNode.setBreadcrumb(breadcrumbs);
+	}
+
+	@Override
+	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		ContentDao contentDao = Tx.get().contentDao();
+
+		return findAllStream(project, ac, READ_PUBLISHED_PERM)
+				// Now lets try to load the containers for those found nodes - apply the language fallback
+				.map(node -> new NodeContent(node, contentDao.findVersion(node, ac, languageTags, type), languageTags, type))
+				// Filter nodes without a container
+				.filter(content -> content.getContainer() != null);
+	}
+
+	@Override
+	default Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		Tx tx = Tx.get();
+		SchemaDao schemaDao = tx.schemaDao();
+		ContentDao contentDao = tx.contentDao();
+		return schemaDao.findNodes(schemaVersion, tx.getBranch(ac).getUuid(),
+				ac.getUser(),
+				ContainerType.forVersion(ac.getVersioningParameters().getVersion())).stream()
+				.map(node -> {
+					HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
+					return new NodeContent(node, container, languageTags, type);
+				})
+				.filter(content -> content.getContainer() != null);
 	}
 
 	/**
@@ -818,6 +845,15 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	@Override
 	default Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
 		return new TraversalResult<>(() -> getBreadcrumbNodeStream(node, ac).iterator());
+	}
+
+	@Override
+	default Stream<NodeContent> getBreadcrumbContent(HibNode sourceNode, List<String> languageTags, ContainerType type, InternalActionContext ac) {
+		ContentDao contentDao = Tx.get().contentDao();
+		return getBreadcrumbNodes(sourceNode, ac).stream().map(node -> {
+			HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
+			return new NodeContent(node, container, languageTags, type);
+		});
 	}
 
 	@Override

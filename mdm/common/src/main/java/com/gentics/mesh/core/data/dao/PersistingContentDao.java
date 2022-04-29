@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -207,15 +209,18 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param nodeUUID the node of this graph field container
 	 * @param version mandatory schema version root
 	 * @param uuid a UUID to use. If null, a generated UUID will be used.
+	 * @param languageTag optional language tag
+	 * @param versionNumber mandatory versionNumber
+	 * @param editor optional user
 	 * @return
 	 */
-	HibNodeFieldContainer createPersisted(String nodeUUID, HibSchemaVersion version, String uuid);
+	HibNodeFieldContainer createPersisted(String nodeUUID, HibSchemaVersion version, String uuid, String languageTag, VersionNumber versionNumber, HibUser editor);
 
 	/**
 	 * Connect fresh container to the node.
 	 * 
 	 * @param node
-	 * @param container
+	 * @param newContainer
 	 * @param branch
 	 * @param languageTag
 	 * @param handleDraftEdge
@@ -311,21 +316,12 @@ public interface PersistingContentDao extends ContentDao {
 		}
 
 		// Create the new container
-		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null);
-
-		newContainer.generateBucketId();
-		newContainer.setEditor(editor);
-		newContainer.setLastEditedTimestamp();
-		newContainer.setLanguageTag(languageTag);
-		newContainer.setSchemaContainerVersion(version); // TODO mb unneeded
+		VersionNumber versionNumber = previous != null ? previous.getVersion().nextDraft() : new VersionNumber();
+		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, versionNumber, editor);
 
 		if (previous != null) {
 			// set the next version number
-			setVersion(newContainer, previous.getVersion().nextDraft());
 			previous.setNextVersion(newContainer);
-		} else {
-			// set the initial version number
-			setVersion(newContainer, new VersionNumber());
 		}
 
 		// clone the original or the previous container
@@ -346,22 +342,13 @@ public interface PersistingContentDao extends ContentDao {
 
 	@Override
 	default HibNodeFieldContainer createEmptyFieldContainer(HibSchemaVersion version, HibNode node, HibUser editor, String languageTag, HibBranch branch) {
-		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null);
-		newContainer.generateBucketId();
-		newContainer.setEditor(editor);
-		newContainer.setLastEditedTimestamp();
-		newContainer.setLanguageTag(languageTag);
-		newContainer.setSchemaContainerVersion(version);
-		ContentDao contentDao = Tx.get().contentDao();
-
 		HibNodeFieldContainer previous = getFieldContainer(node, languageTag, branch, DRAFT);
+
+		VersionNumber versionNumber = previous != null ? previous.getVersion().nextDraft() : new VersionNumber();
+		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, versionNumber, editor);
+
 		if (previous != null) {
-			// set the next version number
-			contentDao.setVersion(newContainer, previous.getVersion().nextDraft());
 			previous.setNextVersion(newContainer);
-		} else {
-			// set the initial version number
-			contentDao.setVersion(newContainer, new VersionNumber());
 		}
 
 		connectFieldContainer(node, newContainer, branch, languageTag, true);
@@ -750,29 +737,36 @@ public interface PersistingContentDao extends ContentDao {
 		if (urlFields == null) {
 			return Stream.empty();
 		}
-		return urlFields.stream().flatMap(urlField -> {
-			FieldSchema fieldSchema = schema.getField(urlField);
-			HibField field = content.getField(fieldSchema);
-			if (field instanceof HibStringField) {
-				HibStringField stringField = (HibStringField) field;
-				String value = stringField.getString();
-				if (StringUtils.isBlank(value)) {
-					return Stream.empty();
-				} else {
-					return Stream.of(value);
-				}
-			}
-			if (field instanceof HibStringFieldList) {
-				HibStringFieldList stringListField = (HibStringFieldList) field;
-				return stringListField.getList().stream()
-						.flatMap(listField -> Optional.ofNullable(listField)
-								.map(HibStringField::getString)
-								.filter(StringUtils::isNotBlank)
-								.stream());
-			}
+		return urlFields.stream()
+				.filter(urlField -> {
+							FieldSchema field = schema.getField(urlField);
+							return field instanceof StringFieldSchema ||
+									(field instanceof ListFieldSchema && "string".equals(((ListFieldSchema) field).getListType()));
+						}
+				)
+				.flatMap(urlField -> {
+					FieldSchema fieldSchema = schema.getField(urlField);
+					HibField field = content.getField(fieldSchema);
+					if (field instanceof HibStringField) {
+						HibStringField stringField = (HibStringField) field;
+						String value = stringField.getString();
+						if (StringUtils.isBlank(value)) {
+							return Stream.empty();
+						} else {
+							return Stream.of(value);
+						}
+					}
+					if (field instanceof HibStringFieldList) {
+						HibStringFieldList stringListField = (HibStringFieldList) field;
+						return stringListField.getList().stream()
+								.flatMap(listField -> Optional.ofNullable(listField)
+										.map(HibStringField::getString)
+										.filter(StringUtils::isNotBlank)
+										.stream());
+					}
 
-			return Stream.empty();
-		});
+					return Stream.empty();
+				});
 	}
 
 	@Override

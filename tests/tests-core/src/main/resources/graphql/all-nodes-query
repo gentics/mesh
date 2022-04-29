@@ -1,0 +1,9 @@
+{
+    schema(name: "folder") {
+        nodes {
+            elements {
+                    uuid
+            }
+        }
+    }
+}

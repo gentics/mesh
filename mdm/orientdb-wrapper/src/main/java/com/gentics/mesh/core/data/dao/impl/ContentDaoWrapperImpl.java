@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.core.data.user.HibUser;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -31,7 +32,6 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -220,11 +220,16 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public HibNodeFieldContainer createPersisted(String nodeuuid, HibSchemaVersion version, String uuid) {
+	public HibNodeFieldContainer createPersisted(String nodeuuid, HibSchemaVersion version, String uuid, String languageTag, VersionNumber versionNumber, HibUser editor) {
 		NodeGraphFieldContainerImpl container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		if (StringUtils.isNotBlank(uuid)) {
 			container.setUuid(uuid);
 		}
+		container.generateBucketId();
+		container.setEditor(editor);
+		container.setLastEditedTimestamp();
+		container.setLanguageTag(languageTag);
+		container.setVersion(versionNumber);
 		container.setSchemaContainerVersion(version);
 		return container;
 	}

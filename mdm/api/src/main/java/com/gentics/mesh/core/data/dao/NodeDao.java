@@ -11,9 +11,11 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -268,6 +270,16 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac);
 
 	/**
+	 * Return the breadcrumb node field containers
+	 * @param sourceNode
+	 * @param languageTags
+	 * @param type
+	 * @param ac
+	 * @return
+	 */
+	Stream<NodeContent> getBreadcrumbContent(HibNode sourceNode, List<String> languageTags, ContainerType type, InternalActionContext ac);
+
+	/**
 	 * Check whether the node is the base node of its project
 	 *
 	 * @return true for base node
@@ -357,6 +369,28 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 */
 	void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
+
+	/**
+	 * Fetch all contents for the provided project in the action context branch and the container type.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions
+	 *  @param project
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type);
+
+	/**
+	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions
+	 * @param schemaVersion
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Stream the hierarchical patch of the node.

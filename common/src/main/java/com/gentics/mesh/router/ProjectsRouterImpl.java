@@ -68,7 +68,7 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 			projectRouters.put(name, projectRouter);
 			log.info("Added project router {" + name + "}");
 
-			projectRouter.route().handler(ctx -> {
+			projectRouter.route().blockingHandler(ctx -> {
 				Database db = (Database) apiRouter.getRoot().getStorage().getDb();
 				HibProject project = db.tx(tx -> {
 					return tx.projectDao().findByName(name);
