@@ -160,6 +160,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+        <!-- Mail dependency -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-mail-client</artifactId>
+            <version>4.2.6</version>
+        </dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
