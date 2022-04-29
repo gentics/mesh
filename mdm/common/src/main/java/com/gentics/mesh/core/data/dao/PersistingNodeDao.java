@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -458,32 +459,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			if (fieldsSet.has("fields")) {
-				// Iterate over all fields and transform them to rest
-				com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
-				for (FieldSchema fieldEntry : schema.getFields()) {
-					// boolean expandField =
-					// fieldsToExpand.contains(fieldEntry.getName()) ||
-					// ac.getExpandAllFlag();
-					Field restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
-					if (fieldEntry.isRequired() && restField == null) {
-						// TODO i18n
-						// throw error(BAD_REQUEST, "The field {" +
-						// fieldEntry.getName()
-						// + "} is a required field but it could not be found in the
-						// node. Please add the field using an update call or change
-						// the field schema and
-						// remove the required flag.");
-						fields.put(fieldEntry.getName(), null);
-					}
-					if (restField == null) {
-						if (log.isDebugEnabled()) {
-							log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-						}
-					} else {
-						fields.put(fieldEntry.getName(), restField);
-					}
-
-				}
+				FieldMap fields = fieldContainer.getRestFields(ac, schema, containerLanguageTags, level);
 				restNode.setFields(fields);
 			}
 		}

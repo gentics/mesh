@@ -46,6 +46,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 public interface HibFieldContainer extends HibBasicFieldContainer {
 
@@ -61,6 +62,18 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 *            Current level of transformation
 	 */
 	Field getRestField(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level);
+
+	/**
+	 * Return a FieldMap containing all the rest fields of the container
+	 *
+	 * @param ac the current action context
+	 * @param schemaModel the schema model of the fields
+	 * @param languageTags
+	 *            language tags
+	 * @param level
+	 *            Current level of transformation
+	 */
+	FieldMap getRestFields(InternalActionContext ac, SchemaModel schemaModel, List<String> languageTags, int level);
 
 	/**
 	 * Return the field for the given field schema.

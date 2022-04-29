@@ -10,6 +10,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.util.List;
 
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -69,6 +73,7 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
  * Abstract implementation for a field container. A {@link GraphFieldContainer} is used to store {@link GraphField} instances.
  */
 public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
+	static final Logger log = LoggerFactory.getLogger(AbstractGraphFieldContainerImpl.class);
 
 	/**
 	 * Return the parent node of the field container.
@@ -359,6 +364,26 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		} else {
 			throw error(BAD_REQUEST, "type unknown");
 		}
+	}
+
+	@Override
+	public FieldMap getRestFields(InternalActionContext ac, SchemaModel schema, List<String> containerLanguageTags, int level) {
+		com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
+		for (FieldSchema fieldEntry : schema.getFields()) {
+			Field restField = getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
+				if (fieldEntry.isRequired() && restField == null) {
+					fields.put(fieldEntry.getName(), null);
+				}
+				if (restField == null) {
+					if (log.isDebugEnabled()) {
+						log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+					}
+				} else {
+					fields.put(fieldEntry.getName(), restField);
+				}
+		}
+
+		return fields;
 	}
 
 	/**
