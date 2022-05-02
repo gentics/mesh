@@ -3,6 +3,7 @@ package com.gentics.mesh.dagger.module;
 import com.gentics.mesh.core.jobs.BranchJobProcessor;
 import com.gentics.mesh.core.jobs.JobProcessor;
 import com.gentics.mesh.core.jobs.JobProcessorImpl;
+import com.gentics.mesh.core.jobs.MailJobProcessor;
 import com.gentics.mesh.core.jobs.MicronodeJobProcessor;
 import com.gentics.mesh.core.jobs.NodeJobProcessor;
 import com.gentics.mesh.core.jobs.SingleJobProcessor;
@@ -37,4 +38,10 @@ public abstract class JobProcessingModule {
 	@IntoMap
 	@JobTypeKey(JobType.versionpurge)
 	abstract SingleJobProcessor versionPurgeJobProcessor(VersionPurgeJobProcessor e);
+
+	@Binds
+	@IntoMap
+	@JobTypeKey(JobType.mail)
+	abstract SingleJobProcessor mailJobProcessor(MailJobProcessor e);
+
 }

@@ -11,6 +11,8 @@ public enum JobType {
 
 	branch,
 
-	versionpurge
+	versionpurge,
+
+	mail
 
 }

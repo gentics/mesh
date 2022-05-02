@@ -40,6 +40,10 @@
 			<artifactId>dagger-compiler</artifactId>
 			<optional>true</optional>
 		</dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-mail-client</artifactId>
+        </dependency>
 	</dependencies>
 	<build>
 		<plugins>

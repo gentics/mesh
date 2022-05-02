@@ -38,6 +38,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import io.vertx.ext.mail.MailMessage;
 
 /**
  * @see JobRoot
@@ -184,6 +185,22 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueVersionPurge(HibUser user, HibProject project) {
 		return enqueueVersionPurge(user, project, null);
+	}
+
+	@Override
+	public HibJob enqueueMailSending(HibUser user, long now, String mail) {
+		MailSendingJobImpl job = getGraph().addFramedVertex(MailSendingJobImpl.class);
+		job.setCreationTimestamp();
+		job.setType(JobType.mail);
+		job.setStatus(QUEUED);
+		job.setStartTimestamp(now);
+		job.setProperty("mail", mail);
+		job.setMail(mail);
+		addItem(job);
+		if (log.isDebugEnabled()) {
+			log.debug("Enqueued project mail sending job {" + job.getUuid() + "}");
+		}
+		return job;
 	}
 
 	@Override

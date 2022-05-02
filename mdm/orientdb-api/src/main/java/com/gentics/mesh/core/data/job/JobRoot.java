@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 
-import io.reactivex.Completable;
+import io.vertx.ext.mail.MailMessage;
 
 /**
  * Aggregation vertex for jobs.
@@ -75,6 +75,15 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @return
 	 */
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
+
+	/**
+	 * Enqueue a mail sending job.
+	 * @param user
+	 * @param now
+	 * @param mail
+	 * @return
+	 */
+	HibJob enqueueMailSending(HibUser user, long now, String mail);
 
 	/**
 	 * Purge all failed jobs from the job root.

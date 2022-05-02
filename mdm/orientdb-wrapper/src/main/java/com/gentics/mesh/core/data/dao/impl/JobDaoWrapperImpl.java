@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-
 import dagger.Lazy;
 
 /**
@@ -140,6 +139,11 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	@Override
 	public HibJob enqueueVersionPurge(HibUser user, HibProject project) {
 		return boot.get().meshRoot().getJobRoot().enqueueVersionPurge(user, project);
+	}
+
+	@Override
+	public HibJob enqueueMailSending(HibUser user, long time, String mail) {
+		return boot.get().meshRoot().getJobRoot().enqueueMailSending(user, time, mail);
 	}
 
 	@Override

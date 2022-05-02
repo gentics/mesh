@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import io.reactivex.Completable;
+import io.vertx.ext.mail.MailMessage;
 
 /**
  * DAO for {@link HibJob}.
@@ -137,6 +137,13 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	 */
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
 
+	/**
+	 * Enqueue sending an email.
+	 * @param user
+	 * @param email
+	 * @return
+	 */
+	HibJob enqueueMailSending(HibUser user, long time, String email);
 	/**
 	 * Purge all failed jobs from the job root.
 	 */

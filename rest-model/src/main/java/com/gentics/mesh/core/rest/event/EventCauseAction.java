@@ -15,6 +15,8 @@ public enum EventCauseAction {
 
 	BRANCH_MIGRATION(BranchMigrationCause.class),
 
+	MAIL_SENDING(BranchMigrationCause.class),
+
 	DELETE(EventCauseInfoImpl.class);
 
 	/**

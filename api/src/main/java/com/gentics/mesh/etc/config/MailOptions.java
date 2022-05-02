@@ -3,40 +3,32 @@ package com.gentics.mesh.etc.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import io.vertx.ext.mail.StartTLSOptions;
 
 public class MailOptions {
 	public static final String MAIL_OPTIONS_DEFAULT_HOSTNAME = "localhost";
-	public static final int MAIL_OPTIONS_DEFAULT_PORT = 25;
+	public static final int MAIL_OPTIONS_DEFAULT_PORT = 1025;
 	public static final int MAIL_OPTIONS_DEFAULT_MAX_POOL_SIZE = 10;
 	public static final boolean MAIL_OPTIONS_DEFAULT_SSL = false;
 	public static final boolean MAIL_OPTIONS_DEFAULT_TRUST_ALL = false;
-	//TODO ask
-	//public static final StartTLSOptions DEFAULT_START_TLS = StartTLSOptions.OPTIONAL;
-	public static final boolean MAIL_OPTIONS_DEFAULT_ALLOW_RCPT_ERRORS = false;
+	public static final StartTLSOptions MAIL_OPTIONS_DEFAULT_START_TLS = StartTLSOptions.OPTIONAL;
 	public static final boolean MAIL_OPTIONS_DEFAULT_KEEP_ALIVE = true;
-	public static final boolean MAIL_OPTIONS_DEFAULT_ATTACH_FILE_UPLOADS = false;
-	public static final boolean MAIL_OPTIONS_DEFAULT_DISABLE_ESMTP = false;
 	public static final String MAIL_OPTIONS_DEFAULT_OWN_HOSTNAME = "";
 	public static final String MAIL_OPTIONS_DEFAULT_USERNAME = "";
 	public static final String MAIL_OPTIONS_DEFAULT_PASSWORD = "";
+	public static final int MAIL_OPTIONS_RETRY_IN_SECONDS = 5000;
 
 	public static final String MAIL_OPTIONS_HOSTNAME_ENV = "hostname";
 	public static final String MAIL_OPTIONS_PORT_ENV = "port";
-	public static final String MAIL_OPTIONS_MAX_POOL_SIZE_ENV = "maxPoolSize";
+	public static final String MAIL_OPTIONS_MAX_POOL_SIZE_ENV = "JobHandlermaxPoolSize";
 	public static final String MAIL_OPTIONS_SSL_ENV = "ssl";
 	public static final String MAIL_OPTIONS_TRUST_ALL_ENV = "trustAll";
 	public static final String MAIL_OPTIONS_OWN_HOSTNAME_ENV = "ownHostname";
 	public static final String MAIL_OPTIONS_USERNAME_ENV = "username";
 	public static final String MAIL_OPTIONS_PASSWORD_ENV = "password";
 	public static final String MAIL_OPTIONS_KEEP_ALIVE_ENV = "keepAlive";
-	public static final String  MAIL_OPTIONS_ATTACH_FILE_UPLOADS_ENV = "attachFileUploads";
-
-	//TODO ask
-	//public static final StartTLSOptions DEFAULT_START_TLS_ENV = StartTLSOptions.OPTIONAL;
-	//TODO
-	//public static final String  MAIL_OPTIONS_ALLOW_RCPT_ERRORS_ENV = false;
-	//TODO
-	//public static final String MAIL_OPTIONS_DISABLE_ESMTP_ENV = false;
+	public static final String MAIL_OPTIONS_RETRY_IN_SECONDS_ENV = "retry";
+	public static final String MAIL_OPTIONS_START_TLS_ENV = "startTSL";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Configure the Mail server hostname. Default is: " + MAIL_OPTIONS_DEFAULT_HOSTNAME)
@@ -48,7 +40,7 @@ public class MailOptions {
 	@EnvironmentVariable(name = MAIL_OPTIONS_PORT_ENV, description = "Override the configured server port.")
 	private int port = MAIL_OPTIONS_DEFAULT_PORT;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the max pool size. Default is: " + MAIL_OPTIONS_DEFAULT_MAX_POOL_SIZE)
 	@EnvironmentVariable(name = MAIL_OPTIONS_MAX_POOL_SIZE_ENV, description = "Override the configured server max pool size.")
 	private int maxPoolSize = MAIL_OPTIONS_DEFAULT_MAX_POOL_SIZE;
@@ -83,10 +75,15 @@ public class MailOptions {
 	@EnvironmentVariable(name = MAIL_OPTIONS_KEEP_ALIVE_ENV, description = "Override the configured keep alive variable.")
 	private Boolean iskeepAlive  = MAIL_OPTIONS_DEFAULT_KEEP_ALIVE;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Configure the Retry Variable in seconds. Default is: " + MAIL_OPTIONS_RETRY_IN_SECONDS)
+	@EnvironmentVariable(name = MAIL_OPTIONS_RETRY_IN_SECONDS_ENV, description = "Override the configured Retry Variable.")
+	private int retry  = MAIL_OPTIONS_RETRY_IN_SECONDS;
+
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the possibility to add attachments variable. Default is: " + MAIL_OPTIONS_DEFAULT_ATTACH_FILE_UPLOADS)
-	@EnvironmentVariable(name = MAIL_OPTIONS_ATTACH_FILE_UPLOADS_ENV, description = "Override the configured posibility to add attachments.")
-	private Boolean isaddAttachments  = MAIL_OPTIONS_DEFAULT_ATTACH_FILE_UPLOADS;
+	@JsonPropertyDescription("Configure Start TLS Variable. Default is: StartTLSOptions.OPTIONAL")
+	@EnvironmentVariable(name = MAIL_OPTIONS_START_TLS_ENV, description = "Override the configured start TLS Variable.")
+	private StartTLSOptions startTls  = MAIL_OPTIONS_DEFAULT_START_TLS;
 
 	public String getHostname() {
 		return hostname;
@@ -157,13 +154,12 @@ public class MailOptions {
 		this.iskeepAlive = iskeepAlive;
 	}
 
-	public Boolean getIsaddAttachments() {
-		return isaddAttachments;
+	public Integer getRetry() {
+		return retry;
 	}
 
-	public void setIsaddAttachments(Boolean isaddAttachments) {
-		this.isaddAttachments = isaddAttachments;
+	public void setRetry(Integer retry) {
+		this.retry = retry;
 	}
-
 
 }

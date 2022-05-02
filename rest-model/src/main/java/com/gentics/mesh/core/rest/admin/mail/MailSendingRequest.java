@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.admin.mail;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -9,29 +10,21 @@ import com.gentics.mesh.core.rest.common.AbstractResponse;
 
 public class MailSendingRequest extends AbstractResponse {
 
-	public String getFrom() {
-		return from;
-	}
-
-	public void setFrom(String from) {
-		this.from = from;
-	}
-
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The email of the sender")
 	private String from;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The list of the emails of the receivers")
-	private ArrayList to;
+	private ArrayList<String> to;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The list of the emails of the persons in cc")
-	private ArrayList cc;
+	private ArrayList<String> cc;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The list of the emails of the persons in bcc")
-	private ArrayList bcc;
+	private ArrayList<String> bcc;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Da muss ich fragen")
@@ -53,6 +46,13 @@ public class MailSendingRequest extends AbstractResponse {
 	@JsonPropertyDescription("The list of the attachments in the email")
 	private ArrayList<MailAttachmentsRequest> attachments;
 
+	public String getFrom() {
+		return from;
+	}
+
+	public void setFrom(String from) {
+		this.from = from;
+	}
 	public ArrayList getTo() {
 		return to;
 	}
