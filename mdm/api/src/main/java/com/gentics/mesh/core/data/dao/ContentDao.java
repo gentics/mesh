@@ -279,6 +279,20 @@ public interface ContentDao {
 	HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user);
 
 	/**
+	 * Create a new field container for the given language and assign the schema version of the branch to the container. The field container will be
+	 * the (only) DRAFT version for the language/branch. This method should only be called when it is known for a fact
+	 * that this will be the first field container
+	 *
+	 * @param languageTag
+	 * @param branch
+	 *            branch
+	 * @param user
+	 *            user
+	 * @return
+	 */
+	HibNodeFieldContainer createFirstFieldContainerForNode(HibNode node, String languageTag, HibBranch branch, HibUser user);
+
+	/**
 	 * Like {@link #createFieldContainer(HibNode, String, HibBranch, HibUser)}, but let the new field container be a clone of the given original (if not
 	 * null).
 	 *

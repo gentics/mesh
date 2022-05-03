@@ -459,7 +459,32 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			if (fieldsSet.has("fields")) {
-				FieldMap fields = fieldContainer.getRestFields(ac, schema, containerLanguageTags, level);
+				// Iterate over all fields and transform them to rest
+				com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
+				for (FieldSchema fieldEntry : schema.getFields()) {
+					// boolean expandField =
+					// fieldsToExpand.contains(fieldEntry.getName()) ||
+					// ac.getExpandAllFlag();
+					Field restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
+					if (fieldEntry.isRequired() && restField == null) {
+						// TODO i18n
+						// throw error(BAD_REQUEST, "The field {" +
+						// fieldEntry.getName()
+						// + "} is a required field but it could not be found in the
+						// node. Please add the field using an update call or change
+						// the field schema and
+						// remove the required flag.");
+						fields.put(fieldEntry.getName(), null);
+					}
+					if (restField == null) {
+						if (log.isDebugEnabled()) {
+							log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+						}
+					} else {
+						fields.put(fieldEntry.getName(), restField);
+					}
+
+				}
 				restNode.setFields(fields);
 			}
 		}
@@ -986,8 +1011,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}
 		ContentDao contentDao = Tx.get().contentDao();
-		HibNodeFieldContainer container = contentDao.createFieldContainer(node, language.getLanguageTag(), branch, requestUser);
-		container.updateFieldsFromRest(ac, requestModel.getFields());
+		HibNodeFieldContainer container = contentDao.createFirstFieldContainerForNode(node, language.getLanguageTag(), branch, requestUser);
+		container.createFieldsFromRest(ac, requestModel.getFields());
 
 		batch.add(node.onCreated());
 		batch.add(contentDao.onCreated(container, branch.getUuid(), DRAFT));

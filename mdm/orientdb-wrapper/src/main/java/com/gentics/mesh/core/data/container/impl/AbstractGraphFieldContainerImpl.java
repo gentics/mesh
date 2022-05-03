@@ -366,26 +366,6 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		}
 	}
 
-	@Override
-	public FieldMap getRestFields(InternalActionContext ac, SchemaModel schema, List<String> containerLanguageTags, int level) {
-		com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
-		for (FieldSchema fieldEntry : schema.getFields()) {
-			Field restField = getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
-				if (fieldEntry.isRequired() && restField == null) {
-					fields.put(fieldEntry.getName(), null);
-				}
-				if (restField == null) {
-					if (log.isDebugEnabled()) {
-						log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-					}
-				} else {
-					fields.put(fieldEntry.getName(), restField);
-				}
-		}
-
-		return fields;
-	}
-
 	/**
 	 * Update or create the field using the given restField. The {@link FieldSchema} is used to determine the type of the field.
 	 * 

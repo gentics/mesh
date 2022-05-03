@@ -64,18 +64,6 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	Field getRestField(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level);
 
 	/**
-	 * Return a FieldMap containing all the rest fields of the container
-	 *
-	 * @param ac the current action context
-	 * @param schemaModel the schema model of the fields
-	 * @param languageTags
-	 *            language tags
-	 * @param level
-	 *            Current level of transformation
-	 */
-	FieldMap getRestFields(InternalActionContext ac, SchemaModel schemaModel, List<String> languageTags, int level);
-
-	/**
 	 * Return the field for the given field schema.
 	 * 
 	 * @param fieldSchema
@@ -234,6 +222,15 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @param restFields
 	 */
 	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields);
+
+	/**
+	 * Use the given map of rest fields to set the data from the map to this container.
+	 * @param ac
+	 * @param restFields
+	 */
+	default void createFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
+		updateFieldsFromRest(ac, restFields);
+	}
 
 	/**
 	 * Gets the HibNodeFieldContainers connected to this FieldContainer. 
