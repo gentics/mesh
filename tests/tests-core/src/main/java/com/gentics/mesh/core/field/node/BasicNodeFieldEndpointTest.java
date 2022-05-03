@@ -36,27 +36,27 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 			htmlFieldSchema.setLabel("Some label");
 			htmlFieldSchema.setRequired(true);
 			prepareTypedSchema(schemaContainer("folder"), List.of(htmlFieldSchema), Optional.empty());
-
-			// 2. Create new node with required field value
-			HibNode parentNode = folder("2015");
-			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-			nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
-			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			nodeCreateRequest.setLanguage("en");
-			nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
-
-			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")));
-			assertNotNull("The response could not be found in the result of the future.", response);
-			assertNotNull("The field was not included in the response.", response.getFields().getHtmlField("htmlField"));
-
-			// 3. Update node
-			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-			nodeUpdateRequest.setLanguage("en");
-			nodeUpdateRequest.setVersion("0.1");
-
-			NodeResponse updateResponse = client()
-				.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).blockingGet();
-			assertNotNull("The response could not be found in the result of the future.", updateResponse);
+			tx.success();
 		}
+		// 2. Create new node with required field value
+		HibNode parentNode = folder("2015");
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
+
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")));
+		assertNotNull("The response could not be found in the result of the future.", response);
+		assertNotNull("The field was not included in the response.", response.getFields().getHtmlField("htmlField"));
+
+		// 3. Update node
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("0.1");
+
+		NodeResponse updateResponse = client()
+			.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).blockingGet();
+		assertNotNull("The response could not be found in the result of the future.", updateResponse);
 	}
 }

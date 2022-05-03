@@ -51,8 +51,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
-import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -80,12 +78,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
-			ContentDao contentDao = tx.contentDao();
 			// 1. Transform the node into a binary content
-			HibSchema container = schemaContainer("binary_content");
-			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english())
-					.setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -108,18 +101,12 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReadS3BinaryNode() {
+	public void testReadS3BinaryNode() throws IOException {
 		HibNode node = content("news_2015");
 		String nodeUuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("content").getLatestVersion().getSchema();
-			S3BinaryFieldSchema s3BinaryFieldSchema = new S3BinaryFieldSchemaImpl();
-			s3BinaryFieldSchema.setName("s3");
-			s3BinaryFieldSchema.setLabel("Some label");
-			schema.addField(s3BinaryFieldSchema);
-			schema.setSegmentField("s3");
-			schemaContainer("content").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(node, new S3BinaryFieldSchemaImpl().setAllowedMimeTypes("image/*").setName("s3").setLabel("Binary content"), true);
 			tx.success();
 		}
 
@@ -266,27 +253,24 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 			// Add node reference to node 2015
 			contentDao.getLatestDraftFieldContainer(parentNode, english()).createNode("nodeRef", node);
+			tx.success();
 		}
+		String path = "/News/2015";
+		MeshWebrootResponse restNode = call(
+				() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+						new NodeParametersImpl().setResolveLinks(MEDIUM).setLanguages("en", "de")));
+		assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
+				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
+		assertEquals("The name of the node did not match", "2015",
+				restNode.getNodeResponse().getFields().getStringField("name").getString());
 
-		try (Tx tx = tx()) {
-			String path = "/News/2015";
-			MeshWebrootResponse restNode = call(
-					() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-							new NodeParametersImpl().setResolveLinks(MEDIUM).setLanguages("en", "de")));
-			assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
-					restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
-			assertEquals("The name of the node did not match", "2015",
-					restNode.getNodeResponse().getFields().getStringField("name").getString());
-
-			// Again with no german fallback option (only english)
-			restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-					new NodeParametersImpl().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
-			assertEquals("The node reference did not point to the 404 path.", "/dummy/error/404",
-					restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
-			assertEquals("The name of the node did not match", "2015",
-					restNode.getNodeResponse().getFields().getStringField("name").getString());
-		}
-
+		// Again with no german fallback option (only english)
+		restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+				new NodeParametersImpl().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
+		assertEquals("The node reference did not point to the 404 path.", "/dummy/error/404",
+				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
+		assertEquals("The name of the node did not match", "2015",
+				restNode.getNodeResponse().getFields().getStringField("name").getString());
 	}
 
 	@Test

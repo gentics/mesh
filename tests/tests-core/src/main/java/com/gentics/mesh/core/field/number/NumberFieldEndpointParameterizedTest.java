@@ -87,6 +87,7 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNumberFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibNumberField numberField = container.createNumber(FIELD_NAME);

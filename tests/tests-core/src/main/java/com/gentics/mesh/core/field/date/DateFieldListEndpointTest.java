@@ -37,86 +37,74 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			DateFieldListImpl listField = new DateFieldListImpl();
-			String dateA = toISO8601(4200L);
-			String dateB = toISO8601(4100L);
-			listField.add(dateA);
-			listField.add(dateB);
+		DateFieldListImpl listField = new DateFieldListImpl();
+		String dateA = toISO8601(4200L);
+		String dateB = toISO8601(4100L);
+		listField.add(dateA);
+		listField.add(dateB);
 
-			NodeResponse response = createNode(FIELD_NAME, listField);
-			DateFieldListImpl field = response.getFields().getDateFieldList(FIELD_NAME);
-			assertThat(field.getItems()).as("List with valid values").containsExactly(dateA, dateB);
-		}
+		NodeResponse response = createNode(FIELD_NAME, listField);
+		DateFieldListImpl field = response.getFields().getDateFieldList(FIELD_NAME);
+		assertThat(field.getItems()).as("List with valid values").containsExactly(dateA, dateB);
 	}
 
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			DateFieldListImpl listField = new DateFieldListImpl();
-			listField.add(toISO8601(4200L));
-			listField.add(toISO8601(4100L));
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		DateFieldListImpl listField = new DateFieldListImpl();
+		listField.add(toISO8601(4200L));
+		listField.add(toISO8601(4100L));
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = tx()) {
-			DateFieldListImpl listField = new DateFieldListImpl();
-			String dateA = toISO8601(4200L);
-			String dateB = toISO8601(4100L);
-			listField.add(dateA);
-			listField.add(dateB);
-			listField.add(null);
-			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		DateFieldListImpl listField = new DateFieldListImpl();
+		String dateA = toISO8601(4200L);
+		String dateB = toISO8601(4100L);
+		listField.add(dateA);
+		listField.add(dateB);
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			assertThat(response.getFields().getDateFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getDateFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			DateFieldListImpl listField = new DateFieldListImpl();
-			listField.add(toISO8601(4200L));
-			listField.add(toISO8601(4100L));
+		DateFieldListImpl listField = new DateFieldListImpl();
+		listField.add(toISO8601(4200L));
+		listField.add(toISO8601(4100L));
 
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = tx()) {
-			// 1. Update an existing node
-			DateFieldListImpl listField = new DateFieldListImpl();
-			listField.add(toISO8601(4200L));
-			listField.add(toISO8601(4100L));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		// 1. Update an existing node
+		DateFieldListImpl listField = new DateFieldListImpl();
+		listField.add(toISO8601(4200L));
+		listField.add(toISO8601(4100L));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-			// 2. Read the node
-			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
-			DateFieldListImpl deserializedField = response.getFields().getDateFieldList(FIELD_NAME);
-			assertNotNull(deserializedField);
-			assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly(toISO8601(4200L), toISO8601(4100L));
-		}
+		// 2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		DateFieldListImpl deserializedField = response.getFields().getDateFieldList(FIELD_NAME);
+		assertNotNull(deserializedField);
+		assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly(toISO8601(4200L), toISO8601(4100L));
 	}
 
 	@Test

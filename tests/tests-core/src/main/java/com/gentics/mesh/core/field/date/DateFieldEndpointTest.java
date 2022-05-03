@@ -49,11 +49,9 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
-			assertNull(field);
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
+		assertNull(field);
 	}
 
 	@Test
@@ -86,14 +84,12 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			String oldVersion = firstResponse.getVersion();
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
@@ -166,12 +162,10 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
-			NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			DateField field = response.getFields().getDateField(FIELD_NAME);
-			assertEquals(toISO8601(nowEpoch), field.getDate());
-		}
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+		DateField field = response.getFields().getDateField(FIELD_NAME);
+		assertEquals(toISO8601(nowEpoch), field.getDate());
 	}
 
 	@Test
@@ -182,6 +176,8 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			prepareTypedSchema(node, new DateFieldSchemaImpl().setName(FIELD_NAME), false);
+			tx.commit();
+
 			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -191,12 +187,10 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			throw new RuntimeException(e);
 		}
 
-		try (Tx tx = tx()) {
-			NodeResponse response = readNode(node);
-			DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
-			assertNotNull(deserializedDateField);
-			assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
-		}
+		NodeResponse response = readNode(node);
+		DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
+		assertNotNull(deserializedDateField);
+		assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
 	}
 
 	@Override

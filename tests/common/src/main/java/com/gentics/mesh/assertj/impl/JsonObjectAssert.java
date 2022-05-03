@@ -1,5 +1,24 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.assertj.core.api.AbstractAssert;
+import org.jetbrains.annotations.NotNull;
+
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.google.common.collect.ImmutableMap;
@@ -8,27 +27,6 @@ import com.jayway.jsonpath.PathNotFoundException;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.assertj.core.api.AbstractAssert;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObject> {
 	/**

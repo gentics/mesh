@@ -62,7 +62,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			htmlListFieldSchema.setName(HTML_LIST);
 			htmlListFieldSchema.setListType("html");
 			prepareTypedSchema(node, htmlListFieldSchema, true);
-
+			tx.commit();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibHtmlFieldList htmlList = container.createHTMLList(HTML_LIST);
 			htmlList.createHTML("some<b>html</b>");
