@@ -67,7 +67,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertEquals(newValue, field.getHTML());
 
 			try (Tx tx = tx()) {
-				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
+				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en").getPreviousVersion();
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getHtmlValue(container, FIELD_NAME));
 			}

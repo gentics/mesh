@@ -42,6 +42,20 @@ public class BinaryFieldUploadEndpointParameterizedTest extends AbstractMeshTest
 	 */
 	@Test
 	public void testParallelDupUpload() throws IOException {
+		testParallelUpload(true);
+	}
+
+	/**
+	 * Test parallel upload of the differently named binary data.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testParallelDiffUpload() throws IOException {
+		testParallelUpload(false);
+	}
+
+	private void testParallelUpload(boolean useSameName) throws IOException {
 
 		String folderUuid = tx(() -> folder("news").getUuid());
 
@@ -64,10 +78,9 @@ public class BinaryFieldUploadEndpointParameterizedTest extends AbstractMeshTest
 					int size = data.length;
 					InputStream ins = new ByteArrayInputStream(data);
 					return client()
-						.updateNodeBinaryField(projectName(), node.getUuid(), "en", node.getVersion(), "image", ins, size, "blume.jpg", "image/jpeg")
+						.updateNodeBinaryField(projectName(), node.getUuid(), "en", node.getVersion(), "image", ins, size, useSameName ? "blume.jpg" : (number + "blume.jpg"), "image/jpeg")
 						.toSingle();
 				});
 		}).lastOrError().ignoreElement().blockingAwait();
-
 	}
 }
