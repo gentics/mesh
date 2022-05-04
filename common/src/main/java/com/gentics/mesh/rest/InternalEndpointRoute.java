@@ -175,8 +175,11 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 
 	/**
 	 * Create a blocking handler for the endpoint.
+	 * The handler will be created "ordered", which means that handlers will not be called concurrently.
+	 * This should only be used, when absolutely necessary and only for mutating requests.
+	 * In all other cases, {@link #blockingHandler(Handler, boolean)} with ordered: false should be used.
 	 * 
-	 * @param requestHandler
+	 * @param requestHandler request handler
 	 * @return Fluent API
 	 */
 	InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler);
@@ -184,8 +187,8 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	/**
 	 * Create a blocking handler for the endpoint.
 	 * 
-	 * @param requestHandler
-	 * @param ordered
+	 * @param requestHandler request handler
+	 * @param ordered if the handlers should be called in order or may be called concurrently
 	 * @return Fluent API
 	 */
 	InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered);

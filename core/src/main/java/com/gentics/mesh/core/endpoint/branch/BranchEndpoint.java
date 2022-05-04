@@ -82,7 +82,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("branchUuid");
 			crudHandler.handleGetMicroschemaVersions(ac, uuid);
-		});
+		}, false);
 
 	}
 
@@ -99,7 +99,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 			String uuid = rc.request().getParam("branchUuid");
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleGetSchemaVersions(ac, uuid);
-		});
+		}, false);
 	}
 
 	private void addNodeMigrationHandler() {
@@ -167,7 +167,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
@@ -180,7 +180,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
-		});
+		}, false);
 	}
 
 	private void addUpdateHandler() {
@@ -264,7 +264,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = ac.getParameter("branchUuid");
 			crudHandler.readTags(ac, branchUuid);
-		});
+		}, false);
 
 		InternalEndpointRoute bulkUpdate = createRoute();
 		bulkUpdate.path("/:branchUuid/tags");

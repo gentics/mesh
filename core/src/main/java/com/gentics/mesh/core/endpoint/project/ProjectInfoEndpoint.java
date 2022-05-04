@@ -49,7 +49,7 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 			String projectName = rc.request().params().get("project");
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadByName(ac, projectName);
-		});
+		}, false);
 	}
 
 	@Override

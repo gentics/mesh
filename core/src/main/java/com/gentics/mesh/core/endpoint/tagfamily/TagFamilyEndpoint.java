@@ -132,7 +132,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
 			tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/:tagFamilyUuid/tags");
@@ -147,7 +147,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
-		});
+		}, false);
 
 	}
 
@@ -185,7 +185,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
 			String uuid = ac.getParameter("tagUuid");
 			tagCrudHandler.handleTaggedNodesList(ac, tagFamilyUuid, uuid);
-		});
+		}, false);
 	}
 
 	private void addTagFamilyDeleteHandler() {
@@ -216,7 +216,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
 			tagFamilyCrudHandler.handleRead(ac, uuid);
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
@@ -228,7 +228,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			tagFamilyCrudHandler.handleReadList(ac);
-		});
+		}, false);
 	}
 
 	private void addTagFamilyCreateHandler() {
