@@ -1,16 +1,20 @@
 package com.gentics.mesh.dagger;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshFactory;
 import com.gentics.mesh.annotation.Getter;
+import com.gentics.mesh.cache.CacheRegistry;
+import com.gentics.mesh.cache.ProjectBranchNameCache;
+import com.gentics.mesh.cache.ProjectNameCache;
+import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
@@ -32,6 +36,15 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	@Getter
 	LivenessManager livenessManager();
+
+	@Getter
+	MeshEventSender meshEventSender();
+
+	@Getter
+	EventAwareCacheFactory eventAwareCacheFactory();
+
+	@Getter
+	CacheRegistry cacheRegistry();
 
 	/**
 	 * Builder for the main dagger component. It allows injection of options and the mesh instance which will be created by the {@link MeshFactory} outside of
@@ -63,12 +76,28 @@ public interface MeshComponent extends BaseMeshComponent {
 		Builder searchProviderType(@Nullable SearchProviderType type);
 
 		/**
-		 * Inject the own instance of {@link SearchWaitUtil}.
+		 * Inject the own instance of {@link SearchWaitUtil} on a top of a default one provided by a core implementation.
 		 * 
-		 * @param type
+		 * @param swUtil
 		 * @return
 		 */
-		Builder searchWaitUtilSupplier(@Nullable Supplier<SearchWaitUtil> swUtil);
+		Builder searchWaitUtilSupplier(@Nullable OverrideSupplier<SearchWaitUtil> swUtil);
+
+		/**
+		 * Inject the own instance of {@link ProjectNameCache} on a top of a default one provided by a core implementation.
+		 * 
+		 * @param cache
+		 * @return
+		 */
+		Builder projectNameCacheSupplier(@Nullable OverrideSupplier<ProjectNameCache> cache);
+
+		/**
+		 * Inject the own instance of {@link ProjectBranchNameCache} on a top of a default one provided by a core implementation.
+		 * 
+		 * @param cache
+		 * @return
+		 */
+		Builder projectBranchNameCacheSupplier(@Nullable OverrideSupplier<ProjectBranchNameCache> cache);
 
 		/**
 		 * Build the component.
