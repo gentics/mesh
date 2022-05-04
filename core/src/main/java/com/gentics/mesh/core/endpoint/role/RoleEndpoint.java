@@ -91,7 +91,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			crudHandler.handlePermissionRead(ac, roleUuid, pathToElement);
-		});
+		}, false);
 	}
 
 	private void addDeleteHandler() {
@@ -139,7 +139,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleRead(ac, uuid);
-		});
+		}, false);
 
 		/*
 		 * List all roles when no parameter was specified
@@ -155,7 +155,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
-		});
+		}, false);
 	}
 
 	private void addCreateHandler() {
