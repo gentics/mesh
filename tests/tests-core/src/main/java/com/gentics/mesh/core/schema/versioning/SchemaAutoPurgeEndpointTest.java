@@ -105,7 +105,10 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 		enableAutoPurgeOnSchema();
 		HibNode node = content();
 		String nodeUuid = tx(() -> node.getUuid());
-		tx(() -> prepareSchema(content(), "", "binary"));
+		tx(tx -> {
+			prepareSchema(content(), "", "binary"); 
+			tx.commit();
+		});
 		assertVersions(nodeUuid, "en", "PD(2.0)=>I(0.1)");
 
 		call(() -> uploadRandomData(node, "en", "binary", 1000, "application/pdf", "somefile.PDF"));

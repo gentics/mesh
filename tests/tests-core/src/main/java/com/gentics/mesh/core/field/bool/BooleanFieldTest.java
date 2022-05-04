@@ -61,7 +61,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 			booleanFieldSchema.setLabel("Some boolean field");
 			booleanFieldSchema.setRequired(true);
 			prepareTypedSchema(node, booleanFieldSchema, true);
-
+			tx.commit();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibBooleanField field = container.createBoolean(BOOLEAN_FIELD);
 			field.setBoolean(true);

@@ -278,6 +278,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
@@ -297,6 +298,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
@@ -336,6 +338,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			// Create test field
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -366,11 +369,13 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			HibNode node1 = folder("2015");
 
 			prepareTypedSchema(node1, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			// Create test field
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node1, english());
 
 			container.createNode(FIELD_NAME, referencedNode);
 
+			tx.success();
 			return node1;
 		});
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
@@ -389,6 +394,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Create test field
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
+			tx.commit();
 			ContentDao contentDao = tx.contentDao();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(FIELD_NAME, newsNode);
@@ -426,6 +432,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode folder = folder("2015");
 		try (Tx tx = tx()) {
 			prepareTypedSchema(schemaContainer("folder"), List.of(FieldUtil.createNodeFieldSchema(FIELD_NAME)), Optional.empty());
+			tx.success();
 		}
 		// add a node in german and english
 		NodeCreateRequest createGermanNode = new NodeCreateRequest();
@@ -450,7 +457,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		createSourceNode.getFields().put("name", createStringField("German Source"));
 		createSourceNode.getFields().put(FIELD_NAME, createNodeField(germanTarget.getUuid()));
 
-		NodeResponse source = client().createNode(PROJECT_NAME, createSourceNode).blockingGet();
+		NodeResponse source = call(() -> client().createNode(PROJECT_NAME, createSourceNode));
 		try (Tx tx = tx()) {
 				
 			// read source node with expanded field

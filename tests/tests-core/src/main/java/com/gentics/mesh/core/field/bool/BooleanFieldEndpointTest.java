@@ -40,6 +40,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 			booleanFieldSchema.setName(FIELD_NAME);
 			booleanFieldSchema.setLabel("Some label");
 			prepareTypedSchema(schemaContainer("folder"), List.of(booleanFieldSchema), Optional.empty());
+			tx.success();
 		}
 	}
 
@@ -53,13 +54,11 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 			container.createBoolean(FIELD_NAME).setBoolean(true);
 			tx.success();
 		}
-		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
-			NodeResponse response = readNode(node);
-			BooleanFieldImpl deserializedBooleanField = response.getFields().getBooleanField(FIELD_NAME);
-			assertNotNull(deserializedBooleanField);
-			assertTrue(deserializedBooleanField.getValue());
-		}
+		HibNode node = folder("2015");
+		NodeResponse response = readNode(node);
+		BooleanFieldImpl deserializedBooleanField = response.getFields().getBooleanField(FIELD_NAME);
+		assertNotNull(deserializedBooleanField);
+		assertTrue(deserializedBooleanField.getValue());
 	}
 
 	@Test
@@ -84,25 +83,23 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 				assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
 				container = boot().contentDao().getFieldContainer(node, "en");
 				oldValue = getBooleanValue(container, FIELD_NAME);
-				response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
-				field = response.getFields().getBooleanField(FIELD_NAME);
-				assertEquals(!flag, field.getValue());
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
 			}
+			response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
+			field = response.getFields().getBooleanField(FIELD_NAME);
+			assertEquals(!flag, field.getValue());
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
+			assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
@@ -127,11 +124,11 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(latest.getPreviousVersion().getBoolean(FIELD_NAME)).isNotNull();
 			Boolean oldValue = latest.getPreviousVersion().getBoolean(FIELD_NAME).getBoolean();
 			assertThat(oldValue).isEqualTo(true);
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
 		}
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test
@@ -158,21 +155,17 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
-			assertNull(field);
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
+		assertNull(field);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNodeWithField();
-			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
-			assertTrue(field.getValue());
-		}
+		NodeResponse response = createNodeWithField();
+		BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
+		assertTrue(field.getValue());
 	}
 
 	@Override

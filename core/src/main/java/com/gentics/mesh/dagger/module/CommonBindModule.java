@@ -11,10 +11,6 @@ import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.PermissionCacheImpl;
-import com.gentics.mesh.cache.ProjectBranchNameCache;
-import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
-import com.gentics.mesh.cache.ProjectNameCache;
-import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
 import com.gentics.mesh.context.BulkActionContext;
@@ -153,16 +149,10 @@ public abstract class CommonBindModule {
 	abstract RangeRequestHandler bindRangeRequestHandler(RangeRequestHandlerImpl e);
 
 	@Binds
-	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
-
-	@Binds
 	abstract WebrootPathCache bindWebrootPathCache(WebrootPathCacheImpl e);
 
 	@Binds
 	abstract PermissionCache bindPermissionCache(PermissionCacheImpl e);
-
-	@Binds
-	abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
 
 	@Binds
 	abstract PluginEnvironment bindPluginEnv(PluginEnvironmentImpl e);
