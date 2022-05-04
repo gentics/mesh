@@ -77,7 +77,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDiff(ac, schemaUuid);
-		});
+		}, false);
 	}
 
 	private void addChangesHandler() {
@@ -127,7 +127,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 			} else {
 				crudHandler.handleRead(wrap(rc), uuid);
 			}
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
@@ -138,7 +138,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		readAll.produces(APPLICATION_JSON);
 		readAll.blockingHandler(rc -> {
 			crudHandler.handleReadList(wrap(rc));
-		});
+		}, false);
 	}
 
 	private void addDeleteHandler() {
