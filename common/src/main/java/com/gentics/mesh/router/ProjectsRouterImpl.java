@@ -80,7 +80,7 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 				}
 				ctx.put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 				ctx.next();
-			});
+			}, false);
 			// Note: the end slash in the subrouter mount point is important, otherwise the subrouter for e.g. /project
 			// (for a project named "project") would also match for the route /projects, which will cause problems,
 			// if the project "project" is deleted
