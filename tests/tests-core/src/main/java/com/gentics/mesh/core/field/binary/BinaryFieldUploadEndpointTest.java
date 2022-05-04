@@ -19,7 +19,6 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +39,6 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -224,42 +222,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertNotNull(binaryField.getHeight());
 			assertEquals("image/jpeg", binaryField.getMimeType());
 		}
-	}
-
-	/**
-	 * Test parallel upload of the same binary data - thus the same binary vertex should be used.
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void testParallelDupUpload() throws IOException {
-
-		String folderUuid = tx(() -> folder("news").getUuid());
-
-		// Prepare schema
-		try (Tx tx = tx()) {
-			prepareTypedSchema(folder("news"), FieldUtil.createBinaryFieldSchema("image"), false);
-			tx.success();
-		}
-
-		Buffer buffer = getBuffer("/pictures/blume.jpg");
-		Observable.range(0, 200).flatMapSingle(number -> {
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setLanguage("en");
-			request.setParentNodeUuid(folderUuid);
-			request.setSchemaName("folder");
-			request.getFields().put("slug", FieldUtil.createStringField("folder" + number));
-			return client().createNode(PROJECT_NAME, request).toSingle()
-				.flatMap(node -> {
-					byte[] data = buffer.getBytes();
-					int size = data.length;
-					InputStream ins = new ByteArrayInputStream(data);
-					return client()
-						.updateNodeBinaryField(projectName(), node.getUuid(), "en", node.getVersion(), "image", ins, size, "blume.jpg", "image/jpeg")
-						.toSingle();
-				});
-		}).lastOrError().ignoreElement().blockingAwait();
-
 	}
 
 	@Test
