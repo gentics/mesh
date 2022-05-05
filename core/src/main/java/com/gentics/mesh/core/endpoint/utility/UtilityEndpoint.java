@@ -69,7 +69,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.validateMicroschema(ac);
-		});
+		}, false);
 	}
 
 	/**
@@ -88,6 +88,6 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.handleResolveLinks(ac);
-		});
+		}, false);
 	}
 }

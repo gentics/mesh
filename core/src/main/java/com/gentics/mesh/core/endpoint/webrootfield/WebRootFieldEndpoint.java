@@ -62,7 +62,7 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 			"Download the field with the given name from the given path. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.blockingHandler(rc -> {
 			handler.handleGetPathField(rc);
-		});
+		}, false);
 
 	}
 

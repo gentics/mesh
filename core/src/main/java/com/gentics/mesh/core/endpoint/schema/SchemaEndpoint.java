@@ -124,7 +124,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDiff(ac, uuid);
-		});
+		}, false);
 	}
 
 	private void addUpdateHandler() {
@@ -183,7 +183,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
@@ -196,7 +196,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
-		});
+		}, false);
 
 	}
 }

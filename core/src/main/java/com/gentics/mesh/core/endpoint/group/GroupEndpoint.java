@@ -79,7 +79,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupRolesList(ac, groupUuid);
-		});
+		}, false);
 
 		InternalEndpointRoute addRole = createRoute();
 		addRole.path("/:groupUuid/roles/:roleUuid");
@@ -127,7 +127,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			crudHandler.handleGroupUserList(ac, groupUuid);
-		});
+		}, false);
 
 		InternalEndpointRoute addUser = createRoute();
 		addUser.path("/:groupUuid/users/:userUuid");
@@ -211,7 +211,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleRead(ac, uuid);
-		});
+		}, false);
 
 		/*
 		 * List all groups when no parameter was specified
@@ -227,7 +227,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.blockingHandler(rc -> {
 			crudHandler.handleReadList(wrap(rc));
-		});
+		}, false);
 	}
 
 	// TODO handle conflicting group name: group_conflicting_name
