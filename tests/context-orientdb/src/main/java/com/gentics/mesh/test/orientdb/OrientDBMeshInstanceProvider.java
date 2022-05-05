@@ -104,4 +104,9 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 	public MeshTestActions actions() {
 		return actions;
 	}
+
+	@Override
+	public void setSyncWrites(boolean syncWrites) {
+		meshOptions.getStorageOptions().setSynchronizeWrites(syncWrites);
+	}
 }
