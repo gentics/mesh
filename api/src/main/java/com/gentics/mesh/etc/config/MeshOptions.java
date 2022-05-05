@@ -137,16 +137,8 @@ public abstract class MeshOptions implements Option {
 	@EnvironmentVariable(name = MESH_MAX_PURGE_BATCH_SIZE, description = "Override the maximum purge batch size.")
 	private int versionPurgeMaxBatchSize = 10;
 
-	public MailOptions getMailOptions() {
-		return mailOptions;
-	}
-
-	public void setMailOptions(MailOptions mailOptions) {
-		this.mailOptions = mailOptions;
-	}
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Mail options.")
+	@JsonProperty(value="mail", required = false)
+	@JsonPropertyDescription("Mail sending options.")
 	private MailOptions mailOptions= new MailOptions();
 
 	@JsonProperty(required = true)
@@ -505,6 +497,18 @@ public abstract class MeshOptions implements Option {
 	public MeshOptions setStartInReadOnly(boolean startInReadOnly) {
 		this.startInReadOnly = startInReadOnly;
 		return this;
+	}
+
+	@Getter
+	@JsonProperty("mail")
+	public MailOptions getMailOptions() {
+		return mailOptions;
+	}
+
+	@Setter
+	@JsonProperty("mail")
+	public void setMailOptions(MailOptions mailOptions) {
+		this.mailOptions = mailOptions;
 	}
 
 	public int getVersionPurgeMaxBatchSize() {

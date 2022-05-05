@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
-import com.gentics.mesh.core.rest.admin.mail.MailSendingRequest;
+import com.gentics.mesh.core.rest.admin.mail.MailSendingResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -131,8 +131,8 @@ public class AdminExamples {
 		config.setMode(CoordinatorMode.DISABLED);
 		return config;
 	}
-	public MailSendingRequest createMailOptionsRequest() {
-		MailSendingRequest request= new MailSendingRequest();
+	public MailSendingResponse createMailOptionsRequest() {
+		MailSendingResponse request= new MailSendingResponse();
 		return request;
 	}
 

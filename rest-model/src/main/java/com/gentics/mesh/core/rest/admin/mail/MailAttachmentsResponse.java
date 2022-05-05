@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.admin.mail;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
-public class MailAttachmentsRequest {
+public class MailAttachmentsResponse {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The project where the attachment is")
@@ -20,6 +20,10 @@ public class MailAttachmentsRequest {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The field of the schema where the attachment is")
 	private String field;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The branch of the attachment. If not set the default will be taken")
+	private String branch;
 
 	public String getProject() {
 		return project;
@@ -52,4 +56,13 @@ public class MailAttachmentsRequest {
 	public void setField(String field) {
 		this.field = field;
 	}
+
+	public String getBranch() {
+		return branch;
+	}
+
+	public void setBranch(String branch) {
+		this.branch = branch;
+	}
+
 }

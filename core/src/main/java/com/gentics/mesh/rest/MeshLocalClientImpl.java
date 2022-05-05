@@ -17,6 +17,7 @@ import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.admin.MailHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
@@ -43,6 +44,8 @@ import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
+import com.gentics.mesh.core.rest.admin.mail.MailAttachmentsResponse;
+import com.gentics.mesh.core.rest.admin.mail.MailSendingResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -206,6 +209,9 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Inject
 	public PluginHandler pluginHandler;
+
+	@Inject
+	public MailHandler mailHandler;
 
 	@Inject
 	public Vertx vertx;
@@ -1861,6 +1867,11 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> clearCache() {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> sendEmail(MailSendingResponse res) {
 		return null;
 	}
 }

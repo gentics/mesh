@@ -27,6 +27,8 @@ import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
+import com.gentics.mesh.core.rest.admin.mail.MailAttachmentsResponse;
+import com.gentics.mesh.core.rest.admin.mail.MailSendingResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -1661,5 +1663,10 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 			.collect(Collectors.joining("/", "/", ""));
 
 		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/webrootfield/" + fieldName + path + getQuery(parameters), MeshWebrootFieldResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> sendEmail(MailSendingResponse res) {
+		return prepareRequest(POST, "/admin/mail", GenericMessageResponse.class, res);
 	}
 }

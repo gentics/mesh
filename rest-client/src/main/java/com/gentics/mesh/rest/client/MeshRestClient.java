@@ -14,7 +14,7 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, NodeS3BinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
 	NavRootClientMethods, EventbusClientMethods, BranchClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods,
-	GenericHttpMethods, HealthClientMethods, LocalConfigMethods, WebRootFieldClientMethods {
+	GenericHttpMethods, HealthClientMethods, LocalConfigMethods, WebRootFieldClientMethods, AdminClientMailSendingMethods {
 
 	/**
 	 * Create a new mesh rest client.

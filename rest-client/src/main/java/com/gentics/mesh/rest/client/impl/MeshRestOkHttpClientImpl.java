@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.core.rest.admin.mail.MailAttachmentsResponse;
+import com.gentics.mesh.core.rest.admin.mail.MailSendingResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -85,4 +87,5 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	public MeshRestClientConfig getConfig() {
 		return config;
 	}
+
 }

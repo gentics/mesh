@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.jobs;
 
+import static com.gentics.mesh.core.rest.MeshEvent.MAIL_SENDING_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_VERSION_PURGE_FINISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.job.JobStatus.*;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -16,7 +19,6 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.HibMailJob;
@@ -24,13 +26,13 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.rest.admin.mail.MailAttachmentsRequest;
-import com.gentics.mesh.core.rest.admin.mail.MailSendingRequest;
-import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
-import com.gentics.mesh.core.rest.event.node.MailSendingCause;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.mail.MailAttachmentsResponse;
+import com.gentics.mesh.core.rest.admin.mail.MailSendingResponse;
+import com.gentics.mesh.core.rest.event.job.MailSendingEventModel;
+import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MailOptions;
@@ -42,15 +44,12 @@ import com.gentics.mesh.util.RxUtil;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.SingleSource;
 import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.StartTLSOptions;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.mail.MailClient;
 
@@ -77,11 +76,12 @@ public class MailJobProcessor implements SingleJobProcessor {
 	@Override
 	public Completable process(HibJob job) {
 		HibMailJob mailJob = (HibMailJob) job;
+		String mailJobId = mailJob.getUuid();
 		MailConfig config = getConfig(meshOptions.getMailOptions());
 		MailClient mailClient = MailClient.create(vertx, config);
 		String mail = db.tx(mailJob::getMail);
 
-		MailSendingRequest request = JsonUtil.readValue(mail, MailSendingRequest.class);
+		MailSendingResponse request = JsonUtil.readValue(mail, MailSendingResponse.class);
 		boolean attachFiles = false;
 		if(request.getAttachments()!= null && !request.getAttachments().isEmpty()){
 			attachFiles = true;
@@ -90,26 +90,39 @@ public class MailJobProcessor implements SingleJobProcessor {
 		MailMessage mailMessage = getMailMessage(request);
 		Consumer<MailMessage> send = m -> mailClient.sendMail(m, sendRes -> {
 			if (sendRes.succeeded()) {
-				db.tx(() -> {
-					mailJob.setStopTimestamp();
-					mailJob.setStatus(COMPLETED);
-					jobDao.mergeIntoPersisted(mailJob);
+				db.tx(tx -> {
+					job.setStopTimestamp();
+					job.setStatus(COMPLETED);
+					jobDao.mergeIntoPersisted(job);
+				});
+				db.tx(tx -> {
+					log.info("Job for sending the email {" + mailJobId + "} completed.");
+					tx.createBatch().add(createEvent(MAIL_SENDING_FINISHED, COMPLETED))
+						.dispatch();
 				});
 			} else {
-				db.tx(() -> {
-						markJobAsFailed(mailJob, (Throwable) sendRes);
-					});
+				markJobAsFailed(mailJobId, new Throwable(sendRes.cause()));
+				db.tx(tx -> {
+					log.info("Job for sending the email {" + mailJob.getUuid() + "} completed.");
+					tx.createBatch().add(createEvent(MAIL_SENDING_FINISHED, FAILED))
+						.dispatch();
+				});
 				log.error("Error while sending mail", sendRes.cause());
 			}
 		});
 		if(mail != null) {
 			if (attachFiles) {
-				addAttachments(request.getAttachments(), mailMessage, job).subscribe(send);
+				addAttachments(request.getAttachments(), mailMessage, mailJobId).subscribe(send);
 			} else {
 				Single.just(mailMessage).subscribe(send);
 			}
 		} else {
-			markJobAsFailed(mailJob, new IllegalArgumentException("There is no message provided"));
+			markJobAsFailed(mailJobId, new IllegalArgumentException("There is no message provided"));
+			db.tx(tx -> {
+				log.info("Job for sending the email {" + mailJob.getUuid() + "} completed.");
+				tx.createBatch().add(createEvent(MAIL_SENDING_FINISHED, FAILED))
+					.dispatch();
+			});
 			return Completable.complete();
 		}
 		return Completable.complete();
@@ -117,39 +130,46 @@ public class MailJobProcessor implements SingleJobProcessor {
 
 	/**
 	 * Mark the job as failed
-	 * @param mailJob
+	 * @param mailJobId
 	 * @param sendRes
 	 */
-	private void markJobAsFailed(HibMailJob mailJob, Throwable sendRes) {
-			mailJob.setStopTimestamp();
-			mailJob.setStatus(FAILED);
-			mailJob.setError(sendRes);
-			jobDao.mergeIntoPersisted(mailJob);
+	private void markJobAsFailed(String mailJobId, Throwable sendRes) {
+		db.tx(tx -> {
+			HibJob mJob = tx.jobDao().findByUuid(mailJobId);
+			mJob.setStopTimestamp();
+			mJob.setStatus(FAILED);
+			mJob.setError(sendRes);
+			jobDao.mergeIntoPersisted(mJob);
+		});
 	}
 
 	/**
 	 * The custom context of the job will be filled with the data being retrieved from the database
-	 * @param job
+	 * @param jobId
 	 * @param binaryField
 	 * @return
 	 */
-	private MailSendingContext prepareContext(HibJob job, MailAttachmentsRequest binaryField) {
-		HibMailJob mailJob = (HibMailJob) job;
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(job.getUuid());
+	private MailSendingContext prepareContext(String jobId, MailAttachmentsResponse binaryField) {
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(jobId);
 		try {
 			return db.tx(tx -> {
 				MailSendingContextImpl context = new MailSendingContextImpl();
 				HibProject project = tx.projectDao().findByName(binaryField.getProject());
 				if (project == null) {
-					markJobAsFailed(mailJob, new IllegalArgumentException("The Project could not be found"));
-					throw error(NOT_FOUND, "object_not_found_for_version",binaryField.getProject());
-
+					throw error(NOT_FOUND, "mail_sending_project_not_found",binaryField.getProject());
 				}
-				HibBranch branch = project.getLatestBranch();
+				HibBranch branch = null;
+				if(binaryField.getBranch() != null && !!binaryField.getBranch().isEmpty()) {
+					branch = tx.branchDao().findByName(project, binaryField.getBranch());
+				}
+				if(branch == null){
+					log.info("The branch was not found, continue within the default branch");
+					branch = project.getLatestBranch();
+				}
+
 				HibNode node = tx.nodeDao().findByUuid(project, binaryField.getUuid());
 				if (node == null) {
-					markJobAsFailed(mailJob, new IllegalArgumentException("The Binary could not be found"));
-					throw error(NOT_FOUND, "object_not_found_for_version",binaryField.getUuid());
+					throw error(NOT_FOUND, "mail_sending_node_not_found",binaryField.getUuid());
 				}
 				BinaryDao binaryDao = tx.binaryDao();
 				context.setBinaryDao(binaryDao);
@@ -162,12 +182,10 @@ public class MailJobProcessor implements SingleJobProcessor {
 					branch.getUuid(),
 					new VersioningParametersImpl(context).getVersion());
 				if (fieldContainer == null) {
-					markJobAsFailed(mailJob, new IllegalArgumentException("The Binary could not be found for the version given"));
 					throw error(NOT_FOUND, "object_not_found_for_version",context.getVersioningParameters().getVersion());
 				}
 				FieldSchema fieldSchema = fieldContainer.getSchemaContainerVersion().getSchema().getField(binaryField.getField());
 				if (fieldSchema == null) {
-					markJobAsFailed(mailJob, new IllegalArgumentException("The schema of the binary could not be found"));
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", binaryField.getField());
 				}
 				if ((fieldSchema instanceof BinaryFieldSchema)) {
@@ -175,12 +193,10 @@ public class MailJobProcessor implements SingleJobProcessor {
 					if (field == null) {
 						throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", binaryField.getField());
 					}
-
-					HibBinary binary = field.getBinary();MailSendingCaus
+					HibBinary binary = field.getBinary();
 					context.setHibBinary(binary);
 					context.setBinaryMimeType(field.getMimeType());
 					context.setBinaryName(field.getDisplayName());
-
 				}
 				return context;
 			});
@@ -189,22 +205,32 @@ public class MailJobProcessor implements SingleJobProcessor {
 		}
 
 	}
+
+	/**
+	 * Create a mail config object out of the configs coming from mesh.yml
+	 * @param mailOptions
+	 * @return MailConfig object
+	 */
 	private MailConfig getConfig(MailOptions mailOptions) {
 		MailConfig config = new MailConfig();
 		config.setHostname(mailOptions.getHostname());
 		config.setPort(mailOptions.getPort());
-		config.setStarttls(StartTLSOptions.OPTIONAL);
+		config.setStarttls(mailOptions.getStartTls());
 		config.setUsername(mailOptions.getUsername());
 		config.setPassword(mailOptions.getPassword());
 		config.setSsl(mailOptions.isSsl());
 		config.setTrustAll(mailOptions.isTrustAll());
-		//config.setStarttls(mailOptions.getStartTls());
-		config.setOwnHostname(mailOptions.getOwnHostname());
 		config.setMaxPoolSize(mailOptions.getMaxPoolSize());
 		config.setKeepAlive(mailOptions.getIskeepAlive());
 		return config;
 	}
-	private MailMessage getMailMessage(MailSendingRequest request) {
+
+	/**
+	 * Create a mail message Object out of the data coming from the request
+	 * @param request
+	 * @return MailMessage object
+	 */
+	private MailMessage getMailMessage(MailSendingResponse request) {
 		MailMessage message = new MailMessage();
 		message.setFrom(request.getFrom());
 		message.setSubject(request.getSubject());
@@ -221,12 +247,12 @@ public class MailJobProcessor implements SingleJobProcessor {
 	 *
 	 * @return single message
 	 */
-	private Single<MailMessage> addAttachments(ArrayList<MailAttachmentsRequest> attachments, MailMessage message, HibJob job) {
+	private Single<MailMessage> addAttachments(ArrayList<MailAttachmentsResponse> attachments, MailMessage message, String jobId) {
 		message.setAttachment(new ArrayList<>());
 		return Observable.fromIterable(attachments)
 			.filter(it-> !it.getProject().isEmpty() && !it.getUuid().isEmpty() || !it.getField().isEmpty())
 			.flatMapSingle(it-> {
-				MailSendingContext context = prepareContext(job, it);
+				MailSendingContext context = prepareContext(jobId, it);
 				BinaryDao binaryDao = context.getBinaryDao();
 				HibBinary binary = context.getHibBinary();
 				return db.tx(tx -> {
@@ -238,11 +264,30 @@ public class MailJobProcessor implements SingleJobProcessor {
 						});
 				});
 			})
-			.lastOrError().doOnError(th-> {
-
+			.lastOrError()
+			.doOnError(th-> {
+				markJobAsFailed(jobId, th);
+				db.tx(tx -> {
+						tx.createBatch().add(createEvent(MAIL_SENDING_FINISHED, FAILED))
+							.dispatch();
+					});
+				log.error("The attachment couldn't be included", th.getMessage());
 			});
 
 
+	}
+
+	/**
+	 *
+	 * @param event
+	 * @param status
+	 * @return
+	 */
+	private MailSendingEventModel createEvent(MeshEvent event, JobStatus status) {
+		MailSendingEventModel model = new MailSendingEventModel();
+		model.setEvent(event);
+		model.setStatus(status);
+		return model;
 	}
 
 }

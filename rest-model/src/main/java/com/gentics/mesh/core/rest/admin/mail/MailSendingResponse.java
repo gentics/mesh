@@ -1,14 +1,13 @@
 package com.gentics.mesh.core.rest.admin.mail;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 
-public class MailSendingRequest extends AbstractResponse {
+public class MailSendingResponse extends AbstractResponse {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The email of the sender")
@@ -44,7 +43,7 @@ public class MailSendingRequest extends AbstractResponse {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The list of the attachments in the email")
-	private ArrayList<MailAttachmentsRequest> attachments;
+	private ArrayList<MailAttachmentsResponse> attachments;
 
 	public String getFrom() {
 		return from;
@@ -109,11 +108,11 @@ public class MailSendingRequest extends AbstractResponse {
 		this.html = html;
 	}
 
-	public ArrayList<MailAttachmentsRequest> getAttachments() {
+	public ArrayList<MailAttachmentsResponse> getAttachments() {
 		return attachments;
 	}
 
-	public void setAttachments(ArrayList<MailAttachmentsRequest> attachments) {
+	public void setAttachments(ArrayList<MailAttachmentsResponse> attachments) {
 		this.attachments = attachments;
 	}
 }

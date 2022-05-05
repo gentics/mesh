@@ -12,6 +12,7 @@ import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.job.JobEventModel;
+import com.gentics.mesh.core.rest.event.job.MailSendingEventModel;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -46,6 +47,14 @@ public final class Examples {
 
 	public static ProjectVersionPurgeEventModel versionPurgeEvent() {
 		ProjectVersionPurgeEventModel model = new ProjectVersionPurgeEventModel();
+		model.setUuid(uuid1());
+		model.setName("demo");
+		model.setStatus(JobStatus.RUNNING);
+		return model;
+	}
+
+	public static MailSendingEventModel mailSendingEvent() {
+		MailSendingEventModel model = new MailSendingEventModel();
 		model.setUuid(uuid1());
 		model.setName("demo");
 		model.setStatus(JobStatus.RUNNING);

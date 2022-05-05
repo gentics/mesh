@@ -13,7 +13,6 @@ public class MailOptions {
 	public static final boolean MAIL_OPTIONS_DEFAULT_TRUST_ALL = false;
 	public static final StartTLSOptions MAIL_OPTIONS_DEFAULT_START_TLS = StartTLSOptions.OPTIONAL;
 	public static final boolean MAIL_OPTIONS_DEFAULT_KEEP_ALIVE = true;
-	public static final String MAIL_OPTIONS_DEFAULT_OWN_HOSTNAME = "";
 	public static final String MAIL_OPTIONS_DEFAULT_USERNAME = "";
 	public static final String MAIL_OPTIONS_DEFAULT_PASSWORD = "";
 	public static final int MAIL_OPTIONS_RETRY_IN_SECONDS = 5000;
@@ -23,7 +22,6 @@ public class MailOptions {
 	public static final String MAIL_OPTIONS_MAX_POOL_SIZE_ENV = "JobHandlermaxPoolSize";
 	public static final String MAIL_OPTIONS_SSL_ENV = "ssl";
 	public static final String MAIL_OPTIONS_TRUST_ALL_ENV = "trustAll";
-	public static final String MAIL_OPTIONS_OWN_HOSTNAME_ENV = "ownHostname";
 	public static final String MAIL_OPTIONS_USERNAME_ENV = "username";
 	public static final String MAIL_OPTIONS_PASSWORD_ENV = "password";
 	public static final String MAIL_OPTIONS_KEEP_ALIVE_ENV = "keepAlive";
@@ -54,11 +52,6 @@ public class MailOptions {
 	@JsonPropertyDescription("Configure the trust all variable. Default is: " + MAIL_OPTIONS_DEFAULT_TRUST_ALL)
 	@EnvironmentVariable(name = MAIL_OPTIONS_TRUST_ALL_ENV, description = "Override the configured trust all variable.")
 	private boolean trustAll = MAIL_OPTIONS_DEFAULT_TRUST_ALL;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the own hostname variable. Default is: " + MAIL_OPTIONS_DEFAULT_OWN_HOSTNAME)
-	@EnvironmentVariable(name = MAIL_OPTIONS_OWN_HOSTNAME_ENV, description = "Override the configured own hostname variable.")
-	private String ownHostname  = MAIL_OPTIONS_DEFAULT_OWN_HOSTNAME;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the username. Default is: " + MAIL_OPTIONS_DEFAULT_USERNAME)
@@ -124,13 +117,6 @@ public class MailOptions {
 	public void setTrustAll(boolean trustAll) {
 		this.trustAll = trustAll;
 	}
-	public String getOwnHostname() {
-		return ownHostname;
-	}
-
-	public void setOwnHostname(String ownHostname) {
-		this.ownHostname = ownHostname;
-	}
 	public String getUsername() {
 		return username;
 	}
@@ -161,5 +147,15 @@ public class MailOptions {
 	public void setRetry(Integer retry) {
 		this.retry = retry;
 	}
+
+
+	public StartTLSOptions getStartTls() {
+		return startTls;
+	}
+
+	public void setStartTls(StartTLSOptions startTls) {
+		this.startTls = startTls;
+	}
+
 
 }

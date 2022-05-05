@@ -1,19 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
-import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_DEPLOYED;
-import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_DEPLOYING;
-import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYED;
-import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYING;
-import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
+import static com.gentics.mesh.core.rest.MeshEvent.*;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_ID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -489,6 +476,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(adminExamples.createMailOptionsRequest());
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "The Mail was sent!.");
+		endpoint.events(MAIL_SENDING_START, MAIL_SENDING_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			mailHandler.handleInvokeMailWorker(wrap(rc));
 		});

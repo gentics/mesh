@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.job.JobEventModel;
+import com.gentics.mesh.core.rest.event.job.MailSendingEventModel;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -665,7 +666,17 @@ public enum MeshEvent {
 
 	S3BINARY_METADATA_EXTRACTED("mesh.s3binary.metadata.extracted",
 			S3BinaryEventModel.class,
-		"Emitted when the metadata of a S3 binary field is extracted.");
+		"Emitted when the metadata of a S3 binary field is extracted."),
+
+	MAIL_SENDING_START("mesh.project.mail_sending.start",
+		MailSendingEventModel.class,
+		"Emitted once a mail sending job starts",
+		Examples::mailSendingEvent),
+
+	MAIL_SENDING_FINISHED("mesh.project.mail_sending.finished",
+		MailSendingEventModel.class,
+		"Emitted once a mail sending job finishes successully or failed",
+		Examples::mailSendingEvent);
 
 	public final String address;
 	public final Class<? extends MeshEventModel> bodyModel;
