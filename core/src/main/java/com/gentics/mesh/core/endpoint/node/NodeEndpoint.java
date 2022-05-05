@@ -123,7 +123,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleNavigation(ac, uuid);
-		});
+		}, false);
 	}
 
 	private void addVersioningHandlers() {
@@ -140,7 +140,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleListVersions(ac, uuid);
-		});
+		}, false);
 	}
 
 	private void addLanguageHandlers() {
@@ -213,7 +213,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			binaryDownloadHandler.handleReadBinaryField(rc, uuid, fieldName);
-		});
+		}, false);
 
 	}
 
@@ -292,7 +292,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleReadChildren(ac, uuid);
-		});
+		}, false);
 	}
 
 	// TODO filtering, sorting
@@ -311,7 +311,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.readTags(ac, uuid);
-		});
+		}, false);
 
 		InternalEndpointRoute bulkUpdate = createRoute();
 		bulkUpdate.path("/:nodeUuid/tags");
@@ -405,7 +405,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
@@ -421,7 +421,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
-		});
+		}, false);
 
 	}
 
@@ -483,7 +483,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handleGetPublishStatus(ac, uuid);
-		});
+		}, false);
 
 		InternalEndpointRoute putEndpoint = createRoute();
 		putEndpoint.description("Publish all language specific contents of the node with the given uuid.");
@@ -533,7 +533,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");
 			crudHandler.handleGetPublishStatus(ac, uuid, lang);
-		});
+		}, false);
 
 		InternalEndpointRoute putLanguageRoute = createRoute();
 		putLanguageRoute.path("/:nodeUuid/languages/:language/published").method(POST).produces(APPLICATION_JSON);

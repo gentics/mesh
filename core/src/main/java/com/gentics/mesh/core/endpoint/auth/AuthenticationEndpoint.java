@@ -71,7 +71,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		loginEndpoint.exampleResponse(OK, miscExamples.getAuthTokenResponse(), "Generated login token.");
 		loginEndpoint.blockingHandler(rc -> {
 			authRestHandler.handleLoginJWT(wrap(rc));
-		});
+		}, false);
 
 		// Only secure logout
 		if (chain != null) {
