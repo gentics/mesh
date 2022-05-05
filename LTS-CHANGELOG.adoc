@@ -22,6 +22,10 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.17`.
 
+icon:check[] Rest: Many reading request were implemented in a way that they would never be executed concurrently with other reading requests.
+So would e.g. a long running graphql request cause webroot requests executed at the same time to be queued until the graphql request was done.
+The behaviour has been changed, so that reading requests will only be queued, if the worker pool has been exhausted.
+
 [[v1.6.27]]
 == 1.6.27 (08.04.2022)
 
