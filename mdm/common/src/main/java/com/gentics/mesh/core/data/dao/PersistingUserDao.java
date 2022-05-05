@@ -202,7 +202,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
 		ContentDao contentDao = Tx.get().contentDao();
 		HibNode node = contentDao.getNode(container);
-		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
+		if (!hasReadPermission(user, container, branchUuid)) {
 			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
 				"published".equals(requestedVersion)
 					? READ_PUBLISHED_PERM.getRestPerm().getName()
@@ -260,17 +260,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		}
 		return user;
 	}
-	
-	/**
-	 * Check the read permission on the given container and return false if the needed permission to read the container is not set. This method will not return
-	 * false if the user has READ permission or READ_PUBLISH permission on a published node.
-	 *
-	 * @param user
-	 * @param container
-	 * @param branchUuid
-	 * @param requestedVersion
-	 */
-	default boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
+
+	default boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid) {
 		ContentDao contentDao = Tx.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		if (hasPermission(user, node, READ_PERM)) {

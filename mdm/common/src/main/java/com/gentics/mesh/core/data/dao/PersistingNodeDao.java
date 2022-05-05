@@ -851,10 +851,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	@Override
 	default Stream<NodeContent> getBreadcrumbContent(HibNode sourceNode, List<String> languageTags, ContainerType type, InternalActionContext ac) {
 		ContentDao contentDao = Tx.get().contentDao();
+		HibUser user = ac.getUser();
+		UserDao userDao = Tx.get().userDao();
+		String branchUuid = Tx.get().getBranch(ac).getUuid();
 		return getBreadcrumbNodes(sourceNode, ac).stream().map(node -> {
 			HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
 			return new NodeContent(node, container, languageTags, type);
-		});
+		}).filter(item -> item.getContainer() != null)
+		.filter(item -> userDao.hasReadPermission(user, item.getContainer(), branchUuid));
 	}
 
 	@Override

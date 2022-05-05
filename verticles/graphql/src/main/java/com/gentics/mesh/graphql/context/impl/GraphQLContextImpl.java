@@ -52,20 +52,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	@Override
 	public boolean hasReadPerm(HibNodeFieldContainer container) {
 		Tx tx = Tx.get();
-		ContentDao contentDao = tx.contentDao();
-		HibNode node = contentDao.getNode(container);
-		Object nodeId = node.getId();
-		UserDao userDao = tx.userDao();
-
-		if (userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PERM)) {
-			return true;
-		}
-
-		boolean isPublished = contentDao.isPublished(container, tx.getBranch(this).getUuid());
-		if (isPublished && userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PUBLISHED_PERM)) {
-			return true;
-		}
-		return false;
+		return tx.userDao().hasReadPermission(getUser(), container, tx.getBranch(this).getUuid());
 	}
 
 	@Override

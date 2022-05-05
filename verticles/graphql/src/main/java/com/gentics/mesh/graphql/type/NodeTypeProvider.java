@@ -176,8 +176,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		ContainerType type = getNodeVersion(env);
 		List<String> languageTags = getLanguageArgument(env, content);
 		return nodeDao.getBreadcrumbContent(content.getNode(), languageTags, type, gc)
-			.filter(item -> item.getContainer() != null)
-			.filter(gc::hasReadPerm)
 			.collect(Collectors.toList());
 	}
 

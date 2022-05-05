@@ -270,7 +270,8 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac);
 
 	/**
-	 * Return the breadcrumb node field containers
+	 * Return the breadcrumb node field containers, returning only node content with a non null container checking
+	 * reading permission for it
 	 * @param sourceNode
 	 * @param languageTags
 	 * @param type
