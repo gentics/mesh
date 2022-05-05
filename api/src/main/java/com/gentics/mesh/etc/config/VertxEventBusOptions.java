@@ -83,7 +83,7 @@ public class VertxEventBusOptions implements Option {
 			}
 			if (warnThreshold > 0 && errorThreshold > 0 && (errorThreshold <= warnThreshold)) {
 				throw new IllegalArgumentException("vertxOptions.eventBus.errorThreshold (set to " + errorThreshold
-						+ ") must be greater than vertxOptions.eventBus.warnThreshld (set to " + warnThreshold + ")");
+						+ ") must be greater than vertxOptions.eventBus.warnThreshold (set to " + warnThreshold + ")");
 			}
 		}
 	}
