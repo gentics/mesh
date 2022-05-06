@@ -4,6 +4,9 @@ import static com.gentics.mesh.test.ClientHelper.call;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -25,29 +28,31 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public class AbstractPluginTest extends AbstractMeshTest {
 
-	public static final String BASIC_PATH = "../../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String PLUGINS_BASE = "/test-plugins/";
 
-	public static final String BASIC2_PATH = "../../core/target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String BASIC_PATH = PLUGINS_BASE + "basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String STATIC_PATH = "../../core/target/test-plugins/static/target/static-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String BASIC2_PATH = PLUGINS_BASE + "basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String STATIC2_PATH = "../../core/target/test-plugins/static2/target/static2-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String STATIC_PATH = PLUGINS_BASE + "static/target/static-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String CLIENT_PATH = "../../core/target/test-plugins/client/target/client-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String STATIC2_PATH = PLUGINS_BASE + "static2/target/static2-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String FAILING_PATH = "../../core/target/test-plugins/failing/target/failing-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String CLIENT_PATH = PLUGINS_BASE + "client/target/client-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String NON_MESH_PATH = "../../core/target/test-plugins/non-mesh/target/non-mesh-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String FAILING_PATH = PLUGINS_BASE + "failing/target/failing-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String CLASSLOADER_PATH = "../../core/target/test-plugins/classloader/target/classloader-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String NON_MESH_PATH = PLUGINS_BASE + "non-mesh/target/non-mesh-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String EXTENSION_PROVIDER_PATH = "../../core/target/test-plugins/extension-provider/target/extension-provider-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String CLASSLOADER_PATH = PLUGINS_BASE + "classloader/target/classloader-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String EXTENSION_CONSUMER_PATH = "../../core/target/test-plugins/extension-consumer/target/extension-consumer-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String EXTENSION_PROVIDER_PATH = PLUGINS_BASE + "extension-provider/target/extension-provider-plugin-0.0.1-SNAPSHOT.jar";
 
-	public static final String GRAPHQL_PATH = "../../core/target/test-plugins/graphql/target/graphql-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String EXTENSION_CONSUMER_PATH = PLUGINS_BASE + "extension-consumer/target/extension-consumer-plugin-0.0.1-SNAPSHOT.jar";
+
+	public static final String GRAPHQL_PATH = PLUGINS_BASE + "graphql/target/graphql-plugin-0.0.1-SNAPSHOT.jar";
 	
-	public static final String INVALID_GRAPHQL_PATH = "../../core/target/test-plugins/invalid-graphql/target/invalid-graphql-plugin-0.0.1-SNAPSHOT.jar";
+	public static final String INVALID_GRAPHQL_PATH = PLUGINS_BASE + "invalid-graphql/target/invalid-graphql-plugin-0.0.1-SNAPSHOT.jar";
 
 	@Before
 	public void preparePluginDir() throws IOException {
@@ -83,14 +88,19 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	}
 
 	public PluginResponse copyAndDeploy(String sourcePath, String name) throws IOException {
-		FileUtil.copy(new File(sourcePath), new File(pluginDir(), name), true);
+		new File(pluginDir()).mkdirs();
+		try (InputStream sourceRes = getClass().getResourceAsStream(sourcePath)) {
+			Files.copy(sourceRes, new File(pluginDir(), name).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}		
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		return call(() -> client().deployPlugin(request));
 	}
 
 	public void copyAndDeploy(String sourcePath, String name, HttpResponseStatus status, String key, String... params) throws IOException {
 		new File(pluginDir()).mkdirs();
-		FileUtil.copy(new File(sourcePath), new File(pluginDir(), name));
+		try (InputStream sourceRes = getClass().getResourceAsStream(sourcePath)) {
+			Files.copy(sourceRes, new File(pluginDir(), name).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}		
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		call(() -> client().deployPlugin(request), status, key, params);
 	}
