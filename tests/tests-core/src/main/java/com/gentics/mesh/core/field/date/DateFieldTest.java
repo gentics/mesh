@@ -90,12 +90,12 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		long date;
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 
 			// Add html field schema to the schema
+			HibNode node = folder("2015");
 			prepareTypedSchema(node, createFieldSchema(true), false);
 			tx.commit();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -106,6 +106,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			String json = getJson(node);
 			assertNotNull(json);
 			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);

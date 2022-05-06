@@ -120,11 +120,11 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
-		Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
-		HibNode newOverview = content("news overview");
-
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
+			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
+			HibNode newOverview = content("news overview");
+
 			ContentDao contentDao = tx.contentDao();
 			MicroschemaDao microschemaDao = tx.microschemaDao();
 
@@ -194,6 +194,10 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
+			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
+			HibNode newOverview = content("news overview");
+
 			String json = getJson(node);
 			System.out.println(json);
 			JsonObject jsonObject = new JsonObject(json);

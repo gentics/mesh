@@ -52,10 +52,10 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Update the schema and add a boolean field
+			HibNode node = folder("2015");
 			BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
 			booleanFieldSchema.setName(BOOLEAN_FIELD);
 			booleanFieldSchema.setLabel("Some boolean field");
@@ -69,6 +69,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			String json = getJson(node);
 			assertTrue("The json should contain the boolean field but it did not.{" + json + "}", json.indexOf("booleanField\" : true") > 1);
 			assertNotNull(json);

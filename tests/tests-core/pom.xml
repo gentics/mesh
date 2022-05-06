@@ -81,6 +81,9 @@
 	<build>
 		<resources>
 			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
 				<directory>${project.build.directory}/test-plugins</directory>
 				<includes>
 					<include>**/*.jar</include>

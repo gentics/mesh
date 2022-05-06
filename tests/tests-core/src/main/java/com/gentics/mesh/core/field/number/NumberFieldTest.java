@@ -87,10 +87,10 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
-
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			HibNode node = folder("2015");
+
 			// Update the schema
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName(NUMBER_FIELD);
@@ -106,6 +106,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			String json = getJson(node);
 			assertTrue("Could not find number within json. Json {" + json + "}", json.indexOf("100.9") > 1);
 			assertNotNull(json);
