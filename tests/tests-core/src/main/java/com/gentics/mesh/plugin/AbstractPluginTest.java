@@ -19,7 +19,6 @@ import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.twelvemonkeys.io.FileUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -87,22 +86,22 @@ public class AbstractPluginTest extends AbstractMeshTest {
 		pluginManager().start();
 	}
 
-	public PluginResponse copyAndDeploy(String sourcePath, String name) throws IOException {
+	public void copy(String sourcePath, String name) throws IOException {
 		new File(pluginDir()).mkdirs();
 		try (InputStream sourceRes = getClass().getResourceAsStream(sourcePath)) {
 			Files.copy(sourceRes, new File(pluginDir(), name).toPath(), StandardCopyOption.REPLACE_EXISTING);
-		}		
+		}
+	}
+
+	public PluginResponse copyAndDeploy(String sourcePath, String name) throws IOException {
+		copy(sourcePath, name);
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		return call(() -> client().deployPlugin(request));
 	}
 
 	public void copyAndDeploy(String sourcePath, String name, HttpResponseStatus status, String key, String... params) throws IOException {
-		new File(pluginDir()).mkdirs();
-		try (InputStream sourceRes = getClass().getResourceAsStream(sourcePath)) {
-			Files.copy(sourceRes, new File(pluginDir(), name).toPath(), StandardCopyOption.REPLACE_EXISTING);
-		}		
+		copy(sourcePath, name);	
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		call(() -> client().deployPlugin(request), status, key, params);
 	}
-
 }
