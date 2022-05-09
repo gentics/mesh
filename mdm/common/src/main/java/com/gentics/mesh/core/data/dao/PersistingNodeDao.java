@@ -1453,7 +1453,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
-		HibNode parentNode = getParentNode(node, branch.getUuid());
+		String parentNodeUuid = getParentNodeUuid(node, branch.getUuid());
 		HibNodeFieldContainer container = contentDao.findVersion(node, ac.getNodeParameters().getLanguageList(tx.data().options()), branch.getUuid(),
 				ac.getVersioningParameters()
 						.getVersion());
@@ -1478,9 +1478,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		 *
 		 * The node can be moved and this would also affect the response. The etag must also be changed when the node is moved.
 		 */
-		if (parentNode != null) {
+		if (parentNodeUuid != null) {
 			keyBuilder.append("-");
-			keyBuilder.append(parentNode.getUuid());
+			keyBuilder.append(parentNodeUuid);
 		}
 
 		// fields version
@@ -1521,30 +1521,32 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		// Publish state & availableLanguages
-		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED)) {
-			keyBuilder.append(c.getLanguageTag() + "published");
+		List<String> publishedContainerLanguageTags = contentDao.getFieldContainersLanguageTags(node, branch.getUuid(), PUBLISHED);
+		for (String languageTag : publishedContainerLanguageTags) {
+			keyBuilder.append(languageTag + "published");
 		}
-		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), DRAFT)) {
-			keyBuilder.append(c.getLanguageTag() + "draft");
+		List<String> draftContainerLanguageTags = contentDao.getFieldContainersLanguageTags(node, branch.getUuid(), PUBLISHED);
+		for (String languageTag : draftContainerLanguageTags) {
+			keyBuilder.append(languageTag + "draft");
 		}
 
 		// breadcrumb
 		keyBuilder.append("-");
-		HibNode current = getParentNode(node, branch.getUuid());
-		if (current != null) {
-			while (current != null) {
-				String key = current.getUuid() + node.getDisplayName(ac);
-				keyBuilder.append(key);
-				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-					WebRootLinkReplacer linkReplacer = tx.data().mesh().webRootLinkReplacer();
-					String url = linkReplacer.resolve(ac, branch.getUuid(), type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-							node.getProject().getName(), container.getLanguageTag());
-					keyBuilder.append(url);
-				}
-				current = getParentNode(current, branch.getUuid());
+		node.getDisplayName(ac);
 
-			}
-		}
+		getBreadcrumbNodeStream(node, ac)
+				.skip(1) // start from parent
+				.map(HibNode::getUuid)
+				.forEach(uuid -> {
+					String key = uuid + node.getDisplayName(ac);
+					keyBuilder.append(key);
+					if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+						WebRootLinkReplacer linkReplacer = tx.data().mesh().webRootLinkReplacer();
+						String url = linkReplacer.resolve(ac, branch.getUuid(), type, uuid, ac.getNodeParameters().getResolveLinks(),
+								node.getProject().getName(), container.getLanguageTag());
+						keyBuilder.append(url);
+					}
+				});
 
 		/**
 		 * webroot path & language paths
@@ -1560,8 +1562,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			keyBuilder.append(path);
 
 			// languagePaths
-			for (HibNodeFieldContainer currentFieldContainer : contentDao.getFieldContainers(node, branch.getUuid(), forVersion(versioiningParameters.getVersion()))) {
-				String currLanguage = currentFieldContainer.getLanguageTag();
+			ContainerType containerType = forVersion(versioiningParameters.getVersion());
+
+			List<String> languageTags;
+			if (PUBLISHED.equals(containerType)) {
+				languageTags = publishedContainerLanguageTags;
+			} else if (DRAFT.equals(containerType)) {
+				languageTags = draftContainerLanguageTags;
+			} else {
+				languageTags = contentDao.getFieldContainersLanguageTags(node, branch.getUuid(), containerType);
+			}
+
+			for (String currLanguage : languageTags) {
 				keyBuilder.append(currLanguage + "=" + linkReplacer.resolve(ac, branch.getUuid(), type, node, ac.getNodeParameters()
 						.getResolveLinks(), currLanguage));
 			}
@@ -1572,6 +1584,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
 		}
 		return keyBuilder.toString();
+	}
+
+	@Override
+	default String getParentNodeUuid(HibNode node, String branchUuid) {
+		return getParentNode(node, branchUuid).getUuid();
 	}
 
 	@Override

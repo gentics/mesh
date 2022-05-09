@@ -103,6 +103,16 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	HibNode getParentNode(HibNode node, String branchUuid);
 
 	/**
+	 * Returns the parent node uuid of this node.
+	 *
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @return
+	 */
+
+	String getParentNodeUuid(HibNode node, String branchUuid);
+
+	/**
 	 * Return a page with child nodes that are visible to the given user.
 	 *
 	 * @param ac

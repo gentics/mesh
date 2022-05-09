@@ -266,6 +266,11 @@ public interface PersistingContentDao extends ContentDao {
 	 */
 	void removeEdge(HibNodeFieldContainerEdge edge);
 
+	@Override
+	default List<String> getFieldContainersLanguageTags(HibNode node, String branchUuid, ContainerType type) {
+		return getFieldContainers(node, branchUuid, type).stream().map(HibNodeFieldContainer::getLanguageTag).collect(Collectors.toList());
+	}
+
 	/**
 	 * Find the node edge with the given parameters: language, branch, type
 	 *

@@ -354,6 +354,15 @@ public interface ContentDao {
 	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type);
 
 	/**
+	 * Return the language tags of the field containers of given type for the node in the given branch.
+	 * @param node
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	List<String> getFieldContainersLanguageTags(HibNode node, String branchUuid, ContainerType type);
+
+	/**
 	 * Return containers of the given type
 	 *
 	 * @param type
