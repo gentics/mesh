@@ -93,9 +93,11 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 			}
 			response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
 			field = response.getFields().getBooleanField(FIELD_NAME);
-			assertEquals(!flag, field.getValue());
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
-			assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
+			try (Tx tx = tx()) {
+				assertEquals(!flag, field.getValue());
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
+				assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
+			}
 		}
 	}
 

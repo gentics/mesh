@@ -13,6 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Calendar;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -120,9 +121,10 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Calendar date = Calendar.getInstance();
+		date.set(2016, 1, 6, 3, 44);
 		try (Tx tx = tx()) {
 			HibNode node = folder("2015");
-			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 			HibNode newOverview = content("news overview");
 
 			ContentDao contentDao = tx.contentDao();
@@ -156,7 +158,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			assertNotNull("Micronode must not be null", micronode);
 			// micronode.createBinary("binaryfield");
 			micronode.createBoolean("booleanfield").setBoolean(true);
-			micronode.createDate("datefield").setDate(date);
+			micronode.createDate("datefield").setDate(date.getTimeInMillis());
 			micronode.createHTML("htmlfield").setHtml("<b>HTML</b> value");
 
 			HibBooleanFieldList booleanList = micronode.createBooleanList("listfield-boolean");
@@ -164,7 +166,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			booleanList.createBoolean(false);
 
 			HibDateFieldList dateList = micronode.createDateList("listfield-date");
-			dateList.createDate(date);
+			dateList.createDate(date.getTimeInMillis());
 			dateList.createDate(0L);
 
 			HibHtmlFieldList htmlList = micronode.createHTMLList("listfield-html");
@@ -195,7 +197,6 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 		try (Tx tx = tx()) {
 			HibNode node = folder("2015");
-			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 			HibNode newOverview = content("news overview");
 
 			String json = getJson(node);
@@ -209,11 +210,11 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			assertNotNull("Micronode must contain fields", micronodeFields);
 			// TODO check binary field
 			assertEquals("Boolean Field", Boolean.TRUE, micronodeFields.getBoolean("booleanfield"));
-			assertEquals("Date Field", toISO8601(date), micronodeFields.getString("datefield"));
+			assertEquals("Date Field", toISO8601(date.getTimeInMillis()), micronodeFields.getString("datefield"));
 			assertEquals("HTML Field", "<b>HTML</b> value", micronodeFields.getString("htmlfield"));
 			// TODO check binary list field
 			assertThat(micronodeFields.getJsonArray("listfield-boolean")).as("Boolean List Field").matches(true, false);
-			assertThat(micronodeFields.getJsonArray("listfield-date")).as("Date List Field").matches(toISO8601(date), toISO8601(0));
+			assertThat(micronodeFields.getJsonArray("listfield-date")).as("Date List Field").matches(toISO8601(date.getTimeInMillis()), toISO8601(0));
 			assertThat(micronodeFields.getJsonArray("listfield-html")).as("HTML List Field").matches("<b>first</b>", "<i>second</i>");
 			assertThat(micronodeFields.getJsonArray("listfield-node")).as("Node List Field").key("uuid").matches(node.getUuid(),
 					newOverview.getUuid());
