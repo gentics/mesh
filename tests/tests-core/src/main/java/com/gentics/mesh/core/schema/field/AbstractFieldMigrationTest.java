@@ -481,9 +481,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-				changeMicroschemaType(oldField, dataProvider, oldFieldFetcher, newField, asserter);
+				changeMicroschemaType(tx, oldField, dataProvider, oldFieldFetcher, newField, asserter);
 			} else {
-				changeSchemaType(oldField, dataProvider, oldFieldFetcher, newField, asserter);
+				changeSchemaType(tx, oldField, dataProvider, oldFieldFetcher, newField, asserter);
 			}
 		}
 	}
@@ -504,8 +504,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void changeSchemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
-		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
+	private void changeSchemaType(Tx tx, FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
+			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
 		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
 		PersistingSchemaDao schemaDao = (PersistingSchemaDao) boot().schemaDao();
@@ -519,7 +519,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(schemaName);
 		container.setCreated(user());
-		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
+		HibSchemaVersion versionA = createSchemaVersion(tx, container, v -> {
 			fillSchemaVersion(v, container, schemaName, "1.0", oldFieldSchema);
 			container.setLatestVersion(v);
 		});
@@ -548,7 +548,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String english = english();
 		HibNode parentNode = folder("2015");
 		HibNode node = nodeDao.create(parentNode, user, versionA, project());
-		Tx.get().commit();
+		tx.commit();
 		HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
 			user);
 		dataProvider.set(englishContainer, fieldName);
@@ -562,7 +562,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		branchDao.assignSchemaVersion(project().getLatestBranch(), user(), versionB, batch);
-		CommonTx.get().commit();
+		tx.commit();
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
@@ -586,6 +586,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 			((ListFieldSchema) oldFieldSchema).getListType(), ((ListFieldSchema) newFieldSchema).getListType())) {
 			assertThat(oldFieldFetcher.fetch(migratedContainer, fieldName)).as(OLDFIELD).isNull();
 		}
+		tx.commit();
 		asserter.assertThat(migratedContainer, fieldName);
 	}
 
@@ -605,8 +606,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void changeMicroschemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher,
-		FieldSchemaCreator newField, DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
+	private void changeMicroschemaType(Tx tx, FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher,
+			FieldSchemaCreator newField, DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		NodeDao nodeDao = boot().nodeDao();
 		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) boot().microschemaDao();
 		
@@ -639,7 +640,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		microschemaDao.assign(container, project(), user(), createBatch());
 		HibNode node = nodeDao.create(folder("2015"), user(), schemaContainer("content").getLatestVersion(), project());
-		Tx.get().commit();
+		tx.commit();
 
 		// create a node based on the old schema
 		HibMicronodeField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, fieldName);
@@ -658,8 +659,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setFromVersion(versionA);
 		context.setToVersion(versionB);
 		context.setStatus(DummyMigrationStatus.get());
-		micronodeMigrationHandler.migrateMicronodes(context).blockingAwait(10,
-			TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(context).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be untouched
 		micronodeField = oldContainer.getMicronode(micronodeFieldName);
@@ -679,6 +679,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 			((ListFieldSchema) oldFieldSchema).getListType(), ((ListFieldSchema) newFieldSchema).getListType())) {
 			assertThat(oldFieldFetcher.fetch(newMicronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNull();
 		}
+		tx.commit();
 		asserter.assertThat(newMicronodeField.getMicronode(), fieldName);
 	}
 
