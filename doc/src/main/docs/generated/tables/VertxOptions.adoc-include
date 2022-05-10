@@ -7,6 +7,11 @@
 | Description
 
 
+| eventBus
+| false
+| object
+| EventBus options
+
 | eventPoolSize
 | false
 | integer

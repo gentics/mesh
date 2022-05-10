@@ -53,6 +53,9 @@
 | *MESH_CLUSTER_VERTX_PORT*
 | Override the vert.x eventbus server port.
 
+| *MESH_VERTX_EVENT_BUS_WARN_THRESHOLD*
+| Override the Vert.x eventBus warn threshold in ms.
+
 | *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
 | Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
 
@@ -76,6 +79,9 @@
 
 | *MESH_CACHE_PATH_SIZE*
 | Override the path cache size.
+
+| *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
+| Override the Vert.x eventBus error threshold in ms.
 
 | *MESH_ELASTICSEARCH_CERT_PATH*
 | Override the configured trusted server certificate.
@@ -136,6 +142,9 @@
 
 | *MESH_GRAPH_BACKUP_DIRECTORY*
 | Override the graph database backup directory.
+
+| *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
+| Override the Vert.x eventBus check interval in ms.
 
 | *MESH_DEFAULT_LANG*
 | Override the configured default language.

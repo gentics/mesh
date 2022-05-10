@@ -6,6 +6,10 @@ updateCheck: true
 vertxOptions:
   workerPoolSize: 20
   eventPoolSize: 16
+  eventBus:
+    checkInterval: 30000
+    warnThreshold: 60000
+    errorThreshold: 120000
 s3options:
   enabled: false
   bucket: null
