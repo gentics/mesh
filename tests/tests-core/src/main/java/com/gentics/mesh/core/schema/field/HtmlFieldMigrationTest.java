@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 
