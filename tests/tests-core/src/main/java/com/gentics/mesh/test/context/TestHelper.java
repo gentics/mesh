@@ -377,9 +377,12 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public MeshRequest<NodeResponse> createNodeAsync(String parentNodeUuid, String fieldKey, Field field) {
-		tx(() -> prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()
+		tx(tx -> {
+			prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()		
 				.map(TestHelper::fieldIntoSchema)
-				.map(schema -> schema.setName(fieldKey)).collect(Collectors.toList()), Optional.empty()));
+				.map(schema -> schema.setName(fieldKey)).collect(Collectors.toList()), Optional.empty()); 
+			tx.success();
+		});
 
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNodeUuid));
@@ -683,7 +686,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
 		try (Tx tx = tx()) {
-			prepareSchema(node, "image/.*", fieldName);
+			prepareSchema(tx.nodeDao().findByUuidGlobal(node.getUuid()), "image/.*", fieldName);
 			tx.success();
 		}
 		String uuid = tx(() -> node.getUuid());

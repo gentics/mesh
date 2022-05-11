@@ -38,10 +38,6 @@ public class WebRootFieldEndpointETagTest extends AbstractMeshTest {
 			node = content("news_2015");
 
 			// 1. Transform the node into a binary content
-			HibSchema container = schemaContainer("binary_content");
-			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
-			contentDao.getLatestDraftFieldContainer(node, german()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -72,9 +68,6 @@ public class WebRootFieldEndpointETagTest extends AbstractMeshTest {
 			ContentDao contentDao = tx.contentDao();
 
 			// 1. Transform the node into a binary content
-			HibSchema container = schemaContainer("binary_content");
-			node.setSchemaContainer(container);
-			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -104,6 +97,7 @@ public class WebRootFieldEndpointETagTest extends AbstractMeshTest {
 			// Inject the reference node field
 			SchemaVersionModel schema = contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
+			actions().updateSchemaVersion(contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")));
 			contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).setSchema(schema);
 			contentDao.getFieldContainer(node, "en").createNode("reference", folder("2015"));
 			tx.success();

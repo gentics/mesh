@@ -61,6 +61,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
             ContentDao contentDao = tx.contentDao();
             // Update the schema and add a binary field
             prepareTypedSchema(node, createFieldSchema(true), false);
+            tx.commit();
             HibNodeFieldContainer container = contentDao.getFieldContainer(node, english());
             S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
             S3HibBinaryField field = container.createS3Binary(S3_BINARY_FIELD, s3binary);
@@ -70,18 +71,16 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
             tx.success();
         }
 
-        try (Tx tx = tx()) {
-            String json = getJson(node);
-            assertNotNull(json);
-            NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
-            assertNotNull(response);
+        String json = getJson(node);
+        assertNotNull(json);
+        NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
+        assertNotNull(response);
 
-            S3BinaryField deserializedNodeField = response.getFields().getS3BinaryField(S3_BINARY_FIELD);
-            assertNotNull(deserializedNodeField);
-            assertEquals("test.jpg", deserializedNodeField.getFileName());
-            assertEquals(200, deserializedNodeField.getHeight().intValue());
-            assertEquals(300, deserializedNodeField.getWidth().intValue());
-        }
+        S3BinaryField deserializedNodeField = response.getFields().getS3BinaryField(S3_BINARY_FIELD);
+        assertNotNull(deserializedNodeField);
+        assertEquals("test.jpg", deserializedNodeField.getFileName());
+        assertEquals(200, deserializedNodeField.getHeight().intValue());
+        assertEquals(300, deserializedNodeField.getWidth().intValue());
     }
 
     @Test

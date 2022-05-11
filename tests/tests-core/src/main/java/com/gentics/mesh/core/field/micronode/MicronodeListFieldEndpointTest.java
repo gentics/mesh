@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,6 +79,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			listFieldSchema.setListType("micronode");
 			listFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 			prepareTypedSchema(schemaContainer("folder"), List.of(listFieldSchema), Optional.empty());
+			tx.success();
 		}
 	}
 
@@ -95,23 +97,19 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
-			listField.add(createItem("Max", "Böse"));
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
+		listField.add(createItem("Max", "Böse"));
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = tx()) {
-			FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
-			listField.add(createItem("Max", "Böse"));
-			listField.add(null);
-			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
+		listField.add(createItem("Max", "Böse"));
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
@@ -193,16 +191,14 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
-			field.add(createItem("Max", "Böse"));
-			field.add(createItem("Moritz", "Böse"));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
-			String oldNumber = firstResponse.getVersion();
+		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		field.add(createItem("Max", "Böse"));
+		field.add(createItem("Moritz", "Böse"));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
+		String oldNumber = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, field);
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, field);
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 	}
 
 	@Test
@@ -371,20 +367,18 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			// 1. Create the node
-			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
-			field.add(createItem("Max", "Böse"));
-			field.add(createItem("Moritz", "Böse"));
-			assertThat(field.getItems()).hasSize(2);
-			NodeResponse response = createNode(FIELD_NAME, field);
+		// 1. Create the node
+		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		field.add(createItem("Max", "Böse"));
+		field.add(createItem("Moritz", "Böse"));
+		assertThat(field.getItems()).hasSize(2);
+		NodeResponse response = createNode(FIELD_NAME, field);
 
-			// Assert the response
-			FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
-			assertNotNull(responseField);
-			assertFieldEquals(field, responseField, true);
-			assertMicronodes(responseField);
-		}
+		// Assert the response
+		FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
+		assertNotNull(responseField);
+		assertFieldEquals(field, responseField, true);
+		assertMicronodes(responseField);
 	}
 
 	/**
@@ -401,7 +395,10 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		vcard.addField(innerField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
-		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerField)));
+		tx(tx -> {
+			prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerField)); 
+			tx.success();
+		});
 
 		// 1. Set the reference
 		MicronodeResponse fieldItem = new MicronodeResponse();
@@ -466,7 +463,10 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		vcard.addField(innerListField);
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
-		tx(() -> prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerListField)));
+		tx(tx -> {
+			prepareTypedMicroschema(microschemaContainers().get("vcard"), List.of(innerListField)); 
+			tx.success();
+		});
 
 		// 1. Set the reference
 		MicronodeResponse fieldItem = new MicronodeResponse();
@@ -522,11 +522,9 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELD_NAME);
-			assertNull(field);
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELD_NAME);
+		assertNull(field);
 	}
 
 	/**
@@ -574,7 +572,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 			// TODO enable comparing uuids
 			if (false && assertUuid && !StringUtils.isEmpty(expectedMicronode.getUuid())) {
-				assertEquals("Check uuid of item + " + (i + 1), expectedMicronode.getUuid(), micronode.getUuid());
+				assertTrue("Check uuid of item + " + (i + 1), expectedMicronode.getUuid().equals(micronode.getUuid()));
 			}
 		}
 	}

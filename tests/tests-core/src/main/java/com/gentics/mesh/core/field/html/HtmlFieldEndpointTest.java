@@ -24,6 +24,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.VersionNumber;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -46,11 +47,9 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(null, (Field) null);
-			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
-			assertNull("The response should not contain the field because it should still be null", htmlField);
-		}
+		NodeResponse response = createNode(null, (Field) null);
+		HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
+		assertNull("The response should not contain the field because it should still be null", htmlField);
 	}
 
 	@Test
@@ -58,32 +57,25 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			try (Tx tx = tx()) {
-				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
-				String oldValue = getHtmlValue(container, FIELD_NAME);
+			VersionNumber oldVersion = tx(() -> boot().contentDao().getFieldContainer(node, "en").getVersion());
+			String newValue = "some<b>html <i>" + i + "</i>";
 
-				String newValue = "some<b>html <i>" + i + "</i>";
+			NodeResponse response = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML(newValue));
+			HtmlFieldImpl field = response.getFields().getHtmlField(FIELD_NAME);
+			assertEquals(newValue, field.getHTML());
 
-				NodeResponse response = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML(newValue));
-				HtmlFieldImpl field = response.getFields().getHtmlField(FIELD_NAME);
-				assertEquals(newValue, field.getHTML());
-
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getHtmlValue(container, FIELD_NAME));
-			}
+			assertEquals("Check version number", oldVersion.nextDraft().toString(), response.getVersion());
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
@@ -109,11 +101,10 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(latest.getPreviousVersion().getHtml(FIELD_NAME)).isNotNull();
 			String oldValue = latest.getPreviousVersion().getHtml(FIELD_NAME).getHTML();
 			assertThat(oldValue).isEqualTo("bla");
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
 		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test
@@ -136,11 +127,9 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNodeWithField();
-			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
-			assertEquals("Some<b>html", htmlField.getHTML());
-		}
+		NodeResponse response = createNodeWithField();
+		HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
+		assertEquals("Some<b>html", htmlField.getHTML());
 	}
 
 	@Test
@@ -150,19 +139,17 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			prepareTypedSchema(node, new HtmlFieldSchemaImpl().setName(FIELD_NAME), false);
+			tx.commit();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");
 			tx.success();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-
-		try (Tx tx = tx()) {
-			NodeResponse response = readNode(node);
-			HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField(FIELD_NAME);
-			assertNotNull(deserializedHtmlField);
-			assertEquals("some<b>html", deserializedHtmlField.getHTML());
-		}
+		NodeResponse response = readNode(node);
+		HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField(FIELD_NAME);
+		assertNotNull(deserializedHtmlField);
+		assertEquals("some<b>html", deserializedHtmlField.getHTML());
 	}
 
 	/**

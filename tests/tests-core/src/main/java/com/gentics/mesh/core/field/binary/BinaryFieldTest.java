@@ -101,6 +101,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			ContentDao contentDao = tx.contentDao();
 			// Update the schema and add a binary field
 			prepareTypedSchema(node, createFieldSchema(true), false);
+			tx.commit();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibBinary binary = tx.binaries().create(hash, 10L).runInExistingTx(tx);
 			HibBinaryField field = container.createBinary(BINARY_FIELD, binary);

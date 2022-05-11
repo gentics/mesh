@@ -29,6 +29,10 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 
 	@Test
 	public void testBranchCache() {
+		if (cache().isDisabled()) {
+			// Cache is disabled by default - no sane testing possible
+			return;
+		}
 		String newName = "New Branch Name";
 
 		assertFalse("Initially the cache should not contain the branch", hasBranchInCache());

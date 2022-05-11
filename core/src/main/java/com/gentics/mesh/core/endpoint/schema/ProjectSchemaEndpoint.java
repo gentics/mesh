@@ -66,7 +66,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
@@ -77,7 +77,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadProjectList(ac);
-		});
+		}, false);
 	}
 
 	private void addAssignHandler() {

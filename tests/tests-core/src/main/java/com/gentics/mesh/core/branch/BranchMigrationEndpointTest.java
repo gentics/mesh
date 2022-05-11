@@ -132,9 +132,8 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartForInitial() throws Throwable {
-		try (Tx tx = tx()) {
-			triggerAndWaitForJob(requestBranchMigration(initialBranch()), FAILED);
-		}
+		HibBranch initialBranch = tx(() -> initialBranch());
+		triggerAndWaitForJob(requestBranchMigration(initialBranch), FAILED);
 	}
 
 	@Test

@@ -300,6 +300,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 					List.of(new MicronodeFieldSchemaImpl().setName("single"), 
 							new ListFieldSchemaImpl().setListType(FieldTypes.MICRONODE.toString()).setName("list")), 
 					Optional.empty());
+			tx.success();
 			return vcard1;
 		});
 		try (Tx tx = tx()) {

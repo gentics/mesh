@@ -73,24 +73,21 @@ public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		HibUser user = db().tx(() -> user());
-
 		Runnable task2 = () -> {
 			try (Tx tx = tx()) {
+				HibUser user = tx.userDao().findByUuid(userUuid());
 				user.setUsername("test2");
 				assertNotNull(boot().userDao().findByUsername("test2"));
 				tx.success();
 			}
-			assertNotNull(boot().userDao().findByUsername("test2"));
 
 			Runnable task = () -> {
 				try (Tx tx = tx()) {
+					HibUser user = tx.userDao().findByUuid(userUuid());
 					user.setUsername("test3");
 					assertNotNull(boot().userDao().findByUsername("test3"));
 					tx.failure();
 				}
-				assertNotNull(boot().userDao().findByUsername("test2"));
-				assertNull(boot().userDao().findByUsername("test3"));
 
 			};
 			Thread t = new Thread(task);

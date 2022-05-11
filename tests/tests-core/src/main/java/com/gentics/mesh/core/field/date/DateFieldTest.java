@@ -97,7 +97,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 			// Add html field schema to the schema
 			prepareTypedSchema(node, createFieldSchema(true), false);
-
+			tx.commit();
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			HibDateField field = container.createDate(DATE_FIELD);
 			date = fromISO8601(toISO8601(System.currentTimeMillis()));

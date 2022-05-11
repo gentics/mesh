@@ -160,7 +160,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("uuid");
 			pluginHandler.handleRead(ac, uuid);
-		});
+		}, false);
 
 		InternalEndpointRoute readAllEndpoint = createRoute();
 		readAllEndpoint.path("/plugins");
@@ -170,7 +170,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readAllEndpoint.exampleResponse(OK, adminExamples.createPluginListResponse(), "Plugin list response.");
 		readAllEndpoint.blockingHandler(rc -> {
 			pluginHandler.handleReadList(wrap(rc));
-		});
+		}, false);
 	}
 
 	/**
@@ -186,7 +186,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleClusterStatus(wrap(rc));
-		});
+		}, false);
 	}
 
 	private void addClusterConfigHandler() {
@@ -198,7 +198,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Currently active cluster configuration.");
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleLoadClusterConfig(wrap(rc));
-		});
+		}, false);
 
 		InternalEndpointRoute updateEndpoint = createRoute();
 		updateEndpoint.path("/cluster/config");
@@ -248,7 +248,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.events(GRAPH_EXPORT_START, GRAPH_EXPORT_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleExport(wrap(rc));
-		});
+		}, false);
 	}
 
 	private void addImportHandler() {
@@ -339,7 +339,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readJobList.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			jobHandler.handleReadList(ac);
-		});
+		}, false);
 
 		InternalEndpointRoute readJob = createRoute();
 		readJob.path("/jobs/:jobUuid");
@@ -352,7 +352,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleRead(ac, uuid);
-		});
+		}, false);
 
 		InternalEndpointRoute deleteJob = createRoute();
 		deleteJob.path("/jobs/:jobUuid");

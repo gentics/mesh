@@ -63,8 +63,8 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 				binaryField.setElasticsearch(customMapping);
 				schema.addField(binaryField);
 			}
-
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(nodeA.getSchemaContainer().getLatestVersion());
 
 			// image
 			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
@@ -123,6 +123,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(nodeA.getSchemaContainer().getLatestVersion());
 
 			// image
 			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);

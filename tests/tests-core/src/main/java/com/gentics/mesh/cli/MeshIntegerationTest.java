@@ -29,7 +29,8 @@ public class MeshIntegerationTest extends AbstractIntegrationTest implements Mes
 
 	@Test
 	public void testStartup() throws Exception {
-		Mesh mesh = Mesh.create();
+		MeshOptions options = getOptions();
+		Mesh mesh = Mesh.create(options);
 		mesh.rxRun().blockingAwait(TIMEOUT, TimeUnit.SECONDS);
 		mesh.shutdown();
 	}

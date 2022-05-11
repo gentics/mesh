@@ -214,8 +214,8 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				HibNumberFieldList field = container.getNumberList(NUMBER_LIST);
 				assertNotNull("The graph field {" + NUMBER_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
-				assertEquals("The list item of the field was not updated.", 42L, field.getList().get(0).getNumber());
-				assertEquals("The list item of the field was not updated.", 43L, field.getList().get(1).getNumber());
+				assertEquals("The list item of the field was not updated.", 42L, field.getList().get(0).getNumber().longValue());
+				assertEquals("The list item of the field was not updated.", 43L, field.getList().get(1).getNumber().longValue());
 			});
 		}
 	}

@@ -11,10 +11,6 @@ import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.PermissionCacheImpl;
-import com.gentics.mesh.cache.ProjectBranchNameCache;
-import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
-import com.gentics.mesh.cache.ProjectNameCache;
-import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
 import com.gentics.mesh.context.BulkActionContext;
@@ -80,6 +76,7 @@ import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
 import com.gentics.mesh.distributed.TopologyChangeReadonlyHandlerImpl;
+import com.gentics.mesh.event.EventBusLivenessManagerImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.handler.RangeRequestHandler;
@@ -87,6 +84,7 @@ import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.liveness.LivenessManagerImpl;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.MetricsServiceImpl;
+import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -153,16 +151,10 @@ public abstract class CommonBindModule {
 	abstract RangeRequestHandler bindRangeRequestHandler(RangeRequestHandlerImpl e);
 
 	@Binds
-	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
-
-	@Binds
 	abstract WebrootPathCache bindWebrootPathCache(WebrootPathCacheImpl e);
 
 	@Binds
 	abstract PermissionCache bindPermissionCache(PermissionCacheImpl e);
-
-	@Binds
-	abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
 
 	@Binds
 	abstract PluginEnvironment bindPluginEnv(PluginEnvironmentImpl e);
@@ -316,6 +308,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);
+
+	@Binds
+	abstract EventBusLivenessManager bindEventbusLivenessManager(EventBusLivenessManagerImpl e);
 
 	@Binds
 	abstract SearchMappingsCache searchMappingsCache(SearchMappingsCacheImpl e);

@@ -579,6 +579,8 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		List<TagReference> loadedTags = response.getTags();
 		assertThat(loadedTags).isNotEmpty().hasSize(2);
 
+		loadedTags = loadedTags.stream().sorted((a, b) -> a.getName().compareTo(b.getName())).collect(Collectors.toList());
+
 		TagReference tag = loadedTags.get(0);
 		assertEquals("red", tag.getName());
 		assertEquals("colors", tag.getTagFamily());

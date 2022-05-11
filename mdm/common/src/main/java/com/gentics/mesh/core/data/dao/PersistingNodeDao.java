@@ -1594,7 +1594,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
-		return create(parentNode, creator, schemaVersion, project, project.getLatestBranch(), null);
+		return create(parentNode, creator, schemaVersion, project, CommonTx.get().branchDao().getLatestBranch(project), null);
 	}
 
 	/**

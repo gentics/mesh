@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| checkInterval
+| false
+| integer
+| Configure the check interval for the Vert.x eventBus in ms. If set to a positive value, Mesh will regularly send test events over the eventBus. Default is: 30000 ms.
+
+| errorThreshold
+| false
+| integer
+| Configure the error threshold for the Vert.x eventBus check in ms. If this and the check interval are set to positive values, and the last test events was received longer than the configured threshold ago, an error message will be logged, and the liveness of the instance will be set to false. Default is: 120000
+
+| warnThreshold
+| false
+| integer
+| Configure the warn threshold for the Vert.x eventBus check in ms. If this and the check interval are set to positive values, and the last test events was received longer than the configured threshold ago, a warn message will be logged. Default is: 60000 ms.
+
+|======

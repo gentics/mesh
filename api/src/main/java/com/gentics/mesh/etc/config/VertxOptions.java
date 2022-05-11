@@ -31,6 +31,10 @@ public class VertxOptions implements Option {
 	@EnvironmentVariable(name = MESH_VERTX_EVENT_POOL_SIZE_ENV, description = "Override the configured Vert.x event pool size.")
 	private int eventPoolSize = DEFAULT_EVENT_POOL_SIZE;
 
+	@JsonProperty("eventBus")
+	@JsonPropertyDescription("EventBus options")
+	private VertxEventBusOptions eventBusOptions = new VertxEventBusOptions();
+
 	public int getEventPoolSize() {
 		return eventPoolSize;
 	}
@@ -51,4 +55,22 @@ public class VertxOptions implements Option {
 		return this;
 	}
 
+	public VertxEventBusOptions getEventBusOptions() {
+		return eventBusOptions;
+	}
+
+	public VertxOptions setEventBusOptions(VertxEventBusOptions eventbusCheckOptions) {
+		this.eventBusOptions = eventbusCheckOptions;
+		if (this.eventBusOptions == null) {
+			this.eventBusOptions = new VertxEventBusOptions();
+		}
+		return this;
+	}
+
+	@Override
+	public void validate(MeshOptions options) {
+		if (getEventBusOptions() != null) {
+			getEventBusOptions().validate(options);
+		}
+	}
 }
