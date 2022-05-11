@@ -410,7 +410,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	Stream<HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac);
+	Stream<? extends HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac);
 
 	/**
 	 * Get publish status for all languages of the node.

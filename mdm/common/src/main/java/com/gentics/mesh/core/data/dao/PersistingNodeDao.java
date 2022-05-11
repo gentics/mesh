@@ -228,7 +228,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	@Override
-	default Stream<HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac) {
+	default Stream<? extends HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac) {
 		Tx tx = Tx.get();
 		String branchUuid = tx.getBranch(ac, node.getProject()).getUuid();
 		HibNode current = node;
