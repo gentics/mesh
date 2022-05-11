@@ -24,6 +24,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.VersionNumber;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -56,21 +57,13 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			String oldValue = tx(tx -> {
-				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
-				return getHtmlValue(container, FIELD_NAME);
-			});
+			VersionNumber oldVersion = tx(() -> boot().contentDao().getFieldContainer(node, "en").getVersion());
 			String newValue = "some<b>html <i>" + i + "</i>";
 
 			NodeResponse response = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML(newValue));
 			HtmlFieldImpl field = response.getFields().getHtmlField(FIELD_NAME);
 			assertEquals(newValue, field.getHTML());
-
-			try (Tx tx = tx()) {
-				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en").getPreviousVersion();
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getHtmlValue(container, FIELD_NAME));
-			}
+			assertEquals("Check version number", oldVersion.nextDraft().toString(), response.getVersion());
 		}
 	}
 
