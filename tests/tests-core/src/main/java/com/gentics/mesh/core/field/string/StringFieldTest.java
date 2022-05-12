@@ -51,10 +51,10 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
-
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			HibNode node = folder("2015");
+
 			// Add a new string field to the schema
 			StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
 			stringFieldSchema.setName(STRING_FIELD);
@@ -70,6 +70,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			String json = getJson(node);
 			assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("someString") > 1);
 			assertNotNull(json);

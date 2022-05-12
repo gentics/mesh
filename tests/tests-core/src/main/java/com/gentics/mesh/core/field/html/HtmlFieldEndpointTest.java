@@ -63,7 +63,6 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse response = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML(newValue));
 			HtmlFieldImpl field = response.getFields().getHtmlField(FIELD_NAME);
 			assertEquals(newValue, field.getHTML());
-
 			assertEquals("Check version number", oldVersion.nextDraft().toString(), response.getVersion());
 		}
 	}

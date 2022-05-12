@@ -1,21 +1,20 @@
 package com.gentics.mesh.plugin;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.FAILED;
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.gentics.mesh.test.helper.ExpectedEvent;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -31,7 +30,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.category.PluginTests;
-import com.twelvemonkeys.io.FileUtil;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
@@ -65,9 +64,11 @@ public class PluginManagerTest extends AbstractPluginTest {
 
 	@Test
 	public void testFilesystemDeployment() throws Exception {
+		String name = "basic.jar";
 		setPluginBaseDir("abc");
 		try (ExpectedEvent registration = expectEvent(MeshEvent.PLUGIN_REGISTERED, 20_000)) {
-			String id = pluginManager().deploy(Paths.get(BASIC_PATH)).blockingGet();
+			copy(BASIC_PATH, name);
+			String id = pluginManager().deploy(new File(pluginDir(), name).toPath()).blockingGet();
 			assertEquals("basic", id);
 		}
 
@@ -86,11 +87,11 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testStartupDeployment() throws IOException, TimeoutException {
 		MeshPluginManager manager = pluginManager();
-		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.jar"));
-		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "duplicate-plugin.jar"));
-		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.blub"));
-		FileUtil.copy(new File(GRAPHQL_PATH), new File(pluginDir(), "gql-plugin.jar"));
-		FileUtil.copy(new File(GRAPHQL_PATH), new File(pluginDir(), "gql-plugin2.jar"));
+		copy(BASIC_PATH, "plugin.jar");
+		copy(BASIC_PATH, "duplicate-plugin.jar");
+		copy(BASIC_PATH, "plugin.blub");
+		copy(GRAPHQL_PATH, "gql-plugin.jar");
+		copy(GRAPHQL_PATH, "gql-plugin2.jar");
 
 		assertEquals(0, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingAwait();

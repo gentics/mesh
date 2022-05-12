@@ -132,8 +132,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartForInitial() throws Throwable {
-		HibBranch initialBranch = tx(() -> initialBranch());
-		triggerAndWaitForJob(requestBranchMigration(initialBranch), FAILED);
+		triggerAndWaitForJob(tx(() -> requestBranchMigration(initialBranch())), FAILED);
 	}
 
 	@Test
@@ -157,24 +156,22 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	public void testStartOrder() throws Throwable {
 		HibProject project = project();
 		EventQueueBatch batch = createBatch();
-		HibBranch newBranch = tx(tx -> {
-			return tx.branchDao().create(project, "newbranch", user(), batch);
+		String newBranch = tx(tx -> {
+			return tx.branchDao().create(project, "newbranch", user(), batch).getUuid();
 		});
-		HibBranch newestBranch = tx(tx -> {
-			return tx.branchDao().create(project, "newestbranch", user(), batch);
+		String newestBranch = tx(tx -> {
+			return tx.branchDao().create(project, "newestbranch", user(), batch).getUuid();
 		});
 
-		try (Tx tx = tx()) {
-			triggerAndWaitForJob(requestBranchMigration(newestBranch), FAILED);
+		triggerAndWaitForJob(tx(tx -> { return requestBranchMigration(tx.branchDao().findByUuid(project(), newestBranch));}), FAILED);
 
-			JobListResponse response = triggerAndWaitForJob(requestBranchMigration(newBranch), COMPLETED);
-			List<JobStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).contains(FAILED, COMPLETED);
+		JobListResponse response = triggerAndWaitForJob(tx(tx -> { return requestBranchMigration(tx.branchDao().findByUuid(project(), newBranch));}), COMPLETED);
+		List<JobStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+		assertThat(status).contains(FAILED, COMPLETED);
 
-			response = triggerAndWaitForJob(requestBranchMigration(newestBranch), COMPLETED);
-			status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).contains(FAILED, COMPLETED, COMPLETED);
-		}
+		response = triggerAndWaitForJob(tx(tx -> { return requestBranchMigration(tx.branchDao().findByUuid(project(), newestBranch));}), COMPLETED);
+		status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+		assertThat(status).contains(FAILED, COMPLETED, COMPLETED);
 	}
 
 	@Test

@@ -65,6 +65,13 @@ public interface MeshInstanceProvider<T extends MeshOptions> extends MeshOptions
 	MeshTestActions actions();
 
 	/**
+	 * Set DB specific write synchronization flag.
+	 * 
+	 * @param syncWrites
+	 */
+	void setSyncWrites(boolean syncWrites);
+
+	/**
 	 * Performs the fast storage cleanup, e.g. in place data drop with keeping the schemas, if available.
 	 * 
 	 * @param db the database to clean up

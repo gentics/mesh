@@ -254,9 +254,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 			assertNotNull("Could not find the field within the previous version.", previousStringList);
 			assertNotNull("Could not find the expected field in the created version.", nextStringList);
-			assertEquals("Both fields should have the same uuid since both are referenced by the both versions.", nextStringList.getUuid(),
-				previousStringList.getUuid());
 
+			// The UUIDs are not guaranteed to keep anymore.
+			//assertEquals("Both fields should have the same uuid since both are referenced by the both versions.", nextStringList.getUuid(),	previousStringList.getUuid());
 		}
 	}
 

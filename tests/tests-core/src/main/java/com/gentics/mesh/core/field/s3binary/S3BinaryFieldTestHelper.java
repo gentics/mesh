@@ -23,7 +23,6 @@ public interface S3BinaryFieldTestHelper {
 
 	final DataProvider FILL_BASIC = (container, name) -> {
 		S3HibBinary s3binary = Tx.get().s3binaries().create(UUIDUtil.randomUUID(), container.getUuid() + "/s3", FILENAME).runInExistingTx(Tx.get());
-
 		S3HibBinaryField field = container.createS3Binary(name, s3binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
