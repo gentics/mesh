@@ -14,6 +14,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -216,9 +217,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			assertThat(micronodeFields.getJsonArray("listfield-boolean")).as("Boolean List Field").matches(true, false);
 			assertThat(micronodeFields.getJsonArray("listfield-date")).as("Date List Field").matches(toISO8601(date.getTimeInMillis()), toISO8601(0));
 			assertThat(micronodeFields.getJsonArray("listfield-html")).as("HTML List Field").matches("<b>first</b>", "<i>second</i>");
-			assertThat(micronodeFields.getJsonArray("listfield-node")).as("Node List Field").key("uuid").matches(node.getUuid(),
-					newOverview.getUuid());
-			assertThat(micronodeFields.getJsonArray("listfield-number")).as("Number List Field").matches(47, 11);
+			assertThat(micronodeFields.getJsonArray("listfield-node")).as("Node List Field").key("uuid").matches(node.getUuid(), newOverview.getUuid());
+			assertThat(micronodeFields.getJsonArray("listfield-number").stream().map(Number.class::cast).map(Number::longValue).collect(Collectors.toList())).as("Number List Field").containsExactly(47L, 11L);
 			assertThat(micronodeFields.getJsonArray("listfield-string")).as("String List Field").matches("first", "second", "third");
 			assertThat(micronodeFields.getJsonObject("nodefield")).as("Node Field").key("uuid").matches(newOverview.getUuid());
 			assertEquals("Number Field", 4711, micronodeFields.getInteger("numberfield").intValue());
