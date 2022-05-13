@@ -5,6 +5,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATU
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 
 import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -22,7 +25,7 @@ import io.vertx.core.logging.LoggerFactory;
  * Central LRU permission cache which is used to quickly lookup cached permissions.
  */
 @Singleton
-public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> implements PermissionCache {
+public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<InternalPermission>> implements PermissionCache {
 
 	private static final Logger log = LoggerFactory.getLogger(PermissionCacheImpl.class);
 
@@ -38,6 +41,11 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 		CLUSTER_DATABASE_CHANGE_STATUS,
 	};
 
+	/**
+	 * Map that will contain every used EnumSet (once)
+	 */
+	private final Map<EnumSet<InternalPermission>, EnumSet<InternalPermission>> uniqueMap = new HashMap<>();
+
 	@Inject
 	public PermissionCacheImpl(EventAwareCacheFactory factory, Vertx vertx, CacheRegistry registry, MeshOptions options) {
 		super(createCache(factory), registry, CACHE_SIZE);
@@ -45,8 +53,8 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 		this.options = options;
 	}
 
-	private static EventAwareCache<String, Boolean> createCache(EventAwareCacheFactory factory) {
-		return factory.<String, Boolean>builder()
+	private static EventAwareCache<String, EnumSet<InternalPermission>> createCache(EventAwareCacheFactory factory) {
+		return factory.<String, EnumSet<InternalPermission>>builder()
 			.events(EVENTS)
 			.action((event, cache) -> {
 				if (log.isDebugEnabled()) {
@@ -60,21 +68,15 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 			.build();
 	}
 
-	/**
-	 * Check whether the granting user permission was stored in the cache.
-	 * 
-	 * @param userId
-	 *            Vertex id of the user
-	 * @param permission
-	 *            Permission to check against
-	 * @param elementId
-	 *            Vertex id of the element to which permissions should be checked
-	 * @return true, if a granting permission was found or false if the permission could not be found in the cache
-	 */
-	public boolean hasPermission(Object userId, InternalPermission permission, Object elementId) {
-		String key = createCacheKey(userId, permission, elementId);
-		Boolean cachedPerm = cache.get(key);
-		return cachedPerm != null && cachedPerm;
+	@Override
+	public Boolean hasPermission(Object userId, InternalPermission permission, Object elementId) {
+		String key = createCacheKey(userId, elementId);
+		EnumSet<InternalPermission> cachedPermissions = cache.get(key);
+		if (cachedPermissions != null) {
+			return cachedPermissions.contains(permission);
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -85,8 +87,8 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	 * @param elementId
 	 * @return
 	 */
-	private String createCacheKey(Object userId, InternalPermission permission, Object elementId) {
-		return userId + "-" + permission.ordinal() + "-" + elementId;
+	private String createCacheKey(Object userId, Object elementId) {
+		return userId + "-" + elementId;
 	}
 
 	/**
@@ -114,17 +116,13 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 		clear(true);
 	}
 
-	/**
-	 * Store a granting permission in the cache.
-	 * 
-	 * @param userId
-	 *            User which currently has roles which grant him the permission on the element
-	 * @param permission
-	 *            Permission which is granted
-	 * @param elementId
-	 *            Id of the element to which a permission is granted
-	 */
-	public void store(Object userId, InternalPermission permission, Object elementId) {
-		cache.put(createCacheKey(userId, permission, elementId), true);
+	@Override
+	public void store(Object userId, EnumSet<InternalPermission> permission, Object elementId) {
+		// clone the EnumSet (we will use the clone in the cache, if no other clone has been created before)
+		EnumSet<InternalPermission> clone = permission.clone();
+		// either get the already used instance from the map or put the clone in the map, if this is the first occurrance
+		EnumSet<InternalPermission> unique = uniqueMap.computeIfAbsent(clone, key -> clone);
+		// put the unique instance into the cache
+		cache.put(createCacheKey(userId, elementId), unique);
 	}
 }

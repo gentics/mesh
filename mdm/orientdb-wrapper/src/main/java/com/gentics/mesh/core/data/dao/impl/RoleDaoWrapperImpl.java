@@ -41,7 +41,7 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
-	public boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+	public boolean grantRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
 		MeshVertex vertex = (MeshVertex) element;
 		boolean permissionGranted = false;
 		for (InternalPermission permission : permissions) {
