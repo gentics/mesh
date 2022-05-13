@@ -62,7 +62,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			long size = Iterators.size(tx.languageDao().findAll().iterator());
-			assertEquals(11, size);
+			assertEquals(9, size);
 		}
 	}
 
