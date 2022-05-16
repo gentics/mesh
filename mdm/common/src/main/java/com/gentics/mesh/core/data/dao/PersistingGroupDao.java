@@ -186,18 +186,54 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default void removeUser(HibGroup group, HibUser user) {
-		removeUser(user, group);
+	default void addUser(HibGroup group, HibUser user) {
+		addUserPersisting(group, user);
 		Tx.get().permissionCache().clear();
 	}
 
-	void removeUser(HibUser user, HibGroup group);
+	/**
+	 * @see #addUser(HibGroup, HibUser)
+	 * @param group group
+	 * @param user user
+	 */
+	void addUserPersisting(HibGroup group, HibUser user);
+
+	@Override
+	default void removeUser(HibGroup group, HibUser user) {
+		removeUserPersisting(group, user);
+		Tx.get().permissionCache().clear();
+	}
+
+	/**
+	 * @see #removeUser(HibGroup, HibUser)
+	 * @param group group
+	 * @param user user
+	 */
+	void removeUserPersisting(HibGroup group, HibUser user);
+
+	@Override
+	default void addRole(HibGroup group, HibRole role) {
+		addRolePersisting(group, role);
+		Tx.get().permissionCache().clear();
+	}
+
+	/**
+	 * @see #addRole(HibGroup, HibRole)
+	 * @param group group
+	 * @param role role
+	 */
+	void addRolePersisting(HibGroup group, HibRole role);
 
 	@Override
 	default void removeRole(HibGroup group, HibRole role) {
-		removeRole(role, group);
+		removeRolePersisting(group, role);
 		Tx.get().permissionCache().clear();
 	}
 
-	void removeRole(HibRole role, HibGroup group);
+	/**
+	 * @see #removeRole(HibGroup, HibRole)
+	 * @param group group
+	 * @param role role
+	 */
+	void removeRolePersisting(HibGroup group, HibRole role);
 }

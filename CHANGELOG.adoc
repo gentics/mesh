@@ -25,6 +25,8 @@ include::content/docs/variables.adoc-include[]
 [[v1.8.5]]
 == 1.8.5 (TBD)
 
+icon:check[] Core: The internal cache for user permissions has been optimized.
+
 icon:check[] Core: Caffeine caching library has been updated to version `2.8.0`.
 
 [[v1.8.4]]

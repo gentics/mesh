@@ -9,14 +9,19 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.etc.LanguageEntry;
+import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -28,10 +33,20 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
 		try (Tx tx = tx()) {
 			boot().initLanguages();
-			HibLanguage language = tx.languageDao().findByLanguageTag("de");
-			assertNotNull(language);
-			assertEquals("German", language.getName());
-			assertEquals("Deutsch", language.getNativeName());
+		}
+		final String filename = "languages.json";
+		final InputStream ins = getClass().getResourceAsStream("/json/" + filename);
+		if (ins == null) {
+			throw new NullPointerException("Languages could not be loaded from classpath file {" + filename + "}");
+		}
+		LanguageSet languageSet = new ObjectMapper().readValue(ins, LanguageSet.class);
+		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
+			try (Tx tx = tx()) {
+				HibLanguage language = tx.languageDao().findByLanguageTag(entry.getKey());
+				assertNotNull(language);
+				assertEquals(language.getName(), entry.getValue().getName());
+				assertEquals(language.getNativeName(), entry.getValue().getNativeName());
+			}
 		}
 	}
 
