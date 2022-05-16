@@ -30,6 +30,7 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.generator.OpenAPIv3Generator;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
@@ -222,6 +223,11 @@ public abstract class AdminHandler extends AbstractHandler {
 			info.setMeshNodeName(options.getNodeName());
 		}
 		return info;
+	}
+
+	public void handleOpenAPIv3(InternalActionContext ac, String format) {
+		OpenAPIv3Generator generator = new OpenAPIv3Generator();
+		generator.generate(ac, format);
 	}
 
 	/**
