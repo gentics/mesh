@@ -32,7 +32,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	 */
 	@Before
 	public void assertCacheEmpty() {
-		assertPermissions("Initial", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
+		assertPermissions("initialization", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
 				InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM);
 	}
 
@@ -49,7 +49,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 					new HashSet<>(Arrays.asList(InternalPermission.DELETE_PERM, InternalPermission.UPDATE_PERM)));
 		});
 
-		assertPermissions("Revoking permissions", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM);
+		assertPermissions("revoking permissions", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM);
 
 		// grant update permission
 		db().tx(tx -> {
@@ -59,10 +59,13 @@ public class PermissionCacheTest extends AbstractMeshTest {
 					new HashSet<>(Arrays.asList(InternalPermission.UPDATE_PERM)), Collections.emptySet());
 		});
 
-		assertPermissions("Granting permissions", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
+		assertPermissions("granting permissions", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
 				InternalPermission.UPDATE_PERM);
 	}
 
+	/**
+	 * Test removing a user from a group and adding a user to a group
+	 */
 	@Test
 	public void testUserGroupAssignment() {
 		// remove user from group
@@ -72,7 +75,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 			tx.groupDao().removeUser(group, user);
 		});
 
-		assertPermissions("Remove user from group");
+		assertPermissions("removing user from group");
 
 		// add user to group
 		db().tx(tx -> {
@@ -81,10 +84,13 @@ public class PermissionCacheTest extends AbstractMeshTest {
 			tx.groupDao().addUser(group, user);
 		});
 
-		assertPermissions("Add user to group", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
+		assertPermissions("adding user to group", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
 				InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM);
 	}
 
+	/**
+	 * Test removing a role from a group and adding a role to a group
+	 */
 	@Test
 	public void testGroupRoleAssignment() {
 		// remove role from group
@@ -94,7 +100,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 			tx.groupDao().removeRole(group, role);
 		});
 
-		assertPermissions("Remove role from group");
+		assertPermissions("removing role from group");
 
 		// add role to group
 		db().tx(tx -> {
@@ -103,10 +109,13 @@ public class PermissionCacheTest extends AbstractMeshTest {
 			tx.groupDao().addRole(group, role);
 		});
 
-		assertPermissions("Add role to group", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
+		assertPermissions("adding role to group", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
 				InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM);
 	}
 
+	/**
+	 * Test deleting a role
+	 */
 	@Test
 	public void testDeleteRole() {
 		// delete the role
@@ -115,9 +124,12 @@ public class PermissionCacheTest extends AbstractMeshTest {
 			tx.roleDao().delete(role, new DummyBulkActionContext());
 		});
 
-		assertPermissions("Delete role");
+		assertPermissions("deleting role");
 	}
 
+	/**
+	 * Test deleting a group
+	 */
 	@Test
 	public void testDeleteGroup() {
 		// delete the group
@@ -126,15 +138,38 @@ public class PermissionCacheTest extends AbstractMeshTest {
 			tx.groupDao().delete(group, new DummyBulkActionContext());
 		});
 
-		assertPermissions("Delete group");
+		assertPermissions("deleting group");
 	}
 
+	/**
+	 * Test deleting the user
+	 */
+	@Test
+	public void testDeleteUser() {
+		db().tx(tx -> {
+			HibUser user = tx.userDao().findByUuid(userUuid());
+			tx.userDao().delete(user, new DummyBulkActionContext());
+		});
+
+		assertThat(getPermissionCacheSize()).as("Cache size after deleting user").isEqualTo(0);
+	}
+
+	/**
+	 * Get the size of the permission cache
+	 * @return cache size
+	 */
 	protected long getPermissionCacheSize() {
 		return db().tx(tx -> {
 			return tx.permissionCache().size();
 		});
 	}
 
+	/**
+	 * Get the permissions for the user on the project.
+	 * Invoking this method will get the permission from the cache (if cached) or will get the permissions
+	 * from the DB and put them into the cache
+	 * @return current permissions of the user
+	 */
 	protected Set<InternalPermission> getPermissionsOnProject() {
 		return db().tx(tx -> {
 			HibProject project = tx.projectDao().findByUuid(projectUuid());
@@ -143,6 +178,16 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		});
 	}
 
+	/**
+	 * Assert that
+	 * <ol>
+	 * <li>Permission cache is empty before checking the permissions</li>
+	 * <li>The user has exactly the given permissions on the project</li>
+	 * <li>Permission cache is no longer empty after checking the permissions</li>
+	 * </ol>
+	 * @param state "state" of the test procedure (e.g. what was the last action performed)
+	 * @param perms expected permissions
+	 */
 	protected void assertPermissions(String state, InternalPermission...perms) {
 		// cache is supposed to be cleared
 		assertThat(getPermissionCacheSize()).as("Cache size after " + state).isEqualTo(0);
