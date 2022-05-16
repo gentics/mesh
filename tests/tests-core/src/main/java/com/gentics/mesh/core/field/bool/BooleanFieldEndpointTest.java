@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.VersionNumber;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -69,26 +70,17 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			boolean flag = false;
-			HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
-			final HibNodeFieldContainer currentContainer = container;
-			Boolean oldValue = tx(() -> getBooleanValue(currentContainer, FIELD_NAME));
-			String expectedVersion = tx(() -> currentContainer.getVersion().nextDraft().toString());
+			VersionNumber oldVersion = tx(() -> boot().contentDao().getFieldContainer(node, "en").getVersion());
 
 			NodeResponse response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(flag));
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertEquals(flag, field.getValue());
-			assertEquals("The version within the response should be bumped by one minor version.", expectedVersion, response.getVersion());
+			assertEquals("The version within the response should be bumped by one minor version.", oldVersion.nextDraft().toString(), response.getVersion());
 
-			try (Tx tx = tx()) {
-				assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
-				container = boot().contentDao().getFieldContainer(node, "en");
-				oldValue = getBooleanValue(container, FIELD_NAME);
-			}
 			response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
 			field = response.getFields().getBooleanField(FIELD_NAME);
 			assertEquals(!flag, field.getValue());
-			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
-			assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
+			assertEquals("Check version number", oldVersion.nextDraft().nextDraft().toString(), response.getVersion());
 		}
 	}
 

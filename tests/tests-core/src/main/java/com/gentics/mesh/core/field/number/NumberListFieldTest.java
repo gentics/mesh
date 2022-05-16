@@ -49,9 +49,9 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			HibNode node = folder("2015");
 			prepareNode(node, NUMBER_LIST, "number");
 
 			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -62,6 +62,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, NUMBER_LIST, "number", response);
 		}

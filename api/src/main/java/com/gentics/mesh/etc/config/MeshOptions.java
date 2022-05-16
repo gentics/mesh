@@ -533,6 +533,9 @@ public abstract class MeshOptions implements Option {
 		if (getS3Options() != null) {
 			getS3Options().validate(this);
 		}
+		if (getVertxOptions() != null) {
+			getVertxOptions().validate(this);
+		}
 		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
 		if (getVersionPurgeMaxBatchSize() <= 0) {
 			throw new IllegalArgumentException("versionPurgeMaxBatchSize must be positive.");

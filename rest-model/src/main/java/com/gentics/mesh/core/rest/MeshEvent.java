@@ -188,6 +188,20 @@ public enum MeshEvent {
 		"Emitted when the database status changes. (e.g. offline, online, backup, syncing)"),
 
 	/**
+	 * Event, which is emitted regularly to check whether local eventbus works
+	 */
+	PING_LOCAL("mesh.ping.local",
+		null,
+		"Event, which is emitted regularly to check whether local eventbus works"),
+
+	/**
+	 * Event, which is emitted regularly to check whether clustered eventbus works
+	 */
+	PING_CLUSTER("mesh.ping.cluster",
+		null,
+		"Event, which is emitted regularly to check whether clustered eventbus works"),
+
+	/**
 	 * Event which is send to update the permission stores.
 	 */
 	CLEAR_PERMISSION_STORE("mesh.clear-permission-store",

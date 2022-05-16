@@ -45,12 +45,8 @@ public abstract class AbstractGenericWriteLock implements WriteLock {
 		this.clusterManager = clusterManager;
 	}
 
-	/**
-	 * Are the writes to DB synchronozed?
-	 * 
-	 * @return
-	 */
-	protected boolean isSyncWrites() {
+	@Override
+	public boolean isSyncWrites() {
 		return true;
 	}
 

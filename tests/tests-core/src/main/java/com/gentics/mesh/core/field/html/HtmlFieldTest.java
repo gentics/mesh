@@ -79,11 +79,11 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 
 			// Add html field schema to the schema
+			HibNode node = folder("2015");
 			HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName(HTML_FIELD);
 			htmlFieldSchema.setLabel("Some html field");
@@ -97,6 +97,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			String json = getJson(node);
 			assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("ABCDE") > 1);
 			assertNotNull(json);
