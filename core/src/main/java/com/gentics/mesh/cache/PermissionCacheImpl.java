@@ -5,6 +5,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATU
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 
 import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -22,7 +25,7 @@ import io.vertx.core.logging.LoggerFactory;
  * Central LRU permission cache which is used to quickly lookup cached permissions.
  */
 @Singleton
-public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> implements PermissionCache {
+public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<InternalPermission>> implements PermissionCache {
 
 	private static final Logger log = LoggerFactory.getLogger(PermissionCacheImpl.class);
 
@@ -38,6 +41,13 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 		CLUSTER_DATABASE_CHANGE_STATUS,
 	};
 
+	/**
+	 * Map that will contain every used EnumSet (once). This is used for deduplication of the permission EnumSet instances
+	 * before putting them into the cache. With 6 permission bits, there are only 2^6=64 possible combinations and we will
+	 * keep only unique instances in the cache instead of up to 100_000 different instances.
+	 */
+	private final Map<EnumSet<InternalPermission>, EnumSet<InternalPermission>> uniqueMap = new HashMap<>();
+
 	@Inject
 	public PermissionCacheImpl(EventAwareCacheFactory factory, Vertx vertx, CacheRegistry registry, MeshOptions options) {
 		super(createCache(factory), registry, CACHE_SIZE);
@@ -45,8 +55,8 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 		this.options = options;
 	}
 
-	private static EventAwareCache<String, Boolean> createCache(EventAwareCacheFactory factory) {
-		return factory.<String, Boolean>builder()
+	private static EventAwareCache<String, EnumSet<InternalPermission>> createCache(EventAwareCacheFactory factory) {
+		return factory.<String, EnumSet<InternalPermission>>builder()
 			.events(EVENTS)
 			.action((event, cache) -> {
 				if (log.isDebugEnabled()) {
@@ -60,21 +70,15 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 			.build();
 	}
 
-	/**
-	 * Check whether the granting user permission was stored in the cache.
-	 * 
-	 * @param userId
-	 *            Vertex id of the user
-	 * @param permission
-	 *            Permission to check against
-	 * @param elementId
-	 *            Vertex id of the element to which permissions should be checked
-	 * @return true, if a granting permission was found or false if the permission could not be found in the cache
-	 */
-	public boolean hasPermission(Object userId, InternalPermission permission, Object elementId) {
-		String key = createCacheKey(userId, permission, elementId);
-		Boolean cachedPerm = cache.get(key);
-		return cachedPerm != null && cachedPerm;
+	@Override
+	public Boolean hasPermission(Object userId, InternalPermission permission, Object elementId) {
+		String key = createCacheKey(userId, elementId);
+		EnumSet<InternalPermission> cachedPermissions = cache.get(key);
+		if (cachedPermissions != null) {
+			return cachedPermissions.contains(permission);
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -85,8 +89,8 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	 * @param elementId
 	 * @return
 	 */
-	private String createCacheKey(Object userId, InternalPermission permission, Object elementId) {
-		return userId + "-" + permission.ordinal() + "-" + elementId;
+	private String createCacheKey(Object userId, Object elementId) {
+		return userId + "-" + elementId;
 	}
 
 	/**
@@ -114,17 +118,24 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 		clear(true);
 	}
 
+	@Override
+	public void store(Object userId, EnumSet<InternalPermission> permission, Object elementId) {
+		// deduplicate the permission EnumSet and put it into the cache
+		cache.put(createCacheKey(userId, elementId), deduplicate(permission));
+	}
+
 	/**
-	 * Store a granting permission in the cache.
-	 * 
-	 * @param userId
-	 *            User which currently has roles which grant him the permission on the element
-	 * @param permission
-	 *            Permission which is granted
-	 * @param elementId
-	 *            Id of the element to which a permission is granted
+	 * Dedpulicate the permission EnumSet, so that the cache will not contain up to 100_000 different instances
+	 * but only up to 2^6=64 different instances.
+	 * @param permission permission set
+	 * @return deduplicated permission set
 	 */
-	public void store(Object userId, InternalPermission permission, Object elementId) {
-		cache.put(createCacheKey(userId, permission, elementId), true);
+	protected EnumSet<InternalPermission> deduplicate(EnumSet<InternalPermission> permission) {
+		// Since the EnumSet is mutable and was passed to the PermissionCache from "outside", we do not
+		// put that instance into the cache, but create a clone first.
+		EnumSet<InternalPermission> clone = EnumSet.copyOf(permission);
+
+		// either get the already used instance from the map or put the clone in the map, if this is the first occurrance
+		return uniqueMap.computeIfAbsent(clone, key -> clone);
 	}
 }
