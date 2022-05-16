@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -45,7 +46,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public void addUser(HibGroup group, HibUser user) {
+	public void addUserPersisting(HibGroup group, HibUser user) {
 		Group graphGroup = toGraph(group);
 		User graphUser = toGraph(user);
 
@@ -58,7 +59,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public void removeUser(HibUser user, HibGroup group) {
+	public void removeUserPersisting(HibGroup group, HibUser user) {
 		PersistingUserDao userDao = CommonTx.get().userDao();
 		Group graphGroup = toGraph(group);
 		User graphUser = toGraph(user);
@@ -84,7 +85,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public void addRole(HibGroup group, HibRole role) {
+	public void addRolePersisting(HibGroup group, HibRole role) {
 		Group graphGroup = toGraph(group);
 		Role graphRole = toGraph(role);
 		graphGroup.setUniqueLinkInTo(graphRole, HAS_ROLE);
@@ -96,7 +97,7 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	}
 
 	@Override
-	public void removeRole(HibRole role, HibGroup group) {
+	public void removeRolePersisting(HibGroup group, HibRole role) {
 		PersistingUserDao userDao = CommonTx.get().userDao();
 		Role graphRole = toGraph(role);
 		Group graphGroup = toGraph(group);
