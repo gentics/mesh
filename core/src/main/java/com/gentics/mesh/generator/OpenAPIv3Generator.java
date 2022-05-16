@@ -9,20 +9,32 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.keyvalue.UnmodifiableMapEntry;
+import org.apache.commons.lang.StringUtils;
 import org.raml.model.parameter.AbstractParam;
 import org.reflections.Reflections;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -68,12 +80,52 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		Server server = new Server();
 		info.setTitle("Gentics Mesh REST API");
 		info.setVersion(MeshVersion.getBuildInfo().getVersion());
-		//server.setUrl("http://localhost:8080/api/v" + CURRENT_API_VERSION);
+		// server.setUrl("http://localhost:8080/api/v" + CURRENT_API_VERSION);
 		openApi.servers(Collections.singletonList(server));
-        openApi.setInfo(info);
-        Components components = new Components();
-        Reflections reflections = new Reflections("com.gentics.mesh");
-        // TODO parse RestModels into components
+		openApi.setInfo(info);
+		Components components = new Components();
+		Reflections reflections = new Reflections("com.gentics.mesh");
+		Map<String, Schema> schemas = reflections.getSubTypesOf(RestModel.class).stream().map(cls -> {
+			Schema<?> schema = new Schema<String>();
+			List<Stream<Field>> fieldStreams = new ArrayList<>();
+			Class<?> tclass = cls;
+			Type[] genericTypes = ParameterizedType.class.isInstance(cls) ? ParameterizedType.class.cast(cls).getActualTypeArguments() : null;
+			while (tclass != null) {
+				fieldStreams.add(Arrays.stream(tclass.getDeclaredFields()));
+				tclass = tclass.getSuperclass();
+			}
+			Map<String, Schema> properties = fieldStreams.stream().flatMap(Function.identity()).map(f -> {
+				String name = f.getName();
+				Schema<?> fieldSchema = new Schema<String>();
+				JsonPropertyDescription description = f.getAnnotation(JsonPropertyDescription.class);
+				if (description != null) {
+					fieldSchema.setDescription(description.value());
+				}
+				JsonProperty property = f.getAnnotation(JsonProperty.class);
+				if (property != null) {
+					if (StringUtils.isNotBlank(property.defaultValue())) {
+						fieldSchema.setDefault(property.defaultValue());
+					}
+					if (property.required()) {
+						schema.addRequiredItem(name);
+					}
+				}
+				Class<?> t = f.getType();
+				JsonDeserialize jdes = f.getAnnotation(JsonDeserialize.class);
+				if (jdes != null && jdes.as() != null) {
+					t = jdes.as();
+					fieldSchema.setType("object");
+					fieldSchema.set$ref("#/components/schemas/" + t.getSimpleName());
+				} else {
+					Type[] args = ParameterizedType.class.isInstance(f.getGenericType()) ? ParameterizedType.class.cast(f.getGenericType()).getActualTypeArguments() : genericTypes;
+					fillType(t, fieldSchema, args);
+				}
+				return new UnmodifiableMapEntry<>(name, fieldSchema);
+			}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			schema.setProperties(properties);
+			return new UnmodifiableMapEntry<>(cls.getSimpleName(), schema);
+		}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		components.setSchemas(schemas);
 		openApi.setComponents(components);
 		try {
 			addCoreEndpoints(openApi);
@@ -96,7 +148,7 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			break;
 		default:
 			throw error(BAD_REQUEST, "Please specify a response format: YAML or JSON");
-		}		
+		}
 		ac.send(formatted, OK, APPLICATION_JSON);
 	}
 
@@ -110,7 +162,8 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			consumer.setPaths(paths);
 		}
 		for (InternalEndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
-			String fullPath = "api/v" + CURRENT_API_VERSION + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
+			String fullPath = "api/v" + CURRENT_API_VERSION + basePath + "/" + verticle.getBasePath()
+					+ endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
 				fullPath = "api/v" + CURRENT_API_VERSION + basePath + endpoint.getRamlPath();
 			}
@@ -152,34 +205,74 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				pathItem.setTrace(operation);
 				break;
 			default:
-				break;			
+				break;
 			}
 			List<Stream<Parameter>> params = List.of(
 					endpoint.getQueryParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.QUERY)),
-					endpoint.getUriParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.PATH))
-			);
+					endpoint.getUriParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.PATH)));
 			operation.setParameters(params.stream().flatMap(Function.identity()).filter(Objects::nonNull).collect(Collectors.toList()));
 			RequestBody requestBody = new RequestBody();
 			Content content = new Content();
 			if (endpoint.getExampleRequestMap() != null) {
 				endpoint.getExampleRequestMap().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
-				.map(e -> {
-					MediaType mediaType = new MediaType();
-					mediaType.setExample(e.getValue().getExample());
-					JsonObject jschema = new JsonObject(e.getValue().getSchema());
-					Schema<String> schema = new Schema<>();
-					schema.setType(jschema.getString("type", "string"));
-					schema.set$id(jschema.getString("id"));
-					mediaType.setSchema(schema);
-					return new UnmodifiableMapEntry<String, MediaType>(e.getKey(), mediaType);
-				}).filter(Objects::nonNull).forEach(e -> content.addMediaType(e.getKey(), e.getValue()));
+						.map(e -> {
+							if (e.getValue().getSchema() == null) {
+								return null;
+							}
+							MediaType mediaType = new MediaType();
+							mediaType.setExample(e.getValue().getExample());
+							JsonObject jschema = new JsonObject(e.getValue().getSchema());
+							Schema<String> schema = new Schema<>();
+							schema.setType(jschema.getString("type", "string"));
+							schema.set$id(jschema.getString("id"));
+							mediaType.setSchema(schema);
+							return new UnmodifiableMapEntry<String, MediaType>(e.getKey(), mediaType);
+						}).filter(Objects::nonNull).forEach(e -> content.addMediaType(e.getKey(), e.getValue()));
 			}
 			requestBody.setContent(content);
 			operation.setRequestBody(requestBody);
-			//action.setIs(Arrays.asList(endpoint.getTraits()));
+			// action.setIs(Arrays.asList(endpoint.getTraits()));
 		}
 	}
 
+	private void fillType(Class<?> t, Schema<?> fieldSchema, Type[] typeArgs) {
+		if (t.isPrimitive() || Number.class.isAssignableFrom(t) || Boolean.class.isAssignableFrom(t)) {
+			if (int.class.isAssignableFrom(t) || Integer.class.isAssignableFrom(t)) {
+				fieldSchema.setType("integer");
+				fieldSchema.setFormat("int32");
+			} else if (boolean.class.isAssignableFrom(t) || Boolean.class.isAssignableFrom(t)) {
+				fieldSchema.setType("boolean");
+			} else if (float.class.isAssignableFrom(t) || Float.class.isAssignableFrom(t)) {
+				fieldSchema.setType("number");
+				fieldSchema.setFormat("float");
+			} else if (long.class.isAssignableFrom(t) || Long.class.isAssignableFrom(t)) {
+				fieldSchema.setType("integer");
+				fieldSchema.setFormat("int64");
+			} else if (double.class.isAssignableFrom(t) || Double.class.isAssignableFrom(t)) {
+				fieldSchema.setType("number");
+				fieldSchema.setFormat("double");
+			} else {
+				fieldSchema.setType("object");
+			}
+		} else if (CharSequence.class.isAssignableFrom(t)) {
+			fieldSchema.setType("string");
+		} else if (t.isArray() || List.class.isAssignableFrom(t)) {
+			fieldSchema.setType("array");
+			Schema<?> itemSchema = new Schema<String>();
+			if (t.isArray()) {
+				fillType(Array.newInstance(t, 0).getClass(), itemSchema, typeArgs);
+			} else if (typeArgs.length > 0 && Class.class.isInstance(typeArgs[0])) {
+				Class<?> itemClass = Class.class.cast(typeArgs[0]);
+				fillType(itemClass, itemSchema, null);
+			} else {
+				System.err.println(t + " / " + Arrays.toString(typeArgs));
+			}
+			fieldSchema.setItems(itemSchema);
+		} else {
+			fieldSchema.setType("object");
+			fieldSchema.set$ref("#/components/schemas/" + t.getSimpleName());
+		}
+	}
 
 	private final Parameter parameter(String name, AbstractParam param, InParameter inType) {
 		Schema schema;
@@ -203,7 +296,7 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			schema = new Schema<String>();
 			break;
 		default:
-			return null;				
+			return null;
 		}
 		schema.setMinimum(param.getMinimum());
 		schema.setMaximum(param.getMaximum());
@@ -224,11 +317,8 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 	}
 
 	private enum InParameter {
-		PATH("path"),
-		QUERY("query"),
-		HEADER("header"),
-		COOKIE("cookie");
-		
+		PATH("path"), QUERY("query"), HEADER("header"), COOKIE("cookie");
+
 		private final String value;
 
 		private InParameter(String value) {
