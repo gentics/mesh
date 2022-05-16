@@ -42,7 +42,9 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 	};
 
 	/**
-	 * Map that will contain every used EnumSet (once)
+	 * Map that will contain every used EnumSet (once). This is used for deduplication of the permission EnumSet instances
+	 * before putting them into the cache. With 6 permission bits, there are only 2^6=64 possible combinations and we will
+	 * keep only unique instances in the cache instead of up to 100_000 different instances.
 	 */
 	private final Map<EnumSet<InternalPermission>, EnumSet<InternalPermission>> uniqueMap = new HashMap<>();
 
@@ -118,11 +120,22 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 
 	@Override
 	public void store(Object userId, EnumSet<InternalPermission> permission, Object elementId) {
-		// clone the EnumSet (we will use the clone in the cache, if no other clone has been created before)
-		EnumSet<InternalPermission> clone = permission.clone();
+		// deduplicate the permission EnumSet and put it into the cache
+		cache.put(createCacheKey(userId, elementId), deduplicate(permission));
+	}
+
+	/**
+	 * Dedpulicate the permission EnumSet, so that the cache will not contain up to 100_000 different instances
+	 * but only up to 2^6=64 different instances.
+	 * @param permission permission set
+	 * @return deduplicated permission set
+	 */
+	protected EnumSet<InternalPermission> deduplicate(EnumSet<InternalPermission> permission) {
+		// Since the EnumSet is mutable and was passed to the PermissionCache from "outside", we do not
+		// put that instance into the cache, but create a clone first.
+		EnumSet<InternalPermission> clone = EnumSet.copyOf(permission);
+
 		// either get the already used instance from the map or put the clone in the map, if this is the first occurrance
-		EnumSet<InternalPermission> unique = uniqueMap.computeIfAbsent(clone, key -> clone);
-		// put the unique instance into the cache
-		cache.put(createCacheKey(userId, elementId), unique);
+		return uniqueMap.computeIfAbsent(clone, key -> clone);
 	}
 }
