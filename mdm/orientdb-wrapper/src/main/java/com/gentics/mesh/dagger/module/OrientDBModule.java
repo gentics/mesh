@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cache.CacheRegistry;
+import com.gentics.mesh.cache.OrientdbCacheRegistry;
 import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
 import com.gentics.mesh.cache.ProjectNameCache;
@@ -272,6 +274,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
+
+	@Binds
+	abstract CacheRegistry bindCacheRegistry(OrientdbCacheRegistry e);
 
 	// END
 

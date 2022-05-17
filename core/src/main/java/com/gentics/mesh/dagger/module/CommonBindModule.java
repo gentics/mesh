@@ -7,8 +7,6 @@ import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.CacheCollectionImpl;
-import com.gentics.mesh.cache.CacheRegistry;
-import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.PermissionCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
@@ -167,9 +165,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract BulkActionContext bindActionContext(BulkActionContextImpl e);
-
-	@Binds
-	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
 
 	@Binds
 	abstract S3BinaryStorage bindS3BinaryStorage(S3BinaryStorageImpl e);
