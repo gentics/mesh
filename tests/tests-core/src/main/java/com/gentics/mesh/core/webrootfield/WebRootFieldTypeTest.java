@@ -469,8 +469,16 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testNumberList(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		testList(fieldShouldExist, contentShouldExist, FieldTypes.NUMBER, (Number) 1234, (Number) 5678, (Number) 9.1011,
-				(Number) (-1213.1415));
+		List<Number> values = List.of((Number) 1234, (Number) 5678, (Number) 9.1011, (Number) (-1213.1415));
+		testList(fieldShouldExist, contentShouldExist, FieldTypes.NUMBER, values, Optional.of(response -> {
+					assertFalse(response.isPlainText());
+					assertFalse(response.isBinary());
+					JsonArray json = new JsonArray(response.getResponseAsJsonString());
+					assertTrue(Arrays.equals(
+							json.stream().map(Number.class::cast).map(Number::doubleValue).collect(Collectors.toList()).toArray(new Double[values.size()]), 
+							values.stream().map(Number::doubleValue).collect(Collectors.toList()).toArray(new Double[values.size()])
+						));
+				}));
 	}
 
 	// Micronode field
@@ -761,12 +769,12 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 
 		if (field.isPresent()) {
 			try (Tx tx = tx()) {
+				FieldSchema schema = field.get();
 				ContentDao contentDao = tx.contentDao();
-				HibSchema container = schemaContainer(isBinaryContent ? "binary_content" : "content");
+				HibSchema container = schemaContainer("content");
 				node.setSchemaContainer(container);
 				contentDao.getLatestDraftFieldContainer(node, english())
 						.setSchemaContainerVersion(container.getLatestVersion());
-				FieldSchema schema = field.get();
 				prepareTypedSchema(node, schema, isBinaryContent);
 				tx.success();
 				fieldName = schema.getName();

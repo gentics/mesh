@@ -31,6 +31,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -589,6 +590,21 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			HibSchema reloaded = schemaDao.findByUuid(schema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
+	}
+
+	@Test
+	public void testDeleteWithChanges() {
+		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
+		schemaCreateRequest.setName("fordeletion");
+		SchemaResponse response = call(() -> client().createSchema(schemaCreateRequest));
+		String uuid = response.getUuid();
+
+		SchemaUpdateRequest request = response.toUpdateRequest();
+		request.setDescription("Updated schema for deletion");
+		call(() -> client().updateSchema(uuid, request));
+
+		// Now delete the schema
+		call(() -> client().deleteSchema(uuid));
 	}
 
 	@Test

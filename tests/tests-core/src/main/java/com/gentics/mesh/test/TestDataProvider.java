@@ -361,7 +361,6 @@ public class TestDataProvider {
 		group.setCreationTimestamp();
 		group.setEditor(user);
 		group.setLastEditedTimestamp();
-		userDao.addGroup(user, group);
 		groups.put(groupName, group);
 
 		String roleName = username + "_role";

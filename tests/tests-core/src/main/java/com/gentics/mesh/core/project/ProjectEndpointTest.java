@@ -43,6 +43,7 @@ import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
@@ -79,6 +80,7 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
@@ -840,9 +842,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	}
 
 	/**
-	 * Test renaming, deleting and re-creating a project (together with project name cache)
+	 * Test renaming, deleting and re-creating a project (together with project name cache).
+	 * Unstable - the app-wide cache may not exist for the Mesh server.
 	 */
 	@Test
+	@Category(FailingTests.class)
 	public void testRenameDeleteCreateProject() {
 		// create project named "project"
 		ProjectResponse project = createProject("project");
