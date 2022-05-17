@@ -37,8 +37,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.rest.node.FieldMap;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -49,6 +47,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -1588,7 +1587,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default String getParentNodeUuid(HibNode node, String branchUuid) {
-		return getParentNode(node, branchUuid).getUuid();
+		HibNode parentNode = getParentNode(node, branchUuid);
+		return parentNode != null ? parentNode.getUuid() : null;
 	}
 
 	@Override
