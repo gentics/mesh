@@ -22,6 +22,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -75,10 +76,12 @@ public abstract class AdminHandler extends AbstractHandler {
 
 	protected final CacheRegistry cacheRegistry;
 
+	protected final ClusterManager clusterManager;
+
 	protected AdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
 		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-		ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry) {
+		ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry, ClusterManager clusterManager) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -91,6 +94,7 @@ public abstract class AdminHandler extends AbstractHandler {
 		this.writeLock = writeLock;
 		this.consistencyCheckHandler = consistencyCheckHandler;
 		this.cacheRegistry = cacheRegistry;
+		this.clusterManager = clusterManager;
 	}
 
 	/**
@@ -228,7 +232,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleOpenAPIv3(InternalActionContext ac, String format) {
-		OpenAPIv3Generator generator = new OpenAPIv3Generator();
+		OpenAPIv3Generator generator = new OpenAPIv3Generator(clusterManager.getHazelcast());
 		generator.generate(ac, format);
 	}
 
