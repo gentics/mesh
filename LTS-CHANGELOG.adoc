@@ -26,6 +26,9 @@ icon:check[] Search: When a schema contained a field of type "micronode" or "lis
 hash as part of the search index name failed with a NullPointerException.
 This has been fixed, so that the microschema version hash will now be null in such cases (like if "allow" was set to an empty array).
 
+icon:check[] Core: The default values for the periodic disk quota check have been changed to absolute values:
+the default for `storage.diskQuota.warnThreshold` is now `3G` and the default for `storage.diskQuota.readOnlyThreshold` is `1G`.
+
 [[v1.6.28]]
 == 1.6.28 (10.05.2022)
 
