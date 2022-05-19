@@ -146,11 +146,14 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testDeleteUser() {
+		String userUuid = db().tx(tx -> {
+			return tx.userDao().create("blub", user()).getUuid();
+		});
+		assertThat(getPermissionCacheSize()).as("Cache size before deleting user").isEqualTo(1);
 		db().tx(tx -> {
-			HibUser user = tx.userDao().findByUuid(userUuid());
+			HibUser user = tx.userDao().findByUuid(userUuid);
 			tx.userDao().delete(user, new DummyBulkActionContext());
 		});
-
 		assertThat(getPermissionCacheSize()).as("Cache size after deleting user").isEqualTo(0);
 	}
 

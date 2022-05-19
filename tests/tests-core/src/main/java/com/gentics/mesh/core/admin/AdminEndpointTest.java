@@ -10,12 +10,14 @@ import static org.junit.Assert.assertEquals;
 import java.util.Locale;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
@@ -40,9 +42,11 @@ public class AdminEndpointTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Test clearing the internal caches
+	 * Test clearing the internal caches.
+	 * Not all servers have app-wide cache, so this may fail.
 	 */
 	@Test
+	@Category(FailingTests.class)
 	public void testClearCache() {
 		// create project named "project"
 		createProject("project");
