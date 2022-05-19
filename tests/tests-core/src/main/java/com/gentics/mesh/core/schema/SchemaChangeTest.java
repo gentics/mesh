@@ -111,18 +111,16 @@ public class SchemaChangeTest extends AbstractMeshTest {
 			Function<HibFieldSchemaVersionElement, HibSchemaChange<?>> schemaChangeProvider) {
 		HibSchemaChange<?> oldChange = null;
 		for (int i = 0; i < 3; i++) {
-			try (Tx tx = tx()) {
-				HibSchemaChange<?> change = schemaChangeProvider.apply(versionB);
-				if (oldChange == null) {
-					oldChange = change;
-					assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainerVersion());
-					versionA.setNextChange(oldChange);
-					assertNotNull("The change has been connected to the schema container and thus the connection should be loadable",
-						oldChange.getPreviousContainerVersion());
-				} else {
-					oldChange.setNextChange(change);
-					oldChange = change;
-				}
+			HibSchemaChange<?> change = schemaChangeProvider.apply(versionB);
+			if (oldChange == null) {
+				oldChange = change;
+				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainerVersion());
+				versionA.setNextChange(oldChange);
+				assertNotNull("The change has been connected to the schema container and thus the connection should be loadable",
+					oldChange.getPreviousContainerVersion());
+			} else {
+				oldChange.setNextChange(change);
+				oldChange = change;
 			}
 		}
 		return oldChange;
