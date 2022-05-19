@@ -88,7 +88,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
 		PermissionCache permissionCache = Tx.get().permissionCache();
 		Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
-		if (cached != null) {
+		if (cached != null && cached) {
 			return cached.booleanValue();
 		} else {
 			// Admin users have all permissions
