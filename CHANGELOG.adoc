@@ -29,6 +29,10 @@ icon:check[] Core: The internal cache for user permissions has been optimized.
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.18`.
 
+icon:check[] Search: When a schema contained a field of type "micronode" or "list" of "micronode" and no "allow", generating the microschema version
+hash as part of the search index name failed with a NullPointerException.
+This has been fixed, so that the microschema version hash will now be null in such cases (like if "allow" was set to an empty array).
+
 [[v1.8.4]]
 == 1.8.4 (10.05.2022)
 
