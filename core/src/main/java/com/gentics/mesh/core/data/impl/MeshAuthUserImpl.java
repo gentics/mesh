@@ -28,11 +28,11 @@ import io.vertx.ext.auth.User;
 public class MeshAuthUserImpl implements MeshAuthUser {
 
 	private final Database db;
-	private final HibUser delegate;
+	private final String delegateUuid;
 
 	private MeshAuthUserImpl(Database db, HibUser user) {
 		this.db = db;
-		this.delegate = user;
+		this.delegateUuid = user.getUuid();
 	}
 
 	/**
@@ -56,6 +56,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	@Override
 	public JsonObject principal() {
 		return db.tx(tx -> {
+			HibUser delegate = tx.userDao().findByUuid(delegateUuid);
 			UserDao userDao = tx.userDao();
 			JsonObject user = new JsonObject();
 			user.put("uuid", delegate.getUuid());
@@ -117,7 +118,6 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	}
 
 	public HibUser getDelegate() {
-		return delegate;
+		return db.tx(tx -> { return tx.userDao().findByUuid(delegateUuid); });
 	}
-
 }

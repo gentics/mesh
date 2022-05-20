@@ -1668,7 +1668,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 1. Load Ids / Objects
 		String uuid = tx(() -> content("concorde").getUuid());
-		final HibNode node = tx(() -> content("concorde"));
 		HibNodeFieldContainer origContainer = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			GroupDao groupDao = tx.groupDao();
@@ -1714,7 +1713,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(content("concorde"), english()).getSchemaContainerVersion().getUuid();
 		});
 
 		waitForSearchIdleEvent();
@@ -1732,7 +1731,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(content("concorde"), english());
 			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
@@ -1759,7 +1758,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateCreateLanguage() {
 		final String germanName = "Zweitausendfünfzehn";
-		final HibNode node = tx(() -> folder("2015"));
 		final String uuid = tx(() -> folder("2015").getUuid());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
@@ -1771,7 +1769,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getSchemaContainerVersion().getUuid();
 		});
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 
