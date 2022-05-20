@@ -30,6 +30,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.lang.Math.ceil;
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -43,7 +44,6 @@ import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
@@ -80,7 +80,6 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
@@ -839,40 +838,5 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// get the list of projects
 		list = call(() -> client().findProjects());
 		assertThat(list.getData().stream().map(ProjectResponse::getName)).as("List of projects").containsOnly("dummy");
-	}
-
-	/**
-	 * Test renaming, deleting and re-creating a project (together with project name cache).
-	 * Unstable - the app-wide cache may not exist for the Mesh server.
-	 */
-	@Test
-	@Category(FailingTests.class)
-	public void testRenameDeleteCreateProject() {
-		// create project named "project"
-		ProjectResponse project = createProject("project");
-
-		// get tag families of project (this will put project into cache)
-		call(() -> client().findTagFamilies("project"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
-
-		// rename project to "newproject"
-		project = updateProject(project.getUuid(), "newproject");
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
-
-		// get tag families of newproject (this will put project into cache)
-		call(() -> client().findTagFamilies("newproject"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
-
-		// delete "newproject"
-		deleteProject(project.getUuid());
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
-
-		// create (again)
-		project = createProject("project");
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
-
-		// get tag families of project
-		call(() -> client().findTagFamilies("project"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
 	}
 }

@@ -4,20 +4,13 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Locale;
-
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
@@ -39,28 +32,5 @@ public class AdminEndpointTest extends AbstractMeshTest {
 		grantAdmin();
 
 		call(() -> client().clusterStatus(), BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
-	}
-
-	/**
-	 * Test clearing the internal caches.
-	 * Not all servers have app-wide cache, so this may fail.
-	 */
-	@Test
-	@Category(FailingTests.class)
-	public void testClearCache() {
-		// create project named "project"
-		createProject("project");
-
-		// get tag families of project (this will put project into cache)
-		call(() -> client().findTagFamilies("project"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
-
-		call(() -> client().clearCache(), FORBIDDEN, "error_admin_permission_required");
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
-		grantAdmin();
-
-		GenericMessageResponse response = call(() -> client().clearCache());
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
-		assertThat(response.getMessage()).as("Response Message").isEqualTo(I18NUtil.get(Locale.ENGLISH, "cache_clear_invoked"));
 	}
 }
