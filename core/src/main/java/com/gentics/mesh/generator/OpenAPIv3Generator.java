@@ -2,7 +2,8 @@ package com.gentics.mesh.generator;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.collections4.keyvalue.UnmodifiableMapEntry;
 import org.apache.commons.lang.StringUtils;
+import org.raml.model.MimeType;
 import org.raml.model.parameter.AbstractParam;
 import org.reflections.Reflections;
 
@@ -54,6 +56,10 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
@@ -99,6 +105,7 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		openApi.servers(Collections.singletonList(server));
 		openApi.setInfo(info);		
 		try {
+			addSecurity(openApi);
 			addComponents(openApi);
 			addCoreEndpoints(openApi);
 			addProjectEndpoints(openApi);
@@ -107,29 +114,56 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		}
 
 		String formatted;
+		String mime;
 		switch (format) {
 		case "yaml":
 			try {
+				mime = APPLICATION_YAML_UTF8;
 				formatted = Yaml.pretty().writeValueAsString(openApi);
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException("Could not generate YAML", e);
 			}
 			break;
 		case "json":
+			mime = APPLICATION_JSON_UTF8;
 			formatted = Json.pretty(openApi);
 			break;
 		default:
 			throw error(BAD_REQUEST, "Please specify a response format: YAML or JSON");
 		}
-		ac.send(formatted, OK, APPLICATION_JSON);
+		ac.send(formatted, OK, mime);
+	}
+
+	private void addSecurity(OpenAPI openApi) {
+		Components components;
+		if (openApi.getComponents() == null) {
+			components = new Components();
+			openApi.setComponents(components);
+		} else {
+			components = openApi.getComponents();
+		}
+		SecurityScheme securityBearerAuth = new SecurityScheme();
+		securityBearerAuth.setScheme("bearer");
+		securityBearerAuth.setType(SecurityScheme.Type.HTTP);
+		securityBearerAuth.setBearerFormat("JWT");
+		components.addSecuritySchemes("bearerAuth", securityBearerAuth);
+		//TODO OAuth2
+		SecurityRequirement reqBearerAuth = new SecurityRequirement();
+		reqBearerAuth.addList("bearerAuth");
+		openApi.addSecurityItem(reqBearerAuth);
 	}
 
 	@SuppressWarnings("rawtypes")
 	private void addComponents(OpenAPI openApi) {
-		Components components = new Components();
+		Components components;
+		if (openApi.getComponents() == null) {
+			components = new Components();
+			openApi.setComponents(components);
+		} else {
+			components = openApi.getComponents();
+		}
 		Reflections reflections = new Reflections("com.gentics.mesh");
 		final List<Type> generics = new ArrayList<>();
-		openApi.setComponents(components);
 		reflections.getSubTypesOf(RestModel.class).stream().map(cls -> {
 			if (Modifier.isInterface(cls.getModifiers()) || Modifier.isAbstract(cls.getModifiers()) || cls.getTypeParameters().length > 0) {
 				return null;
@@ -214,6 +248,10 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			if (method == null) {
 				method = HttpMethod.GET;
 			}
+			if (endpoint.isInsecure()) {
+				// Reset the default security requirements
+				operation.setSecurity(Collections.emptyList());
+			}
 			switch (method) {
 			case DELETE:
 				pathItem.setDelete(operation);
@@ -253,32 +291,69 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				RequestBody requestBody = new RequestBody();
 				Content content = new Content();
 				endpoint.getExampleRequestMap().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
-						.map(e -> {
-							MediaType mediaType = new MediaType();
-							mediaType.setExample(e.getValue().getExample());
-							if (e.getValue().getFormParameters() != null) {
-								Map<String, Schema> props = e.getValue().getFormParameters().entrySet().stream().map(p -> parameter(p.getKey(), p.getValue().get(0), null))
-										.collect(Collectors.toMap(p -> p.getName(), p -> p.getSchema()));
-								Schema<String> schema = new Schema<>();
-								schema.setType("object");
-								schema.setProperties(props);
-								mediaType.setSchema(schema);
-								return new UnmodifiableMapEntry<String, MediaType>("multipart/form-data", mediaType);
-							} else if (e.getValue().getSchema() != null) {
-								JsonObject jschema = new JsonObject(e.getValue().getSchema());
-								Schema<String> schema = new Schema<>();
-								schema.setType(jschema.getString("type", "string"));
-								schema.set$id(jschema.getString("id"));
-								schema.set$ref("#/components/schemas/" + endpoint.getExampleRequestClass().getSimpleName());
-								mediaType.setSchema(schema);
-								return new UnmodifiableMapEntry<String, MediaType>(e.getKey(), mediaType);
-							} else { return null; }							
-						}).filter(Objects::nonNull).forEach(e -> content.addMediaType(e.getKey(), e.getValue()));
+						.map(e -> fillMediaType(e.getKey(), e.getValue(), endpoint.getExampleRequestClass()))
+						.filter(Objects::nonNull).forEach(e -> content.addMediaType(e.getKey(), e.getValue()));
 				requestBody.setContent(content);
 				operation.setRequestBody(requestBody);
+				ApiResponses responses = new ApiResponses();
+				endpoint.getProduces().stream().map(e -> {
+					ApiResponse response = new ApiResponse();
+					Content responseBody = new Content();
+					responseBody.addMediaType(e, new MediaType());
+					response.setContent(responseBody);
+					return new UnmodifiableMapEntry<String, ApiResponse>("default", response);
+				}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(e.getKey(), e.getValue()));
+				endpoint.getExampleResponses().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
+						.map(e -> {
+							ApiResponse response = new ApiResponse();
+							if (e.getValue().getDescription().startsWith("Generated login token")) {
+								e.getValue().getHeaders();
+							}
+							response.setDescription(e.getValue().getDescription());
+							if (endpoint.getExampleResponseClasses() != null && endpoint.getExampleResponseClasses().get(e.getKey()) != null) {
+								Class<?> ref = endpoint.getExampleResponseClasses().get(e.getKey());
+								if (ref.getCanonicalName().startsWith("com.gentics.mesh")) {
+									response.set$ref("#/components/schemas/" + ref.getSimpleName());
+								} else {
+									Content responseBody = new Content();
+								//	response.setContent(responseBody);
+									e.getValue().getBody().entrySet().stream().filter(r -> Objects.nonNull(r.getValue()))
+										.map(r -> fillMediaType(r.getKey(), r.getValue(), ref))
+										.filter(Objects::nonNull).forEach(r -> responseBody.addMediaType(r.getKey(), r.getValue()));
+									response.setContent(responseBody);
+								}
+							}							
+							return new UnmodifiableMapEntry<Integer, ApiResponse>(e.getKey(), response);
+						}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(Integer.toString(e.getKey()), e.getValue()));
+				operation.setResponses(responses);
 			}
 			// action.setIs(Arrays.asList(endpoint.getTraits()));
 		}
+	}
+
+	private Map.Entry<String, MediaType> fillMediaType(String key, MimeType mimeType, Class<?> refClass) {
+		MediaType mediaType = new MediaType();
+		mediaType.setExample(mimeType.getExample());
+		if (mimeType.getFormParameters() != null) {
+			Map<String, Schema> props = mimeType.getFormParameters().entrySet().stream().map(p -> parameter(p.getKey(), p.getValue().get(0), null))
+					.collect(Collectors.toMap(p -> p.getName(), p -> p.getSchema()));
+			Schema<String> schema = new Schema<>();
+			schema.setType("object");
+			schema.setProperties(props);
+			mediaType.setSchema(schema);
+			return new UnmodifiableMapEntry<String, MediaType>("multipart/form-data", mediaType);
+		} else if (mimeType.getSchema() != null) {
+			JsonObject jschema = new JsonObject(mimeType.getSchema());
+			Schema<String> schema = new Schema<>();
+			schema.setType(jschema.getString("type", "string"));
+			schema.set$id(jschema.getString("id"));
+			schema.set$ref("#/components/schemas/" + refClass.getSimpleName());
+			mediaType.setSchema(schema);
+			return new UnmodifiableMapEntry<String, MediaType>(key, mediaType);
+		} else if (refClass != null && refClass.getSimpleName().toLowerCase().startsWith("json")) {
+			mediaType.setExample(mimeType.getExample());
+			return new UnmodifiableMapEntry<String, MediaType>(key, mediaType);
+		} else { return null; }	
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
