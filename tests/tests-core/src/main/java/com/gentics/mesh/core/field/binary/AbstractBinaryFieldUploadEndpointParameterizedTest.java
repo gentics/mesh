@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.junit.Test;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
@@ -45,6 +46,26 @@ public abstract class AbstractBinaryFieldUploadEndpointParameterizedTest extends
 	 * @return
 	 */
 	public abstract boolean isSyncWrites();
+
+	/**
+	 * Test parallel upload of the same binary data - thus the same binary vertex should be used.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testParallelDupUpload() throws IOException {
+		testParallelUpload(true);
+	}
+
+	/**
+	 * Test parallel upload of the differently named binary data.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testParallelDiffUpload() throws IOException {
+		testParallelUpload(false);
+	}
 
 	protected void testParallelUpload(boolean useSameName) throws IOException {
 		String folderUuid = tx(() -> folder("news").getUuid());
