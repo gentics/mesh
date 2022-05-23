@@ -93,6 +93,7 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 
 		secure("/");
 		InternalEndpointRoute infoEndpoint = createRoute();
+		infoEndpoint.setInsecure(true);
 		infoEndpoint.path("/");
 		infoEndpoint.description("Endpoint which returns version information");
 		infoEndpoint.displayName("Version Information");

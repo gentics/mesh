@@ -10,6 +10,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -97,8 +98,11 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	private Boolean mutating;
 
+	private boolean insecure = false;
+
 	/**
-	 * Create a new endpoint wrapper using the provided router to create the wrapped route instance.
+	 * Create a new endpoint wrapper using the provided router to create the wrapped
+	 * route instance.
 	 *
 	 * @param router
 	 * @param localConfigApi
@@ -187,7 +191,8 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
 		}
-		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequestMap == null) {
+		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8))
+				&& exampleRequestMap == null) {
 			log.error("Endpoint {" + getPath() + "} has no example request.");
 			throw new RuntimeException("Endpoint has no example request.");
 		}
@@ -200,7 +205,8 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 		List<String> segments = getNamedSegments();
 		for (String segment : segments) {
 			if (!getUriParameters().containsKey(segment)) {
-				throw new RuntimeException("Missing URI description for path {" + getRamlPath() + "} segment {" + segment + "}");
+				throw new RuntimeException(
+						"Missing URI description for path {" + getRamlPath() + "} segment {" + segment + "}");
 			}
 		}
 		return this;
@@ -294,7 +300,8 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	}
 
 	@Override
-	public InternalEndpointRoute exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription) {
+	public InternalEndpointRoute exampleResponse(HttpResponseStatus status, String description, String headerName,
+			String example, String headerDescription) {
 		Response response = new Response();
 		response.setDescription(description);
 		exampleResponses.put(status.code(), response);
@@ -330,7 +337,11 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 			map.put("application/json", mimeType);
 		} else {
 			mimeType.setExample(model.toString());
-			map.put("text/plain", mimeType);
+			if (model.getClass().getSimpleName().toLowerCase().startsWith("json")) {
+				map.put("application/json", mimeType);
+			} else {
+				map.put("text/plain", mimeType);
+			}
 		}
 
 		exampleResponses.put(status.code(), response);
@@ -522,9 +533,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	@Override
 	public boolean isMutating() {
 		return Optional.ofNullable(mutating)
-			.orElse(Optional.ofNullable(getMethod())
-				.map(mutatingMethods::contains)
-				.orElse(false));
+				.orElse(Optional.ofNullable(getMethod()).map(mutatingMethods::contains).orElse(false));
 	}
 
 	@Override
@@ -536,5 +545,26 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	@Override
 	public Route getRoute() {
 		return route;
+	}
+
+	@Override
+	public boolean isInsecure() {
+		return insecure;
+	}
+
+	@Override
+	public InternalEndpointRoute setInsecure(boolean insecure) {
+		this.insecure = insecure;
+		return this;
+	}
+
+	@Override
+	public Set<String> getProduces() {
+		return Collections.unmodifiableSet(produces);
+	}
+
+	@Override
+	public Set<String> getConsumes() {
+		return Collections.unmodifiableSet(consumes);
 	}
 }
