@@ -5,7 +5,9 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -39,6 +41,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionNumber;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
@@ -62,6 +65,13 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type) {
 		return toGraph(node).getFieldContainer(languageTag, branchUuid, type);
+	}
+
+	@Override
+	public Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, ContainerType type) {
+		return nodes.stream()
+				.map(node -> Pair.of(node, getFieldEdges(node, branchUuid, type).stream().map(HibNodeFieldContainerEdge::getNodeContainer).collect(Collectors.toList())))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
 	@Override

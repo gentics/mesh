@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Stream;
 
@@ -15,7 +17,6 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -87,6 +88,17 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Result<? extends HibNode> getChildren(HibNode node, String branchUuid);
+
+	/**
+	 * Return all content of the provided type using language fallback for each node in the given branch
+	 * @param nodes
+	 * @param ac
+	 * @param branchUuid
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -234,6 +246,16 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
 
 	/**
+	 * Return a string path for each of the provided node for the given branch, container type with language fallbacks
+	 * @param sourceNodes
+	 * @param ac
+	 * @param type
+	 * @param languageTags
+	 * @return
+	 */
+	Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags);
+
+	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
 	 * node.
 	 *
@@ -278,17 +300,6 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return Deque with breadcrumb nodes
 	 */
 	Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac);
-
-	/**
-	 * Return the breadcrumb node field containers, returning only node content with a non null container checking
-	 * reading permission for it
-	 * @param sourceNode
-	 * @param languageTags
-	 * @param type
-	 * @param ac
-	 * @return
-	 */
-	Stream<NodeContent> getBreadcrumbContent(HibNode sourceNode, List<String> languageTags, ContainerType type, InternalActionContext ac);
 
 	/**
 	 * Check whether the node is the base node of its project
@@ -411,6 +422,15 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Stream<? extends HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac);
+
+	/**
+	 * Return a breadcrumb node map, where the key is the source node and the value is a list of ancestors including the
+	 * node itself. The list is ordered by distance from the source node descending. This method does not check permissions
+	 * @param node
+	 * @param ac
+	 * @return
+	 */
+	Map<HibNode, List<HibNode>> getBreadcrumbNodesMap(Collection<HibNode> node, InternalActionContext ac);
 
 	/**
 	 * Get publish status for all languages of the node.

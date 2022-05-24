@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -263,6 +264,15 @@ public interface ContentDao {
 	 * @return
 	 */
 	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type);
+
+	/**
+	 * Return a map with node as a key and all its field containers as values. This method does not check permission
+	 * @param nodes
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, ContainerType type);
 
 	/**
 	 * Create a new field container for the given language and assign the schema version of the branch to the container. The field container will be

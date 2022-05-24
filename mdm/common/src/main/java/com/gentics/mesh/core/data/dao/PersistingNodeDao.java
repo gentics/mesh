@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -108,6 +109,7 @@ import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
@@ -848,19 +850,6 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Stream<NodeContent> getBreadcrumbContent(HibNode sourceNode, List<String> languageTags, ContainerType type, InternalActionContext ac) {
-		ContentDao contentDao = Tx.get().contentDao();
-		HibUser user = ac.getUser();
-		UserDao userDao = Tx.get().userDao();
-		String branchUuid = Tx.get().getBranch(ac).getUuid();
-		return getBreadcrumbNodes(sourceNode, ac).stream().map(node -> {
-			HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
-			return new NodeContent(node, container, languageTags, type);
-		}).filter(item -> item.getContainer() != null)
-		.filter(item -> userDao.hasReadPermission(user, item.getContainer(), branchUuid));
-	}
-
-	@Override
 	default NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
@@ -1176,6 +1165,85 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
+	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags) {
+		ContentDao contentDao = Tx.get().contentDao();
+		Map<HibNode, List<HibNode>> breadcrumbPerNode = getBreadcrumbNodesMap(sourceNodes, ac);
+
+		List<HibNode> allAncestors = breadcrumbPerNode.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+
+		Set<HibNode> allNodes = new HashSet<>(sourceNodes);
+		allNodes.addAll(allAncestors);
+
+		String branchUuid = Tx.get().getBranch(ac).getUuid();
+		Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(allNodes, branchUuid, type);
+		List<String> languages = Arrays.asList(languageTags);
+		BranchDao branchDao = Tx.get().branchDao();
+		HibBranch branch = sourceNodes.stream().map(node -> branchDao.findByUuid(node.getProject(), branchUuid)).findFirst().orElse(null);
+		return breadcrumbPerNode.entrySet()
+				.stream()
+				.map(kv -> {
+					HibNode sourceNode = kv.getKey();
+					List<HibNode> breadcrumb = kv.getValue();
+					Collections.reverse(breadcrumb);
+					List<? extends HibNode> ancestors = breadcrumb;
+					List<String> segments = new ArrayList<>();
+					for (int i = 0; i < ancestors.size(); i++) {
+						HibNode node = ancestors.get(i);
+						if (node.isBaseNode()) {
+							if (ancestors.size() == 1) {
+								segments.add("");
+							}
+							continue;
+						}
+						boolean isSourceNode = i == 0;
+						List<HibNodeFieldContainer> containers = fieldsContainers.getOrDefault(node, Collections.emptyList());
+						HibNodeFieldContainer container = getContainerWithLanguageFallback(containers, languages, !isSourceNode);
+						String segment = container != null ? contentDao.getSegmentFieldValue(container) : null;
+						if (segment == null) {
+							// Abort early if one of the path segments could not be resolved.
+							// We need to fall back to url fields in those cases.
+							HibNodeFieldContainer containerForUrlFieldValues = getContainerWithLanguageFallback(containers, languages, false);
+							String fallbackPath = null;
+							if (containerForUrlFieldValues != null) {
+								fallbackPath = contentDao.getUrlFieldValues(containerForUrlFieldValues).findFirst().orElse(null);
+							}
+
+							return Pair.of(sourceNode, fallbackPath);
+						}
+
+						segments.add(segment);
+					}
+
+					return Pair.of(sourceNode, buildPathFromSegments(branch, segments));
+				})
+				.filter(p -> p.getValue() != null)
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	private HibNodeFieldContainer getContainerWithLanguageFallback(List<HibNodeFieldContainer> containers, List<String> languageTags, boolean anyLanguage) {
+
+		ContentDao contentDao = Tx.get().contentDao();
+		Map<String, List<HibNodeFieldContainer>> containerByLanguage = containers.stream().collect(Collectors.groupingBy(HibNodeFieldContainer::getLanguageTag));
+
+		HibNodeFieldContainer container = null;
+		for (String languageTag : languageTags) {
+			List<HibNodeFieldContainer> c = containerByLanguage.getOrDefault(languageTag, Collections.emptyList());
+			if (!c.isEmpty()) {
+				container = c.get(0);
+				break;
+			}
+		}
+
+		if (container == null && anyLanguage) {
+			if (!containers.isEmpty()) {
+				container = containers.get(0);
+			}
+		}
+
+		return container;
+	}
+
+	@Override
 	default String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
 		ContentDao contentDao = Tx.get().contentDao();
 		// We want to avoid rending the path again for nodes which we have already handled.
@@ -1210,34 +1278,38 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				segments.add(segment);
 			}
 
-			Collections.reverse(segments);
-
-			// Finally construct the path from all segments
-			StringBuilder builder = new StringBuilder();
-
-			// Append the prefix first
 			BranchDao branchDao = Tx.get().branchDao();
 			HibBranch branch = branchDao.findByUuid(node.getProject(), branchUuid);
-			if (branch != null) {
-				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
-				if (!prefix.isEmpty()) {
-					String[] prefixSegments = prefix.split("/");
-					for (String prefixSegment : prefixSegments) {
-						if (prefixSegment.isEmpty()) {
-							continue;
-						}
-						builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
+			return buildPathFromSegments(branch, segments);
+		});
+	}
+
+	private String buildPathFromSegments(HibBranch branch, List<String> segments) {
+		Collections.reverse(segments);
+
+		// Finally construct the path from all segments
+		StringBuilder builder = new StringBuilder();
+
+		// Append the prefix first
+		if (branch != null) {
+			String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
+			if (!prefix.isEmpty()) {
+				String[] prefixSegments = prefix.split("/");
+				for (String prefixSegment : prefixSegments) {
+					if (prefixSegment.isEmpty()) {
+						continue;
 					}
+					builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
 				}
 			}
+		}
 
-			Iterator<String> it = segments.iterator();
-			while (it.hasNext()) {
-				String currentSegment = it.next();
-				builder.append("/").append(URIUtils.encodeSegment(currentSegment));
-			}
-			return builder.toString();
-		});
+		Iterator<String> it = segments.iterator();
+		while (it.hasNext()) {
+			String currentSegment = it.next();
+			builder.append("/").append(URIUtils.encodeSegment(currentSegment));
+		}
+		return builder.toString();
 	}
 
 	/**

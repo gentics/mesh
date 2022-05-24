@@ -828,15 +828,15 @@ public interface PersistingContentDao extends ContentDao {
 
 		switch (segmentFieldType) {
 			case BINARY:
-				HibBinaryField binary = content.getBinary(segmentFieldKey);
-				if (nonNull(binary)) {
-					return binary.getFileName();
+				String binaryFileName = content.getBinaryFileName(segmentFieldKey);
+				if (nonNull(binaryFileName)) {
+					return binaryFileName;
 				}
 				break;
 			case S3BINARY:
-				S3HibBinaryField s3binaryField = content.getS3Binary(segmentFieldKey);
-				if (nonNull(s3binaryField)) {
-					return s3binaryField.getBinary().getFileName();
+				String s3BinaryFileName = content.getS3BinaryFileName(segmentFieldKey);
+				if (nonNull(s3BinaryFileName)) {
+					return s3BinaryFileName;
 				}
 				break;
 			default:

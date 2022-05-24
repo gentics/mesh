@@ -259,12 +259,28 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibBinaryField getBinary(String key);
 
 	/**
+	 * Return the binary file name for the given key.
+	 *
+	 * @param key
+	 * @return
+	 */
+	String getBinaryFileName(String key);
+
+	/**
 	 * Return the s3 binary  field for the given key.
 	 *
 	 * @param key
 	 * @return
 	 */
 	S3HibBinaryField getS3Binary(String key);
+
+	/**
+	 * Return the s3 binary file name for the given key.
+	 *
+	 * @param key
+	 * @return
+	 */
+	String getS3BinaryFileName(String key);
 
 	/**
 	 * Return the node field for the given key.

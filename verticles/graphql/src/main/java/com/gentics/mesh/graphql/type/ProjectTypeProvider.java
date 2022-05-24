@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
+import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -57,7 +58,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	 * @param env
 	 * @return
 	 */
-	private NodeContent baseNodeFetcher(DataFetchingEnvironment env) {
+	private DataFetcherResult<NodeContent> baseNodeFetcher(DataFetchingEnvironment env) {
 		ContentDao contentDao = Tx.get().contentDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = env.getSource();
@@ -67,8 +68,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		ContainerType type = getNodeVersion(env);
 
 		HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
-		container = gc.requiresReadPermSoft(container, env);
-		return new NodeContent(node, container, languageTags, type);
+		return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 	}
 
 	/**

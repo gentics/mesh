@@ -248,11 +248,23 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
+	public String getBinaryFileName(String key) {
+		BinaryGraphField binary = getBinary(key);
+		return binary != null ? binary.getFileName() : null;
+	}
+
+	@Override
 	public S3BinaryGraphField getS3Binary(String key) {
 		return outE(HAS_FIELD)
 				.has(S3BinaryGraphFieldImpl.class)
 				.has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
 				.nextOrDefaultExplicit(S3BinaryGraphFieldImpl.class, null);
+	}
+
+	@Override
+	public String getS3BinaryFileName(String key) {
+		S3BinaryGraphField s3Binary = getS3Binary(key);
+		return s3Binary != null ? s3Binary.getFileName() : null;
 	}
 
 	@Override

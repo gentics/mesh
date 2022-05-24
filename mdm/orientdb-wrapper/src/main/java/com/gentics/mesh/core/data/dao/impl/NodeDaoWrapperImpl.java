@@ -2,9 +2,14 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -12,12 +17,15 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -29,6 +37,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * DAO for {@link HibNode} operation.
@@ -112,6 +121,23 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
+	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
+		return nodes.stream().map(node -> Pair.of(node, getContentFromNode(node, branchUuid, languageTags, type)))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	private List<NodeContent> getContentFromNode(HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type) {
+		ContentDao contentDao = boot.get().contentDao();
+		return toGraph(sourceNode).getChildren(branchUuid)
+				.stream()
+				.map(node -> {
+					HibNodeFieldContainer container = contentDao.findVersion(node, languageTags, branchUuid, type.getHumanCode());
+					return new NodeContent(node, container, languageTags, type);
+				})
+				.collect(Collectors.toList());
+	}
+
+	@Override
 	public String getDisplayName(HibNode node, InternalActionContext ac) {
 		return toGraph(node).getDisplayName(ac);
 	}
@@ -166,6 +192,17 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	@Override
 	public long globalCount() {
 		return boot.get().meshRoot().nodeCount();
+	}
+
+	@Override
+	public Map<HibNode, List<HibNode>> getBreadcrumbNodesMap(Collection<HibNode> nodes, InternalActionContext ac) {
+		return nodes.stream().map(node -> Pair.of(node,
+				getBreadcrumbNodes(node, ac)
+						.stream()
+						.map(HibNode.class::cast)
+						.collect(Collectors.collectingAndThen(Collectors.toList(), l -> { Collections.reverse(l); return l;})))
+		)
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
 	@Override
