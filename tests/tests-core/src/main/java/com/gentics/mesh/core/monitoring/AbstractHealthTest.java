@@ -14,7 +14,7 @@ public abstract class AbstractHealthTest extends AbstractMeshTest {
 	 */
 	@After
 	@Before
-	public void setup() {
+	public void setReady() {
 		meshApi().setStatus(MeshStatus.READY);
 	}
 
