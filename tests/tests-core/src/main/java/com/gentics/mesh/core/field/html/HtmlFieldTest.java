@@ -90,7 +90,9 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 			htmlFieldSchema.setRequired(true);
 			prepareTypedSchema(node, htmlFieldSchema, false);
 			tx.commit();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibHtmlField field = container.createHTML(HTML_FIELD);
 			field.setHtml("Some<b>htmlABCDE");
 			tx.success();

@@ -98,7 +98,9 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 			HibNode node = folder("2015");
 			prepareTypedSchema(node, createFieldSchema(true), false);
 			tx.commit();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibDateField field = container.createDate(DATE_FIELD);
 			date = fromISO8601(toISO8601(System.currentTimeMillis()));
 			field.setDate(date);

@@ -53,7 +53,9 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, STRING_LIST, "string");
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibStringFieldList stringList = container.createStringList(STRING_LIST);
 			stringList.createString("dummyString1");
 			stringList.createString("dummyString2");
