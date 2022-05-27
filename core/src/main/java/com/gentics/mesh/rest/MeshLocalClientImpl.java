@@ -1638,7 +1638,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JobListResponse> findJobs(PagingParameters... parameters) {
+	public MeshRequest<JobListResponse> findJobs(ParameterProvider... parameters) {
 		return null;
 	}
 
@@ -1840,6 +1840,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<EmptyResponse> writable() {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> clearCache() {
 		return null;
 	}
 }

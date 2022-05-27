@@ -170,6 +170,18 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	 * @return true iff the database on at least one node is in status BACKUP or SYNCHRONIZING
 	 */
 	public boolean isClusterTopologyLocked() {
+		return isClusterTopologyLocked(true);
+	}
+
+	/**
+	 * Check whether a topology change in the database / cluster setup is requiring a lock.
+	 * 
+	 * Calling this method will synchronize the stati from the distributed manager.
+	 * 
+	 * @param doLog true if log messages shall be created, false if not
+	 * @return true iff the database on at least one node is in status BACKUP or SYNCHRONIZING
+	 */
+	public boolean isClusterTopologyLocked(boolean doLog) {
 		// update the locally stored status from the distributed manager.
 		ODistributedServerManager distributedManager = manager.getServer().getDistributedManager();
 		for (String nodeName : distributedManager.getActiveServers()) {
@@ -180,7 +192,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			switch (status) {
 			case BACKUP:
 			case SYNCHRONIZING:
-				if (log.isInfoEnabled()) {
+				if (doLog && log.isInfoEnabled()) {
 					log.info("Current database stati: {}", getDatabaseStati());
 					log.info("Locking since " + entry.getKey() + " is in status " + entry.getValue());
 				}
@@ -189,7 +201,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 				continue;
 			}
 		}
-		if (log.isDebugEnabled()) {
+		if (doLog && log.isDebugEnabled()) {
 			log.debug("Current database stati: {}", getDatabaseStati());
 		}
 		return false;

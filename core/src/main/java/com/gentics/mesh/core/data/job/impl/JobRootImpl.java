@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -208,11 +209,12 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 *            action context
 	 * @param pagingInfo
 	 *            Paging information object that contains page options.
-	 * 
+	 * @param extraFilter
+	 *            Additional filter to be applied
 	 * @return
 	 */
-	public TransformablePage<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, false);
+	public TransformablePage<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, extraFilter, false);
 	}
 
 	@Override

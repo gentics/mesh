@@ -1,0 +1,14 @@
+{
+    "_meshLanguageOverride": {
+        "de": {
+            "analysis": {
+                "analyzer": {
+                    "my_stop_analyzer": {
+                        "type": "stop",
+                        "stopwords": "_german_"
+                    }
+                }
+            }
+        }
+    }
+}

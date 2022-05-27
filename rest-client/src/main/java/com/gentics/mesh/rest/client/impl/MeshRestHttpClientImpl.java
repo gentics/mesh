@@ -1442,7 +1442,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<JobListResponse> findJobs(PagingParameters... parameters) {
+	public MeshRequest<JobListResponse> findJobs(ParameterProvider... parameters) {
 		return prepareRequest(GET, "/admin/jobs" + getQuery(parameters), JobListResponse.class);
 	}
 
@@ -1526,6 +1526,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
 		return prepareRequest(POST, "/admin/coordinator/config", CoordinatorConfig.class, coordinatorConfig);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> clearCache() {
+		return prepareRequest(DELETE, "/admin/cache", GenericMessageResponse.class);
 	}
 
 	@Override

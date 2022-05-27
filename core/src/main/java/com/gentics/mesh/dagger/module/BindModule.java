@@ -31,6 +31,7 @@ import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
 import com.gentics.mesh.distributed.TopologyChangeReadonlyHandlerImpl;
 import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.EventBusLivenessManagerImpl;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
@@ -40,6 +41,7 @@ import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.MetricsServiceImpl;
+import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManagerImpl;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -143,6 +145,9 @@ public abstract class BindModule {
 
 	@Binds
 	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);
+
+	@Binds
+	abstract EventBusLivenessManager bindEventbusLivenessManager(EventBusLivenessManagerImpl e);
 
 	@Binds
 	abstract SearchMappingsCache searchMappingsCache(SearchMappingsCacheImpl e);

@@ -186,6 +186,20 @@ public enum MeshEvent {
 		"Emitted when the database status changes. (e.g. offline, online, backup, syncing)"),
 
 	/**
+	 * Event, which is emitted regularly to check whether local eventbus works
+	 */
+	PING_LOCAL("mesh.ping.local",
+		null,
+		"Event, which is emitted regularly to check whether local eventbus works"),
+
+	/**
+	 * Event, which is emitted regularly to check whether clustered eventbus works
+	 */
+	PING_CLUSTER("mesh.ping.cluster",
+		null,
+		"Event, which is emitted regularly to check whether clustered eventbus works"),
+
+	/**
 	 * Event which is send to update the permission stores.
 	 */
 	CLEAR_PERMISSION_STORE("mesh.clear-permission-store",
@@ -198,6 +212,13 @@ public enum MeshEvent {
 	CLEAR_PATH_STORE("mesh.clear-path-store",
 		null,
 		"Event which will clear the path stores."),
+
+	/**
+	 * Event which is sent to clear all internal caches
+	 */
+	CLEAR_CACHES("mesh.clear-caches",
+		null,
+		"Event which will clear the internal caches."),
 
 	/* User */
 

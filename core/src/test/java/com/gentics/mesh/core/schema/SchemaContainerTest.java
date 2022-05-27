@@ -58,8 +58,11 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		NodeGraphFieldContainer content = tx(() -> content().getLatestDraftFieldContainer("en"));
 		SchemaContainerVersion version = tx(() -> schemaContainer("content").getLatestVersion());
 
-		long before = tx(tx -> {
+		tx(tx -> {
 			content.setBucketId(Integer.MAX_VALUE);
+		});
+
+		long before = tx(tx -> {
 			// Count contents in bucket 0 to MaxInt/2
 			return version.getFieldContainers(initialBranchUuid(), bucket).count();
 		});

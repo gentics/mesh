@@ -430,6 +430,24 @@ Emitted when the database status changes. (e.g. offline, online, backup, syncing
 
 
 
+=== _mesh.ping.local_
+
+Event, which is emitted regularly to check whether local eventbus works
+
+
+
+
+
+
+=== _mesh.ping.cluster_
+
+Event, which is emitted regularly to check whether clustered eventbus works
+
+
+
+
+
+
 === _mesh.clear-permission-store_
 
 Event which will clear the permission stores.
@@ -442,6 +460,15 @@ Event which will clear the permission stores.
 === _mesh.clear-path-store_
 
 Event which will clear the path stores.
+
+
+
+
+
+
+=== _mesh.clear-caches_
+
+Event which will clear the internal caches.
 
 
 
