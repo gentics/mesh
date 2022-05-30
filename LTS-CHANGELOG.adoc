@@ -20,6 +20,15 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.29]]
 == 1.6.29 (TBD)
 
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.18`.
+
+icon:check[] Search: When a schema contained a field of type "micronode" or "list" of "micronode" and no "allow", generating the microschema version
+hash as part of the search index name failed with a NullPointerException.
+This has been fixed, so that the microschema version hash will now be null in such cases (like if "allow" was set to an empty array).
+
+icon:check[] Core: The default values for the periodic disk quota check have been changed to absolute values:
+the default for `storage.diskQuota.warnThreshold` is now `3G` and the default for `storage.diskQuota.readOnlyThreshold` is `1G`.
+
 icon:check[] Server: Fixed defined Health-Check in docker container and added a startup-grace period of 60s.
 
 [[v1.6.28]]
