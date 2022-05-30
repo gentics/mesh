@@ -595,6 +595,21 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testDeleteWithChanges() {
+		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
+		schemaCreateRequest.setName("fordeletion");
+		SchemaResponse response = call(() -> client().createSchema(schemaCreateRequest));
+		String uuid = response.getUuid();
+
+		SchemaUpdateRequest request = response.toUpdateRequest();
+		request.setDescription("Updated schema for deletion");
+		call(() -> client().updateSchema(uuid, request));
+
+		// Now delete the schema
+		call(() -> client().deleteSchema(uuid));
+	}
+
+	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {

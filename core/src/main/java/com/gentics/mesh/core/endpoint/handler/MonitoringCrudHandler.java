@@ -101,13 +101,17 @@ public class MonitoringCrudHandler {
 			throw error(SERVICE_UNAVAILABLE, "error_internal");
 		}
 
+		if (!db.isHealthy()) {
+			log.warn("Failing DB health check");
+			throw error(SERVICE_UNAVAILABLE, "error_internal");
+		}
+
 		MeshStatus status = boot.mesh().getStatus();
-		if (status.equals(MeshStatus.READY)) {
-			rc.response().end();
-		} else {
+		if (!status.equals(MeshStatus.READY)) {
 			log.warn("Status is {" + status.name() + "} - Failing readiness probe");
 			throw error(SERVICE_UNAVAILABLE, "error_internal");
 		}
+		rc.response().end();
 	}
 
 	/**

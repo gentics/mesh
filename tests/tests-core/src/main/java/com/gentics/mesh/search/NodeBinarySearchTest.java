@@ -53,8 +53,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testBinarySearchMapping() throws Exception {
 		grantAdmin();
-		HibNode nodeA = content("concorde");
-		String nodeUuid = tx(() -> nodeA.getUuid());
+		String nodeUuid = tx(() -> content("concorde").getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 
 		// Update the schema to include the binary fields we need
@@ -85,6 +84,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
+			HibNode nodeA = content("concorde");
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				schemaVersionUuid, ContainerType.DRAFT, null);
@@ -144,8 +144,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testDocumentSearch() throws Exception {
 		grantAdmin();
-		HibNode nodeA = content("concorde");
-		String nodeUuid = tx(() -> nodeA.getUuid());
+		String nodeUuid = tx(() -> content("concorde").getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 
 		// Add binary field
@@ -163,6 +162,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
+			HibNode nodeA = tx.nodeDao().findByUuidGlobal(nodeUuid);
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
 			String id = ContentDao.composeDocumentId(nodeUuid, "en");

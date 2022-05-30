@@ -130,7 +130,6 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 			String key = perm.propertyKey();
 			toGraph(target).property(key, toGraph(source).property(key));
 		}
-
 		Tx.get().permissionCache().clear();
 		return user;
 	}
