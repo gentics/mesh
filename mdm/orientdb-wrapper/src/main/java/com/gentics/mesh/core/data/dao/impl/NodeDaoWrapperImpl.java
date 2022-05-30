@@ -100,8 +100,22 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
+	public Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid) {
+		return nodes.stream()
+				.map(node -> Pair.of(node, (List<HibNode>) getChildren(node, branchUuid).list()))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	@Override
 	public HibNode getParentNode(HibNode node, String branchUuid) {
 		return toGraph(node).getParentNode(branchUuid);
+	}
+
+	@Override
+	public Map<HibNode, HibNode> getParentNodes(Collection<HibNode> nodes, String branchUuid) {
+		return nodes.stream()
+				.map(node -> Pair.of(node, getParentNode(node, branchUuid)))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
 	@Override
@@ -135,11 +149,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 					return new NodeContent(node, container, languageTags, type);
 				})
 				.collect(Collectors.toList());
-	}
-
-	@Override
-	public String getDisplayName(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getDisplayName(ac);
 	}
 
 	@Override

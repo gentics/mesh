@@ -106,6 +106,14 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac);
 
 	/**
+	 * Return all children of the provides nodes for the specified branch
+	 * @param nodes
+	 * @param branchUuid
+	 * @return
+	 */
+	Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid);
+
+	/**
 	 * Returns the parent node of this node.
 	 *
 	 * @param branchUuid
@@ -113,6 +121,14 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	HibNode getParentNode(HibNode node, String branchUuid);
+
+	/**
+	 * Returns a map with nodes and their immediate parents
+	 * @param nodes
+	 * @param branchUuid
+	 * @return
+	 */
+	Map<HibNode, HibNode> getParentNodes(Collection<HibNode> nodes, String branchUuid);
 
 	/**
 	 * Returns the parent node uuid of this node.

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,6 +73,30 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 		return nodes.stream()
 				.map(node -> Pair.of(node, getFieldEdges(node, branchUuid, type).stream().map(HibNodeFieldContainerEdge::getNodeContainer).collect(Collectors.toList())))
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	@Override
+	public Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, VersionNumber versionNumber) {
+		return nodes.stream()
+				.map(node -> Pair.of(node, getFieldContainersForVersion(node, branchUuid, versionNumber)))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	public List<HibNodeFieldContainer> getFieldContainersForVersion(HibNode node, String branchUuid, VersionNumber versionNumber) {
+		Result<? extends HibNodeFieldContainerEdge> edges = getFieldEdges(node, branchUuid, ContainerType.DRAFT);
+
+		return edges.stream().map(edge -> {
+			HibNodeFieldContainer container = edge.getNodeContainer();
+
+			if (container != null) {
+				while (container != null && !versionNumber.equals(container.getVersion())) {
+					container = container.getPreviousVersion();
+				}
+			}
+
+			return container;
+		}).filter(Objects::nonNull)
+		  .collect(Collectors.toList());
 	}
 
 	@Override

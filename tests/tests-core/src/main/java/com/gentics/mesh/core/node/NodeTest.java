@@ -682,7 +682,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(boot(), user, RoleResponse.class,
 					new VersioningParametersImpl().setBranch(branchUuid));
 			ac.setProject(project().getName());
-			return tx.nodeDao().getChildrenStream(folder("news"), ac).map(node -> node.getDisplayName(ac))
+			return tx.nodeDao().getChildrenStream(folder("news"), ac).map(node -> tx.nodeDao().getDisplayName(node, ac))
 					.collect(Collectors.toList());
 		});
 	}
