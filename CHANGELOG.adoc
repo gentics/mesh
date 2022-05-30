@@ -36,6 +36,8 @@ This has been fixed, so that the microschema version hash will now be null in su
 icon:check[] Core: The default values for the periodic disk quota check have been changed to absolute values:
 the default for `storage.diskQuota.warnThreshold` is now `3G` and the default for `storage.diskQuota.readOnlyThreshold` is `1G`.
 
+icon:check[] Server: Fixed defined Health-Check in docker container and added a startup-grace period of 60s.
+
 [[v1.8.4]]
 == 1.8.4 (10.05.2022)
 
