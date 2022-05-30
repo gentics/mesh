@@ -51,7 +51,9 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createBoolean(FIELD_NAME).setBoolean(true);
 			tx.success();
 		}

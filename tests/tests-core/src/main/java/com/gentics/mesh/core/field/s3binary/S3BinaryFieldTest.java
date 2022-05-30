@@ -62,7 +62,9 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
             // Update the schema and add a binary field
             prepareTypedSchema(node, createFieldSchema(true), false);
             tx.commit();
-            HibNodeFieldContainer container = contentDao.getFieldContainer(node, english());
+            HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+                    node.getProject().getLatestBranch(), user(),
+                    contentDao.getLatestDraftFieldContainer(node, english()), true);
             S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
             S3HibBinaryField field = container.createS3Binary(S3_BINARY_FIELD, s3binary);
             field.setMimeType("image/jpg");

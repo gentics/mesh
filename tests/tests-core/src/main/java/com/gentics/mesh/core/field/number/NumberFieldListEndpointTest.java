@@ -161,9 +161,9 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumberList(FIELD_NAME)).isNotNull();
-			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(item -> item.getNumber())
+			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(item -> item.getNumber().doubleValue())
 				.collect(Collectors.toList());
-			assertThat(oldValueList).containsExactly(42, 41.1);
+			assertThat(oldValueList).containsExactly(42.0, 41.1);
 		}
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);

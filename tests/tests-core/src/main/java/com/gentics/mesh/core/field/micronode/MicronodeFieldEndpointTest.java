@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -72,13 +73,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName(FIELD_NAME);
 			microschemaFieldSchema.setLabel("Some label");
 			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
-			schema.addField(microschemaFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(microschemaFieldSchema), Optional.empty());
 			tx.success();
 		}
 	}
@@ -381,19 +380,19 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			prepareTypedSchema(node, new MicronodeFieldSchemaImpl().setName(FIELD_NAME), false);
-			tx.commit();
 			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibMicronodeField micronodeField = container.createMicronode(FIELD_NAME, microschema);
 			micronodeField.getMicronode().createString("firstName").setString("Max");
 			tx.success();
 		}
 
-		NodeResponse response = readNode(node);
+		NodeResponse response = readNode(folder("2015"));
 		MicronodeResponse deserializedMicronodeField = response.getFields().getMicronodeField(FIELD_NAME);
 		assertNotNull("Micronode field must not be null", deserializedMicronodeField);
 		StringField firstNameField = deserializedMicronodeField.getFields().getStringField("firstName");
