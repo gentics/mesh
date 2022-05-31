@@ -142,5 +142,5 @@ storage:
   clusterJoinTimeout: 500000
   diskQuota:
     checkInterval: 10000
-    warnThreshold: "10%"
-    readOnlyThreshold: "2%"
+    warnThreshold: "3G"
+    readOnlyThreshold: "1G"

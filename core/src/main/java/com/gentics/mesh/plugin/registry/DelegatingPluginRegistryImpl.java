@@ -1,6 +1,5 @@
 package com.gentics.mesh.plugin.registry;
 
-import static com.gentics.mesh.core.rest.plugin.PluginStatus.FAILED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.INITIALIZED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
 

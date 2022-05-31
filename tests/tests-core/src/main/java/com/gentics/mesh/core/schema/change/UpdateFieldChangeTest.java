@@ -39,14 +39,16 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	public void testApply() {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createVersion(schemaDao(tx));
+			version.setName("test");
 
 			SchemaModelImpl schema = new SchemaModelImpl("test");
+			schema.setVersion("0.1");
 			schema.addField(FieldUtil.createStringFieldSchema("name"));
+			version.setSchema(schema);
 
 			HibUpdateFieldChange change = createChange(schemaDao(tx), version, UPDATEFIELD);
 			change.setFieldName("name");
 			change.setLabel("updated");
-			version.setSchema(schema);
 			version.setNextChange(change);
 
 			FieldSchemaContainer updatedSchema = mutator.apply(version);

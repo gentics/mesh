@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -46,7 +47,24 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	}
 
 	@Override
-	public boolean hasPermissionForElementId(HibUser user, Object elementId, InternalPermission permission) {
+	public EnumSet<InternalPermission> getPermissionsForElementId(HibUser user, Object elementId) {
+		EnumSet<InternalPermission> permissions = EnumSet.noneOf(InternalPermission.class);
+		for (InternalPermission perm : InternalPermission.values()) {
+			if (hasPermissionForElementId(user, elementId, perm)) {
+				permissions.add(perm);
+			}
+		}
+		return permissions;
+	}
+
+	/**
+	 * Check whether the user has the given permission on the element
+	 * @param user user
+	 * @param elementId element ID
+	 * @param permission queried permission
+	 * @return true if the user is granted the permission, false if not
+	 */
+	protected boolean hasPermissionForElementId(HibUser user, Object elementId, InternalPermission permission) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		// Find all roles that are assigned to the user by checking the
 		// shortcut edge from the index
@@ -112,6 +130,7 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 			String key = perm.propertyKey();
 			toGraph(target).property(key, toGraph(source).property(key));
 		}
+		Tx.get().permissionCache().clear();
 		return user;
 	}
 

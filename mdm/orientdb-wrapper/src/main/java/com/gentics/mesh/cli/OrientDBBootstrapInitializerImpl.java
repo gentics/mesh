@@ -6,11 +6,8 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.Iterator;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -40,18 +37,14 @@ import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
-import com.hazelcast.core.HazelcastInstance;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import io.reactivex.Completable;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 @Singleton
 public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializer implements OrientDBBootstrapInitializer {

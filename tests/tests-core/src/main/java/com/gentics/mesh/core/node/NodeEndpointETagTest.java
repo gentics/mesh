@@ -144,9 +144,8 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		HibNode node = content();
-
 		try (Tx tx = tx()) {
+			HibNode node = content();
 			ContentDao contentDao = tx.contentDao();
 			// Inject the reference node field
 			SchemaVersionModel schema = contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).getSchema();
@@ -158,6 +157,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = content();
 			NodeDao nodeDao = tx.nodeDao();
 			String actualEtag = callETag(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 			String etag = nodeDao.getETag(node, mockActionContext());

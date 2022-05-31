@@ -109,9 +109,9 @@ public class TypeConverter {
 			return null;
 		}
 
-		if (Arrays.asList("true", "1").contains(value.toString().toLowerCase())) {
+		if (Arrays.asList("true", "1", "1.0").contains(value.toString().toLowerCase())) {
 			return true;
-		} else if (Arrays.asList("false", "0").contains(value.toString().toLowerCase())) {
+		} else if (Arrays.asList("false", "0", "0.0").contains(value.toString().toLowerCase())) {
 			return false;
 		} else {
 			return null;

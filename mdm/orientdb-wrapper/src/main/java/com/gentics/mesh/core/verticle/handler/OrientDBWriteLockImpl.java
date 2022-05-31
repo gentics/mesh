@@ -24,7 +24,7 @@ public class OrientDBWriteLockImpl extends AbstractGenericWriteLock {
 		this.options = options;
 	}
 
-	protected boolean isSyncWrites() {
+	public boolean isSyncWrites() {
 		return options.getStorageOptions().isSynchronizeWrites();
 	}
 

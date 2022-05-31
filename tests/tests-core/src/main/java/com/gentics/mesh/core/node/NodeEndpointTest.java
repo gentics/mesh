@@ -1668,7 +1668,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 1. Load Ids / Objects
 		String uuid = tx(() -> content("concorde").getUuid());
-		final HibNode node = tx(() -> content("concorde"));
 		HibNodeFieldContainer origContainer = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			GroupDao groupDao = tx.groupDao();
@@ -1714,7 +1713,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(content("concorde"), english()).getSchemaContainerVersion().getUuid();
 		});
 
 		waitForSearchIdleEvent();
@@ -1732,7 +1731,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(content("concorde"), english());
 			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
@@ -1759,7 +1758,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateCreateLanguage() {
 		final String germanName = "Zweitausendfünfzehn";
-		final HibNode node = tx(() -> folder("2015"));
 		final String uuid = tx(() -> folder("2015").getUuid());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
@@ -1771,7 +1769,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getSchemaContainerVersion().getUuid();
 		});
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 
@@ -2053,51 +2051,48 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
-		HibBranch initialBranch;
-		HibBranch newBranch;
+		String initialBranch = null;
+		String newBranch = "newbranch";
 
 		waitForJobs(() -> {
 			// create a new branch
-			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName("newbranch")));
+			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName(newBranch)));
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			initialBranch = reloadBranch(project.getInitialBranch());
-			newBranch = tx.branchDao().findByName(project, "newbranch");
+			initialBranch = project.getInitialBranch().getName();
+			assertNotNull(tx.branchDao().findByName(project, newBranch));
 		}
 
-		try (Tx tx = tx()) {
-			// create node in one branch
-			HibNode node = content("concorde");
-			NodeCreateRequest parentRequest = new NodeCreateRequest();
-			parentRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			parentRequest.setLanguage("en");
-			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			parentRequest.setParentNodeUuid(node.getUuid());
-			NodeResponse parentNode = call(
-				() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+		// create node in one branch
+		String nodeUuid = tx(() -> content("concorde").getUuid());
+		NodeCreateRequest parentRequest = new NodeCreateRequest();
+		parentRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		parentRequest.setLanguage("en");
+		parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		parentRequest.setParentNodeUuid(nodeUuid);
+		NodeResponse parentNode = call(
+			() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch)));
 
-			// create child in same branch
-			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
-			sameBranchChildRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			sameBranchChildRequest.setLanguage("en");
-			sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
-			NodeResponse sameBranchChildResponse = call(
-				() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+		// create child in same branch
+		NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
+		sameBranchChildRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		sameBranchChildRequest.setLanguage("en");
+		sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
+		NodeResponse sameBranchChildResponse = call(
+			() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch)));
 
-			// try to create node with same uuid in other branch with first node as parent
-			NodeCreateRequest childRequest = new NodeCreateRequest();
-			childRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			childRequest.setLanguage("en");
-			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			childRequest.setParentNodeUuid(parentNode.getUuid());
-			call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
-				new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
-
-			tx.success();
-		}
+		// try to create node with same uuid in other branch with first node as parent
+		NodeCreateRequest childRequest = new NodeCreateRequest();
+		childRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		childRequest.setLanguage("en");
+		childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		childRequest.setParentNodeUuid(parentNode.getUuid());
+		String branch = initialBranch;
+		call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
+			new VersioningParametersImpl().setBranch(branch)), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
 	}
 
 	@Test

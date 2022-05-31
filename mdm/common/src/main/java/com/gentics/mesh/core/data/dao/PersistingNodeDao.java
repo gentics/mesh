@@ -1283,9 +1283,6 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// Check whether this is the first time that an update for the given language and branch occurs. In this case a new container must be created.
 		// This means that no conflict check can be performed. Conflict checks only occur for updates on existing contents.
 		if (latestDraftVersion == null) {
-			// Create a new field container
-			latestDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser());
-
 			// Check whether the node has a parent node in this branch, if not, the request is supposed to be a create request
 			// and we get the parent node from this create request
 			if (getParentNode(node, branch.getUuid()) == null) {
@@ -1303,7 +1300,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				}
 				setParentNode(node, branch.getUuid(), parentNode);
 			}
-
+			// Create a new field container
+			latestDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser());
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 			batch.add(contentDao.onCreated(latestDraftVersion, branch.getUuid(), DRAFT));
 			return true;

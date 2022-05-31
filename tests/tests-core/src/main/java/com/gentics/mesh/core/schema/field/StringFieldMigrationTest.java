@@ -20,6 +20,8 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.string.StringFieldTestHelper;
@@ -311,12 +313,14 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATESTRING, FILL0, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(0L);
+			assertThat(container.getNumberList(name).getValues()).hasSize(1);
+			assertThat(new BigDecimal(container.getNumberList(name).getValues().get(0).intValue())).as(NEWFIELDVALUE).isEqualTo(BigDecimal.ZERO);
 		});
 
 		changeType(CREATESTRING, FILL1, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L);
+			assertThat(container.getNumberList(name).getValues()).hasSize(1);
+			assertThat(new BigDecimal(container.getNumberList(name).getValues().get(0).intValue())).as(NEWFIELDVALUE).isEqualTo(BigDecimal.ONE);
 		});
 
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATENUMBERLIST, (container, name) -> {

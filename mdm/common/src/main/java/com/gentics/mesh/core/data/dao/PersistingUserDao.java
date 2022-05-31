@@ -12,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -86,24 +87,23 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	@Override
 	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
 		PermissionCache permissionCache = Tx.get().permissionCache();
-		if (permissionCache.hasPermission(user.getId(), permission, elementId)) {
-			return true;
+		Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
+		if (cached != null) {
+			if (!cached && permission == READ_PUBLISHED_PERM) {
+				return hasPermissionForId(user, elementId, READ_PERM);
+			}
+
+			return cached.booleanValue();
 		} else {
 			// Admin users have all permissions
 			if (user.isAdmin()) {
-				for (InternalPermission perm : InternalPermission.values()) {
-					permissionCache.store(user.getId(), perm, elementId);
-				}
+				permissionCache.store(user.getId(), EnumSet.allOf(InternalPermission.class), elementId);
 				return true;
 			}
 
-			boolean hasPermission = hasPermissionForElementId(user, elementId, permission);
-			if (hasPermission) {
-				// We only store granting permissions in the store in order
-				// reduce the invalidation calls.
-				// This way we do not need to invalidate the cache if a role
-				// is removed from a group or a role is deleted.
-				permissionCache.store(user.getId(), permission, elementId);
+			EnumSet<InternalPermission> permissions = getPermissionsForElementId(user, elementId);
+			permissionCache.store(user.getId(), permissions, elementId);
+			if (permissions.contains(permission)) {
 				return true;
 			}
 
@@ -116,7 +116,13 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		}
 	}
 
-	boolean hasPermissionForElementId(HibUser user, Object elementId, InternalPermission permission);
+	/**
+	 * Get the permissions set on the element with given ID
+	 * @param user user
+	 * @param elementId element ID
+	 * @return enumset of granted permissions
+	 */
+	EnumSet<InternalPermission> getPermissionsForElementId(HibUser user, Object elementId);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.

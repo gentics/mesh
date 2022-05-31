@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -124,6 +125,9 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 			HibSchema folderSchema = schemaContainer("folder");
 			SchemaVersionModel schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
+			prepareTypedSchema(folderSchema, schema.getFields(), Optional.empty());
+			tx.commit();
+			
 			folderSchema.getLatestVersion().setSchema(schema);
 			mesh().serverSchemaStorage().addSchema(schema);
 
@@ -137,7 +141,7 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 					project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
-			englishContainer.createString("displayName").setString("german displayName");
+			//englishContainer.createString("displayName").setString("german displayName");
 			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015

@@ -56,8 +56,8 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     @Test
     @Override
     public void testFieldTransformation() throws Exception {
-        HibNode node = folder("2015");
         try (Tx tx = tx()) {
+        	HibNode node = folder("2015");
             ContentDao contentDao = tx.contentDao();
             // Update the schema and add a binary field
             prepareTypedSchema(node, createFieldSchema(true), false);
@@ -71,7 +71,7 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
             tx.success();
         }
 
-        String json = getJson(node);
+        String json = tx(() -> getJson(folder("2015")));
         assertNotNull(json);
         NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
         assertNotNull(response);

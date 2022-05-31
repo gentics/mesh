@@ -20,6 +20,8 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.stream.Collectors;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.date.DateFieldTestHelper;
@@ -236,7 +238,8 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest implement
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEDATE, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(DATEVALUE);
+			assertThat(container.getNumberList(name).getValues().stream().map(Number::longValue).collect(Collectors.toList()))
+				.as(NEWFIELDVALUE).containsExactly(DATEVALUE);
 		});
 	}
 

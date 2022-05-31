@@ -3,27 +3,14 @@ package com.gentics.mesh.core.monitoring;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.AbstractMeshTest;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
-public class HealthEndpointTest extends AbstractMeshTest {
-
-	/**
-	 * Make sure that the status will be reset after the test so that 
-	 * the database setup and initial login will not fail.
-	 */
-	@After
-	@Before
-	public void setup() {
-		meshApi().setStatus(MeshStatus.READY);
-	}
+public class HealthEndpointTest extends AbstractHealthTest {
 
 	@Test
 	public void testReadinessProbe() {

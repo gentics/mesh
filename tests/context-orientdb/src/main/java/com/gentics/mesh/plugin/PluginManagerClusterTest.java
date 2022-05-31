@@ -7,16 +7,15 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.TimeoutException;
 
-import com.gentics.mesh.test.helper.ExpectedEvent;
-import org.junit.experimental.categories.Category;
-
-import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.category.PluginTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
+import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.category.PluginTests;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 
 /**
  * Run the plugin tests in clustered mode with a single instance.
@@ -25,7 +24,7 @@ import com.gentics.mesh.plugin.manager.MeshPluginManager;
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = false, clusterMode = true)
 public class PluginManagerClusterTest extends PluginManagerTest {
 	/**
-	 * Test initialization retry, if plugin fails due to topology change
+	 * Test initialization retry, if plugin fails due to topology change. 
 	 * @throws TimeoutException
 	 */
 	@Test

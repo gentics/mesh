@@ -22,6 +22,22 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
+[[v1.8.5]]
+== 1.8.5 (31.05.2022)
+
+icon:check[] Core: The internal cache for user permissions has been optimized.
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.18`.
+
+icon:check[] Search: When a schema contained a field of type "micronode" or "list" of "micronode" and no "allow", generating the microschema version
+hash as part of the search index name failed with a NullPointerException.
+This has been fixed, so that the microschema version hash will now be null in such cases (like if "allow" was set to an empty array).
+
+icon:check[] Core: The default values for the periodic disk quota check have been changed to absolute values:
+the default for `storage.diskQuota.warnThreshold` is now `3G` and the default for `storage.diskQuota.readOnlyThreshold` is `1G`.
+
+icon:check[] Server: Fixed defined Health-Check in docker container and added a startup-grace period of 60s.
+
 [[v1.8.4]]
 == 1.8.4 (10.05.2022)
 

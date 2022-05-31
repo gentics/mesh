@@ -19,6 +19,8 @@ import static com.gentics.mesh.core.field.FieldTestHelper.NOOP;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.bool.BooleanFieldTestHelper;
@@ -288,12 +290,14 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest implem
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEBOOLEAN, FILLTRUE, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1);
+			assertThat(container.getNumberList(name).getValues()).hasSize(1);
+			assertThat(new BigDecimal(container.getNumberList(name).getValues().get(0).intValue())).as(NEWFIELDVALUE).isEqualTo(BigDecimal.ONE);
 		});
 
 		changeType(CREATEBOOLEAN, FILLFALSE, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(0);
+			assertThat(container.getNumberList(name).getValues()).hasSize(1);
+			assertThat(new BigDecimal(container.getNumberList(name).getValues().get(0).intValue())).as(NEWFIELDVALUE).isEqualTo(BigDecimal.ZERO);
 		});
 	}
 
