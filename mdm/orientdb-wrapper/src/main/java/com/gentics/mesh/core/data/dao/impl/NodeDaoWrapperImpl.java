@@ -209,7 +209,7 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 				getBreadcrumbNodes(node, ac)
 						.stream()
 						.map(HibNode.class::cast)
-						.collect(Collectors.collectingAndThen(Collectors.toList(), l -> { Collections.reverse(l); return l;})))
+						.collect(Collectors.toList()))
 		)
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
