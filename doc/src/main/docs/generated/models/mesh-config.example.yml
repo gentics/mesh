@@ -87,8 +87,8 @@ storage:
   clusterJoinTimeout: 500000
   diskQuota:
     checkInterval: 10000
-    warnThreshold: "15%"
-    readOnlyThreshold: "10%"
+    warnThreshold: "3G"
+    readOnlyThreshold: "1G"
 search:
   url: "http://localhost:9200"
   username: null
