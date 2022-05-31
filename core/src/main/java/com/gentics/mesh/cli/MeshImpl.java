@@ -134,7 +134,13 @@ public class MeshImpl implements Mesh {
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		meshInternal = builder.configuration(options).mesh(this).build();
 		setMeshInternal(meshInternal);
-		meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
+		try {
+			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
+		} catch (Throwable e1) {
+			log.fatal("Fatal error on Mesh init", e1);
+			shutdown();
+			return this;
+		}
 		if (options.isUpdateCheckEnabled()) {
 			try {
 				invokeUpdateCheck();

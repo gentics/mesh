@@ -268,10 +268,18 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	private Collection<String> getAllowedMicroschemas(FieldSchema field) {
 		if (field instanceof MicronodeFieldSchema) {
 			MicronodeFieldSchema micronodeField = (MicronodeFieldSchema) field;
-			return Arrays.asList(micronodeField.getAllowedMicroSchemas());
+			if (micronodeField.getAllowedMicroSchemas() == null) {
+				return Collections.emptyList();
+			} else {
+				return Arrays.asList(micronodeField.getAllowedMicroSchemas());
+			}
 		} else if (field instanceof ListFieldSchema) {
 			ListFieldSchema listField = (ListFieldSchema) field;
-			return Arrays.asList(listField.getAllowedSchemas());
+			if (listField.getAllowedSchemas() == null) {
+				return Collections.emptyList();
+			} else {
+				return Arrays.asList(listField.getAllowedSchemas());
+			}
 		} else {
 			return Collections.emptyList();
 		}

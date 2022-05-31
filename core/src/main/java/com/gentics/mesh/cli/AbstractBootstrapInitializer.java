@@ -392,11 +392,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		options = prepareMeshOptions(options);
 
 		addDebugInfoLogAppender(options);
-		try {
-			db().init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		db().init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 
 		if (isClustered) {
 			initCluster(options, flags, isInitMode);

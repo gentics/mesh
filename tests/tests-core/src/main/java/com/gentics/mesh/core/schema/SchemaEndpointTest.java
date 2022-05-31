@@ -31,6 +31,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -75,6 +76,8 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -592,6 +595,21 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testDeleteWithChanges() {
+		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
+		schemaCreateRequest.setName("fordeletion");
+		SchemaResponse response = call(() -> client().createSchema(schemaCreateRequest));
+		String uuid = response.getUuid();
+
+		SchemaUpdateRequest request = response.toUpdateRequest();
+		request.setDescription("Updated schema for deletion");
+		call(() -> client().updateSchema(uuid, request));
+
+		// Now delete the schema
+		call(() -> client().deleteSchema(uuid));
+	}
+
+	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
@@ -783,5 +801,43 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			() -> client().createSchema(loadResourceJsonAsPojo("schemas/languageOverride/duplicateLanguage.json", SchemaCreateRequest.class)),
 			HttpResponseStatus.BAD_REQUEST, "error_language_duplicate_override", "de"
 		);
+	}
+
+	/**
+	 * Test creating a schema with a micronode field without "allow".
+	 * The microschema version hash should be null
+	 */
+	@Test
+	public void testMicronodeFieldWithoutAllow() {
+		SchemaResponse response = call(() -> {
+			SchemaCreateRequest request = new SchemaCreateRequest().setName("withoutallow");
+			request.addField(new MicronodeFieldSchemaImpl().setName("field"));
+			return client().createSchema(request);
+		});
+
+		tx(tx -> {
+			HibSchema schema = tx.schemaDao().findByUuid(response.getUuid());
+			HibSchemaVersion version = schema.getLatestVersion();
+			assertThat(version.getMicroschemaVersionHash(initialBranch())).as("Microschema Version Hash").isNull();
+		});
+	}
+
+	/**
+	 * Test creating a schema with a list of micronodes without "allow".
+	 * The microschema version hash should be null
+	 */
+	@Test
+	public void testMicronodeListFieldWithoutAllow() {
+		SchemaResponse response = call(() -> {
+			SchemaCreateRequest request = new SchemaCreateRequest().setName("withoutallow");
+			request.addField(new ListFieldSchemaImpl().setListType("micronode").setName("field"));
+			return client().createSchema(request);
+		});
+
+		tx(tx -> {
+			HibSchema schema = tx.schemaDao().findByUuid(response.getUuid());
+			HibSchemaVersion version = schema.getLatestVersion();
+			assertThat(version.getMicroschemaVersionHash(initialBranch())).as("Microschema Version Hash").isNull();
+		});
 	}
 }

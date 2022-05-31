@@ -344,7 +344,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 	@Test
 	public void testDeleteWithChanges() {
-
 		String json = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getJson());
 		String uuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 
@@ -354,7 +353,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		// Now delete the schema
 		call(() -> client().deleteMicroschema(uuid));
-
 	}
 
 	/**

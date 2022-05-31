@@ -39,4 +39,4 @@ VOLUME /keystore
 VOLUME /config
 
 CMD [ "java", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
-HEALTHCHECK --interval=10s --retries=1 CMD ["live.sh"]
+HEALTHCHECK --start-period=60s --interval=10s --retries=2 CMD ["sh", "live.sh"]
