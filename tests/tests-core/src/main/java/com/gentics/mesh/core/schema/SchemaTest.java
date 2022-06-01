@@ -379,11 +379,11 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		folders.add(tx(() -> getDisplayName(project().getBaseNode(), initialBranchUuid)));
 
 		// revoke permission to read folder("news")
-		tx(tx -> {
+		String news = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			HibNode newsFolder = data().getFolder("news");
 			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PERM);
-			return newsFolder.getUuid();
+			return getDisplayName(newsFolder, initialBranchUuid);
 		});
 
 		// revoke permission to read published  folder("deals")
@@ -442,6 +442,9 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			Set<String> expected = new HashSet<>(folders);
 			if (testCase.getRight() != null) {
 				expected.add(testCase.getRight());
+			}
+			if (testCase.getMiddle() == ContainerType.DRAFT) {
+				expected.remove(news);
 			}
 
 			try (Tx tx = tx()) {

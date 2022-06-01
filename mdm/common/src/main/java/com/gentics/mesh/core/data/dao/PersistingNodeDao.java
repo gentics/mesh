@@ -199,7 +199,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
 		ContentDao contentDao = Tx.get().contentDao();
 
-		return findAllStream(project, ac, READ_PUBLISHED_PERM)
+		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)
 				// Now lets try to load the containers for those found nodes - apply the language fallback
 				.map(node -> new NodeContent(node, contentDao.findVersion(node, ac, languageTags, type), languageTags, type))
 				// Filter nodes without a container
