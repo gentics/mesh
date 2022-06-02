@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -88,8 +89,11 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
+	 * @param node node
+	 * @param ac action context
+	 * @param perm permission
 	 */
-	Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac);
+	Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac, InternalPermission perm);
 
 	/**
 	 * Returns the parent node of this node.

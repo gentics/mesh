@@ -1,0 +1,42 @@
+{
+	noPermNode: node(path: "/News") {
+		# [$.data.noPermNode=<is-null>]
+		uuid
+	}
+	onlyDraftNodeAsDraft: node(version: draft, path: "/Deals") {
+		# [$.data.onlyDraftNodeAsDraft.version=<is-null>]
+		uuid
+		version
+	}
+	onlyDraftNodeAsPublished: node(version: published, path: "/Deals") {
+		# [$.data.onlyDraftNodeAsPublished=<is-null>]
+		uuid
+		version
+	}
+	node(path:"/") {
+		# [$.data.node.uuid=<is-uuid>]
+		uuid
+		version
+		isPublished
+		isDraft
+		children(lang: ["en","de"]) {
+			# [$.data.node.children.elements.length()=0]
+			elements {
+				uuid
+				language
+				path
+				... on folder { fields { slug }}
+			}
+		}
+		# [$.data.node.parent=<is-null>]
+		parent {
+			uuid
+		}
+	}
+}
+# [$.errors.length()=2]
+# [$.errors[0].message=graphql_error_missing_perm]
+# [$.errors[1].message=graphql_error_missing_perm]
+# [$.errors[0].type=missing_perm]
+# [$.errors[0].elementId=<is-uuid>]
+# [$.errors[0].elementType=node]
