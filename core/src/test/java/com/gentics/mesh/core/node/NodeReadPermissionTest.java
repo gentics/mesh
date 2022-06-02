@@ -194,6 +194,19 @@ public class NodeReadPermissionTest extends AbstractMeshTest {
 	}
 
 	/**
+	 * Test loadNavigation
+	 */
+	@Test
+	public void testLoadNavigation() {
+		NavigationResponse navigation = call(() -> client().loadNavigation(PROJECT_NAME, testFolder.getUuid(),
+				new VersioningParametersImpl().setVersion(version)));
+		assertThat(navigation.getChildren()).as("Navigation children").isNotNull();
+		List<String> folderNames = navigation.getChildren().stream().map(item -> item.getNode().getDisplayName())
+				.collect(Collectors.toList());
+		assertFolderNames(folderNames, false);
+	}
+
+	/**
 	 * Test calling navroot for the Test folder
 	 */
 	@Test
