@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -282,8 +283,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
+	 * @param ac action context
+	 * @param perm permission to check for
 	 */
-	Stream<Node> getChildrenStream(InternalActionContext ac);
+	Stream<Node> getChildrenStream(InternalActionContext ac, GraphPermission perm);
 
 	/**
 	 * Return the list of children for this node, that the given user has read permission for. Filter by the provides information.

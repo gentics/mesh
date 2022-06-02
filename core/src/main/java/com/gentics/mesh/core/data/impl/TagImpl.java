@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
@@ -169,11 +170,11 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	public TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser user, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(branch, languageTags, type);
-		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PUBLISHED_PERM, NodeImpl.class);
+		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, NodeImpl.class);
 	}
 
 	@Override
-	public TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac) {
+	public TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac, GraphPermission perm) {
 		MeshAuthUser user = ac.getUser();
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
@@ -183,19 +184,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
 				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT);
 			})
-			.filter(item -> {
-				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
-				if (hasRead) {
-					return true;
-				} else {
-					// Check whether the node is published. In this case we need to check the read publish perm.
-					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
-					if (isPublishedForBranch) {
-						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
-					}
-				}
-				return false;
-			});
+				.filter(item -> user.hasPermissionForId(item.getId(), perm));
 
 		return new TraversalResult<>(() -> s.iterator());
 	}
