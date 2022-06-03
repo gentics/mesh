@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -90,7 +91,8 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	Result<? extends HibNode> getChildren(HibNode node, String branchUuid);
 
 	/**
-	 * Return all content of the provided type using language fallback for each node in the given branch
+	 * Return all content of the provided type using language fallback for each node in the given branch.
+	 * This will also check for permissions.
 	 * @param nodes
 	 * @param ac
 	 * @param branchUuid
@@ -102,8 +104,11 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
+	 * @param node node
+	 * @param ac action context
+	 * @param perm permission
 	 */
-	Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac);
+	Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac, InternalPermission perm);
 
 	/**
 	 * Return all children of the provides nodes for the specified branch

@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -23,6 +27,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -31,13 +36,14 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * DAO for {@link HibNode} operation.
@@ -95,8 +101,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getChildrenStream(ac);
+	public Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac, InternalPermission perm) {
+		return toGraph(node).getChildrenStream(ac, perm);
 	}
 
 	@Override
@@ -136,14 +142,18 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 
 	@Override
 	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
-		return nodes.stream().map(node -> Pair.of(node, getContentFromNode(node, branchUuid, languageTags, type)))
+		HibUser user = ac.getUser();
+		return nodes.stream()
+				.map(node -> Pair.of(node, getContentFromNode(user, node, branchUuid, languageTags, type)))
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
-	private List<NodeContent> getContentFromNode(HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type) {
+	private List<NodeContent> getContentFromNode(HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type) {
+		UserDao userDao = Tx.get().userDao();
 		ContentDao contentDao = boot.get().contentDao();
 		return toGraph(sourceNode).getChildren(branchUuid)
 				.stream()
+				.filter(node -> userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM))
 				.map(node -> {
 					HibNodeFieldContainer container = contentDao.findVersion(node, languageTags, branchUuid, type.getHumanCode());
 					return new NodeContent(node, container, languageTags, type);

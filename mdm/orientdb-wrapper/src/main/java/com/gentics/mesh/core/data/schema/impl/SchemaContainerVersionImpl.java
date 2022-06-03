@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
@@ -11,6 +12,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.stream.Stream;
@@ -94,7 +96,7 @@ public class SchemaContainerVersionImpl extends
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()
 			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type)
-				&& userDao.hasPermissionForId(user, node.getId(), type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)));
+				&& userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)));
 	}
 
 	@Override

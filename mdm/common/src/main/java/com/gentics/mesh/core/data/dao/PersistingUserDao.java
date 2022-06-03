@@ -12,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -123,6 +124,14 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @return enumset of granted permissions
 	 */
 	EnumSet<InternalPermission> getPermissionsForElementId(HibUser user, Object elementId);
+
+	/**
+	 * Prepare the permissions of the user on the elements with given IDs.
+	 * Implementations may e.g. preload the permissions and put them into the cache.
+	 * @param user user
+	 * @param elementIds collection of element IDs
+	 */
+	void preparePermissionsForElementIds(HibUser user, Collection<Object> elementIds);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.

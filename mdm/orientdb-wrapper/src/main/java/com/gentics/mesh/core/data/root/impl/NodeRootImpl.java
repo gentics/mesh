@@ -98,7 +98,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		HibUser user = ac.getUser();
 		UserDao userDao = mesh().boot().userDao();
 
-		return findAll(tx.getProject(ac).getUuid()).filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
+		return findAll(tx.getProject(ac).getUuid())
+			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 

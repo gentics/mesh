@@ -14,7 +14,7 @@
       elements {
         uuid
       }
-      # [$.data.tag.nodes.totalCount=2]
+      # [$.data.tag.nodes.totalCount=0]
       totalCount
     }
   }
@@ -23,13 +23,11 @@
       uuid
       tags {
         elements {
-          # [$.data.nodes.elements[0].tags.elements[0].name=red]
-          # [$.data.nodes.elements[1].tags.elements[0].name=red]
           name
         }
       }
     }
-    # [$.data.nodes.totalCount=2]
+    # [$.data.nodes.totalCount=0]
     totalCount
   }
 }

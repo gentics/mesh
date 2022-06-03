@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -55,6 +56,11 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 			}
 		}
 		return permissions;
+	}
+
+	@Override
+	public void preparePermissionsForElementIds(HibUser user, Collection<Object> elementIds) {
+		// empty implementation
 	}
 
 	/**

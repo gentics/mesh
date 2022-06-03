@@ -3,6 +3,7 @@ package com.gentics.mesh.graphql.type;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.graphql.filter.NodeReferenceFilter.nodeReferenceFilter;
 import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
@@ -39,6 +40,7 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -360,7 +362,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
 				ContentDao contentDao = Tx.get().contentDao();
 				NodeDao nodeDao = Tx.get().nodeDao();
+				UserDao userDao = Tx.get().userDao();
 				GraphQLContext gc = env.getContext();
+				HibUser user = gc.getUser();
 				NodeContent content = env.getSource();
 				if (content == null) {
 					return null;
@@ -376,7 +380,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return future.thenApply(contents -> {
 					return applyNodeFilter(env, contents.stream()
 							.filter(item -> item.getContainer() != null)
-							.filter(item -> gc.hasReadPerm(item.getContainer()))
 					);
 				});
 			}, NODE_PAGE_TYPE_NAME)

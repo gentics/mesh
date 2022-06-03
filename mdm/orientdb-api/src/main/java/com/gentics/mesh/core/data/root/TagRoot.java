@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -54,12 +55,13 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 
 	/**
 	 * Load all nodes which have been tagged by the tag.
-	 * 
-	 * @param tag
-	 * @param ac
-	 * @return
+	 * This will also check for the required permission
+	 * @param tag tag
+	 * @param ac action context
+	 * @param perm permission
+	 * @return result
 	 */
-	Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac);
+	Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac, InternalPermission perm);
 
 	/**
 	 * Return a traversal result of nodes that were tagged by this tag in the given branch

@@ -69,7 +69,7 @@ public class NodeDataLoader {
 
 	/**
 	 * Batch load all children of a node for a transaction branch, the provided container type and language tags,
-	 * without doing permission checks.
+	 * also checking for permissions.
 	 */
 	public static BatchLoaderWithContext<HibNode, List<NodeContent>> CHILDREN_LOADER = (keys, environment) -> {
 		Tx tx = Tx.get();
