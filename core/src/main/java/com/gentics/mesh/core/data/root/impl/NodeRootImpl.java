@@ -100,22 +100,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission perm) {
 		MeshAuthUser user = ac.getUser();
-		String branchUuid = ac.getBranch().getUuid();
 
 		return findAll(ac.getProject().getUuid())
-			.filter(item -> {
-				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
-				if (hasRead) {
-					return true;
-				} else {
-					// Check whether the node is published. In this case we need to check the read publish perm.
-					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
-					if (isPublishedForBranch) {
-						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
-					}
-				}
-				return false;
-			})
+			.filter(item -> user.hasPermissionForId(item.getId(), perm))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 

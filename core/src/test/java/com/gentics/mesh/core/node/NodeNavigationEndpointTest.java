@@ -242,7 +242,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 		NodeResponse germanFolderResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
 		NavigationResponse navResponse = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid,
-			new NavigationParametersImpl().setMaxDepth(42), new NodeParametersImpl().setLanguages("de").setResolveLinks(LinkType.FULL)));
+			new NavigationParametersImpl().setMaxDepth(42), new NodeParametersImpl().setLanguages("de", "en").setResolveLinks(LinkType.FULL)));
 
 		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2",
 			findFolder(navResponse, germanFolderResponse.getUuid()).getPath());

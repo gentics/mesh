@@ -3,6 +3,7 @@ package com.gentics.mesh.graphql.type;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.graphql.filter.NodeReferenceFilter.nodeReferenceFilter;
 import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
@@ -329,7 +330,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				List<String> languageTags = getLanguageArgument(env, content);
 				ContainerType type = getNodeVersion(env);
 
-				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
+				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)
 					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags, type), languageTags, type))
 					.filter(item -> item.getContainer() != null)
 					.filter(item -> gc.hasReadPerm(item.getContainer()));
