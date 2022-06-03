@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -49,8 +50,10 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
+	 * @param ac action context
+	 * @param perm permission
 	 */
-	Stream<Node> getChildrenStream(InternalActionContext ac);
+	Stream<Node> getChildrenStream(InternalActionContext ac, InternalPermission perm);
 
 	/**
 	 * Gets all NodeGraphField edges that reference this node.

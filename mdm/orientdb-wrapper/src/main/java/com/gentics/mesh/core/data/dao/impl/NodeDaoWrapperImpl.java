@@ -86,8 +86,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getChildrenStream(ac);
+	public Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac, InternalPermission perm) {
+		return toGraph(node).getChildrenStream(ac, perm);
 	}
 
 	@Override

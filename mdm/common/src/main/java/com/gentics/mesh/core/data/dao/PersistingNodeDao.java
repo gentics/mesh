@@ -643,8 +643,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (!node.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 			throw error(BAD_REQUEST, "navigation_error_no_container");
 		}
+		List<String> languageList = ac.getNodeParameters().getLanguageList(tx.data().options());
+
 		String etagKey = buildNavigationEtagKey(ac, node, parameters.getMaxDepth(), 0, tx.getBranch(ac, node.getProject()).getUuid(), forVersion(ac
-				.getVersioningParameters().getVersion()));
+				.getVersioningParameters().getVersion()), languageList);
 		String etag = ETag.hash(etagKey);
 		ac.setEtag(etag, true);
 		if (ac.matches(etag, true)) {
@@ -652,7 +654,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		} else {
 			NavigationResponse response = new NavigationResponse();
 			return buildNavigationResponse(ac, node, parameters.getMaxDepth(), 0, response, response, tx.getBranch(ac, node.getProject()).getUuid(),
-					forVersion(ac.getVersioningParameters().getVersion()));
+					forVersion(ac.getVersioningParameters().getVersion()), languageList);
 		}
 	}
 
@@ -665,14 +667,15 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param level      Current level of recursion
 	 * @param branchUuid Branch uuid used to extract selected tree structure
 	 * @param type
+	 * @param languages list of languages
 	 * @return
 	 */
-	private String buildNavigationEtagKey(InternalActionContext ac, HibNode node, int maxDepth, int level, String branchUuid, ContainerType type) {
+	private String buildNavigationEtagKey(InternalActionContext ac, HibNode node, int maxDepth, int level, String branchUuid, ContainerType type, List<String> languages) {
 		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		List<HibNode> nodes = getChildren(node, ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+		List<HibNode> nodes = getChildren(node, ac.getUser(), branchUuid, languages, type).collect(Collectors.toList());
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
@@ -681,9 +684,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 		for (HibNode child : nodes) {
 			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, branchUuid, type));
+				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, branchUuid, type, languages));
 			} else if (parameters.isIncludeAll()) {
-				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level, branchUuid, type));
+				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level, branchUuid, type, languages));
 			}
 		}
 		return builder.toString();
@@ -714,11 +717,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param currentElement Current navigation element for the given level
 	 * @param branchUuid     Branch uuid to be used for loading children of nodes
 	 * @param type           container type to be used for transformation
+	 * @param languages      languages
 	 * @return
 	 */
 	private NavigationResponse buildNavigationResponse(InternalActionContext ac, HibNode node, int maxDepth, int level,
-													   NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
-		List<HibNode> nodes = getChildren(node, ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+													   NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type, List<String> languages) {
+		List<HibNode> nodes = getChildren(node, ac.getUser(), branchUuid, languages, type).collect(Collectors.toList());
 		List<NavigationResponse> responses = new ArrayList<>();
 
 		NodeResponse response = transformToRestSync(node, ac, 0);
@@ -743,7 +747,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 					currentElement.setChildren(new ArrayList<>());
 				}
 				currentElement.getChildren().add(childElement);
-				responses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
+				responses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement, branchUuid, type, languages));
 			} else if (parameters.isIncludeAll()) {
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -751,7 +755,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				}
 				NavigationElement childElement = new NavigationElement();
 				currentElement.getChildren().add(childElement);
-				responses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, branchUuid, type));
+				responses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, branchUuid, type, languages));
 			}
 		}
 		return responses.get(responses.size() - 1);

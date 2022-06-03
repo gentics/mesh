@@ -1,0 +1,35 @@
+{
+  me {
+    # [$.data.me.username=anonymous]
+    username
+  }
+  # The anonymous role has read published perm and thus is allowed to read the node but not the content
+  node(path:"/Neuigkeiten/2015") {
+    uuid
+  	# [$.data.node=<is-null>]
+    version
+  }
+  tag(name: "red") {
+    nodes {
+      elements {
+        uuid
+      }
+      # [$.data.tag.nodes.totalCount=2]
+      totalCount
+    }
+  }
+  nodes {
+    elements {
+      uuid
+      tags {
+        elements {
+          # [$.data.nodes.elements[0].tags.elements[0].name=red]
+          # [$.data.nodes.elements[1].tags.elements[0].name=red]
+          name
+        }
+      }
+    }
+    # [$.data.nodes.totalCount=2]
+    totalCount
+  }
+}

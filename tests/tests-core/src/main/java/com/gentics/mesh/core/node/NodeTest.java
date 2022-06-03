@@ -618,7 +618,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	}
 
 	/**
-	 * Test implementation of {@link NodeDao#getChildrenStream(HibNode, InternalActionContext)}}.
+	 * Test implementation of {@link NodeDao#getChildrenStream(HibNode, InternalActionContext, InternalPermission)}}.
 	 * Check whether
 	 * <ol>
 	 * <li>All children in the given branch are returned</li>
@@ -683,7 +683,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(boot(), user, RoleResponse.class,
 					new VersioningParametersImpl().setBranch(branchUuid));
 			ac.setProject(project().getName());
-			return tx.nodeDao().getChildrenStream(folder("news"), ac).map(node -> node.getDisplayName(ac))
+			return tx.nodeDao().getChildrenStream(folder("news"), ac, null).map(node -> node.getDisplayName(ac))
 					.collect(Collectors.toList());
 		});
 	}
