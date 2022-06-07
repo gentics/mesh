@@ -56,7 +56,7 @@ public class DummyMigrationStatus implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void incCompleted() {
+	public void incCompleted(int increment) {
 
 	}
 }

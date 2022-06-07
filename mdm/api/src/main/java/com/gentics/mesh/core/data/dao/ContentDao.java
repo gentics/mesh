@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
@@ -373,15 +374,6 @@ public interface ContentDao {
 	 * @return
 	 */
 	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type);
-
-	/**
-	 * Return the language tags of the field containers of given type for the node in the given branch.
-	 * @param node
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	List<String> getFieldContainersLanguageTags(HibNode node, String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -994,4 +986,15 @@ public interface ContentDao {
 	 * @return
 	 */
 	NodeFieldListItem toListItem(HibNode node, InternalActionContext ac, String[] languageTags);
+
+	/**
+	 * Get a {@link FieldMap} from the provided container
+	 * @param fieldContainer
+	 * @param ac
+	 * @param schema
+	 * @param level
+	 * @param containerLanguageTags
+	 * @return
+	 */
+	FieldMap getFieldMap(HibNodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags);
 }

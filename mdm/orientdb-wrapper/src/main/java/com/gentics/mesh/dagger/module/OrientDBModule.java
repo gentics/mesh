@@ -98,6 +98,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerChe
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
+import com.gentics.mesh.core.migration.NodeMigration;
+import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.verticle.handler.OrientDBWriteLockImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -277,6 +279,10 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract CacheRegistry bindCacheRegistry(OrientdbCacheRegistry e);
+
+	// Migration
+	@Binds
+	abstract NodeMigration nodeMigration(NodeMigrationImpl e);
 
 	// END
 

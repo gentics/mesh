@@ -37,6 +37,10 @@ when called with `version`=`draft`, but returned all tagged nodes with `read pub
 icon:check[] Rest: The endpoint `GET /api/v2/{project}/navroot/{path}` failed with a 404 error if called with `version`=`published` and at least
 one of the nodes in the node structure was not published. This has been fixed.
 
+icon:check[] Jobs: Previously jobs were running in a single transaction. This has been changed to use multiple transactions during the migration.
+
+icon:check[] Jobs: Schema, Microschema and Branch jobs are now migrating entites in batches, instead of one at a time. The number of elements in the batch can be configured in the MeshOptions.
+
 [[v1.8.5]]
 == 1.8.5 (31.05.2022)
 

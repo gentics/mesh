@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import org.apache.commons.collections.CollectionUtils;
@@ -265,11 +266,6 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param edge
 	 */
 	void removeEdge(HibNodeFieldContainerEdge edge);
-
-	@Override
-	default List<String> getFieldContainersLanguageTags(HibNode node, String branchUuid, ContainerType type) {
-		return getFieldContainers(node, branchUuid, type).stream().map(HibNodeFieldContainer::getLanguageTag).collect(Collectors.toList());
-	}
 
 	/**
 	 * Find the node edge with the given parameters: language, branch, type
@@ -1048,6 +1044,37 @@ public interface PersistingContentDao extends ContentDao {
 				languageTags));
 		}
 		return listItem;
+	}
+
+	@Override
+	default FieldMap getFieldMap(HibNodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags) {
+		com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
+		for (FieldSchema fieldEntry : schema.getFields()) {
+			// boolean expandField =
+			// fieldsToExpand.contains(fieldEntry.getName()) ||
+			// ac.getExpandAllFlag();
+			Field restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
+			if (fieldEntry.isRequired() && restField == null) {
+				// TODO i18n
+				// throw error(BAD_REQUEST, "The field {" +
+				// fieldEntry.getName()
+				// + "} is a required field but it could not be found in the
+				// node. Please add the field using an update call or change
+				// the field schema and
+				// remove the required flag.");
+				fields.put(fieldEntry.getName(), null);
+			}
+			if (restField == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+				}
+			} else {
+				fields.put(fieldEntry.getName(), restField);
+			}
+
+		}
+
+		return fields;
 	}
 }
 

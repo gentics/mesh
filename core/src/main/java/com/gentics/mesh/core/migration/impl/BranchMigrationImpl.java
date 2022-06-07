@@ -31,6 +31,7 @@ import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 
@@ -48,8 +49,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationImpl.class);
 
 	@Inject
-	public BranchMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
-		super(db, nodeFieldAPIHandler, metrics, batchProvider);
+	public BranchMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, MeshOptions options) {
+		super(db, nodeFieldAPIHandler, metrics, batchProvider, options);
 	}
 
 	@Override
@@ -75,8 +76,10 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 
 			List<Exception> errorsDetected = new ArrayList<>();
 			// Iterate over all nodes of the project and migrate them to the new branch
-			migrateLoop(nodes, cause, status, (batch, node, errors) -> {
-				migrateNode(node.getUuid(), batch, oldBranch, newBranch, errorsDetected);
+			migrateLoop(nodes, cause, status, (batch, nodeList, errors) -> {
+				for (HibNode node : nodeList) {
+					migrateNode(node.getUuid(), batch, oldBranch, newBranch, errorsDetected);
+				}
 			});
 
 			if (!errorsDetected.isEmpty()) {

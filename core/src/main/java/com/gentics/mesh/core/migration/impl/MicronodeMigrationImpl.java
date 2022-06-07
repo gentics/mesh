@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.VersionNumber;
@@ -61,8 +62,8 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	private final WriteLock writeLock;
 
 	@Inject
-	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
-		super(db, binaryFieldHandler, metrics, batchProvider);
+	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock, MeshOptions options) {
+		super(db, binaryFieldHandler, metrics, batchProvider, options);
 		this.writeLock = writeLock;
 	}
 
@@ -113,9 +114,11 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			}
 
 			List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status,
-					(batch, container, errors) -> {
+					(batch, containers, errors) -> {
 						try (WriteLock lock = writeLock.lock(ac)) {
-							migrateMicronodeContainer(ac, context, batch, container, touchedFields, errors);
+							for (HibNodeFieldContainer container : containers) {
+								migrateMicronodeContainer(ac, context, batch, container, touchedFields, errors);
+							}
 						}
 					});
 
