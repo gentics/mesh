@@ -250,7 +250,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Tx tx = GraphDBTx.getGraphTx();
 		UserDao userDao = tx.userDao();
 		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid()))
-			.filter(node -> userDao.hasPermissionForId(user, node.getId(), perm))
+			.filter(node -> perm != null 
+					? userDao.hasPermissionForId(user, node.getId(), perm) 
+					: (userDao.hasPermissionForId(user, node.getId(), READ_PERM) || (userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM))))
 			.map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}
 
