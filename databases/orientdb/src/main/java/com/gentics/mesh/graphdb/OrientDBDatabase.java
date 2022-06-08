@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.Mesh;
@@ -211,7 +212,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		boolean isInMemory = storageOptions.getDirectory() == null;
 
 		if (isInMemory && startOrientServer) {
-			throw new RuntimeException(
+			throw new IllegalArgumentException(
 				"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 		}
 
@@ -220,7 +221,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.trace("Using ridbag transition threshold {" + value + "}");
 		}
 		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(value);
+		OGlobalConfiguration.DIRECT_MEMORY_PREALLOCATE.setValue(storageOptions.isMemoryPreallocate());
 		OGlobalConfiguration.WARNING_DEFAULT_USERS.setValue(false);
+
+		String memoryLeftToHost = storageOptions.getMemoryLeftToHost();
+		if (StringUtils.isNotBlank(memoryLeftToHost)) {
+			OGlobalConfiguration.MEMORY_LEFT_TO_OS.setValue(memoryLeftToHost);
+			OGlobalConfiguration.MEMORY_LEFT_TO_CONTAINER.setValue(memoryLeftToHost);
+		}
 
 		clusterManager.initConfigurationFiles();
 

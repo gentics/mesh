@@ -1,6 +1,5 @@
 package com.gentics.mesh.test;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 

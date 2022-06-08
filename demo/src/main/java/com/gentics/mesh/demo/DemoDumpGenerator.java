@@ -91,6 +91,7 @@ public class DemoDumpGenerator {
 			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
 		}
 		options.setNodeName("dumpGenerator");
+		options.getStorageOptions().setMemoryPreallocate(false);
 		init(options);
 	}
 

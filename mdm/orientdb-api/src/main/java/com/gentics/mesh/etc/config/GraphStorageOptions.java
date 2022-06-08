@@ -27,6 +27,8 @@ public class GraphStorageOptions implements Option {
 	public static final int DEFAULT_TX_RETRY_LIMIT = 10;
 	public static final long DEFAULT_TX_COMMIT_TIMEOUT = 0;
 	public static final int DEFAULT_CLUSTER_JOIN_TIMEOUT = 500_000;
+	public static final String DEFAULT_MEMORY_LEFT_TO_HOST = null;
+	public static final boolean DEFAULT_MEMORY_PREALLOCATE = true;
 
 	public static final String MESH_GRAPH_DB_DIRECTORY_ENV = "MESH_GRAPH_DB_DIRECTORY";
 	public static final String MESH_GRAPH_BACKUP_DIRECTORY_ENV = "MESH_GRAPH_BACKUP_DIRECTORY";
@@ -38,6 +40,18 @@ public class GraphStorageOptions implements Option {
 	public static final String MESH_GRAPH_TX_RETRY_LIMIT_ENV = "MESH_GRAPH_TX_RETRY_LIMIT";
 	public static final String MESH_GRAPH_TX_COMMIT_TIMEOUT_ENV = "MESH_GRAPH_TX_COMMIT_TIMEOUT";
 	public static final String MESH_GRAPH_CLUSTER_JOIN_TIMEOUT_ENV = "MESH_GRAPH_CLUSTER_JOIN_TIMEOUT";
+	public static final String MESH_GRAPH_DB_MEMORY_LEFT_TO_HOST = "MESH_GRAPH_DB_MEMORY_LEFT_TO_HOST";
+	public static final String MESH_GRAPH_DB_MEMORY_PREALLOCATE = "MESH_GRAPH_DB_MEMORY_PREALLOCATE";
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("An amount of RAM OrientDB leaves to the host OS or container. If null/empty, an OrientDB-default values will be used. Uses a format {number}{unit char}, i.e. 256m, 4g etc.")
+	@EnvironmentVariable(name = MESH_GRAPH_DB_MEMORY_LEFT_TO_HOST, description = "Override the amount of RAM left to host OS or container.")
+	private String memoryLeftToHost = DEFAULT_MEMORY_LEFT_TO_HOST;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Should OrientDB preallocate the RAM cache memory before start?")
+	@EnvironmentVariable(name = MESH_GRAPH_DB_MEMORY_PREALLOCATE, description = "Override the flag to preallocate the OrientDB cache RAM.")
+	private boolean memoryPreallocate = DEFAULT_MEMORY_PREALLOCATE;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
@@ -249,6 +263,44 @@ public class GraphStorageOptions implements Option {
 	}
 
 	/**
+	 * Get the amount of RAM that OrientDB will not use for the cache. If null, a OrientDB-default values will be used. Uses a format {number}{unit char}, i.e. 256m, 4g etc.
+	 * 
+	 * @return
+	 */
+	public String getMemoryLeftToHost() {
+		return memoryLeftToHost;
+	}
+
+	/**
+	 * Get the amount of RAM that OrientDB will not use for the cache. If null, a OrientDB-default values will be used. Uses a format {number}{unit char}, i.e. 256m, 4g etc.
+	 * 
+	 * @return self
+	 */
+	public GraphStorageOptions setMemoryLeftToHost(String memoryLeftToHost) {
+		this.memoryLeftToHost = memoryLeftToHost;
+		return this;
+	}
+
+	/**
+	 * Should the OrientDB preallocate its cache memory?
+	 * 
+	 * @return
+	 */
+	public boolean isMemoryPreallocate() {
+		return memoryPreallocate;
+	}
+
+	/**
+	 * Set the OrientDB flag to preallocate its cache memory
+	 * 
+	 * @return self
+	 */
+	public GraphStorageOptions setMemoryPreallocate(boolean memoryPreallocate) {
+		this.memoryPreallocate = memoryPreallocate;
+		return this;
+	}
+
+	/**
 	 * Validate the settings.
 	 */
 	public void validate(MeshOptions meshOptions) {
@@ -258,5 +310,4 @@ public class GraphStorageOptions implements Option {
 		}
 		getDiskQuotaOptions().validate(meshOptions);
 	}
-
 }

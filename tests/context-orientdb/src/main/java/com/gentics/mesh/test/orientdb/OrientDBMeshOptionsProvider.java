@@ -12,6 +12,7 @@ public class OrientDBMeshOptionsProvider implements MeshOptionsProvider {
 	
 	public OrientDBMeshOptionsProvider() {
 		meshOptions = OptionsLoader.generateDefaultConfig(OrientDBMeshOptions.class, null);
+		meshOptions.getStorageOptions().setMemoryPreallocate(false);
 	}
 	
 	@Override
