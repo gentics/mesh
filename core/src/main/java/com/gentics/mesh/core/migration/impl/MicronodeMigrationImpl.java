@@ -116,6 +116,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status,
 					(batch, containers, errors) -> {
 						try (WriteLock lock = writeLock.lock(ac)) {
+							beforeBatchMigration(containers, ac);
 							for (HibNodeFieldContainer container : containers) {
 								migrateMicronodeContainer(ac, context, batch, container, touchedFields, errors);
 							}

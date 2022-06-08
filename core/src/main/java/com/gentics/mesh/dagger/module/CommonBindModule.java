@@ -65,7 +65,6 @@ import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
-import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
@@ -218,9 +217,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract BranchMigration branchMigration(BranchMigrationImpl e);
-
-	@Binds
-	abstract MicronodeMigration micronodeMigration(MicronodeMigrationImpl e);
 
 	@Binds
 	abstract LocalBinaryStorage localBinaryStorage(LocalBinaryStorageImpl e);
