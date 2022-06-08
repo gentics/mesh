@@ -148,7 +148,6 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		String filename = "filename.txt";
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		HibNode node = folder("2015");
 
 		// 1. Upload a binary field
 		String uuid = tx(() -> folder("2015").getUuid());
@@ -168,6 +167,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			HibNode node = folder("2015");
 			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBinary(FIELD_NAME)).isNull();
