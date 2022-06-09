@@ -37,6 +37,8 @@ when called with `version`=`draft`, but returned all tagged nodes with `read pub
 icon:check[] Rest: The endpoint `GET /api/v2/{project}/navroot/{path}` failed with a 404 error if called with `version`=`published` and at least
 one of the nodes in the node structure was not published. This has been fixed.
 
+icon:plus[] Core: The RAM consumption by OrientDB is now configurable via settings `storage.memoryPreallocate` (should the whole RAM amount, allowed for cache usage, be preallocated at once on Mesh start, default: true) and `storage.memoryLeftToHost` (how much of OS/container RAM should OrientDB leave available to the host, default: 256m for container environment, 2g for bare OS).
+
 [[v1.8.5]]
 == 1.8.5 (31.05.2022)
 
