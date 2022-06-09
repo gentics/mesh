@@ -62,8 +62,6 @@ import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.migration.BranchMigration;
-import com.gentics.mesh.core.migration.MicronodeMigration;
-import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
@@ -214,9 +212,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract TagFamilyIndexHandler tagFamilyIndexHandler(TagFamilyIndexHandlerImpl e);
-
-	@Binds
-	abstract BranchMigration branchMigration(BranchMigrationImpl e);
 
 	@Binds
 	abstract LocalBinaryStorage localBinaryStorage(LocalBinaryStorageImpl e);

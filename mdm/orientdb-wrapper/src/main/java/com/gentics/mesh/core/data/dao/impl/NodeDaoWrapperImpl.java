@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.branch.HibBranch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
@@ -252,5 +253,15 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		}
 		node.setProject(root);
 		return node;
+	}
+
+	@Override
+	public void migrateParentNodes(List<? extends HibNode> nodes, HibBranch oldBranch, HibBranch newBranch) {
+		nodes.forEach(node -> {
+			HibNode oldParent = getParentNode(node, oldBranch.getUuid());
+			if (oldParent != null) {
+				setParentNode(node, newBranch.getUuid(), oldParent);
+			}
+		});
 	}
 }

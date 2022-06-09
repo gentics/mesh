@@ -567,4 +567,12 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	NodeReference transformToReference(HibNode node, InternalActionContext ac);
+
+	/**
+	 * Copy all the parent nodes from the old branch to the new branch
+	 * @param nodes
+	 * @param oldBranch
+	 * @param newBranch
+	 */
+	void migrateParentNodes(List<? extends HibNode> nodes, HibBranch oldBranch, HibBranch newBranch);
 }
