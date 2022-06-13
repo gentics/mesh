@@ -17,7 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.handler.impl.HttpStatusException;
 import okhttp3.Response;
 
-public class AbstractValidateSchemaTest extends AbstractMeshTest {
+public abstract class AbstractValidateSchemaTest extends AbstractMeshTest {
 
 	public static final String INVALID_NAME_EMPTY = "";
 	public static final String INVALID_NAME_NUMBER = "123";

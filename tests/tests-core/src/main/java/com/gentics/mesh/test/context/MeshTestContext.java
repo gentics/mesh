@@ -455,7 +455,9 @@ public class MeshTestContext extends TestWatcher {
 		for (File folder : tmpFolders) {
 			FileUtils.deleteDirectory(folder);
 		}
-		meshDagger.permissionCache().clear(false);
+		if (meshDagger != null && meshDagger.permissionCache() != null) {
+			meshDagger.permissionCache().clear(false);
+		}
 	}
 
 	public TestDataProvider getData() {
