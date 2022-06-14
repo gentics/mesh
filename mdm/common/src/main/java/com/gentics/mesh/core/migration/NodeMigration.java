@@ -48,11 +48,11 @@ public interface NodeMigration {
 	default void beforeBatchMigration(List<? extends HibNodeFieldContainer> containerList, InternalActionContext ac) {}
 
 	/**
-	 * Invoked inside a transaction after the container list is migrated.
-	 * @param containerList
-	 * @param ac
+	 * Purge the container list. Invoked inside the migration transaction.
+	 * @param toPurge contains pair of a container with its nullable parent
+	 *
 	 */
-	default void afterBatchMigration(List<? extends HibNodeFieldContainer> containerList, InternalActionContext ac) {}
+	void bulkPurge(List<HibNodeFieldContainer> toPurge);
 
 	/**
 	 * Create a migration event model from the provided params

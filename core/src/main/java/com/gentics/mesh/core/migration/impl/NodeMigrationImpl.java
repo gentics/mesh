@@ -11,6 +11,7 @@ import static com.gentics.mesh.metric.SimpleMetric.NODE_MIGRATION_PENDING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -57,6 +59,7 @@ import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Handler for node migrations after schema updates.
@@ -195,10 +198,16 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, containerList, errors) -> {
 				try (WriteLock lock = writeLock.lock(context)) {
 					beforeBatchMigration(containerList, context);
+					List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> toPurge = new ArrayList<>();
 					for (HibNodeFieldContainer container : containerList) {
-						migrateContainer(context, batch, container, errors, touchedFields);
+						Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
+						if (toPurgePair != null) {
+							toPurge.add(toPurgePair);
+						}
 					}
-					afterBatchMigration(containerList, context);
+
+					List<HibNodeFieldContainer> toPurgeList = filterPurgeable(toPurge);
+					bulkPurge(toPurgeList);
 				}
 				if (metrics.isEnabled()) {
 					migrationGauge.decrementAndGet();
@@ -220,6 +229,28 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 	}
 
+	public List<HibNodeFieldContainer> filterPurgeable(List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> containerList) {
+		ContentDao contentDao = Tx.get().contentDao();
+
+		// perform bulk purge
+		return containerList.stream()
+				.flatMap(pair -> {
+					if (!pair.getLeft().equals(pair.getRight()) && pair.getRight() != null) {
+						return Stream.of(pair.getLeft(), pair.getRight());
+					}
+
+					return Stream.of(pair.getLeft());
+				}).filter(container -> contentDao.isAutoPurgeEnabled(container) && contentDao.isPurgeable(container))
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public void bulkPurge(List<HibNodeFieldContainer> toPurge) {
+		ContentDao contentDao = Tx.get().contentDao();
+
+		toPurge.forEach(contentDao::purge);
+	}
+
 	/**
 	 * Migrates the given container.
 	 * 
@@ -229,10 +260,10 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 *            Container to be migrated
 	 * @param errorsDetected
 	 * @param touchedFields
-	 * @return
+	 * @return a pair with the container and its parent to purge
 	 */
-	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, HibNodeFieldContainer container,
-								  List<Exception> errorsDetected, Set<String> touchedFields) {
+	private Pair<HibNodeFieldContainer, HibNodeFieldContainer> migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, HibNodeFieldContainer container,
+																				List<Exception> errorsDetected, Set<String> touchedFields) {
 		ContentDao contentDao = Tx.get().contentDao();
 
 		String containerUuid = container.getUuid();
@@ -267,12 +298,13 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			// 2. Migrate the draft container. This will also update the draft edge.
 			migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, nextDraftVersion);
 
-			postMigrationPurge(container, oldPublished);
+			return Pair.of(container, oldPublished);
 		} catch (Exception e1) {
 			log.error("Error while handling container {" + containerUuid + "} of node {" + parentNodeUuid + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
 
+		return null;
 	}
 
 	/**
