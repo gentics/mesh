@@ -32,6 +32,8 @@ when called with `version`=`draft`, but returned all tagged nodes with `read pub
 icon:check[] Rest: The endpoint `GET /api/v2/{project}/navroot/{path}` failed with a 404 error if called with `version`=`published` and at least
 one of the nodes in the node structure was not published. This has been fixed.
 
+icon:check[] Documentation: The misleading `image` mentions in the Micronode documentation have been removed.
+
 [[v1.6.29]]
 == 1.6.29 (31.05.2022)
 
