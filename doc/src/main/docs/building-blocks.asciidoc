@@ -288,7 +288,7 @@ The ```required``` property indicates if the field is mandatory or not.
 
 
 ===== Micronode
-A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blog post node. For a detailed description see our definition of <<micronode>>.
+A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. a caption to be used in a image node. For a detailed description see our definition of <<micronode>>.
 The ```required``` property indicates if the field is mandatory or not.
 
 A ```micronode``` field type must have an ```allow``` property that acts as a whitelist for allowed microschemas.  If allow is an empty array, any type of micronode may be used.
@@ -351,7 +351,7 @@ A *micronode* is similar to a node. It also follows a schema - a *microschemaMod
 
 With micronodes it is possible to build complex object data structures as they are basically representing subnodes of nodes.
 
-Typical use cases for micronodes are content items that do not exist on their own but are tied to their (parent) node, e.g., media elements of your blog post such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, text paragraphs. As another example consider a recipe having a list of ingredients which in turn consist of a name and a quantity.
+Typical use cases for micronodes are content items that do not exist on their own but are tied to their (parent) node, e.g., media elements of your blog post such as YouTube videos, image galleries, Google maps, image captions, vcards, quotes, text paragraphs. As another example consider a recipe having a list of ingredients which in turn consist of a name and a quantity.
 
 NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further micronodes, thus limiting the nesting level to one.
 
