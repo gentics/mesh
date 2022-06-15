@@ -148,9 +148,10 @@ public class S3BinaryFieldTest extends AbstractFieldTest<S3BinaryFieldSchema> {
     public void testEquals() {
         try (Tx tx = tx()) {
             HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
-            S3HibBinary s3binary = tx.s3binaries().create(UUID.randomUUID().toString(),"1234/s3","img.jg").runInExistingTx(tx);
-            S3HibBinaryField fieldA = container.createS3Binary("fieldA", s3binary);
-            S3HibBinaryField fieldB = container.createS3Binary("fieldB", s3binary);
+            S3HibBinary s3binaryA = tx.s3binaries().create(UUID.randomUUID().toString(),"1234/s3","img.jg").runInExistingTx(tx);
+            S3HibBinary s3binaryB = tx.s3binaries().create(UUID.randomUUID().toString(),"1234/s3","img.jg").runInExistingTx(tx);
+            S3HibBinaryField fieldA = container.createS3Binary("fieldA", s3binaryA);
+            S3HibBinaryField fieldB = container.createS3Binary("fieldB", s3binaryB);
             assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
             fieldA.setFileName("someText");
             assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
