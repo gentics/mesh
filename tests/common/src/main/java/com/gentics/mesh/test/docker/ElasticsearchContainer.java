@@ -30,7 +30,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 	}
 
 	public ElasticsearchContainer(String version) {
-		super("docker.apa-it.at/elasticsearch/elasticsearch-oss:" + version);
+		super(System.getProperty("mesh.container.image.prefix", "") + "elasticsearch/elasticsearch-oss:" + version);
 	}
 
 	@Override
