@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.rest.node.FieldMap;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -47,6 +49,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -107,6 +110,7 @@ import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
@@ -118,7 +122,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		NodeReference nodeReference = new NodeReference();
 		nodeReference.setUuid(node.getUuid());
-		nodeReference.setDisplayName(node.getDisplayName(ac));
+		nodeReference.setDisplayName(getDisplayName(node, ac));
 		nodeReference.setSchema(node.getSchemaContainer().transformToReference());
 		nodeReference.setProjectName(node.getProject().getName());
 		if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
@@ -192,6 +196,32 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		restNode.setBreadcrumb(breadcrumbs);
 	}
 
+	@Override
+	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		ContentDao contentDao = Tx.get().contentDao();
+
+		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)
+				// Now lets try to load the containers for those found nodes - apply the language fallback
+				.map(node -> new NodeContent(node, contentDao.findVersion(node, ac, languageTags, type), languageTags, type))
+				// Filter nodes without a container
+				.filter(content -> content.getContainer() != null);
+	}
+
+	@Override
+	default Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		Tx tx = Tx.get();
+		SchemaDao schemaDao = tx.schemaDao();
+		ContentDao contentDao = tx.contentDao();
+		return schemaDao.findNodes(schemaVersion, tx.getBranch(ac).getUuid(),
+				ac.getUser(),
+				ContainerType.forVersion(ac.getVersioningParameters().getVersion())).stream()
+				.map(node -> {
+					HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
+					return new NodeContent(node, container, languageTags, type);
+				})
+				.filter(content -> content.getContainer() != null);
+	}
+
 	/**
 	 * Stream the hierarchical path of the node. 
 	 * 
@@ -200,7 +230,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	@Override
-	default Stream<HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac) {
+	default Stream<? extends HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac) {
 		Tx tx = Tx.get();
 		String branchUuid = tx.getBranch(ac, node.getProject()).getUuid();
 		HibNode current = node;
@@ -396,7 +426,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				restNode.setDisplayField(schema.getDisplayField());
 			}
 			if (fieldsSet.has("displayName")) {
-				restNode.setDisplayName(node.getDisplayName(ac));
+				restNode.setDisplayName(getDisplayName(node, ac));
 			}
 
 			if (fieldsSet.has("language")) {
@@ -431,32 +461,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			if (fieldsSet.has("fields")) {
-				// Iterate over all fields and transform them to rest
-				com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
-				for (FieldSchema fieldEntry : schema.getFields()) {
-					// boolean expandField =
-					// fieldsToExpand.contains(fieldEntry.getName()) ||
-					// ac.getExpandAllFlag();
-					Field restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
-					if (fieldEntry.isRequired() && restField == null) {
-						// TODO i18n
-						// throw error(BAD_REQUEST, "The field {" +
-						// fieldEntry.getName()
-						// + "} is a required field but it could not be found in the
-						// node. Please add the field using an update call or change
-						// the field schema and
-						// remove the required flag.");
-						fields.put(fieldEntry.getName(), null);
-					}
-					if (restField == null) {
-						if (log.isDebugEnabled()) {
-							log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-						}
-					} else {
-						fields.put(fieldEntry.getName(), restField);
-					}
-
-				}
+				FieldMap fields = contentDao.getFieldMap(fieldContainer, ac, schema, level, containerLanguageTags);
 				restNode.setFields(fields);
 			}
 		}
@@ -978,8 +983,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}
 		ContentDao contentDao = Tx.get().contentDao();
-		HibNodeFieldContainer container = contentDao.createFieldContainer(node, language.getLanguageTag(), branch, requestUser);
-		container.updateFieldsFromRest(ac, requestModel.getFields());
+		HibNodeFieldContainer container = contentDao.createFirstFieldContainerForNode(node, language.getLanguageTag(), branch, requestUser);
+		container.createFieldsFromRest(ac, requestModel.getFields());
 
 		batch.add(node.onCreated());
 		batch.add(contentDao.onCreated(container, branch.getUuid(), DRAFT));
@@ -1140,6 +1145,85 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
+	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags) {
+		ContentDao contentDao = Tx.get().contentDao();
+		Map<HibNode, List<HibNode>> breadcrumbPerNode = getBreadcrumbNodesMap(sourceNodes, ac);
+
+		List<HibNode> allAncestors = breadcrumbPerNode.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+
+		Set<HibNode> allNodes = new HashSet<>(sourceNodes);
+		allNodes.addAll(allAncestors);
+
+		String branchUuid = Tx.get().getBranch(ac).getUuid();
+		Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(allNodes, branchUuid, type);
+		List<String> languages = Arrays.asList(languageTags);
+		BranchDao branchDao = Tx.get().branchDao();
+		HibBranch branch = sourceNodes.stream().map(node -> branchDao.findByUuid(node.getProject(), branchUuid)).findFirst().orElse(null);
+		return breadcrumbPerNode.entrySet()
+				.stream()
+				.map(kv -> {
+					HibNode sourceNode = kv.getKey();
+					List<HibNode> breadcrumb = kv.getValue();
+					Collections.reverse(breadcrumb);
+					List<? extends HibNode> ancestors = breadcrumb;
+					List<String> segments = new ArrayList<>();
+					for (int i = 0; i < ancestors.size(); i++) {
+						HibNode node = ancestors.get(i);
+						if (node.isBaseNode()) {
+							if (ancestors.size() == 1) {
+								segments.add("");
+							}
+							continue;
+						}
+						boolean isSourceNode = i == 0;
+						List<HibNodeFieldContainer> containers = fieldsContainers.getOrDefault(node, Collections.emptyList());
+						HibNodeFieldContainer container = getContainerWithLanguageFallback(containers, languages, !isSourceNode);
+						String segment = container != null ? contentDao.getSegmentFieldValue(container) : null;
+						if (segment == null) {
+							// Abort early if one of the path segments could not be resolved.
+							// We need to fall back to url fields in those cases.
+							HibNodeFieldContainer containerForUrlFieldValues = getContainerWithLanguageFallback(containers, languages, false);
+							String fallbackPath = null;
+							if (containerForUrlFieldValues != null) {
+								fallbackPath = contentDao.getUrlFieldValues(containerForUrlFieldValues).findFirst().orElse(null);
+							}
+
+							return Pair.of(sourceNode, fallbackPath);
+						}
+
+						segments.add(segment);
+					}
+
+					return Pair.of(sourceNode, buildPathFromSegments(branch, segments));
+				})
+				.filter(p -> p.getValue() != null)
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	private HibNodeFieldContainer getContainerWithLanguageFallback(List<HibNodeFieldContainer> containers, List<String> languageTags, boolean anyLanguage) {
+
+		ContentDao contentDao = Tx.get().contentDao();
+		Map<String, List<HibNodeFieldContainer>> containerByLanguage = containers.stream().collect(Collectors.groupingBy(HibNodeFieldContainer::getLanguageTag));
+
+		HibNodeFieldContainer container = null;
+		for (String languageTag : languageTags) {
+			List<HibNodeFieldContainer> c = containerByLanguage.getOrDefault(languageTag, Collections.emptyList());
+			if (!c.isEmpty()) {
+				container = c.get(0);
+				break;
+			}
+		}
+
+		if (container == null && anyLanguage) {
+			if (!containers.isEmpty()) {
+				container = containers.get(0);
+			}
+		}
+
+		return container;
+	}
+
+	@Override
 	default String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
 		ContentDao contentDao = Tx.get().contentDao();
 		// We want to avoid rending the path again for nodes which we have already handled.
@@ -1174,34 +1258,38 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				segments.add(segment);
 			}
 
-			Collections.reverse(segments);
-
-			// Finally construct the path from all segments
-			StringBuilder builder = new StringBuilder();
-
-			// Append the prefix first
 			BranchDao branchDao = Tx.get().branchDao();
 			HibBranch branch = branchDao.findByUuid(node.getProject(), branchUuid);
-			if (branch != null) {
-				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
-				if (!prefix.isEmpty()) {
-					String[] prefixSegments = prefix.split("/");
-					for (String prefixSegment : prefixSegments) {
-						if (prefixSegment.isEmpty()) {
-							continue;
-						}
-						builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
+			return buildPathFromSegments(branch, segments);
+		});
+	}
+
+	private String buildPathFromSegments(HibBranch branch, List<String> segments) {
+		Collections.reverse(segments);
+
+		// Finally construct the path from all segments
+		StringBuilder builder = new StringBuilder();
+
+		// Append the prefix first
+		if (branch != null) {
+			String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
+			if (!prefix.isEmpty()) {
+				String[] prefixSegments = prefix.split("/");
+				for (String prefixSegment : prefixSegments) {
+					if (prefixSegment.isEmpty()) {
+						continue;
 					}
+					builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
 				}
 			}
+		}
 
-			Iterator<String> it = segments.iterator();
-			while (it.hasNext()) {
-				String currentSegment = it.next();
-				builder.append("/").append(URIUtils.encodeSegment(currentSegment));
-			}
-			return builder.toString();
-		});
+		Iterator<String> it = segments.iterator();
+		while (it.hasNext()) {
+			String currentSegment = it.next();
+			builder.append("/").append(URIUtils.encodeSegment(currentSegment));
+		}
+		return builder.toString();
 	}
 
 	/**
@@ -1491,21 +1579,21 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		// breadcrumb
 		keyBuilder.append("-");
-		HibNode current = getParentNode(node, branch.getUuid());
-		if (current != null) {
-			while (current != null) {
-				String key = current.getUuid() + node.getDisplayName(ac);
-				keyBuilder.append(key);
-				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-					WebRootLinkReplacer linkReplacer = tx.data().mesh().webRootLinkReplacer();
-					String url = linkReplacer.resolve(ac, branch.getUuid(), type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-							node.getProject().getName(), container.getLanguageTag());
-					keyBuilder.append(url);
-				}
-				current = getParentNode(current, branch.getUuid());
+		getDisplayName(node, ac);
 
-			}
-		}
+		getBreadcrumbNodeStream(node, ac)
+				.skip(1) // start from parent
+				.map(HibNode::getUuid)
+				.forEach(uuid -> {
+					String key = uuid + getDisplayName(node, ac);
+					keyBuilder.append(key);
+					if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+						WebRootLinkReplacer linkReplacer = tx.data().mesh().webRootLinkReplacer();
+						String url = linkReplacer.resolve(ac, branch.getUuid(), type, uuid, ac.getNodeParameters().getResolveLinks(),
+								node.getProject().getName(), container.getLanguageTag());
+						keyBuilder.append(url);
+					}
+				});
 
 		/**
 		 * webroot path & language paths
@@ -1533,6 +1621,31 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
 		}
 		return keyBuilder.toString();
+	}
+
+	@Override
+	default String getDisplayName(HibNode node, InternalActionContext ac) {
+		NodeParameters nodeParameters = ac.getNodeParameters();
+		VersioningParameters versioningParameters = ac.getVersioningParameters();
+		ContentDao contentDao = Tx.get().contentDao();
+
+		HibNodeFieldContainer container = contentDao.findVersion(node, nodeParameters.getLanguageList(Tx.get().data().options()), Tx.get().getBranch(ac, node.getProject()).getUuid(), versioningParameters.getVersion());
+		if (container == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Could not find any matching i18n field container for node {" + node.getUuid() + "}.");
+			}
+			return null;
+		} else {
+			// Determine the display field name and load the string value
+			// from that field.
+			return container.getDisplayFieldValue();
+		}
+	}
+
+	@Override
+	default String getParentNodeUuid(HibNode node, String branchUuid) {
+		HibNode parentNode = getParentNode(node, branchUuid);
+		return parentNode != null ? parentNode.getUuid() : null;
 	}
 
 	@Override

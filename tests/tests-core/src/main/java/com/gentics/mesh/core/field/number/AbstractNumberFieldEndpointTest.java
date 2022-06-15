@@ -1,13 +1,14 @@
 package com.gentics.mesh.core.field.number;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 
 /**
@@ -20,13 +21,11 @@ public abstract class AbstractNumberFieldEndpointTest extends AbstractFieldEndpo
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName(FIELD_NAME);
 			// numberFieldSchema.setMin(10);
 			// numberFieldSchema.setMax(1000);
-			schema.addField(numberFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(numberFieldSchema), Optional.empty());
 			tx.success();
 		}
 	}

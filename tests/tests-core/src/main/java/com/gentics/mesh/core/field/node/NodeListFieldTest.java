@@ -57,7 +57,9 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			ContentDao contentDao = tx.contentDao();
 			HibNode newsNode = folder("news");
 			prepareNode(node, NODE_LIST, "node");
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNodeFieldList nodeList = container.createNodeList(NODE_LIST);
 			nodeList.createNode(0, newsNode);
 			nodeList.createNode(1, newsNode);

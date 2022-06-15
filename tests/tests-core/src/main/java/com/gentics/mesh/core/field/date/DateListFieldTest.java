@@ -55,7 +55,9 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, "dateList", "date");
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibDateFieldList dateList = container.createDateList("dateList");
 			dateList.createDate(1L);
 			dateList.createDate(2L);

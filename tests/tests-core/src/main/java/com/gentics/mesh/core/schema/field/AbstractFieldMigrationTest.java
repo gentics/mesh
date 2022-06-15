@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.gentics.mesh.util.CoreTestUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 
@@ -51,7 +52,6 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
@@ -136,14 +136,14 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(container.getUuid());
 		container.setCreated(user());
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
-			fillSchemaVersion(v, container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
+			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
 						removedFieldName));
 			container.setLatestVersion(v);
 		});
 		schemaDao.mergeIntoPersisted(container);		
 
 		// create version 2 of the schema (with one field removed)
-		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", creator.create(persistentFieldName));
+		HibSchemaVersion versionB = CoreTestUtils.createSchemaVersion(container, schemaName, "2.0", creator.create(persistentFieldName));
 
 		// link the schemas with the change in between
 		HibRemoveFieldChange change = (HibRemoveFieldChange) schemaDao.createPersistedChange(versionA, SchemaChangeOperation.REMOVEFIELD);
@@ -324,13 +324,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
-			fillSchemaVersion(v, container, schemaName, "1.0", creator.create(oldFieldName));
+			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", creator.create(oldFieldName));
 			container.setLatestVersion(v);
 		});
 
 		// create version 2 of the schema (with the field renamed)
 		FieldSchema newField = creator.create(newFieldName);
-		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
+		HibSchemaVersion versionB = CoreTestUtils.createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
 		HibAddFieldChange addFieldChange = (HibAddFieldChange) schemaDao.createPersistedChange(versionB, SchemaChangeOperation.ADDFIELD);
@@ -520,14 +520,14 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(schemaName);
 		container.setCreated(user());
 		HibSchemaVersion versionA = createSchemaVersion(tx, container, v -> {
-			fillSchemaVersion(v, container, schemaName, "1.0", oldFieldSchema);
+			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", oldFieldSchema);
 			container.setLatestVersion(v);
 		});
 		schemaDao.mergeIntoPersisted(container);
 
 		// create version 2 of the schema (with the field modified)
 		FieldSchema newFieldSchema = newField.create(fieldName);
-		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", newFieldSchema);
+		HibSchemaVersion versionB = CoreTestUtils.createSchemaVersion(container, schemaName, "2.0", newFieldSchema);
 
 		// link the schemas with the change in between
 		HibFieldTypeChange change = (HibFieldTypeChange) schemaDao.createPersistedChange(versionA, SchemaChangeOperation.CHANGEFIELDTYPE);
@@ -745,13 +745,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
-			fillSchemaVersion(v, container, schemaName, "1.0", oldField);
+			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", oldField);
 			container.setLatestVersion(v);
 		});
 
 		// Create version 2 of the schema (with the field renamed)
 		FieldSchema newField = creator.create(fieldName);
-		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
+		HibSchemaVersion versionB = CoreTestUtils.createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// Link the schemas with the changes in between
 		HibUpdateFieldChange updateFieldChange = (HibUpdateFieldChange) schemaDao.createPersistedChange(versionA, SchemaChangeOperation.UPDATEFIELD);
@@ -928,13 +928,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
-			fillSchemaVersion(v, container, schemaName, "1.0", oldField);
+			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", oldField);
 			container.setLatestVersion(v);
 		});
 
 		// create version 2 of the schema (with the field renamed)
 		FieldSchema newField = creator.create(fieldName);
-		HibSchemaVersion versionB = createSchemaVersion(container, schemaName, "2.0", newField);
+		HibSchemaVersion versionB = CoreTestUtils.createSchemaVersion(container, schemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
 		HibUpdateFieldChange updateFieldChange = (HibUpdateFieldChange) schemaDao.createPersistedChange(versionA, SchemaChangeOperation.UPDATEFIELD);
@@ -1020,43 +1020,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setStatus(DummyMigrationStatus.get());
 		micronodeMigrationHandler.migrateMicronodes(context).blockingAwait(10,
 			TimeUnit.SECONDS);
-	}
-
-	/**
-	 * Create a schema.
-	 * 
-	 * @param container
-	 *            Parent schema container for versions
-	 * @param name
-	 *            schema name
-	 * @param version
-	 *            schema version
-	 * @param fields
-	 *            list of schema fields
-	 * @return schema container
-	 */
-	protected HibSchemaVersion createSchemaVersion(HibSchema container, String name, String version, FieldSchema... fields) {
-		HibSchemaVersion sversion = CommonTx.get().schemaDao().createPersistedVersion(container, v -> fillSchemaVersion(v, container, name, version, fields));
-		Tx.get().commit();
-		return sversion;
-	}
-
-	protected HibSchemaVersion fillSchemaVersion(HibSchemaVersion containerVersion, HibSchema container, String name, String versionName, FieldSchema... fields) {
-		SchemaVersionModel schema = new SchemaModelImpl();
-		schema.setName(name);
-		schema.setVersion(versionName);
-		for (FieldSchema field : fields) {
-			schema.addField(field);
-		}
-		schema.setContainer(false);
-		// schema.setDisplayField("name");
-		// schema.setSegmentField("name");
-		schema.validate();
-
-		containerVersion.setName(name);
-		containerVersion.setSchema(schema);
-		containerVersion.setSchemaContainer(container);
-		return containerVersion;
 	}
 
 	/**

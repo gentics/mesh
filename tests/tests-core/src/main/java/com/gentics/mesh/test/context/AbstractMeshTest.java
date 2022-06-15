@@ -103,7 +103,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	public String getJson(HibNode node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
-		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return tx(tx -> {
 			return tx.nodeDao().transformToRestSync(node, ac, 0).toJson();
 		});

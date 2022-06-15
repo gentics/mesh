@@ -39,6 +39,14 @@ one of the nodes in the node structure was not published. This has been fixed.
 
 icon:check[] Documentation: The misleading `image` mentions in the Micronode documentation have been removed.
 
+icon:check[] Jobs: Previously jobs were running in a single transaction. This has been changed to use multiple transactions during the migration.
+
+icon:check[] Jobs: Schema, Microschema and Branch jobs are now migrating entites in batches, instead of one at a time. The number of elements in the batch can be configured in the MeshOptions.
+
+icon:check[] Core: Caffeine caching library has been updated to version `2.8.0`.
+
+icon:check[] Core: Graphql-java library has been updated to version `12.0`.
+
 [[v1.8.5]]
 == 1.8.5 (31.05.2022)
 

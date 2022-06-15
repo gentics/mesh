@@ -8,7 +8,7 @@
 		language
 
 		enNode: node(lang: "en") {
-			# [$.data.node.enNode.version=1.0]
+			# [$.data.node.enNode.version=2.0]
 			version
 
 			# [$.data.node.enNode.isDraft=true]

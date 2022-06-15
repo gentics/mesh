@@ -72,12 +72,13 @@ public class BranchJobProcessor implements SingleJobProcessor {
 		log.debug("Preparing branch migration job");
 		try {
 			return db.tx(tx -> {
+				HibJob hibJob = CommonTx.get().jobDao().mergeIntoPersisted(job);
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 				context.setStatus(status);
 
 				tx.createBatch().add(createEvent(job, BRANCH_MIGRATION_START, STARTING)).dispatch();
 
-				HibBranch newBranch = job.getBranch();
+				HibBranch newBranch = hibJob.getBranch();
 				if (newBranch == null) {
 					throw error(BAD_REQUEST, "Branch for job {" + job.getUuid() + "} cannot be found.");
 				}

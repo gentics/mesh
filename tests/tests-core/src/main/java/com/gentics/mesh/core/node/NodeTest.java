@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,7 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -51,6 +49,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -683,7 +682,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(boot(), user, RoleResponse.class,
 					new VersioningParametersImpl().setBranch(branchUuid));
 			ac.setProject(project().getName());
-			return tx.nodeDao().getChildrenStream(folder("news"), ac, InternalPermission.READ_PUBLISHED_PERM).map(node -> node.getDisplayName(ac))
+			return tx.nodeDao().getChildrenStream(folder("news"), ac, InternalPermission.READ_PUBLISHED_PERM).map(node -> Tx.get().nodeDao().getDisplayName(node, ac))
 					.collect(Collectors.toList());
 		});
 	}
