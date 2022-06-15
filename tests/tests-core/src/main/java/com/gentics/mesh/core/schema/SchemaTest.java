@@ -443,6 +443,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			if (testCase.getRight() != null) {
 				expected.add(testCase.getRight());
 			}
+			// testuser is not allowed to view draft of "news" folder
 			if (testCase.getMiddle() == ContainerType.DRAFT) {
 				expected.remove(news);
 			}
