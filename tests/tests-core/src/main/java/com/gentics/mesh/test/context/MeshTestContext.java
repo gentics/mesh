@@ -586,7 +586,7 @@ public class MeshTestContext extends TestWatcher {
 			network = Network.newNetwork();
 			elasticsearch = new ElasticsearchContainer(version).withNetwork(network);
 			elasticsearch.waitingFor(Wait.forHttp(("/")));
-			toxiproxy = new ToxiproxyContainer().withNetwork(network);
+			toxiproxy = new ToxiproxyContainer(System.getProperty("mesh.container.image.prefix", "") + "shopify/toxiproxy:2.1.0").withNetwork(network);
 			if (!toxiproxy.isRunning()) {
 				toxiproxy.start();
 			}

@@ -9,7 +9,7 @@ import java.time.Duration;
 public class AWSContainer extends GenericContainer<AWSContainer> {
 
     private static final int DEFAULT_PORT = 9000;
-    private static final String DEFAULT_IMAGE = "minio/minio";
+    private static final String DEFAULT_IMAGE = System.getProperty("mesh.container.image.prefix", "") + "minio/minio";
     private static final String DEFAULT_TAG = "edge";
     private static final String MINIO_ACCESS_KEY = "MINIO_ACCESS_KEY";
     private static final String MINIO_SECRET_KEY = "MINIO_SECRET_KEY";
