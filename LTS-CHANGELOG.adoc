@@ -34,6 +34,9 @@ one of the nodes in the node structure was not published. This has been fixed.
 
 icon:check[] Documentation: The misleading `image` mentions in the Micronode documentation have been removed.
 
+icon:check[] Core: If a link to a node was rendered from a url field, the path prefix of the used branch was ignored. This has been changed now,
+so that links to nodes will always contain the path prefix, regardless of whether the link is rendered from a url field or from segment fields.
+
 [[v1.6.29]]
 == 1.6.29 (31.05.2022)
 
