@@ -349,7 +349,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
 			S3HibBinary binary = tx.s3binaries().create(UUIDUtil.randomUUID(), s3Bucket, fileName).runInExistingTx(tx);
-			contentDao.getLatestDraftFieldContainer(node, english()).createS3Binary("s3binary", binary).setFileName(fileName);
+			HibNodeFieldContainer original = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer newBinary = contentDao.createFieldContainer(node, english(), project().getLatestBranch(), user(), original, true);
+			newBinary.createS3Binary("s3binary", binary).setFileName(fileName);
 
 			// uploading
 			File tempFile = createTempFile();
