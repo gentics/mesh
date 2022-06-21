@@ -42,6 +42,13 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole> {
+    /**
+     * Grant role permission. Consumers implementing this method do not need to invalidate the cache
+     * @param role the role
+     * @param element
+     * @param permissions
+     */
+    boolean grantRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
     /**
      * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
@@ -84,6 +91,16 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
         userDao.inheritRolePermissions(requestUser, roleRoot, role);
         batch.add(role.onCreated());
         return role;
+    }
+
+    @Override
+    default boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+        boolean permissionsGranted = grantRolePermissions(role, element, permissions);
+        if (permissionsGranted) {
+            PermissionCache cache = Tx.get().permissionCache();
+            cache.clear();
+        }
+        return permissionsGranted;
     }
 
     /**

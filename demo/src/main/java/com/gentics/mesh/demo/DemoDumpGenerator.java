@@ -23,6 +23,7 @@ import com.gentics.mesh.util.UUIDUtil;
 public class DemoDumpGenerator {
 
 	static {
+		System.setProperty("memory.directMemory.preallocate", "false");
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 		if ("jotschi".equalsIgnoreCase(System.getProperty("user.name"))) {

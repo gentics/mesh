@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_CACHES;
 import static com.gentics.mesh.core.rest.admin.consistency.ConsistencyRating.INCONSISTENT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
@@ -11,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -68,10 +70,12 @@ public abstract class AdminHandler extends AbstractHandler {
 
 	protected final ConsistencyCheckHandler consistencyCheckHandler;
 
+	private final CacheRegistry cacheRegistry;
+
 	protected AdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
 		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
-		ConsistencyCheckHandler consistencyCheckHandler) {
+		ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -83,6 +87,7 @@ public abstract class AdminHandler extends AbstractHandler {
 		this.coordinator = coordinator;
 		this.writeLock = writeLock;
 		this.consistencyCheckHandler = consistencyCheckHandler;
+		this.cacheRegistry = cacheRegistry;
 	}
 
 	/**
@@ -349,5 +354,23 @@ public abstract class AdminHandler extends AbstractHandler {
 				return coordinator.loadConfig();
 			}, model -> ac.send(model, OK));
 		}
+	}
+
+	/**
+	 * Clear all internal caches locally and trigger an event to clear the caches cluster wide.
+	 * @param ac
+	 */
+	public void handleCacheClear(InternalActionContext ac) {
+		utils.syncTx(ac, tx -> {
+			HibUser user = ac.getUser();
+			if (user != null && !user.isAdmin()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+
+			cacheRegistry.clear();
+			vertx.eventBus().publish(CLEAR_CACHES.address, null);
+
+			return message(ac, "cache_clear_invoked");
+		}, model -> ac.send(model, OK));
 	}
 }

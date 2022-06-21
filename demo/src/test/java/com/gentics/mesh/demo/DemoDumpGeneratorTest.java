@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
@@ -66,6 +67,7 @@ public class DemoDumpGeneratorTest {
 			GroupDao groupDao = tx.groupDao();
 			ProjectDao projectDao = tx.projectDao();
 			ContentDao contentDao = tx.contentDao();
+			BranchDao branchDao = tx.branchDao();
 			NodeDao nodeDao = tx.nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
@@ -91,9 +93,9 @@ public class DemoDumpGeneratorTest {
 				HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, "en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
-				String branchUuid = node.getProject().getInitialBranch().getUuid();
+				String branchUuid = branchDao.getInitialBranch(node.getProject()).getUuid();
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
-				String microSchemaVersionHash = container.getSchemaContainerVersion().getMicroschemaVersionHash(node.getProject().getInitialBranch());
+				String microSchemaVersionHash = container.getSchemaContainerVersion().getMicroschemaVersionHash(branchDao.getInitialBranch(node.getProject()));
 				ContainerType type = PUBLISHED;
 				String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, microSchemaVersionHash);
 				String documentId = ContentDao.composeDocumentId(node.getUuid(), languageTag);

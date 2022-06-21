@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.8.2"
+version: "1.8.5"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -3960,14 +3960,14 @@ mediaType: application/json
                                 "versionUuid" : {
                                   "type" : "string"
                                 },
-                                "uuid" : {
-                                  "type" : "string"
-                                },
                                 "name" : {
                                   "type" : "string"
                                 },
                                 "set" : {
                                   "type" : "boolean"
+                                },
+                                "uuid" : {
+                                  "type" : "string"
                                 }
                               }
                             },
@@ -4087,14 +4087,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -4295,14 +4295,14 @@ mediaType: application/json
                                                   "versionUuid" : {
                                                     "type" : "string"
                                                   },
-                                                  "uuid" : {
-                                                    "type" : "string"
-                                                  },
                                                   "name" : {
                                                     "type" : "string"
                                                   },
                                                   "set" : {
                                                     "type" : "boolean"
+                                                  },
+                                                  "uuid" : {
+                                                    "type" : "string"
                                                   }
                                                 }
                                               }
@@ -4556,14 +4556,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -4751,14 +4751,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -5005,6 +5005,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "name" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Name of the field."
+                                                },
+                                                "type" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Type of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -5015,16 +5025,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "name" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Name of the field."
-                                                },
-                                                "type" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Type of the field."
                                                 }
                                               }
                                             }
@@ -5289,6 +5289,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the field."
+                                  },
+                                  "type" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Type of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -5299,16 +5309,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "name" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Name of the field."
-                                  },
-                                  "type" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Type of the field."
                                   }
                                 }
                               }
@@ -5443,6 +5443,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the field."
+                                          },
+                                          "type" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Type of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -5453,16 +5463,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "name" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Name of the field."
-                                          },
-                                          "type" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Type of the field."
                                           }
                                         }
                                       }
@@ -5713,6 +5713,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the field."
+                                          },
+                                          "type" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Type of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -5723,16 +5733,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "name" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Name of the field."
-                                          },
-                                          "type" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Type of the field."
                                           }
                                         }
                                       }
@@ -5926,6 +5926,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the field."
+                                  },
+                                  "type" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Type of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -5936,16 +5946,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "name" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Name of the field."
-                                  },
-                                  "type" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Type of the field."
                                   }
                                 }
                               }
@@ -6073,6 +6073,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the field."
+                                          },
+                                          "type" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Type of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -6083,16 +6093,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "name" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Name of the field."
-                                          },
-                                          "type" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Type of the field."
                                           }
                                         }
                                       }
@@ -6438,6 +6438,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the field."
+                                  },
+                                  "type" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Type of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -6448,16 +6458,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "name" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Name of the field."
-                                  },
-                                  "type" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Type of the field."
                                   }
                                 }
                               }
@@ -6683,6 +6683,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the field."
+                                  },
+                                  "type" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Type of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -6693,16 +6703,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "name" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Name of the field."
-                                  },
-                                  "type" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Type of the field."
                                   }
                                 }
                               }
@@ -6815,6 +6815,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the field."
+                                          },
+                                          "type" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Type of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -6825,16 +6835,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "name" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Name of the field."
-                                          },
-                                          "type" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Type of the field."
                                           }
                                         }
                                       }
@@ -7021,6 +7021,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "name" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Name of the field."
+                                                },
+                                                "type" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Type of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -7031,16 +7041,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "name" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Name of the field."
-                                                },
-                                                "type" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Type of the field."
                                                 }
                                               }
                                             }
@@ -7291,6 +7291,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the field."
+                                          },
+                                          "type" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Type of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -7301,16 +7311,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "name" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Name of the field."
-                                          },
-                                          "type" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Type of the field."
                                           }
                                         }
                                       }
@@ -7428,6 +7428,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the field."
+                                  },
+                                  "type" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Type of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -7438,16 +7448,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "name" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Name of the field."
-                                  },
-                                  "type" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Type of the field."
                                   }
                                 }
                               }
@@ -7662,6 +7662,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the field."
+                                  },
+                                  "type" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Type of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -7672,16 +7682,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "name" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Name of the field."
-                                  },
-                                  "type" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Type of the field."
                                   }
                                 }
                               }
@@ -7778,6 +7778,43 @@ mediaType: application/json
 /admin: 
     displayName: /admin
     description: Collection of administrative endpoints which usually require admin permission
+    /cache: 
+        delete: 
+            description: Clear all internal caches (cluster wide).
+            responses: 
+                "200": 
+                    description: Clearing the caches has been invoked.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
+                                  "properties" : {
+                                    "message" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
+                                    },
+                                    "internalMessage" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Internal developer friendly message"
+                                    },
+                                    "properties" : {
+                                      "type" : "object",
+                                      "description" : "Map of i18n properties which were used to construct the provided message",
+                                      "additionalProperties" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:java:lang:Object"
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "message" : "I18n message"
+                                }
     /cluster/config: 
         get: 
             description: Loads the cluster configuration.
@@ -9913,6 +9950,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "name" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Name of the field."
+                                                },
+                                                "type" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Type of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -9923,16 +9970,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "name" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Name of the field."
-                                                },
-                                                "type" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Type of the field."
                                                 }
                                               }
                                             }
@@ -10229,14 +10266,14 @@ mediaType: application/json
                                                   "versionUuid" : {
                                                     "type" : "string"
                                                   },
-                                                  "uuid" : {
-                                                    "type" : "string"
-                                                  },
                                                   "name" : {
                                                     "type" : "string"
                                                   },
                                                   "set" : {
                                                     "type" : "boolean"
+                                                  },
+                                                  "uuid" : {
+                                                    "type" : "string"
                                                   }
                                                 }
                                               }
@@ -10769,14 +10806,14 @@ mediaType: application/json
                                                   "versionUuid" : {
                                                     "type" : "string"
                                                   },
-                                                  "uuid" : {
-                                                    "type" : "string"
-                                                  },
                                                   "name" : {
                                                     "type" : "string"
                                                   },
                                                   "set" : {
                                                     "type" : "boolean"
+                                                  },
+                                                  "uuid" : {
+                                                    "type" : "string"
                                                   }
                                                 }
                                               }
@@ -11309,6 +11346,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "name" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Name of the field."
+                                                },
+                                                "type" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Type of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -11319,16 +11366,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "name" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Name of the field."
-                                                },
-                                                "type" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Type of the field."
                                                 }
                                               }
                                             }
@@ -12761,6 +12798,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the field."
+                                  },
+                                  "type" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Type of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -12771,16 +12818,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "name" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Name of the field."
-                                  },
-                                  "type" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Type of the field."
                                   }
                                 }
                               }
@@ -13153,6 +13190,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the field."
+                                  },
+                                  "type" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Type of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -13163,16 +13210,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "name" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Name of the field."
-                                  },
-                                  "type" : {
-                                    "type" : "string",
-                                    "required" : true,
-                                    "description" : "Type of the field."
                                   }
                                 }
                               }
@@ -13815,7 +13852,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.8.2",
+                                  "meshVersion" : "1.8.5",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -13933,14 +13970,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -14065,14 +14102,14 @@ mediaType: application/json
                                     "versionUuid" : {
                                       "type" : "string"
                                     },
-                                    "uuid" : {
-                                      "type" : "string"
-                                    },
                                     "name" : {
                                       "type" : "string"
                                     },
                                     "set" : {
                                       "type" : "boolean"
+                                    },
+                                    "uuid" : {
+                                      "type" : "string"
                                     }
                                   }
                                 }
@@ -14265,14 +14302,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -14768,14 +14805,14 @@ mediaType: application/json
                                                   "versionUuid" : {
                                                     "type" : "string"
                                                   },
-                                                  "uuid" : {
-                                                    "type" : "string"
-                                                  },
                                                   "name" : {
                                                     "type" : "string"
                                                   },
                                                   "set" : {
                                                     "type" : "boolean"
+                                                  },
+                                                  "uuid" : {
+                                                    "type" : "string"
                                                   }
                                                 }
                                               }
@@ -15394,14 +15431,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -15981,14 +16018,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -16486,14 +16523,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -17135,14 +17172,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -17671,14 +17708,14 @@ mediaType: application/json
                                                   "versionUuid" : {
                                                     "type" : "string"
                                                   },
-                                                  "uuid" : {
-                                                    "type" : "string"
-                                                  },
                                                   "name" : {
                                                     "type" : "string"
                                                   },
                                                   "set" : {
                                                     "type" : "boolean"
+                                                  },
+                                                  "uuid" : {
+                                                    "type" : "string"
                                                   }
                                                 }
                                               }
@@ -18640,14 +18677,14 @@ mediaType: application/json
                                                 "versionUuid" : {
                                                   "type" : "string"
                                                 },
-                                                "uuid" : {
-                                                  "type" : "string"
-                                                },
                                                 "name" : {
                                                   "type" : "string"
                                                 },
                                                 "set" : {
                                                   "type" : "boolean"
+                                                },
+                                                "uuid" : {
+                                                  "type" : "string"
                                                 }
                                               }
                                             }
@@ -19325,14 +19362,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -19835,14 +19872,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -20918,14 +20955,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -22859,14 +22896,14 @@ mediaType: application/json
                                                   "versionUuid" : {
                                                     "type" : "string"
                                                   },
-                                                  "uuid" : {
-                                                    "type" : "string"
-                                                  },
                                                   "name" : {
                                                     "type" : "string"
                                                   },
                                                   "set" : {
                                                     "type" : "boolean"
+                                                  },
+                                                  "uuid" : {
+                                                    "type" : "string"
                                                   }
                                                 }
                                               }
@@ -23437,14 +23474,14 @@ mediaType: application/json
                                                 "versionUuid" : {
                                                   "type" : "string"
                                                 },
-                                                "uuid" : {
-                                                  "type" : "string"
-                                                },
                                                 "name" : {
                                                   "type" : "string"
                                                 },
                                                 "set" : {
                                                   "type" : "boolean"
+                                                },
+                                                "uuid" : {
+                                                  "type" : "string"
                                                 }
                                               }
                                             }
@@ -24254,14 +24291,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -24608,14 +24645,14 @@ mediaType: application/json
                                             "versionUuid" : {
                                               "type" : "string"
                                             },
-                                            "uuid" : {
-                                              "type" : "string"
-                                            },
                                             "name" : {
                                               "type" : "string"
                                             },
                                             "set" : {
                                               "type" : "boolean"
+                                            },
+                                            "uuid" : {
+                                              "type" : "string"
                                             }
                                           }
                                         }
@@ -27664,14 +27701,14 @@ mediaType: application/json
                                                   "versionUuid" : {
                                                     "type" : "string"
                                                   },
-                                                  "uuid" : {
-                                                    "type" : "string"
-                                                  },
                                                   "name" : {
                                                     "type" : "string"
                                                   },
                                                   "set" : {
                                                     "type" : "boolean"
+                                                  },
+                                                  "uuid" : {
+                                                    "type" : "string"
                                                   }
                                                 }
                                               }
@@ -28661,6 +28698,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "name" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Name of the field."
+                                                },
+                                                "type" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Type of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -28671,16 +28718,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "name" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Name of the field."
-                                                },
-                                                "type" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Type of the field."
                                                 }
                                               }
                                             }
@@ -29006,6 +29043,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the field."
+                                          },
+                                          "type" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Type of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -29016,16 +29063,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "name" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Name of the field."
-                                          },
-                                          "type" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Type of the field."
                                           }
                                         }
                                       }
@@ -29247,6 +29284,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the field."
+                                          },
+                                          "type" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Type of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -29257,16 +29304,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "name" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Name of the field."
-                                          },
-                                          "type" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Type of the field."
                                           }
                                         }
                                       }
@@ -29484,6 +29521,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "name" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Name of the field."
+                                                },
+                                                "type" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Type of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -29494,16 +29541,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "name" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Name of the field."
-                                                },
-                                                "type" : {
-                                                  "type" : "string",
-                                                  "required" : true,
-                                                  "description" : "Type of the field."
                                                 }
                                               }
                                             }
@@ -29740,6 +29777,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the field."
+                                          },
+                                          "type" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Type of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -29750,16 +29797,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "name" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Name of the field."
-                                          },
-                                          "type" : {
-                                            "type" : "string",
-                                            "required" : true,
-                                            "description" : "Type of the field."
                                           }
                                         }
                                       }

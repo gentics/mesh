@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.context;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -10,7 +9,6 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -28,9 +26,6 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
@@ -47,6 +42,8 @@ import okhttp3.OkHttpClient;
 public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper, WrapperHelper {
 
 	static {
+		// New OrientDBs have aggressive memory preallocation, which can eat the whole RAM with an eventual crash, so we disable it.
+		System.setProperty("memory.directMemory.preallocate", "false");
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
@@ -106,8 +103,9 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	public String getJson(HibNode node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
-		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return Tx.get().nodeDao().transformToRestSync(node, ac, 0).toJson();
+		return tx(tx -> {
+			return tx.nodeDao().transformToRestSync(node, ac, 0).toJson();
+		});
 	}
 
 	protected void testPermission(InternalPermission perm, HibBaseElement element) {

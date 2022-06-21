@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
@@ -25,7 +26,6 @@ import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -43,12 +43,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -61,6 +59,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -73,10 +72,10 @@ import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.parameter.LinkType;
@@ -91,6 +90,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -207,8 +207,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				request.setParentNodeUuid(uuid);
 
 				call(() -> client().createNode(PROJECT_NAME, request));
-				// long duration = currentTimeMillis() - start;
-				// out.println("Duration:" + i + " " + (duration / i));
+				long duration = System.currentTimeMillis() - start;
+				MeshTestContext.LOG.info("Duration:" + i + " " + (duration / i));
 			}
 		}
 	}
@@ -371,7 +371,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testCreateWithDuplicateUuid() throws Exception {
-		String nodeUuid = tx(() -> project().getUuid());
+		String nodeUuid = tx(() -> project().getBaseNode().getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReferenceImpl().setName("content"));
@@ -384,7 +384,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
-			call(() -> client().createNode(nodeUuid, PROJECT_NAME, request), INTERNAL_SERVER_ERROR, "error_internal");
+			call(() -> client().createNode(nodeUuid, PROJECT_NAME, request), BAD_REQUEST);
 		}
 	}
 
@@ -545,8 +545,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Delete the node
 			call(() -> client().deleteNode(PROJECT_NAME, restNode2.getUuid()));
 
-			HibNode deletedNode = boot().nodeDao().findByUuid(project(), restNode2.getUuid());
-			assertNull("The node should have been deleted.", deletedNode);
+			call(() -> client().findNodeByUuid(projectUuid(), restNode2.getUuid()), NOT_FOUND);
 		}
 	}
 
@@ -1383,26 +1382,19 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testReadByUUIDWithLinkPathsAndNoSegmentFieldRef() {
-		HibNode node;
-		try (Tx tx = tx()) {
-			NodeDao nodeDao = Tx.get().nodeDao();
-			node = nodeDao.findByUuidGlobal(folder("news").getUuid());
-			// Update the schema
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			schema.setSegmentField(null);
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			mesh().serverSchemaStorage().clear();
-			tx.success();
-		}
+		String nodeUuid = tx(tx -> { return folder("news").getUuid(); });
+		String schemaUuid = tx(tx -> { return folder("news").getSchemaContainer().getUuid(); });
+		SchemaResponse schema = call(() -> client().findSchemaByUuid(schemaUuid));
 
-		try (Tx tx = tx()) {
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setResolveLinks(
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, schema.toUpdateRequest().setSegmentField(null)));
+		}, COMPLETED, 1);		
+
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setResolveLinks(
 				LinkType.FULL), new VersioningParametersImpl().draft()));
 			assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/error/404", response.getPath());
 			assertThat(response.getLanguagePaths()).containsEntry("en", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404");
 			assertThat(response.getLanguagePaths()).containsEntry("de", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404");
-		}
-
 	}
 
 	@Test
@@ -1675,7 +1667,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 1. Load Ids / Objects
 		String uuid = tx(() -> content("concorde").getUuid());
-		final HibNode node = tx(() -> content("concorde"));
 		HibNodeFieldContainer origContainer = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			GroupDao groupDao = tx.groupDao();
@@ -1721,7 +1712,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(content("concorde"), english()).getSchemaContainerVersion().getUuid();
 		});
 
 		waitForSearchIdleEvent();
@@ -1739,7 +1730,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(content("concorde"), english());
 			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
@@ -1766,7 +1757,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateCreateLanguage() {
 		final String germanName = "Zweitausendfünfzehn";
-		final HibNode node = tx(() -> folder("2015"));
 		final String uuid = tx(() -> folder("2015").getUuid());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
@@ -1778,7 +1768,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getSchemaContainerVersion().getUuid();
 		});
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 
@@ -2060,48 +2050,48 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
-		HibBranch initialBranch = tx(() -> reloadBranch(project().getInitialBranch()));
-		HibBranch newBranch = tx(() -> {
+		String initialBranch = null;
+		String newBranch = "newbranch";
+
+		waitForJobs(() -> {
 			// create a new branch
-			HibBranch branch = createBranch("newbranch");
-			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
-			context.setNewBranch(branch);
-			context.setOldBranch(initialBranch);
-			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
-			return branch;
-		});
+			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName(newBranch)));
+		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			// create node in one branch
-			HibNode node = content("concorde");
-			NodeCreateRequest parentRequest = new NodeCreateRequest();
-			parentRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			parentRequest.setLanguage("en");
-			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			parentRequest.setParentNodeUuid(node.getUuid());
-			NodeResponse parentNode = call(
-				() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
-
-			// create child in same branch
-			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
-			sameBranchChildRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			sameBranchChildRequest.setLanguage("en");
-			sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
-			NodeResponse sameBranchChildResponse = call(
-				() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
-
-			// try to create node with same uuid in other branch with first node as parent
-			NodeCreateRequest childRequest = new NodeCreateRequest();
-			childRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			childRequest.setLanguage("en");
-			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			childRequest.setParentNodeUuid(parentNode.getUuid());
-			call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
-				new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
-
-			tx.success();
+			HibProject project = project();
+			initialBranch = project.getInitialBranch().getName();
+			assertNotNull(tx.branchDao().findByName(project, newBranch));
 		}
+
+		// create node in one branch
+		String nodeUuid = tx(() -> content("concorde").getUuid());
+		NodeCreateRequest parentRequest = new NodeCreateRequest();
+		parentRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		parentRequest.setLanguage("en");
+		parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		parentRequest.setParentNodeUuid(nodeUuid);
+		NodeResponse parentNode = call(
+			() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch)));
+
+		// create child in same branch
+		NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
+		sameBranchChildRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		sameBranchChildRequest.setLanguage("en");
+		sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
+		NodeResponse sameBranchChildResponse = call(
+			() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch)));
+
+		// try to create node with same uuid in other branch with first node as parent
+		NodeCreateRequest childRequest = new NodeCreateRequest();
+		childRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		childRequest.setLanguage("en");
+		childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		childRequest.setParentNodeUuid(parentNode.getUuid());
+		String branch = initialBranch;
+		call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
+			new VersioningParametersImpl().setBranch(branch)), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
 	}
 
 	@Test

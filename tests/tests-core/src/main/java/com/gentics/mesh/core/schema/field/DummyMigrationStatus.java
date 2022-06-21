@@ -3,6 +3,7 @@ package com.gentics.mesh.core.schema.field;
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobWarningList;
 
 /**
  * Wrapper for migration status for tests.
@@ -30,6 +31,11 @@ public class DummyMigrationStatus implements MigrationStatusHandler {
 	}
 
 	@Override
+	public MigrationStatusHandler done(JobWarningList warningList) {
+		return this;
+	}
+
+	@Override
 	public MigrationStatusHandler error(Throwable error, String string) {
 		return this;
 	}
@@ -50,7 +56,7 @@ public class DummyMigrationStatus implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void incCompleted() {
+	public void incCompleted(int increment) {
 
 	}
 }

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -43,74 +44,65 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	public void testCreateNodeWithField() {
 		NodeResponse response = createNodeWithField();
 		NumberFieldListImpl field = response.getFields().getNumberFieldList(FIELD_NAME);
-		assertThat(field.getItems()).as("Only valid values should be stored").containsExactly(42, 41, 0.1, Long.MAX_VALUE);
+		assertThat(field.getItems().stream().map(Number::doubleValue).collect(Collectors.toList())).as("Only valid values should be stored")
+				.containsExactly(new BigDecimal(42).doubleValue(), new BigDecimal(41).doubleValue(), new BigDecimal(0.1).doubleValue(), new BigDecimal(Long.MAX_VALUE).doubleValue());
 	}
 
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = tx()) {
-			NumberFieldListImpl listField = new NumberFieldListImpl();
-			listField.add(42);
-			listField.add(41);
-			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(42);
+		listField.add(41);
+		listField.add(null);
+		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = tx()) {
-			NumberFieldListImpl listField = new NumberFieldListImpl();
-			listField.add(42);
-			listField.add(41);
-			listField.add(null);
-			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(42);
+		listField.add(41);
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			assertThat(response.getFields().getNumberFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getNumberFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			NumberFieldListImpl listField = new NumberFieldListImpl();
-			listField.add(41L);
-			listField.add(42L);
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(41L);
+		listField.add(42L);
 
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = tx()) {
-			// 1. Update an existing node
-			NumberFieldListImpl listField = new NumberFieldListImpl();
-			listField.add(41L);
-			listField.add(42L);
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		// 1. Update an existing node
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(41L);
+		listField.add(42L);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-			// 2. Read the node
-			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
-			NumberFieldListImpl deserializedField = response.getFields().getNumberFieldList(FIELD_NAME);
-			assertNotNull(deserializedField);
-			assertThat(deserializedField.getItems()).as("List field values from updated node (null values are omitted)").containsExactly(41, 42);
-		}
+		// 2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		NumberFieldListImpl deserializedField = response.getFields().getNumberFieldList(FIELD_NAME);
+		assertNotNull(deserializedField);
+		assertThat(deserializedField.getItems().stream().map(Number::intValue).collect(Collectors.toList())).as("List field values from updated node (null values are omitted)").containsExactly(41, 42);
 	}
 
 	@Test
@@ -135,7 +127,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			}
 			NodeResponse response = updateNode(FIELD_NAME, list);
 			NumberFieldListImpl field = response.getFields().getNumberFieldList(FIELD_NAME);
-			assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
+			assertThat(field.getItems().stream().map(Number::doubleValue).collect(Collectors.toList())).as("Updated field")
+					.containsExactlyElementsOf(list.getItems().stream().map(Number::doubleValue).collect(Collectors.toList()));
 
 			try (Tx tx = tx()) {
 				ContentDao contentDao = tx.contentDao();
@@ -171,9 +164,9 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumberList(FIELD_NAME)).isNotNull();
-			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(item -> item.getNumber())
+			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(item -> item.getNumber().doubleValue())
 				.collect(Collectors.toList());
-			assertThat(oldValueList).containsExactly(42, 41.1);
+			assertThat(oldValueList).containsExactly(42.0, 41.1);
 		}
 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);

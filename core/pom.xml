@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.8.3-SNAPSHOT</version>
+		<version>1.8.6-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -181,36 +181,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-invoker-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<?m2e ignore ?>
-						<id>build-test-projects</id>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<!-- Before the test phase -->
-						<phase>process-test-classes</phase>
-						<configuration>
-							<skipInvocation>${skip.test-plugins}</skipInvocation>
-							<properties>
-								<mesh.version>${project.version}</mesh.version>
-								<skipTests>true</skipTests>
-							</properties>
-							<!-- Somehow invalid build hook are configured -->
-							<postBuildHookScript>/bin/true</postBuildHookScript>
-							<preBuildHookScript>/bin/true</preBuildHookScript>
-							<projectsDirectory>src/test/plugins</projectsDirectory>
-							<cloneProjectsTo>${project.build.directory}/test-plugins</cloneProjectsTo>
-							<pomIncludes>
-								<pomInclude>pom.xml</pomInclude>
-							</pomIncludes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

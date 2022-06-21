@@ -5,6 +5,12 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cache.CacheRegistry;
+import com.gentics.mesh.cache.OrientdbCacheRegistry;
+import com.gentics.mesh.cache.ProjectBranchNameCache;
+import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
+import com.gentics.mesh.cache.ProjectNameCache;
+import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
@@ -92,8 +98,14 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerChe
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.migration.BranchMigration;
+import com.gentics.mesh.core.migration.MicronodeMigration;
+import com.gentics.mesh.core.migration.NodeMigration;
+import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
+import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.verticle.handler.OrientDBWriteLockImpl;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.proxy.ClusterEnabledRequestDelegatorImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -260,6 +272,27 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract AdminHandler adminHandler(OrientDBAdminHandler e);
+
+	// Caches
+
+	@Binds
+	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
+
+	@Binds
+	abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
+
+	@Binds
+	abstract CacheRegistry bindCacheRegistry(OrientdbCacheRegistry e);
+
+	// Migration
+	@Binds
+	abstract NodeMigration nodeMigration(NodeMigrationImpl e);
+
+	@Binds
+	abstract MicronodeMigration micronodeMigration(MicronodeMigrationImpl e);
+
+	@Binds
+	abstract BranchMigration branchMigration(BranchMigrationImpl e);
 
 	// END
 

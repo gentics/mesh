@@ -150,7 +150,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		statusEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			adminHandler.handleStatus(ac);
-		});
+		}, false);
 
 		// Endpoint createMappings = createEndpoint();
 		// createMappings.path("/createMappings");

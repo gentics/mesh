@@ -14,10 +14,6 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
  */
 public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, MeshEdge, DisplayField, S3HibBinaryField, GraphDeletableField {
 
-	String S3_BINARY_FILENAME_PROPERTY_KEY = "fileName";
-
-	String S3_BINARY_CONTENT_TYPE_PROPERTY_KEY = "s3binaryContentType";
-
 	String S3_BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "s3binaryImageDominantColor";
 
 	String S3_BINARY_IMAGE_FOCAL_POINT_X = "s3binaryImageFocalPointX";
@@ -44,7 +40,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	 * @return
 	 */
 	default String getFileName() {
-		return property(S3_BINARY_FILENAME_PROPERTY_KEY);
+		return getBinary().getFileName();
 	}
 
 	/**
@@ -54,7 +50,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	 * @return Fluent API
 	 */
 	default S3HibBinaryField setFileName(String fileName) {
-		property(S3_BINARY_FILENAME_PROPERTY_KEY, fileName);
+		getBinary().setFileName(fileName);
 		return this;
 	}
 
@@ -64,7 +60,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	 * @return
 	 */
 	default String getMimeType() {
-		return property(S3_BINARY_CONTENT_TYPE_PROPERTY_KEY);
+		return getBinary().getMimeType();
 	}
 
 	/**
@@ -74,7 +70,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	 * @return Fluent API
 	 */
 	default S3BinaryGraphField setMimeType(String mimeType) {
-		property(S3_BINARY_CONTENT_TYPE_PROPERTY_KEY, mimeType);
+		getBinary().setMimeType(mimeType);
 		return this;
 	}
 

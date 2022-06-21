@@ -213,13 +213,13 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		FieldMap fieldMap = new FieldMapImpl();
 		fieldMap.put(fieldKey, field);
 		if (field != null) {
-			try {
+			try (Tx tx = tx()) {
 				prepareTypedSchema(container.getNode(), TestHelper.fieldIntoSchema(field).setName(fieldKey), true);
+				tx.commit();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
 		container.updateFieldsFromRest(ac, fieldMap);
 	}
-
 }

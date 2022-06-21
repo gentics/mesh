@@ -59,6 +59,9 @@
 | *MESH_CLUSTER_VERTX_PORT*
 | Override the vert.x eventbus server port.
 
+| *MESH_VERTX_EVENT_BUS_WARN_THRESHOLD*
+| Override the Vert.x eventBus warn threshold in ms.
+
 | *FLOAT_VALUE_PRIMITIVE_ENV*
 | 
 
@@ -89,6 +92,9 @@
 | *MESH_CACHE_PATH_SIZE*
 | Override the path cache size.
 
+| *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
+| Override the Vert.x eventBus error threshold in ms.
+
 | *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
 | Override the configured client certificate handling mode.
 
@@ -116,11 +122,11 @@
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
 
-| *MESH_IMAGE_CACHE_DIRECTORY*
-| Override the path for image cache directory.
-
 | *MESH_DEBUGINFO_LOG_ENABLED*
 | Enables the debug info log
+
+| *MESH_IMAGE_CACHE_DIRECTORY*
+| Override the path for image cache directory.
 
 | *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
 | Override the batch bulk length limit. Default: 5000000
@@ -154,6 +160,9 @@
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
 | Override the cluster topology lock timeout in ms.
+
+| *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
+| Override the Vert.x eventBus check interval in ms.
 
 | *TEST_ENV_KEY*
 | 
@@ -296,11 +305,11 @@
 | *MESH_LANGUAGES_FILE_PATH*
 | Override the path to the optional languages file
 
-| *MESH_BINARY_DOCUMENT_PARSER*
-| Override the document parser enabled flag.
-
 | *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
 | Override the cluster topology lock delay in ms.
+
+| *MESH_BINARY_DOCUMENT_PARSER*
+| Override the document parser enabled flag.
 
 | *MESH_AUTH_KEYSTORE_PASS*
 | Override the configured keystore password.

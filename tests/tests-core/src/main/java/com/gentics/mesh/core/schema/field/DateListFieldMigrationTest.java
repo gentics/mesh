@@ -20,6 +20,8 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.stream.Collectors;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.date.DateListFieldHelper;
@@ -27,21 +29,6 @@ import com.gentics.mesh.test.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class DateListFieldMigrationTest extends AbstractFieldMigrationTest implements DateListFieldHelper {
-
-	/**
-	 * Cast a long to int if its possible. A long can be cast to int if it is smaller than Integer.MAX_VALUE.
-	 *
-	 * @param num
-	 *            the number to cast
-	 * @return the int or long number
-	 */
-	private Number castToInt(long num) {
-		if (num < Integer.MAX_VALUE) {
-			return (int) num;
-		} else {
-			return num;
-		}
-	}
 
 	@Test
 	@Override
@@ -251,7 +238,8 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).contains(DATEVALUE, OTHERDATEVALUE);
+			assertThat(container.getNumberList(name).getValues().stream().map(Number::longValue).collect(Collectors.toList()))
+				.as(NEWFIELDVALUE).contains(DATEVALUE, OTHERDATEVALUE);
 		});
 	}
 

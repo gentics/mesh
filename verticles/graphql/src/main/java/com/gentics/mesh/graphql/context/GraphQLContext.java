@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.context;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -10,6 +11,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.plugin.graphql.GraphQLPluginContext;
 
+import graphql.GraphQLError;
 import graphql.schema.DataFetchingEnvironment;
 
 /**
@@ -38,13 +40,14 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 
 	/**
 	 * Check whether the current user of the context has read permission on the container (via type and parent node).
-	 * This method will not fail with an exception. Instead the perm error will be logged in the error list. Null will be returned in this case.
+	 * This method will not fail with an exception. Instead the perm error will be returned in the optional. An empty
+	 * optional will be returned in other cases.
 	 * 
 	 * @param container
 	 * @param env Environment used to add perm errors
-	 * @return Provided container or null if permissions are lacking.
+	 * @return An optional graphql permission error.
 	 */
-	HibNodeFieldContainer requiresReadPermSoft(HibNodeFieldContainer container, DataFetchingEnvironment env);
+	Optional<GraphQLError> requiresReadPermSoft(HibNodeFieldContainer container, DataFetchingEnvironment env);
 
 	/**
 	 * Check whether the content can be read by the current user. Please note that this method will not check READ perms on the node. It is only checking the content container of the node. 

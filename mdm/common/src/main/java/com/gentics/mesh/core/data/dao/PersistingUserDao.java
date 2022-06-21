@@ -12,6 +12,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -86,24 +88,23 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	@Override
 	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
 		PermissionCache permissionCache = Tx.get().permissionCache();
-		if (permissionCache.hasPermission(user.getId(), permission, elementId)) {
-			return true;
+		Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
+		if (cached != null) {
+			if (!cached && permission == READ_PUBLISHED_PERM) {
+				return hasPermissionForId(user, elementId, READ_PERM);
+			}
+
+			return cached.booleanValue();
 		} else {
 			// Admin users have all permissions
 			if (user.isAdmin()) {
-				for (InternalPermission perm : InternalPermission.values()) {
-					permissionCache.store(user.getId(), perm, elementId);
-				}
+				permissionCache.store(user.getId(), EnumSet.allOf(InternalPermission.class), elementId);
 				return true;
 			}
 
-			boolean hasPermission = hasPermissionForElementId(user, elementId, permission);
-			if (hasPermission) {
-				// We only store granting permissions in the store in order
-				// reduce the invalidation calls.
-				// This way we do not need to invalidate the cache if a role
-				// is removed from a group or a role is deleted.
-				permissionCache.store(user.getId(), permission, elementId);
+			EnumSet<InternalPermission> permissions = getPermissionsForElementId(user, elementId);
+			permissionCache.store(user.getId(), permissions, elementId);
+			if (permissions.contains(permission)) {
 				return true;
 			}
 
@@ -116,7 +117,21 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		}
 	}
 
-	boolean hasPermissionForElementId(HibUser user, Object elementId, InternalPermission permission);
+	/**
+	 * Get the permissions set on the element with given ID
+	 * @param user user
+	 * @param elementId element ID
+	 * @return enumset of granted permissions
+	 */
+	EnumSet<InternalPermission> getPermissionsForElementId(HibUser user, Object elementId);
+
+	/**
+	 * Prepare the permissions of the user on the elements with given IDs.
+	 * Implementations may e.g. preload the permissions and put them into the cache.
+	 * @param user user
+	 * @param elementIds collection of element IDs
+	 */
+	void preparePermissionsForElementIds(HibUser user, Collection<Object> elementIds);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
@@ -202,7 +217,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
 		ContentDao contentDao = Tx.get().contentDao();
 		HibNode node = contentDao.getNode(container);
-		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
+		if (!hasReadPermission(user, container, branchUuid)) {
 			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
 				"published".equals(requestedVersion)
 					? READ_PUBLISHED_PERM.getRestPerm().getName()
@@ -260,17 +275,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		}
 		return user;
 	}
-	
-	/**
-	 * Check the read permission on the given container and return false if the needed permission to read the container is not set. This method will not return
-	 * false if the user has READ permission or READ_PUBLISH permission on a published node.
-	 *
-	 * @param user
-	 * @param container
-	 * @param branchUuid
-	 * @param requestedVersion
-	 */
-	default boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
+
+	default boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid) {
 		ContentDao contentDao = Tx.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		if (hasPermission(user, node, READ_PERM)) {
@@ -509,7 +515,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		}
 
 		Boolean adminFlag = requestModel.getAdmin();
-		if (adminFlag != null) {
+		if (adminFlag != null && adminFlag.booleanValue()) {
 			if (requestUser.isAdmin()) {
 				user.setAdmin(adminFlag);
 			} else {

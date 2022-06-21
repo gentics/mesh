@@ -163,13 +163,15 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		HibNode baseNode = project.getBaseNode();
 		CommonTx ctx = CommonTx.get();
 		ContentDao contentDao = ctx.contentDao();
+		BranchDao branchDao = ctx.branchDao();
+		PersistingNodeDao nodeDao = ctx.nodeDao();
 		if (baseNode == null) {
-			baseNode = ctx.create(CommonTx.get().nodeDao().getPersistenceClass(project));
+			baseNode = nodeDao.createPersisted(project, null);
 			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
 			baseNode.setProject(project);
 			baseNode.setCreated(creator);
 			HibLanguage language = ctx.languageDao().findByLanguageTag(ctx.data().options().getDefaultLanguage());
-			contentDao.createFieldContainer(baseNode, language.getLanguageTag(), project.getLatestBranch(), creator);
+			contentDao.createFieldContainer(baseNode, language.getLanguageTag(), branchDao.getLatestBranch(project), creator);
 			project.setBaseNode(baseNode);
 		}
 		return baseNode;
@@ -181,6 +183,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		UserDao userDao = CommonTx.get().userDao();
 		SchemaDao schemaDao = CommonTx.get().schemaDao();
 		ContentDao contentDao = CommonTx.get().contentDao();
+		BranchDao branchDao = CommonTx.get().branchDao();
 
 		// TODO also create a default object schema for the project. Move this
 		// into service class
@@ -212,7 +215,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		Boolean ssl = requestModel.getSsl();
 		String pathPrefix = requestModel.getPathPrefix();
 		HibProject project = create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, uuid, batch);
-		HibBranch initialBranch = project.getInitialBranch();
+		HibBranch initialBranch = branchDao.getInitialBranch(project);
 		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions

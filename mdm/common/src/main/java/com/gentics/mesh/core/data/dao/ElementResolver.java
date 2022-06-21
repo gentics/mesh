@@ -39,7 +39,7 @@ public interface ElementResolver<B extends HibBaseElement, E extends HibBaseElem
 	 * @return
 	 */
 	default HibBaseElement resolveToElement(HibBaseElement permissionRoot, B root, Stack<String> stack) {
-		if (log.isDebugEnabled()) {
+		if (log.isDebugEnabled() && root != null) {
 			log.debug("Resolving for {" + root.getClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {
 				log.debug("Stack: is empty");

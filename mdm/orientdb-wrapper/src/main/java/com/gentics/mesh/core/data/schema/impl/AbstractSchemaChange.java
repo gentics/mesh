@@ -3,9 +3,6 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.List;
@@ -96,11 +93,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 				.collect(Collectors.toMap(
 						entry -> entry.getKey().replace(REST_PROPERTY_PREFIX_KEY, StringUtils.EMPTY), 
 						entry -> entry.getValue()));
-	}
-
-	@Override
-	public void setIndexOptions(JsonObject options) {
-		setRestProperty(ELASTICSEARCH_KEY, options.encode());
 	}
 
 	@Override

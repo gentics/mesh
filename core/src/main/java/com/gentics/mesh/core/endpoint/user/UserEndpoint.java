@@ -114,7 +114,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			crudHandler.handlePermissionRead(ac, userUuid, pathToElement);
-		});
+		}, false);
 	}
 
 	private void addResetTokenHandler() {
@@ -150,7 +150,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleRead(ac, uuid);
-		});
+		}, false);
 
 		/*
 		 * List all users when no parameter was specified
@@ -169,7 +169,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
-		});
+		}, false);
 	}
 
 	private void addDeleteHandler() {

@@ -2,6 +2,7 @@ package com.gentics.mesh.mock;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.shared.SharedKeys.API_VERSION_CONTEXT_KEY;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +12,7 @@ import java.util.Map.Entry;
 
 import org.mockito.Mockito;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.HttpQueryUtils;
 
@@ -36,13 +39,21 @@ public final class Mocks {
 	}
 
 	public static InternalActionContext getMockedInternalActionContext(String query, HibUser user, HibProject project) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
+		return getMockedInternalActionContext(query, user, project, null);
+	}
+
+	public static <T> InternalActionContext getMockedInternalActionContext(String query, HibUser user, HibProject project, T body) {
+		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null, body));
 		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 		ac.put(API_VERSION_CONTEXT_KEY, CURRENT_API_VERSION);
 		return ac;
 	}
 
 	public static RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, HibUser user, HibProject project) {
+		return getMockedRoutingContext(query, noInternalMap, user, project, null);
+	}
+
+	public static <T> RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, HibUser user, HibProject project, T body) {
 		Map<String, Object> map = new HashMap<>();
 		if (noInternalMap) {
 			map = null;
@@ -80,6 +91,14 @@ public final class Mocks {
 
 		if (project != null) {
 			when(rc.get(SharedKeys.PROJECT_CONTEXT_KEY)).thenReturn(project);
+		}
+
+		if (body != null) {
+			try {
+				when(rc.getBodyAsString()).thenReturn(JsonUtil.getMapper().writeValueAsString(body));
+			} catch (JsonProcessingException e) {
+				fail("Could not transform body to string", e);
+			}
 		}
 		return rc;
 

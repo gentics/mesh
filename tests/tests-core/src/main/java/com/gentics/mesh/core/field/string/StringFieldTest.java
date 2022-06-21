@@ -51,24 +51,28 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
-
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			HibNode node = folder("2015");
+
 			// Add a new string field to the schema
 			StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
 			stringFieldSchema.setName(STRING_FIELD);
 			stringFieldSchema.setLabel("Some string field");
 			stringFieldSchema.setRequired(true);
 			prepareTypedSchema(node, stringFieldSchema, false);
+			tx.commit();
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibStringField field = container.createString(STRING_FIELD);
 			field.setString("someString");
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			String json = getJson(node);
 			assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("someString") > 1);
 			assertNotNull(json);

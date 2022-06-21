@@ -30,6 +30,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.lang.Math.ceil;
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -220,6 +221,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	@Override
+	@Ignore("Not valid over dup UUIDs being allowed globally")
 	public void testCreateWithDuplicateUuid() throws Exception {
 		try (Tx noTx = tx()) {
 			String uuid = user().getUuid();

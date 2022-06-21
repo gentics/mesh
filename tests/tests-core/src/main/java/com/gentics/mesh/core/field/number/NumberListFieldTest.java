@@ -49,12 +49,14 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			HibNode node = folder("2015");
 			prepareNode(node, NUMBER_LIST, "number");
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNumberFieldList numberList = container.createNumberList(NUMBER_LIST);
 			numberList.createNumber(1);
 			numberList.createNumber(1.11);
@@ -62,6 +64,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, NUMBER_LIST, "number", response);
 		}
@@ -214,8 +217,8 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				HibNumberFieldList field = container.getNumberList(NUMBER_LIST);
 				assertNotNull("The graph field {" + NUMBER_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
-				assertEquals("The list item of the field was not updated.", 42L, field.getList().get(0).getNumber());
-				assertEquals("The list item of the field was not updated.", 43L, field.getList().get(1).getNumber());
+				assertEquals("The list item of the field was not updated.", 42L, field.getList().get(0).getNumber().longValue());
+				assertEquals("The list item of the field was not updated.", 43L, field.getList().get(1).getNumber().longValue());
 			});
 		}
 	}

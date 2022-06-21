@@ -10,6 +10,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,12 +38,10 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
 			dateFieldSchema.setName(FIELD_NAME);
 			dateFieldSchema.setLabel("Some label");
-			schema.addField(dateFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(dateFieldSchema), Optional.empty());
 			tx.success();
 		}
 	}
@@ -49,11 +49,9 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
-			assertNull(field);
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
+		assertNull(field);
 	}
 
 	@Test
@@ -86,14 +84,12 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			String oldVersion = firstResponse.getVersion();
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
@@ -166,37 +162,33 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
-			NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			DateField field = response.getFields().getDateField(FIELD_NAME);
-			assertEquals(toISO8601(nowEpoch), field.getDate());
-		}
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
+		DateField field = response.getFields().getDateField(FIELD_NAME);
+		assertEquals(toISO8601(nowEpoch), field.getDate());
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		HibNode node = folder("2015");
 		Long nowEpoch;
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			prepareTypedSchema(node, new DateFieldSchemaImpl().setName(FIELD_NAME), false);
+
 			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
 			tx.success();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 
-		try (Tx tx = tx()) {
-			NodeResponse response = readNode(node);
-			DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
-			assertNotNull(deserializedDateField);
-			assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
-		}
+		NodeResponse response = readNode(folder("2015"));
+		DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
+		assertNotNull(deserializedDateField);
+		assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
 	}
 
 	@Override

@@ -17,6 +17,65 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.30]]
+== 1.6.30 (TBD)
+
+icon:check[] GraphQL: The behaviour for getting lists of nodes with `version`=`draft` using the REST API or GraphQL was inconsistent for nodes,
+for which the requesting user only had the `read published` permission.
+When using the REST API, those nodes were never returned, using GraphQL, those nodes were returned, if they were published and the draft version
+happened to be identical to the published version.
+The behaviour when using GraphQL has been changed to be identical to the REST API now.
+
+icon:check[] Rest: The endpoint `GET /api/v2/{project}/tagFamilies/{tagFamilyUuid}/tags/{tagUuid}/nodes` did not correctly check for the `read`
+when called with `version`=`draft`, but returned all tagged nodes with `read published` permission. This has been fixed.
+
+icon:check[] Rest: The endpoint `GET /api/v2/{project}/navroot/{path}` failed with a 404 error if called with `version`=`published` and at least
+one of the nodes in the node structure was not published. This has been fixed.
+
+[[v1.6.29]]
+== 1.6.29 (31.05.2022)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.18`.
+
+icon:check[] Search: When a schema contained a field of type "micronode" or "list" of "micronode" and no "allow", generating the microschema version
+hash as part of the search index name failed with a NullPointerException.
+This has been fixed, so that the microschema version hash will now be null in such cases (like if "allow" was set to an empty array).
+
+icon:check[] Core: The default values for the periodic disk quota check have been changed to absolute values:
+the default for `storage.diskQuota.warnThreshold` is now `3G` and the default for `storage.diskQuota.readOnlyThreshold` is `1G`.
+
+icon:check[] Server: Fixed defined Health-Check in docker container and added a startup-grace period of 60s.
+
+[[v1.6.28]]
+== 1.6.28 (10.05.2022)
+
+icon:check[] Rest: Many reading request were implemented in a way that they would never be executed concurrently with other reading requests.
+So would e.g. a long running graphql request cause webroot requests executed at the same time to be queued until the graphql request was done.
+The behaviour has been changed, so that reading requests will only be queued, if the worker pool has been exhausted.
+
+icon:check[] Core: A periodic check for the EventBus has been added, which can be configured via the configuration settings `vertxOptions.eventBus.checkInterval`,
+`vertxOptions.eventBus.warnThreshold` and `vertxOptions.eventBus.errorThreshold`. If enabled (which is the default), and the periodically sent ping event is not
+received within the given error threshold, the Mesh instance which be considered unhealthy (liveness check will fail).
+
+[[v1.6.27]]
+== 1.6.27 (08.04.2022)
+
+icon:check[] Clustering: When starting an instance of Gentics Mesh with the command line parameter `-resetAdminPassword` to reset the password of the
+`admin` user, starting would fail if the write quorum of OrientDB was not reached. The startup behaviour has been changed now, so that resetting the
+password is delayed until the write quorum is reached.
+
+icon:check[] Rest: When creating a new user and setting the admin flag to `false`, this failed if the request user did not have the admin flag set
+to `true`. The permission check has been fixed now, so that the admin flag is only required for the requesting user, if the new user should also
+have the admin flag set to `true`.
+
+icon:check[] Core: When a project was renamed, deleted and then recreated with the same name, an internal cache was not cleared and caused
+subsequent errors in calls to the project, until the Mesh instance was restarted.
+This has been fixed now. The internal caches will be properly cleared.
+
+icon:plus[] Rest: The new endpoint `DELETE /api/v1/admin/cache` will clear all internal caches (cluster wide).
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.3`.
+
 [[v1.6.26]]
 == 1.6.26 (23.03.2022)
 

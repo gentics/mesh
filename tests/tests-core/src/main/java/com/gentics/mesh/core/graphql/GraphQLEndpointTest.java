@@ -326,7 +326,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			actions().updateSchemaVersion(schemaContainer("folder").getLatestVersion());
 
 			// Setup some test data
-			HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
+			HibNodeFieldContainer container = boot().contentDao().createFieldContainer(node, "en", initialBranch(), user());
 
 			// node
 			container.createNode("nodeRef", node2);

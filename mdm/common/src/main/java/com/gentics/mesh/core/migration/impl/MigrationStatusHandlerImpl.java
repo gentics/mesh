@@ -18,6 +18,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
+import com.gentics.mesh.core.rest.job.JobWarningList;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -91,10 +92,16 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	 * </ul>
 	 */
 	public MigrationStatusHandler done() {
+		done(new JobWarningList());
+		return this;
+	}
+
+	public MigrationStatusHandler done(JobWarningList warnings) {
 		HibJob job = getJob();
 		setStatus(COMPLETED);
 		log.info("Migration completed without errors.");
 		job.setStopTimestamp();
+		job.setWarnings(warnings);
 		commit(job);
 		return this;
 	}
@@ -137,8 +144,8 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void incCompleted() {
-		completionCount++;
+	public void incCompleted(int increment) {
+		completionCount += increment;
 	}
 
 	private HibJob getJob() {

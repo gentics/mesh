@@ -19,7 +19,6 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +39,6 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -151,8 +149,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				HibNodeFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 				assertNotNull("No new version was created.", newContainer);
 				assertEquals(newContainer.getUuid(), contentDao.getLatestDraftFieldContainer(node, english()).getUuid());
-
-				NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
+			}
+			NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
+			try (Tx tx = tx()) {
+				ContentDao contentDao = tx.contentDao();
+				HibNodeFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 				String value = container.getBinary("binary") == null ? null : container.getBinary("binary").getFileName();
 				assertEquals("Version {" + container.getVersion() + "} did not contain the old value", oldFilename, value);
@@ -175,13 +176,13 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			HibNode node = folder("news");
 
 			// Add a schema called nonBinary
-			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-			schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
-			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-
-			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_found_field_is_not_binary",
-				"nonBinary");
+			prepareTypedSchema(node.getSchemaContainer(),
+					List.of(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content")),
+					Optional.empty());
 		}
+
+		call(() -> uploadRandomData(folder("news"), "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_found_field_is_not_binary",
+			"nonBinary");
 	}
 
 	@Test
@@ -193,6 +194,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			prepareTypedSchema(folder("news"), fields.stream().map(FieldUtil::createBinaryFieldSchema).collect(Collectors.toList()), Optional.empty());
+			tx.success();
 		}
 
 		String uuid = tx(() -> folder("news").getUuid());
@@ -222,53 +224,19 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 	}
 
-	/**
-	 * Test parallel upload of the same binary data - thus the same binary vertex should be used.
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void testParallelDupUpload() throws IOException {
-
-		String folderUuid = tx(() -> folder("news").getUuid());
-
-		// Prepare schema
-		try (Tx tx = tx()) {
-			prepareTypedSchema(folder("news"), FieldUtil.createBinaryFieldSchema("image"), false);
-		}
-
-		Buffer buffer = getBuffer("/pictures/blume.jpg");
-		Observable.range(0, 200).flatMapSingle(number -> {
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setLanguage("en");
-			request.setParentNodeUuid(folderUuid);
-			request.setSchemaName("folder");
-			request.getFields().put("slug", FieldUtil.createStringField("folder" + number));
-			return client().createNode(PROJECT_NAME, request).toSingle()
-				.flatMap(node -> {
-					byte[] data = buffer.getBytes();
-					int size = data.length;
-					InputStream ins = new ByteArrayInputStream(data);
-					return client()
-						.updateNodeBinaryField(projectName(), node.getUuid(), "en", node.getVersion(), "image", ins, size, "blume.jpg", "image/jpeg")
-						.toSingle();
-				});
-		}).lastOrError().ignoreElement().blockingAwait();
-
-	}
-
 	@Test
 	public void testUploadBrokenImage() throws IOException {
 		String contentType = "image/jpeg";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("news");
 			prepareTypedSchema(node, FieldUtil.createBinaryFieldSchema("image"), false);
-
-			call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
+			tx.success();
 		}
+
+		call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
 
 		String uuid = tx(() -> folder("news").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
@@ -288,6 +256,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// Add a schema called nonBinary
 		try (Tx tx = tx()) {
 			prepareTypedSchema(node, FieldUtil.createBinaryFieldSchema("image"), false);
+			tx.success();
 		}
 
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);

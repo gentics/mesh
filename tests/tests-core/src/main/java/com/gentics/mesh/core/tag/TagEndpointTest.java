@@ -495,6 +495,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	@Override
+	@Ignore("Not valid over dup UUIDs being allowed globally")
 	public void testCreateWithDuplicateUuid() throws Exception {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setName("SomeName");

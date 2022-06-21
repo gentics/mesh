@@ -87,10 +87,10 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode node = folder("2015");
-
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
+			HibNode node = folder("2015");
+
 			// Update the schema
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName(NUMBER_FIELD);
@@ -98,14 +98,17 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			// numberFieldSchema.setMax(1000);
 			numberFieldSchema.setRequired(true);
 			prepareTypedSchema(node, numberFieldSchema, false);
-
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			tx.commit();
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNumberField numberField = container.createNumber(NUMBER_FIELD);
 			numberField.setNumber(100.9f);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			String json = getJson(node);
 			assertTrue("Could not find number within json. Json {" + json + "}", json.indexOf("100.9") > 1);
 			assertNotNull(json);

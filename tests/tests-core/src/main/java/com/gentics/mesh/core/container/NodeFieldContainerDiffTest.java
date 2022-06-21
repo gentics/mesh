@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.NoConsistencyCheck;
 
@@ -93,15 +95,12 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	}
 
 	@Test
-	public void testDiffMicronodeField() {
-		try (Tx tx = tx()) {
-			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(
-				FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
-
+	public void testDiffMicronodeField() throws IOException {
+		MicronodeFieldSchema micronodeField = FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard");
+		HibMicroschemaVersion version = tx(tx -> {
 			// Create microschema vcard
 			HibMicroschema schemaContainer = createMicroschema(tx);
-			HibMicroschemaVersion version = createMicroschemaVersion(tx, schemaContainer, v -> {
+			HibMicroschemaVersion version1 = createMicroschemaVersion(tx, schemaContainer, v -> {
 				schemaContainer.setLatestVersion(v);
 				MicroschemaVersionModel microschema = new MicroschemaModelImpl();
 				microschema.setName("vcard");
@@ -109,6 +108,13 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 				microschema.getFields().add(FieldUtil.createStringFieldSchema("lastName"));
 				v.setSchema(microschema);
 			});
+			tx.commit();
+			prepareTypedMicroschema(schemaContainer, List.of(micronodeField));
+			return version1;
+		});
+		try (Tx tx = tx()) {
+			ContentDao contentDao = tx.contentDao();
+			HibNodeFieldContainer containerA = createContainer(micronodeField);
 
 			HibMicronodeField micronodeA = containerA.createMicronode("micronodeField", version);
 			micronodeA.getMicronode().createString("firstName").setString("firstnameValue");

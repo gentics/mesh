@@ -1,21 +1,5 @@
 package com.gentics.mesh.test;
 
-import com.gentics.mesh.core.data.i18n.I18NUtil;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
-import com.gentics.mesh.rest.client.impl.EmptyResponse;
-import com.gentics.mesh.test.context.ClientHandler;
-import com.gentics.mesh.util.ETag;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-
-import java.util.Locale;
-import java.util.function.Function;
-
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.http.HttpConstants.IF_NONE_MATCH;
 import static org.junit.Assert.assertEquals;
@@ -25,6 +9,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Locale;
+import java.util.function.Function;
+
+import com.gentics.mesh.core.data.i18n.I18NUtil;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
+import com.gentics.mesh.test.context.ClientHandler;
+import com.gentics.mesh.util.ETag;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 public final class ClientHelper {
 
@@ -113,7 +114,9 @@ public final class ClientHelper {
 		String... i18nParams) {
 		try {
 			handler.handle().blockingGet();
-			fail("We expected the future to have failed but it succeeded.");
+			if (HttpResponseStatus.OK != status) {
+				fail("We expected the future to have failed but it succeeded.");
+			}
 		} catch (RuntimeException | MeshRestClientMessageException e) {
 			MeshRestClientMessageException error;
 			if (e instanceof RuntimeException) {

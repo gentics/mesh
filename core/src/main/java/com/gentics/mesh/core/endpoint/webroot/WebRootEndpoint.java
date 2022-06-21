@@ -59,7 +59,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(ImageManipulationParametersImpl.class);
 		endpoint.blockingHandler(rc -> {
 			handler.handleGetPath(rc);
-		});
+		}, false);
 	}
 
 	private void addPathUpdateCreateHandler() {

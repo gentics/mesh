@@ -112,8 +112,8 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac) {
-		return boot.get().meshRoot().getTagRoot().findTaggedNodes(tag, ac);
+	public Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac, InternalPermission perm) {
+		return boot.get().meshRoot().getTagRoot().findTaggedNodes(tag, ac, perm);
 	}
 
 	@Override

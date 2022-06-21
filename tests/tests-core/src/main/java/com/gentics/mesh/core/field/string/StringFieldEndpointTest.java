@@ -6,11 +6,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.VersionNumber;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -42,22 +44,19 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 
 			// add non restricted string field
 			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
 			stringFieldSchema.setName(FIELD_NAME);
 			stringFieldSchema.setLabel("Some label");
-			schema.addField(stringFieldSchema);
 
 			// add restricted string field
 			StringFieldSchema restrictedStringFieldSchema = new StringFieldSchemaImpl();
 			restrictedStringFieldSchema.setName("restrictedstringField");
 			restrictedStringFieldSchema.setLabel("Some label");
 			restrictedStringFieldSchema.setAllowedValues(new String[] { "one", "two", "three" });
-			schema.addField(restrictedStringFieldSchema);
 
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(stringFieldSchema, restrictedStringFieldSchema), Optional.empty());
 			tx.success();
 		}
 	}
@@ -65,31 +64,23 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(null, (Field) null);
-			StringFieldImpl stringField = response.getFields().getStringField(FIELD_NAME);
-			assertNull(stringField);
-		}
+		NodeResponse response = createNode(null, (Field) null);
+		StringFieldImpl stringField = response.getFields().getStringField(FIELD_NAME);
+		assertNull(stringField);
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
 		for (int i = 0; i < 20; i++) {
-			try (Tx tx = tx()) {
-				HibNode node = folder("2015");
-				HibNodeFieldContainer container = boot().contentDao().getFieldContainer(node, "en");
-				String oldValue = getStringValue(container, FIELD_NAME);
+			VersionNumber oldVersion = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
 
-				String newValue = "content " + i;
+			String newValue = "content " + i;
 
-				NodeResponse response = updateNode(FIELD_NAME, new StringFieldImpl().setString(newValue));
-				StringFieldImpl field = response.getFields().getStringField(FIELD_NAME);
-				assertEquals(newValue, field.getString());
-
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
-				assertEquals("Check old value", oldValue, getStringValue(container, FIELD_NAME));
-			}
+			NodeResponse response = updateNode(FIELD_NAME, new StringFieldImpl().setString(newValue));
+			StringFieldImpl field = response.getFields().getStringField(FIELD_NAME);
+			assertEquals(newValue, field.getString());
+			assertEquals("Check version number", oldVersion.nextDraft().toString(), response.getVersion());
 		}
 	}
 
@@ -125,11 +116,10 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(latest.getPreviousVersion().getString(FIELD_NAME)).isNotNull();
 			String oldValue = latest.getPreviousVersion().getString(FIELD_NAME).getString();
 			assertThat(oldValue).isEqualTo("bla");
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-				secondResponse.getVersion());
 		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+			secondResponse.getVersion());
 	}
 
 	@Test
@@ -138,14 +128,11 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
 		StringField emptyField = new StringFieldImpl();
 		emptyField.setString("");
-		NodeResponse secondResponse = null;
-		try (Tx tx = tx()) {
-			String oldVersion = firstResponse.getVersion();
-			secondResponse = updateNode(FIELD_NAME, emptyField);
-			assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNotNull();
-			assertThat(secondResponse.getFields().getStringField(FIELD_NAME).getString()).as("Updated Field Value").isEqualTo("");
-			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
-		}
+		String oldVersion = firstResponse.getVersion();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getStringField(FIELD_NAME).getString()).as("Updated Field Value").isEqualTo("");
+		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse.getVersion());
 
@@ -168,50 +155,42 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNodeWithField();
-			StringFieldImpl field = response.getFields().getStringField(FIELD_NAME);
-			assertEquals("someString", field.getString());
-		}
+		NodeResponse response = createNodeWithField();
+		StringFieldImpl field = response.getFields().getStringField(FIELD_NAME);
+		assertEquals("someString", field.getString());
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			prepareTypedSchema(node, FieldUtil.createStringFieldSchema(FIELD_NAME), false);
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibStringField stringField = container.createString(FIELD_NAME);
 			stringField.setString("someString");
 			tx.success();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
-		try (Tx tx = tx()) {
-			NodeResponse response = readNode(node);
-			StringFieldImpl deserializedStringField = response.getFields().getStringField(FIELD_NAME);
-			assertNotNull(deserializedStringField);
-			assertEquals("someString", deserializedStringField.getString());
-		}
+		NodeResponse response = readNode(folder("2015"));
+		StringFieldImpl deserializedStringField = response.getFields().getStringField(FIELD_NAME);
+		assertNotNull(deserializedStringField);
+		assertEquals("someString", deserializedStringField.getString());
 	}
 
 	@Test
 	public void testValueRestrictionValidValue() {
-		try (Tx tx = tx()) {
-			NodeResponse response = updateNode("restrictedstringField", new StringFieldImpl().setString("two"));
-			StringFieldImpl field = response.getFields().getStringField("restrictedstringField");
-			assertEquals("two", field.getString());
-		}
+		NodeResponse response = updateNode("restrictedstringField", new StringFieldImpl().setString("two"));
+		StringFieldImpl field = response.getFields().getStringField("restrictedstringField");
+		assertEquals("two", field.getString());
 	}
 
 	@Test
 	public void testValueRestrictionInvalidValue() {
-		try (Tx tx = tx()) {
-			updateNodeFailure("restrictedstringField", new StringFieldImpl().setString("invalid"), HttpResponseStatus.BAD_REQUEST,
+		updateNodeFailure("restrictedstringField", new StringFieldImpl().setString("invalid"), HttpResponseStatus.BAD_REQUEST,
 				"node_error_invalid_string_field_value", "restrictedstringField", "invalid");
-		}
 	}
 	
 	@Test
@@ -222,16 +201,13 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 			// unrestrict string field
 			StringFieldSchema restrictedStringFieldSchema = schema.getField("restrictedstringField", StringFieldSchema.class);
 			restrictedStringFieldSchema.setAllowedValues();
-			schema.addField(restrictedStringFieldSchema);
 
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 			tx.success();
 		}		
-		try (Tx tx = tx()) {
-			NodeResponse response = updateNode("restrictedstringField", new StringFieldImpl().setString("million"));
-			StringFieldImpl field = response.getFields().getStringField("restrictedstringField");
-			assertEquals("million", field.getString());
-		}
+		NodeResponse response = updateNode("restrictedstringField", new StringFieldImpl().setString("million"));
+		StringFieldImpl field = response.getFields().getStringField("restrictedstringField");
+		assertEquals("million", field.getString());
 	}
 
 	@Override

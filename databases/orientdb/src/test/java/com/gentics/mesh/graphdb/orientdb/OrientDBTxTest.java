@@ -15,7 +15,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;

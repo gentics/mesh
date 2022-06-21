@@ -34,5 +34,13 @@
     "it":{
         "name":"Italian",
         "nativeName":"Italiano"
+    },
+    "uk":{
+    	"name":"Ukrainian",
+    	"nativeName":"Українська"
+    },
+    "hi":{
+    	"name":"Hindi",
+    	"nativeName":"हिन्दी, हिंदी"
     }
 }

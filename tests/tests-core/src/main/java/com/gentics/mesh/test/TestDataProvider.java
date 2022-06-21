@@ -361,7 +361,6 @@ public class TestDataProvider {
 		group.setCreationTimestamp();
 		group.setEditor(user);
 		group.setLastEditedTimestamp();
-		userDao.addGroup(user, group);
 		groups.put(groupName, group);
 
 		String roleName = username + "_role";
@@ -730,6 +729,16 @@ public class TestDataProvider {
 			schemaContainers.put(name, schema);
 		});
 		return schemaContainers.get(name);
+	}
+
+	@Getter
+	public HibMicroschema getMicroschemaContainer(String name) {
+		Tx.maybeGet().ifPresent(tx -> {
+			HibMicroschema microschema = microschemaContainers.get(name);
+			microschema = tx.<CommonTx>unwrap().load(microschema.getId(), tx.<CommonTx>unwrap().microschemaDao().getPersistenceClass());
+			microschemaContainers.put(name, microschema);
+		});
+		return microschemaContainers.get(name);
 	}
 
 	public Map<String, HibTag> getTags() {

@@ -10,6 +10,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.util.List;
 
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -69,6 +73,7 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
  * Abstract implementation for a field container. A {@link GraphFieldContainer} is used to store {@link GraphField} instances.
  */
 public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
+	static final Logger log = LoggerFactory.getLogger(AbstractGraphFieldContainerImpl.class);
 
 	/**
 	 * Return the parent node of the field container.
@@ -243,11 +248,23 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
+	public String getBinaryFileName(String key) {
+		BinaryGraphField binary = getBinary(key);
+		return binary != null ? binary.getFileName() : null;
+	}
+
+	@Override
 	public S3BinaryGraphField getS3Binary(String key) {
 		return outE(HAS_FIELD)
 				.has(S3BinaryGraphFieldImpl.class)
 				.has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
 				.nextOrDefaultExplicit(S3BinaryGraphFieldImpl.class, null);
+	}
+
+	@Override
+	public String getS3BinaryFileName(String key) {
+		S3BinaryGraphField s3Binary = getS3Binary(key);
+		return s3Binary != null ? s3Binary.getFileName() : null;
 	}
 
 	@Override

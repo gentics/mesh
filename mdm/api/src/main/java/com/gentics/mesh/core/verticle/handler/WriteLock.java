@@ -20,4 +20,13 @@ public interface WriteLock extends AutoCloseable {
 	 */
 	WriteLock lock(InternalActionContext ac);
 
+	/**
+	 * Are the writes to DB synchronized?
+	 * 
+	 * @return
+	 */
+	default boolean isSyncWrites() {
+		// Disabled by default
+		return false;
+	}
 }

@@ -56,13 +56,6 @@ public interface Database extends TxFactory {
 	void closeConnectionPool();
 
 	/**
-	 * Shortcut for stop/start. This will also drop the graph database.
-	 * 
-	 * @throws Exception
-	 */
-	void reset() throws Exception;
-
-	/**
 	 * Remove all edges and all vertices from the graph.
 	 */
 	void clear();
@@ -246,6 +239,33 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	<T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex);
+
+	/**
+	 * Check if DB is ready for serve.
+	 * 
+	 * @return
+	 */
+	default boolean isHealthy() {
+		try (Tx tx = tx()) {
+			return tx != null;
+		} catch (Throwable t) {
+			log.error("Error on DB health check", t);
+			return false;
+		}
+	}
+
+	/**
+	 * Shortcut for stop/start. This will also drop the graph database.
+	 * 
+	 * @throws Exception
+	 */
+	default void reset() throws Exception {
+		if (log.isDebugEnabled()) {
+			log.debug("Resetting database");
+		}
+		stop();
+		init(null);
+	}
 
 	/**
 	 * Asynchronously execute the given handler within a transaction and return the completable.

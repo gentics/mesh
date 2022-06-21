@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -168,6 +169,12 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en", "de");
 
+		tx(() -> {
+			HibSchemaVersion latestVersion = getTestNode().getSchemaContainer().getLatestVersion();
+			latestVersion.getSchema().addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
+			actions().updateSchemaVersion(latestVersion);
+		});
+
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, nodeUuid, request, parameters));
 		assertThat(restNode).hasVersion("1.1");
 
@@ -247,9 +254,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 			assertNotNull("Could not find the field within the previous version.", previousStringList);
 			assertNotNull("Could not find the expected field in the created version.", nextStringList);
-			assertEquals("Both fields should have the same uuid since both are referenced by the both versions.", nextStringList.getUuid(),
-				previousStringList.getUuid());
 
+			// The UUIDs are not guaranteed to keep anymore.
+			//assertEquals("Both fields should have the same uuid since both are referenced by the both versions.", nextStringList.getUuid(),	previousStringList.getUuid());
 		}
 	}
 

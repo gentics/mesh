@@ -59,6 +59,7 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
             s3BinaryFieldSchema.setName(FIELD_NAME);
             s3BinaryFieldSchema.setLabel("Some label");
             prepareTypedSchema(schemaContainer("content"), List.of(s3BinaryFieldSchema), Optional.empty());
+            tx.success();
         }
     }
 

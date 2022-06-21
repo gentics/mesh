@@ -6,6 +6,10 @@ updateCheck: true
 vertxOptions:
   workerPoolSize: 20
   eventPoolSize: 16
+  eventBus:
+    checkInterval: 30000
+    warnThreshold: 60000
+    errorThreshold: 120000
 s3options:
   enabled: false
   bucket: null
@@ -138,5 +142,5 @@ storage:
   clusterJoinTimeout: 500000
   diskQuota:
     checkInterval: 10000
-    warnThreshold: "10%"
-    readOnlyThreshold: "2%"
+    warnThreshold: "3G"
+    readOnlyThreshold: "1G"

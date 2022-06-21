@@ -41,6 +41,7 @@ import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -164,7 +165,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public HibNodeFieldContainer getLatestDraftFieldContainer(String languageTag) {
-		return getGraphFieldContainer(languageTag, getProject().getLatestBranch(), DRAFT, NodeGraphFieldContainerImpl.class);
+		return getGraphFieldContainer(languageTag, getProject().getBranchRoot().getLatestBranch(), DRAFT, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -174,7 +175,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public HibNodeFieldContainer getFieldContainer(String languageTag) {
-		return getGraphFieldContainer(languageTag, getProject().getLatestBranch().getUuid(), DRAFT, NodeGraphFieldContainerImpl.class);
+		return getGraphFieldContainer(languageTag, getProject().getBranchRoot().getLatestBranch().getUuid(), DRAFT, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -244,15 +245,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Stream<Node> getChildrenStream(InternalActionContext ac) {
+	public Stream<Node> getChildrenStream(InternalActionContext ac, InternalPermission perm) {
 		HibUser user = ac.getUser();
 		Tx tx = GraphDBTx.getGraphTx();
 		UserDao userDao = tx.userDao();
 		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid()))
-			.filter(node -> {
-				Object id = node.getId();
-				return userDao.hasPermissionForId(user, id, READ_PERM) || userDao.hasPermissionForId(user, id, READ_PUBLISHED_PERM);
-			}).map(node -> graph.frameElementExplicit(node, NodeImpl.class));
+			.filter(node -> userDao.hasPermissionForId(user, node.getId(), perm))
+			.map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}
 
 	@Override
@@ -279,7 +278,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public HibProject getProject() {
+	public Project getProject() {
 		return db().index().findByUuid(ProjectImpl.class, property(PROJECT_KEY_PROPERTY));
 	}
 

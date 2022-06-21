@@ -73,6 +73,13 @@ public class PageTransformer {
 		builder.append(page.getTotalElements());
 		builder.append(page.getNumber());
 		builder.append(page.getPerPage());
+		if (page.getSize() > 0) {
+			HibCoreElement<? extends RestModel> element = page.getWrappedList().get(0);
+			ElementType type = element.getTypeInfo().getType();
+			DaoTransformable<HibCoreElement<? extends RestModel>, RestModel> dao = daos.get(type);
+			dao.beforeGetETagForPage(page, ac);
+		}
+
 		for (HibCoreElement<? extends RestModel> element : page) {
 			builder.append("-");
 			String eTag = daos.get(element.getTypeInfo().getType())

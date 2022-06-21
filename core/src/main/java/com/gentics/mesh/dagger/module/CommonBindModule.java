@@ -7,14 +7,8 @@ import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.CacheCollectionImpl;
-import com.gentics.mesh.cache.CacheRegistry;
-import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.PermissionCacheImpl;
-import com.gentics.mesh.cache.ProjectBranchNameCache;
-import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
-import com.gentics.mesh.cache.ProjectNameCache;
-import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
 import com.gentics.mesh.context.BulkActionContext;
@@ -68,11 +62,7 @@ import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.migration.BranchMigration;
-import com.gentics.mesh.core.migration.MicronodeMigration;
-import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
-import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
-import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
@@ -80,6 +70,7 @@ import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.distributed.TopologyChangeReadonlyHandler;
 import com.gentics.mesh.distributed.TopologyChangeReadonlyHandlerImpl;
+import com.gentics.mesh.event.EventBusLivenessManagerImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.handler.RangeRequestHandler;
@@ -87,6 +78,7 @@ import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.liveness.LivenessManagerImpl;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.MetricsServiceImpl;
+import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -153,16 +145,10 @@ public abstract class CommonBindModule {
 	abstract RangeRequestHandler bindRangeRequestHandler(RangeRequestHandlerImpl e);
 
 	@Binds
-	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
-
-	@Binds
 	abstract WebrootPathCache bindWebrootPathCache(WebrootPathCacheImpl e);
 
 	@Binds
 	abstract PermissionCache bindPermissionCache(PermissionCacheImpl e);
-
-	@Binds
-	abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
 
 	@Binds
 	abstract PluginEnvironment bindPluginEnv(PluginEnvironmentImpl e);
@@ -175,9 +161,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract BulkActionContext bindActionContext(BulkActionContextImpl e);
-
-	@Binds
-	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
 
 	@Binds
 	abstract S3BinaryStorage bindS3BinaryStorage(S3BinaryStorageImpl e);
@@ -229,15 +212,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract TagFamilyIndexHandler tagFamilyIndexHandler(TagFamilyIndexHandlerImpl e);
-
-	@Binds
-	abstract BranchMigration branchMigration(BranchMigrationImpl e);
-
-	@Binds
-	abstract MicronodeMigration micronodeMigration(MicronodeMigrationImpl e);
-
-	@Binds
-	abstract NodeMigration nodeMigration(NodeMigrationImpl e);
 
 	@Binds
 	abstract LocalBinaryStorage localBinaryStorage(LocalBinaryStorageImpl e);
@@ -316,6 +290,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract LivenessManager bindLivenessManager(LivenessManagerImpl e);
+
+	@Binds
+	abstract EventBusLivenessManager bindEventbusLivenessManager(EventBusLivenessManagerImpl e);
 
 	@Binds
 	abstract SearchMappingsCache searchMappingsCache(SearchMappingsCacheImpl e);

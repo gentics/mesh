@@ -15,6 +15,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -103,19 +104,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 				Tx tx = Tx.get();
 				ContentDao contentDao = tx.contentDao();
+				NodeDao nodeDao = tx.nodeDao();
 				GraphQLContext gc = env.getContext();
 				List<String> languageTags = getLanguageArgument(env);
 				ContainerType type = getNodeVersion(env);
 				SchemaDao schemaDao = tx.schemaDao();
-				Stream<? extends NodeContent> nodes = schemaDao.findNodes(getSchemaContainerVersion(env), tx.getBranch(gc).getUuid(),
-					gc.getUser(),
-					ContainerType.forVersion(gc.getVersioningParameters().getVersion())).stream()
-					.map(node -> {
-						HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
-						return new NodeContent(node, container, languageTags, type);
-					})
-					.filter(content -> content.getContainer() != null)
-					.filter(gc::hasReadPerm);
+				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type);
 
 				return applyNodeFilter(env, nodes);
 			}, NODE_PAGE_TYPE_NAME)
