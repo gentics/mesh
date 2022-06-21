@@ -103,7 +103,7 @@
 							<attach>false</attach>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
-								<descriptor>src/main/assembly/demo-zip.xml</descriptor>
+								<descriptor>../common/src/main/assembly/demo-zip.xml</descriptor>
 							</descriptors>
 							<outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
 							<finalName>mesh-demo</finalName>
@@ -120,7 +120,7 @@
 							<attach>true</attach>
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
-								<descriptor>src/main/assembly/dump-zip.xml</descriptor>
+								<descriptor>../common/src/main/assembly/dump-zip.xml</descriptor>
 							</descriptors>
 							<outputDirectory>${project.basedir}/target/classes</outputDirectory>
 							<finalName>mesh</finalName>

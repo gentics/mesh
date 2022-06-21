@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -14,7 +15,6 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -467,7 +467,7 @@ public class DemoDataProvider {
 			StringWriter writer = new StringWriter();
 			InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
 			if (ins != null) {
-				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
+				IOUtils.copy(ins, writer, StandardCharsets.UTF_8.name());
 				SchemaCreateRequest schema = JsonUtil.readValue(writer.toString(), SchemaCreateRequest.class);
 				SchemaResponse schemaResponse = call(() -> client.createSchema(uuid, schema));
 				schemas.put(schemaName, schemaResponse);
@@ -496,7 +496,7 @@ public class DemoDataProvider {
 
 	private JsonObject loadJson(String name) throws IOException {
 		StringWriter writer = new StringWriter();
-		IOUtils.copy(getClass().getResourceAsStream("/data/" + name + ".json"), writer, Charsets.UTF_8.name());
+		IOUtils.copy(getClass().getResourceAsStream("/data/" + name + ".json"), writer, StandardCharsets.UTF_8.name());
 		return new JsonObject(writer.toString());
 	}
 

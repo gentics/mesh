@@ -140,17 +140,6 @@ public abstract class AbstractDemoDumper<T extends MeshOptions> extends Abstract
 		throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 
 		// Setup demo data
-		meshInternal.database().tx(tx -> {
-			provider.setup();
-			tx.success();
-		});
+		provider.setup();
 	}
-
-	/**
-	 * External impl-specific options setup.
-	 * 
-	 * @param options
-	 * @throws Exception
-	 */
-	protected abstract void setupOptions(T options) throws Exception;
 }

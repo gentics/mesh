@@ -6,7 +6,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.env.MeshOptionsContext;
 
-public abstract class AbstractMeshOptionsDemoContext<T extends MeshOptions> implements MeshOptionsContext<T> {
+public abstract class AbstractMeshOptionsDemoContext<T extends MeshOptions> implements MeshOptionsContext<T>, MeshDemoOptionsProvider<T> {
 
 	static {
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
@@ -24,4 +24,8 @@ public abstract class AbstractMeshOptionsDemoContext<T extends MeshOptions> impl
 		return options;
 	}
 
+	@Override
+	public void setupOptions(T options) throws Exception {
+		// None required for Runner
+	}
 }
