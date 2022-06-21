@@ -16,6 +16,7 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 public abstract class AbstractRunnerNode extends AbstractMeshOptionsDemoContext<OrientDBMeshOptions> {
 
 	static {
+		System.setProperty("memory.directMemory.preallocate", "false");
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
 

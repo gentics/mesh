@@ -17,9 +17,11 @@ import com.gentics.mesh.etc.config.env.Option;
 @GenerateDocumentation
 public class GraphStorageOptions implements Option {
 
-	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "graphdb";
-	public static final String DEFAULT_BACKUP_DIRECTORY = "data" + File.separator + "backup";
-	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "export";
+	public static final String DEFAULT_DATA_ROOT = "data";
+
+	public static final String DEFAULT_DIRECTORY = DEFAULT_DATA_ROOT + File.separator + "graphdb";
+	public static final String DEFAULT_BACKUP_DIRECTORY = DEFAULT_DATA_ROOT + File.separator + "backup";
+	public static final String DEFAULT_EXPORT_DIRECTORY = DEFAULT_DATA_ROOT + File.separator + "export";
 	public static final boolean DEFAULT_START_SERVER = false;
 	public static final boolean DEFAULT_SYNC_WRITES = true;
 	public static final long DEFAULT_SYNC_WRITES_TIMEOUT = 60_000;

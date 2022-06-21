@@ -35,11 +35,7 @@ public class DemoDumpGenerator extends AbstractDemoDumper<OrientDBMeshOptions> {
 		}
 	}
 
-	/**
-	 * Initialize the Mesh options.
-	 * 
-	 * @throws Exception
-	 */
+	@Override
 	public void setupOptions(OrientDBMeshOptions options) throws Exception {
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory("target/dump/" + options.getStorageOptions().getDirectory());
