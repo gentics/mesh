@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -72,13 +74,11 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadFolderContentFieldByPathAndResolveLinks() throws Exception {
 		HibNode content = content("news_2015");
-
-		try (Tx tx = tx()) {
-			ContentDao contentDao = tx.contentDao();
-			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
-					.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
-			tx.success();
-		}
+		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), content.getUuid()));
+		NodeUpdateRequest updateRequest = response.toRequest();
+		updateRequest.getFields()
+				.put("content", new StringFieldImpl().setString("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>"));
+		call(() -> client().updateNode(projectName(), content.getUuid(), updateRequest));
 
 		try (Tx tx = tx()) {
 			String path = "/News/2015/News_2015.en.html";
@@ -114,7 +114,7 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadContentWithNodeRefByPath() throws Exception {
-
+		HibNode nodeRef = null;
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
@@ -133,21 +133,26 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 
 			// Create content which is only german
 			HibSchema contentSchema = schemaContainer("content");
-			HibNode node = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
+			nodeRef = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
-			roleDao.grantPermissions(role(), node, InternalPermission.values());
-			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, german(),
+			roleDao.grantPermissions(role(), nodeRef, InternalPermission.values());
+			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(nodeRef, german(),
 					project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
 			//englishContainer.createString("displayName").setString("german displayName");
 			englishContainer.createString("slug").setString("test.de.html");
 
-			// Add node reference to node 2015
-			contentDao.getLatestDraftFieldContainer(parentNode, english()).createNode("nodeRef", node);
 			tx.success();
 		}
+
+		// add node reference to 2015
+		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), folder("2015").getUuid()));
+		NodeUpdateRequest request = response.toRequest();
+		request.getFields().put("nodeRef", new NodeFieldImpl().setUuid(nodeRef.getUuid()));
+		call(() -> client().updateNode(projectName(), folder("2015").getUuid(), request));
+
 
 		try (Tx tx = tx()) {
 			String path = "/News/2015";

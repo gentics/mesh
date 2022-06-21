@@ -11,6 +11,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import org.codehaus.jettison.json.JSONException;
 
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -80,14 +90,16 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	}
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
-		ContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
-		contentDao.getLatestDraftFieldContainer(node, english()).createNumber("speed").setNumber(number);
+		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
+		NodeUpdateRequest request = response.toRequest();
+		request.getFields().put("speed", new NumberFieldImpl().setNumber(number));
+		call(() -> client().updateNode(projectName(), node.getUuid(), request));
 	}
 
 	/**
@@ -104,17 +116,21 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		schema.addField(vcardFieldSchema);
 		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
-		HibMicronodeField vcardField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronode("vcard",
-			microschemaContainers().get("vcard").getLatestVersion());
-		vcardField.getMicronode().createString("firstName").setString("Mickey");
-		vcardField.getMicronode().createString("lastName").setString("Mouse");
+		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
+		NodeUpdateRequest request = response.toRequest();
+
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Mickey"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Mouse"));
+		request.getFields().put("vcard", field);
+		call(() -> client().updateNode(projectName(), node.getUuid(), request));
 	}
 
 	/**
 	 * Add a micronode list field to the tested content
 	 */
 	protected void addMicronodeListField() {
-		ContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 
 		// Update the schema
@@ -126,22 +142,32 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		schema.addField(vcardListFieldSchema);
 		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
-		HibMicronodeFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeList("vcardlist");
+		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
-			HibMicronode micronode = vcardListField.createMicronode(microschemaContainers().get("vcard").getLatestVersion());
-			micronode.createString("firstName").setString(testdata.v1());
-			micronode.createString("lastName").setString(testdata.v2());
+			MicronodeResponse field = new MicronodeResponse();
+			field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+			field.getFields().put("firstName", new StringFieldImpl().setString(testdata.v1()));
+			field.getFields().put("lastName", new StringFieldImpl().setString(testdata.v2()));
+			listField.add(field);
 		}
 
+		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
+		NodeUpdateRequest request = response.toRequest();
+		request.getFields().put("vcardlist", listField);
+		request.setLanguage(english());
+		call(() -> client().updateNode(projectName(), node.getUuid(), request));
+
 		// create an empty vcard list field
-		contentDao.getLatestDraftFieldContainer(node, german()).createMicronodeList("vcardlist");
+		NodeUpdateRequest germanRequest = call(() -> client().findNodeByUuid(projectName(), node.getUuid(), new NodeParametersImpl().setLanguages("de"))).toRequest();
+		germanRequest.getFields().put("vcardlist", new MicronodeFieldListImpl());
+		germanRequest.setLanguage(german());
+		call(() -> client().updateNode(projectName(), node.getUuid(), germanRequest));
 	}
 
 	/**
 	 * Add a node list field to the tested content
 	 */
 	protected void addNodeListField() {
-		ContentDao contentDao = boot().contentDao();
 		HibNode node = content("concorde");
 
 		// Update the schema
@@ -154,11 +180,17 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
 		// create a non-empty list for the english version
-		HibNodeFieldList nodeListField = contentDao.getLatestDraftFieldContainer(node, english()).createNodeList("nodelist");
-		nodeListField.addItem(nodeListField.createNode(node));
+		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
+		NodeUpdateRequest request = response.toRequest();
+		NodeFieldListImpl fieldList = new NodeFieldListImpl();
+		fieldList.add(new NodeFieldListItemImpl().setUuid(node.getUuid()));
+		request.getFields().put("nodelist", fieldList);
+		call(() -> client().updateNode(projectName(), node.getUuid(), request));
 
 		// create an empty list for the german version
-		contentDao.getLatestDraftFieldContainer(node, german()).createNodeList("nodelist");
+		NodeUpdateRequest germanRequest = call(() -> client().findNodeByUuid(projectName(), node.getUuid(), new NodeParametersImpl().setLanguages("de"))).toRequest();
+		germanRequest.getFields().put("nodelist", new NodeFieldListImpl());
+		call(() -> client().updateNode(projectName(), node.getUuid(), germanRequest));
 	}
 
 	/**
