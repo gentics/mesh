@@ -21,5 +21,14 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>tests-mesh-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>tests-mesh-demo</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-demo</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>

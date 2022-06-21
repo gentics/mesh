@@ -31,8 +31,9 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
 
-public class DemoDumpGeneratorTest {
+public class DemoDumpGeneratorTest implements MeshOptionsTypeUnawareContext {
 
 	private BootstrapInitializer boot;
 
@@ -42,7 +43,7 @@ public class DemoDumpGeneratorTest {
 
 	private Mesh mesh;
 
-	private static DemoDumpGenerator generator = new DemoDumpGenerator();
+	private static DemoDumper generator = MeshDemoContextProvider.getProvider().getDumper();
 
 	@BeforeClass
 	public static void cleanupFolders() throws Exception {
