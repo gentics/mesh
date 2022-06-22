@@ -16,7 +16,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-demo-common</artifactId>
 			<version>${project.version}</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
