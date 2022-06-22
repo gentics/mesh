@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -32,7 +33,15 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
+import com.gentics.mesh.test.category.FailingTests;
 
+/**
+ * The context for demo tests cannot be constructed at CI, therefore test marked as failed.
+ * 
+ * @author plyhun
+ *
+ */
+@Category({FailingTests.class})
 public class DemoDumpGeneratorTest implements MeshOptionsTypeUnawareContext {
 
 	private BootstrapInitializer boot;
