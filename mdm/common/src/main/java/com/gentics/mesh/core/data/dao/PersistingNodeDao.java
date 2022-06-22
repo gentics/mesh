@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1185,7 +1186,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 							HibNodeFieldContainer containerForUrlFieldValues = getContainerWithLanguageFallback(containers, languages, false);
 							String fallbackPath = null;
 							if (containerForUrlFieldValues != null) {
-								fallbackPath = contentDao.getUrlFieldValues(containerForUrlFieldValues).findFirst().orElse(null);
+								fallbackPath = contentDao.getUrlFieldValues(containerForUrlFieldValues)
+										.findFirst()
+										.map(path -> getWithSanitizedPathPrefix(branch, builder -> builder.append(path)))
+										.orElse(null);
 							}
 
 							return Pair.of(sourceNode, fallbackPath);
@@ -1230,12 +1234,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// Thus utilise the action context data map to retrieve already handled paths.
 		String cacheKey = node.getUuid() + branchUuid + type.getCode() + Arrays.toString(languageTag);
 		return (String) ac.data().computeIfAbsent(cacheKey, key -> {
+			BranchDao branchDao = Tx.get().branchDao();
+			HibBranch branch = branchDao.findByUuid(node.getProject(), branchUuid);
 
 			List<String> segments = new ArrayList<>();
 			String segment = contentDao.getPathSegment(node, branchUuid, type, languageTag);
 			if (segment == null) {
 				// Fall back to url fields
-				return getUrlFieldPath(node, branchUuid, type, languageTag);
+				return getUrlFieldPath(node, branch, type, languageTag);
 			}
 			segments.add(segment);
 
@@ -1253,24 +1259,23 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				// Abort early if one of the path segments could not be resolved.
 				// We need to fall back to url fields in those cases.
 				if (segment == null) {
-					return getUrlFieldPath(node, branchUuid, type, languageTag);
+					return getUrlFieldPath(node, branch, type, languageTag);
 				}
 				segments.add(segment);
 			}
 
-			BranchDao branchDao = Tx.get().branchDao();
-			HibBranch branch = branchDao.findByUuid(node.getProject(), branchUuid);
 			return buildPathFromSegments(branch, segments);
 		});
 	}
 
-	private String buildPathFromSegments(HibBranch branch, List<String> segments) {
-		Collections.reverse(segments);
-
-		// Finally construct the path from all segments
+	/**
+	 * Get the Path, which is appended by the given pathBuilder optionally prepended with the pathPrefix of the branch
+	 * @param branchUuid branch UUID
+	 * @param pathBuilder consumer, which will get a stringbuilder and should append the path
+	 * @return complete path
+	 */
+	private String getWithSanitizedPathPrefix(HibBranch branch, Consumer<StringBuilder> pathBuilder) {
 		StringBuilder builder = new StringBuilder();
-
-		// Append the prefix first
 		if (branch != null) {
 			String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
 			if (!prefix.isEmpty()) {
@@ -1283,31 +1288,40 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				}
 			}
 		}
-
-		Iterator<String> it = segments.iterator();
-		while (it.hasNext()) {
-			String currentSegment = it.next();
-			builder.append("/").append(URIUtils.encodeSegment(currentSegment));
-		}
+		pathBuilder.accept(builder);
 		return builder.toString();
 	}
 
+	private String buildPathFromSegments(HibBranch branch, List<String> segments) {
+		Collections.reverse(segments);
+
+		// Finally construct the path from all segments
+		return getWithSanitizedPathPrefix(branch, builder -> {
+			Iterator<String> it = segments.iterator();
+			while (it.hasNext()) {
+				String currentSegment = it.next();
+				builder.append("/").append(URIUtils.encodeSegment(currentSegment));
+			}
+		});
+	}
+	
 	/**
 	 * Return the first url field path found.
 	 *
 	 * @param node
-	 * @param branchUuid
+	 * @param branch
 	 * @param type
 	 * @param languages
 	 *            The order of languages will be used to search for the url field values.
 	 * @return null if no url field could be found.
 	 */
-	private String getUrlFieldPath(HibNode node, String branchUuid, ContainerType type, String... languages) {
+	private String getUrlFieldPath(HibNode node, HibBranch branch, ContainerType type, String... languages) {
 		ContentDao contentDao = Tx.get().contentDao();
 		return Stream.of(languages)
-				.flatMap(language -> Stream.ofNullable(contentDao.getFieldContainer(node, language, branchUuid, type)))
+				.flatMap(language -> Stream.ofNullable(contentDao.getFieldContainer(node, language, branch != null ? branch.getUuid() : null, type)))
 				.flatMap(contentDao::getUrlFieldValues)
 				.findFirst()
+				.map(path -> getWithSanitizedPathPrefix(branch, builder -> builder.append(path)))
 				.orElse(null);
 	}
 
