@@ -1,5 +1,6 @@
 package com.gentics.mesh.cache;
 
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PATH_STORE;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
@@ -46,7 +47,8 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 		NODE_CONTENT_DELETED,
 		CLUSTER_NODE_JOINED,
 		CLUSTER_DATABASE_CHANGE_STATUS,
-		SCHEMA_MIGRATION_FINISHED };
+		SCHEMA_MIGRATION_FINISHED,
+		BRANCH_UPDATED};
 
 	@Inject
 	public WebrootPathCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry, MeshOptions options) {
