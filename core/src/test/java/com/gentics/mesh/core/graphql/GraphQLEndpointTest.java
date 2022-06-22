@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -107,6 +108,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	private final boolean withMicroschema;
 
+	private final boolean withBranchPathPrefix;
+
 	private final String version;
 	private final String apiVersion;
 
@@ -124,70 +127,72 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 *
 	 * @param queryName The filename of the GraphQL query to use
 	 * @param withMicroschema Whether to use micro schemas
+	 * @param withBranchPathPrefix whether the branch should have a path prefix set
 	 * @param version Whether to use the <code>draft</code> or <code>published</code> version
 	 * @param assertion A custom assertion to be applied on the GraphQL query result
 	 */
-	public GraphQLEndpointTest(String queryName, boolean withMicroschema, String version, Consumer<JsonObject> assertion, String apiVersion) {
+	public GraphQLEndpointTest(String queryName, boolean withMicroschema, boolean withBranchPathPrefix, String version, Consumer<JsonObject> assertion, String apiVersion) {
 		this.queryName = queryName;
 		this.withMicroschema = withMicroschema;
+		this.withBranchPathPrefix = withBranchPathPrefix;
 		this.version = version;
 		this.assertion = assertion;
 		this.apiVersion = apiVersion;
 	}
 
-	@Parameters(name = "query={0},version={2},apiVersion={4}")
+	@Parameters(name = "query={0},version={3},apiVersion={5}")
 	public static Collection<Object[]> paramData() {
 		return Stream.<List<Object>>of(
-			Arrays.asList("full-query", true, "draft"),
-			Arrays.asList("role-user-group-query", true, "draft"),
-			Arrays.asList("group-query", true, "draft"),
-			Arrays.asList("schema-query", true, "draft"),
-			// Arrays.asList("schema-projects-query", true, "draft"),
-			Arrays.asList("microschema-query", true, "draft"),
-			Arrays.asList("paging-query", true, "draft"),
-			Arrays.asList("tagFamily-query", true, "draft"),
-			Arrays.asList("node-query", true, "draft"),
-			Arrays.asList("node-tag-query", true, "draft"),
-			Arrays.asList("nodes-query", true, "draft"),
-			Arrays.asList("nodes-query-by-uuids", true, "draft"),
-			Arrays.asList("node-breadcrumb-query", true, "draft"),
-			Arrays.asList("node-breadcrumb-query-with-lang", true, "draft"),
-			Arrays.asList("node-language-fallback-query", true, "draft"),
-			Arrays.asList("node-languages-query", true, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLanguageContent),
-			Arrays.asList("node-not-found-webroot-query", true, "draft"),
-			Arrays.asList("node-webroot-query", true, "draft"),
-			Arrays.asList("node-webroot-urlfield-query", true, "draft"),
-			Arrays.asList("node-relations-query", true, "draft"),
-			Arrays.asList("node-fields-query", true, "draft"),
-			Arrays.asList("node-fields-no-microschema-query", false, "draft"),
-			Arrays.asList("node/link/webroot", true, "draft"),
-			Arrays.asList("node/link/children", true, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse),
-			Arrays.asList("node/link/webroot-language", true, "draft"),
-			Arrays.asList("node/link/reference", true, "draft"),
-			Arrays.asList("node-field-list-path-query", true, "draft"),
-			Arrays.asList("project-query", true, "draft"),
-			Arrays.asList("tag-query", true, "draft"),
-			Arrays.asList("branch-query", true, "draft"),
-			Arrays.asList("user-query", true, "draft"),
-			Arrays.asList("microschema-projects-query", true, "draft"),
-			Arrays.asList("node-version-published-query", true, "published"),
-			Arrays.asList("filtering/children", true, "draft"),
-			Arrays.asList("filtering/nodes", true, "draft"),
-			Arrays.asList("filtering/nodes-en", true, "draft"),
-			Arrays.asList("filtering/nodes-jp", true, "draft"),
-			Arrays.asList("filtering/nodes-creator-editor", true, "draft"),
-			Arrays.asList("filtering/users", true, "draft"),
-			Arrays.asList("filtering/groups", true, "draft"),
-			Arrays.asList("filtering/roles", true, "draft"),
-			Arrays.asList("node/breadcrumb-root", true, "draft"),
-			Arrays.asList("node/versionslist", true, "draft"),
-			Arrays.asList("permissions", true, "draft"),
-			Arrays.asList("user-node-reference", true, "draft")
+			Arrays.asList("full-query", true, false, "draft"),
+			Arrays.asList("role-user-group-query", true, false, "draft"),
+			Arrays.asList("group-query", true, false, "draft"),
+			Arrays.asList("schema-query", true, false, "draft"),
+			// Arrays.asList("schema-projects-query", true, false, "draft"),
+			Arrays.asList("microschema-query", true, false, "draft"),
+			Arrays.asList("paging-query", true, false, "draft"),
+			Arrays.asList("tagFamily-query", true, false, "draft"),
+			Arrays.asList("node-query", true, false, "draft"),
+			Arrays.asList("node-tag-query", true, false, "draft"),
+			Arrays.asList("nodes-query", true, false, "draft"),
+			Arrays.asList("nodes-query-by-uuids", true, false, "draft"),
+			Arrays.asList("node-breadcrumb-query", true, false, "draft"),
+			Arrays.asList("node-breadcrumb-query-with-lang", true, false, "draft"),
+			Arrays.asList("node-language-fallback-query", true, false, "draft"),
+			Arrays.asList("node-languages-query", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLanguageContent),
+			Arrays.asList("node-not-found-webroot-query", true, false, "draft"),
+			Arrays.asList("node-webroot-query", true, false, "draft"),
+			Arrays.asList("node-webroot-urlfield-query", true, false, "draft"),
+			Arrays.asList("node-relations-query", true, false, "draft"),
+			Arrays.asList("node-fields-query", true, false, "draft"),
+			Arrays.asList("node-fields-no-microschema-query", false, false, "draft"),
+			Arrays.asList("node/link/webroot", true, false, "draft"),
+			Arrays.asList("node/link/children", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse),
+			Arrays.asList("node/link/webroot-language", true, false, "draft"),
+			Arrays.asList("node/link/reference", true, false, "draft"),
+			Arrays.asList("node-field-list-path-query", true, false, "draft"),
+			Arrays.asList("project-query", true, false, "draft"),
+			Arrays.asList("tag-query", true, false, "draft"),
+			Arrays.asList("branch-query", true, true, "draft"),
+			Arrays.asList("user-query", true, false, "draft"),
+			Arrays.asList("microschema-projects-query", true, false, "draft"),
+			Arrays.asList("node-version-published-query", true, false, "published"),
+			Arrays.asList("filtering/children", true, false, "draft"),
+			Arrays.asList("filtering/nodes", true, false, "draft"),
+			Arrays.asList("filtering/nodes-en", true, false, "draft"),
+			Arrays.asList("filtering/nodes-jp", true, false, "draft"),
+			Arrays.asList("filtering/nodes-creator-editor", true, false, "draft"),
+			Arrays.asList("filtering/users", true, false, "draft"),
+			Arrays.asList("filtering/groups", true, false, "draft"),
+			Arrays.asList("filtering/roles", true, false, "draft"),
+			Arrays.asList("node/breadcrumb-root", true, false, "draft"),
+			Arrays.asList("node/versionslist", true, false, "draft"),
+			Arrays.asList("permissions", true, false, "draft"),
+			Arrays.asList("user-node-reference", true, false, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
-			// Make sure all testData entries have five parts.
-			Object[] array = testCase.toArray(new Object[5]);
-			array[4] = "v" + version;
+			// Make sure all testData entries have six parts.
+			Object[] array = testCase.toArray(new Object[6]);
+			array[5] = "v" + version;
 			return array;
 		})).collect(Collectors.toList());
 	}
@@ -217,6 +222,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				}
 				tx.success();
 			}
+		}
+
+		// update branch
+		if (withBranchPathPrefix) {
+			call(() -> client.updateBranch(PROJECT_NAME, initialBranchUuid(),
+					new BranchUpdateRequest().setHostname("getmesh.io").setSsl(false).setPathPrefix("/base/path")));
 		}
 
 		try (Tx tx = tx()) {

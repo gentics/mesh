@@ -40,6 +40,8 @@ so that links to nodes will always contain the path prefix, regardless of whethe
 icon:check[] Core: When the pathPrefix of a branch was changed, node could possibly still be access using the old pathPrefix due to an internal
 cache, which was not invalidated. The cache will now be cleared when a branch is modified.
 
+icon:check[] GraphQL: The fields `hostname`, `ssl` and `pathPrefix` have been added to the type `branch`.
+
 [[v1.6.29]]
 == 1.6.29 (31.05.2022)
 
