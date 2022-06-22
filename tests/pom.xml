@@ -40,7 +40,6 @@
 		<module>tests-service-local-storage</module>
 		<module>tests-service-metrics-prometheus</module>
 		<module>tests-admin-gui</module>
-		<module>tests-demo</module>
 
 		<!-- Other tests -->
 <!-- Move here from the root as soon as https://issues.jenkins.io/browse/JENKINS-26472 is fixed -->
