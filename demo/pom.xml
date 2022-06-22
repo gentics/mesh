@@ -38,7 +38,10 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-api</artifactId>
 		</dependency>
-        
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tests-api</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
