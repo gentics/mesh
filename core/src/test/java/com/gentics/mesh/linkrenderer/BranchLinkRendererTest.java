@@ -27,6 +27,8 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -39,6 +41,8 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import io.vertx.core.json.JsonObject;
 
 @RunWith(value = Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
@@ -231,6 +235,19 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 	public void testRenderUrlField() {
 		assertThat(replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", urlFieldNodeUuid, branchUuid)))
 				.as("URL").isEqualTo(getPrefix() + "/this/is/the/url.html");
+	}
+
+	@Test
+	public void testRenderUrlFieldViaGraphQL() {
+		GraphQLRequest request = new GraphQLRequest()
+				.setQuery("query nodeByUuid($uuid:String) {\n" +
+					"  node(uuid: $uuid) {\n" +
+					"    path\n" +
+					"  }\n" +
+					"}")
+				.setVariables(new JsonObject().put("uuid", urlFieldNodeUuid));
+		GraphQLResponse graphQLResponse = call(() -> client().graphql(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(branchName)));
+		assertThat(graphQLResponse.getData()).compliesTo("$.node.path=" + getPathPrefix() + "/this/is/the/url.html");
 	}
 
 	private String getPrefix() {
