@@ -8,17 +8,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import com.gentics.mesh.test.category.FailingTests;
-
-/**
- * The context for demo tests cannot be constructed at CI, therefore test marked as failed.
- * 
- * @author plyhun
- *
- */
-@Category({FailingTests.class})
 public class UnzipTest {
 
 	@Test
