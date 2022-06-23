@@ -7,36 +7,28 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
-
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import org.codehaus.jettison.json.JSONException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import java.util.Map;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -50,8 +42,11 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshTestSetting;
-
 import io.vertx.core.json.JsonObject;
+import org.codehaus.jettison.json.JSONException;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(startServer = true, testSize = FULL)
@@ -158,27 +153,30 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		long numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			RoleDao roleDao = tx.roleDao();
 			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
-			HibUser user = user();
 			String english = english();
 			HibNode concorde = content("concorde");
-
-			HibProject project = concorde.getProject();
 			HibNode parentNode = nodeDao.getParentNode(concorde, branchUuid);
 			HibSchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
-
+			NodeResponse request = call(() -> client().findNodeByUuid(projectName(), concorde.getUuid()));
 			for (int i = 0; i < numAdditionalNodes; i++) {
-				HibNode node = nodeDao.create(parentNode, user, schemaVersion, project);
-				node.getSchemaContainer().getLatestVersion().getSchema().addField(new StringFieldSchemaImpl().setName("name"));
-				actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
-				HibNodeFieldContainer fieldContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(), user);
-				fieldContainer.createString("name").setString("Name_" + i);
-				HibMicronodeField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
-				vcardField.getMicronode().createString("firstName").setString("Mickey");
-				vcardField.getMicronode().createString("lastName").setString("Mouse");
-				roleDao.grantPermissions(role(), node, InternalPermission.READ_PERM);
+				NodeCreateRequest createRequest = new NodeCreateRequest();
+				createRequest.setSchema(schemaVersion.transformToReference());
+				MicronodeResponse micronodeField = new MicronodeResponse();
+				micronodeField.getFields().putAll(
+						Map.of("firstName", new StringFieldImpl().setString("Mickey"),
+								"lastName", new StringFieldImpl().setString("Mouse"))
+				);
+				micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+				FieldMap fieldMap = request.getFields().putAll(
+						Map.of("slug", new StringFieldImpl().setString("Name_" + i), "vcard", micronodeField)
+				);
+				createRequest.setFields(fieldMap);
+				createRequest.setParentNode(parentNode.transformToMinimalReference());
+				createRequest.setLanguage(english);
+
+				call(() -> client().createNode(projectName(), createRequest));
 			}
 			tx.success();
 		}
@@ -193,7 +191,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	/**
 	 * Tests if all tags are in the node response when searching for a node.
-	 * 
+	 *
 	 * @throws JSONException
 	 * @throws InterruptedException
 	 */

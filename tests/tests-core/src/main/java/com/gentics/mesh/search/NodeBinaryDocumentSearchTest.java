@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,10 +47,12 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
-		HibNode nodeA = content("concorde");
-		HibNode nodeB = content();
+		HibNode nodeA;
+		HibNode nodeB;
 
 		try (Tx tx = tx()) {
+			nodeA = content("concorde");
+			nodeB = content();
 			ContentDao contentDao = tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
@@ -70,7 +73,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
-			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA)
+			HibNodeFieldContainer originalA = contentDao.getLatestDraftFieldContainer(nodeA, english());
+			HibNodeFieldContainer newFieldContainerA = contentDao.createFieldContainer(nodeA, english(), project().getLatestBranch(), user(), originalA, true);
+			newFieldContainerA.createBinary("binary", binaryA)
 				.setImageDominantColor("#super").setFileName("somefile.jpg").setMimeType("image/jpeg");
 
 			// file
@@ -78,9 +83,11 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
 
-			contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
+			HibNodeFieldContainer originalB = contentDao.getLatestDraftFieldContainer(nodeB, english());
+			HibNodeFieldContainer newFieldContainerB = contentDao.createFieldContainer(nodeB, english(), project().getLatestBranch(), user(), originalB, true);
+			newFieldContainerB.createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
-			contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary2", binaryB).setFileName("somefile.dat")
+			newFieldContainerB.createBinary("binary2", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			tx.success();
 		}
@@ -115,10 +122,12 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testSearchBinaryField() throws Exception {
-		HibNode nodeA = content("concorde");
-		HibNode nodeB = content();
+		HibNode nodeA;
+		HibNode nodeB;
 
 		try (Tx tx = tx()) {
+			nodeA = content("concorde");
+			nodeB = content();
 			ContentDao contentDao = tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
@@ -129,12 +138,16 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
-			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA)
+			HibNodeFieldContainer originalA = contentDao.getLatestDraftFieldContainer(nodeA, english());
+			HibNodeFieldContainer newFieldContainerA = contentDao.createFieldContainer(nodeA, english(), project().getLatestBranch(), user(), originalA, true);
+			newFieldContainerA.createBinary("binary", binaryA)
 				.setImageDominantColor("#super").setFileName("somefile.jpg").setMimeType("image/jpeg");
 
 			// file
 			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
-			HibBinaryField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB);
+			HibNodeFieldContainer originalB = contentDao.getLatestDraftFieldContainer(nodeB, english());
+			HibNodeFieldContainer newFieldContainerB = contentDao.createFieldContainer(nodeB, english(), project().getLatestBranch(), user(), originalB, true);
+			HibBinaryField binary = newFieldContainerB.createBinary("binary", binaryB);
 			binary.setMimeType("text/plain").setFileName("somefile.dat");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
