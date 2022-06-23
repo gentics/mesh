@@ -116,7 +116,7 @@ stage("Setup Build Environment") {
 					} else {
 						sshagent(["git"]) {
 							try {
-								sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -U -e -pl '!ferma,!demo,!doc,!performance-tests' clean install"
+								sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -U -e -pl '!ferma,!demo/default,!doc,!performance-tests' clean install"
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 							}
@@ -131,7 +131,7 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runUnstableTests)) {
 					sshagent(["git"]) {
 						try {
-							sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!ferma,!demo,!doc,!performance-tests' test -DfailIfNoTests=false"
+							sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!ferma,!demo/default,!doc,!performance-tests' test -DfailIfNoTests=false"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 						}
@@ -184,7 +184,7 @@ stage("Setup Build Environment") {
 					node("mesh-cluster-worker-11") {
 						try {
 							unstash 'project'
-							sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
+							sh "mvn -B -DskipTests clean install -pl '!demo/default,!doc'"
 							sh "mvn -B -Dsurefire.groups=com.gentics.mesh.test.category.ClusterTests -DfailIfNoTests=false -Dmesh.container.image.prefix=docker.apa-it.at/ test"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
@@ -218,7 +218,7 @@ stage("Setup Build Environment") {
 					node("mesh-performance-worker-11") {
 						try {
 							unstash 'project'
-							sh "mvn -B -U clean package -pl '!doc,!demo,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/"
+							sh "mvn -B -U clean package -pl '!doc,!demo/default,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 							deleteDir()
