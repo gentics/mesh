@@ -162,9 +162,9 @@ stage("Setup Build Environment") {
 
 				if (Boolean.valueOf(params.runDocker)) {
 					// demo
-					sh "rm demo/target/*sources.jar || true"
-					sh "rm demo/target/*javadoc.jar || true"
-					sh "cd demo ; docker build --network=host -t " + imagePrefix + "gentics/mesh-demo:latest -t " + imagePrefix + "gentics/mesh-demo:" + version + " . "
+					sh "rm demo/default/target/*sources.jar || true"
+					sh "rm demo/default/target/*javadoc.jar || true"
+					sh "cd demo/default ; docker build --network=host -t " + imagePrefix + "gentics/mesh-demo:latest -t " + imagePrefix + "gentics/mesh-demo:" + version + " . "
 
 					// server
 					sh "rm server/target/*sources.jar || true"
