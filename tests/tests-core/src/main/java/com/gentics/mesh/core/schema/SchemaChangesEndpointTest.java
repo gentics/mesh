@@ -218,12 +218,15 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testRemoveAddFieldTypeWithSameKey() throws Exception {
 		SchemaUpdateRequest request;
-		HibNode content = content();
+		HibNode content;
 		HibSchema schemaContainer = schemaContainer("content");
 
 		try (Tx tx = tx()) {
+			content = content();
 			ContentDao contentDao = tx.contentDao();
-			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content").setHtml("42.1");
+			HibNodeFieldContainer original = contentDao.getLatestDraftFieldContainer(content, english());
+			HibNodeFieldContainer newContainer = contentDao.createFieldContainer(content, english(), project().getLatestBranch(), user(), original, true);
+			newContainer.getHtml("content").setHtml("42.1");
 
 			// 1. Create update request by removing the content field from schema and adding a new content with different type
 			request = JsonUtil.readValue(schemaContainer.getLatestVersion().getJson(), SchemaUpdateRequest.class);
@@ -257,13 +260,13 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 			assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
 				response.getFields().getNumberField("content").getClass());
-			assertEquals("2.0", response.getVersion());
+			assertEquals("2.1", response.getVersion());
 
 			// 7. Update the node and set the new field
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.getFields().put("content", new NumberFieldImpl().setNumber(42.01));
-			nodeUpdateRequest.setVersion("2.0");
+			nodeUpdateRequest.setVersion("2.1");
 			response = call(() -> client().updateNode(PROJECT_NAME, contentUuid(), nodeUpdateRequest));
 			assertNotNull(response);
 			assertNotNull(response.getFields().hasField("content"));

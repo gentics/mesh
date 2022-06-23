@@ -169,12 +169,6 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en", "de");
 
-		tx(() -> {
-			HibSchemaVersion latestVersion = getTestNode().getSchemaContainer().getLatestVersion();
-			latestVersion.getSchema().addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
-			actions().updateSchemaVersion(latestVersion);
-		});
-
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, nodeUuid, request, parameters));
 		assertThat(restNode).hasVersion("1.1");
 
@@ -297,6 +291,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		schema.addField(micronodeFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		mesh().serverSchemaStorage().addSchema(schema);
+		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 	}
 
 	/**
