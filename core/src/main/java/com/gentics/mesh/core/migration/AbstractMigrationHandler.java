@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
@@ -135,7 +136,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		sqb.setCause(cause);
 		int pollCount = options.getMigrationMaxBatchSize();
 		while (!containers.isEmpty()) {
-			List<T> containerList = pollMany(containers, pollCount);
+			List<T> containerList = CollectionUtil.pollMany(containers, pollCount);
 			try {
 				// Each container migration has its own search queue batch which is then combined with other batch entries.
 				// This prevents adding partial entries from failed migrations.
@@ -209,17 +210,5 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	protected HibBranch reloadBranch(HibBranch branch) {
 		PersistingBranchDao branchDao = CommonTx.get().branchDao();
 		return branchDao.findByUuid(branch.getProject(), branch.getUuid());
-	}
-
-	private <T> List<T> pollMany(Queue<T> containers, int count) {
-		ArrayList<T> result = new ArrayList<>();
-		int currentCount = 0;
-		while (currentCount < count && !containers.isEmpty()) {
-			T polled = containers.poll();
-			result.add(polled);
-			currentCount++;
-		}
-
-		return result;
 	}
 }
