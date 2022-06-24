@@ -6,6 +6,13 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.env.MeshOptionsContext;
 
+/**
+ * Options holder impl for {@link MeshDemoOptionsProvider}
+ * 
+ * @author plyhun
+ *
+ * @param <T> options type
+ */
 public abstract class AbstractMeshOptionsDemoContext<T extends MeshOptions> implements MeshOptionsContext<T>, MeshDemoOptionsProvider<T> {
 
 	static {

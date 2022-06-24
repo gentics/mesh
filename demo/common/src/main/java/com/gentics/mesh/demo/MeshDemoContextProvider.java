@@ -2,6 +2,12 @@ package com.gentics.mesh.demo;
 
 import com.gentics.mesh.test.MeshOptionsProvider;
 
+/**
+ * Demo context provider for the tests.
+ * 
+ * @author plyhun
+ *
+ */
 public interface MeshDemoContextProvider extends MeshOptionsProvider {
 	/**
 	 * System property key for an {@link MeshDemoContextProvider} context-dependent implementation.
