@@ -11,6 +11,10 @@ import java.io.IOException;
 
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import org.junit.Test;
 
@@ -95,11 +99,16 @@ public class WebRootFieldEndpointETagTest extends AbstractMeshTest {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = content("news_2015");
 			// Inject the reference node field
-			SchemaVersionModel schema = contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).getSchema();
+			HibSchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en"));
+			SchemaVersionModel schema = schemaVersion.getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
-			actions().updateSchemaVersion(contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")));
-			contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).setSchema(schema);
-			contentDao.getFieldContainer(node, "en").createNode("reference", folder("2015"));
+			schemaVersion.setSchema(schema);
+			actions().updateSchemaVersion(schemaVersion);
+
+			NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
+			NodeUpdateRequest request = response.toRequest();
+			request.getFields().put("reference", new NodeFieldImpl().setUuid(folder("2015").getUuid()));
+			call(() -> client().updateNode(projectName(), node.getUuid(), request));
 			tx.success();
 		}
 

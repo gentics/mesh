@@ -165,7 +165,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 		}
 	}
 
-	public static enum TestQuery {
+	public enum TestQuery {
 
 		ME_NODE_REFERENCE("me.nodeReference"),
 
@@ -247,7 +247,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 
 	}
 
-	public static enum ContentSetupType {
+	public enum ContentSetupType {
 
 		// Expect draft version (1.1)
 		PUBLISH_SELECT_DRAFT,
@@ -262,7 +262,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 		NO_PUBLISH_SELECT_PUBLISHED;
 	}
 
-	public static enum PermissionScenario {
+	public enum PermissionScenario {
 		/**
 		 * Grant no read permissions to most nodes. Note that NODE_1B_UUID still got permissions in order to assert nested fields.
 		 */
