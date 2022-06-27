@@ -322,6 +322,33 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	public void testCheckboxWithMail() throws IOException, MessagingException {
+		String uuid = createForm("selection_with_mail.json");
+		ResponseWithCookies rs = submit(uuid, true, false, false,
+			"radiobuttons1", "r_2",
+			"singleselect1", "s_1",
+			"multiselect1", "m_1", "multiselect1", "m_2", "multiselect1", "m_3");
+
+		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
+			.as("Mail sent in time")
+			.isTrue();
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+
+		assertThat(messages.length)
+			.as("Received messages")
+			.isEqualTo(1);
+
+		String content = messages[0].getContent().toString().replaceAll("\\r", "");
+
+		System.out.println(content);
+
+		assertThat(content)
+			.as("Mail content")
+			.isEqualTo(fromFile("selection_with_mail_unchecked_checkbox.html"));
+	}
+
+	@Test
 	public void testPostFileWithMail() throws IOException, MessagingException {
 		String formDefinition = "filefield_with_mail.json";
 		Pair<String, String> uuids = doPostFile(formDefinition);

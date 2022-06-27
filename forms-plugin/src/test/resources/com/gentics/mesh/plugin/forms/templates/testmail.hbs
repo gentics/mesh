@@ -3,6 +3,7 @@
         {{ baseUrl }}/api/forms/forms/{{ form.uuid }}/data/{{ dataUuid }}/binary/{{ this.name }}
     {{~ else }}
 value: {{{formatDate value "MM/dd/yyyy" srcFormat="dd.MM.yyyy"}}}
+valueProperty: {{valueProperty}}
 valueLabel: {{{valueLabel}}}
 options.length: {{{options.length}}}
 customProperty: {{{customProperty}}}

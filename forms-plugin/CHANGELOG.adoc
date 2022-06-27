@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.6.23]]
+== 1.6.23 (TBD)
+
+icon:check[] Forms: Fixes reporting of submitted checkbox values for outgoing mails. The field of the checkbox element which contains the value to be stored when checked conflicts with the name of the field used for actually submitted values, so all checkboxes would appear to be checked in e-mails. The field `value` now only contains the actual submitted data, the field from the checkbox element will be named `valueProperty` in the e-mail templates.
+
 [[v1.6.21]]
 == 1.6.21 (2022-04-19)
 
