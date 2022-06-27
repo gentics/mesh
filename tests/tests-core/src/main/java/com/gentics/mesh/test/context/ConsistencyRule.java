@@ -45,7 +45,7 @@ public class ConsistencyRule extends TestWatcher {
 	}
 
 	@Override
-	protected void finished(Description description) {
+	protected void succeeded(Description description) {
 		Class<?> testClass = description.getTestClass();
 		if (testClass != null && testClass.isAnnotationPresent(NoConsistencyCheck.class)) {
 			return;
