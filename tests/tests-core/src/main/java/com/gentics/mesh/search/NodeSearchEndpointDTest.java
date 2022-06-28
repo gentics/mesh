@@ -58,7 +58,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodesResolveLinks() throws Exception {
-		tx(this::addMicronodeListField);
+		addMicronodeListField();
 		recreateIndices();
 
 		for (String firstName : Arrays.asList("Mickey", "Donald")) {

@@ -90,11 +90,13 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	}
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
-		HibNode node = content("concorde");
-		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
+		HibNode node = tx(() -> content("concorde"));
+		tx(() -> {
+			SchemaVersionModel schema = content("concorde").getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(new NumberFieldSchemaImpl().setName("speed"));
+			content("concorde").getSchemaContainer().getLatestVersion().setSchema(schema);
+			actions().updateSchemaVersion(content("concorde").getSchemaContainer().getLatestVersion());
+		});
 
 		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
 		NodeUpdateRequest request = response.toRequest();
@@ -106,24 +108,31 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode field to the tested content
 	 */
 	protected void addMicronodeField() {
-		ContentDao contentDao = boot().contentDao();
-		HibNode node = content("concorde");
+		HibNode node = tx(() -> {
+			HibNode nodeTmp = content("concorde");
 
-		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
-		vcardFieldSchema.setName("vcard");
-		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
-		schema.addField(vcardFieldSchema);
-		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
+			SchemaModel schema = nodeTmp.getSchemaContainer().getLatestVersion().getSchema();
+			MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
+			vcardFieldSchema.setName("vcard");
+			vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
+			schema.addField(vcardFieldSchema);
+			actions().updateSchemaVersion(nodeTmp.getSchemaContainer().getLatestVersion());
+			return nodeTmp;
+		});
 
-		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
-		NodeUpdateRequest request = response.toRequest();
+		NodeUpdateRequest request = tx(() -> {
+			NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
+			NodeUpdateRequest requestTmp = response.toRequest();
 
-		MicronodeResponse field = new MicronodeResponse();
-		field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
-		field.getFields().put("firstName", new StringFieldImpl().setString("Mickey"));
-		field.getFields().put("lastName", new StringFieldImpl().setString("Mouse"));
-		request.getFields().put("vcard", field);
+			MicronodeResponse field = new MicronodeResponse();
+			field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+			field.getFields().put("firstName", new StringFieldImpl().setString("Mickey"));
+			field.getFields().put("lastName", new StringFieldImpl().setString("Mouse"));
+			requestTmp.getFields().put("vcard", field);
+
+			return requestTmp;
+		});
+
 		call(() -> client().updateNode(projectName(), node.getUuid(), request));
 	}
 
@@ -131,16 +140,18 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode list field to the tested content
 	 */
 	protected void addMicronodeListField() {
-		HibNode node = content("concorde");
+		HibNode node = tx(() -> content("concorde"));
 
 		// Update the schema
-		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		ListFieldSchema vcardListFieldSchema = new ListFieldSchemaImpl();
-		vcardListFieldSchema.setName("vcardlist");
-		vcardListFieldSchema.setListType("micronode");
-		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
-		schema.addField(vcardListFieldSchema);
-		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
+		tx(() -> {
+			SchemaModel schema = content("concorde").getSchemaContainer().getLatestVersion().getSchema();
+			ListFieldSchema vcardListFieldSchema = new ListFieldSchemaImpl();
+			vcardListFieldSchema.setName("vcardlist");
+			vcardListFieldSchema.setListType("micronode");
+			vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
+			schema.addField(vcardListFieldSchema);
+			actions().updateSchemaVersion(content("concorde").getSchemaContainer().getLatestVersion());
+		});
 
 		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
@@ -168,16 +179,18 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a node list field to the tested content
 	 */
 	protected void addNodeListField() {
-		HibNode node = content("concorde");
+		HibNode node = tx(() -> content("concorde"));
 
 		// Update the schema
-		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
-		nodeListFieldSchema.setName("nodelist");
-		nodeListFieldSchema.setListType("node");
-		nodeListFieldSchema.setAllowedSchemas(schema.getName());
-		schema.addField(nodeListFieldSchema);
-		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
+		tx(() -> {
+			SchemaModel schema = content("concorde").getSchemaContainer().getLatestVersion().getSchema();
+			ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
+			nodeListFieldSchema.setName("nodelist");
+			nodeListFieldSchema.setListType("node");
+			nodeListFieldSchema.setAllowedSchemas(schema.getName());
+			schema.addField(nodeListFieldSchema);
+			actions().updateSchemaVersion(content("concorde").getSchemaContainer().getLatestVersion());
+		});
 
 		// create a non-empty list for the english version
 		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
