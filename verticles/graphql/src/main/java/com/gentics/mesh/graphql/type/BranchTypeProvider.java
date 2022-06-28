@@ -48,6 +48,15 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 		// .latest
 		branchType.field(newFieldDefinition().name("latest").type(GraphQLBoolean));
 
+		// .hostname
+		branchType.field(newFieldDefinition().name("hostname").type(GraphQLString));
+
+		// .ssl
+		branchType.field(newFieldDefinition().name("ssl").type(GraphQLBoolean));
+
+		// .pathPrefix
+		branchType.field(newFieldDefinition().name("pathPrefix").type(GraphQLString));
+
 		// .schema
 		branchType.field(
 			newFieldDefinition().name("schema").description("Load schema by name or uuid.")
