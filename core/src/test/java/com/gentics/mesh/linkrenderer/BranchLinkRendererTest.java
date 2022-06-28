@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -26,16 +27,22 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import io.vertx.core.json.JsonObject;
 
 @RunWith(value = Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
@@ -56,6 +63,8 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 	public String contentUuid;
 
 	public String localNodeUuid;
+
+	public String urlFieldNodeUuid;
 
 	public String updatedUuid;
 
@@ -84,6 +93,18 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 	@Before
 	public void setupDeps() {
 		latestBranchUuid = call(() -> client().findBranches(PROJECT_NAME)).getData().get(0).getUuid();
+
+		// create schema, that contains a URL field (but not segment field)
+		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest()
+				.setAutoPurge(true)
+				.setContainer(false)
+				.setName("schema_without_segment")
+				.setFields(Arrays.asList(FieldUtil.createStringFieldSchema("url"), FieldUtil.createStringFieldSchema("name")))
+				.setUrlFields(Arrays.asList("url"));
+		SchemaResponse schemaResponse = call(() -> client().createSchema(schemaCreateRequest));
+
+		// assign schema to project
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
 
 		// Grant admin perms. Otherwise we can't check the jobs
 		grantAdmin();
@@ -123,6 +144,17 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 			.getUuid();
 
 		updatedUuid = updateExistingNode();
+
+		// create another node using the schema with the URL field
+		urlFieldNodeUuid = call(() -> {
+			NodeCreateRequest anotherNodeCreateRequest = new NodeCreateRequest()
+				.setLanguage("en")
+				.setParentNodeUuid(folderUuid)
+				.setSchemaName("schema_without_segment");
+			anotherNodeCreateRequest.getFields().put("url", FieldUtil.createStringField("/this/is/the/url.html"));
+			anotherNodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Node name"));
+			return client().createNode(PROJECT_NAME, anotherNodeCreateRequest, new VersioningParametersImpl().setBranch(branchName));
+		}).getUuid();
 	}
 
 	/**
@@ -197,6 +229,25 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 		String expectedPath2 = getPrefix() + "/News/localNode";
 		assertEquals("The path did not match", expectedPath2, response2.getPath());
 		assertEquals("Content2: " + getPathPrefix() + expectedPath, response2.getFields().getStringField("content").getString());
+	}
+
+	@Test
+	public void testRenderUrlField() {
+		assertThat(replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", urlFieldNodeUuid, branchUuid)))
+				.as("URL").isEqualTo(getPrefix() + "/this/is/the/url.html");
+	}
+
+	@Test
+	public void testRenderUrlFieldViaGraphQL() {
+		GraphQLRequest request = new GraphQLRequest()
+				.setQuery("query nodeByUuid($uuid:String) {\n" +
+					"  node(uuid: $uuid) {\n" +
+					"    path\n" +
+					"  }\n" +
+					"}")
+				.setVariables(new JsonObject().put("uuid", urlFieldNodeUuid));
+		GraphQLResponse graphQLResponse = call(() -> client().graphql(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(branchName)));
+		assertThat(graphQLResponse.getData()).compliesTo("$.node.path=" + getPathPrefix() + "/this/is/the/url.html");
 	}
 
 	private String getPrefix() {

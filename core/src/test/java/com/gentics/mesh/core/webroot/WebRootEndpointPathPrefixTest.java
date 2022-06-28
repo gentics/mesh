@@ -6,6 +6,9 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -39,6 +42,7 @@ public class WebRootEndpointPathPrefixTest extends AbstractMeshTest {
 	public void testPathPrefixWebroot() {
 		final String niceUrlPath = "/some/wonderful/short/url";
 		final String prefix = "my/prefix";
+		final String otherPrefix = "my/other/prefix";
 
 		setupSchema(true);
 
@@ -70,5 +74,30 @@ public class WebRootEndpointPathPrefixTest extends AbstractMeshTest {
 		assertThat(call(() -> client().webroot(PROJECT_NAME, "/" + prefix + "/middle"))).hasUuid(uuid);
 		assertThat(call(() -> client().webroot(PROJECT_NAME, "/" + prefix + "/last/segment"))).hasUuid(uuid);
 
+		// check that new paths (with new prefix) can not yet be found
+		List<String> oldPaths = Arrays.asList("/" + prefix + "/slugValue", "/" + prefix + niceUrlPath,
+				"/" + prefix + "/some/other/url", "/" + prefix + "/middle",
+				"/" + prefix + "/last/segment");
+		List<String> newPaths = Arrays.asList("/" + otherPrefix + "/slugValue", "/" + otherPrefix + niceUrlPath,
+				"/" + otherPrefix + "/some/other/url", "/" + otherPrefix + "/middle",
+				"/" + otherPrefix + "/last/segment");
+
+		for (String newPath : newPaths) {
+			call(() -> client().webroot(PROJECT_NAME, newPath), NOT_FOUND, "node_not_found_for_path", newPath);
+		}
+
+		// change the path prefix to something else
+		request.setPathPrefix(otherPrefix);
+		call(() -> client().updateBranch(PROJECT_NAME, branchUuid, request));
+
+		// old paths (with old prefix) should not be found any more
+		for (String oldPath : oldPaths) {
+			call(() -> client().webroot(PROJECT_NAME, oldPath), NOT_FOUND, "node_not_found_for_path", oldPath);
+		}
+
+		// check the new paths
+		for (String newPath : newPaths) {
+			assertThat(call(() -> client().webroot(PROJECT_NAME, newPath))).hasUuid(uuid);
+		}
 	}
 }
