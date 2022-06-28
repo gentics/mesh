@@ -32,7 +32,7 @@ public abstract class AbstractMeshOptionsDemoContext<T extends MeshOptions> impl
 	}
 
 	@Override
-	public void setupOptions(T options) throws Exception {
+	public void setupOptions(T options) {
 		// None required for Runner
 	}
 }
