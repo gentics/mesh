@@ -7,13 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
@@ -27,29 +25,26 @@ import net.lingala.zip4j.exception.ZipException;
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
  */
-public class DemoRunner {
+public abstract class AbstractDemoRunner<T extends MeshOptions> extends AbstractMeshOptionsDemoContext<T> {
 
 	private static Logger log;
 
-	static {
-		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
-		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
-		System.setProperty("storage.trackChangedRecordsInWAL", "true");
+	public AbstractDemoRunner(String[] args, Class<? extends T> optionsClass) {
+		super(args, optionsClass);
 	}
 
 	/**
-	 * Start the process.
+	 * Start the demo instance.
 	 * 
-	 * @param args
 	 * @throws Exception
 	 */
-	public static void main(String[] args) throws Exception {
+	protected void run() throws Exception {
 		LoggingConfigurator.init();
-		log = LoggerFactory.getLogger(DemoRunner.class);
+		log = LoggerFactory.getLogger(AbstractDemoRunner.class);
 		// Extract dump file on first time startup to speedup startup
 		setupDemo();
 
-		MeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
+		MeshOptions options = getOptions();
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader(vertx -> {
@@ -84,5 +79,4 @@ public class DemoRunner {
 			log.info("Demo data extracted to {" + dataDir.getAbsolutePath() + "}");
 		}
 	}
-
 }

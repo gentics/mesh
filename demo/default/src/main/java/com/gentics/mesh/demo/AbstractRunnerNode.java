@@ -1,10 +1,6 @@
 package com.gentics.mesh.demo;
 
-import java.io.File;
-
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
@@ -17,20 +13,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
-/**
- * Cluster runner
- */
-public class RunnerNodeA {
-
-	private static final String basePath = "data-nodeA";
+public abstract class AbstractRunnerNode extends AbstractMeshOptionsDemoContext<OrientDBMeshOptions> {
 
 	static {
-		// Use slf4j instead of jul
+		System.setProperty("memory.directMemory.preallocate", "false");
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
-		System.setProperty("vertx.cacheDirBase", basePath + File.separator + "tmp");
-		System.setProperty("mesh.confDirName", "config-nodeA");
 	}
+
+	public AbstractRunnerNode(String[] args) {
+		super(args, OrientDBMeshOptions.class);
+	}
+
+	protected abstract String getBasePath();
+
+	protected abstract int getPort();
 
 	/**
 	 * Run the server.
@@ -38,17 +34,17 @@ public class RunnerNodeA {
 	 * @param args
 	 * @throws Exception
 	 */
-	public static void main(String[] args) throws Exception {
+	public void run() throws Exception {
+		OrientDBMeshOptions options = getOptions();
 
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, "-" + MeshCLI.INIT_CLUSTER);
-		options.getStorageOptions().setDirectory(basePath + "/graph");
-		// options.getSearchOptions().setDirectory(basePath + "/es");
-		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
-		options.getUploadOptions().setTempDirectory(basePath + "/temp");
-		options.getHttpServerOptions().setPort(8080);
+		options.getStorageOptions().setDirectory(getBasePath() + "/graph");
+		// options.getSearchOptions().setDirectory(getBasePath() + "/es");
+		options.getUploadOptions().setDirectory(getBasePath() + "/binaryFiles");
+		options.getUploadOptions().setTempDirectory(getBasePath() + "/temp");
+		options.getHttpServerOptions().setPort(getPort());
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
-		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
+		options.getAuthenticationOptions().setKeystorePath(getBasePath() + "/keystore.jkms");
 		// options.getSearchOptions().setHttpEnabled(true);
 		options.getClusterOptions().setEnabled(true);
 		options.getClusterOptions().setClusterName("testcluster");
@@ -81,5 +77,4 @@ public class RunnerNodeA {
 			mesh.shutdownAndTerminate(10);
 		}
 	}
-
 }

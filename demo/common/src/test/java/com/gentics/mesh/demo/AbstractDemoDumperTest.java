@@ -8,7 +8,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -31,8 +30,9 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
 
-public class DemoDumpGeneratorTest {
+public abstract class AbstractDemoDumperTest implements MeshOptionsTypeUnawareContext {
 
 	private BootstrapInitializer boot;
 
@@ -42,13 +42,7 @@ public class DemoDumpGeneratorTest {
 
 	private Mesh mesh;
 
-	private static DemoDumpGenerator generator = new DemoDumpGenerator();
-
-	@BeforeClass
-	public static void cleanupFolders() throws Exception {
-		generator.cleanup();
-		generator.init();
-	}
+	protected static DemoDumper generator = null;
 
 	@Before
 	public void setup() throws Exception {

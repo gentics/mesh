@@ -7,4 +7,4 @@ services:
     volumes:
       - /opt/results:/maven/mesh-performance-tests/target/results
       - /opt/.m2:/root/.m2
-    command: ["mvn", "-B", "-pl", "!doc,!verticles,!demo,!server", "-Dmaven.javadoc.skip=true", "-Dskip.cluster.tests=true", "-Dskip.unit.tests=true", "package" ]
+    command: ["mvn", "-B", "-pl", "!doc,!verticles,!demo/default,!server", "-Dmaven.javadoc.skip=true", "-Dskip.cluster.tests=true", "-Dskip.unit.tests=true", "package" ]

@@ -1,7 +1,6 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.etc.config.env;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.env.MeshOptionsContext;
 
 /**
  * This interface may be used by the implementor unit test classes, 
@@ -12,20 +11,12 @@ import com.gentics.mesh.etc.config.env.MeshOptionsContext;
  *
  * @param <T>
  */
-public interface MeshOptionsTypeAwareContext<T extends MeshOptions> extends MeshOptionsContext<T> {
+public interface MeshOptionsContext<T extends MeshOptions> {
 
 	/**
 	 * Get the options. By default the options are taken from the provider, set in {@link MeshOptionsProvider#ENV_OPTIONS_PROVIDER_CLASS} system property.
 	 * 
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	default T getOptions() {
-		try {
-			return (T) MeshOptionsProvider.getProvider().getOptions();
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
-	}
+	T getOptions();
 }

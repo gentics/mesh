@@ -32,6 +32,7 @@ public class OptionUtils {
 	 *            the target type
 	 * @return the converted value
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes", "unused" })
 	private static <T> T convertValue(Class<T> clazz, String value) {
 		if ("null".equals(value)) {
 			return null;

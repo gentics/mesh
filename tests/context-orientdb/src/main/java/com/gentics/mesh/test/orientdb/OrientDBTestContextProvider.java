@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.orientdb;
 
-
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshOptionsProvider;
