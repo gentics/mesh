@@ -10,6 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
@@ -68,13 +69,13 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 	}
 
 	private Flowable<String> getSchemastatus(HibBranch branch) {
-		return db.singleTx(() -> branchCrudHandler.getSchemaVersionsInfo(branch))
+		return db.singleTx(() -> branchCrudHandler.getSchemaVersionsInfo(CommonTx.get().branchDao().mergeIntoPersisted(branch.getProject(), branch)))
 			.map(RestModel::toJson)
 			.toFlowable();
 	}
 
 	private Flowable<String> getMicroschemastatus(HibBranch branch) {
-		return db.singleTx(() -> branchCrudHandler.getMicroschemaVersions(branch))
+		return db.singleTx(() -> branchCrudHandler.getMicroschemaVersions(CommonTx.get().branchDao().mergeIntoPersisted(branch.getProject(), branch)))
 			.map(RestModel::toJson)
 			.toFlowable();
 	}
