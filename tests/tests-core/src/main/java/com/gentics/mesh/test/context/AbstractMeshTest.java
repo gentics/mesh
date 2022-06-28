@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.Timeout;
 
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -26,8 +27,6 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.shared.SharedKeys;
-import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.util.MeshAssert;
@@ -60,6 +59,13 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@Rule
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();
+
+	/**
+	 * Add a global timeout of 44 minutes, which is slightly less than the timeout of 45 minutes, which is used for the surefire plugin
+	 * for the test execution
+	 */
+	@ClassRule
+	public static Timeout globalTimeout= new Timeout(44, TimeUnit.MINUTES);
 
 	@Rule
 	public ConsistencyRule consistency = new ConsistencyRule(getTestContext());
