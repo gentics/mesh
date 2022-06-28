@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -279,31 +280,40 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Collections.reverse(segments);
 
 			// Finally construct the path from all segments
-			StringBuilder builder = new StringBuilder();
-
-			// Append the prefix first
-			Branch branch = getProject().getBranchRoot().findByUuid(branchUuid);
-			if (branch != null) {
-				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
-				if (!prefix.isEmpty()) {
-					String[] prefixSegments = prefix.split("/");
-					for (String prefixSegment : prefixSegments) {
-						if (prefixSegment.isEmpty()) {
-							continue;
-						}
-						builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
-					}
+			return getWithSanitizedPathPrefix(branchUuid, builder -> {
+				Iterator<String> it = segments.iterator();
+				while (it.hasNext()) {
+					String currentSegment = it.next();
+					builder.append("/").append(URIUtils.encodeSegment(currentSegment));
 				}
-			}
-
-			Iterator<String> it = segments.iterator();
-			while (it.hasNext()) {
-				String currentSegment = it.next();
-				builder.append("/").append(URIUtils.encodeSegment(currentSegment));
-			}
-			return builder.toString();
+			});
 		});
 
+	}
+
+	/**
+	 * Get the Path, which is appended by the given pathBuilder optionally prepended with the pathPrefix of the branch
+	 * @param branchUuid branch UUID
+	 * @param pathBuilder consumer, which will get a stringbuilder and should append the path
+	 * @return complete path
+	 */
+	protected String getWithSanitizedPathPrefix(String branchUuid, Consumer<StringBuilder> pathBuilder) {
+		StringBuilder builder = new StringBuilder();
+		Branch branch = getProject().getBranchRoot().findByUuid(branchUuid);
+		if (branch != null) {
+			String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
+			if (!prefix.isEmpty()) {
+				String[] prefixSegments = prefix.split("/");
+				for (String prefixSegment : prefixSegments) {
+					if (prefixSegment.isEmpty()) {
+						continue;
+					}
+					builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
+				}
+			}
+		}
+		pathBuilder.accept(builder);
+		return builder.toString();
 	}
 
 	/**
@@ -319,6 +329,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.flatMap(language -> Optional.ofNullable(getGraphFieldContainer(language, branchUuid, type)).map(Stream::of).orElseGet(Stream::empty))
 			.flatMap(NodeGraphFieldContainer::getUrlFieldValues)
 			.findFirst()
+			.map(path -> getWithSanitizedPathPrefix(branchUuid, builder -> builder.append(path)))
 			.orElse(null);
 	}
 
