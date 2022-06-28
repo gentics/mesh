@@ -55,13 +55,11 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = tx()) {
-			HtmlFieldListImpl listField = new HtmlFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add(null);
-			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		HtmlFieldListImpl listField = new HtmlFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
