@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import org.junit.Before;
 
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
@@ -18,9 +17,7 @@ public abstract class AbstractListFieldEndpointTest extends AbstractFieldEndpoin
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Tx tx = tx()) {
-			setSchema(getListFieldType());
-		}
+		tx(() -> setSchema(getListFieldType()));
 	}
 
 	protected void setSchema(String listType) throws IOException {

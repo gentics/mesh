@@ -95,7 +95,7 @@ public class WebRootFieldEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		String path = "/News/2015/News_2015.en.html";
-		try (Tx tx = tx()) {
+		tx((tx) -> {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = content("news_2015");
 			// Inject the reference node field
@@ -104,6 +104,10 @@ public class WebRootFieldEndpointETagTest extends AbstractMeshTest {
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
 			schemaVersion.setSchema(schema);
 			actions().updateSchemaVersion(schemaVersion);
+		});
+
+		try (Tx tx = tx()) {
+			HibNode node = content("news_2015");
 
 			NodeResponse response = call(() -> client().findNodeByUuid(projectName(), node.getUuid()));
 			NodeUpdateRequest request = response.toRequest();

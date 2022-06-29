@@ -7,14 +7,19 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 import java.util.Map;
 
+import org.codehaus.jettison.json.JSONException;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -33,6 +38,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -42,11 +48,8 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshTestSetting;
+
 import io.vertx.core.json.JsonObject;
-import org.codehaus.jettison.json.JSONException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(startServer = true, testSize = FULL)
@@ -58,7 +61,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodesResolveLinks() throws Exception {
-		tx(this::addMicronodeListField);
+		addMicronodeListField();
 		recreateIndices();
 
 		for (String firstName : Arrays.asList("Mickey", "Donald")) {
@@ -151,34 +154,31 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		long numAdditionalNodes = 99;
-		try (Tx tx = tx()) {
-			NodeDao nodeDao = tx.nodeDao();
-			String branchUuid = project().getLatestBranch().getUuid();
-			addMicronodeField();
-			String english = english();
-			HibNode concorde = content("concorde");
-			HibNode parentNode = nodeDao.getParentNode(concorde, branchUuid);
-			HibSchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
-			NodeResponse request = call(() -> client().findNodeByUuid(projectName(), concorde.getUuid()));
-			for (int i = 0; i < numAdditionalNodes; i++) {
-				NodeCreateRequest createRequest = new NodeCreateRequest();
-				createRequest.setSchema(schemaVersion.transformToReference());
-				MicronodeResponse micronodeField = new MicronodeResponse();
-				micronodeField.getFields().putAll(
-						Map.of("firstName", new StringFieldImpl().setString("Mickey"),
-								"lastName", new StringFieldImpl().setString("Mouse"))
-				);
-				micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
-				FieldMap fieldMap = request.getFields().putAll(
-						Map.of("slug", new StringFieldImpl().setString("Name_" + i), "vcard", micronodeField)
-				);
-				createRequest.setFields(fieldMap);
-				createRequest.setParentNode(parentNode.transformToMinimalReference());
-				createRequest.setLanguage(english);
+		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
+		addMicronodeField();
+		String english = english();
+		NodeReference parentNode = tx(tx -> {
+			return tx.nodeDao().getParentNode(content("concorde"), branchUuid).transformToMinimalReference();
+		});
+		HibSchemaVersion schemaVersion = tx(() -> content("concorde").getSchemaContainer().getLatestVersion());
+		NodeResponse request = call(() -> client().findNodeByUuid(projectName(), content("concorde").getUuid()));
+		for (int i = 0; i < numAdditionalNodes; i++) {
+			NodeCreateRequest createRequest = new NodeCreateRequest();
+			createRequest.setSchema(schemaVersion.transformToReference());
+			MicronodeResponse micronodeField = new MicronodeResponse();
+			micronodeField.getFields().putAll(
+					Map.of("firstName", new StringFieldImpl().setString("Mickey"),
+							"lastName", new StringFieldImpl().setString("Mouse"))
+					);
+			micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+			FieldMap fieldMap = request.getFields().putAll(
+					Map.of("slug", new StringFieldImpl().setString("Name_" + i), "vcard", micronodeField)
+					);
+			createRequest.setFields(fieldMap);
+			createRequest.setParentNode(parentNode);
+			createRequest.setLanguage(english);
 
-				call(() -> client().createNode(projectName(), createRequest));
-			}
-			tx.success();
+			call(() -> client().createNode(projectName(), createRequest));
 		}
 		recreateIndices();
 
@@ -199,30 +199,31 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testTagCount() throws Exception {
 		recreateIndices();
 
-		try (Tx tx = tx()) {
+		HibNode node = tx(() -> content("concorde"));
+
+		long previousTagCount = tx(tx -> {
 			TagDao tagDao = tx.tagDao();
+			return tagDao.getTags(node, project().getLatestBranch()).count();
+		});
 
-			HibNode node = content("concorde");
-			long previousTagCount = tagDao.getTags(node, project().getLatestBranch()).count();
-			// Create tags:
-			int tagCount = 20;
-			for (int i = 0; i < tagCount; i++) {
-				TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
-				// Add tags to node:
-				call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new VersioningParametersImpl().draft()));
-			}
-
-			waitForSearchIdleEvent();
-
-			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"),
-				new VersioningParametersImpl().draft()));
-			assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
-
-			// assert tag count
-			long nColorTags = response.getData().get(0).getTags().stream().filter(ref -> ref.getTagFamily().equals("colors")).count();
-			long nBasicTags = response.getData().get(0).getTags().stream().filter(ref -> ref.getTagFamily().equals("basic")).count();
-			assertEquals("Expect correct tag count", previousTagCount + tagCount, nColorTags + nBasicTags);
+		// Create tags:
+		int tagCount = 20;
+		for (int i = 0; i < tagCount; i++) {
+			TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
+			// Add tags to node:
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new VersioningParametersImpl().draft()));
 		}
+
+		waitForSearchIdleEvent();
+
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"),
+			new VersioningParametersImpl().draft()));
+		assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
+
+		// assert tag count
+		long nColorTags = response.getData().get(0).getTags().stream().filter(ref -> ref.getTagFamily().equals("colors")).count();
+		long nBasicTags = response.getData().get(0).getTags().stream().filter(ref -> ref.getTagFamily().equals("basic")).count();
+		assertEquals("Expect correct tag count", previousTagCount + tagCount, nColorTags + nBasicTags);
 	}
 
 	@Test
