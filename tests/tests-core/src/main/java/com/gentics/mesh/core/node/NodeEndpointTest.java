@@ -693,70 +693,67 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (Tx tx = tx()) {
-			NodeDao nodeDao = tx.nodeDao();
-			HibNode parentNode = folder("2015");
-			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-			HibNode noPermNode = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-			String noPermNodeUUID = noPermNode.getUuid();
+		HibNode parentNode = folder("2015");
+		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
+		HibNode noPermNode = tx(tx -> { return tx.nodeDao().create(parentNode, user(), schemaContainer("content").getLatestVersion(), project()); });
+		String noPermNodeUUID = noPermNode.getUuid();
 
-			// Create 20 drafts
-			int nNodes = 20;
-			for (int i = 0; i < nNodes; i++) {
-				NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-				nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("content"));
-				nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("test"));
-				nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("test" + i));
-				nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
-				nodeCreateRequest.setLanguage("en");
-				call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-			}
-
-			assertNotNull(noPermNode.getUuid());
-			long perPage = 11;
-			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(3, perPage),
-				new VersioningParametersImpl().draft()));
-			assertEquals(perPage, restResponse.getData().size());
-
-			// Extra Nodes + permitted nodes
-			int totalNodes = getNodeCount() + nNodes;
-			int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
-			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-			assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
-			assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
-
-			List<NodeResponse> allNodes = new ArrayList<>();
-			for (int page = 1; page <= totalPages; page++) {
-				restResponse = client().findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage),
-					new VersioningParametersImpl().draft()).blockingGet();
-				allNodes.addAll(restResponse.getData());
-			}
-			assertEquals("Somehow not all nodes were loaded when loading all pages.", totalNodes, allNodes.size());
-
-			// Verify that the no_perm_node is not part of the response
-			List<NodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID)).collect(
-				Collectors.toList());
-			assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
-
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25L)),
-				BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25L)),
-				BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
-
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1L)),
-				BAD_REQUEST, "error_pagesize_parameter", "-1");
-
-			NodeListResponse list = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25L), new VersioningParametersImpl()
-				.draft()));
-			assertEquals(4242, list.getMetainfo().getCurrentPage());
-			assertEquals(0, list.getData().size());
-			assertEquals(25L, list.getMetainfo().getPerPage().longValue());
-			assertEquals(2, list.getMetainfo().getPageCount());
-			assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
+		// Create 20 drafts
+		int nNodes = 20;
+		for (int i = 0; i < nNodes; i++) {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("content"));
+			nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("test"));
+			nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("test" + i));
+			nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+			nodeCreateRequest.setLanguage("en");
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
+
+		assertNotNull(noPermNode.getUuid());
+		long perPage = 11;
+		NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(3, perPage),
+			new VersioningParametersImpl().draft()));
+		assertEquals(perPage, restResponse.getData().size());
+
+		// Extra Nodes + permitted nodes
+		int totalNodes = getNodeCount() + nNodes;
+		int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
+		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
+
+		List<NodeResponse> allNodes = new ArrayList<>();
+		for (int page = 1; page <= totalPages; page++) {
+			restResponse = client().findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage),
+				new VersioningParametersImpl().draft()).blockingGet();
+			allNodes.addAll(restResponse.getData());
+		}
+		assertEquals("Somehow not all nodes were loaded when loading all pages.", totalNodes, allNodes.size());
+
+		// Verify that the no_perm_node is not part of the response
+		List<NodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID)).collect(
+			Collectors.toList());
+		assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+		call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25L)),
+			BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+
+		call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25L)),
+			BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
+
+		call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1L)),
+			BAD_REQUEST, "error_pagesize_parameter", "-1");
+
+		NodeListResponse list = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25L), new VersioningParametersImpl()
+			.draft()));
+		assertEquals(4242, list.getMetainfo().getCurrentPage());
+		assertEquals(0, list.getData().size());
+		assertEquals(25L, list.getMetainfo().getPerPage().longValue());
+		assertEquals(2, list.getMetainfo().getPageCount());
+		assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
 	}
 
 	@Test
