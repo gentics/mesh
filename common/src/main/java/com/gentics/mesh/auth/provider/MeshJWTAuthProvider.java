@@ -106,20 +106,21 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 					log.warn("Could not authenticate token.");
 				}
 				resultHandler.handle(Future.failedFuture("Invalid Token"));
-			} else {
-				JsonObject decodedJwt = rh.result().principal();
-				try {
-					User user = loadUserByJWT(decodedJwt);
-					AuthenticationResult result = new AuthenticationResult(user);
+				return;
+			}
 
-					// Check whether an api key was used to authenticate the user.
-					if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
-						result.setUsingAPIKey(true);
-					}
-					resultHandler.handle(Future.succeededFuture(result));
-				} catch (Exception e) {
-					resultHandler.handle(Future.failedFuture(e));
+			JsonObject decodedJwt = rh.result().principal();
+			try {
+				User user = loadUserByJWT(decodedJwt);
+				AuthenticationResult result = new AuthenticationResult(user);
+
+				// Check whether an api key was used to authenticate the user.
+				if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
+					result.setUsingAPIKey(true);
 				}
+				resultHandler.handle(Future.succeededFuture(result));
+			} catch (Exception e) {
+				resultHandler.handle(Future.failedFuture(e));
 			}
 		});
 	}
@@ -198,6 +199,30 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			// TODO Don't let the user know that we know that he did not exist?
 			throw error(UNAUTHORIZED, "auth_login_failed");
 		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Validating password using the bcrypt password encoder");
+		}
+
+		if (!passwordEncoder.matches(password, accountPasswordHash)) {
+			resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+			return;
+		}
+
+		boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
+		if (forcedPasswordChange && newPassword == null) {
+			resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
+			return;
+		} else if (!forcedPasswordChange && newPassword != null) {
+			resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_newpassword_failed")));
+			return;
+		}
+
+		if (forcedPasswordChange) {
+			db.tx(() -> user.setPassword(newPassword));
+		}
+
+		resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
 	}
 
 	/**
@@ -219,6 +244,13 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
 			throw error(INTERNAL_SERVER_ERROR, "error_internal");
 		}
+
+		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
+		JsonObject tokenData = new JsonObject();
+		String uuid = db.tx(((MeshAuthUser) user)::getUuid);
+		tokenData.put(USERID_FIELD_NAME, uuid);
+		JWTOptions jwtOptions = JWTUtil.createJWTOptions(options);
+		return jwtProvider.generateToken(tokenData, jwtOptions);
 	}
 
 	/**
@@ -235,8 +267,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		JsonObject tokenData = new JsonObject()
 			.put(USERID_FIELD_NAME, user.getUuid())
 			.put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
-		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
-				.setAudience(options.getAudience()).setIssuer(options.getIssuer());
+		JWTOptions jwtOptions = JWTUtil.createJWTOptions(options);
 		if (expireDuration != null) {
 			jwtOptions.setExpiresInMinutes(expireDuration);
 		}
@@ -269,7 +300,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			// }
 
 			// Check whether the token might be an API key token
-			if (!jwt.containsKey("exp")) {
+			if (!jwt.containsKey(JWTUtil.JWT_FIELD_EXPIRATION)) {
 				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
 				// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
 				if (apiKeyToken != null) {
