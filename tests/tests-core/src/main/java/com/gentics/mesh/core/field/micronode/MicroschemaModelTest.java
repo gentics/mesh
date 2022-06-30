@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -303,30 +304,36 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			tx.success();
 			return vcard1;
 		});
+
+		List<String> containerUuids = new ArrayList<>();
 		try (Tx tx = tx()) {
-			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
 			HibMicroschemaVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
 			HibNodeFieldContainer containerWithBoth = boot().contentDao().getFieldContainer(folder("2015"), "en");
 			containerWithBoth.createMicronode("single", vcard);
 			containerWithBoth.createMicronodeList("list").createMicronode(vcard);
+			containerUuids.add(containerWithBoth.getUuid());
 
 			HibNodeFieldContainer containerWithField = boot().contentDao().getFieldContainer(folder("news"), "en");
 			containerWithField.createMicronode("single", vcard);
+			containerUuids.add(containerWithField.getUuid());
 
 			HibNodeFieldContainer containerWithList = boot().contentDao().getFieldContainer(folder("products"), "en");
 			containerWithList.createMicronodeList("list").createMicronode(vcard);
+			containerUuids.add(containerWithList.getUuid());
 
 			HibNodeFieldContainer containerWithOtherVersion = boot().contentDao().getFieldContainer(folder("deals"), "en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
 
 			List<? extends HibNodeFieldContainer> containers = microschemaDao.findDraftFieldContainers(vcard, project().getLatestBranch().getUuid()).list();
-			assertTrue(containers.stream().anyMatch(container -> container.getUuid().equals(containerWithBoth.getUuid())));
-			assertTrue(containers.stream().anyMatch(container -> container.getUuid().equals(containerWithField.getUuid())));
-			assertTrue(containers.stream().anyMatch(container -> container.getUuid().equals(containerWithList.getUuid())));
-			assertThat(containers).hasSize(3);
-			// We cannot rely on POJO comparison anymore.
-			//assertThat(new ArrayList<HibNodeFieldContainer>(containers)).containsExactlyInAnyOrder(containerWithBoth, containerWithField, containerWithList).hasSize(3);
+
+			assertThat(containers.stream().map(HibNodeFieldContainer::getUuid)).containsOnlyElementsOf(containerUuids);
+			tx.success();
 		}
 	}
 }

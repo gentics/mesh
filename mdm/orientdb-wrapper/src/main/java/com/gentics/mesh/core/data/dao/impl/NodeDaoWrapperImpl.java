@@ -1,28 +1,44 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.branch.HibBranch;
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
@@ -91,8 +107,22 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
+	public Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid) {
+		return nodes.stream()
+				.map(node -> Pair.of(node, (List<HibNode>) getChildren(node, branchUuid).list()))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	@Override
 	public HibNode getParentNode(HibNode node, String branchUuid) {
 		return toGraph(node).getParentNode(branchUuid);
+	}
+
+	@Override
+	public Map<HibNode, HibNode> getParentNodes(Collection<HibNode> nodes, String branchUuid) {
+		return nodes.stream()
+				.map(node -> Pair.of(node, getParentNode(node, branchUuid)))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
 	@Override
@@ -112,8 +142,24 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public String getDisplayName(HibNode node, InternalActionContext ac) {
-		return toGraph(node).getDisplayName(ac);
+	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
+		HibUser user = ac.getUser();
+		return nodes.stream()
+				.map(node -> Pair.of(node, getContentFromNode(user, node, branchUuid, languageTags, type)))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	private List<NodeContent> getContentFromNode(HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type) {
+		UserDao userDao = Tx.get().userDao();
+		ContentDao contentDao = boot.get().contentDao();
+		return toGraph(sourceNode).getChildren(branchUuid)
+				.stream()
+				.filter(node -> userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM))
+				.map(node -> {
+					HibNodeFieldContainer container = contentDao.findVersion(node, languageTags, branchUuid, type.getHumanCode());
+					return new NodeContent(node, container, languageTags, type);
+				})
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -169,6 +215,17 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
+	public Map<HibNode, List<HibNode>> getBreadcrumbNodesMap(Collection<HibNode> nodes, InternalActionContext ac) {
+		return nodes.stream().map(node -> Pair.of(node,
+				getBreadcrumbNodes(node, ac)
+						.stream()
+						.map(HibNode.class::cast)
+						.collect(Collectors.toList()))
+		)
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	@Override
 	protected RootVertex<Node> getRoot(HibProject root) {
 		return toGraph(root).getNodeRoot();
 	}
@@ -196,5 +253,15 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		}
 		node.setProject(root);
 		return node;
+	}
+
+	@Override
+	public void migrateParentNodes(List<? extends HibNode> nodes, HibBranch oldBranch, HibBranch newBranch) {
+		nodes.forEach(node -> {
+			HibNode oldParent = getParentNode(node, oldBranch.getUuid());
+			if (oldParent != null) {
+				setParentNode(node, newBranch.getUuid(), oldParent);
+			}
+		});
 	}
 }

@@ -19,7 +19,6 @@ import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
 import com.gentics.mesh.core.rest.job.JobWarningList;
-import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -145,8 +144,8 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void incCompleted() {
-		completionCount++;
+	public void incCompleted(int increment) {
+		completionCount += increment;
 	}
 
 	private HibJob getJob() {

@@ -18,6 +18,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -484,10 +487,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String nodeUuid = contentUuid();
 		// Add some really long string value to the content
 		try (Tx tx = tx()) {
+			HibNode parentNode = content();
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
-			container.getString("title").setString(TestUtils.getRandomHash(40_000));
-			container.getString("teaser").setString(TestUtils.getRandomHash(40_000));
+
+			HibNodeFieldContainer original = contentDao.getLatestDraftFieldContainer(parentNode, english());
+			HibNodeFieldContainer newContainer = contentDao.createFieldContainer(parentNode, english(), project().getLatestBranch(), user(), original, true);
+			newContainer.getString("title").setString(TestUtils.getRandomHash(40_000));
+			newContainer.getString("teaser").setString(TestUtils.getRandomHash(40_000));
 			tx.success();
 		}
 
@@ -530,17 +536,18 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				"The mapping should not include a raw field for the title field");
 		}
 
-		List<JsonObject> searchDocumentsOfContent = trackingSearchProvider().getStoreEvents().entrySet().stream().filter(e -> e.getKey().endsWith(
-			nodeUuid + "-en")).map(e -> e.getValue()).collect(Collectors.toList());
-		assertThat(searchDocumentsOfContent).isNotEmpty();
-		// Assert that the documents are correct. The teaser must have been truncated.
-		for (JsonObject doc : searchDocumentsOfContent) {
-			String teaser = doc.getJsonObject("fields").getString("teaser");
-			assertThat(teaser).hasSize(32_700);
-			String content = doc.getJsonObject("fields").getString("title");
-			assertThat(content).hasSize(40_000);
-		}
+		JsonObject doc = trackingSearchProvider().getStoreEvents().entrySet().stream()
+				.filter(e -> e.getKey().endsWith(nodeUuid + "-en"))
+				.map(e -> e.getValue())
+				.sorted(Comparator.comparing((JsonObject json) -> json.getJsonObject("fields").getString("teaser").length()).reversed())
+				.findFirst()
+				.orElseThrow();
 
+		// Assert that the teaser has been truncated
+		String teaser = doc.getJsonObject("fields").getString("teaser");
+		assertThat(teaser).hasSize(32_700);
+		String content = doc.getJsonObject("fields").getString("title");
+		assertThat(content).hasSize(40_000);
 	}
 
 	@Test

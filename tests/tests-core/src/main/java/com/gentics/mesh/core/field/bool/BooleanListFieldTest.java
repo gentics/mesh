@@ -57,7 +57,9 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, BOOLEAN_LIST, "boolean");
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 
 			HibBooleanFieldList booleanList = container.createBooleanList(BOOLEAN_LIST);
 			booleanList.createBoolean(true);

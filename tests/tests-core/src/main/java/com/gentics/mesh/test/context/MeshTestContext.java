@@ -29,8 +29,9 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
-import org.junit.rules.TestWatcher;
+import org.junit.rules.TestRule;
 import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
@@ -82,7 +83,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import okhttp3.OkHttpClient;
 
-public class MeshTestContext extends TestWatcher {
+public class MeshTestContext implements TestRule {
 
 	static {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
@@ -130,19 +131,31 @@ public class MeshTestContext extends TestWatcher {
 
 	private MeshTestContextProvider meshTestContextProvider;
 
-	@Override
-	protected void starting(Description description) {
-		try {
-			MeshTestSetting settings = getSettings(description);
-			// Setup the dagger context and orientdb,es once
-			if (description.isSuite()) {
-				setupOnce(settings);
-			} else {
-				setup(settings);
+	public Statement apply(final Statement base, final Description description) {
+		return new Statement() {
+			@Override
+			public void evaluate() throws Throwable {
+				starting(description);
+				try {
+					base.evaluate();
+				} finally {
+					finished(description);
+				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
+		};
+	}
+
+	/**
+	 * Start the test context
+	 * @param description
+	 */
+	protected void starting(Description description) throws Throwable {
+		MeshTestSetting settings = getSettings(description);
+		// Setup the dagger context and orientdb,es once
+		if (description.isSuite()) {
+			setupOnce(settings);
+		} else {
+			setup(settings);
 		}
 	}
 
@@ -187,18 +200,18 @@ public class MeshTestContext extends TestWatcher {
 			// Create a trust manager that does not validate certificate chains
 			final TrustManager[] trustAllCerts = new TrustManager[] {
 				new X509TrustManager() {
-					@Override
+				@Override
 					public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-					}
+				}
 
-					@Override
+				@Override
 					public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-					}
+				}
 
-					@Override
-					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-						return new java.security.cert.X509Certificate[] {};
-					}
+				@Override
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return new java.security.cert.X509Certificate[] {};
+				}
 				}
 			};
 
@@ -222,7 +235,10 @@ public class MeshTestContext extends TestWatcher {
 		}
 	}
 
-	@Override
+	/**
+	 * Test finished, so tear down the test context
+	 * @param description
+	 */
 	protected void finished(Description description) {
 		try {
 			MeshTestSetting settings = getSettings(description);
@@ -586,7 +602,7 @@ public class MeshTestContext extends TestWatcher {
 			network = Network.newNetwork();
 			elasticsearch = new ElasticsearchContainer(version).withNetwork(network);
 			elasticsearch.waitingFor(Wait.forHttp(("/")));
-			toxiproxy = new ToxiproxyContainer().withNetwork(network);
+			toxiproxy = new ToxiproxyContainer(System.getProperty("mesh.container.image.prefix", "") + "shopify/toxiproxy:2.1.0").withNetwork(network);
 			if (!toxiproxy.isRunning()) {
 				toxiproxy.start();
 			}
@@ -610,29 +626,29 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		}
 		switch (settings.awsContainer()) {
-			case NONE:
-				break;
-			case AWS:
-				throw new IllegalStateException("AWS test container is currently unsupported");
-			case MINIO:
-				String ACCESS_KEY = "accessKey";
-				String SECRET_KEY = "secretKey";
+		case NONE:
+			break;
+		case AWS:
+			throw new IllegalStateException("AWS test container is currently unsupported");
+		case MINIO:
+			String ACCESS_KEY = "accessKey";
+			String SECRET_KEY = "secretKey";
 				AWSContainer awsContainer = new AWSContainer(
 						new AWSContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY));
-				awsContainer.start();
-				s3Options.setCorsAllowedOrigins(null);
-				s3Options.setCorsAllowedHeaders(null);
-				s3Options.setCorsAllowedMethods(null);
-				s3Options.setEnabled(true);
-				s3Options.setAccessKeyId(ACCESS_KEY);
-				s3Options.setBucket("test-bucket");
-				S3CacheOptions s3CacheOptions = new S3CacheOptions();
-				s3CacheOptions.setBucket("test-cache-bucket");
-				s3Options.setS3CacheOptions(s3CacheOptions);
-				s3Options.setSecretAccessKey(SECRET_KEY);
-				s3Options.setRegion("eu-central-1");
-				s3Options.setEndpoint("http://" + awsContainer.getHostAddress());
-				break;
+			awsContainer.start();
+			s3Options.setCorsAllowedOrigins(null);
+			s3Options.setCorsAllowedHeaders(null);
+			s3Options.setCorsAllowedMethods(null);
+			s3Options.setEnabled(true);
+			s3Options.setAccessKeyId(ACCESS_KEY);
+			s3Options.setBucket("test-bucket");
+			S3CacheOptions s3CacheOptions = new S3CacheOptions();
+			s3CacheOptions.setBucket("test-cache-bucket");
+			s3Options.setS3CacheOptions(s3CacheOptions);
+			s3Options.setSecretAccessKey(SECRET_KEY);
+			s3Options.setRegion("eu-central-1");
+			s3Options.setEndpoint("http://" + awsContainer.getHostAddress());
+			break;
 		}
 
 		if (settings.useKeycloak()) {

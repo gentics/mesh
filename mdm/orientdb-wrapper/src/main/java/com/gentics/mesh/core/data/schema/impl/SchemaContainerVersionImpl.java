@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;

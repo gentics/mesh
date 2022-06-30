@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Stream;
 
@@ -11,6 +13,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -88,12 +91,32 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	Result<? extends HibNode> getChildren(HibNode node, String branchUuid);
 
 	/**
+	 * Return all content of the provided type using language fallback for each node in the given branch.
+	 * This will also check for permissions.
+	 * @param nodes
+	 * @param ac
+	 * @param branchUuid
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type);
+
+	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
 	 * @param node node
 	 * @param ac action context
 	 * @param perm permission
 	 */
 	Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac, InternalPermission perm);
+
+	/**
+	 * Return all children of the provides nodes for the specified branch
+	 * @param nodes
+	 * @param branchUuid
+	 * @return
+	 */
+	Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid);
 
 	/**
 	 * Returns the parent node of this node.
@@ -103,6 +126,24 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	HibNode getParentNode(HibNode node, String branchUuid);
+
+	/**
+	 * Returns a map with nodes and their immediate parents
+	 * @param nodes
+	 * @param branchUuid
+	 * @return
+	 */
+	Map<HibNode, HibNode> getParentNodes(Collection<HibNode> nodes, String branchUuid);
+
+	/**
+	 * Returns the parent node uuid of this node.
+	 *
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @return
+	 */
+
+	String getParentNodeUuid(HibNode node, String branchUuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
@@ -224,6 +265,16 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTag
 	 */
 	void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
+
+	/**
+	 * Return a string path for each of the provided node for the given branch, container type with language fallbacks
+	 * @param sourceNodes
+	 * @param ac
+	 * @param type
+	 * @param languageTags
+	 * @return
+	 */
+	Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags);
 
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
@@ -363,13 +414,44 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
 
 	/**
+	 * Fetch all contents for the provided project in the action context branch and the container type.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions
+	 *  @param project
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type);
+
+	/**
+	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions
+	 * @param schemaVersion
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type);
+
+	/**
 	 * Stream the hierarchical patch of the node.
 	 * 
 	 * @param node
 	 * @param ac
 	 * @return
 	 */
-	Stream<HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac);
+	Stream<? extends HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac);
+
+	/**
+	 * Return a breadcrumb node map, where the key is the source node and the value is a list of ancestors including the
+	 * node itself. The list is ordered by distance from the source node descending. This method does not check permissions
+	 * @param node
+	 * @param ac
+	 * @return
+	 */
+	Map<HibNode, List<HibNode>> getBreadcrumbNodesMap(Collection<HibNode> node, InternalActionContext ac);
 
 	/**
 	 * Get publish status for all languages of the node.
@@ -485,4 +567,12 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	NodeReference transformToReference(HibNode node, InternalActionContext ac);
+
+	/**
+	 * Copy all the parent nodes from the old branch to the new branch
+	 * @param nodes
+	 * @param oldBranch
+	 * @param newBranch
+	 */
+	void migrateParentNodes(List<? extends HibNode> nodes, HibBranch oldBranch, HibBranch newBranch);
 }

@@ -71,7 +71,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronodeResolveLinks() throws Exception {
-		tx(this::addMicronodeField);
+		addMicronodeField();
 		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),
@@ -91,7 +91,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodes() throws Exception {
-		tx(this::addMicronodeListField);
+		addMicronodeListField();
 		recreateIndices();
 
 		for (String firstName : Arrays.asList("Mickey", "Donald")) {
@@ -119,7 +119,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfNodes() throws Exception {
-		tx(this::addNodeListField);
+		addNodeListField();
 		recreateIndices();
 
 		String nodeUuid = tx(() -> content("concorde").getUuid());

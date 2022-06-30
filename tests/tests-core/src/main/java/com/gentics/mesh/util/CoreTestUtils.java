@@ -3,6 +3,7 @@ package com.gentics.mesh.util;
 import java.util.Arrays;
 import java.util.UUID;
 
+import com.gentics.mesh.core.db.Tx;
 import org.apache.commons.lang.RandomStringUtils;
 
 import com.gentics.mesh.FieldUtil;
@@ -36,7 +37,7 @@ public final class CoreTestUtils {
 		HibSchema schemaContainer = ctx.schemaDao().create(schema, null, null, false);
 		HibSchemaVersion version = schemaContainer.getLatestVersion();
 		ctx.commit();
-		return ctx.contentDao().createPersisted(UUID.randomUUID().toString(), version, null);
+		return ctx.contentDao().createPersisted(UUID.randomUUID().toString(), version, null, null, new VersionNumber(), null);
 	}
 
 	public static SchemaVersionModel createSchema(FieldSchema... fields) {
@@ -44,5 +45,42 @@ public final class CoreTestUtils {
 		schema.setName(RandomStringUtils.random(10, true, true));
 		Arrays.stream(fields).forEach(field -> schema.addField(field));
 		return schema;
+	}
+
+	/**
+	 * Create a schema.
+	 *
+	 * @param container
+	 *            Parent schema container for versions
+	 * @param name
+	 *            schema name
+	 * @param version
+	 *            schema version
+	 * @param fields
+	 *            list of schema fields
+	 * @return schema container
+	 */
+	public static HibSchemaVersion createSchemaVersion(HibSchema container, String name, String version, FieldSchema... fields) {
+		HibSchemaVersion sversion = CommonTx.get().schemaDao().createPersistedVersion(container, v -> fillSchemaVersion(v, container, name, version, fields));
+		Tx.get().commit();
+		return sversion;
+	}
+
+	public static HibSchemaVersion fillSchemaVersion(HibSchemaVersion containerVersion, HibSchema container, String name, String versionName, FieldSchema... fields) {
+		SchemaVersionModel schema = new SchemaModelImpl();
+		schema.setName(name);
+		schema.setVersion(versionName);
+		for (FieldSchema field : fields) {
+			schema.addField(field);
+		}
+		schema.setContainer(false);
+		// schema.setDisplayField("name");
+		// schema.setSegmentField("name");
+		schema.validate();
+
+		containerVersion.setName(name);
+		containerVersion.setSchema(schema);
+		containerVersion.setSchemaContainer(container);
+		return containerVersion;
 	}
 }

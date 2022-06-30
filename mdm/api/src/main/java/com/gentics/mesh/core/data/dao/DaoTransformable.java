@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibTransformableElement;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.reactivex.Single;
@@ -44,6 +46,13 @@ public interface DaoTransformable<T, R extends RestModel> {
 	 * @return
 	 */
 	R transformToRestSync(T element, InternalActionContext ac, int level, String... languageTags);
+
+	/**
+	 * Invoked before retrieving etags for a page
+	 * @param page
+	 * @param ac
+	 */
+	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac) {}
 
 	/**
 	 * Return the etag for the element.

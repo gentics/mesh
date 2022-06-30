@@ -545,8 +545,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Delete the node
 			call(() -> client().deleteNode(PROJECT_NAME, restNode2.getUuid()));
 
-			HibNode deletedNode = boot().nodeDao().findByUuid(project(), restNode2.getUuid());
-			assertNull("The node should have been deleted.", deletedNode);
+			call(() -> client().findNodeByUuid(projectUuid(), restNode2.getUuid()), NOT_FOUND);
 		}
 	}
 

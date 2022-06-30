@@ -96,12 +96,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
 		Tx tx = Tx.get();
 		HibUser user = ac.getUser();
-		String branchUuid = tx.getBranch(ac).getUuid();
 		UserDao userDao = mesh().boot().userDao();
 
 		return findAll(tx.getProject(ac).getUuid())
 			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
-			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	/**

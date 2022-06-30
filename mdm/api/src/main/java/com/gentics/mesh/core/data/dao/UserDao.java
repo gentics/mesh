@@ -296,9 +296,8 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param user
 	 * @param container
 	 * @param branchUuid
-	 * @param requestedVersion
 	 */
-	boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion);
+	boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid);
 
 	/**
 	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the

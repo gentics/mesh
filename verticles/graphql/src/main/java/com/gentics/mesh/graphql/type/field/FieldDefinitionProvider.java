@@ -58,6 +58,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
+import com.gentics.mesh.graphql.type.NodeTypeProvider;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.util.DateUtils;
 
@@ -498,8 +499,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 						HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
-						container = gc.requiresReadPermSoft(container, env);
-						return new NodeContent(node, container, languageTags, type);
+						return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 					}
 				}
 				return null;

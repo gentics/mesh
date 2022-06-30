@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -84,19 +83,19 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			prepareTypedSchema(node, FieldUtil.createNumberFieldSchema(FIELD_NAME), false);
-			tx.commit();
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNumberField numberField = container.createNumber(FIELD_NAME);
 			numberField.setNumber(this.num);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			NodeResponse response = readNode(node);
+			NodeResponse response = readNode(folder("2015"));
 			NumberFieldImpl deserializedNumberField = response.getFields().getNumberField(FIELD_NAME);
 			assertNotNull(deserializedNumberField);
 			Assert.assertNumberValueEquals(this.num, deserializedNumberField.getNumber());

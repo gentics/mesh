@@ -28,6 +28,7 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -190,8 +191,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
-					.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
+			NodeResponse response = call(() -> client().findNodeByUuid(projectName(), content.getUuid()));
+			NodeUpdateRequest request = response.toRequest();
+			request.getFields()
+					.put("content", new HtmlFieldImpl().setHTML("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>"));
+			call(() -> client().updateNode(projectName(), content.getUuid(), request));
 			tx.success();
 		}
 
@@ -252,7 +256,10 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015
-			contentDao.getLatestDraftFieldContainer(parentNode, english()).createNode("nodeRef", node);
+			HibNodeFieldContainer original = contentDao.getLatestDraftFieldContainer(parentNode, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(parentNode, english(), project().getLatestBranch(), user(), original, true);
+			container.createNode("nodeRef", node);
+			contentDao.updateWebrootPathInfo(container, project().getLatestBranch().getUuid(), "");
 			tx.success();
 		}
 		String path = "/News/2015";

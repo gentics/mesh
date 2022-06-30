@@ -18,15 +18,16 @@ import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
 import com.gentics.mesh.etc.config.GraphQLOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
-
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLError;
+import graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentation;
 import graphql.language.SourceLocation;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.json.JsonArray;
@@ -34,6 +35,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
+import org.dataloader.DataLoader;
+import org.dataloader.DataLoaderOptions;
+import org.dataloader.DataLoaderRegistry;
 
 /**
  * Handler for GraphQL REST endpoint operations.
@@ -87,9 +91,18 @@ public class GraphQLHandler {
 					// store for possibly logging it later
 					loggableQuery.set(query);
 					loggableVariables.set(variables);
-					GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).build();
+					GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).instrumentation(new DataLoaderDispatcherInstrumentation()).build();
+
+					DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
+					DataLoaderOptions options = DataLoaderOptions.newOptions().setBatchLoaderContextProvider(() -> gc);
+					dataLoaderRegistry.register(NodeDataLoader.CONTENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CONTENT_LOADER, options));
+					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, options));
+					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, options));
+					dataLoaderRegistry.register(NodeDataLoader.BREADCRUMB_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.BREADCRUMB_LOADER, options));
+
 					ExecutionInput executionInput = ExecutionInput
 						.newExecutionInput()
+						.dataLoaderRegistry(dataLoaderRegistry)
 						.query(query)
 						.context(gc)
 						.variables(variables)
@@ -180,7 +193,7 @@ public class GraphQLHandler {
 				addLocation(dataError, jsonError);
 			} else {
 				jsonError.put("message", error.getMessage());
-				jsonError.put("type", error.getErrorType());
+				jsonError.put("type", error.getErrorType().toString());
 				addLocation(error, jsonError);
 			}
 			jsonErrors.add(jsonError);

@@ -9,6 +9,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -17,6 +18,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.TagDao;
@@ -31,6 +33,7 @@ import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 
@@ -48,8 +51,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationImpl.class);
 
 	@Inject
-	public BranchMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
-		super(db, nodeFieldAPIHandler, metrics, batchProvider);
+	public BranchMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, MeshOptions options) {
+		super(db, nodeFieldAPIHandler, metrics, batchProvider, options);
 	}
 
 	@Override
@@ -75,8 +78,26 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 
 			List<Exception> errorsDetected = new ArrayList<>();
 			// Iterate over all nodes of the project and migrate them to the new branch
-			migrateLoop(nodes, cause, status, (batch, node, errors) -> {
-				migrateNode(node.getUuid(), batch, oldBranch, newBranch, errorsDetected);
+			migrateLoop(nodes, cause, status, (batch, nodeList, errors) -> {
+				ContentDao contentDao = Tx.get().contentDao();
+				NodeDao nodeDao = Tx.get().nodeDao();
+
+				// prepare nodes for the migration
+				List<? extends HibNode> preparedNodes = beforeBatchMigration(nodeList);
+
+				// skip already migrated nodes
+				List<? extends HibNode> nodesToMigrate = preparedNodes.stream()
+						// Check whether the node already has an initial container and thus was already migrated
+						.filter(node -> !contentDao.getFieldContainers(node, newBranch, INITIAL).hasNext())
+						.collect(Collectors.toList());
+
+				// migrate parents in batches
+				nodeDao.migrateParentNodes(nodesToMigrate, oldBranch, newBranch);
+
+				// perform rest of the migration
+				for (HibNode node : nodesToMigrate) {
+					migrateNode(node, batch, oldBranch, newBranch, errorsDetected);
+				}
 			});
 
 			if (!errorsDetected.isEmpty()) {
@@ -102,30 +123,18 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 * Migrate the node from the old branch to the new branch. This will effectively create the edges between the new branch and the node. Additionally also the
 	 * tags will be update to correspond with the new branch structure.
 	 * 
-	 * @param nodeUuid
+	 * @param node
 	 * @param batch
 	 * @param oldBranch
 	 * @param newBranch
 	 * @param errorsDetected
 	 */
-	private void migrateNode(String nodeUuid, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
+	private void migrateNode(HibNode node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			Tx tx = Tx.get();
-			NodeDao nodeDao = tx.nodeDao();
 			TagDao tagDao = tx.tagDao();
 			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 			HibBranch branchToMigrateTo = tx.branchDao().findByUuid(newBranch.getProject(), newBranch.getUuid());
-			HibNode node = tx.nodeDao().findByUuidGlobal(nodeUuid);
-
-			// Check whether the node already has an initial container and thus was already migrated
-			if (contentDao.getFieldContainers(node, branchToMigrateTo, INITIAL).hasNext()) {
-				return;
-			}
-
-			HibNode parent = nodeDao.getParentNode(node, oldBranch.getUuid());
-			if (parent != null) {
-				nodeDao.setParentNode(node, branchToMigrateTo.getUuid(), parent);
-			}
 
 			Result<HibNodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
 			Result<HibNodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);
@@ -147,7 +156,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 			// Migrate tags
 			tagDao.getTags(node, oldBranch).forEach(tag -> tagDao.addTag(node, tag, branchToMigrateTo));
 		} catch (Exception e1) {
-			log.error("Error while handling node {" + nodeUuid + "} during schema migration.", e1);
+			log.error("Error while handling node {" + node.getUuid() + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
 	}

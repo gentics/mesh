@@ -41,7 +41,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange() throws Exception {
 		int numberValue = 1200;
-		tx(() -> addNumberSpeedFieldToOneNode(numberValue));
+		addNumberSpeedFieldToOneNode(numberValue);
 		recreateIndices();
 
 		// from 100 to 9000
@@ -53,9 +53,10 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange2() throws Exception {
 		int numberValue = 1200;
+		addNumberSpeedFieldToOneNode(numberValue);
+
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			addNumberSpeedFieldToOneNode(numberValue);
 			contentDao.getLatestDraftFieldContainer(content(), english()).createNumber("speed").setNumber(92.1535f);
 		});
 		recreateIndices();
@@ -70,7 +71,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange3() throws Exception {
 		int numberValue = 1200;
-		tx(() -> addNumberSpeedFieldToOneNode(numberValue));
+		addNumberSpeedFieldToOneNode(numberValue);
 		recreateIndices();
 
 		// out of bounds
@@ -81,7 +82,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronode() throws Exception {
-		tx(this::addMicronodeField);
+		addMicronodeField();
 		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),

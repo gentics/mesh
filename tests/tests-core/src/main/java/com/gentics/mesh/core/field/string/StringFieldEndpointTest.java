@@ -6,11 +6,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -43,22 +44,19 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 
 			// add non restricted string field
 			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
 			stringFieldSchema.setName(FIELD_NAME);
 			stringFieldSchema.setLabel("Some label");
-			schema.addField(stringFieldSchema);
 
 			// add restricted string field
 			StringFieldSchema restrictedStringFieldSchema = new StringFieldSchemaImpl();
 			restrictedStringFieldSchema.setName("restrictedstringField");
 			restrictedStringFieldSchema.setLabel("Some label");
 			restrictedStringFieldSchema.setAllowedValues(new String[] { "one", "two", "three" });
-			schema.addField(restrictedStringFieldSchema);
 
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(stringFieldSchema, restrictedStringFieldSchema), Optional.empty());
 			tx.success();
 		}
 	}
@@ -165,19 +163,18 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			prepareTypedSchema(node, FieldUtil.createStringFieldSchema(FIELD_NAME), false);
-			tx.commit();
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibStringField stringField = container.createString(FIELD_NAME);
 			stringField.setString("someString");
 			tx.success();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
-		NodeResponse response = readNode(node);
+		NodeResponse response = readNode(folder("2015"));
 		StringFieldImpl deserializedStringField = response.getFields().getStringField(FIELD_NAME);
 		assertNotNull(deserializedStringField);
 		assertEquals("someString", deserializedStringField.getString());
@@ -204,7 +201,6 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 			// unrestrict string field
 			StringFieldSchema restrictedStringFieldSchema = schema.getField("restrictedstringField", StringFieldSchema.class);
 			restrictedStringFieldSchema.setAllowedValues();
-			schema.addField(restrictedStringFieldSchema);
 
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 			tx.success();
