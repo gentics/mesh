@@ -56,6 +56,8 @@ icon:check[] Cluster: The plugin initialization now waits not only for the write
 [[v1.6.30]]
 == 1.6.30 (06.07.2022)
 
+icon:plus[] Auth: Added JWT options to configure token content (`issuer` - `"iss"`, `audience` - `"aud"`) and token verification (`leeway` and `ignoreExpiration`).
+
 icon:check[] GraphQL: The behaviour for getting lists of nodes with `version`=`draft` using the REST API or GraphQL was inconsistent for nodes,
 for which the requesting user only had the `read published` permission.
 When using the REST API, those nodes were never returned, using GraphQL, those nodes were returned, if they were published and the draft version
