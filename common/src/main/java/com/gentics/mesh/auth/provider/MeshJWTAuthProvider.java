@@ -45,28 +45,31 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthProvider.class);
 
-	private JWTAuth jwtProvider;
-
 	public static final String TOKEN_COOKIE_KEY = "mesh.token";
-
 	private static final String USERID_FIELD_NAME = "userUuid";
-
 	private static final String API_KEY_TOKEN_CODE_FIELD_NAME = "jti";
 
+	private final Vertx vertx;
 	protected final Database db;
-
-	private BCryptPasswordEncoder passwordEncoder;
-
-	private BootstrapInitializer boot;
-
+	private final BCryptPasswordEncoder passwordEncoder;
+	private final BootstrapInitializer boot;
 	private final MeshOptions meshOptions;
+
+	private JWTAuth jwtProvider;
 
 	@Inject
 	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
+		this.vertx = vertx;
 		this.meshOptions = meshOptions;
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
 		this.boot = boot;
+	}
+
+	public void initialize() {
+		if (this.jwtProvider != null) {
+			return;
+		}
 
 		// Use the mesh JWT options in order to setup the JWTAuth provider
 		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
@@ -81,10 +84,12 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		// Set JWT options from the config
 		config.setJWTOptions(JWTUtil.createJWTOptions(options));
 		config.setKeyStore(new KeyStoreOptions().setPath(keyStorePath).setPassword(keystorePassword).setType(type));
-		jwtProvider = JWTAuth.create(vertx, new JWTAuthOptions(config));
+		this.jwtProvider = JWTAuth.create(this.vertx, new JWTAuthOptions(config));
 	}
 
 	public void authenticateJWT(JsonObject authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
+		this.initialize();
+
 		// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
 		// We will use this information to load the Mesh User from the graph.
 		jwtProvider.authenticate(authInfo, rh -> {
@@ -136,6 +141,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 *            Handler to be invoked with the created JWToken
 	 */
 	public void generateToken(String username, String password, String newPassword, Handler<AsyncResult<String>> resultHandler) {
+		this.initialize();
+
 		authenticate(username, password, newPassword, rh -> {
 			if (rh.failed()) {
 				resultHandler.handle(Future.failedFuture(rh.cause()));
@@ -220,6 +227,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 * @return The new token
 	 */
 	public String generateToken(User user) {
+		this.initialize();
 		if (!(user instanceof MeshAuthUser)) {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
 			throw error(INTERNAL_SERVER_ERROR, "error_internal");
@@ -243,6 +251,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 * @return Generated API key
 	 */
 	public String generateAPIToken(com.gentics.mesh.core.data.User user, String tokenCode, Integer expireDuration) {
+		this.initialize();
 		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
 		JsonObject tokenData = new JsonObject()
 			.put(USERID_FIELD_NAME, user.getUuid())
