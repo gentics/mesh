@@ -1,7 +1,10 @@
 package com.gentics.mesh.test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.reflections.Reflections;
 import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
@@ -44,14 +47,15 @@ public interface MeshOptionsProvider {
 		Class<? extends T> classToInstantiate = null;
 		if (StringUtils.isBlank(className)) {
 			Reflections reflections = new Reflections("com.gentics.mesh");
-			Set<Class<? extends T>> classes = reflections.getSubTypesOf(classOfT);
-			if (classes.size() > 0) {
-				for (Class<? extends T> cls : classes) {
-					if (!cls.isInterface() && !Modifier.isAbstract(cls.getModifiers())) {
-						classToInstantiate = cls;
-						break;
-					}
-				}
+			List<Class<? extends T>> classes = new ArrayList<>(reflections.getSubTypesOf(classOfT));
+
+			// remove interfaces, abstract classes or classes, which are not eligible
+			classes.removeIf(cls -> cls.isInterface() || Modifier.isAbstract(cls.getModifiers()) || !isEligible(cls));
+
+			if (!classes.isEmpty()) {
+				// sort classes by order
+				classes.sort((c1, c2) -> Integer.compare(getOrder(c1), getOrder(c2)));
+				classToInstantiate = classes.get(0);
 			}
 			if (classToInstantiate == null) {
 				throw new NoMeshTestContextException(classOfT);
@@ -67,6 +71,47 @@ public interface MeshOptionsProvider {
 			return (T) classToInstantiate.getConstructor().newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Get the order of the provider class. This either the order given by the {@link MeshProviderOrder} annotation, or {@link Integer#MAX_VALUE}
+	 * @param <T> type
+	 * @param classOfT provider class
+	 * @return order
+	 */
+	static <T extends MeshOptionsProvider> int getOrder(Class<T> classOfT) {
+		MeshProviderOrder order = null;
+		Class<?> clazz = classOfT;
+		while (clazz != null && order == null) {
+			order = clazz.getAnnotation(MeshProviderOrder.class);
+			clazz = clazz.getSuperclass();
+		}
+		if (order == null) {
+			return Integer.MAX_VALUE;
+		} else {
+			return order.value();
+		}
+	}
+
+	/**
+	 * Check whether the provider class is eligible. It is eligible, if it does not have a static method named "isEligible", which returns a boolean,
+	 * or if that method returns true
+	 * @param <T> type
+	 * @param classOfT provider class
+	 * @return true, when the class is eligible
+	 */
+	static <T extends MeshOptionsProvider> boolean isEligible(Class<T> classOfT) {
+		try {
+			Method method = classOfT.getMethod("isEligible");
+			if (Modifier.isStatic(method.getModifiers()) || method.getReturnType() == Boolean.class) {
+				return (boolean) method.invoke(null);
+			} else {
+				return true;
+			}
+		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			return true;
 		}
 	}
 }
