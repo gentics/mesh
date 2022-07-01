@@ -3,7 +3,11 @@ package com.gentics.mesh.util;
 import java.util.Arrays;
 import java.util.UUID;
 
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import org.apache.commons.lang.RandomStringUtils;
 
 import com.gentics.mesh.FieldUtil;
@@ -82,5 +86,21 @@ public final class CoreTestUtils {
 		containerVersion.setSchema(schema);
 		containerVersion.setSchemaContainer(container);
 		return containerVersion;
+	}
+
+	public static HibMicroschemaVersion fillMicroschemaVersion(HibMicroschemaVersion microschemaVersion, HibMicroschema microschema, String name, String versionName, FieldSchema... fields) {
+		MicroschemaVersionModel model = new MicroschemaModelImpl();
+		model.setName(name);
+		model.setVersion(versionName);
+		for (FieldSchema field : fields) {
+			model.addField(field);
+		}
+		model.validate();
+
+		microschemaVersion.setName(name);
+		microschemaVersion.setSchema(model);
+		microschemaVersion.setSchemaContainer(microschema);
+
+		return microschemaVersion;
 	}
 }
