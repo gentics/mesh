@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_REFRESH_REQUEST;
 import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.retryWithDelay;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.logElasticSearchError;
 
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -38,6 +39,7 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.exceptions.CompositeException;
 import io.reactivex.exceptions.MissingBackpressureException;
 import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
@@ -393,6 +395,15 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					}
 					idleChecker.addAndGetRequests(request.requestCount());
 				})
+				.doOnError(err -> logElasticSearchError(err, () -> {
+					if (err instanceof SocketTimeoutException 
+							|| (err instanceof CompositeException && ((CompositeException) err).getExceptions().stream().anyMatch(SocketTimeoutException.class::isInstance))) {
+						log.info("Transforming event " + messageEvent.event + " process timed out", err);
+						idleChecker.decrementAndGetTransformations();
+					} else {
+						log.error("Error transforming event " + messageEvent.event, err);
+					}
+				}))
 				.retryWhen(retryWithDelay(
 					Duration.ofMillis(options.getRetryInterval()),
 					options.getRetryLimit()))
