@@ -39,7 +39,6 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.exceptions.CompositeException;
 import io.reactivex.exceptions.MissingBackpressureException;
 import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
@@ -407,8 +406,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				.retryWhen(retryWithDelay(
 					Duration.ofMillis(options.getRetryInterval()),
 					options.getRetryLimit()))
-				.doOnComplete(
-					() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
+				.doOnComplete(() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
 				.doOnTerminate(idleChecker::decrementAndGetTransformations);
 		} catch (Exception e) {
 			// For safety to keep the verticle always running
