@@ -10,14 +10,14 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.JWTUtil;
 
 import io.reactivex.Single;
@@ -71,7 +71,7 @@ public class JWTPayloadTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			this.serverOptionsChanger.accept(this.options());
 
-			User user = user();
+			HibUser user = user();
 			String username = user.getUsername();
 
 			MeshRestClient client = MeshRestClient.create("localhost", port(), false);

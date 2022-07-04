@@ -167,6 +167,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		public MeshOptionChanger optionChanger() {
 			return delegate.optionChanger();
 		}
+
+		@Override
+		public boolean loginClients() {
+			return true;
+		}
 	}
 
 	@Override

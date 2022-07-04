@@ -8,14 +8,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.JWTTestUtil;
 import com.gentics.mesh.util.Tuple;
 
@@ -95,7 +95,7 @@ public class JWTPayloadValidationTest extends AbstractMeshTest {
 			this.clientOptionsChanger.accept(clientOptions);
 
 			Tuple<JWTAuth, JWTOptions> jwt = JWTTestUtil.createAuth(vertx(), clientOptions, null);
-			User user = user();
+			HibUser user = user();
 			JsonObject tokenData = new JsonObject()
 				.put("userUuid", user.getUuid());
 			String token = jwt.v1().generateToken(tokenData, jwt.v2());

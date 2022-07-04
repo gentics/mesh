@@ -6,15 +6,14 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.JWTTestUtil;
 import com.gentics.mesh.util.JWTUtil;
 import com.gentics.mesh.util.Tuple;
@@ -65,7 +64,7 @@ public class JWTLeewayTimeoutValidationTest extends AbstractMeshTest {
 				jwtOptions.setNoTimestamp(true);
 			});
 
-			User user = user();
+			HibUser user = user();
 			JsonObject tokenData = new JsonObject()
 				.put("userUuid", user.getUuid())
 				.put(JWTUtil.JWT_FIELD_EXPIRATION, (System.currentTimeMillis() / 1000L) + this.offset);
