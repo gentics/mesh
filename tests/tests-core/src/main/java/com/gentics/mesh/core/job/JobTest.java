@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
@@ -115,10 +116,8 @@ public class JobTest extends AbstractMeshTest {
 			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx, microschema, v -> {}), createMicroschemaVersion(tx, microschema, v -> {}));
 			dao.enqueueBranchMigration(user(), latestBranch());
 
-			List<? extends HibJob> list = dao.findAll().list();
-			assertThat(list.get(0).getType()).isEqualTo(JobType.schema);
-			assertThat(list.get(1).getType()).isEqualTo(JobType.microschema);
-			assertThat(list.get(2).getType()).isEqualTo(JobType.branch);
+			List<JobType> list = dao.findAll().stream().map(HibJob::getType).collect(Collectors.toList());
+			assertThat(list).containsExactlyInAnyOrder(JobType.schema, JobType.microschema, JobType.branch);
 			assertThat(list.size()).isEqualTo(3);
 		}
 	}

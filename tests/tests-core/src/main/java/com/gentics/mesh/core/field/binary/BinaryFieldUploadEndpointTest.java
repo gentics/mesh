@@ -179,6 +179,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareTypedSchema(node.getSchemaContainer(),
 					List.of(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content")),
 					Optional.empty());
+			tx.success();
 		}
 
 		call(() -> uploadRandomData(folder("news"), "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_found_field_is_not_binary",

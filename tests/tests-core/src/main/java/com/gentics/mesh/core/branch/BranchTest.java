@@ -93,7 +93,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibBranch branchThree = createBranch("Three");
 
 			List<? extends HibBranch> branchList = branchDao.findAll(project).list();
-			assertThat(new ArrayList<HibBranch>(branchList)).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
+			assertThat(new ArrayList<HibBranch>(branchList)).usingElementComparatorOnFields("uuid").containsExactlyInAnyOrder(initialBranch,
 				branchOne, branchTwo, branchThree);
 		}
 	}
@@ -160,7 +160,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertThat(project.getLatestBranch()).as("Latest Branch").isNamed("Third new Branch").matches(thirdNewBranch).hasNext(null)
 				.hasPrevious(secondNewBranch);
 
-			assertThat(new ArrayList<HibBranch>(branchDao.findAll(project).list())).usingElementComparatorOnFields("uuid").containsExactly(
+			assertThat(new ArrayList<HibBranch>(branchDao.findAll(project).list())).usingElementComparatorOnFields("uuid").containsExactlyInAnyOrder(
 				initialBranch,
 				firstNewBranch, secondNewBranch, thirdNewBranch);
 
