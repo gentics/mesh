@@ -388,6 +388,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			return Flowable.empty();
 		}
 		try {
+			AtomicInteger retried = new AtomicInteger(options.getRetryLimit());
 			return this.mainEventhandler.handle(messageEvent)
 				.doOnNext(request -> {
 					if (log.isTraceEnabled()) {
@@ -396,9 +397,8 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					idleChecker.addAndGetRequests(request.requestCount());
 				})
 				.doOnError(err -> logElasticSearchError(err, () -> {
-					if (err instanceof SocketTimeoutException 
-							|| (err instanceof CompositeException && ((CompositeException) err).getExceptions().stream().anyMatch(SocketTimeoutException.class::isInstance))) {
-						log.info("Transforming event " + messageEvent.event + " process timed out", err);
+					if (err instanceof SocketTimeoutException && retried.get() > 0) {
+						log.info("Transforming event " + messageEvent.event + " process timed out on retry #" + retried.getAndDecrement(), err);
 						idleChecker.decrementAndGetTransformations();
 					} else {
 						log.error("Error transforming event " + messageEvent.event, err);
