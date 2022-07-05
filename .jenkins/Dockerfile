@@ -33,15 +33,6 @@ RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz"
     mv docker/* /usr/bin &&\
     rm -rf docke*
 
-# Install Java 8
-RUN mkdir -p /usr/lib/jvm/ && \
-   cd /usr/lib/jvm/ && \
-   wget -nv -O jdk-8-x64.tar.gz "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u265-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u265b01.tar.gz" && \
-   tar xfz jdk-8-x64.tar.gz && \
-   rm *.gz && \
-   mv java-1.8.0-openjdk-amd64 java-8
-ENV JAVA_1_8_HOME /usr/lib/jvm/java-8
-
 # Install Java 11 (default)
 RUN mkdir -p /usr/lib/jvm/ && \
    cd /usr/lib/jvm/ && \
@@ -49,7 +40,6 @@ RUN mkdir -p /usr/lib/jvm/ && \
    tar xfz openjdk-11.tar.gz && \
    rm *.gz && \
    mv jdk-11* java-11
-ENV JAVA_1_11_HOME /usr/lib/jvm/java-11
 ENV JAVA_HOME /usr/lib/jvm/java-11
 
 # Install Java 15
