@@ -10,6 +10,7 @@ import java.net.URL;
 import java.time.Duration;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
@@ -25,6 +26,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpServer;
 
+@Ignore("Test hangs")
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true, optionChanger = RANDOM_ES_PORT)
 public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 
