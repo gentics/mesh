@@ -253,9 +253,11 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 						job.resetJob();
 					}
 				});
-				MeshEvent.triggerJobWorker(boot.mesh());
 				return root.transformToRestSync(job, ac, 0);
-			}, model -> ac.send(model, OK));
+			}, model -> {
+				MeshEvent.triggerJobWorker(boot.mesh());
+				ac.send(model, OK);
+			});
 		}
 	}
 

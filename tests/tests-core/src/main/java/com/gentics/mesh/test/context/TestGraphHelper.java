@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.schema.HibSchema;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -23,7 +24,8 @@ public interface TestGraphHelper extends TestHelper {
 
 	default HibProject createProject(String name, String schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		return Tx.get().projectDao().create(name, null, null, null, user(), schemaContainer(schema).getLatestVersion(), batch);
+		HibSchema schemaEntity = Tx.get().schemaDao().findByName(schema);
+		return Tx.get().projectDao().create(name, null, null, null, user(), schemaEntity.getLatestVersion(), batch);
 	}
 
 	default HibBranch createBranch(String name) {

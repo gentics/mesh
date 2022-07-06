@@ -104,6 +104,8 @@ import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
 import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
 import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
+import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
+import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.verticle.handler.OrientDBWriteLockImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -293,6 +295,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract BranchMigration branchMigration(BranchMigrationImpl e);
+
+	@Binds
+	abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(ProjectVersionPurgeHandlerImpl e);
 
 	// END
 

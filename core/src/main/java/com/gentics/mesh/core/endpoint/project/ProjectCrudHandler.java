@@ -78,9 +78,11 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 				} else {
 					boot.jobDao().enqueueVersionPurge(user, project);
 				}
-				MeshEvent.triggerJobWorker(boot.mesh());
 				return message(ac, "project_version_purge_enqueued");
-			}, message -> ac.send(message, OK));
+			}, message -> {
+				MeshEvent.triggerJobWorker(boot.mesh());
+				ac.send(message, OK);
+			});
 		}
 	}
 

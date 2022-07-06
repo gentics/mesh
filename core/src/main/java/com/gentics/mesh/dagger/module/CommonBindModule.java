@@ -226,9 +226,6 @@ public abstract class CommonBindModule {
 	abstract S3BinaryUploadHandler s3binaryUploadHandler(S3BinaryUploadHandlerImpl e);
 
 	@Binds
-	abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(ProjectVersionPurgeHandlerImpl e);
-
-	@Binds
 	abstract ServerSchemaStorage serverSchemaStorage(ServerSchemaStorageImpl e);
 
 	@Binds
