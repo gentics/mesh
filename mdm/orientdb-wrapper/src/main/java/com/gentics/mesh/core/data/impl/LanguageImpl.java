@@ -76,9 +76,4 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse> imple
 	public boolean update(InternalActionContext rc, EventQueueBatch batch) {
 		throw new NotImplementedException("Languages can't be updated");
 	}
-
-	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return "";
-	}
 }

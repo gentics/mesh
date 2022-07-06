@@ -7,10 +7,12 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.util.ETag;
 
 /**
  * Common interfaces shared by schema and microschema versions
@@ -46,5 +48,19 @@ public interface HibFieldSchemaElement<
 	 */
 	Map<HibBranch, SCV> findReferencedBranches();
 
+	/**
+	 * Transform a container to its REST representation.
+	 * 
+	 * @see DaoTransformable#transformToRestSync(Object, InternalActionContext, int, String...)
+	 * @param ac
+	 * @param level
+	 * @param languageTags
+	 * @return
+	 */
 	R transformToRestSync(InternalActionContext ac, int level, String... languageTags);
+
+	@Override
+	default String getSubETag(InternalActionContext ac) {
+		return ETag.hash(getLatestVersion().getETag(ac));
+	}
 }

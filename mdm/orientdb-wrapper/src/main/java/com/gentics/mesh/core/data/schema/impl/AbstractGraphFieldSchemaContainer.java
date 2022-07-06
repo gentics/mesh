@@ -24,7 +24,6 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.util.ETag;
 
 /**
  * The {@link AbstractGraphFieldSchemaContainer} contains the abstract graph element implementation for {@link GraphFieldSchemaContainer} implementations (e.g.:
@@ -125,11 +124,6 @@ public abstract class AbstractGraphFieldSchemaContainer<
 		bac.add(onDeleted());
 		getElement().remove();
 		// TODO delete versions and nodes as well
-	}
-
-	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return ETag.hash(toGraph(getLatestVersion()).getETag(ac));
 	}
 
 	@Override

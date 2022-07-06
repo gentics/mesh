@@ -60,11 +60,6 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse> implem
 	}
 
 	@Override
-	public String getSubETag(InternalActionContext ac) {
-		return getErrorMessage() + getErrorDetail();
-	}
-
-	@Override
 	public void setType(JobType type) {
 		property(TYPE_PROPERTY_KEY, type.name());
 	}

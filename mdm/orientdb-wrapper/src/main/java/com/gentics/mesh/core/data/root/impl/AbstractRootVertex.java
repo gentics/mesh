@@ -142,8 +142,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	 * @return
 	 */
 	public String getSubETag(T element, InternalActionContext ac) {
-		// TODO FIXME make this method abstract
-		throw new RuntimeException("Not implemented");
+		throw new IllegalStateException("getSubETag should not get called over the root vertex implementations, that don't support ETagging.");
 	}
 
 	@Override

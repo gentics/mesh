@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.JOB_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.JOB_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.JOB_UPDATED;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -19,9 +21,6 @@ import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.util.DateUtils;
-
-import io.reactivex.Completable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Domain model for job.
@@ -356,5 +355,10 @@ public interface HibJob extends HibCoreElement<JobResponse>, HibCreatorTracking 
 	@Override
 	default String getAPIPath(InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/admin/jobs/" + getUuid();
+	}
+
+	@Override
+	default String getSubETag(InternalActionContext ac) {
+		return getErrorMessage() + getErrorDetail();
 	}
 }

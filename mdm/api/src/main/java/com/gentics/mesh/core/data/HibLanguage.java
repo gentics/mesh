@@ -51,4 +51,9 @@ public interface HibLanguage extends HibCoreElement<LanguageResponse>, HibNamedE
 		// Languages don't have a public location
 		return null;
 	}
+
+	@Override
+	default String getSubETag(InternalActionContext ac) {
+		return "";
+	}
 }
