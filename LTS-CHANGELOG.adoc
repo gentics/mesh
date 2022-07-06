@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.6.30]]
-== 1.6.30 (TBD)
+== 1.6.30 (06.07.2022)
 
 icon:check[] GraphQL: The behaviour for getting lists of nodes with `version`=`draft` using the REST API or GraphQL was inconsistent for nodes,
 for which the requesting user only had the `read published` permission.
