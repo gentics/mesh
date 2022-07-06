@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.Timeout;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
@@ -62,6 +63,13 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@Rule
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();
+
+	/**
+	 * Add a global timeout of 44 minutes, which is slightly less than the timeout of 45 minutes, which is used for the surefire plugin
+	 * for the test execution
+	 */
+	@ClassRule
+	public static Timeout globalTimeout= new Timeout(44, TimeUnit.MINUTES);
 
 	@Override
 	public MeshTestContext getTestContext() {
